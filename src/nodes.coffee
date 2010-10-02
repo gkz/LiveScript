@@ -970,6 +970,7 @@ exports.CodeNode = class CodeNode extends BaseNode
         else
           params.push param
     params = (param.compile(o) for param in params)
+    params.push 'it' if not params.length and @body.contains(-> it.value is 'it')
     @body.makeReturn() unless empty
     (o.scope.parameter(param)) for param in params
     o.indent = @idt 2 if @className
