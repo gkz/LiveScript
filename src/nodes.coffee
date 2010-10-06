@@ -88,22 +88,22 @@ exports.BaseNode = class BaseNode
   # Recursively traverses down the *children* of the nodes, yielding to a block
   # and returning true when the block finds a match. `contains` does not cross
   # scope boundaries.
-  contains: (block) ->
+  contains: (test) ->
     contains = false
-    @traverseChildren false, (node) ->
-      if block(node)
+    @traverseChildren false, ->
+      if test it
         contains = true
         return false
     contains
 
   # Is this node of a certain type, or does it contain the type?
   containsType: (type) ->
-    this instanceof type or @contains (n) -> n instanceof type
+    this instanceof type or @contains -> it instanceof type
 
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   containsPureStatement: ->
-    @isPureStatement() or @contains (n) -> n.isPureStatement?()
+    @isPureStatement() or @contains -> it.isPureStatement?()
 
   # Perform an in-order traversal of the AST. Crosses scope boundaries.
   traverse: (block) -> @traverseChildren true, block
@@ -124,7 +124,7 @@ exports.BaseNode = class BaseNode
 
   collectChildren: ->
     nodes = []
-    @eachChild (node) -> nodes.push node
+    @eachChild -> nodes.push it
     nodes
 
   traverseChildren: (crossScope, func) ->
@@ -518,7 +518,7 @@ exports.CallNode = class CallNode extends BaseNode
         fun += name.compile o if name
       return "#{fun}.apply(#{ref}, #{splatargs})"
     call = 'call(this)'
-    argvar = (n) -> n instanceof LiteralNode and n.value is 'arguments'
+    argvar = -> it instanceof LiteralNode and it.value is 'arguments'
     for arg in @args when arg.contains argvar
       call = 'apply(this, arguments)'
       break
@@ -1398,7 +1398,7 @@ exports.ForNode = class ForNode extends BaseNode
     topLevel      = del(o, 'top') and not @returns
     range         = @source instanceof ValueNode and @source.base instanceof RangeNode and not @source.properties.length
     source        = if range then @source.base else @source
-    codeInBody    = @body.contains (n) -> n instanceof CodeNode
+    codeInBody    = @body.contains -> it instanceof CodeNode
     scope         = o.scope
     name          = @name  and @name.compile o
     index         = @index and @index.compile o
@@ -1606,18 +1606,18 @@ ClosureNode = exports.ClosureNode =
     return expressions if expressions.containsPureStatement()
     func = new ParentheticalNode(new CodeNode([], Expressions.wrap([expressions])))
     args = []
-    mentionsArgs = expressions.contains (n) ->
-      n instanceof LiteralNode and (n.value is 'arguments')
-    mentionsThis = expressions.contains (n) ->
-      (n instanceof LiteralNode and (n.value is 'this')) or
-      (n instanceof CodeNode and n.bound)
-    if mentionsArgs or mentionsThis
+    if (mentionsArgs = expressions.contains @literalArgs) or
+       (               expressions.contains @literalThis)
       meth = literal(if mentionsArgs then 'apply' else 'call')
       args = [literal('this')]
       args.push literal 'arguments' if mentionsArgs
       func = new ValueNode func, [new AccessorNode(meth)]
     call = new CallNode(func, args)
     if statement then Expressions.wrap([call]) else call
+
+  literalArgs: -> it instanceof LiteralNode and it.value is 'arguments'
+  literalThis: -> it instanceof LiteralNode and it.value is 'this' or
+                  it instanceof CodeNode    and it.bound
 
 # Utility Functions
 # -----------------
@@ -1670,8 +1670,7 @@ IS_STRING = /^['"]/
 # -----------------
 
 # Handy helper for a generating LiteralNode.
-literal = (name) ->
-  new LiteralNode(name)
+literal = -> new LiteralNode it
 
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
