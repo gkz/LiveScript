@@ -173,3 +173,8 @@ ok a is '123456'
 
 # Multiple operators should space themselves.
 ok + +1 is - -1
+
+
+eq '', do do do -> -> -> do String
+eq 1, do -> 1
+eq @, do => @
