@@ -94,7 +94,7 @@ exports.Base = class Base
 
   # Is this node of a certain type, or does it contain the type?
   containsType: (type) ->
-    this instanceof type or @contains (node) -> node instanceof type
+    this instanceof type or @contains -> it instanceof type
 
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
@@ -122,7 +122,7 @@ exports.Base = class Base
 
   collectChildren: ->
     nodes = []
-    @eachChild (node) -> nodes.push node
+    @eachChild -> nodes.push it
     nodes
 
   traverseChildren: (crossScope, func, arg) ->
@@ -877,6 +877,8 @@ exports.Code = class Code extends Base
     @body.expressions.splice 0, 0, exprs... if exprs.length
     @body.makeReturn() unless wasEmpty or @noReturn
     scope.parameter vars[i] = v.compile o for v, i in vars unless splats
+    if not vars.length and @body.contains ((node) -> node.value is 'it')
+      vars.push 'it'
     comm     = if @comment then @comment.compile(o) + '\n' else ''
     o.indent = @idt 2 if @className
     idt      = @idt 1
