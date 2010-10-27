@@ -178,3 +178,7 @@ ok + +1 is - -1
 eq '', do do do -> -> -> do String
 eq 1, do -> 1
 eq @, do => @
+
+
+ok []    instanceof [String, Array]
+ok 0 not instanceof [String, Array]

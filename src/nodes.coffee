@@ -100,7 +100,7 @@ exports.Base = class Base
   # a pure statement?
   containsPureStatement: ->
     @isPureStatement() or @contains (node, func) ->
-      func(node) or if node instanceof While or node instanceof For
+      func(node) or if node instanceof [While, For]
       then -> it instanceof Return
       else func
     , -> it.isPureStatement()
@@ -568,7 +568,7 @@ exports.Obj = class Obj extends Base
       indent = if prop instanceof Comment then '' else @idt 1
       if prop instanceof Value and prop.tags.this
         prop = new Assign prop.properties[0].name, prop, 'object'
-      else if prop not instanceof Assign and prop not instanceof Comment
+      else if prop not instanceof [Assign, Comment]
         prop = new Assign prop, prop, 'object'
       indent + prop.compile(o) + join
     props = props.join ''
@@ -1061,6 +1061,7 @@ exports.Op = class Op extends Base
     return @compileUnary     o if @isUnary()
     return @compileChain     o if @isChainable() and @first.isChainable()
     return @compileExistence o if @operator is '?'
+    return @compileMultiIO   o if @operator is 'instanceof' and @second.isArray()
     @first.tags.front = @tags.front
     "#{ @first.compile o, LEVEL_OP } #{@operator} #{ @second.compile o, LEVEL_OP }"
 
@@ -1094,6 +1095,13 @@ exports.Op = class Op extends Base
     parts.reverse() if @flip
     code = parts.join ''
     if o.level <= LEVEL_OP then code else "(#{code})"
+
+  compileMultiIO: (o) ->
+    [sub, ref] = @first.cache o, LEVEL_OP
+    tests = for item, i in @second.base.objects
+      (if i then ref else sub) + ' instanceof ' + item.compile o
+    tests = tests.join ' || '
+    if o.level < LEVEL_OP then tests else "(#{tests})"
 
   toString: (idt) -> super idt, @constructor.name + ' ' + @operator
 
@@ -1219,7 +1227,7 @@ exports.Parens = class Parens extends Base
     if expr instanceof Value and expr.isAtomic()
       expr.tags.front = @tags.front
       return expr.compile o
-    bare = o.level < LEVEL_OP and (expr instanceof Op or expr instanceof Call)
+    bare = o.level < LEVEL_OP and expr instanceof [Op, Call]
     code = expr.compile o, LEVEL_PAREN
     if bare then code else "(#{code})"
 
