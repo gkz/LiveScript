@@ -1024,6 +1024,12 @@ exports.Op = class Op extends Base
 
   constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
+    if op is 'do'
+      if first instanceof Code and first.bound
+        first.bound = no
+        first = new Value first, [new Accessor new Literal 'call']
+        args  = [new Literal 'this']
+      return new Call first, args
     if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound

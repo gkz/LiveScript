@@ -493,7 +493,7 @@ exports.Lexer = class Lexer
 # Keywords that CoffeeScript shares in common with JavaScript.
 JS_KEYWORDS = [
   'true', 'false', 'null', 'this'
-  'new', 'delete', 'typeof', 'in', 'instanceof'
+  'new', 'do', 'delete', 'typeof', 'in', 'instanceof'
   'return', 'throw', 'break', 'continue', 'debugger'
   'if', 'else', 'switch', 'for', 'while', 'try', 'catch', 'finally'
   'class', 'extends', 'super'
@@ -516,7 +516,7 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
 RESERVED = [
-  'case', 'default', 'function', 'var', 'void', 'with', 'do'
+  'case', 'default', 'function', 'var', 'void', 'with'
   'const', 'let', 'enum', 'export', 'import', 'native'
   '__hasProp', '__extends', '__slice'
 ]
@@ -584,7 +584,7 @@ COMPOUND_ASSIGN = [
 ]
 
 # Unary tokens.
-UNARY   = ['!', '~', 'NEW', 'TYPEOF', 'DELETE']
+UNARY   = ['!', '~', 'NEW', 'DO', 'TYPEOF', 'DELETE']
 
 # Logical tokens.
 LOGIC   = ['&&', '||', '&', '|', '^']
