@@ -41,7 +41,7 @@ eq obj?.prop, "hello"
 eq obj?['prop'], "hello"
 eq obj.prop?.length, 5
 eq obj?.prop?['length'], 5
-eq obj?.prop?.non?.existent?.property, undefined
+eq obj?.prop?.non?.existent?.property, void
 
 
 # Soaks and caches method calls as well.
@@ -49,13 +49,13 @@ arr = ["--", "----"]
 
 eq arr.pop()?.length, 4
 eq arr.pop()?.length, 2
-eq arr.pop()?.length, undefined
-eq arr.pop()?.length?.non?.existent()?.property, undefined
+eq arr.pop()?.length, void
+eq arr.pop()?.length?.non?.existent()?.property, void
 
 
 # Soaks method calls safely.
 value = null
-eq value?.toString().toLowerCase(), undefined
+eq value?.toString().toLowerCase(), void
 
 value = 10
 eq value?.toString().toLowerCase(), '10'
@@ -75,7 +75,7 @@ ok counter is 3
 
 
 ident = (obj) -> obj
-eq ident(non?.existent().method()), undefined, 'soaks inner values'
+eq ident(non?.existent().method()), void, 'soaks inner values'
 
 
 # Soaks constructor invocations.
@@ -91,7 +91,7 @@ ok a is 1
 ok not value?.property?, 'safely checks existence on soaks'
 
 
-eq nothing?.value, undefined, 'safely calls values off of non-existent variables'
+eq nothing?.value, void, 'safely calls values off of non-existent variables'
 eq !nothing?.value and 1, 1,  'corresponding operators work as expected'
 
 
@@ -115,12 +115,12 @@ obj = {
 
 eq plus1?(41), 42
 eq (plus1? 41), 42
-eq plus2?(41), undefined
-eq (plus2? 41), undefined
+eq plus2?(41), void
+eq (plus2? 41), void
 eq obj.returnThis?(), obj
-eq obj.returnSelf?(), undefined
+eq obj.returnSelf?(), void
 eq obj.returnThis?().flag = on, on
-eq obj.returnSelf?().flag = on, undefined
+eq obj.returnSelf?().flag = on, void
 eq obj.counter().counter().returnThis?(), obj
 eq count, 2
 
@@ -128,20 +128,20 @@ maybe_close = (f, arg) -> if typeof f is 'function' then () -> f(arg) else -1
 
 eq maybe_close(plus1, 41)?(), 42
 eq (maybe_close plus1, 41)?(), 42
-eq (maybe_close 'string', 41)?(), undefined
+eq (maybe_close 'string', 41)?(), void
 
-eq 2?(3), undefined
+eq 2?(3), void
 eq new Number?(42) | 0, 42
 eq new Bumper?(42) | 0, 0
 
 
 #726
-eq calendar?[Date()], undefined
+eq calendar?[Date()], void
 
 
 #733
 a = b: {c: null}
-eq a.b?.c?(), undefined
+eq a.b?.c?(), void
 
 a.b?.c or= (it) -> it
 eq a.b?.c?(1), 1
@@ -150,10 +150,10 @@ eq a.b?.c?([2, 3]...), 2
 
 #756
 a = null
-ok isNaN      a?.b.c +  1
-eq undefined, a?.b.c += 1
-eq undefined, ++a?.b.c
-eq undefined, delete a?.b.c
+ok isNaN a?.b.c +  1
+eq void, a?.b.c += 1
+eq void, ++a?.b.c
+eq void, delete a?.b.c
 
 a = b: {c: 0}
 eq 1,   a?.b.c +  1

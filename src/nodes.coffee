@@ -1088,11 +1088,12 @@ exports.Op = class Op extends Base
   # Compile a unary **Op**.
   compileUnary: (o) ->
     parts = [op = @operator]
-    parts.push ' ' if op in ['new', 'typeof', 'delete'] or
+    parts.push ' ' if op in ['new', 'typeof', 'delete', 'void'] or
                       op in ['+', '-'] and @first instanceof Op and @first.operator is op
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
-    parts.join ''
+    code = parts.join ''
+    if o.level <= LEVEL_OP then code else "(#{code})"
 
   toString: (idt) -> super idt, @constructor.name + ' ' + @operator
 
@@ -1192,7 +1193,7 @@ exports.Existence = class Existence extends Base
   compileNode: (o) ->
     code = @expression.compile o
     code = if IDENTIFIER.test(code) and not o.scope.check code
-    then "typeof #{code} !== \"undefined\" && #{code} !== null"
+    then "typeof #{code} != \"undefined\" && #{code} !== null"
     else "#{code} != null"
     if o.level <= LEVEL_COND then code else "(#{code})"
 
@@ -1418,7 +1419,7 @@ exports.If = class If extends Base
   compileExpression: (o) ->
     code = @condition .compile(o, LEVEL_COND) + ' ? ' +
            @bodyNode().compile(o, LEVEL_LIST) + ' : ' +
-           @elseBodyNode()?.compile o, LEVEL_LIST
+           (@elseBodyNode()?.compile(o, LEVEL_LIST) or 'void 0')
     if o.level >= LEVEL_COND then "(#{code})" else code
 
   unfoldSoak: -> @soak and this

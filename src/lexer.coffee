@@ -117,10 +117,10 @@ exports.Lexer = class Lexer
         @identifierError id
     unless forcedIdentifier
       id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
-      tag = if id is '!'                       then 'UNARY'
-      else  if id in ['==', '!=']              then 'COMPARE'
-      else  if id in ['&&', '||']              then 'LOGIC'
-      else  if id in ['true', 'false', 'null'] then 'BOOL'
+      tag = if id is '!'                        then 'UNARY'
+      else  if id in <[ == != ]>                then 'COMPARE'
+      else  if id in <[ && || ]>                then 'LOGIC'
+      else  if id in <[ true false null void ]> then 'BOOL'
       else  tag
     @token tag, id
     @token ':', ':' if colon
@@ -269,7 +269,7 @@ exports.Lexer = class Lexer
   outdentToken: (moveOut, noNewlines, close) ->
     while moveOut > 0
       len = @indents.length - 1
-      if @indents[len] is undefined
+      if len not of @indents
         moveOut = 0
       else if @indents[len] is @outdebt
         moveOut -= @outdebt
@@ -504,7 +504,7 @@ exports.Lexer = class Lexer
 
 # Keywords that CoffeeScript shares in common with JavaScript.
 JS_KEYWORDS = <[
-  true false null this
+  true false null this void
   new do delete typeof in instanceof
   return throw break continue debugger
   if else switch for while try catch finally
@@ -528,7 +528,7 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
 RESERVED = <[
-  case default function var void with
+  case default function var with
   const let enum export import native
   __hasProp __extends __slice
 ]>
@@ -611,9 +611,6 @@ MATH    = <[ * / % ]>
 
 # Relational tokens that are negatable with `not` prefix.
 RELATION = <[ IN OF INSTANCEOF ]>
-
-# Boolean tokens.
-BOOL = <[ TRUE FALSE NULL ]>
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.

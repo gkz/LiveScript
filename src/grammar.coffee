@@ -131,7 +131,8 @@ grammar =
     o 'AlphaNumeric'
     o 'JS',                                     -> new Literal $1
     o 'REGEX',                                  -> new Literal $1
-    o 'BOOL',                                   -> new Literal $1
+    o 'BOOL',                                   ->
+      if $1 is 'void' then new Op 'void', new Literal 0 else new Literal $1
   ]
 
   # Assignment of a variable, property, or index to a value.
@@ -173,7 +174,7 @@ grammar =
   # list.
   Code: [
     o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4
-    o 'FuncGlyph Block',                        -> new Code [], $2, $1
+    o 'FuncGlyph Block',                                 -> new Code [], $2, $1
   ]
 
   # CoffeeScript has two different symbols for functions. `->` is for ordinary
