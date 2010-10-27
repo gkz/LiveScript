@@ -56,6 +56,7 @@ exports.Lexer = class Lexer
            @stringToken()     or
            @numberToken()     or
            @regexToken()      or
+           @wordsToken()      or
            @jsToken()         or
            @literalToken()
     @closeIndentation()
@@ -141,7 +142,7 @@ exports.Lexer = class Lexer
         return 0 unless match = SIMPLESTR.exec @chunk
         @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
       when '"'
-        return 0 unless string = @balancedString @chunk, [['"', '"'], ['#{', '}']]
+        return 0 unless string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
         if 0 < string.indexOf '#{', 1
         then @interpolateString string.slice 1, -1
         else @token 'STRING', @escapeLines string
@@ -200,7 +201,7 @@ exports.Lexer = class Lexer
       @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
       return heregex.length
     @token 'IDENTIFIER', 'RegExp'
-    @tokens.push ['CALL_START', '(']
+    @tokens.push <[ CALL_START ( ]>
     tokens = []
     for [tag, value] in @interpolateString(body, regex: yes)
       if tag is 'TOKENS'
@@ -209,13 +210,24 @@ exports.Lexer = class Lexer
         continue unless value = value.replace HEREGEX_OMIT, ''
         value = value.replace /\\/g, '\\\\'
         tokens.push ['STRING', @makeString(value, '"', yes)]
-      tokens.push ['+', '+']
+      tokens.push <[ + + ]>
     tokens.pop()
-    @tokens.push ['STRING', '""'], ['+', '+'] unless tokens[0]?[0] is 'STRING'
+    @tokens.push <[ STRING "" ]>, <[ + + ]> unless tokens[0]?[0] is 'STRING'
     @tokens.push tokens...
-    @tokens.push [',', ','], ['STRING', '"' + flags + '"'] if flags
+    @tokens.push <[ , , ]>, ['STRING', '"' + flags + '"'] if flags
     @token ')', ')'
     heregex.length
+
+  # Matches words literal, a syntax sugar for an array of strings.
+  wordsToken: ->
+    return 0 unless match = WORDS.exec @chunk
+    [words] = match
+    @token '[', '['
+    for word in words.slice(2, -2).match /\S+/g
+      @tokens.push ['STRING', @makeString word, '"'], <[ , , ]>
+    @token ']', ']'
+    @line += count words, '\n'
+    words.length
 
   # Matches newlines, indents, and outdents, and determines which is which.
   # If we can detect that the current line is continued onto the the next line,
@@ -309,7 +321,7 @@ exports.Lexer = class Lexer
     prev = last @tokens
     if value is '=' and prev
       @assignmentError() if not prev[1].reserved and prev[1] in JS_FORBIDDEN
-      if prev[1] in ['||', '&&']
+      if prev[1] in <[ || && ]>
         prev[0] = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
@@ -429,7 +441,7 @@ exports.Lexer = class Lexer
         i += 1
         continue
       unless letter is '#' and str.charAt(i+1) is '{' and
-             (expr = @balancedString str.slice(i+1), [['{', '}']])
+             (expr = @balancedString str.slice(i+1), [<[ { } ]>])
         continue
       tokens.push ['TO_BE_STRING', str.slice(pi, i)] if pi < i
       inner = expr.slice(1, -1).replace(LEADING_SPACES, '').replace(TRAILING_SPACES, '')
@@ -437,8 +449,8 @@ exports.Lexer = class Lexer
         nested = new Lexer().tokenize inner, line: @line, rewrite: off
         nested.pop()
         if nested.length > 1
-          nested.unshift ['(', '(']
-          nested.push    [')', ')']
+          nested.unshift <[ ( ( ]>
+          nested.push    <[ ) ) ]>
         tokens.push ['TOKENS', nested]
       i += expr.length
       pi = i + 1
@@ -491,16 +503,16 @@ exports.Lexer = class Lexer
 # ---------
 
 # Keywords that CoffeeScript shares in common with JavaScript.
-JS_KEYWORDS = [
-  'true', 'false', 'null', 'this'
-  'new', 'do', 'delete', 'typeof', 'in', 'instanceof'
-  'return', 'throw', 'break', 'continue', 'debugger'
-  'if', 'else', 'switch', 'for', 'while', 'try', 'catch', 'finally'
-  'class', 'extends', 'super'
-]
+JS_KEYWORDS = <[
+  true false null this
+  new do delete typeof in instanceof
+  return throw break continue debugger
+  if else switch for while try catch finally
+  class extends super
+]>
 
 # CoffeeScript-only keywords.
-COFFEE_KEYWORDS = ['then', 'unless', 'until', 'loop', 'of', 'by', 'when']
+COFFEE_KEYWORDS = <[ then unless until loop of by when ]>
 COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   and  : '&&'
   or   : '||'
@@ -515,11 +527,11 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
-RESERVED = [
-  'case', 'default', 'function', 'var', 'void', 'with'
-  'const', 'let', 'enum', 'export', 'import', 'native'
-  '__hasProp', '__extends', '__slice'
-]
+RESERVED = <[
+  case default function var void with
+  const let enum export import native
+  __hasProp __extends __slice
+]>
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.
@@ -547,6 +559,7 @@ CODE       = /^[-=]>/
 MULTI_DENT = /^(?:\n[ \t]*)+/
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+WORDS      = /^<\[[\s\S]*?]>/
 
 # Regex-matching-regexes.
 REGEX = /// ^
@@ -579,30 +592,28 @@ NO_NEWLINE      = /// ^ (?:            # non-capturing group
 ) $ ///
 
 # Compound assignment tokens.
-COMPOUND_ASSIGN = [
-  '-=', '+=', '/=', '*=', '%=', '||=', '&&=', '?=', '<<=', '>>=', '>>>=', '&=', '^=', '|='
-]
+COMPOUND_ASSIGN = <[ -= += /= *= %= ||= &&= ?= <<= >>= >>>= &= ^= |= ]>
 
 # Unary tokens.
-UNARY   = ['!', '~', 'NEW', 'DO', 'TYPEOF', 'DELETE']
+UNARY   = <[ ! ~ DO NEW TYPEOF DELETE ]>
 
 # Logical tokens.
-LOGIC   = ['&&', '||', '&', '|', '^']
+LOGIC   = <[ & | ^ && || ]>
 
 # Bit-shifting tokens.
-SHIFT   = ['<<', '>>', '>>>']
+SHIFT   = <[ << >> >>> ]>
 
 # Comparison tokens.
-COMPARE = ['==', '!=', '<', '>', '<=', '>=']
+COMPARE = <[ == != <= < > >= ]>
 
 # Mathmatical tokens.
-MATH    = ['*', '/', '%']
+MATH    = <[ * / % ]>
 
 # Relational tokens that are negatable with `not` prefix.
-RELATION = ['IN', 'OF', 'INSTANCEOF']
+RELATION = <[ IN OF INSTANCEOF ]>
 
 # Boolean tokens.
-BOOL = ['TRUE', 'FALSE', 'NULL']
+BOOL = <[ TRUE FALSE NULL ]>
 
 # Tokens which a regular expression will never immediately follow, but which
 # a division operator might.
@@ -610,15 +621,15 @@ BOOL = ['TRUE', 'FALSE', 'NULL']
 # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
 #
 # Our list is shorter, due to sans-parentheses method calls.
-NOT_REGEX = ['NUMBER', 'REGEX', 'BOOL', '++', '--', ']']
+NOT_REGEX = <[ NUMBER REGEX BOOL ++ -- ] ]>
 
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE  = ['IDENTIFIER', 'STRING', 'REGEX', ')', ']', '}', '?', '::', '@', 'THIS', 'SUPER']
-INDEXABLE = CALLABLE.concat 'NUMBER', 'BOOL'
+CALLABLE  = <[ IDENTIFIER STRING REGEX ) ] } ? :: @ THIS SUPER ]>
+INDEXABLE = CALLABLE.concat <[ NUMBER BOOL ]>
 
-# Tokens that, when immediately preceding a `WHEN`, indicate that the `WHEN`
+# Tokens that, when immediately preceding a `WHEN` indicate that the `WHEN`
 # occurs at the start of a line. We disambiguate these from trailing whens to
 # avoid an ambiguity in the grammar.
-LINE_BREAK = ['INDENT', 'OUTDENT', 'TERMINATOR']
+LINE_BREAK = <[ INDENT OUTDENT TERMINATOR ]>

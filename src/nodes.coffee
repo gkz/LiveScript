@@ -101,9 +101,9 @@ exports.Base = class Base
   containsPureStatement: ->
     @isPureStatement() or @contains (node, func) ->
       func(node) or if node instanceof While or node instanceof For
-      then (node) -> node instanceof Return
+      then -> it instanceof Return
       else func
-    , (node) -> node.isPureStatement()
+    , -> it.isPureStatement()
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
@@ -169,16 +169,16 @@ exports.Expressions = class Expressions extends Base
     @expressions = compact flatten nodes or []
 
   # Tack an expression on to the end of this expression list.
-  push: (node) ->
-    @expressions.push node
+  push: ->
+    @expressions.push it
     this
 
   # Remove and return the last expression of this expression list.
   pop: -> @expressions.pop()
 
   # Add an expression at the beginning of this expression list.
-  unshift: (node) ->
-    @expressions.unshift node
+  unshift: ->
+    @expressions.unshift it
     this
 
   # If this Expressions consists of just a single node, unwrap it by pulling
@@ -263,7 +263,7 @@ exports.Literal = class Literal extends Base
 
   isComplex: NO
 
-  assigns: (name) -> name is @value
+  assigns: -> it is @value
 
   compile: -> if @value.reserved then "\"#{@value}\"" else @value
 
@@ -877,8 +877,7 @@ exports.Code = class Code extends Base
     @body.expressions.splice 0, 0, exprs... if exprs.length
     @body.makeReturn() unless wasEmpty or @noReturn
     scope.parameter vars[i] = v.compile o for v, i in vars unless splats
-    if not vars.length and @body.contains ((node) -> node.value is 'it')
-      vars.push 'it'
+    vars.push 'it' if not vars.length and @body.contains (-> it.value is 'it')
     comm     = if @comment then @comment.compile(o) + '\n' else ''
     o.indent = @idt 2 if @className
     idt      = @idt 1
@@ -1397,8 +1396,8 @@ exports.If = class If extends Base
     else
       new Return this
 
-  ensureExpressions: (node) ->
-    if node instanceof Expressions then node else new Expressions [node]
+  ensureExpressions: ->
+    if it instanceof Expressions then it else new Expressions [it]
 
   # Compile the **If** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
@@ -1468,9 +1467,9 @@ Closure =
     call = new Call func, args
     if statement then Expressions.wrap [call] else call
 
-  literalArgs: (node) -> node instanceof Literal and node.value is 'arguments'
-  literalThis: (node) -> node instanceof Literal and node.value is 'this' or
-                         node instanceof Code    and node.bound
+  literalArgs: -> it instanceof Literal and it.value is 'arguments'
+  literalThis: -> it instanceof Literal and it.value is 'this' or
+                  it instanceof Code    and it.bound
 
 # Constants
 # ---------
