@@ -123,8 +123,8 @@ runTests = (CoffeeScript) ->
   passedTests = failedTests = 0
   for all name, func of require 'assert' then do ->
     global[name] = ->
-      passedTests += 1
       func arguments...
+      ++passedTests
   global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
   process.on 'exit', ->

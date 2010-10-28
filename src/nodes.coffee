@@ -452,7 +452,7 @@ exports.Call = class Call extends Base
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
-    return @compileSplat o for arg in @args when arg instanceof Splat
+    return @compileSplat o, code if code = Splat.compileSplattedArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
     if @isSuper
     then @compileSuper args, o
@@ -467,8 +467,7 @@ exports.Call = class Call extends Base
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
-  compileSplat: (o) ->
-    splatargs = Splat.compileSplattedArray @args, o
+  compileSplat: (o, splatargs) ->
     return "#{ @superReference o }.apply(this, #{splatargs})" if @isSuper
     unless @new
       base = new Value @variable
@@ -616,8 +615,7 @@ exports.Arr = class Arr extends Base
 
   compileNode: (o) ->
     o.indent = @idt 1
-    for obj in @objects when obj instanceof Splat
-      return Splat.compileSplattedArray @objects, o
+    return code if code = Splat.compileSplattedArray o, @objects
     objects = []
     for obj, i in @objects
       code = obj.compile o, LEVEL_LIST
@@ -936,23 +934,24 @@ exports.Splat = class Splat extends Base
   compile: (o) -> if @index? then @compileParam o else @name.compile o
 
   # Utility function that converts arbitrary number of elements, mixed with
-  # splats, to a proper array
-  @compileSplattedArray: (list, o) ->
-    args = []
-    end  = -1
-    for arg, i in list
-      code = arg.compile o, LEVEL_LIST
-      prev = args[end]
-      if arg not instanceof Splat
-        if prev and starts(prev, '[') and ends(prev, ']')
-          args[end] = "#{prev.slice 0, -1}, #{code}]"
-          continue
-        if prev and starts(prev, '.concat([') and ends(prev, '])')
-          args[end] = "#{prev.slice 0, -2}, #{code}])"
-          continue
-        code = "[#{code}]"
-      args[++end] = if i is 0 then code else ".concat(#{code})"
-    args.join ''
+  # splats, to a proper array.
+  @compileSplattedArray: (o, list, apply) ->
+    index = -1
+    continue while (node = list[++index]) and node not instanceof Splat
+    return '' if index >= list.length
+    if list.length is 1
+      code = list[0].compile o, LEVEL_LIST
+      return code if apply
+      return "#{ utility 'slice' }.call(#{code})"
+    args = list.slice index
+    for node, i in args
+      code = node.compile o, LEVEL_LIST
+      args[i] = if node instanceof Splat
+      then "#{ utility 'slice' }.call(#{code})"
+      else "[#{code}]"
+    return args[0] + ".concat(#{ args.slice(1).join ', ' })" if index is 0
+    base = (node.compile o, LEVEL_LIST for node in list.slice 0, index)
+    "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
 #### While
 

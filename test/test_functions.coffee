@@ -113,11 +113,11 @@ ok del() is 5
 # Ensure that functions can have a trailing comma in their argument list
 mult = (x, mids..., y) ->
   x *= n for n in mids
-  x *= y
+  x * y
 
-ok mult(1, 2,) is 2
-ok mult(1, 2, 3,) is 6
-ok mult(10, (i for i from 1 to 6)...) is 7200
+eq 2, mult 1, 2
+eq 6, mult 1, 2, 3
+eq 7200, mult 10, (i for i from 1 to 6)...
 
 
 # Test for inline functions with parentheses and implicit calls.
