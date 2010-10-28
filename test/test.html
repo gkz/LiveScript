@@ -45,9 +45,9 @@
     catch e then eq e, err
 
   CoffeeScript.run = (code, cb) ->
-    try Function(CoffeeScript.compile code, wrap: no)()
+    try Function(CoffeeScript.compile code, bare: true)()
     catch e then cb(); throw e
-    cb yes
+    cb true
 
   run = (name) ->
     CoffeeScript.load "test_#{name}.coffee", (yay) ->

@@ -42,4 +42,11 @@ try
 catch err
 finally
 
-ok true
+
+# Try catch with empty clause in a function body.
+func = ->
+  try
+    100
+  catch err
+
+eq func(), 100
