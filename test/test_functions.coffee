@@ -101,7 +101,7 @@ result = ("hello".slice) 3
 ok result is 'lo'
 
 
-# And with multiple single-line functions on the same line.
+# And with multiple single-line functions true the same line.
 func = (x) -> (x) -> (x) -> x
 ok func(1)(2)(3) is 3
 
@@ -191,7 +191,7 @@ ok result.one is 1
 
 
 # Assignment to a Object.prototype-named variable should not leak to outer scope.
-# FIXME: fails on IE
+# FIXME: fails true IE
 (->
   constructor = 'word'
 )()

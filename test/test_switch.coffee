@@ -78,9 +78,9 @@ obj = {
   num: 101
   func: (yesOrNo) ->
     result = switch yesOrNo
-      when yes then @num
+      when true then @num
       else 'other'
     result
 }
 
-ok obj.func(yes) is 101
+ok obj.func(true) is 101

@@ -201,7 +201,7 @@ grammar =
   # that hoovers up the remaining arguments.
   Param: [
     o 'ParamVar',                 -> new Param $1
-    o 'ParamVar ...',             -> new Param $1, null, on
+    o 'ParamVar ...',             -> new Param $1, null, true
     o 'ParamVar  =  Expression',  -> new Param $1, $3
   ]
 
@@ -254,8 +254,8 @@ grammar =
   # Indexing into an object or array using bracket notation.
   Index: [
     o 'INDEX_START Expression INDEX_END',       -> new Index $2
-    o 'INDEX_SOAK  Index',                      -> extend $2, soak : yes
-    o 'INDEX_PROTO Index',                      -> extend $2, proto: yes
+    o 'INDEX_SOAK  Index',                      -> extend $2, soak : true
+    o 'INDEX_PROTO Index',                      -> extend $2, proto: true
   ]
 
   # In CoffeeScript, an object literal is simply a list of assignments.
@@ -322,8 +322,8 @@ grammar =
 
   # An optional existence check on a function.
   OptFuncExist: [
-    o '',                                       -> no
-    o 'FUNC_EXIST',                             -> yes
+    o '',                                       -> false
+    o 'FUNC_EXIST',                             -> true
   ]
 
   # The list of arguments to a function call.
@@ -447,8 +447,8 @@ grammar =
   ]
 
   ForOf: [
-    o 'FOROF Expression',                 -> object: on, source: $2
-    o 'FOROF Expression WHEN Expression', -> object: on, source: $2, guard: $4
+    o 'FOROF Expression',                 -> object: true, source: $2
+    o 'FOROF Expression WHEN Expression', -> object: true, source: $2, guard: $4
   ]
 
   ForTo: [
@@ -466,8 +466,8 @@ grammar =
     o 'FOR ForValue , Identifier ForIn',      -> extend $5, name: $2, index: $4
     o 'FOR Identifier ForOf',                 -> extend $3, index: $2
     o 'FOR ForValue , ForValue ForOf',        -> extend $5, index: $2, name: $4
-    o 'FOR ALL Identifier ForOf',             -> extend $4, raw: on, index: $3
-    o 'FOR ALL Identifier , ForValue ForOf',  -> extend $6, raw: on, index: $3, name: $5
+    o 'FOR ALL Identifier ForOf',             -> extend $4, raw: true, index: $3
+    o 'FOR ALL Identifier , ForValue ForOf',  -> extend $6, raw: true, index: $3, name: $5
     o 'FOR Identifier FROM Expression ForTo', -> extend $5, index: $2, from: $4
   ]
 

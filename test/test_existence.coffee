@@ -88,10 +88,10 @@ ok (new Foo())?.bar is 'bat'
 ok a is 1
 
 
-ok not value?.property?, 'safely checks existence on soaks'
+ok not value?.property?, 'safely checks existence true soaks'
 
 
-eq nothing?.value, void, 'safely calls values off of non-existent variables'
+eq nothing?.value, void, 'safely calls values false of non-existent variables'
 eq !nothing?.value and 1, 1,  'corresponding operators work as expected'
 
 
@@ -119,8 +119,8 @@ eq plus2?(41), void
 eq (plus2? 41), void
 eq obj.returnThis?(), obj
 eq obj.returnSelf?(), void
-eq obj.returnThis?().flag = on, on
-eq obj.returnSelf?().flag = on, void
+eq obj.returnThis?().flag = true, true
+eq obj.returnSelf?().flag = true, void
 eq obj.counter().counter().returnThis?(), obj
 eq count, 2
 
@@ -159,4 +159,4 @@ a = b: {c: 0}
 eq 1,   a?.b.c +  1
 eq 1,   a?.b.c += 1
 eq 2,   ++a?.b.c
-eq yes, delete a?.b.c
+eq true, delete a?.b.c

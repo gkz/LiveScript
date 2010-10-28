@@ -42,7 +42,7 @@ exports.Lexer = class Lexer
     @indents = []           # The stack of all current indentation levels.
     @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
     # Flags for distinguishing FORIN/FOROF/FROM/TO.
-    @seenFor = @seenFrom = no
+    @seenFor = @seenFrom = false
     # At every position, run through this list of attempted matches,
     # short-circuiting if any of them succeed. Their order determines precedence:
     # `@literalToken` is the fallback catch-all.
@@ -60,7 +60,7 @@ exports.Lexer = class Lexer
            @jsToken()         or
            @literalToken()
     @closeIndentation()
-    return @tokens if o.rewrite is off
+    return @tokens if o.rewrite is false
     (new Rewriter).rewrite @tokens
 
   # Tokenizers
@@ -79,12 +79,12 @@ exports.Lexer = class Lexer
       @token 'ALL', id
       return id.length
     if id is 'from' and @tag(1) is 'FOR'
-      @seenFor  = no
-      @seenFrom = yes
+      @seenFor  = false
+      @seenFrom = true
       @token 'FROM', id
       return id.length
     if id is 'to' and @seenFrom
-      @seenFrom = no
+      @seenFrom = false
       @token 'TO', id
       return id.length
     forcedIdentifier = colon or
@@ -96,12 +96,12 @@ exports.Lexer = class Lexer
       if tag is 'WHEN' and @tag() in LINE_BREAK
         tag = 'LEADING_WHEN'
       else if tag is 'FOR'
-        @seenFor = yes
+        @seenFor = true
       else if tag in UNARY
         tag = 'UNARY'
       else if tag in RELATION
         if tag isnt 'INSTANCEOF' and @seenFor
-          @seenFor = no
+          @seenFor = false
           tag = 'FOR' + tag
         else
           tag = 'RELATION'
@@ -112,7 +112,7 @@ exports.Lexer = class Lexer
       if forcedIdentifier
         tag = 'IDENTIFIER'
         id  = new String id
-        id.reserved = yes
+        id.reserved = true
       else if id in RESERVED
         @identifierError id
     unless forcedIdentifier
@@ -159,8 +159,8 @@ exports.Lexer = class Lexer
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], {quote, indent: null}
     if quote is '"' and 0 <= doc.indexOf '#{'
-    then @interpolateString doc, heredoc: yes
-    else @token 'STRING', @makeString doc, quote, yes
+    then @interpolateString doc, heredoc: true
+    else @token 'STRING', @makeString doc, quote, true
     @line += count heredoc, '\n'
     heredoc.length
 
@@ -203,13 +203,13 @@ exports.Lexer = class Lexer
     @token 'IDENTIFIER', 'RegExp'
     @tokens.push <[ CALL_START ( ]>
     tokens = []
-    for [tag, value] in @interpolateString(body, regex: yes)
+    for [tag, value] in @interpolateString(body, regex: true)
       if tag is 'TOKENS'
         tokens.push value...
       else
         continue unless value = value.replace HEREGEX_OMIT, ''
         value = value.replace /\\/g, '\\\\'
-        tokens.push ['STRING', @makeString(value, '"', yes)]
+        tokens.push ['STRING', @makeString(value, '"', true)]
       tokens.push <[ + + ]>
     tokens.pop()
     @tokens.push <[ STRING "" ]>, <[ + + ]> unless tokens[0]?[0] is 'STRING'
@@ -446,7 +446,7 @@ exports.Lexer = class Lexer
       tokens.push ['TO_BE_STRING', str.slice(pi, i)] if pi < i
       inner = expr.slice(1, -1).replace(LEADING_SPACES, '').replace(TRAILING_SPACES, '')
       if inner.length
-        nested = new Lexer().tokenize inner, line: @line, rewrite: off
+        nested = new Lexer().tokenize inner, line: @line, rewrite: false
         nested.pop()
         if nested.length > 1
           nested.unshift <[ ( ( ]>
@@ -519,10 +519,6 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   is   : '=='
   isnt : '!='
   not  : '!'
-  yes  : 'true'
-  no   : 'false'
-  on   : 'true'
-  off  : 'false'
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,

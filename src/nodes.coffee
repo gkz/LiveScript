@@ -11,8 +11,8 @@
 exports.extend = extend  # for parser
 
 # Constant functions for nodes that don't need customization.
-YES  = -> yes
-NO   = -> no
+YES  = -> true
+NO   = -> false
 THIS = -> this
 
 #### Base
@@ -68,7 +68,7 @@ exports.Base = class Base
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
-    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src, immediate: on)
+    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src, immediate: true)
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
     [src, tmp]
 
@@ -86,7 +86,7 @@ exports.Base = class Base
   # and returning true when the block finds a match. `contains` does not cross
   # scope boundaries.
   contains: (block, arg) ->
-    contains = no
+    contains = false
     @traverseChildren false, (node, arg) ->
       if (rearg = block node, arg) is true then not contains = true else if arg? then rearg
     , arg
@@ -233,7 +233,7 @@ exports.Expressions = class Expressions extends Base
   compileExpression: (node, o) ->
     node = node.unwrapAll()
     node = node.unfoldSoak(o) or node
-    node.tags.front = on
+    node.tags.front = true
     o.level = LEVEL_TOP
     code    = node.compile o
     if node.isStatement o then code else @tab + code + ';'
@@ -305,7 +305,7 @@ exports.Value = class Value extends Base
     return base if not props and base instanceof Value
     @base       = base
     @properties = props or []
-    @tags       = if tag then {(tag): on} else {}
+    @tags       = if tag then {(tag): true} else {}
 
   # Add a property access to the list.
   push: (prop) ->
@@ -322,8 +322,8 @@ exports.Value = class Value extends Base
   isSimpleNumber : -> @base instanceof Literal and SIMPLENUM.test @base.value
   isAtomic       : ->
     for node in @properties.concat @base
-      return no if node.soak or node instanceof Call
-    yes
+      return false if node.soak or node instanceof Call
+    true
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
   assigns     : (name) -> not @properties.length and @base.assigns name
@@ -370,14 +370,14 @@ exports.Value = class Value extends Base
       Array::push.apply ifn.body.properties, @properties
       return ifn
     for prop, i in @properties when prop.soak
-      prop.soak = off
+      prop.soak = false
       fst = new Value @base, @properties.slice 0, i
       snd = new Value @base, @properties.slice i
       if fst.isComplex()
         ref = new Literal o.scope.freeVariable 'ref'
         fst = new Parens new Assign ref, fst
         snd.base = ref
-      return new If new Existence(fst), snd, soak: on
+      return new If new Existence(fst), snd, soak: true
     null
 
 #### Comment
@@ -436,7 +436,7 @@ exports.Call = class Call extends Base
       rite = new Call rite, @args
       rite.new = @new
       left = new Literal "typeof #{ left.compile o } === \"function\""
-      return new If left, new Value(rite), soak: yes
+      return new If left, new Value(rite), soak: true
     call = this
     list = []
     loop
@@ -598,8 +598,8 @@ exports.Obj = class Obj extends Base
     if o.level <= LEVEL_PAREN then code else "(#{code})"
 
   assigns: (name) ->
-    for prop in @properties when prop.assigns name then return yes
-    no
+    for prop in @properties when prop.assigns name then return true
+    false
 
 #### Arr
 
@@ -631,8 +631,8 @@ exports.Arr = class Arr extends Base
       "[#{objects}]"
 
   assigns: (name) ->
-    for obj in @objects when obj.assigns name then return yes
-    no
+    for obj in @objects when obj.assigns name then return true
+    false
 
 #### Class
 
@@ -815,7 +815,7 @@ exports.Assign = class Assign extends Base
             "multiple splats are disallowed in an assignment: #{obj} ..."
         if typeof idx is 'number'
           idx = new Literal splat or idx
-          acc = no
+          acc = false
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar), [new (if acc then Accessor else Index) idx]
@@ -1027,7 +1027,7 @@ exports.Op = class Op extends Base
     return new In first, second if op is 'in'
     if op is 'do'
       if first instanceof Code and first.bound
-        first.bound = no
+        first.bound = false
         first = new Value first, [new Accessor new Literal 'call']
         args  = [new Literal 'this']
       return new Call first, args
@@ -1276,8 +1276,8 @@ exports.For = class For extends Base
     varPart = guardPart = defPart = retPart = ''
     body    = Expressions.wrap [@body]
     idt     = @idt 1
-    scope.find(name,  immediate: yes) if name
-    scope.find(index, immediate: yes) if index
+    scope.find(name,  immediate: true) if name
+    scope.find(index, immediate: true) if index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     if @from
       [tail, tvar] = @to.compileLoopReference o, 'to'

@@ -9,7 +9,7 @@ CoffeeScript.eval = (code, options) ->
 
 # Running code does not provide access to this scope.
 CoffeeScript.run = (code, options = {}) ->
-  options.bare = on
+  options.bare = true
   Function(CoffeeScript.compile code, options)()
 
 # If we're not in a browser environment, we're finished with the public API.
@@ -36,6 +36,6 @@ runScripts = ->
         CoffeeScript.run script.innerHTML
   null
 if window.addEventListener
-  addEventListener 'DOMContentLoaded', runScripts, no
+  addEventListener 'DOMContentLoaded', runScripts, false
 else
   attachEvent 'onload', runScripts

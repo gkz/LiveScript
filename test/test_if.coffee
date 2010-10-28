@@ -62,7 +62,7 @@ else
 ok result is undefined
 
 
-# Return an if with no else.
+# Return an if with false else.
 func = ->
   return if false then callback()
 
@@ -79,17 +79,17 @@ result = ident if false then 300 else 100
 ok result is 100
 
 
-# If-to-ternary with instanceof requires parentheses (no comment).
+# If-to-ternary with instanceof requires parentheses (false comment).
 if {} instanceof Object
-  ok yes
+  ok true
 else
-  ok no
+  ok false
 
 try
   {} + {}
-  ok yes
+  ok true
 catch e
-  ok no
+  ok false
 
 
 # If-to-ternary as part of a larger operation requires parens.
@@ -115,14 +115,14 @@ ok func() is 5
 i = 1
 isTrue = (x) -> x is true
 
-if isTrue yes then i += 1
+if isTrue true then i += 1
 
 ok i is 2
 
 # If/else with a suppressed indentation via assignment.
 result =
   if      false then 10
-  else if no    then 20
+  else if false    then 20
   else if 0     then 30
   else if NaN   then 40
   else               50 +

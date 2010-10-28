@@ -26,7 +26,7 @@ ok object is extend object, array
 eq object[3], 3
 
 # Test `flatten`
-ay = yes
+ay = true
 (ay and= typeof n is 'number') for n in flatten [0, [[1], 2], 3, [4]]
 ok ay
 

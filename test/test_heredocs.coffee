@@ -105,7 +105,7 @@ eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
 
 eq 'multiline nested "interpolations" work', """multiline #{
   "nested #{(->
-    ok yes
+    ok true
     "\"interpolations\""
   )()}"
 } work"""

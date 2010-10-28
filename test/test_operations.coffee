@@ -37,7 +37,7 @@ ok 200 in array
 ok 1 not in array
 ok array[0]++ in [99, 100], 'should cache testee'
 
-# And with array presence on an instance variable.
+# And with array presence true an instance variable.
 obj = {
   list: [1, 2, 3, 4, 5]
   in_list: (value) -> value in @list

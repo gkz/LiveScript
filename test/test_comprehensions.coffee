@@ -100,11 +100,11 @@ ok learn().join(' ') is '1 2 3'
 
 ok rule(101) is 101
 
-f = -> [-> ok no, 'should cache source']
-ok yes for k of [f] = f()
+f = -> [-> ok false, 'should cache source']
+ok true for k of [f] = f()
 
 
-# Lenient on pure statements not trying to reach out of the closure
+# Lenient true pure statements not trying to reach out of the closure
 val = for i in [1]
   for j in [] then break
   i

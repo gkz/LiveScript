@@ -15,7 +15,7 @@ value = 0.0 + -.25 - -.75 + 0.0
 ok value is 0.5
 
 
-# Can call methods directly on numbers.
+# Can call methods directly true numbers.
 4.valueOf() is 4
 
 
@@ -61,8 +61,8 @@ ok moe.hello() is 'Hello Moe'
 
 
 obj = {
-  is:     -> yes,
-  'not':  -> no,
+  is:     -> true,
+  'not':  -> false,
 }
 
 ok obj.is()
@@ -128,13 +128,13 @@ ok obj.b is 2
 # Implicit objects nesting.
 obj =
   options:
-    value: yes
+    value: true
 
   fn: ->
     {}
     null
 
-ok obj.options.value is yes
+ok obj.options.value is true
 ok obj.fn() is null
 
 
@@ -258,9 +258,9 @@ obj.val = ok
 eq ok, obj.key
 
 #542: Objects leading expression statement should be parenthesized.
-{f: -> ok yes }.f() + 1
+{f: -> ok true }.f() + 1
 
 
 #764: Boolean/Number should be indexable.
 ok 42['toString']
-ok on['toString']
+ok true['toString']

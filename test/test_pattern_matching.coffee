@@ -152,7 +152,7 @@ obj =
     {@a} = object
     null
 
-{} = [] = ok yes, 'empty assignment is allowed'
+{} = [] = ok true, 'empty assignment is allowed'
 
 obj.func [1, 2], a: 'a', b: 'b'
 

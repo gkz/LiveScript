@@ -145,7 +145,7 @@ class exports.Rewriter
       else i - 1
       idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
       tok = ['{', '{', token[2]]
-      tok.generated = yes
+      tok.generated = true
       tokens.splice idx, 0, tok
       @detectEnd i + 2, condition, action
       2
@@ -154,29 +154,29 @@ class exports.Rewriter
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    classLine = no
+    classLine = false
     action = (token, i) ->
       idx = if token[0] is 'OUTDENT' then i + 1 else i
       @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
     @scanTokens (token, i, tokens) ->
       tag        = token[0]
-      classLine  = yes if tag is 'CLASS'
+      classLine  = true if tag is 'CLASS'
       {(i-1): prev, (i+1): next} = tokens
       callObject = not classLine and tag is 'INDENT' and
                    next and next.generated and next[0] is '{' and
                    prev and prev[0] in IMPLICIT_FUNC
-      seenSingle = no
-      classLine  = no  if tag in LINEBREAKS
-      token.call = yes if prev and not prev.spaced and tag is '?'
+      seenSingle = false
+      classLine  = false  if tag in LINEBREAKS
+      token.call = true if prev and not prev.spaced and tag is '?'
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or not (token.spaced or token.newLine) and tag in IMPLICIT_UNSPACED_CALL)
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + (if callObject then 2 else 1), (token, i) ->
-        return yes if not seenSingle and token.fromThen
+        return true if not seenSingle and token.fromThen
         [tag] = token
-        seenSingle = yes if tag in ['IF', 'ELSE', 'UNLESS', '->', '=>']
-        return yes if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
+        seenSingle = true if tag in ['IF', 'ELSE', 'UNLESS', '->', '=>']
+        return true if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
         not token.generated and @tag(i - 1) isnt ',' and tag in IMPLICIT_END and
         (tag isnt 'INDENT' or
          (@tag(i - 2) isnt 'CLASS' and @tag(i - 1) not in IMPLICIT_BLOCK and

@@ -116,7 +116,7 @@ ok b is 4
 ok list.join(' ') is '0 1 2 3 4'
 
 
-# Splat on a line by itself is invalid.
+# Splat true a line by itself is invalid.
 failed = true
 try
   CoffeeScript.compile "x 'a'\n...\n"

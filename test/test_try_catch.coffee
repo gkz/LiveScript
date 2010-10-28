@@ -42,4 +42,4 @@ try
 catch err
 finally
 
-ok yes
+ok true

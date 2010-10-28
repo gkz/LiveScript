@@ -27,12 +27,12 @@ exports.OptionParser = class OptionParser
     args    = normalizeArguments args
     for arg, i in args
       isOption = !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
-      matchedRule = no
+      matchedRule = false
       for rule in @rules
         if rule.shortFlag is arg or rule.longFlag is arg
           value = if rule.hasArgument then args[i += 1] else true
           options[rule.name] = if rule.isList then (options[rule.name] or []).concat value else value
-          matchedRule = yes
+          matchedRule = true
           break
       throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
       if not isOption
