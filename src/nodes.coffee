@@ -214,7 +214,7 @@ exports.Expressions = class Expressions extends Base
     o.level  = LEVEL_TOP
     code     = @compileWithDeclarations o
     code     = code.replace TRAILING_WHITESPACE, ''
-    if o.bare then code else "(function() {\n#{code}\n}).call(this);\n"
+    if o.bare then code else "(function(){\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -487,11 +487,11 @@ exports.Call = class Call extends Base
       return "#{fun}.apply(#{ref}, #{splatargs})"
     idt = @idt 1
     """
-    (function(func, args, ctor) {
+    (function(func, args, ctor){
     #{idt}ctor.prototype = func.prototype;
     #{idt}var child = new ctor, result = func.apply(child, args);
     #{idt}return typeof result === "object" ? result : child;
-    #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function() {}))
+    #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function(){}))
     """
 
 #### Extends
@@ -713,7 +713,7 @@ exports.Class = class Class extends Base
           pname = pvar.compile o
           ctor.body.push new Return new Literal 'this' if ctor.body.isEmpty()
           ret = "return #{className}.prototype.#{pname}.apply(#{me}, arguments);"
-          ctor.body.unshift new Literal "this.#{pname} = function() { #{ret} }"
+          ctor.body.unshift new Literal "this.#{pname} = function(){ #{ret} }"
       if pvar
         access = if prop.context is 'this'
         then pvar.properties[0]
@@ -897,12 +897,12 @@ exports.Code = class Code extends Base
     code     = if @body.isEmpty() then ''
     else "\n#{ @body.compileWithDeclarations o }\n"
     if @className
-      open  = "(function() {\n#{comm}#{idt}function #{@className}("
+      open  = "(function(){\n#{comm}#{idt}function #{@className}("
       close = "#{ code and idt }}\n#{idt}return #{@className};\n#{@tab}})()"
     else
       open  = 'function('
       close = "#{ code and @tab }}"
-    func = "#{open}#{ vars.join ', ' }) {#{code}#{close}"
+    func = "#{open}#{ vars.join ', ' }){#{code}#{close}"
     scope.endLevel()
     return "(#{ utility 'bind' }(#{func}, #{@context}))" if @bound
     if @tags.front then "(#{func})" else func
@@ -1527,8 +1527,8 @@ UTILITIES =
   # to the superclass for `super()` calls. See:
   # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.source.html#line1206).
   extends: '''
-    function(child, parent) {
-      function ctor() { this.constructor = child; }
+    function(child, parent){
+      function ctor(){ this.constructor = child; }
       ctor.prototype = parent.prototype;
       child.prototype = new ctor;
       if (typeof parent.extended === "function") parent.extended(child);
@@ -1538,14 +1538,14 @@ UTILITIES =
 
   # Create a function bound to the current value of "this".
   bind: '''
-    function(func, context) {
-      return function() { return func.apply(context, arguments); };
+    function(func, context){
+      return function(){ return func.apply(context, arguments); };
     }
   '''
 
   # Discover if an item is in an array.
   indexOf: '''
-    Array.prototype.indexOf || function(item) {
+    Array.prototype.indexOf || function(item){
       for (var i = 0, l = this.length; i < l; i++) {
         if (this[i] === item) return i;
       }
@@ -1555,7 +1555,7 @@ UTILITIES =
 
   # Copies properties from right to left.
   import: '''
-    function(obj, src, own) {
+    function(obj, src, own){
       if (own) own = Object.prototype.hasOwnProperty;
       for (var key in src) if (!own || own.call(src, key)) obj[key] = src[key];
       return obj;
