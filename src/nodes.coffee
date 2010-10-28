@@ -887,7 +887,7 @@ exports.Code = class Code extends Base
       close = "#{ code and @tab }}"
     func = "#{open}#{ vars.join ', ' }){#{code}#{close}"
     scope.endLevel()
-    return "(#{ utility 'bind' }(#{func}, #{@context}))" if @bound
+    return "#{ utility 'bind' }(#{func}, #{@context})" if @bound
     if @front then "(#{func})" else func
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
@@ -1222,7 +1222,7 @@ exports.Parens = class Parens extends Base
     expr = @expression
     expr.front = @front
     return expr.compile o if not @newed and
-      (expr instanceof [Value, Code, Parens] or
+      (expr instanceof [Value, Call, Code, Parens] or
        o.level < LEVEL_OP and expr instanceof Op)
     code = expr.compile o, LEVEL_PAREN
     if expr.isStatement() then code else "(#{code})"
@@ -1482,7 +1482,7 @@ Closure =
   # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement, noReturn) ->
     return expressions if expressions.containsPureStatement()
-    func = new Parens new Code [], Expressions.wrap [expressions]
+    func = new Code [], Expressions.wrap [expressions]
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or
        (               expressions.contains @literalThis)
@@ -1492,6 +1492,7 @@ Closure =
       func = new Value func, [new Accessor meth]
       func.noReturn = noReturn
     call = new Parens new Call func, args
+    call.newed = expressions.newed
     if statement then Expressions.wrap [call] else call
 
   literalArgs: -> it instanceof Literal and it.value is 'arguments'
