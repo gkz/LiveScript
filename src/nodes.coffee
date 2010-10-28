@@ -321,8 +321,7 @@ exports.Value = class Value extends Base
   isAssignable   : -> @hasProperties() or @base.isAssignable()
   isSimpleNumber : -> @base instanceof Literal and SIMPLENUM.test @base.value
   isAtomic       : ->
-    for node in @properties.concat @base
-      return false if node.soak or node instanceof Call
+    return false for node in @properties.concat(@base) when node.soak
     true
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
@@ -358,6 +357,7 @@ exports.Value = class Value extends Base
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
     @base.tags.front = @tags.front
+    @base.newed = @newed
     props = @properties
     code  = @base.compile o, if props.length then LEVEL_ACCESS else null
     code  = "(#{code})" if props[0] instanceof Accessor and @isSimpleNumber()
@@ -1049,6 +1049,7 @@ exports.Op = class Op extends Base
     if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
+      first.newed = true
     super()
     @operator = @CONVERSIONS[op] or op
     @first    = first
@@ -1240,11 +1241,11 @@ exports.Parens = class Parens extends Base
   compileNode: (o) ->
     expr = @expression
     expr.tags.front = @tags.front
-    if expr instanceof Value and expr.isAtomic()
-      return expr.compile o
-    bare = expr instanceof Code or o.level < LEVEL_OP and expr instanceof [Op, Call]
+    return expr.compile o if not @newed and
+      (expr instanceof [Value, Code, Parens] or
+       o.level < LEVEL_OP and expr instanceof Op)
     code = expr.compile o, LEVEL_PAREN
-    if bare then code else "(#{code})"
+    if expr.isStatement() then code else "(#{code})"
 
 #### For
 
