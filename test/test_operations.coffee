@@ -182,3 +182,10 @@ eq @, do => @
 
 ok []    instanceof [String, Array]
 ok 0 not instanceof [String, Array]
+
+
+target = {} import {42}
+target import all new class then deep: 'copy'
+
+eq target[42], 42
+eq target.deep, 'copy'

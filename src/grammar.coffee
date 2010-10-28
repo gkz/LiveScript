@@ -545,6 +545,9 @@ grammar =
       else
         new Op $2, $1, $3
 
+    o 'Expression IMPORT     Expression',       -> new Import $1, $3, true
+    o 'Expression IMPORT ALL Expression',       -> new Import $1, $4
+
     o 'SimpleAssignable COMPOUND_ASSIGN
        Expression',                             -> new Assign $1, $3, $2
     o 'SimpleAssignable COMPOUND_ASSIGN
@@ -572,7 +575,7 @@ operators = [
   ['left',      'MATH']
   ['left',      '+', '-']
   ['left',      'SHIFT']
-  ['left',      'RELATION']
+  ['left',      'RELATION', 'IMPORT']
   ['left',      'COMPARE']
   ['left',      'LOGIC']
   ['nonassoc',  'INDENT', 'OUTDENT']

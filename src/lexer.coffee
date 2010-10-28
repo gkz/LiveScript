@@ -75,7 +75,7 @@ exports.Lexer = class Lexer
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
-    if id is 'all' and @tag() is 'FOR'
+    if id is 'all' and @tag() in ['FOR', 'IMPORT']
       @token 'ALL', id
       return id.length
     if id is 'from' and @tag(1) is 'FOR'
@@ -505,7 +505,7 @@ exports.Lexer = class Lexer
 # Keywords that CoffeeScript shares in common with JavaScript.
 JS_KEYWORDS = <[
   true false null this void
-  new do delete typeof in instanceof
+  new do delete typeof in instanceof import
   return throw break continue debugger
   if else switch for while try catch finally
   class extends super
@@ -523,11 +523,7 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
-RESERVED = <[
-  case default function var with
-  const let enum export import native
-  __hasProp __extends __slice
-]>
+RESERVED = <[ case default function var with const let enum export native ]>
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.

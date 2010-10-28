@@ -491,7 +491,7 @@ exports.Call = class Call extends Base
     #{idt}ctor.prototype = func.prototype;
     #{idt}var child = new ctor, result = func.apply(child, args);
     #{idt}return typeof result === "object" ? result : child;
-    #{@tab}})(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function() {})
+    #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function() {}))
     """
 
 #### Extends
@@ -508,6 +508,19 @@ exports.Extends = class Extends extends Base
   # Hooks one constructor into another's prototype chain.
   compile: (o) ->
     new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compile o
+
+#### Import
+
+exports.Import = class Import extends Base
+
+  children: ['left', 'right']
+
+  constructor: (@left, @right, @own) -> super()
+
+  compile: (o) ->
+    args = [@left, @right]
+    args.push new Literal true if @own
+    new Call(new Value(new Literal utility 'import'), args).compile o
 
 #### Accessor
 
@@ -681,7 +694,7 @@ exports.Class = class Class extends Base
           props.push func if func isnt ref
           apply = new Call new Value(ref, [new Accessor new Literal 'apply']),
                            [new Literal('this'), new Literal('arguments')]
-          func  = new Code [], new Expressions([apply])
+          func  = new Code [], new Expressions [apply]
         throw SyntaxError 'cannot define a constructor as a bound function.' if func.bound
         func.name = className
         func.body.push new Return new Literal 'this'
@@ -698,7 +711,7 @@ exports.Class = class Class extends Base
           constScope or= new Scope o.scope, ctor.body, ctor
           me or= constScope.freeVariable 'this'
           pname = pvar.compile o
-          ctor.body.push    new Return new Literal 'this' if ctor.body.isEmpty()
+          ctor.body.push new Return new Literal 'this' if ctor.body.isEmpty()
           ret = "return #{className}.prototype.#{pname}.apply(#{me}, arguments);"
           ctor.body.unshift new Literal "this.#{pname} = function() { #{ret} }"
       if pvar
@@ -891,7 +904,7 @@ exports.Code = class Code extends Base
       close = "#{ code and @tab }}"
     func = "#{open}#{ vars.join ', ' }) {#{code}#{close}"
     scope.endLevel()
-    return "#{ utility 'bind' }(#{func}, #{@context})" if @bound
+    return "(#{ utility 'bind' }(#{func}, #{@context}))" if @bound
     if @tags.front then "(#{func})" else func
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
@@ -1224,10 +1237,10 @@ exports.Parens = class Parens extends Base
 
   compileNode: (o) ->
     expr = @expression
+    expr.tags.front = @tags.front
     if expr instanceof Value and expr.isAtomic()
-      expr.tags.front = @tags.front
       return expr.compile o
-    bare = o.level < LEVEL_OP and expr instanceof [Op, Call]
+    bare = expr instanceof Code or o.level < LEVEL_OP and expr instanceof [Op, Call]
     code = expr.compile o, LEVEL_PAREN
     if bare then code else "(#{code})"
 
@@ -1330,7 +1343,7 @@ exports.For = class For extends Base
 
   pluckDirectCall: (o, body, name, index) ->
     defs = ''
-    for expr, idx in body.expressions when (expr = expr.unwrapAll()) instanceof Call
+    for expr, idx in body.expressions when (expr = do expr.unwrapAll) instanceof Call
       val = do expr.variable.unwrapAll
       continue unless \
         val instanceof Code and not expr.args.length or
@@ -1496,7 +1509,7 @@ Closure =
       args.push new Literal 'arguments' if mentionsArgs
       func = new Value func, [new Accessor meth]
       func.noReturn = noReturn
-    call = new Call func, args
+    call = new Parens new Call func, args
     if statement then Expressions.wrap [call] else call
 
   literalArgs: -> it instanceof Literal and it.value is 'arguments'
@@ -1535,6 +1548,15 @@ UTILITIES =
         if (this[i] === item) return i;
       }
       return -1;
+    }
+  '''
+
+  # Copies properties from right to left.
+  import: '''
+    function(obj, src, own) {
+      if (own) own = Object.prototype.hasOwnProperty;
+      for (var key in src) if (!own || own.call(src, key)) obj[key] = src[key];
+      return obj;
     }
   '''
 
