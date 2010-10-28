@@ -28,7 +28,7 @@ run = (buffer) ->
 
 # Create the REPL by listening to **stdin**.
 repl = readline.createInterface stdio
-repl.setPrompt 'coffee> '
+repl.setPrompt 'coco> '
 stdio.on 'data',   (buffer) -> repl.write buffer
 repl.on  'close',  -> stdio.destroy()
 repl.on  'line',   run
