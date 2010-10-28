@@ -1001,6 +1001,7 @@ exports.While = class While extends Base
   compileNode: (o) ->
     o.indent = @idt 1
     set      = ''
+    code     = @condition.compile o, LEVEL_PAREN
     {body}   = this
     if body.isEmpty()
       body = ''
@@ -1011,7 +1012,8 @@ exports.While = class While extends Base
         body = Push.wrap rvar, body if body
       body = Expressions.wrap [new If @guard, body] if @guard
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
-    code = set + @tab + "while (#{ @condition.compile o, LEVEL_PAREN }) {#{body}}"
+    code  = set + @tab + if code is 'true' then 'for (;;)' else "while (#{code})"
+    code += " {#{body}}"
     if @returns
       o.indent = @tab
       code += '\n' + new Return(new Literal rvar).compile o
