@@ -119,10 +119,14 @@ func = -> for i in [1]
 ok func()[0][0] is 1
 
 
-# If the last expression is dynamic call,
+# For each dynamic call under `for`,
 # define it outside and pass loop variables to it.
 fs = for i from 0 to 2 when i > 0
-  void
+  me = this
+  do =>
+    return if i < 2
+    eq me, this
+    eq 1, arguments.length
   do ->
     {callee} = arguments
     -> [i, callee]
