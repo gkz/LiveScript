@@ -48,17 +48,17 @@ exports.Lexer = class Lexer
     # `@literalToken` is the fallback catch-all.
     i = 0
     while @chunk = code.slice i
-      i += @identifierToken() or
-           @commentToken()    or
-           @whitespaceToken() or
-           @lineToken()       or
-           @heredocToken()    or
-           @stringToken()     or
-           @numberToken()     or
-           @regexToken()      or
-           @wordsToken()      or
-           @jsToken()         or
-           @literalToken()
+      i += do @identifierToken or
+           do @commentToken    or
+           do @whitespaceToken or
+           do @lineToken       or
+           do @heredocToken    or
+           do @stringToken     or
+           do @numberToken     or
+           do @regexToken      or
+           do @wordsToken      or
+           do @jsToken         or
+           do @literalToken
     @closeIndentation()
     return @tokens if o.rewrite is false
     (new Rewriter).rewrite @tokens
@@ -93,13 +93,13 @@ exports.Lexer = class Lexer
     if id in JS_KEYWORDS or
        not forcedIdentifier and id in COFFEE_KEYWORDS
       tag = id.toUpperCase()
-      if tag is 'WHEN' and @tag() in LINE_BREAK
+      if tag is 'WHEN' and @tag() in <[ INDENT OUTDENT TERMINATOR ]>
         tag = 'LEADING_WHEN'
       else if tag is 'FOR'
         @seenFor = true
-      else if tag in UNARY
+      else if tag in <[ NEW DO TYPEOF DELETE ]>
         tag = 'UNARY'
-      else if tag in RELATION
+      else if tag in <[ IN OF INSTANCEOF ]>
         if tag isnt 'INSTANCEOF' and @seenFor
           @seenFor = false
           tag = 'FOR' + tag
@@ -187,7 +187,13 @@ exports.Lexer = class Lexer
   regexToken: ->
     return 0 if @chunk.charAt(0) isnt '/'
     return @heregexToken match if match = HEREGEX.exec @chunk
-    return 0 if @tag() in NOT_REGEX
+    # Tokens which a regular expression will never immediately follow, but which
+    # a division operator might.
+    #
+    # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
+    #
+    # Our list is shorter, due to sans-parentheses method calls.
+    return 0 if @tag() in <[ NUMBER REGEX BOOL ++ -- ]>
     return 0 unless match = REGEX.exec @chunk
     [regex] = match
     @token 'REGEX', if regex is '//' then '/(?:)/' else regex
@@ -322,16 +328,18 @@ exports.Lexer = class Lexer
     if value is '=' and prev
       @assignmentError() if not prev[1].reserved and prev[1] in JS_FORBIDDEN
       if prev[1] in <[ || && ]>
-        prev[0] = 'COMPOUND_ASSIGN'
+        prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
-    if      value is ';'             then tag = 'TERMINATOR'
-    else if value in MATH            then tag = 'MATH'
-    else if value in COMPARE         then tag = 'COMPARE'
-    else if value in COMPOUND_ASSIGN then tag = 'COMPOUND_ASSIGN'
-    else if value in UNARY           then tag = 'UNARY'
-    else if value in SHIFT           then tag = 'SHIFT'
-    else if value in LOGIC or value is '?' and prev?.spaced then tag = 'LOGIC'
+    if      value is ';'                   then tag = 'TERMINATOR'
+    else if value in <[ ! ~ ]>             then tag = 'UNARY'
+    else if value in <[ * / % ]>           then tag = 'MATH'
+    else if value in <[ == != <= < > >= ]> then tag = 'COMPARE'
+    else if value in <[ & | ^ && || ]> or value is '?' and prev?.spaced \
+                                           then tag = 'LOGIC'
+    else if value in <[ << >> >>> ]>       then tag = 'SHIFT'
+    else if value in <[-= += /= *= %= ||= &&= ?= <<= >>= >>>= &= ^= |=]> \
+                                           then tag = 'COMPOUND_ASSIGN'
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
@@ -583,42 +591,8 @@ NO_NEWLINE      = /// ^ (?:            # non-capturing group
   delete | typeof | instanceof
 ) $ ///
 
-# Compound assignment tokens.
-COMPOUND_ASSIGN = <[ -= += /= *= %= ||= &&= ?= <<= >>= >>>= &= ^= |= ]>
-
-# Unary tokens.
-UNARY   = <[ ! ~ DO NEW TYPEOF DELETE ]>
-
-# Logical tokens.
-LOGIC   = <[ & | ^ && || ]>
-
-# Bit-shifting tokens.
-SHIFT   = <[ << >> >>> ]>
-
-# Comparison tokens.
-COMPARE = <[ == != <= < > >= ]>
-
-# Mathmatical tokens.
-MATH    = <[ * / % ]>
-
-# Relational tokens that are negatable with `not` prefix.
-RELATION = <[ IN OF INSTANCEOF ]>
-
-# Tokens which a regular expression will never immediately follow, but which
-# a division operator might.
-#
-# See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
-#
-# Our list is shorter, due to sans-parentheses method calls.
-NOT_REGEX = <[ NUMBER REGEX BOOL ++ -- ] ]>
-
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
 CALLABLE  = <[ IDENTIFIER STRING REGEX ) ] } ? :: @ THIS SUPER ]>
 INDEXABLE = CALLABLE.concat <[ NUMBER BOOL ]>
-
-# Tokens that, when immediately preceding a `WHEN` indicate that the `WHEN`
-# occurs at the start of a line. We disambiguate these from trailing whens to
-# avoid an ambiguity in the grammar.
-LINE_BREAK = <[ INDENT OUTDENT TERMINATOR ]>
