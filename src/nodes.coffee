@@ -1318,7 +1318,7 @@ exports.For = class For extends Base
     if @object
       forPart   = ivar + ' in ' + sourcePart
       guardPart = if @raw then '' else
-        idt + "if (!#{ utility 'hasProp' }.call(#{svar}, #{ivar})) continue;\n"
+        idt + "if (!#{ utility 'owns' }.call(#{svar}, #{ivar})) continue;\n"
     else
       vars   += ', ' + step if step isnt pvar
       defPart = @tab + sourcePart + ';\n' if svar isnt sourcePart
@@ -1561,8 +1561,8 @@ UTILITIES =
   '''
 
   # Shortcuts to speed up the lookup time for native functions.
-  hasProp: 'Object.prototype.hasOwnProperty'
-  slice  : 'Array.prototype.slice'
+  owns  : 'Object.prototype.hasOwnProperty'
+  slice : 'Array.prototype.slice'
 
 # Levels indicates a node's position in the AST.
 LEVEL_TOP    = 0  # ...;

@@ -12,7 +12,7 @@ readline     = require 'readline'
 stdio = process.openStdin()
 
 # Quick alias for quitting the REPL.
-global import {quit: -> process.exit 0}
+global.quit = -> process.exit 0
 
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead
@@ -20,9 +20,9 @@ global import {quit: -> process.exit 0}
 run = (buffer) ->
   try
     val = CoffeeScript.eval buffer.toString(), bare: true, globals: true, fileName: 'repl'
-    console.log val if val isnt undefined
+    console.log val unless val is void
   catch err
-    console.error err.stack or err.toString()
+    console.error "#{ err.stack or err }"
   repl.prompt()
 
 # Create the REPL by listening to **stdin**.
