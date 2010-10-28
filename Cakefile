@@ -97,12 +97,10 @@ task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
 runTests = (CoffeeScript) ->
   startTime = Date.now()
   passedTests = failedTests = 0
-  wrap = (name, func) ->
+  for all name, func of require 'assert' then do ->
     global[name] = ->
       passedTests += 1
       func arguments...
-  for all name, func of require 'assert'
-    wrap name, func
   global.eq = global.strictEqual
   global.CoffeeScript = CoffeeScript
   process.on 'exit', ->
@@ -121,7 +119,7 @@ runTests = (CoffeeScript) ->
           CoffeeScript.run code.toString(), {fileName}
         catch err
           failedTests += 1
-          log "failed #{fileName}", red, '\n' + err.stack.toString()
+          log "failed #{fileName}", red, '\n' + err.stack
 
 
 task 'test', 'run the CoffeeScript language test suite', ->

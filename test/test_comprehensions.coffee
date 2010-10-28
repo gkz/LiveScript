@@ -117,3 +117,16 @@ func = -> for i in [1]
   return if false
   j for j in [1]
 ok func()[0][0] is 1
+
+
+# If the last expression is dynamic call,
+# define it outside and pass loop variables to it.
+fs = for i from 0 to 2 when i > 0
+  void
+  do ->
+    {callee} = arguments
+    -> [i, callee]
+[one, two] = (f() for f in fs)
+eq one[0], 1
+eq two[0], 2
+eq one[1], two[1]

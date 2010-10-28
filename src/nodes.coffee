@@ -1314,6 +1314,7 @@ exports.For = class For extends Base
         when -1 then '--'
         else (if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar)
     varPart = idt + namePart + ';\n' if namePart
+    defPart += @pluckDirectCall o, name, index
     code = guardPart + varPart
     unless body.isEmpty()
       if o.level > LEVEL_TOP or @returns
@@ -1326,6 +1327,26 @@ exports.For = class For extends Base
       code    += body.compile o, LEVEL_TOP
     code = '\n' + code + '\n' + @tab if code
     defPart + @tab + "for (#{forPart}) {#{code}}" + retPart
+
+  pluckDirectCall: (o, name, index) ->
+    return '' unless not @pattern and \
+      (call = last @body.expressions or [@body]) instanceof Call and
+      (code = call.variable)                instanceof Code or
+        code instanceof Value and code.base instanceof Code and
+        [console.log code] and
+        code.properties.length is 1 and
+        code.properties[0].name.value is 'call'
+    fn   = code.base or code
+    ref  = new Literal o.scope.freeVariable 'fn'
+    base = new Value ref
+    args = compact [name, index]
+    args.reverse() if @object
+    fn.params.push new Param args[i] = new Literal a for a, i in args
+    if code instanceof Value
+      code.base = base
+      args.push new Literal 'this'
+    @body.expressions.splice -1, 1, new Call ref, args
+    @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
 
 #### Switch
 
