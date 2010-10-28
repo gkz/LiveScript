@@ -6,14 +6,13 @@
 
 # Require the **coffee-script** module to get access to the compiler.
 CoffeeScript = require './coffee-script'
-helpers      = require './helpers'
 readline     = require 'readline'
 
 # Start by opening up **stdio**.
 stdio = process.openStdin()
 
 # Quick alias for quitting the REPL.
-helpers.extend global, quit: -> process.exit(0)
+global import {quit: -> process.exit 0}
 
 # The main REPL function. **run** is called every time a line of code is entered.
 # Attempt to evaluate the command. If there's an exception, print it out instead

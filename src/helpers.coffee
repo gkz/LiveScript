@@ -21,19 +21,6 @@ exports.count = (string, letter) ->
   num++ while pos = 1 + string.indexOf letter, pos
   num
 
-# Merge objects, returning a fresh copy with attributes from both sides.
-# Used every time `Base#compile` is called, to allow properties in the
-# options hash to propagate down the tree without polluting other branches.
-exports.merge = (options, overrides) ->
-  extend (extend {}, options), overrides
-
-# Extend a source object with the properties of another object (shallow copy).
-# We use this to simulate Node's deprecated `process.mixin`.
-extend = exports.extend = (object, properties) ->
-  for all key, val of properties
-    object[key] = val
-  object
-
 # Return a flattened version of an array.
 # Handy for getting a list of `children` from the nodes.
 exports.flatten = flatten = (array) ->

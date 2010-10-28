@@ -6,9 +6,9 @@
 {Scope} = require './scope'
 
 # Import the helpers we plan to use.
-{compact, flatten, extend, merge, del, starts, ends, last} = require './helpers'
+{compact, flatten, del, starts, ends, last} = require './helpers'
 
-exports.extend = extend  # for parser
+exports.extend = (left, rite) -> left import all rite  # for parser
 
 # Constant functions for nodes that don't need customization.
 YES  = -> true
@@ -37,7 +37,7 @@ exports.Base = class Base
   # already been asked to return the result (because statements know how to
   # return results).
   compile: (o, lvl) ->
-    o        = if o then extend {}, o else {}
+    o        = if o then {} import o else {}
     o.level  = lvl if lvl?
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
@@ -1263,7 +1263,7 @@ exports.For = class For extends Base
     if head.index instanceof Value
       throw SyntaxError 'index cannot be a pattern matching expression'
     super()
-    extend this, head
+    this import head
     @step  or= new Literal 1 unless @object
     @pattern = @name instanceof Value
     @returns = false
@@ -1456,7 +1456,7 @@ exports.If = class If extends Base
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
-    then @elseBodyNode().compile merge o, indent: @tab, chainChild: true
+    then @elseBodyNode().compile o import {indent: @tab, chainChild: true}
     else "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
 
   # Compile the If as a conditional operator.

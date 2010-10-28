@@ -5,9 +5,6 @@
 # variables are new and need to be declared with `var`, and which are shared
 # with the outside.
 
-# Import the helpers we plan to use.
-{extend, last} = require './helpers'
-
 exports.Scope = class Scope
 
   # The top-level **Scope** object.
@@ -86,7 +83,7 @@ exports.Scope = class Scope
     index = 0
     index++ while @check(temp = @temporary type, index) and @type(temp) isnt 'reuse'
     @add temp, 'var'
-    last(@garbage)?.push temp
+    @garbage[@garbage.length - 1]?.push temp
     temp
 
   # Ensure that an assignment is made at the top of this scope

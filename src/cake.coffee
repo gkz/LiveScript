@@ -9,7 +9,6 @@
 # External dependencies.
 fs           = require 'fs'
 path         = require 'path'
-helpers      = require './helpers'
 optparse     = require './optparse'
 CoffeeScript = require './coffee-script'
 
@@ -20,7 +19,7 @@ switches  = []
 oparse    = null
 
 # Mixin the top-level Cake functions for Cakefiles to use directly.
-helpers.extend global,
+global import {
 
   # Define a Cake task with a short name, an optional sentence description,
   # and the function to run as the action itself.
@@ -38,7 +37,7 @@ helpers.extend global,
   invoke: (name) ->
     missingTask name unless tasks[name]
     tasks[name].action options
-
+}
 
 # Run `cake`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.

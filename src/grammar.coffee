@@ -35,7 +35,7 @@ o = (patternString, action, options) ->
   return [patternString, '$$ = $1;', options] unless action
   action = if match = unwrap.exec action then match[1] else "(#{action}())"
   action = action.replace /\bnew /g, '$&yy.'
-  action = action.replace /\b(?:Expressions\.wrap|extend)\b/g, 'yy.$&'
+  action = action.replace /\bExpressions\.wra\b/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
 # Grammatical Rules
@@ -254,8 +254,8 @@ grammar =
   # Indexing into an object or array using bracket notation.
   Index: [
     o 'INDEX_START Expression INDEX_END',       -> new Index $2
-    o 'INDEX_SOAK  Index',                      -> extend $2, soak : true
-    o 'INDEX_PROTO Index',                      -> extend $2, proto: true
+    o 'INDEX_SOAK  Index',                      -> $2 import {'soak' }
+    o 'INDEX_PROTO Index',                      -> $2 import {'proto'}
   ]
 
   # In CoffeeScript, an object literal is simply a list of assignments.

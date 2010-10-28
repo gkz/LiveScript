@@ -9,12 +9,11 @@ fs             = require 'fs'
 path           = require 'path'
 optparse       = require './optparse'
 CoffeeScript   = require './coffee-script'
-helpers        = require './helpers'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
 # Allow CoffeeScript to emit Node.js events, and add it to global scope.
-helpers.extend CoffeeScript, new EventEmitter
+CoffeeScript import all new EventEmitter
 global.CoffeeScript = CoffeeScript
 
 # The help banner that is printed when `coffee` is called without arguments.
@@ -95,7 +94,7 @@ compileScript = (file, input, base) ->
   o = opts
   options = compileOptions file
   if o.require
-    require(if helpers.starts(req, '.') then fs.realpathSync(req) else req) for req in o.require
+    require(if req.charAt(0) is '.' then fs.realpathSync(req) else req) for req in o.require
   try
     t = task = {file, input, options}
     CoffeeScript.emit 'compile', task
