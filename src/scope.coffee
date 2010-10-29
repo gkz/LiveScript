@@ -18,7 +18,7 @@ exports.Scope = class Scope
     @variables = [{name: 'arguments', type: 'arguments'}]
     @positions = {}
     if @parent
-      @garbage = @parent.garbage
+      {@garbage} = @parent
     else
       @garbage   = []
       Scope.root = this
@@ -26,9 +26,8 @@ exports.Scope = class Scope
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
     if typeof (pos = @positions[name]) is 'number'
-      @variables[pos].type = type
-    else
-      @positions[name] = @variables.push({name, type}) - 1
+    then @variables[pos].type = type
+    else @positions[name]     = -1 + @variables.push {name, type}
 
   # Create a new garbage level
   startLevel: ->
@@ -94,21 +93,25 @@ exports.Scope = class Scope
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   hasDeclarations: (body) ->
-    body is @expressions and @any (v) -> v.type in ['var', 'reuse']
+    body is @expressions and @any -> it.type in <[ var reuse ]>
 
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
   hasAssignments: (body) ->
-    body is @expressions and @any (v) -> v.type.assigned
+    body is @expressions and @any -> it.type.assigned
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
-    (v.name for v in @variables when v.type in ['var', 'reuse']).sort()
+    usr = []
+    tmp = []
+    for {name, type} in @variables when type in <[ var reuse ]>
+      (if name.charAt(0) is '_' then tmp else usr).push name
+    usr.sort().concat tmp.sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
   assignedVariables: ->
-    ("#{v.name} = #{v.type.value}" for v in @variables when v.type.assigned)
+    v.name + ' = ' + v.type.value for v in @variables when v.type.assigned
 
   # Compile the JavaScript for all of the variable declarations in this scope.
   compiledDeclarations: ->
