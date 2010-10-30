@@ -52,7 +52,7 @@ exports.run = (code, options) ->
   while root.parent
     root = root.parent
   # Set the filename
-  root.filename = fs.realpathSync options.fileName
+  root.filename = fs.realpathSync options.fileName or '.'
   # Clear the module cache
   root.moduleCache = {} if root.moduleCache
   # Compile

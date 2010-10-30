@@ -52,12 +52,12 @@ optionParser = null
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  return usage()                              if opts.help
-  return version()                            if opts.version
-  return require './repl'                     if opts.interactive
-  return compileStdio()                       if opts.stdio
-  return compileScript 'console', sources[0]  if opts.eval
-  return require './repl'                     unless sources.length
+  return usage()                      if opts.help
+  return version()                    if opts.version
+  return require './repl'             if opts.interactive
+  return compileStdio()               if opts.stdio
+  return compileScript '', sources[0] if opts.eval
+  return require './repl'             unless sources.length
   separator = sources.indexOf '--'
   flags = []
   if separator >= 0
