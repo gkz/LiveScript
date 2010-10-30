@@ -241,21 +241,10 @@ grammar =
     o 'This'
   ]
 
-  # The general group of accessors into an object, by property, by prototype
-  # or by array index or slice.
+  # The general group of accessors into an object.
   Accessor: [
-    o '.  Identifier', -> new Accessor $2
-    o '?. Identifier', -> new Accessor $2, 'soak'
-    o '.= Identifier', -> new Accessor $2, 'assign'
-    o ':: Identifier', -> new Accessor $2, 'proto'
-    o '::',            -> new Accessor new Literal 'prototype'
-    o 'Index'
-  ]
-
-  # Indexing into an object or array using bracket notation.
-  Index: [
-    o 'INDEX_START Expression INDEX_END', -> new Index $2, $1
-    o 'INDEX_PROTO Index',                -> extend $2, {'proto'}
+    o 'ACCESS Identifier',                -> new Accessor $2, $1
+    o 'INDEX_START Expression INDEX_END', -> new Index    $2, $1
   ]
 
   # In CoffeeScript, an object literal is simply a list of assignments.
@@ -567,7 +556,7 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  ['left',      '.', '?.', '.=', '::']
+  ['left',      '.', '?.', '.=']
   ['left',      'CALL_START', 'CALL_END']
   ['nonassoc',  '++', '--']
   ['left',      '?']

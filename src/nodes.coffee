@@ -27,6 +27,7 @@ THIS = -> this
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
 exports.Base = class Base
+
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
@@ -548,17 +549,19 @@ exports.Accessor = class Accessor extends Base
 
   children: ['name']
 
-  constructor: (@name, tag) -> @[tag] = true
+  constructor: (@name, symbol) ->
+    switch symbol
+      when '?.' then @soak   = true
+      when '.=' then @assign = true
 
   compile: (o) ->
-    name = @name.compile o
-    (if @proto then '.prototype' else '') +
-      if IS_STRING.test name then "[#{name}]" else ".#{name}"
+    if (name = @name.compile o).charAt(0) in <[ \" \' ]>
+    then "[#{name}]"
+    else ".#{name}"
 
   isComplex: NO
 
-  toString: (idt) ->
-    super idt, @constructor.name + if @assign then '=' else ''
+  toString: (idt) -> super idt, @constructor.name + if @assign then '=' else ''
 
 #### Index
 
@@ -567,13 +570,12 @@ exports.Index = class Index extends Base
 
   children: ['index']
 
-  constructor: (@index, type) ->
-    switch type
+  constructor: (@index, symbol) ->
+    switch symbol
       when '?[' then @soak   = true
       when '[=' then @assign = true
 
-  compile: (o) ->
-    (if @proto then '.prototype' else '') + "[#{ @index.compile o, LEVEL_PAREN }]"
+  compile: (o) -> "[#{ @index.compile o, LEVEL_PAREN }]"
 
   isComplex: -> @index.isComplex()
 
@@ -730,11 +732,10 @@ exports.Class = class Class extends Base
           ret = "return #{className}.prototype.#{pname}.apply(#{me}, arguments);"
           ctor.body.unshift new Literal "this.#{pname} = function(){ #{ret} }"
       if pvar
-        access = if prop.context is 'this'
-        then pvar.properties[0]
-        else new Accessor pvar, 'proto'
-        val  = new Value variable, [access]
-        prop = new Assign val, func
+        accs = if prop.context is 'this'
+        then [pvar.properties[0]]
+        else [new Accessor(new Literal 'prototype'), new Accessor(pvar)]
+        prop = new Assign new Value(variable, accs), func
       props.push prop
 
     ctor.className = className.match /[$\w]+$/
@@ -1623,9 +1624,6 @@ IDENTIFIER = /^[$A-Za-z_][$\w]*$/
 NUMBER     = /// ^ -? (?: 0x[\da-f]+ | (?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)? ) $ ///i
 SIMPLENUM  = /^[+-]?\d+$/
 METHOD_DEF = /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
-
-# Is a literal value a string?
-IS_STRING = /^['"]/
 
 # Utility Functions
 # -----------------

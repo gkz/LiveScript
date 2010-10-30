@@ -174,7 +174,7 @@ class exports.Rewriter
         return true if not seenSingle and token.fromThen
         [tag] = token
         seenSingle = true if tag in <[ IF ELSE UNLESS -> => ]>
-        return true if tag in ['.', '?.', '::'] and @tag(i - 1) is 'OUTDENT'
+        return true if tag is 'ACCESS' and @tag(i - 1) is 'OUTDENT'
         not token.generated and @tag(i - 1) isnt ',' and tag in IMPLICIT_END and
         (tag isnt 'INDENT' or
          (@tag(i - 2) isnt 'CLASS' and @tag(i - 1) not in IMPLICIT_BLOCK and

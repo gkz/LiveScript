@@ -87,8 +87,11 @@ exports.Lexer = class Lexer
       @seenFrom = false
       @token 'TO', id
       return id.length
-    forcedIdentifier = colon or
-      (prev = last @tokens) and not prev.spaced and prev[0] in ['.', '?.', '@', '::']
+    forcedIdentifier = colon or if prev = last @tokens
+      if prev[1].colon2
+        @token 'ACCESS', '.'
+      else
+        prev[0] is 'ACCESS' or not prev.spaced and prev[0] is '@'
     tag = 'IDENTIFIER'
     if id in JS_FORBIDDEN
       if forcedIdentifier
@@ -334,6 +337,7 @@ exports.Lexer = class Lexer
         prev[1] += '='
         return value.length
     if      value in <[ ! ~ ]>             then tag = 'UNARY'
+    else if value in <[ . ?. .= ]>         then tag = 'ACCESS'
     else if value in <[ * / % ]>           then tag = 'MATH'
     else if value in <[ == != <= < > >= ]> then tag = 'COMPARE'
     else if value in <[ && || & | ^ ]> or value is '?' and prev?.spaced \
@@ -343,12 +347,16 @@ exports.Lexer = class Lexer
                                            then tag = 'COMPOUND_ASSIGN'
     else if value in <[ ?[ [= ]>           then tag = 'INDEX_START'
     else if value is ';'                   then tag = 'TERMINATOR'
+    else if value is '::'
+      id = new String 'prototype'
+      id.colon2 = true
+      @tokens.push ['ACCESS', '.', @line], ['IDENTIFIER', id, @line]
+      return value.length
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
       else if value is '[' and prev[0] in INDEXABLE
-        prev[0] = 'INDEX_PROTO' if prev[0] is '::'
         tag = 'INDEX_START'
     @token tag, value
     value.length
@@ -482,7 +490,7 @@ exports.Lexer = class Lexer
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
-    (prev = last @tokens, 1) and prev[0] isnt '.' and
+    (prev = last @tokens, 1) and prev[0] isnt 'ACCESS' and
       (value = @value()) and not value.reserved and
       NO_NEWLINE.test(value) and not CODE.test(value) and not ASSIGNED.test(@chunk)
 
