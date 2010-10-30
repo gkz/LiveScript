@@ -129,10 +129,8 @@ grammar =
   # through and printed to JavaScript.
   Literal: [
     o 'AlphaNumeric'
-    o 'JS',    -> new Literal $1
-    o 'REGEX', -> new Literal $1
-    o 'THIS',  -> new Literal 'this'
-    o 'BOOL',  ->
+    o 'THIS',    -> new Literal 'this'
+    o 'LITERAL', ->
       if $1 is 'void' then new Op 'void', new Literal 0 else new Literal $1
   ]
 

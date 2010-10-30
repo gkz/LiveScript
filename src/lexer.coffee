@@ -126,7 +126,7 @@ exports.Lexer = class Lexer
       tag = if id is '!'                        then 'UNARY'
       else  if id in <[ == != ]>                then 'COMPARE'
       else  if id in <[ && || ]>                then 'LOGIC'
-      else  if id in <[ true false null void ]> then 'BOOL'
+      else  if id in <[ true false null void ]> then 'LITERAL'
       else  tag
     @token tag, id
     @token ':', ':' if colon
@@ -184,8 +184,8 @@ exports.Lexer = class Lexer
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
-    @token 'JS', (script = match[0]).slice 1, -1
-    script.length
+    @token 'LITERAL', match[0].slice 1, -1
+    match[0].length
 
   # Matches regular expression literals. Lexing regular expressions is difficult
   # to distinguish from division, so we borrow some basic heuristics from
@@ -199,10 +199,10 @@ exports.Lexer = class Lexer
     # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
     #
     # Our list is shorter, due to sans-parentheses method calls.
-    return 0 if @tag() in <[ NUMBER REGEX BOOL ++ -- ]>
-    return 0 unless match = REGEX.exec @chunk
+    return 0 if @tag() in <[ NUMBER LITERAL ++ -- ]> or
+                not match = REGEX.exec @chunk
     [regex] = match
-    @token 'REGEX', if regex is '//' then '/(?:)/' else regex
+    @token 'LITERAL', if regex is '//' then '/(?:)/' else regex
     regex.length
 
   # Matches experimental, multiline and extended regular expression literals.
@@ -210,7 +210,7 @@ exports.Lexer = class Lexer
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
       re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
-      @token 'REGEX', "/#{ re or '(?:)' }/#{flags}"
+      @token 'LITERAL', "/#{ re or '(?:)' }/#{flags}"
       return heregex.length
     @token 'IDENTIFIER', 'RegExp'
     @tokens.push <[ CALL_START ( ]>
@@ -597,5 +597,5 @@ NO_NEWLINE      = /// ^ (?:            # non-capturing group
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE  = <[ IDENTIFIER THISPROP STRING REGEX ) ] } ? THIS SUPER ]>
-INDEXABLE = CALLABLE.concat <[ NUMBER BOOL ]>
+CALLABLE  = <[ IDENTIFIER THISPROP ) ] } ? SUPER THIS ]>
+INDEXABLE = CALLABLE.concat <[ NUMBER LITERAL ]>
