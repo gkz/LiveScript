@@ -229,7 +229,7 @@ exports.Lexer = class Lexer
     return 0 unless match = WORDS.exec @chunk
     [words] = match
     @token '[', '['
-    for word in words.slice(2, -2).match /\S+/g
+    for word in words.slice(2, -2).match(/\S+/g) or ['']
       @tokens.push ['STRING', @makeString word, '"'], <[ , , ]>
     @token ']', ']'
     @line += count words, '\n'

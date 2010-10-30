@@ -257,6 +257,11 @@ obj.val = ok
 {(obj.key)} = obj
 eq ok, obj.key
 
+
+eq '<[ quoted words ]>', <[ <[ quoted words ]\> ]>.join ' '
+eq  1, <[]>.length
+eq '', <[]>[0]
+
 #542: Objects leading expression statement should be parenthesized.
 {f: -> ok true }.f() + 1
 
