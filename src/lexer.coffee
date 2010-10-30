@@ -10,7 +10,7 @@
 {Rewriter} = require './rewriter'
 
 # Import the helpers we need.
-{count, starts, compact, last} = require './helpers'
+{count, last} = require './helpers'
 
 # The Lexer Class
 # ---------------
@@ -331,15 +331,15 @@ exports.Lexer = class Lexer
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
-    if      value is ';'                   then tag = 'TERMINATOR'
-    else if value in <[ ! ~ ]>             then tag = 'UNARY'
+    if      value in <[ ! ~ ]>             then tag = 'UNARY'
     else if value in <[ * / % ]>           then tag = 'MATH'
     else if value in <[ == != <= < > >= ]> then tag = 'COMPARE'
     else if value in <[ & | ^ && || ]> or value is '?' and prev?.spaced \
                                            then tag = 'LOGIC'
     else if value in <[ << >> >>> ]>       then tag = 'SHIFT'
-    else if value in <[-= += /= *= %= ||= &&= ?= <<= >>= >>>= &= ^= |=]> \
+    else if value in <[ -= += /= *= %= ||= &&= ?= <<= >>= >>>= &= ^= |= ]> \
                                            then tag = 'COMPOUND_ASSIGN'
+    else if value is ';'                   then tag = 'TERMINATOR'
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
@@ -373,16 +373,15 @@ exports.Lexer = class Lexer
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
     return this if @tag() isnt ')'
-    stack = []
     {tokens} = this
+    level = 0
     i = tokens.length
     tokens[--i][0] = 'PARAM_END'
     while tok = tokens[--i]
       switch tok[0]
-        when ')'
-          stack.push tok
+        when ')' then ++level
         when '(', 'CALL_START'
-          if stack.length then stack.pop()
+          if level then --level
           else
             tok[0] = 'PARAM_START'
             return this
@@ -412,19 +411,20 @@ exports.Lexer = class Lexer
     slen = str.length
     while i < slen
       if levels.length and str.charAt(i) is '\\'
-        i += 1
-      else
-        for pair in delimited
-          [open, close] = pair
-          if levels.length and starts(str, close, i) and last(levels) is pair
-            levels.pop()
-            i += close.length - 1
-            i += 1 unless levels.length
-            break
-          if starts str, open, i
-            levels.push(pair)
-            i += open.length - 1
-            break
+        i += 2
+        continue
+      for pair in delimited
+        [open, close] = pair
+        if levels.length and last(levels) is pair and
+           close is str.substr i, close.length
+          levels.pop()
+          i += close.length - 1
+          i += 1 unless levels.length
+          break
+        if open is str.substr i, open.length
+          levels.push pair
+          i += open.length - 1
+          break
       break if not levels.length
       i += 1
     if levels.length
