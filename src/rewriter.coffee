@@ -170,7 +170,7 @@ class exports.Rewriter
       @detectEnd i + (if callObject then 2 else 1), (token, i) ->
         return true if not seenSingle and token.fromThen
         [tag] = token
-        seenSingle = true if tag in <[ IF ELSE UNLESS -> => ]>
+        seenSingle = true if tag in <[ IF ELSE -> => ]>
         return true if tag is 'ACCESS' and @tag(i - 1) is 'OUTDENT'
         not token.generated and @tag(i - 1) isnt ',' and tag in IMPLICIT_END and
         (tag isnt 'INDENT' or
@@ -218,7 +218,7 @@ class exports.Rewriter
   tagPostfixConditionals: ->
     condition = (token, i) -> token[0] in ['TERMINATOR', 'INDENT']
     @scanTokens (token, i) ->
-      return 1 unless token[0] in ['IF', 'UNLESS']
+      return 1 unless token[0] is 'IF'
       original = token
       @detectEnd i + 1, condition, (token, i) ->
         original[0] = 'POST_' + original[0] if token[0] isnt 'INDENT'
@@ -328,7 +328,7 @@ IMPLICIT_FUNC    = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = <[
   IDENTIFIER THISPROP NUMBER STRING LITERAL THIS UNARY PARAM_START
-  IF UNLESS TRY SWITCH CLASS -> => [ ( { -- ++
+  IF TRY SWITCH CLASS -> => [ ( { -- ++
 ]>
 
 IMPLICIT_UNSPACED_CALL = <[ + - ]>
@@ -337,7 +337,7 @@ IMPLICIT_UNSPACED_CALL = <[ + - ]>
 IMPLICIT_BLOCK = <[ -> => { [ , ]>
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END   = <[ POST_IF POST_UNLESS FOR WHILE UNTIL WHEN LOOP TERMINATOR INDENT ]>
+IMPLICIT_END   = <[ POST_IF FOR WHILE WHEN LOOP TERMINATOR INDENT ]>
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.

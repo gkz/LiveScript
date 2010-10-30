@@ -110,6 +110,10 @@ exports.Lexer = class Lexer
         tag = 'LEADING_WHEN'
       else if tag is 'FOR'
         @seenFor = true
+      else if tag is 'UNLESS'
+        tag = 'IF'
+      else if tag is 'UNTIL'
+        tag = 'WHILE'
       else if tag in <[ NEW DO TYPEOF DELETE ]>
         tag = 'UNARY'
       else if tag in <[ IN OF INSTANCEOF ]>

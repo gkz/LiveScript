@@ -384,10 +384,8 @@ grammar =
 
   # The condition portion of a while loop.
   WhileSource: [
-    o 'WHILE Expression',                 -> new While $2
-    o 'WHILE Expression WHEN Expression', -> new While $2, guard: $4
-    o 'UNTIL Expression',                 -> new While $2, invert: true
-    o 'UNTIL Expression WHEN Expression', -> new While $2, invert: true, guard: $4
+    o 'WHILE Expression',                 -> new While $2, name: $1
+    o 'WHILE Expression WHEN Expression', -> new While $2, name: $1, guard: $4
   ]
 
   # The while loop can either be normal, with a block of expressions to execute,
@@ -475,9 +473,8 @@ grammar =
   # if-related rules are broken up along these lines in order to avoid
   # ambiguity.
   IfBlock: [
-    o 'IF     Expression Block',          -> new If $2, $3
-    o 'UNLESS Expression Block',          -> new If $2, $3, invert: true
-    o 'IfBlock ELSE IF Expression Block', -> $1.addElse new If $4, $5
+    o 'IF Expression Block',              -> new If $2, $3, name: $1
+    o 'IfBlock ELSE IF Expression Block', -> $1.addElse new If $4, $5, name: $3
     o 'IfBlock ELSE Block',               -> $1.addElse $3
   ]
 
@@ -485,14 +482,10 @@ grammar =
   # *if* and *unless*.
   If: [
     o 'IfBlock'
-    o 'Statement  POST_IF Expression',     ->
-      new If $3, Expressions.wrap([$1]), statement: true
-    o 'Expression POST_IF Expression',     ->
-      new If $3, Expressions.wrap([$1]), statement: true
-    o 'Statement  POST_UNLESS Expression', ->
-      new If $3, Expressions.wrap([$1]), statement: true, invert: true
-    o 'Expression POST_UNLESS Expression', ->
-      new If $3, Expressions.wrap([$1]), statement: true, invert: true
+    o 'Statement  POST_IF Expression', ->
+      new If $3, Expressions.wrap([$1]), name: $2, statement: true
+    o 'Expression POST_IF Expression', ->
+      new If $3, Expressions.wrap([$1]), name: $2, statement: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
@@ -563,9 +556,9 @@ operators = [
   ['nonassoc',  'INDENT', 'OUTDENT']
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
   ['right',     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY',
-                'THROW', 'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'UNTIL', 'LOOP',
+                'THROW', 'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'LOOP',
                 'SUPER', 'CLASS', 'EXTENDS']
-  ['right',     'POST_IF', 'POST_UNLESS']
+  ['right',     'POST_IF']
 ]
 
 # Wrapping Up

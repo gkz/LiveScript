@@ -1013,9 +1013,9 @@ exports.While = class While extends Base
 
   isStatement: YES
 
-  constructor: (condition, options) ->
-    @condition = if options?.invert then condition.invert() else condition
-    @guard     = options?.guard
+  constructor: (cond, options = {}) ->
+    @condition = if options.name is 'until' then cond.invert() else cond
+    {@guard}   = options
 
   addBody: (@body) -> this
 
@@ -1446,11 +1446,11 @@ exports.If = class If extends Base
 
   children: <[ condition body elseBody ]>
 
-  constructor: (condition, @body, options = {}) ->
-    @condition = if options.invert then condition.invert() else condition
+  constructor: (cond, @body, options = {}) ->
+    @condition = if options.name is 'unless' then cond.invert() else cond
     @elseBody  = null
     @isChain   = false
-    {@soak}    = options
+    {@soak, @statement} = options
 
   bodyNode: -> @body?.unwrap()
   elseBodyNode: -> @elseBody?.unwrap()
@@ -1467,7 +1467,7 @@ exports.If = class If extends Base
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
-    o?.level is LEVEL_TOP or
+    @statement or o?.level is LEVEL_TOP or
       @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
 
   compileNode: (o) ->
