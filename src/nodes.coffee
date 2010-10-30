@@ -6,7 +6,7 @@
 {Scope} = require './scope'
 
 # Import the helpers we plan to use.
-{compact, flatten, del, starts, ends, last} = require './helpers'
+{compact, flatten, del, last} = require './helpers'
 
 exports.extend = (left, rite) -> left import all rite  # for parser
 
@@ -65,13 +65,13 @@ exports.Base = class Base
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
-    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src, immediate: true)
+    unless NUMBER.test(src) or
+           IDENTIFIER.test(src) and o.scope.check(src, immediate: true)
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
     [src, tmp]
 
   # Convenience method to grab the current indentation level, plus tabbing in.
-  idt: (tabs) ->
-    (@tab or '') + Array((tabs or 0) + 1).join TAB
+  idt: (tabs) -> (@tab or '') + Array((tabs or 0) + 1).join TAB
 
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
@@ -102,9 +102,9 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', override) ->
-    children = (child.toString idt + TAB for child in @collectChildren()).join('')
+    children = (child.toString idt + TAB for child in @collectChildren())
     klass = override or @constructor.name + if @soak then '?' else ''
-    '\n' + idt + klass + children
+    '\n' + idt + klass + children.join ''
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -290,7 +290,7 @@ exports.Return = class Return extends Base
 # or vanilla.
 exports.Value = class Value extends Base
 
-  children: ['base', 'properties']
+  children: <[ base properties ]>
 
   # A **Value** has a base and a list of property accesses.
   constructor: (base, props, tag) ->
@@ -393,7 +393,7 @@ exports.Comment = class Comment extends Base
 # calls against the prototype's function of the same name.
 exports.Call = class Call extends Base
 
-  children: ['variable', 'args']
+  children: <[ variable args ]>
 
   constructor: (variable, @args = [], @soak) ->
     @new      = ''
@@ -449,7 +449,7 @@ exports.Call = class Call extends Base
   # Compile a vanilla function call.
   compileNode: (o) ->
     @variable?.front = @front
-    return @compileSplat o, code if code = Splat.compileSplattedArray o, @args, true
+    return @compileSplat o, code if code = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
     if @isSuper
     then @compileSuper args, o
@@ -491,7 +491,7 @@ exports.Call = class Call extends Base
 # [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
 exports.Extends = class Extends extends Base
 
-  children: ['child', 'parent']
+  children: <[ child parent ]>
 
   constructor: (@child, @parent) ->
 
@@ -503,7 +503,7 @@ exports.Extends = class Extends extends Base
 
 exports.Import = class Import extends Base
 
-  children: ['left', 'right']
+  children: <[ left right ]>
 
   constructor: (@left, @right, @own) ->
 
@@ -612,7 +612,7 @@ exports.Arr = class Arr extends Base
 
   compileNode: (o) ->
     o.indent = @idt 1
-    return code if code = Splat.compileSplattedArray o, @objects
+    return code if code = Splat.compileArray o, @objects
     objects = []
     for obj, i in @objects
       code = obj.compile o, LEVEL_LIST
@@ -636,7 +636,7 @@ exports.Arr = class Arr extends Base
 # The CoffeeScript class definition.
 exports.Class = class Class extends Base
 
-  children: ['variable', 'parent', 'properties']
+  children: <[ variable parent properties ]>
 
   isStatement: YES
 
@@ -661,9 +661,8 @@ exports.Class = class Class extends Base
 
     if @parent
       applied = new Value @parent, [new Accessor new Literal 'apply']
-      ctor = new Code [], new Expressions [
-        new Call applied, [new Literal('this'), new Literal('arguments')]
-      ]
+      ctor    = new Code [], new Expressions \
+        [new Call applied, [new Literal('this'), new Literal('arguments')]]
     else
       ctor = new Code [], new Expressions [new Return new Literal 'this']
 
@@ -721,7 +720,7 @@ exports.Assign = class Assign extends Base
   # Matchers for detecting class/method names
   METHOD_DEF: /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
 
-  children: ['variable', 'value']
+  children: <[ variable value ]>
 
   constructor: (@variable, @value, @context) ->
 
@@ -737,7 +736,7 @@ exports.Assign = class Assign extends Base
   compileNode: (o) ->
     if isValue = @variable instanceof Value
       return @compilePatternMatch o if @variable.isArray() or @variable.isObject()
-      return @compileConditional  o if @context in ['||=', '&&=', '?=']
+      return @compileConditional  o if @context in <[ ||= &&= ?= ]>
     name = @variable.compile o, LEVEL_LIST
     if @value instanceof Code and match = @METHOD_DEF.exec name
       @value.name  = match[2]
@@ -832,7 +831,7 @@ exports.Assign = class Assign extends Base
 # has no *children* -- they're within the inner scope.
 exports.Code = class Code extends Base
 
-  children: ['params', 'body']
+  children: <[ params body ]>
 
   constructor: (@params = [], @body = new Expressions, tag) ->
     @bound   = tag is 'boundfunc'
@@ -898,7 +897,7 @@ exports.Code = class Code extends Base
 # as well as be a splat, gathering up a group of parameters into an array.
 exports.Param = class Param extends Base
 
-  children: ['name', 'value']
+  children: <[ name value ]>
 
   constructor: (@name, @value, @splat) ->
 
@@ -926,13 +925,13 @@ exports.Splat = class Splat extends Base
   constructor: (name) ->
     @name = if name.compile then name else new Literal name
 
-  assigns: (name) -> @name.assigns name
+  assigns: -> @name.assigns it
 
   compile: (o) -> if @index? then @compileParam o else @name.compile o
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array.
-  @compileSplattedArray: (o, list, apply) ->
+  @compileArray: (o, list, apply) ->
     index = -1
     continue while (node = list[++index]) and node not instanceof Splat
     return '' if index >= list.length
@@ -957,7 +956,7 @@ exports.Splat = class Splat extends Base
 # flexibility or more speed than a comprehension can provide.
 exports.While = class While extends Base
 
-  children: ['condition', 'guard', 'body']
+  children: <[ condition guard body ]>
 
   isStatement: YES
 
@@ -976,7 +975,7 @@ exports.While = class While extends Base
     i = expressions.length
     return true if expressions[--i]?.containsPureStatement()
     ret = -> it instanceof Return
-    return true while --i >= 0 when expressions[i].contains ret
+    return true while i when expressions[--i].contains ret
     false
 
   # The main difference from a JavaScript *while* is that the CoffeeScript
@@ -1020,7 +1019,7 @@ exports.Op = class Op extends Base
     '!==': '==='
     '===': '!=='
 
-  children: ['first', 'second']
+  children: <[first second ]>
 
   constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
@@ -1043,7 +1042,7 @@ exports.Op = class Op extends Base
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
-  isChainable: -> @operator in ['<', '>', '>=', '<=', '===', '!==']
+  isChainable: -> @operator in <[ < > >= <= === !== ]>
 
   invert: ->
     if op = @INVERSIONS[@operator]
@@ -1054,7 +1053,7 @@ exports.Op = class Op extends Base
     else super()
 
   unfoldSoak: (o) ->
-    @operator in ['++', '--', 'delete'] and If.unfoldSoak o, this, 'first'
+    @operator in <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
 
   compileNode: (o) ->
     return @compileUnary     o if @isUnary()
@@ -1088,8 +1087,8 @@ exports.Op = class Op extends Base
   # Compile a unary **Op**.
   compileUnary: (o) ->
     parts = [op = @operator]
-    parts.push ' ' if op in ['new', 'typeof', 'delete', 'void'] or
-                      op in ['+', '-'] and @first instanceof Op and @first.operator is op
+    parts.push ' ' if op in <[ new typeof delete void ]> or
+                      op in <[ + - ]> and @first.operator is op
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
     code = parts.join ''
@@ -1107,7 +1106,7 @@ exports.Op = class Op extends Base
 #### In
 exports.In = class In extends Base
 
-  children: ['object', 'array']
+  children: <[ object array ]>
 
   constructor: (@object, @array) ->
 
@@ -1144,7 +1143,7 @@ exports.In = class In extends Base
 # A classic *try/catch/finally* block.
 exports.Try = class Try extends Base
 
-  children: ['attempt', 'recovery', 'ensure']
+  children: <[ attempt recovery ensure ]>
 
   isStatement: YES
 
@@ -1241,7 +1240,7 @@ exports.Parens = class Parens extends Base
 # you can map and filter in a single pass.
 exports.For = class For extends Base
 
-  children: ['body', 'source', 'guard', 'step', 'from', 'to']
+  children: <[ body source guard step from to ]>
 
   isStatement: YES
 
@@ -1356,7 +1355,7 @@ exports.For = class For extends Base
 # A JavaScript *switch* statement. Converts into a returnable expression on-demand.
 exports.Switch = class Switch extends Base
 
-  children: ['subject', 'cases', 'otherwise']
+  children: <[ subject cases otherwise ]>
 
   isStatement: YES
 
@@ -1392,7 +1391,7 @@ exports.Switch = class Switch extends Base
 # because ternaries are already proper expressions, and don't need conversion.
 exports.If = class If extends Base
 
-  children: ['condition', 'body', 'elseBody']
+  children: <[ condition body elseBody ]>
 
   constructor: (condition, @body, options = {}) ->
     @condition = if options.invert then condition.invert() else condition
