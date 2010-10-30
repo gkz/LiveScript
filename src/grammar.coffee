@@ -131,6 +131,7 @@ grammar =
     o 'AlphaNumeric'
     o 'JS',    -> new Literal $1
     o 'REGEX', -> new Literal $1
+    o 'THIS',  -> new Literal 'this'
     o 'BOOL',  ->
       if $1 is 'void' then new Op 'void', new Literal 0 else new Literal $1
   ]
@@ -238,7 +239,6 @@ grammar =
     o 'Assignable'
     o 'Literal',       -> new Value $1
     o 'Parenthetical', -> new Value $1
-    o 'This'
   ]
 
   # The general group of accessors into an object.
@@ -321,15 +321,10 @@ grammar =
     o 'CALL_START ArgList OptComma CALL_END',   -> $2
   ]
 
-  # A reference to the *this* current object.
-  This: [
-    o 'THIS', -> new Value new Literal 'this'
-    o '@',    -> new Value new Literal 'this'
-  ]
-
-  # A reference to a property on *this*.
+  # A reference to a property on `this`.
   ThisProperty: [
-    o '@ Identifier', -> new Value new Literal('this'), [new Accessor $2], 'this'
+    o 'THISPROP', ->
+      new Value new Literal('this'), [new Accessor new Literal $1], 'this'
   ]
 
   # The array literal.

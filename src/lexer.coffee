@@ -87,12 +87,16 @@ exports.Lexer = class Lexer
       @seenFrom = false
       @token 'TO', id
       return id.length
-    forcedIdentifier = colon or if prev = last @tokens
+    if at = id.charAt(0) is '@'
+      id .= slice 1
+      tag = 'THISPROP'
+    else
+      tag = 'IDENTIFIER'
+    forcedIdentifier = at or colon or if prev = last @tokens
       if prev[1].colon2
         @token 'ACCESS', '.'
       else
-        prev[0] is 'ACCESS' or not prev.spaced and prev[0] is '@'
-    tag = 'IDENTIFIER'
+        prev[0] is 'ACCESS'
     if id in JS_FORBIDDEN
       if forcedIdentifier
         id = new String id
@@ -346,6 +350,7 @@ exports.Lexer = class Lexer
     else if value in <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
                                            then tag = 'COMPOUND_ASSIGN'
     else if value in <[ ?[ [= ]>           then tag = 'INDEX_START'
+    else if value is '@'                   then tag = 'THIS'
     else if value is ';'                   then tag = 'TERMINATOR'
     else if value is '::'
       id = new String 'prototype'
@@ -511,11 +516,10 @@ exports.Lexer = class Lexer
 
 # Keywords that CoffeeScript shares in common with JavaScript.
 JS_KEYWORDS = <[
-  true false null this void
+  true false null this void super
   new do delete typeof in instanceof import
   return throw break continue debugger
-  if else switch for while try catch finally
-  class extends super
+  if else switch for while try catch finally class extends
 ]>
 
 # CoffeeScript-only keywords.
@@ -538,7 +542,7 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
 IDENTIFIER = /// ^
-  ( [$A-Za-z_][$\w]* )
+  ( @?[$A-Za-z_][$\w]* )
   ( [^\n\S]* : (?!:) )?  # Is this a property name?
 ///
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
@@ -593,5 +597,5 @@ NO_NEWLINE      = /// ^ (?:            # non-capturing group
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE  = <[ IDENTIFIER STRING REGEX ) ] } ? :: @ THIS SUPER ]>
+CALLABLE  = <[ IDENTIFIER THISPROP STRING REGEX ) ] } ? THIS SUPER ]>
 INDEXABLE = CALLABLE.concat <[ NUMBER BOOL ]>

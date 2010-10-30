@@ -119,12 +119,11 @@ class exports.Rewriter
     start = null
     condition = (token, i) ->
       return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
-      {(i+1): one, (i+2): two, (i+3): three} = @tokens
+      {(i+1): one, (i+2): two} = @tokens
       [tag] = token
-      tag in <[ TERMINATOR OUTDENT ]> and
-        not (two?[0] is ':' or one?[0] is '@' and three?[0] is ':' or one?[0] is '(') or
+      tag in <[ TERMINATOR OUTDENT ]> and not (two?[0] is ':' or one?[0] is '(') or
       tag is ',' and one and
-        one[0] not in <[ IDENTIFIER NUMBER STRING @ TERMINATOR OUTDENT ( ]>
+        one[0] not in <[ IDENTIFIER NUMBER STRING THISPROP TERMINATOR OUTDENT ( ]>
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
@@ -134,13 +133,11 @@ class exports.Rewriter
         start = stack.pop()
         return 1
       return 1 unless tag is ':' and
-        ((ago2 = @tag i - 2) is ':' or
-         (ago1 = @tag i - 1) is ')' and @tag(start[1] - 1) is ':' or
+        (@tag(i - 2) is ':' or  # a: b:
+         (paren = @tag(i - 1) is ')') and @tag(start[1] - 1) is ':' or  # a: (..):
          stack[stack.length - 1]?[0] isnt '{')
       stack.push ['{']
-      idx = if ago1 is ')'
-      then start[1]
-      else i - if ago2 is '@' then 2 else 1
+      idx = if paren then start[1] else i - 1
       idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
       tok = ['{', '{', token[2]]
       tok.generated = true
@@ -326,12 +323,12 @@ for [left, rite] in BALANCED_PAIRS
 EXPRESSION_CLOSE = <[ CATCH WHEN ELSE FINALLY ]>.concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
-IMPLICIT_FUNC    = <[ IDENTIFIER SUPER ) CALL_END ] INDEX_END @ THIS ]>
+IMPLICIT_FUNC    = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL    = <[
-  IDENTIFIER NUMBER STRING JS REGEX NEW PARAM_START CLASS
-  IF UNLESS TRY SWITCH THIS BOOL UNARY @ -> => [ ( { -- ++
+  IDENTIFIER THISPROP NUMBER STRING JS REGEX NEW PARAM_START CLASS
+  IF UNLESS TRY SWITCH THIS BOOL UNARY -> => [ ( { -- ++
 ]>
 
 IMPLICIT_UNSPACED_CALL = <[ + - ]>
