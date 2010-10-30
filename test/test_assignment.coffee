@@ -30,7 +30,7 @@ ok tester().example() is 'example function'
 
 
 try throw CoffeeScript.tokens 'in = 1'
-catch e then eq e.message, 'Reserved word "in" on line 1 can\'t be assigned'
+catch e then eq e.message, 'Reserved word "in" on line 1 cannot be assigned'
 
 
 num = 10
@@ -59,6 +59,13 @@ val = null
 val ?= 'value'
 val ?= 'eulav'
 eq val, 'value'
+
+
+parent = child: str: 'test'
+parent.child.str.=replace /./, 'b'
+eq 'best', parent.child.str
+parent.child.str[='replace'] /./, 'r'
+eq 'rest', parent.child.str
 
 
 for nonref in ['""', '0', 'f()']

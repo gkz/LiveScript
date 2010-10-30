@@ -90,7 +90,13 @@ exports.Lexer = class Lexer
     forcedIdentifier = colon or
       (prev = last @tokens) and not prev.spaced and prev[0] in ['.', '?.', '@', '::']
     tag = 'IDENTIFIER'
-    if id in JS_KEYWORDS or
+    if id in JS_FORBIDDEN
+      if forcedIdentifier
+        id = new String id
+        id.reserved = true
+      else if id in RESERVED
+        throw SyntaxError "Reserved word \"#{id}\" on line #{ @line + 1 }"
+    if not id.reserved      and id in     JS_KEYWORDS or
        not forcedIdentifier and id in COFFEE_KEYWORDS
       tag = id.toUpperCase()
       if tag is 'WHEN' and @tag() in <[ INDENT OUTDENT TERMINATOR ]>
@@ -101,20 +107,13 @@ exports.Lexer = class Lexer
         tag = 'UNARY'
       else if tag in <[ IN OF INSTANCEOF ]>
         if tag isnt 'INSTANCEOF' and @seenFor
-          @seenFor = false
           tag = 'FOR' + tag
+          @seenFor = false
         else
           tag = 'RELATION'
           if @value() is '!'
             @tokens.pop()
             id = '!' + id
-    if id in JS_FORBIDDEN
-      if forcedIdentifier
-        tag = 'IDENTIFIER'
-        id  = new String id
-        id.reserved = true
-      else if id in RESERVED
-        @identifierError id
     unless forcedIdentifier
       id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
       tag = if id is '!'                        then 'UNARY'
@@ -326,29 +325,31 @@ exports.Lexer = class Lexer
     tag  = value
     prev = last @tokens
     if value is '=' and prev
-      @assignmentError() if not prev[1].reserved and prev[1] in JS_FORBIDDEN
-      if prev[1] in <[ || && ]>
+      pid = prev[1]
+      if not pid.reserved and pid in JS_FORBIDDEN
+        throw SyntaxError \
+          "Reserved word \"#{pid}\" on line #{ @line + 1 } cannot be assigned"
+      if pid in <[ || && ]>
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
     if      value in <[ ! ~ ]>             then tag = 'UNARY'
     else if value in <[ * / % ]>           then tag = 'MATH'
     else if value in <[ == != <= < > >= ]> then tag = 'COMPARE'
-    else if value in <[ & | ^ && || ]> or value is '?' and prev?.spaced \
+    else if value in <[ && || & | ^ ]> or value is '?' and prev?.spaced \
                                            then tag = 'LOGIC'
     else if value in <[ << >> >>> ]>       then tag = 'SHIFT'
-    else if value in <[ -= += /= *= %= ||= &&= ?= <<= >>= >>>= &= ^= |= ]> \
+    else if value in <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
                                            then tag = 'COMPOUND_ASSIGN'
+    else if value in <[ ?[ [= ]>           then tag = 'INDEX_START'
     else if value is ';'                   then tag = 'TERMINATOR'
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
       else if value is '[' and prev[0] in INDEXABLE
+        prev[0] = 'INDEX_PROTO' if prev[0] is '::'
         tag = 'INDEX_START'
-        switch prev[0]
-          when '?'  then prev[0] = 'INDEX_SOAK'
-          when '::' then prev[0] = 'INDEX_PROTO'
     @token tag, value
     value.length
 
@@ -363,7 +364,7 @@ exports.Lexer = class Lexer
     unless herecomment
       while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
-        indent = attempt if indent is null or 0 < attempt.length < indent.length
+        indent  = attempt if indent is null or 0 < attempt.length < indent.length
     doc = doc.replace /// \n #{indent} ///g, '\n' if indent
     doc = doc.replace /^\n/, '' unless herecomment
     doc
@@ -390,16 +391,6 @@ exports.Lexer = class Lexer
   # Close up all remaining open blocks at the end of the file.
   closeIndentation: ->
     @outdentToken @indent
-
-  # The error for when you try to use a forbidden word in JavaScript as
-  # an identifier.
-  identifierError: (word) ->
-    throw SyntaxError "Reserved word \"#{word}\" on line #{@line + 1}"
-
-  # The error for when you try to assign to a reserved word in JavaScript,
-  # like "function" or "default".
-  assignmentError: ->
-    throw SyntaxError "Reserved word \"#{@value()}\" on line #{@line + 1} can't be assigned"
 
   # Matches a balanced group such as a single or double-quoted string. Pass in
   # a series of delimiters, all of which must be nested correctly within the
@@ -545,13 +536,13 @@ IDENTIFIER = /// ^
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
 OPERATOR   = /// ^ (
-  ?: [-=]>             # function
-   | [-+*/%<>&|^!?=]=  # compound assign / compare
-   | >>>=?             # zero-fill right shift
-   | ([-+:])\1         # doubles
-   | ([&|<>])\2=?      # logic / shift
-   | \?\.              # soak access
-   | \.{3}             # splat
+  ?: [-=]>              # function
+   | [-+*/%<>&|^?.[=!]= # compound assign / compare
+   | >>>=?              # zero-fill right shift
+   | ([-+:])\1          # {in,de}crement / prototype
+   | ([&|<>])\2=?       # logic / shift
+   | \?[.[]             # soak access
+   | \.{3}              # splat
 ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/

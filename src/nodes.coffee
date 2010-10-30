@@ -33,9 +33,9 @@ exports.Base = class Base
   # the top level of a block (which would be unnecessary), and we haven't
   # already been asked to return the result (because statements know how to
   # return results).
-  compile: (o, lvl) ->
-    o        = if o then {} import o else {}
-    o.level  = lvl if lvl?
+  compile: (o, level) ->
+    o        = if o then {} import all o else {}
+    o.level  = level if level?
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
     if o.level is LEVEL_TOP or node.isPureStatement() or not node.isStatement(o)
@@ -103,8 +103,9 @@ exports.Base = class Base
   # This is what `coffee --nodes` prints out.
   toString: (idt = '', override) ->
     children = (child.toString idt + TAB for child in @collectChildren())
-    klass = override or @constructor.name + if @soak then '?' else ''
-    '\n' + idt + klass + children.join ''
+    name  = override or @constructor.name
+    name += '?' if @soak
+    '\n' + idt + name + children.join ''
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
@@ -128,7 +129,7 @@ exports.Base = class Base
 
   unwrapAll: ->
     node = this
-    continue until node is node = node.unwrap()
+    continue until node is node .= unwrap()
     node
 
   # Default implementations of the common node properties and methods. Nodes
@@ -141,8 +142,9 @@ exports.Base = class Base
   isChainable     : NO
   isAssignable    : NO
 
-  unwrap     : THIS
-  unfoldSoak : NO
+  unwrap       : THIS
+  unfoldSoak   : NO
+  unfoldAssign : NO
 
   # Is this node used to assign a certain variable?
   assigns: NO
@@ -205,7 +207,7 @@ exports.Expressions = class Expressions extends Base
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
     code     = @compileWithDeclarations o
-    code     = code.replace TRAILING_WHITESPACE, ''
+    code    .= replace TRAILING_WHITESPACE, ''
     if o.bare then code else "(function(){\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
@@ -223,8 +225,8 @@ exports.Expressions = class Expressions extends Base
   # return the result, and it's an expression, simply return it. If it's a
   # statement, ask the statement to do so.
   compileExpression: (node, o) ->
-    node = node.unwrapAll()
-    node = node.unfoldSoak(o) or node
+    node .= unwrapAll()
+    node  = node.unfoldSoak(o) or node
     node.front = true
     o.level = LEVEL_TOP
     code    = node.compile o
@@ -348,6 +350,7 @@ exports.Value = class Value extends Base
   # operators `?.` interspersed. Then we have to take care not to accidentally
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
+    return asn.compile o if asn = @unfoldAssign o
     @base.front = @front
     @base.newed = @newed
     props = @properties
@@ -359,7 +362,7 @@ exports.Value = class Value extends Base
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     if ifn = @base.unfoldSoak o
-      Array::push.apply ifn.body.properties, @properties
+      ifn.body.properties.push @properties...
       return ifn
     for prop, i in @properties when prop.soak
       prop.soak = false
@@ -372,14 +375,26 @@ exports.Value = class Value extends Base
       return new If new Existence(fst), snd, soak: true
     null
 
+  unfoldAssign: (o) ->
+    if asn = @base.unfoldAssign o
+      asn.value.properties.push @properties...
+      return asn
+    for prop, i in @properties when prop.assign
+      prop.assign = false
+      [lhs, rhs] = new Value(@base, @properties.slice 0, i).cacheReference o
+      asn = new Assign lhs, new Value rhs, @properties.slice i
+      asn.access = true
+      return asn
+    null
+
 #### Comment
 
 # CoffeeScript passes through block comments as JavaScript block comments
 # at the same position.
 exports.Comment = class Comment extends Base
 
-  isPureStatement: YES
-  isStatement:     YES
+  isPureStatement : YES
+  isStatement     : YES
 
   constructor: (@comment) ->
 
@@ -411,11 +426,10 @@ exports.Call = class Call extends Base
     throw SyntaxError 'cannot call super outside of a function.' unless method
     {name} = method
     throw SyntaxError 'cannot call super on an anonymous function.' unless name
-    if method.klass
-    then "#{method.klass}.__super__.#{name}"
+    if method.clas
+    then "#{method.clas}.__super__.#{name}"
     else "#{name}.__super__.constructor"
 
-  # Soaked chained invocations unfold into if/else ternary structures.
   unfoldSoak: (o) ->
     if @soak
       if @variable
@@ -428,17 +442,7 @@ exports.Call = class Call extends Base
       rite.new = @new
       left = new Literal "typeof #{ left.compile o } === \"function\""
       return new If left, new Value(rite), soak: true
-    call = this
-    list = []
-    loop
-      if call.variable instanceof Call
-        list.push call
-        call = call.variable
-        continue
-      break unless call.variable instanceof Value
-      list.push call
-      break unless (call = call.variable.base) instanceof Call
-    for call in list.reverse()
+    for call in @digCalls()
       if ifn
         if call.variable instanceof Call
         then call.variable      = ifn
@@ -446,9 +450,33 @@ exports.Call = class Call extends Base
       ifn = If.unfoldSoak o, call, 'variable'
     ifn
 
+  # List up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
+  digCalls: ->
+    call = this
+    list = []
+    loop
+      if call.variable instanceof Call
+        list.push call
+        call .= variable
+        continue
+      break unless call.variable instanceof Value
+      list.push call
+      break unless call .= variable.base instanceof Call
+    list.reverse()
+
   # Compile a vanilla function call.
   compileNode: (o) ->
-    @variable?.front = @front
+    if vr = @variable
+      for call in @digCalls()
+        if asn
+          if call.variable instanceof Call
+          then call.variable      = asn
+          else call.variable.base = asn
+        if asn = call.variable.unfoldAssign o
+          call.variable = asn.value
+          asn.value = new Value call
+      return asn.compile o if asn
+      vr.front = @front
     return @compileSplat o, code if code = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
     if @isSuper
@@ -520,15 +548,17 @@ exports.Accessor = class Accessor extends Base
 
   children: ['name']
 
-  constructor: (@name, tag) ->
-    @proto = if tag is 'proto' then '.prototype' else ''
-    @soak  = tag is 'soak'
+  constructor: (@name, tag) -> @[tag] = true
 
   compile: (o) ->
     name = @name.compile o
-    @proto + if IS_STRING.test name then "[#{name}]" else ".#{name}"
+    (if @proto then '.prototype' else '') +
+      if IS_STRING.test name then "[#{name}]" else ".#{name}"
 
   isComplex: NO
+
+  toString: (idt) ->
+    super idt, @constructor.name + if @assign then '=' else ''
 
 #### Index
 
@@ -537,12 +567,17 @@ exports.Index = class Index extends Base
 
   children: ['index']
 
-  constructor: (@index) ->
+  constructor: (@index, type) ->
+    switch type
+      when '?[' then @soak   = true
+      when '[=' then @assign = true
 
   compile: (o) ->
     (if @proto then '.prototype' else '') + "[#{ @index.compile o, LEVEL_PAREN }]"
 
   isComplex: -> @index.isComplex()
+
+  toString: Accessor::toString
 
 #### Obj
 
@@ -571,8 +606,8 @@ exports.Obj = class Obj extends Base
       else if prop not instanceof [Assign, Comment]
         prop = new Assign prop, prop, 'object'
       indent + prop.compile(o) + join
-    props = props.join ''
-    obj   = "{#{ if props then '\n' + props + '\n' + @idt() else '' }}"
+    props .= join ''
+    obj    = "{#{ if props then '\n' + props + '\n' + @idt() else '' }}"
     if @front then "(#{obj})" else obj
 
   compileDynamic: (o, idx) ->
@@ -621,7 +656,7 @@ exports.Arr = class Arr extends Base
       else if i is @objects.length - 1
       then code
       else code + ', ')
-    objects = objects.join ''
+    objects .= join ''
     if 0 < objects.indexOf '\n'
       "[\n#{o.indent}#{objects}\n#{@tab}]"
     else
@@ -717,9 +752,6 @@ exports.Class = class Class extends Base
 # property of an object -- including within object literals.
 exports.Assign = class Assign extends Base
 
-  # Matchers for detecting class/method names
-  METHOD_DEF: /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
-
   children: <[ variable value ]>
 
   constructor: (@variable, @value, @context) ->
@@ -729,31 +761,35 @@ exports.Assign = class Assign extends Base
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, 'variable'
 
-  # Compile an assignment, delegating to `compilePatternMatch` or
-  # `compileSplice` if appropriate. Keep track of the name of the base object
-  # we've been assigned to, for correct internal references. If the variable
-  # has not been seen yet within the current scope, declare it.
-  compileNode: (o) ->
-    if isValue = @variable instanceof Value
-      return @compilePatternMatch o if @variable.isArray() or @variable.isObject()
-      return @compileConditional  o if @context in <[ ||= &&= ?= ]>
-    name = @variable.compile o, LEVEL_LIST
-    if @value instanceof Code and match = @METHOD_DEF.exec name
-      @value.name  = match[2]
-      @value.klass = match[1]
-    val = @value.compile o, LEVEL_LIST
-    return "#{name}: #{val}" if @context is 'object'
-    unless @variable.isAssignable()
-      throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
-    o.scope.find name unless isValue and (@variable.hasProperties() or @variable.namespaced)
-    val = name + " #{ @context or '=' } " + val
-    if o.level <= LEVEL_LIST then val else "(#{val})"
+  unfoldAssign: -> @access and this
 
-  # Brief implementation of recursive pattern matching, when assigning array or
+  # Compile an assignment, delegating to `compileDestructuring` or
+  # `compileSplice` if appropriate.
+  compileNode: (o) ->
+    {variable, value} = this
+    if isValue = variable instanceof Value
+      return @compileDestructuring o if variable.isArray() or variable.isObject()
+      return @compileConditional   o if @context in <[ ||= &&= ?= ]>
+    name = variable.compile o, LEVEL_LIST
+    # Keep track of the name of the base object
+    # we've been assigned to, for correct internal references.
+    if value instanceof Code and match = METHOD_DEF.exec name
+      [_, value.clas, value.name] = match
+    val = value.compile o, LEVEL_LIST
+    return "#{name}: #{val}" if @context is 'object'
+    unless variable.isAssignable()
+      throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
+    # If the variable has not been seen yet within the current scope, declare it.
+    unless @access or isValue and (variable.namespaced or variable.hasProperties())
+      o.scope.find name
+    name += " #{ @context or '=' } " + val
+    if o.level <= LEVEL_LIST then name else "(#{name})"
+
+  # Brief implementation of recursive destructuring, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
   # See the [ECMAScript Harmony Wiki](http://wiki.ecmascript.org/doku.php?id=harmony:destructuring)
   # for details.
-  compilePatternMatch: (o) ->
+  compileDestructuring: (o) ->
     top       = o.level is LEVEL_TOP
     {value}   = this
     {objects} = @variable.base
@@ -803,7 +839,7 @@ exports.Assign = class Assign extends Base
         splat = "#{ivar}++"
       else
         if obj instanceof Splat
-          obj = obj.name.compile o
+          obj .= name.compile o
           throw SyntaxError \
             "multiple splats are disallowed in an assignment: #{obj} ..."
         if typeof idx is 'number'
@@ -823,6 +859,22 @@ exports.Assign = class Assign extends Base
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
     return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
+
+  compileAccess: (o) ->
+    val  = @value
+    val .= variable if call = val instanceof Call
+    unless val instanceof Value and
+        ((base = val.base) instanceof Literal or
+         base instanceof Arr and base.objects.length is 1)
+      throw SyntaxError 'invalid right hand side for ".=": ' + @value.compile o
+    [left, rite] = @variable.cacheReference o
+    acc = if base instanceof Arr
+    then new Index    base.objects[0]
+    else new Accessor base
+    val.properties.unshift acc
+    val.base = rite
+    code = left.compile(o) + ' = ' + @value.compile(o)
+    if o.level <= LEVEL_LIST then code else "(#{code})"
 
 #### Code
 
@@ -848,8 +900,8 @@ exports.Code = class Code extends Base
     o.indent    = @idt 1
     delete o.bare
     delete o.globals
-    vars   = []
-    exprs  = []
+    vars  = []
+    exprs = []
     for param in @params when param.splat
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
@@ -1071,7 +1123,7 @@ exports.Op = class Op extends Base
   compileChain: (o) ->
     [@first.second, shared] = @first.second.cache o
     fst  = @first .compile o, LEVEL_OP
-    fst  = fst.slice 1, -1 if fst.charAt(0) is '('
+    fst .= slice 1, -1 if fst.charAt(0) is '('
     code = "#{fst} && #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
     if o.level < LEVEL_OP then code else "(#{code})"
 
@@ -1098,8 +1150,8 @@ exports.Op = class Op extends Base
     [sub, ref] = @first.cache o, LEVEL_OP
     tests = for item, i in @second.base.objects
       (if i then ref else sub) + ' instanceof ' + item.compile o
-    tests = tests.join ' || '
-    if o.level < LEVEL_OP then tests else "(#{tests})"
+    code = tests.join ' || '
+    if o.level < LEVEL_OP then code else "(#{code})"
 
   toString: (idt) -> super idt, @constructor.name + ' ' + @operator
 
@@ -1124,8 +1176,8 @@ exports.In = class In extends Base
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = for item, i in @array.base.objects
       (if i then ref else sub) + cmp + item.compile o
-    tests = tests.join cnj
-    if o.level < LEVEL_OP then tests else "(#{tests})"
+    code  = tests.join cnj
+    if o.level < LEVEL_OP then code else "(#{code})"
 
   compileLoopTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_LIST
@@ -1246,7 +1298,7 @@ exports.For = class For extends Base
 
   constructor: (body, head) ->
     if head.index instanceof Value
-      throw SyntaxError 'index cannot be a pattern matching expression'
+      throw SyntaxError 'index variable of "for" cannot be destructuring'
     this import head
     @body    = Expressions.wrap [body]
     @step  or= new Literal 1 unless @object
@@ -1372,7 +1424,7 @@ exports.Switch = class Switch extends Base
     code = @tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {\n"
     for [conditions, block], i in @cases
       for cond in flatten [conditions]
-        cond  = cond.invert() unless @subject
+        cond .= invert() unless @subject
         code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
       code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
@@ -1570,6 +1622,7 @@ TRAILING_WHITESPACE = /[ \t]+$/gm
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
 NUMBER     = /// ^ -? (?: 0x[\da-f]+ | (?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)? ) $ ///i
 SIMPLENUM  = /^[+-]?\d+$/
+METHOD_DEF = /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
 
 # Is a literal value a string?
 IS_STRING = /^['"]/
