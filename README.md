@@ -25,15 +25,18 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 - `import` / `import all`
 
-  An infix operator that copies properties from left to right and returns the right operand.
+  Infix operators that copy properties from left to right and return the right operand.
 
         $ coco -bpe 'x import y import all z'
-        var __import = function(obj, src, own){
-          if (own) own = Object.prototype.hasOwnProperty;
-          for (var key in src) if (!own || own.call(src, key)) obj[key] = src[key];
+        var __importAll = function(obj, src){
+          for (var key in src) obj[key] = src[key];
+          return obj;
+        }, __import = function(obj, src){
+          var own = Object.prototype.hasOwnProperty;
+          for (var key in src) if (own.call(src, key)) obj[key] = src[key];
           return obj;
         };
-        __import(__import(x, y, true), z);
+        __importAll(__import(x, y), z);
 
 
 - `it`

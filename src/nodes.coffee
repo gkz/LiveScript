@@ -537,9 +537,8 @@ exports.Import = class Import extends Base
   constructor: (@left, @right, @own) ->
 
   compile: (o) ->
-    args = [@left, @right]
-    args.push new Literal true if @own
-    new Call(new Value(new Literal utility 'import'), args).compile o
+    util = new Value new Literal utility if @own then 'import' else 'importAll'
+    new Call(util, [@left, @right]).compile o
 
 #### Accessor
 
@@ -1604,9 +1603,15 @@ UTILITIES =
 
   # Copies properties from right to left.
   import: '''
-    function(obj, src, own){
-      if (own) own = Object.prototype.hasOwnProperty;
-      for (var key in src) if (!own || own.call(src, key)) obj[key] = src[key];
+    function(obj, src){
+      var own = Object.prototype.hasOwnProperty;
+      for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+      return obj;
+    }
+  '''
+  importAll: '''
+    function(obj, src){
+      for (var key in src) obj[key] = src[key];
       return obj;
     }
   '''
