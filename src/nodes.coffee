@@ -1420,20 +1420,20 @@ exports.Switch = class Switch extends Base
     this
 
   compileNode: (o) ->
-    idt1 = @idt 1
-    idt2 = o.indent = @idt 2
-    code = @tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {\n"
+    {tab} = this
+    idt   = o.indent = @idt 1
+    code  = tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {\n"
     for [conditions, block], i in @cases
       for cond in flatten [conditions]
         cond .= invert() unless @subject
-        code += idt1 + "case #{ cond.compile o, LEVEL_PAREN }:\n"
+        code += tab + "case #{ cond.compile o, LEVEL_PAREN }:\n"
       code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
       for expr in block.expressions by -1 when expr not instanceof Comment
-        code += idt2 + 'break;\n' unless expr instanceof Return
+        code += idt + 'break;\n' unless expr instanceof Return
         break
-    code += idt1 + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
-    code +  @tab + '}'
+    code += tab + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
+    code +  tab + '}'
 
 #### If
 
