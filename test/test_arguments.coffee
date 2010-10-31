@@ -61,3 +61,10 @@ eq 15, withSplats 1
 eq  5, withSplats 1, 1
 eq  1, withSplats 1, 1, 1
 eq  2, withSplats 1, 1, 1, 1
+
+
+(->
+  eq @0, 0
+  eq @2, 2
+  eq @999, void
+) 0, 1, 2

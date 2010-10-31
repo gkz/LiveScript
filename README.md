@@ -11,6 +11,12 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
         a = a[0];
 
 
+- `@0`, `@1`, ...
+
+        $ coco -bpe '@0 @1'
+        arguments[0](arguments[1]);
+
+
 - `instanceof []`
 
         $ coco -bpe 'A instanceof [B, C]'

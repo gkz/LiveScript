@@ -328,7 +328,7 @@ exports.Lexer = class Lexer
       value = @chunk.charAt 0
     tag  = value
     prev = last @tokens
-    if value is '=' and prev
+    if prev and value is '='
       pid = prev[1]
       if not pid.reserved and pid in JS_FORBIDDEN
         throw SyntaxError \
@@ -347,12 +347,17 @@ exports.Lexer = class Lexer
     else if value in <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
                                            then tag = 'COMPOUND_ASSIGN'
     else if value in <[ ?[ [= ]>           then tag = 'INDEX_START'
-    else if value is '@'                   then tag = 'THIS'
     else if value is ';'                   then tag = 'TERMINATOR'
+    else if value is '@'                   then tag = 'THIS'
+    else if value.charAt(0) is '@'
+      @tokens.push \
+        ['IDENTIFIER', 'arguments', @line],
+        <[ INDEX_START [ ]>, ['NUMBER', value.slice 1], <[ INDEX_END  ] ]>
+      return value.length
     else if value is '::'
       id = new String 'prototype'
       id.colon2 = true
-      @tokens.push ['ACCESS', '.', @line], ['IDENTIFIER', id, @line]
+      @tokens.push <[ ACCESS . ]>, ['IDENTIFIER', id, @line]
       return value.length
     else if prev and not prev.spaced
       if value is '(' and prev[0] in CALLABLE
@@ -392,10 +397,9 @@ exports.Lexer = class Lexer
       switch tok[0]
       case ')' then ++level
       case '(', 'CALL_START'
-        if level then --level
-        else
-          tok[0] = 'PARAM_START'
-          return this
+        break if level--
+        tok[0] = 'PARAM_START'
+        return this
     this
 
   # Close up all remaining open blocks at the end of the file.
@@ -552,6 +556,7 @@ OPERATOR   = /// ^ (
    | ([&|<>])\2=?       # logic / shift
    | \?[.[]             # soak access
    | \.{3}              # splat
+   | @\d+               # argument shorthand
 ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
