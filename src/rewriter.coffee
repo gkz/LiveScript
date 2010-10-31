@@ -320,7 +320,7 @@ for [left, rite] in BALANCED_PAIRS
   EXPRESSION_END  .push INVERSES[left] = rite
 
 # Tokens that indicate the close of a clause of an expression.
-EXPRESSION_CLOSE = <[ CATCH WHEN ELSE FINALLY ]>.concat EXPRESSION_END
+EXPRESSION_CLOSE = <[ ELSE WHEN CATCH FINALLY CASE DEFAULT ]>.concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
 IMPLICIT_FUNC    = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
@@ -337,12 +337,12 @@ IMPLICIT_UNSPACED_CALL = <[ + - ]>
 IMPLICIT_BLOCK = <[ -> => { [ , ]>
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END   = <[ POST_IF FOR WHILE WHEN LOOP TERMINATOR INDENT ]>
+IMPLICIT_END   = <[ POST_IF FOR WHILE WHEN CASE DEFAULT LOOP TERMINATOR INDENT ]>
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
-SINGLE_LINERS  = <[ ELSE -> => TRY FINALLY THEN ]>
-SINGLE_CLOSERS = <[ TERMINATOR CATCH FINALLY ELSE OUTDENT LEADING_WHEN ]>
+SINGLE_LINERS  = <[ -> => ELSE THEN DEFAULT TRY FINALLY ]>
+SINGLE_CLOSERS = <[ TERMINATOR CATCH FINALLY ELSE OUTDENT CASE DEFAULT ]>
 
 # Tokens that end a line.
 LINEBREAKS     = <[ TERMINATOR INDENT OUTDENT ]>

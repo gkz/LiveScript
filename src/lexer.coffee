@@ -106,9 +106,7 @@ exports.Lexer = class Lexer
     if not id.reserved      and id in     JS_KEYWORDS or
        not forcedIdentifier and id in COFFEE_KEYWORDS
       tag = id.toUpperCase()
-      if tag is 'WHEN' and @tag() in <[ INDENT OUTDENT TERMINATOR ]>
-        tag = 'LEADING_WHEN'
-      else if tag is 'FOR'
+      if tag is 'FOR'
         @seenFor = true
       else if tag is 'UNLESS'
         tag = 'IF'
@@ -148,16 +146,16 @@ exports.Lexer = class Lexer
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
     switch @chunk.charAt 0
-      when "'"
-        return 0 unless match = SIMPLESTR.exec @chunk
-        @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
-      when '"'
-        return 0 unless string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
-        if 0 < string.indexOf '#{', 1
-        then @interpolateString string.slice 1, -1
-        else @token 'STRING', @escapeLines string
-      else
-        return 0
+    case "'"
+      return 0 unless match = SIMPLESTR.exec @chunk
+      @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
+    case '"'
+      return 0 unless string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
+      if 0 < string.indexOf '#{', 1
+      then @interpolateString string.slice 1, -1
+      else @token 'STRING', @escapeLines string
+    default
+      return 0
     @line += count string, '\n'
     string.length
 
@@ -397,12 +395,12 @@ exports.Lexer = class Lexer
     tokens[--i][0] = 'PARAM_END'
     while tok = tokens[--i]
       switch tok[0]
-        when ')' then ++level
-        when '(', 'CALL_START'
-          if level then --level
-          else
-            tok[0] = 'PARAM_START'
-            return this
+      case ')' then ++level
+      case '(', 'CALL_START'
+        if level then --level
+        else
+          tok[0] = 'PARAM_START'
+          return this
     this
 
   # Close up all remaining open blocks at the end of the file.
@@ -523,7 +521,7 @@ JS_KEYWORDS = <[
   true false null this void super
   new do delete typeof in instanceof import
   return throw break continue debugger
-  if else switch for while try catch finally class extends
+  if else switch case default for while try catch finally class extends
 ]>
 
 # CoffeeScript-only keywords.
@@ -538,7 +536,7 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by CoffeeScript internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
-RESERVED = <[ case default function var with const let enum export native ]>
+RESERVED = <[ function var with const let enum export native ]>
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.

@@ -150,7 +150,6 @@ grammar =
     o 'ThisProperty'
     o 'Comment'
   ]
-
   ObjAssignable: [
     o 'Identifier'
     o 'AlphaNumeric'
@@ -195,7 +194,6 @@ grammar =
     o 'Param',                                  -> [$1]
     o 'ParamList , Param',                      -> $1.concat $3
   ]
-
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
@@ -203,7 +201,6 @@ grammar =
     o 'ParamVar ...',             -> new Param $1, null, true
     o 'ParamVar  =  Expression',  -> new Param $1, $3
   ]
-
   ParamVar: [
     o 'Identifier'
     o 'ThisProperty'
@@ -275,14 +272,12 @@ grammar =
     o 'CLASS EXTENDS Value
        INDENT ClassBody OUTDENT',             -> new Class null, $3, $5
   ]
-
   # Assignments that can happen directly inside a class declaration.
   ClassAssign: [
     o 'AssignObj',                                -> $1
     o 'ThisProperty : Expression',                -> new Assign new Value($1), $3, 'this'
     o 'ThisProperty : INDENT Expression OUTDENT', -> new Assign new Value($1), $4, 'this'
   ]
-
   # A list of assignments to a class.
   ClassBody: [
     o '',                                 -> []
@@ -290,7 +285,6 @@ grammar =
     o 'ClassBody TERMINATOR ClassAssign', -> $1.concat $3
     o '{ ClassBody }',                    -> $2
   ]
-
   # Extending an object by setting its prototype chain to reference a parent
   # object.
   Extends: [
@@ -341,7 +335,6 @@ grammar =
     o 'INDENT ArgList OptComma OUTDENT',                  -> $2
     o 'ArgList OptComma INDENT ArgList OptComma OUTDENT', -> $1.concat $4
   ]
-
   # Valid arguments are Expressions or Splats.
   Arg: [
     o 'Expression'
@@ -363,7 +356,6 @@ grammar =
     o 'TRY Block FINALLY Block',       -> new Try $2, null, null, $4
     o 'TRY Block Catch FINALLY Block', -> new Try $2, $3[0], $3[1], $5
   ]
-
   # A catch clause names its error and runs a block of code.
   Catch: [
     o 'CATCH Identifier Block', -> [$2, $3]
@@ -387,7 +379,6 @@ grammar =
     o 'WHILE Expression',                 -> new While $2, name: $1
     o 'WHILE Expression WHEN Expression', -> new While $2, name: $1, guard: $4
   ]
-
   # The while loop can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression. There is no do..while.
   While: [
@@ -410,7 +401,6 @@ grammar =
     o 'Expression ForBody', -> new For $1, $2
     o 'ForBody    Block',   -> new For $2, $1
   ]
-
   # An array of all accepted values for a variable inside the loop. This
   # enables support for pattern matching.
   ForValue: [
@@ -418,26 +408,22 @@ grammar =
     o 'Array',  -> new Value $1
     o 'Object', -> new Value $1
   ]
-
   ForIn: [
     o 'FORIN Expression',                               -> source: $2
     o 'FORIN Expression WHEN Expression',               -> source: $2, guard: $4
     o 'FORIN Expression BY Expression',                 -> source: $2, step: $4
     o 'FORIN Expression BY Expression WHEN Expression', -> source: $2, step: $4, guard: $6
   ]
-
   ForOf: [
     o 'FOROF Expression',                 -> object: true, source: $2
     o 'FOROF Expression WHEN Expression', -> object: true, source: $2, guard: $4
   ]
-
   ForTo: [
     o 'TO Expression',                               -> to: $2
     o 'TO Expression WHEN Expression',               -> to: $2, guard: $4
     o 'TO Expression BY Expression',                 -> to: $2, step: $4
     o 'TO Expression BY Expression WHEN Expression', -> to: $2, step: $4, guard: $6
   ]
-
   # The source of a comprehension is an array or object with an optional guard
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
@@ -452,21 +438,17 @@ grammar =
   ]
 
   Switch: [
-    o 'SWITCH Expression INDENT Whens OUTDENT',            -> new Switch $2, $4
-    o 'SWITCH Expression INDENT Whens ELSE Block OUTDENT', -> new Switch $2, $4, $6
-    o 'SWITCH INDENT Whens OUTDENT',                       -> new Switch null, $3
-    o 'SWITCH INDENT Whens ELSE Block OUTDENT',            -> new Switch null, $3, $5
+    o 'SWITCH Expression Cases',               -> new Switch $2, $3
+    o 'SWITCH Expression Cases DEFAULT Block', -> new Switch $2, $3, $5
+    o 'SWITCH Cases',                          -> new Switch null, $2
+    o 'SWITCH Cases DEFAULT Block',            -> new Switch null, $2, $4
   ]
-
-  Whens: [
-    o 'When'
-    o 'Whens When', -> $1.concat $2
+  Cases: [
+    o 'Case'
+    o 'Cases Case', -> $1.concat $2
   ]
-
-  # An individual **When** clause, with action.
-  When: [
-    o 'LEADING_WHEN SimpleArgs Block',            -> [[$2, $3]]
-    o 'LEADING_WHEN SimpleArgs Block TERMINATOR', -> [[$2, $3]]
+  Case: [
+    o 'CASE SimpleArgs Block',            -> [[$2, $3]]
   ]
 
   # The most basic form of *if* is a condition and an action. The following
@@ -477,7 +459,6 @@ grammar =
     o 'IfBlock ELSE IF Expression Block', -> $1.addElse new If $4, $5, name: $3
     o 'IfBlock ELSE Block',               -> $1.addElse $3
   ]
-
   # The full complement of *if* expressions, including postfix one-liner
   # *if* and *unless*.
   If: [
@@ -516,9 +497,8 @@ grammar =
     o 'Expression LOGIC    Expression',   -> new Op $2, $1, $3
     o 'Expression RELATION Expression',   ->
       if $2.charAt(0) is '!'
-        new Op($2.slice(1), $1, $3).invert()
-      else
-        new Op $2, $1, $3
+      then new Op($2.slice(1), $1, $3).invert()
+      else new Op $2, $1, $3
 
     o 'Expression IMPORT     Expression', -> new Import $1, $3, true
     o 'Expression IMPORT ALL Expression', -> new Import $1, $4
@@ -557,7 +537,7 @@ operators = [
   ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
   ['right',     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY',
                 'THROW', 'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'LOOP',
-                'SUPER', 'CLASS', 'EXTENDS']
+                'SWITCH', 'CASE', 'DEFAULT', 'SUPER', 'CLASS', 'EXTENDS']
   ['right',     'POST_IF']
 ]
 

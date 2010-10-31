@@ -16,11 +16,11 @@ func = ->
   true
 
 switch 'string'
-  # comment
-  when false then something()
-  # comment
-  when null
-    somethingElse()
+# comment
+case false then something()
+# comment
+case null
+  somethingElse()
 
 ->
   code()
@@ -122,7 +122,7 @@ ok result is 3
 
 
 result = switch 'z'
-  when 'z' then 7
+case 'z' then 7
 # comment
 ok result is 7
 

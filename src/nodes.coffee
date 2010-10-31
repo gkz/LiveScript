@@ -551,8 +551,8 @@ exports.Accessor = class Accessor extends Base
 
   constructor: (@name, symbol) ->
     switch symbol
-      when '?.' then @soak   = true
-      when '.=' then @assign = true
+    case '?.' then @soak   = true
+    case '.=' then @assign = true
 
   compile: (o) ->
     if (name = @name.compile o).charAt(0) in <[ \" \' ]>
@@ -572,8 +572,8 @@ exports.Index = class Index extends Base
 
   constructor: (@index, symbol) ->
     switch symbol
-      when '?[' then @soak   = true
-      when '[=' then @assign = true
+    case '?[' then @soak   = true
+    case '[=' then @assign = true
 
   compile: (o) -> "[#{ @index.compile o, LEVEL_PAREN }]"
 
@@ -1363,9 +1363,9 @@ exports.For = class For extends Base
       vars   += ', ' + step if step isnt pvar
       defPart = @tab + sourcePart + ';\n' if svar isnt sourcePart
       forPart = vars + "; #{cond}; " + ivar + switch +pvar
-        when  1 then '++'
-        when -1 then '--'
-        else (if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar)
+      case  1 then '++'
+      case -1 then '--'
+      default if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
     varPart = idt + namePart + ';\n' if namePart
     defPart += @pluckDirectCall o, body, name, index unless @pattern
     code = guardPart + varPart

@@ -27,8 +27,8 @@ ok func() is 'word'
 # And with switches.
 func = ->
   switch 'a'
-    when 'a' then 42
-    else return 23
+  case 'a' then 42
+  default return 23
 
 eq func(), 42
 
