@@ -101,4 +101,5 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 - `yes`/`no`/`on`/`off` are not reserved. Define your own or just use `true`/`false`.
 - `undefined` is not reserved.
+- `===`/`!==`/`==`/`!=` each compiles as is.
 - switch-when-else has been replaced by switch-case-default.

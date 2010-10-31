@@ -11,18 +11,19 @@ ok 50 > 10 > 5 is parseInt('5', 10)
 
 eq 1, 1 | 2 < 3 < 4
 
-ok 1 == 1 <= 1, '`x == y <= z` should become `x === y && y <= z`'
+ok 1 == 1 <= 1, '`x == y <= z` should become `x == y && y <= z`'
 
 i = 0
 ok 1 > i++ < 1, 'chained operations should evaluate each value only once'
 
 
-# `==` and `is` should be interchangeable.
-a = b = 1
+# `===` and `is` should be interchangeable.
+a = 1
+b = '1'
 
-ok a is 1 and b is 1
 ok a == b
-ok a is b
+ok not (a === b)
+ok not (a is  b)
 
 
 # Allow "if x not in y"

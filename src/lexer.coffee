@@ -124,7 +124,7 @@ exports.Lexer = class Lexer
     unless forcedIdentifier
       id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
       tag = if id is '!'                        then 'UNARY'
-      else  if id in <[ == != ]>                then 'COMPARE'
+      else  if id in <[ === !== ]>              then 'COMPARE'
       else  if id in <[ && || ]>                then 'LOGIC'
       else  if id in <[ true false null void ]> then 'LITERAL'
       else  tag
@@ -337,18 +337,19 @@ exports.Lexer = class Lexer
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
-    if      value in <[ ! ~ ]>             then tag = 'UNARY'
-    else if value in <[ . ?. .= ]>         then tag = 'ACCESS'
-    else if value in <[ * / % ]>           then tag = 'MATH'
-    else if value in <[ == != <= < > >= ]> then tag = 'COMPARE'
+    if      value in <[ ! ~ ]>       then tag = 'UNARY'
+    else if value in <[ . ?. .= ]>   then tag = 'ACCESS'
+    else if value in <[ * / % ]>     then tag = 'MATH'
+    else if value in <[ === !== <= < > >= == != ]> \
+                                     then tag = 'COMPARE'
     else if value in <[ && || & | ^ ]> or value is '?' and prev?.spaced \
-                                           then tag = 'LOGIC'
-    else if value in <[ << >> >>> ]>       then tag = 'SHIFT'
+                                     then tag = 'LOGIC'
+    else if value in <[ << >> >>> ]> then tag = 'SHIFT'
     else if value in <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
-                                           then tag = 'COMPOUND_ASSIGN'
-    else if value in <[ ?[ [= ]>           then tag = 'INDEX_START'
-    else if value is ';'                   then tag = 'TERMINATOR'
-    else if value is '@'                   then tag = 'THIS'
+                                     then tag = 'COMPOUND_ASSIGN'
+    else if value in <[ ?[ [= ]>     then tag = 'INDEX_START'
+    else if value is ';'             then tag = 'TERMINATOR'
+    else if value is '@'             then tag = 'THIS'
     else if value.charAt(0) is '@'
       @tokens.push \
         ['IDENTIFIER', 'arguments', @line],
@@ -528,8 +529,8 @@ COFFEE_KEYWORDS = <[ then unless until loop of by when ]>
 COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   and  : '&&'
   or   : '||'
-  is   : '=='
-  isnt : '!='
+  is   : '==='
+  isnt : '!=='
   not  : '!'
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
@@ -550,7 +551,8 @@ NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
 OPERATOR   = /// ^ (
   ?: [-=]>              # function
-   | [-+*/%<>&|^?.[=!]= # compound assign / compare
+   | [!=]==             # strict equality
+   | [-+*/%&|^?.[<>=!]= # compound assign / comparison
    | >>>=?              # zero-fill right shift
    | ([-+:])\1          # {in,de}crement / prototype
    | ([&|<>])\2=?       # logic / shift

@@ -441,7 +441,7 @@ exports.Call = class Call extends Base
         rite = new Value left
       rite = new Call rite, @args
       rite.new = @new
-      left = new Literal "typeof #{ left.compile o } === \"function\""
+      left = new Literal "typeof #{ left.compile o } == \"function\""
       return new If left, new Value(rite), soak: true
     for call in @digCalls()
       if ifn
@@ -509,7 +509,7 @@ exports.Call = class Call extends Base
     (function(func, args, ctor){
     #{idt}ctor.prototype = func.prototype;
     #{idt}var child = new ctor, result = func.apply(child, args);
-    #{idt}return typeof result === "object" ? result : child;
+    #{idt}return typeof result == "object" ? result : child;
     #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function(){}))
     """
 
@@ -1072,16 +1072,16 @@ exports.Op = class Op extends Base
 
   # The map of conversions from CoffeeScript to JavaScript symbols.
   CONVERSIONS:
-    '==': '==='
-    '!=': '!=='
     'of': 'in'
 
   # The map of invertible operators.
   INVERSIONS:
     '!==': '==='
     '===': '!=='
+    '!=' : '=='
+    '==' : '!='
 
-  children: <[first second ]>
+  children: <[ first second ]>
 
   constructor: (op, first, second, flip) ->
     return new In first, second if op is 'in'
@@ -1104,7 +1104,7 @@ exports.Op = class Op extends Base
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
-  isChainable: -> @operator in <[ < > >= <= === !== ]>
+  isChainable: -> @operator in <[ < > >= <= === !== == != ]>
 
   invert: ->
     if op = @INVERSIONS[@operator]
@@ -1579,7 +1579,7 @@ UTILITIES =
       function ctor(){ this.constructor = child; }
       ctor.prototype = parent.prototype;
       child.prototype = new ctor;
-      if (typeof parent.extended === "function") parent.extended(child);
+      if (typeof parent.extended == "function") parent.extended(child);
       child.__super__ = parent.prototype;
     }
   '''
@@ -1594,9 +1594,8 @@ UTILITIES =
   # Discover if an item is in an array.
   indexOf: '''
     Array.prototype.indexOf || function(item){
-      for (var i = 0, l = this.length; i < l; i++) {
+      for (var i = 0, l = this.length; i < l; ++i)
         if (this[i] === item) return i;
-      }
       return -1;
     }
   '''
