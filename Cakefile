@@ -29,7 +29,7 @@ task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) 
   console.log "Linking 'coco' to #{bin}/coco"
   exec [
     "mkdir -p #{lib} #{bin}"
-    "cp -rf bin lib LICENSE README package.json src #{lib}"
+    "cp -rf bin lib LICENSE README.md package.json src #{lib}"
     "ln -sf #{lib}/bin/coffee #{bin}/coco"
     "ln -sf #{lib}/bin/cake #{bin}/coke"
     "mkdir -p ~/.node_libraries"
