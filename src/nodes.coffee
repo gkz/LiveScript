@@ -591,31 +591,38 @@ exports.Obj = class Obj extends Base
   constructor: (props) -> @objects = @properties = props or []
 
   compileNode: (o) ->
-    for prop, i in @properties when (prop.variable or prop).base instanceof Parens
-      return @compileDynamic o, i
-    o.indent = @idt 1
-    nonComments = (prop for prop in @properties when prop not instanceof Comment)
-    lastNoncom  = last nonComments
-    props = for prop, i in @properties
-      join = if i is @properties.length - 1
+    for prop, i in @properties
+      if (prop.variable or prop).base instanceof Parens or
+         prop instanceof Splat
+        return @compileDynamic o, i
+    lastIndex = @properties.length - 1
+    for prop in @properties by -1 when prop not instanceof Comment
+      lastNonComment = prop
+      break
+    code = ''
+    idt  = o.indent = @idt 1
+    for prop, i in @properties
+      code += idt unless prop instanceof Comment
+      code += if prop instanceof Value and prop.this
+      then new Assign(prop.properties[0].name, prop, 'object').compile o
+      else if prop not instanceof [Assign, Comment]
+      then new Assign(prop, prop, 'object').compile o
+      else prop.compile o
+      code += if i is lastIndex
       then ''
-      else if prop is lastNoncom or prop instanceof Comment
+      else if prop is lastNonComment or prop instanceof Comment
       then '\n'
       else ',\n'
-      indent = if prop instanceof Comment then '' else @idt 1
-      if prop instanceof Value and prop.this
-        prop = new Assign prop.properties[0].name, prop, 'object'
-      else if prop not instanceof [Assign, Comment]
-        prop = new Assign prop, prop, 'object'
-      indent + prop.compile(o) + join
-    props .= join ''
-    obj    = "{#{ if props then '\n' + props + '\n' + @idt() else '' }}"
-    if @front then "(#{obj})" else obj
+    code = "{#{ code and '\n' + code + '\n' + @tab }}"
+    if @front then "(#{code})" else code
 
   compileDynamic: (o, idx) ->
     obj  = o.scope.freeVariable 'obj'
     code = "#{obj} = #{ new Obj(@properties.slice 0, idx).compile o }, "
     for prop, i in @properties.slice idx
+      if sp = prop instanceof Splat
+        code += new Import(new Literal(obj), prop.name, true).compile(o) + ', '
+        continue
       if prop instanceof Comment
         code += prop.compile(o) + ' '
         continue
@@ -631,7 +638,9 @@ exports.Obj = class Obj extends Base
       then '.' + key
       else '[' + key + ']'
       code += "#{obj}#{key} = #{val}, "
-    code += obj
+    if sp
+    then code .= slice 0, -2
+    else code += obj
     if o.level <= LEVEL_PAREN then code else "(#{code})"
 
   assigns: (name) ->

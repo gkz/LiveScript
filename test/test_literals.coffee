@@ -230,11 +230,15 @@ eq result.two, obj.list()[1]
 
 # Dynamic object keys.
 i = 0
+o = splat: 'me'
 obj = {
   ### leading comment  ###
   (4 * 2): 8
   ### cached shorthand ###
   (++i)
+  ###      splat       ###
+  o...
+  ({splatMe: 'too'})...
   ###   normal keys    ###
   key: ok
   's': ok
@@ -247,6 +251,8 @@ obj = {
 eq obj.interpolated.nested[123], 456
 eq obj[8], 8
 eq obj[1], 1
+eq obj.splat  , 'me'
+eq obj.splatMe, 'too'
 ok obj.key is obj.s is obj[0]
 
 eq 'braceless dynamic key',

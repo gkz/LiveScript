@@ -121,7 +121,8 @@ class exports.Rewriter
       return false if 'HERECOMMENT' in [@tag(i + 1), @tag(i - 1)]
       {(i+1): one, (i+2): two} = @tokens
       [tag] = token
-      tag in <[ TERMINATOR OUTDENT ]> and not (two?[0] is ':' or one?[0] is '(') or
+      tag in <[ TERMINATOR OUTDENT ]> and
+        not (one?[0] is '(' or two?[0] in <[ : ... ]>) or
       tag is ',' and one and
         one[0] not in <[ IDENTIFIER NUMBER STRING THISPROP TERMINATOR OUTDENT ( ]>
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
