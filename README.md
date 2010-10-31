@@ -50,14 +50,16 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 - object splat
 
-        $ coco -bpe 'O = {o..., (o.o)...}'
+        $ coco -bpe 'O = {0, o..., (o.o)..., "0"}'
         var O, _obj;
         var __import = function(obj, src, own){
           if (own) own = Object.prototype.hasOwnProperty;
           for (var key in src) if (!own || own.call(src, key)) obj[key] = src[key];
           return obj;
         };
-        O = (_obj = {}, __import(_obj, o, true), __import(_obj, o.o, true));
+        O = (_obj = __import(__import({
+          0: 0
+        }, o, true), o.o, true), _obj["0"] = "0", _obj);
 
 
 - `switch`-`case`-`default`

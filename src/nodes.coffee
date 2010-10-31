@@ -591,17 +591,17 @@ exports.Obj = class Obj extends Base
   constructor: (props) -> @objects = @properties = props or []
 
   compileNode: (o) ->
-    for prop, i in @properties
-      if (prop.variable or prop).base instanceof Parens or
-         prop instanceof Splat
-        return @compileDynamic o, i
-    lastIndex = @properties.length - 1
-    for prop in @properties by -1 when prop not instanceof Comment
+    for prop, i in props = @properties
+      if prop instanceof Splat or (prop.variable or prop).base instanceof Parens
+        rest = props.splice i
+        break
+    lastIndex = props.length - 1
+    for prop in props by -1 when prop not instanceof Comment
       lastNonComment = prop
       break
     code = ''
     idt  = o.indent = @idt 1
-    for prop, i in @properties
+    for prop, i in props
       code += idt unless prop instanceof Comment
       code += if prop instanceof Value and prop.this
       then new Assign(prop.properties[0].name, prop, 'object').compile o
@@ -614,18 +614,21 @@ exports.Obj = class Obj extends Base
       then '\n'
       else ',\n'
     code = "{#{ code and '\n' + code + '\n' + @tab }}"
+    return @compileDynamic o, code, rest if rest
     if @front then "(#{code})" else code
 
-  compileDynamic: (o, idx) ->
-    obj  = o.scope.freeVariable 'obj'
-    code = "#{obj} = #{ new Obj(@properties.slice 0, idx).compile o }, "
-    for prop, i in @properties.slice idx
+  compileDynamic: (o, code, props) ->
+    for prop, i in props
       if sp = prop instanceof Splat
-        code += new Import(new Literal(obj), prop.name, true).compile(o) + ', '
+        impt = new Import(new Literal(oref or code), prop.name, true).compile o
+        code = if oref then code + ', ' + impt else impt
         continue
       if prop instanceof Comment
-        code += prop.compile(o) + ' '
+        code += ' ' + prop.compile o
         continue
+      unless oref
+        oref = o.scope.freeVariable 'obj'
+        code = oref + ' = ' + code
       if prop instanceof Assign
         acc = prop.variable.base
         key = acc.compile o, LEVEL_PAREN
@@ -633,18 +636,16 @@ exports.Obj = class Obj extends Base
       else
         acc = prop.base
         [key, val] = acc.cache o, LEVEL_LIST, ref
-        ref = val
+        ref = val if key isnt val
       key = if acc instanceof Literal and IDENTIFIER.test key
       then '.' + key
       else '[' + key + ']'
-      code += "#{obj}#{key} = #{val}, "
-    if sp
-    then code .= slice 0, -2
-    else code += obj
+      code += ', ' + oref + key + ' = ' + val
+    code += ', ' + oref unless sp
     if o.level <= LEVEL_PAREN then code else "(#{code})"
 
   assigns: (name) ->
-    for prop in @properties when prop.assigns name then return true
+    return true for prop in @properties when prop.assigns name
     false
 
 #### Arr
