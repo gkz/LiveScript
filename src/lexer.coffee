@@ -31,9 +31,8 @@ exports.Lexer = class Lexer
   #
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
-  tokenize: (code, options) ->
-    code     = code.replace(/\r/g, '').replace TRAILING_SPACES, ''
-    o        = options or {}
+  tokenize: (code, o = {}) ->
+    code    .= replace(/\r/g, '').replace TRAILING_SPACES, ''
     @code    = code         # The remainder of the source code.
     @line    = o.line or 0  # The current line.
     @indent  = 0            # The current indentation level.
@@ -60,8 +59,7 @@ exports.Lexer = class Lexer
            do @jsToken         or
            do @literalToken
     @closeIndentation()
-    return @tokens if o.rewrite is false
-    (new Rewriter).rewrite @tokens
+    if o.rewrite is false then @tokens else new Rewriter().rewrite @tokens
 
   # Tokenizers
   # ----------
@@ -138,9 +136,8 @@ exports.Lexer = class Lexer
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
-    number = match[0]
-    @token 'NUMBER', number
-    number.length
+    @token 'NUMBER', match[0]
+    match[0].length
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
@@ -163,7 +160,7 @@ exports.Lexer = class Lexer
   # preserve whitespace, but ignore indentation to the left.
   heredocToken: ->
     return 0 unless match = HEREDOC.exec @chunk
-    heredoc = match[0]
+    [heredoc] = match
     quote = heredoc.charAt 0
     doc = @sanitizeHeredoc match[2], {quote, indent: null}
     if quote is '"' and 0 <= doc.indexOf '#{'
@@ -211,8 +208,8 @@ exports.Lexer = class Lexer
   heregexToken: (match) ->
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
-      re = body.replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
-      @token 'LITERAL', "/#{ re or '(?:)' }/#{flags}"
+      body .= replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
+      @token 'LITERAL', "/#{ body or '(?:)' }/#{flags}"
       return heregex.length
     @token 'IDENTIFIER', 'RegExp'
     @tokens.push <[ CALL_START ( ]>
@@ -221,8 +218,8 @@ exports.Lexer = class Lexer
       if tag is 'TOKENS'
         tokens.push value...
       else
-        continue unless value = value.replace HEREGEX_OMIT, ''
-        value = value.replace /\\/g, '\\\\'
+        continue unless value .= replace HEREGEX_OMIT, ''
+        value .= replace /\\/g, '\\\\'
         tokens.push ['STRING', @makeString(value, '"', true)]
       tokens.push <[ + + ]>
     tokens.pop()
@@ -282,22 +279,20 @@ exports.Lexer = class Lexer
   # inwards past several recorded indents.
   outdentToken: (moveOut, noNewlines, close) ->
     while moveOut > 0
-      len = @indents.length - 1
-      if len not of @indents
+      if (len = @indents.length - 1) < 0
         moveOut = 0
-      else if @indents[len] is @outdebt
-        moveOut -= @outdebt
+      else if (idt = @indents[len]) is @outdebt
+        moveOut -= idt
         @outdebt = 0
-      else if @indents[len] < @outdebt
-        @outdebt -= @indents[len]
-        moveOut  -= @indents[len]
+      else if idt < @outdebt
+        moveOut  -= idt
+        @outdebt -= idt
       else
-        dent = @indents.pop() - @outdebt
-        moveOut -= dent
+        moveOut -= dent = @indents.pop() - @outdebt
         @outdebt = 0
         @token 'OUTDENT', dent
     @outdebt -= moveOut if dent
-    @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR' or noNewlines
+    @token 'TERMINATOR', '\n' unless noNewlines or @tag() is 'TERMINATOR'
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
@@ -380,8 +375,8 @@ exports.Lexer = class Lexer
       while match = HEREDOC_INDENT.exec doc
         attempt = match[1]
         indent  = attempt if indent is null or 0 < attempt.length < indent.length
-    doc = doc.replace /// \n #{indent} ///g, '\n' if indent
-    doc = doc.replace /^\n/, '' unless herecomment
+    doc .= replace /// \n #{indent} ///g, '\n' if indent
+    doc .= replace /^\n/, '' unless herecomment
     doc
 
   # A source of ambiguity in our grammar used to be parameter lists in function
@@ -431,10 +426,10 @@ exports.Lexer = class Lexer
           levels.push pair
           i += open.length - 1
           break
-      break if not levels.length
+      break unless levels.length
       i += 1
-    if levels.length
-      throw SyntaxError "Unterminated #{levels.pop()[0]} starting on line #{@line + 1}"
+    if levels.length then throw SyntaxError \
+      "Unterminated #{ levels.pop()[0] } starting on line #{ @line + 1 }"
     i and str.slice 0, i
 
   # Expand variables and expressions inside double-quoted strings using
@@ -454,13 +449,14 @@ exports.Lexer = class Lexer
       if letter is '\\'
         i += 1
         continue
-      unless letter is '#' and str.charAt(i+1) is '{' and
-             (expr = @balancedString str.slice(i+1), [<[ { } ]>])
-        continue
+      continue unless letter is '#' and str.charAt(i+1) is '{' and
+                      (expr = @balancedString str.slice(i+1), [<[ { } ]>])
       tokens.push ['TO_BE_STRING', str.slice(pi, i)] if pi < i
-      inner = expr.slice(1, -1).replace(LEADING_SPACES, '').replace(TRAILING_SPACES, '')
+      inner = expr.slice(1, -1)
+              .replace( LEADING_SPACES, '')
+              .replace(TRAILING_SPACES, '')
       if inner.length
-        nested = new Lexer().tokenize inner, line: @line, rewrite: false
+        nested = new Lexer().tokenize inner, {@line, rewrite: false}
         nested.pop()
         if nested.length > 1
           nested.unshift <[ ( ( ]>
@@ -485,8 +481,7 @@ exports.Lexer = class Lexer
   # -------
 
   # Add a token to the results, taking note of the line number.
-  token: (tag, value) ->
-    @tokens.push [tag, value, @line]
+  token: (tag, value) -> @tokens.push [tag, value, @line]
 
   # Peek at a tag/value in the current token stream.
   tag  : (index, tag) ->
@@ -508,9 +503,9 @@ exports.Lexer = class Lexer
   # Constructs a string token by escaping quotes and newlines.
   makeString: (body, quote, heredoc) ->
     return quote + quote unless body
-    body = body.replace /\\([\s\S])/g, (match, contents) ->
-      if contents in ['\n', quote] then contents else match
-    body = body.replace /// #{quote} ///g, '\\$&'
+    body .= replace /\\([\s\S])/g, (match, escaped) ->
+      if escaped in ['\n', quote] then escaped else match
+    body .= replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
 
 # Constants
