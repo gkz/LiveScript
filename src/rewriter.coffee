@@ -338,7 +338,7 @@ IMPLICIT_UNSPACED_CALL = <[ + - ]>
 IMPLICIT_BLOCK = <[ -> => { [ , ]>
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END   = <[ POST_IF FOR WHILE WHEN CASE DEFAULT LOOP TERMINATOR INDENT ]>
+IMPLICIT_END   = <[ POST_IF FOR WHILE WHEN BY CASE DEFAULT LOOP TERMINATOR INDENT ]>
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.
