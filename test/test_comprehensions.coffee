@@ -19,6 +19,8 @@ nums = (i * 3 for i from 1 to 3)
 negs = (x for x from -20 to -5*2)
 eq nums.concat(negs.slice 0, 3).join(' '), '3 6 9 -20 -19 -18'
 
+eq '123', (i for i from 1 til 4     ).join ''
+eq '036', (i for i from 0 til 9 by 3).join ''
 
 # With range comprehensions, you can loop in steps.
 eq "#{ x for x from 0 to 9 by  3 }", '0,3,6,9'

@@ -7,9 +7,7 @@
 #
 # Which is a format that can be fed directly into [Jison](http://github.com/zaach/jison).
 
-{Rewriter} = require './rewriter'
-
-# Import the helpers we need.
+{Rewriter}    = require './rewriter'
 {count, last} = require './helpers'
 
 # The Lexer Class
@@ -81,7 +79,7 @@ exports.Lexer = class Lexer
       @seenFrom = true
       @token 'FROM', id
       return id.length
-    if id is 'to' and @seenFrom
+    if id in ['to', 'til'] and @seenFrom
       @seenFrom = false
       @token 'TO', id
       return id.length

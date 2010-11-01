@@ -411,20 +411,22 @@ grammar =
     o 'Object', -> new Value $1
   ]
   ForIn: [
-    o 'FORIN Expression',                               -> source: $2
-    o 'FORIN Expression WHEN Expression',               -> source: $2, guard: $4
-    o 'FORIN Expression BY Expression',                 -> source: $2, step: $4
-    o 'FORIN Expression BY Expression WHEN Expression', -> source: $2, step: $4, guard: $6
+    o 'FORIN Expression',                 -> source: $2
+    o 'FORIN Expression WHEN Expression', -> source: $2,           guard: $4
+    o 'FORIN Expression BY Expression',   -> source: $2, step: $4
+    o 'FORIN Expression BY Expression
+                        WHEN Expression', -> source: $2, step: $4, guard: $6
   ]
   ForOf: [
     o 'FOROF Expression',                 -> object: true, source: $2
     o 'FOROF Expression WHEN Expression', -> object: true, source: $2, guard: $4
   ]
   ForTo: [
-    o 'TO Expression',                               -> to: $2
-    o 'TO Expression WHEN Expression',               -> to: $2, guard: $4
-    o 'TO Expression BY Expression',                 -> to: $2, step: $4
-    o 'TO Expression BY Expression WHEN Expression', -> to: $2, step: $4, guard: $6
+    o 'TO Expression',                 -> op: $1, to: $2
+    o 'TO Expression WHEN Expression', -> op: $1, to: $2,           guard: $4
+    o 'TO Expression BY Expression',   -> op: $1, to: $2, step: $4
+    o 'TO Expression BY Expression
+                     WHEN Expression', -> op: $1, to: $2, step: $4, guard: $6
   ]
   # The source of a comprehension is an array or object with an optional guard
   # clause. If it's an array comprehension, you can also choose to step through

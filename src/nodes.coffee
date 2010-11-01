@@ -3,9 +3,7 @@
 # but some are created by other nodes as a method of code generation. To convert
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
-{Scope} = require './scope'
-
-# Import the helpers we plan to use.
+{Scope}                       = require './scope'
 {compact, flatten, del, last} = require './helpers'
 
 exports.extend = (left, rite) -> left import all rite  # for parser
@@ -1319,7 +1317,7 @@ exports.For = class For extends Base
 
   containsPureStatement: While::containsPureStatement
 
-  compileReturnValue: (val, o) ->
+  compileReturnValue: (o, val) ->
     return '\n' + new Return(new Literal val).compile o if @returns
     return '\n' + val if val
     ''
@@ -1340,15 +1338,16 @@ exports.For = class For extends Base
     scope.find index, true if index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     if @from
+      eq = if @op is 'til' then '' else '='
       [tail, tvar] = @to.compileLoopReference o, 'to'
       vars  = ivar + ' = ' + @from.compile o
       vars += ', ' + tail if tail isnt tvar
       cond = if +pvar
-      then "#{ivar} #{ if pvar < 0 then '>' else '<' }= #{tvar}"
-      else "#{pvar} < 0 ? #{ivar} >= #{tvar} : #{ivar} <= #{tvar}"
+      then "#{ivar} #{ if pvar < 0 then '>' else '<' }#{eq} #{tvar}"
+      else "#{pvar} < 0 ? #{ivar} >#{eq} #{tvar} : #{ivar} <#{eq} #{tvar}"
     else
       if name or @object and not @raw
-      then [sourcePart,  svar] = @source.compileLoopReference o, 'ref'
+      then [sourcePart , svar] = @source.compileLoopReference o, 'ref'
       else  sourcePart = svar  = @source.compile o, LEVEL_PAREN
       namePart = if @pattern
         new Assign(@name, new Literal "#{svar}[#{ivar}]").compile o, LEVEL_TOP
@@ -1380,7 +1379,7 @@ exports.For = class For extends Base
       if o.level > LEVEL_TOP or @returns
         rvar     = scope.freeVariable 'result'
         defPart += @tab + rvar + ' = [];\n'
-        retPart  = @compileReturnValue rvar, o
+        retPart  = @compileReturnValue o, rvar
         body     = Push.wrap rvar, body
       body     = Expressions.wrap [new If @guard, body] if @guard
       o.indent = idt
