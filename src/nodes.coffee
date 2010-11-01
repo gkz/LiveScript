@@ -60,7 +60,7 @@ exports.Base = class Base
       [ref, ref]
     else
       ref = new Literal reused or o.scope.freeVariable 'ref'
-      sub = new Assign ref, this
+      sub = new Assign ref, this, '='
       if level then [sub.compile(o, level), ref.value] else [sub, ref]
 
   # Compile to a source/variable pair suitable for looping.
@@ -338,11 +338,11 @@ exports.Value = class Value extends Base
     base = new Value @base, @properties.slice 0, -1
     if base.isComplex()  # `a().b`
       bref = new Literal o.scope.freeVariable 'base'
-      base = new Value new Parens new Assign bref, base
+      base = new Value new Parens new Assign bref, base, '='
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
       nref = new Literal o.scope.freeVariable 'name'
-      name = new Index new Assign nref, name.index
+      name = new Index new Assign nref, name.index, '='
       nref = new Index nref
     [base.push(name), new Value(bref or base.base, [nref or name])]
 
@@ -371,7 +371,7 @@ exports.Value = class Value extends Base
       snd = new Value @base, @properties.slice i
       if fst.isComplex()
         ref = new Literal o.scope.freeVariable 'ref'
-        fst = new Parens new Assign ref, fst
+        fst = new Parens new Assign ref, fst, '='
         snd.base = ref
       return new If new Existence(fst), snd, soak: true
     null
@@ -383,7 +383,7 @@ exports.Value = class Value extends Base
     for prop, i in @properties when prop.assign
       prop.assign = false
       [lhs, rhs] = new Value(@base, @properties.slice 0, i).cacheReference o
-      asn = new Assign lhs, new Value rhs, @properties.slice i
+      asn = new Assign lhs, new Value(rhs, @properties.slice i), '='
       asn.access = true
       return asn
     null
@@ -725,7 +725,6 @@ exports.Class = class Class extends Base
         func.name = className
         func.body.push new Return new Literal 'this'
         variable = new Value variable
-        variable.namespaced = 0 < className.indexOf '.'
         ctor = func
         ctor.comment = props.expressions.pop() if last(props.expressions) instanceof Comment
         continue
@@ -744,7 +743,7 @@ exports.Class = class Class extends Base
         accs = if prop.context is 'this'
         then [pvar.properties[0]]
         else [new Accessor(new Literal 'prototype'), new Accessor(pvar)]
-        prop = new Assign new Value(variable, accs), func
+        prop = new Assign new Value(variable, accs), func, '='
       props.push prop
 
     ctor.className = className.match /[$\w]+$/
@@ -764,6 +763,7 @@ exports.Assign = class Assign extends Base
 
   children: <[ variable value ]>
 
+  # Omit @context to declare a variable with it.
   constructor: (@variable, @value, @context) ->
 
   assigns: (name) ->
@@ -789,9 +789,7 @@ exports.Assign = class Assign extends Base
     return "#{name}: #{val}" if @context is 'object'
     unless variable.isAssignable()
       throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
-    # If the variable has not been seen yet within the current scope, declare it.
-    unless @access or isValue and (variable.namespaced or variable.hasProperties())
-      o.scope.find name
+    o.scope.find name unless @context or isValue and variable.hasProperties()
     name += " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then name else "(#{name})"
 
@@ -857,7 +855,8 @@ exports.Assign = class Assign extends Base
           acc = false
         else
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
-        val = new Value new Literal(vvar), [new (if acc then Accessor else Index) idx]
+        val = new Value new Literal(vvar),
+                        [new (if acc then Accessor else Index) idx]
       assigns.push new Assign(obj, val).compile o, LEVEL_LIST
     assigns.push vvar unless top
     code = assigns.join ', '
@@ -868,7 +867,7 @@ exports.Assign = class Assign extends Base
   # more than once.
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
-    return new Op(@context.slice(0, -1), left, new Assign(rite, @value)).compile o
+    new Op(@context.slice(0, -1), left, new Assign(rite, @value, '=')).compile o
 
   compileAccess: (o) ->
     val  = @value
@@ -1140,7 +1139,7 @@ exports.Op = class Op extends Base
   compileExistence: (o) ->
     if @first.isComplex()
       ref = o.scope.freeVariable 'ref'
-      fst = new Parens new Assign new Literal(ref), @first
+      fst = new Parens new Assign new Literal(ref), @first, '='
     else
       fst = @first
       ref = fst.compile o
@@ -1409,7 +1408,7 @@ exports.For = class For extends Base
         [val.base, base] = [base, val]
         args.unshift new Literal 'this'
       body.expressions[idx] = new Call base, args
-      defs += @tab + new Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
+      defs += @tab + new Assign(ref, fn, '=').compile(o, LEVEL_TOP) + ';\n'
     defs
 
 #### Switch

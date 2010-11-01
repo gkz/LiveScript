@@ -71,3 +71,6 @@ eq 'rest', parent.child.str
 for nonref in ['""', '0', 'f()']
   try ok not CoffeeScript.compile "{k: #{nonref}} = v"
   catch e then eq e.message, "\"#{nonref}\" cannot be assigned."
+
+
+eq Math, do -> Math or= 0
