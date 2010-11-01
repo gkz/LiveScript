@@ -66,8 +66,7 @@ exports.Base = class Base
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
-    unless NUMBER.test(src) or
-           IDENTIFIER.test(src) and o.scope.check(src, immediate: true)
+    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src, true)
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
     [src, tmp]
 
@@ -1337,8 +1336,8 @@ exports.For = class For extends Base
     ivar    = if not index then scope.freeVariable 'i' else index
     varPart = guardPart = defPart = retPart = ''
     idt     = @idt 1
-    scope.find(name,  immediate: true) if name
-    scope.find(index, immediate: true) if index
+    scope.find name,  true if name
+    scope.find index, true if index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     if @from
       [tail, tvar] = @to.compileLoopReference o, 'to'
@@ -1375,7 +1374,7 @@ exports.For = class For extends Base
       case -1 then '--' + ivar
       default ivar + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
     varPart  = idt + namePart + ';\n' if namePart
-    defPart += @pluckDirectCall o, body, name, index unless @pattern
+    defPart += @pluckDirectCalls o, body, name, index unless @pattern
     code = guardPart + varPart
     unless body.isEmpty()
       if o.level > LEVEL_TOP or @returns
@@ -1389,7 +1388,7 @@ exports.For = class For extends Base
     code = '\n' + code + '\n' + @tab if code
     defPart + @tab + "for (#{forPart}) {#{code}}" + retPart
 
-  pluckDirectCall: (o, body, name, index) ->
+  pluckDirectCalls: (o, body, name, index) ->
     defs = ''
     for expr, idx in body.expressions when (expr = do expr.unwrapAll) instanceof Call
       val = do expr.variable.unwrapAll
