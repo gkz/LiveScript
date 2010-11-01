@@ -350,7 +350,6 @@ exports.Value = class Value extends Base
   compileNode: (o) ->
     return asn.compile o if asn = @unfoldAssign o
     @base.front = @front
-    @base.newed = @newed
     props = @properties
     code  = @base.compile o, if props.length then LEVEL_ACCESS else null
     code  = "(#{code})" if props[0] instanceof Accessor and @isSimpleNumber()
@@ -1090,7 +1089,7 @@ exports.Op = class Op extends Base
     if op is 'new'
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
-      first.newed = true
+      first.keep = true
     @operator = @CONVERSIONS[op] or op
     @first    = first
     @second   = second
@@ -1272,7 +1271,7 @@ exports.Parens = class Parens extends Base
 
   children: ['expression']
 
-  constructor: (@expression) ->
+  constructor: (@expression, @keep) ->
 
   unwrap    : -> @expression
   isComplex : -> @expression.isComplex()
@@ -1281,7 +1280,7 @@ exports.Parens = class Parens extends Base
   compileNode: (o) ->
     expr = @expression
     expr.front = @front
-    return expr.compile o if not @newed and
+    return expr.compile o if not @keep and
       (expr instanceof [Value, Call, Code, Parens] or
        o.level < LEVEL_OP and expr instanceof Op)
     code = expr.compile o, LEVEL_PAREN
@@ -1555,8 +1554,7 @@ Closure =
       args.push new Literal 'arguments' if mentionsArgs
       func = new Value func, [new Accessor meth]
       func.noReturn = noReturn
-    call = new Parens new Call func, args
-    call.newed = expressions.newed
+    call = new Parens new Call(func, args), true
     if statement then Expressions.wrap [call] else call
 
   literalArgs: -> it instanceof Literal and it.value is 'arguments'

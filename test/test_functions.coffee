@@ -11,6 +11,7 @@ ok y.x() is 3
 # The empty function should not cause a syntax error.
 ->
 () ->
+(0 while 0).pop()
 
 
 # Multiple nested function declarations mixed with implicit calls should not
