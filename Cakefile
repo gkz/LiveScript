@@ -19,9 +19,9 @@ log = (message, color, explanation) ->
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `cake install`'
 
-task 'install', 'install CoffeeScript into /usr/local (or --prefix)', (options) ->
+task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
   base = options.prefix or '/usr/local'
-  lib  = "#{base}/lib/coffee-script"
+  lib  = "#{base}/lib/coco"
   bin  = "#{base}/bin"
   node = "~/.node_libraries/coco"
   console.log "Installing Coco to #{lib}"
