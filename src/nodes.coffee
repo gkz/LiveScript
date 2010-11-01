@@ -1371,11 +1371,11 @@ exports.For = class For extends Base
     else
       vars   += ', ' + step if step isnt pvar
       defPart = @tab + sourcePart + ';\n' if svar isnt sourcePart
-      forPart = vars + "; #{cond}; " + ivar + switch +pvar
-      case  1 then '++'
-      case -1 then '--'
-      default if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
-    varPart = idt + namePart + ';\n' if namePart
+      forPart = vars + "; #{cond}; " + switch +pvar
+      case  1 then '++' + ivar
+      case -1 then '--' + ivar
+      default ivar + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
+    varPart  = idt + namePart + ';\n' if namePart
     defPart += @pluckDirectCall o, body, name, index unless @pattern
     code = guardPart + varPart
     unless body.isEmpty()
