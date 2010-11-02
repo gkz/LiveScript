@@ -3,8 +3,8 @@
 # but some are created by other nodes as a method of code generation. To convert
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
-{Scope}              = require './scope'
-{flatten, del, last} = require './helpers'
+{Scope}     = require './scope'
+{del, last} = require './helpers'
 
 exports.extend = (left, rite) -> left import all rite  # for parser
 
@@ -108,9 +108,10 @@ exports.Base = class Base
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
     return this unless @children
-    for attr in @children when @[attr]
-      for child in flatten [@[attr]]
-        return this if func(child) is false
+    for name in @children when child = @[name]
+      if 'length' of child
+      then for node in child then return this if false is func node
+      else                        return this if false is func child
     this
 
   collectChildren: ->
