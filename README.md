@@ -7,6 +7,7 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
         $ coco -bpe 'location.href.=replace /^http:/, "https:"'
         location.href = location.href.replace(/^http:/, "https:");
+
         $ coco -bpe 'a[=0]'
         a = a[0];
 
@@ -15,6 +16,20 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
         $ coco -bpe '@0 @1'
         arguments[0](arguments[1]);
+
+
+- `do`
+
+  A unary operator that simply calls a function. Helps you write less parentheses.
+
+        $ coco -bpe 'do f'
+        f();
+
+        $ coco -bpe 'do ->'
+        (function(){})();
+
+        $ coco -bpe 'do =>'
+        (function(){}).call(this);
 
 
 - `instanceof []`
