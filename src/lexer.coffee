@@ -254,7 +254,6 @@ exports.Lexer = class Lexer
     return 0 unless match = MULTI_DENT.exec @chunk
     indent = match[0]
     @line += count indent, '\n'
-    prev = last @tokens, 1
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
     if size - @indebt is @indent
@@ -298,10 +297,8 @@ exports.Lexer = class Lexer
   # Matches and consumes non-meaningful whitespace. Tag the previous token
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
-    return 0 unless (match = WHITESPACE.exec @chunk) or
-                    (nline = @chunk.charAt(0) is '\n')
-    prev = last @tokens
-    prev[if match then 'spaced' else 'newLine'] = true
+    return 0 unless (match = WHITESPACE.exec @chunk) or @chunk.charAt(0) is '\n'
+    last(@tokens)[if match then 'spaced' else 'eol'] = true
     if match then match[0].length else 0
 
   # Generate a newline token. Consecutive newlines get merged together.

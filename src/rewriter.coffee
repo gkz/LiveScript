@@ -169,7 +169,7 @@ class exports.Rewriter
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or
-         tag is 'PLUS_MINUS' and not (token.spaced or token.newLine))
+         tag is 'PLUS_MINUS' and not (token.spaced or token.eol))
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + (if callObject then 2 else 1), (token, i) ->
         return true if not seenSingle and token.fromThen
