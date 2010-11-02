@@ -240,7 +240,7 @@ exports.Literal = class Literal extends Base
 
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
-  isPureStatement: -> @value in ['break', 'continue', 'debugger']
+  isPureStatement: -> @value in <[ break continue debugger ]>
 
   isAssignable: -> IDENTIFIER.test @value
 
@@ -260,8 +260,8 @@ exports.Return = class Return extends Base
 
   children: ['expression']
 
-  isStatement    : YES
-  isPureStatement: YES
+  isStatement     : YES
+  isPureStatement : YES
 
   constructor: (@expression) ->
 
@@ -298,12 +298,9 @@ exports.Value = class Value extends Base
   # Some boolean checks for the benefit of other nodes.
   isArray        : -> not @properties.length and @base instanceof Arr
   isObject       : -> not @properties.length and @base instanceof Obj
-  isComplex      : -> @hasProperties() or @base.isComplex()
-  isAssignable   : -> @hasProperties() or @base.isAssignable()
+  isComplex      : -> !!@properties.length or @base.isComplex()
+  isAssignable   : -> !!@properties.length or @base.isAssignable()
   isSimpleNumber : -> @base instanceof Literal and SIMPLENUM.test @base.value
-  isAtomic       : ->
-    return false for node in @properties.concat(@base) when node.soak
-    true
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
   assigns     : (name) -> not @properties.length and @base.assigns name
@@ -1409,31 +1406,46 @@ exports.Switch = class Switch extends Base
   isStatement: YES
 
   constructor: (@subject, @cases, @otherwise) ->
+    return if @subject
+    @subject = new Literal false
+    cs.tests = (test.invert() for test in cs.tests) for cs in @cases
 
   makeReturn: ->
-    pair[1].makeReturn() for pair in @cases
+    cs.body.makeReturn() for cs in @cases
     @otherwise?.makeReturn()
     this
 
   compileNode: (o) ->
-    {tab, subject} = this
-    idt   = o.indent = @idt 1
-    code  = tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {\n"
-    addCase = (cond) ->
-      cond .= invert() unless subject
-      code += tab + "case #{ cond.compile o, LEVEL_PAREN }:\n"
-    for [conditions, block], i in @cases
-      for cond in conditions
-        if cond.=unwrap() instanceof Arr
-        then addCase c for c in cond.objects
-        else addCase cond
-      code += body + '\n' if body = block.compile o, LEVEL_TOP
-      break if i is @cases.length - 1 and not @otherwise
-      for expr in block.expressions by -1 when expr not instanceof Comment
-        code += idt + 'break;\n' unless expr instanceof Return
+    o.indent = @idt 1
+    o.tab = tab = @tab
+    code  = tab + "switch (#{ @subject.compile o, LEVEL_PAREN }) {\n"
+    lastIndex = if @otherwise then -1 else @cases.length - 1
+    for cs, i in @cases
+      code += cs.compile o
+      break if i is lastIndex
+      for exp in cs.body.expressions by -1 when exp not instanceof Comment
+        code += o.indent + 'break;\n' unless exp instanceof Return
         break
     code += tab + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
     code +  tab + '}'
+
+#### Case
+
+exports.Case = class Case extends Base
+
+  children: <[ tests body ]>
+
+  constructor: (@tests, @body) ->
+
+  compile: (o) ->
+    code = ''
+    add  = -> code += o.tab + "case #{ it.compile o, LEVEL_PAREN }:\n"
+    for test in @tests
+      if test.=unwrap() instanceof Arr
+      then add c for c in test.objects
+      else add test
+    code += body + '\n' if body = @body.compile o, LEVEL_TOP
+    code
 
 #### If
 

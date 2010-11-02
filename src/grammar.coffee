@@ -441,11 +441,11 @@ grammar =
     o 'SWITCH Cases DEFAULT Block',            -> new Switch null, $2, $4
   ]
   Cases: [
-    o 'Case'
+    o 'Case',       -> [$1]
     o 'Cases Case', -> $1.concat $2
   ]
   Case: [
-    o 'CASE SimpleArgs Block',            -> [[$2, $3]]
+    o 'CASE SimpleArgs Block', -> new Case $2, $3
   ]
 
   # The most basic form of *if* is a condition and an action. The following
