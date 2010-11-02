@@ -1,8 +1,6 @@
-{compact, count, flatten, del, last} = CoffeeScript.helpers
+{count, flatten, del, last} = CoffeeScript.helpers
 
 array = [0, 1, 2, 3, 4]
-
-eq compact([false, 0, '', 1 % 0, null, void]).length, 0
 
 eq 3, count '123 234 345', '3'
 

@@ -3,8 +3,8 @@
 # but some are created by other nodes as a method of code generation. To convert
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
-{Scope}                       = require './scope'
-{compact, flatten, del, last} = require './helpers'
+{Scope}              = require './scope'
+{flatten, del, last} = require './helpers'
 
 exports.extend = (left, rite) -> left import all rite  # for parser
 
@@ -1393,7 +1393,7 @@ exports.For = class For extends Base
       fn   = val.base or val
       ref  = new Literal o.scope.freeVariable 'fn'
       base = new Value ref
-      args = compact [name, index]
+      args = [].concat name or [], index or []
       args.reverse() if @object
       fn.params.push new Param args[i] = new Literal a for a, i in args
       if val.base

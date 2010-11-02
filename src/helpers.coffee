@@ -2,10 +2,6 @@
 # the **Lexer**, **Rewriter**, and the **Nodes**. Merge objects, flatten
 # arrays, count characters, that sort of thing.
 
-# Trim out all falsy values from an array.
-exports.compact = (array) ->
-  item for item in array when item
-
 # Count the number of occurences of a character in a string.
 exports.count = (string, letter) ->
   num = pos = 0
