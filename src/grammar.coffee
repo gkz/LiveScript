@@ -172,15 +172,9 @@ grammar =
   # of **Expressions** preceded by a function arrow, with an optional parameter
   # list.
   Code: [
-    o 'PARAM_START ParamList PARAM_END FuncGlyph Block', -> new Code $2, $5, $4
-    o 'FuncGlyph Block',                                 -> new Code [], $2, $1
-  ]
-
-  # CoffeeScript has two different symbols for functions. `->` is for ordinary
-  # functions, and `=>` is for functions bound to the current value of *this*.
-  FuncGlyph: [
-    o '->', -> 'func'
-    o '=>', -> 'boundfunc'
+    o 'PARAM_START ParamList PARAM_END
+       FUNCTION Block', -> new Code $2, $5, $4
+    o 'FUNCTION Block', -> new Code [], $2, $1
   ]
 
   # An optional, trailing comma.

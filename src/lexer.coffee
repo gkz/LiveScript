@@ -56,7 +56,8 @@ exports.Lexer = class Lexer
            do @wordsToken      or
            do @jsToken         or
            do @literalToken
-    @closeIndentation()
+    # Close up all remaining open blocks at the end of the file.
+    @outdentToken @indent
     if o.rewrite is false then @tokens else new Rewriter().rewrite @tokens
 
   # Tokenizers
@@ -321,7 +322,10 @@ exports.Lexer = class Lexer
   literalToken: ->
     if match = OPERATOR.exec @chunk
       [value] = match
-      @tagParameters() if CODE.test value
+      if CODE.test value
+        @tagParameters()
+        @token 'FUNCTION', value
+        return value.length
     else
       value = @chunk.charAt 0
     tag  = value
@@ -400,10 +404,6 @@ exports.Lexer = class Lexer
         tok[0] = 'PARAM_START'
         return this
     this
-
-  # Close up all remaining open blocks at the end of the file.
-  closeIndentation: ->
-    @outdentToken @indent
 
   # Matches a balanced group such as a single or double-quoted string. Pass in
   # a series of delimiters, all of which must be nested correctly within the
@@ -560,7 +560,7 @@ OPERATOR   = /// ^ (
 ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
-CODE       = /^[-=]>/
+CODE       = /^[-=]>$/
 MULTI_DENT = /^(?:\n[ \t]*)+/
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/

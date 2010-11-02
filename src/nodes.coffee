@@ -879,8 +879,7 @@ exports.Code = class Code extends Base
   children: <[ params body ]>
 
   constructor: (@params = [], @body = new Expressions, tag) ->
-    @bound   = tag is 'boundfunc'
-    @context = 'this' if @bound
+    @context = 'this' if @bound = tag is '=>'
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
