@@ -158,7 +158,9 @@ exports.Expressions = class Expressions extends Base
 
   isStatement: YES
 
-  constructor: (nodes) -> @expressions = if nodes then flatten nodes else []
+  constructor: (node) ->
+    return node if node instanceof Expressions
+    @expressions = if node then [node] else []
 
   append  : -> @expressions.push    it; this
   prepend : -> @expressions.unshift it; this
@@ -224,12 +226,6 @@ exports.Expressions = class Expressions extends Base
     o.level = LEVEL_TOP
     code    = node.compile o
     if node.isStatement o then code else @tab + code + ';'
-
-  # Wrap up the given nodes as an **Expressions**, unless it already happens
-  # to be one.
-  @wrap: (nodes) ->
-    return nodes[0] if nodes.length is 1 and nodes[0] instanceof Expressions
-    new Expressions nodes
 
 #### Literal
 
@@ -697,9 +693,9 @@ exports.Class = class Class extends Base
     if @parent
       applied = new Value @parent, [new Accessor new Literal 'apply']
       ctor    = new Code [], new Expressions \
-        [new Call applied, [new Literal('this'), new Literal('arguments')]]
+        new Call applied, [new Literal('this'), new Literal('arguments')]
     else
-      ctor = new Code [], new Expressions [new Return new Literal 'this']
+      ctor = new Code [], new Expressions new Return new Literal 'this'
 
     for prop in @properties
       {variable: pvar, value: func} = prop
@@ -709,7 +705,7 @@ exports.Class = class Class extends Base
           props.append func if func isnt ref
           apply = new Call new Value(ref, [new Accessor new Literal 'apply']),
                            [new Literal('this'), new Literal('arguments')]
-          func  = new Code [], new Expressions [apply]
+          func  = new Code [], new Expressions apply
         throw SyntaxError 'cannot define a constructor as a bound function.' if func.bound
         func.name = className
         func.body.append new Return new Literal 'this'
@@ -1045,7 +1041,7 @@ exports.While = class While extends Base
         rvar = o.scope.freeVariable 'result'
         set  = "#{@tab}#{rvar} = [];\n"
         body = Push.wrap rvar, body if body
-      body = Expressions.wrap [new If @guard, body] if @guard
+      body = new Expressions new If @guard, body, {'statement'} if @guard
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code  = set + @tab + if code is 'true' then 'for (;;' else "while (#{code}"
     code += ") {#{body}}"
@@ -1299,8 +1295,8 @@ exports.For = class For extends Base
   constructor: (body, head) ->
     if head.index instanceof Value
       throw SyntaxError 'index variable of "for" cannot be destructuring'
-    this import head
-    @body    = Expressions.wrap [body]
+    this import all head
+    @body    = new Expressions body
     @step  or= new Literal 1 unless @object
     @pattern = @name instanceof Value
     @returns = false
@@ -1375,7 +1371,7 @@ exports.For = class For extends Base
         defPart += @tab + rvar + ' = [];\n'
         retPart  = @compileReturnValue o, rvar
         body     = Push.wrap rvar, body
-      body     = Expressions.wrap [new If @guard, body] if @guard
+      body     = new Expressions new If @guard, body, {'statement'} if @guard
       o.indent = idt
       code    += body.compile o, LEVEL_TOP
     code = '\n' + code + '\n' + @tab if code
@@ -1452,8 +1448,8 @@ exports.If = class If extends Base
     @isChain   = false
     {@soak, @statement} = options
 
-  bodyNode: -> @body?.unwrap()
-  elseBodyNode: -> @elseBody?.unwrap()
+  bodyNode     : -> @body    ?.unwrap()
+  elseBodyNode : -> @elseBody?.unwrap()
 
   # Rewrite a chain of **Ifs** to add a default case as the final *else*.
   addElse: (elseBody) ->
@@ -1461,7 +1457,7 @@ exports.If = class If extends Base
       @elseBodyNode().addElse elseBody
     else
       @isChain  = elseBody instanceof If
-      @elseBody = @ensureExpressions elseBody
+      @elseBody = new Expressions elseBody
     this
 
   # The **If** only compiles into a statement if either of its bodies needs
@@ -1475,14 +1471,10 @@ exports.If = class If extends Base
 
   makeReturn: ->
     if @isStatement()
-      @body     and= @ensureExpressions @body.makeReturn()
-      @elseBody and= @ensureExpressions @elseBody.makeReturn()
-      this
-    else
-      new Return this
-
-  ensureExpressions: ->
-    if it instanceof Expressions then it else new Expressions [it]
+      @body     and= new Expressions @body    .makeReturn()
+      @elseBody and= new Expressions @elseBody.makeReturn()
+      return this
+    new Return this
 
   # Compile the **If** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
@@ -1490,13 +1482,13 @@ exports.If = class If extends Base
     child    = del o, 'chainChild'
     cond     = @condition.compile o, LEVEL_PAREN
     o.indent = @idt 1
-    body     = @ensureExpressions(@body).compile o
+    body     = new Expressions(@body).compile o
     body     = "\n#{body}\n#{@tab}" if body
     ifPart   = "if (#{cond}) {#{body}}"
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
-    then @elseBodyNode().compile o import {indent: @tab, chainChild: true}
+    then @elseBodyNode().compile o import all {indent: @tab, chainChild: true}
     else "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
 
   # Compile the If as a conditional operator.
@@ -1540,7 +1532,7 @@ Closure =
   # then make sure that the closure wrapper preserves the original values.
   wrap: (expressions, statement, noReturn) ->
     return expressions if expressions.containsPureStatement()
-    func = new Code [], Expressions.wrap [expressions]
+    func = new Code [], new Expressions expressions
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or
        (               expressions.contains @literalThis)
@@ -1550,7 +1542,7 @@ Closure =
       func = new Value func, [new Accessor meth]
       func.noReturn = noReturn
     call = new Parens new Call(func, args), true
-    if statement then Expressions.wrap [call] else call
+    if statement then new Expressions call else call
 
   literalArgs: -> it instanceof Literal and it.value is 'arguments'
   literalThis: -> it instanceof Literal and it.value is 'this' or

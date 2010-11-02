@@ -33,9 +33,9 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patternString, action, options) ->
   patternString = patternString.replace /\s{2,}/g, ' '
   return [patternString, '$$ = $1;', options] unless action
-  action = if match = unwrap.exec action then match[1] else "(#{action}())"
-  action = action.replace /\bnew /g, '$&yy.'
-  action = action.replace /\b(?:Expressions\.wrap|extend)\b/g, 'yy.$&'
+  action  = if match = unwrap.exec action then match[1] else "(#{action}())"
+  action .= replace /// \b new    \s ///g, '$&yy.'
+  action .= replace /// \b extend \b ///g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
 # Grammatical Rules
@@ -64,7 +64,7 @@ grammar =
 
   # Any list of statements and expressions, seperated by line breaks or semicolons.
   Body: [
-    o 'Line',                 -> Expressions.wrap [$1]
+    o 'Line',                 -> new Expressions $1
     o 'Body TERMINATOR Line', -> $1.append $3
     o 'Body TERMINATOR'
   ]
@@ -109,8 +109,8 @@ grammar =
   # token stream.
   Block: [
     o 'INDENT Body OUTDENT', -> $2
-    o 'INDENT OUTDENT',      -> new Expressions
-    o 'TERMINATOR Comment',  -> Expressions.wrap [$2]
+    o 'INDENT      OUTDENT', -> new Expressions
+    o 'TERMINATOR Comment',  -> new Expressions $2
   ]
 
   # A literal identifier, a variable name or property.
@@ -385,14 +385,14 @@ grammar =
   # or postfix, with a single expression. There is no do..while.
   While: [
     o 'WhileSource Block',      -> $1.addBody $2
-    o 'Statement  WhileSource', -> $2.addBody Expressions.wrap [$1]
-    o 'Expression WhileSource', -> $2.addBody Expressions.wrap [$1]
+    o 'Statement  WhileSource', -> $2.addBody new Expressions $1
+    o 'Expression WhileSource', -> $2.addBody new Expressions $1
     o 'Loop',                   -> $1
   ]
 
   Loop: [
     o 'LOOP Block',      -> new While(new Literal true).addBody $2
-    o 'LOOP Expression', -> new While(new Literal true).addBody Expressions.wrap [$2]
+    o 'LOOP Expression', -> new While(new Literal true).addBody new Expressions $2
   ]
 
   # Array, object, and range comprehensions, at the most generic level.
@@ -468,9 +468,9 @@ grammar =
   If: [
     o 'IfBlock'
     o 'Statement  POST_IF Expression', ->
-      new If $3, Expressions.wrap([$1]), name: $2, statement: true
+      new If $3, new Expressions($1), name: $2, statement: true
     o 'Expression POST_IF Expression', ->
-      new If $3, Expressions.wrap([$1]), name: $2, statement: true
+      new If $3, new Expressions($1), name: $2, statement: true
   ]
 
   # Arithmetic and logical operators, working on one or more operands.
