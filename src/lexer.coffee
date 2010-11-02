@@ -37,7 +37,8 @@ exports.Lexer = class Lexer
     @indebt  = 0            # The over-indentation at the current level.
     @outdebt = 0            # The under-outdentation at the current level.
     @indents = []           # The stack of all current indentation levels.
-    @tokens  = []           # Stream of parsed tokens in the form ['TYPE', value, line]
+    # Stream of parsed tokens in the form `['TYPE', value, line]`.
+    @tokens  = [['DUMMY', '', 0]]
     # Flags for distinguishing FORIN/FOROF/FROM/TO.
     @seenFor = @seenFrom = false
     # At every position, run through this list of attempted matches,
@@ -58,6 +59,7 @@ exports.Lexer = class Lexer
            do @literalToken
     # Close up all remaining open blocks at the end of the file.
     @outdentToken @indent
+    @tokens.shift()  # dispose dummy
     if o.rewrite is false then @tokens else new Rewriter().rewrite @tokens
 
   # Tokenizers
@@ -89,11 +91,10 @@ exports.Lexer = class Lexer
       tag = 'THISPROP'
     else
       tag = 'IDENTIFIER'
-    forcedIdentifier = at or colon or if prev = last @tokens
-      if prev[1].colon2
-        @token 'ACCESS', '.'
-      else
-        prev[0] is 'ACCESS'
+    forcedIdentifier = at or colon or
+      if (prev = last @tokens)[1].colon2
+      then @token 'ACCESS', '.'
+      else prev[0] is 'ACCESS'
     if id in JS_FORBIDDEN
       if forcedIdentifier
         id = new String id
@@ -300,7 +301,7 @@ exports.Lexer = class Lexer
     return 0 unless (match = WHITESPACE.exec @chunk) or
                     (nline = @chunk.charAt(0) is '\n')
     prev = last @tokens
-    prev[if match then 'spaced' else 'newLine'] = true if prev
+    prev[if match then 'spaced' else 'newLine'] = true
     if match then match[0].length else 0
 
   # Generate a newline token. Consecutive newlines get merged together.
@@ -330,7 +331,7 @@ exports.Lexer = class Lexer
       value = @chunk.charAt 0
     tag  = value
     prev = last @tokens
-    if prev and value is '='
+    if value is '='
       pid = prev[1]
       if not pid.reserved and pid in JS_FORBIDDEN
         throw SyntaxError \
@@ -346,7 +347,7 @@ exports.Lexer = class Lexer
     else if value in <[ * / % ]>     then tag = 'MATH'
     else if value in <[ === !== <= < > >= == != ]> \
                                      then tag = 'COMPARE'
-    else if value in <[ && || & | ^ ]> or value is '?' and prev?.spaced \
+    else if value in <[ && || & | ^ ]> or value is '?' and prev.spaced \
                                      then tag = 'LOGIC'
     else if value in <[ << >> >>> ]> then tag = 'SHIFT'
     else if value in <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
@@ -364,7 +365,7 @@ exports.Lexer = class Lexer
       id.colon2 = true
       @tokens.push <[ ACCESS . ]>, ['IDENTIFIER', id, @line]
       return value.length
-    else if prev and not prev.spaced
+    else unless prev.spaced
       if value is '(' and prev[0] in CALLABLE
         prev[0] = 'FUNC_EXIST' if prev[0] is '?'
         tag = 'CALL_START'
