@@ -252,17 +252,16 @@ exports.Lexer = class Lexer
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
     return 0 unless match = MULTI_DENT.exec @chunk
-    indent = match[0]
+    [indent] = match
     @line += count indent, '\n'
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
     if size - @indebt is @indent
-      if noNewlines then @suppressNewlines() else @newlineToken()
+      @newlineToken() unless noNewlines
       return indent.length
     if size > @indent
       if noNewlines
         @indebt = size - @indent
-        @suppressNewlines()
         return indent.length
       diff = size - @indent + @outdebt
       @token 'INDENT', diff
@@ -306,19 +305,13 @@ exports.Lexer = class Lexer
     @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
     this
 
-  # Use a `\` at a line-ending to suppress the newline.
-  # The slash is removed here once its job is done.
-  suppressNewlines: ->
-    @tokens.pop() if @value() is '\\'
-    this
-
   # We treat all other single characters as a token. Eg.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
   # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   literalToken: ->
-    if match = OPERATOR.exec @chunk
+    if match = SYMBOL.exec @chunk
       [value] = match
       if CODE.test value
         @tagParameters()
@@ -352,6 +345,8 @@ exports.Lexer = class Lexer
     else if value in <[ ?[ [= ]>     then tag = 'INDEX_START'
     else if value is ';'             then tag = 'TERMINATOR'
     else if value is '@'             then tag = 'THIS'
+    else if value is '\\\n'
+      return value.length
     else if value.charAt(0) is '@'
       @tokens.push \
         ['IDENTIFIER', 'arguments', @line],
@@ -495,9 +490,7 @@ exports.Lexer = class Lexer
   # Are we in the midst of an unfinished expression?
   unfinished: ->
     LINE_CONTINUER.test(@chunk) or
-    (prev = last @tokens, 1) and prev[0] isnt 'ACCESS' and
-      (value = @value()) and not value.reserved and
-      NO_NEWLINE.test(value) and not CODE.test(value) and not ASSIGNED.test(@chunk)
+    @tag() in <[ ACCESS INDEX_START PLUS_MINUS MATH COMPARE RELATION LOGIC SHIFT ]>
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
@@ -547,7 +540,7 @@ IDENTIFIER = /// ^
 ///
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
-OPERATOR   = /// ^ (
+SYMBOL   = /// ^ (
   ?: [-=]>              # function
    | [!=]==             # strict equality
    | [-+*/%&|^?.[<>=!]= # compound assign / comparison
@@ -557,6 +550,7 @@ OPERATOR   = /// ^ (
    | \?[.[]             # soak access
    | \.{3}              # splat
    | @\d+               # argument shorthand
+   | \\\n               # continued line
 ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
@@ -586,15 +580,9 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 # Token cleaning regexes.
 MULTILINER      = /\n/g
 HEREDOC_INDENT  = /\n+([ \t]*)/g
-ASSIGNED        = /^\s*@?[$A-Za-z_][$\w]*[ \t]*?[:=][^:=>]/
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
 LEADING_SPACES  = /^\s+/
 TRAILING_SPACES = /\s+$/
-NO_NEWLINE      = /// ^ (?:            # non-capturing group
-  [-+*&|/%=<>!.\\][<>=&|]* |           # symbol operators
-  and | or | is(?:nt)? | n(?:ot|ew) |  # word operators
-  delete | typeof | instanceof
-) $ ///
 
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
