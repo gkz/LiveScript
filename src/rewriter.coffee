@@ -120,13 +120,12 @@ class exports.Rewriter
     stack = []
     start = null
     condition = (token, i) ->
-      return false if 'HERECOMMENT' in [@tag(i+1), @tag(i-1)]
-      {(i+1): one, (i+2): two} = @tokens
+      one = @tag i+1
+      return false if 'HERECOMMENT' in [one, @tag i-1]
       [tag] = token
-      tag in <[ TERMINATOR OUTDENT ]> and
-        not (one?[0] is '(' or two?[0] in <[ : ... ]>) or
-      tag is ',' and one and
-        one[0] not in <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]>
+      tag is ',' and
+        one not in <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]> or
+      tag in <[ TERMINATOR OUTDENT ]> and @tag(i+2) not in <[ : ... ]>
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
