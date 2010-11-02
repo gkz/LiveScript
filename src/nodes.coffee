@@ -207,10 +207,12 @@ exports.Expressions = class Expressions extends Base
     code    = @compileNode o
     {scope} = o
     if not o.globals and scope.hasDeclarations this
-      vars += @tab + "var #{ scope.compiledDeclarations() };\n"
+      vars += scope.declaredVariables().join ', '
     if scope.hasAssignments this
-      vars += @tab + "var #{ multident scope.compiledAssignments(), @tab };\n"
-    vars + code
+      vars += ', ' if vars
+      vars += multident scope.assignedVariables().join(', '), @tab
+    code = @tab + "var #{vars};\n" + code if vars
+    code
 
   # Compiles a single expression within the expressions body. If we need to
   # return the result, and it's an expression, simply return it. If it's a

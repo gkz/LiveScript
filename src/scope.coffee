@@ -42,8 +42,8 @@ exports.Scope = class Scope
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
-  find: (name, options) ->
-    return true if @check name, options
+  find: (name, immediate) ->
+    return true if @check name, immediate
     @add name, 'var'
     false
 
@@ -109,9 +109,3 @@ exports.Scope = class Scope
   # of this scope.
   assignedVariables: ->
     v.name + ' = ' + v.type.value for v in @variables when v.type.assigned
-
-  # Compile the JavaScript for all of the variable declarations in this scope.
-  compiledDeclarations : -> @declaredVariables().join ', '
-
-  # Compile the JavaScript for all of the variable assignments in this scope.
-  compiledAssignments  : -> @assignedVariables().join ', '
