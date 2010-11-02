@@ -519,11 +519,11 @@ exports.Import = class Import extends Base
 
   children: <[ left right ]>
 
-  constructor: (@left, @right, @own) ->
+  constructor: (@left, @right, own) ->
+    @util = if own then 'import' else 'importAll'
 
   compile: (o) ->
-    util = new Value new Literal utility if @own then 'import' else 'importAll'
-    new Call(util, [@left, @right]).compile o
+    new Call(new Value(new Literal utility @util), [@left, @right]).compile o
 
 #### Accessor
 

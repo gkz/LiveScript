@@ -74,9 +74,10 @@ exports.Lexer = class Lexer
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
-    if id is 'all' and @tag() in <[ FOR IMPORT ]>
-      @token 'ALL', id
-      return id.length
+    if id is 'all'
+      switch @tag()
+      case 'FOR'    then @token 'ALL', id; return id.length
+      case 'IMPORT' then @value 0, ''    ; return id.length
     if id is 'from' and @tag(1) is 'FOR'
       @seenFor  = false
       @seenFrom = true
@@ -319,10 +320,9 @@ exports.Lexer = class Lexer
         return value.length
     else
       value = @chunk.charAt 0
-    tag  = value
-    prev = last @tokens
-    if value is '='
-      pid = prev[1]
+    switch tag = value
+    case '='
+      pid = (prev = last @tokens)[1]
       if not pid.reserved and pid in JS_FORBIDDEN
         throw SyntaxError \
           "Reserved word \"#{pid}\" on line #{ @line + 1 } cannot be assigned"
@@ -330,28 +330,25 @@ exports.Lexer = class Lexer
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
-    switch value
     case <[ ! ~ ]>          then tag = 'UNARY'
     case <[ . ?. .= ]>      then tag = 'ACCESS'
     case <[ + - ]>          then tag = 'PLUS_MINUS'
-    case <[ ++ -- ]>        then tag = 'CREMENT'
-    case <[ * / % ]>        then tag = 'MATH'
     case <[ === !== <= < > >= == != ]> \
                             then tag = 'COMPARE'
     case <[ && || & | ^ ]>  then tag = 'LOGIC'
-    case '?'                then tag = 'LOGIC' if prev.spaced
+    case <[ * / % ]>        then tag = 'MATH'
+    case <[ ++ -- ]>        then tag = 'CREMENT'
     case <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
                             then tag = 'COMPOUND_ASSIGN'
     case <[ << >> >>> ]>    then tag = 'SHIFT'
     case <[ ?[ [= ]>        then tag = 'INDEX_START'
     case '@'                then tag = 'THIS'
     case ';'                then tag = 'TERMINATOR'
-    case '\\\n'
-      return value.length
+    case '?'                then tag = 'LOGIC' if last(@tokens).spaced
+    case '\\\n'             then return value.length
     default
       if value.charAt(0) is '@'
-        @tokens.push \
-          ['IDENTIFIER', 'arguments', @line],
+        @tokens.push ['IDENTIFIER', 'arguments', @line],
           <[ INDEX_START [ ]>, ['STRNUM', value.slice 1], <[ INDEX_END  ] ]>
         return value.length
       if value is '::'
@@ -359,7 +356,7 @@ exports.Lexer = class Lexer
         id.colon2 = true
         @tokens.push <[ ACCESS . ]>, ['IDENTIFIER', id, @line]
         return value.length
-      unless prev.spaced
+      unless (prev = last @tokens).spaced
         if value is '(' and prev[0] in CALLABLE
           prev[0] = 'FUNC_EXIST' if prev[0] is '?'
           tag = 'CALL_START'
@@ -490,8 +487,9 @@ exports.Lexer = class Lexer
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    LINE_CONTINUER.test(@chunk) or
-    @tag() in <[ ACCESS INDEX_START PLUS_MINUS MATH COMPARE RELATION LOGIC SHIFT ]>
+    LINE_CONTINUER.test(@chunk) or @tag() in <[
+      ACCESS INDEX_START PLUS_MINUS MATH COMPARE LOGIC RELATION IMPORT SHIFT
+    ]>
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->

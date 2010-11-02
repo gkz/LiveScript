@@ -487,13 +487,11 @@ grammar =
     o 'Expression SHIFT      Expression', -> new Op $2, $1, $3
     o 'Expression COMPARE    Expression', -> new Op $2, $1, $3
     o 'Expression LOGIC      Expression', -> new Op $2, $1, $3
+    o 'Expression IMPORT     Expression', -> new Import $1, $3, $2
     o 'Expression RELATION   Expression', ->
       if $2.charAt(0) is '!'
       then new Op($2.slice(1), $1, $3).invert()
       else new Op $2, $1, $3
-
-    o 'Expression IMPORT     Expression', -> new Import $1, $3, true
-    o 'Expression IMPORT ALL Expression', -> new Import $1, $4
 
     o 'SimpleAssignable COMPOUND_ASSIGN
        Expression',                       -> new Assign $1, $3, $2
