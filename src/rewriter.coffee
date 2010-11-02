@@ -126,7 +126,7 @@ class exports.Rewriter
       tag in <[ TERMINATOR OUTDENT ]> and
         not (one?[0] is '(' or two?[0] in <[ : ... ]>) or
       tag is ',' and one and
-        one[0] not in <[ IDENTIFIER NUMBER STRING THISPROP TERMINATOR OUTDENT ( ]>
+        one[0] not in <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]>
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
       if (tag = token[0]) in EXPRESSION_START
@@ -332,7 +332,7 @@ IMPLICIT_FUNC = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL = <[
-  IDENTIFIER THISPROP NUMBER STRING LITERAL THIS UNARY PARAM_START
+  IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY PARAM_START
   IF TRY SWITCH CLASS -> => [ ( { -- ++
 ]>
 

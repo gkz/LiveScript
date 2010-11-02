@@ -71,7 +71,7 @@ exports.Lexer = class Lexer
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
-    if id is 'all' and @tag() in ['FOR', 'IMPORT']
+    if id is 'all' and @tag() in <[ FOR IMPORT ]>
       @token 'ALL', id
       return id.length
     if id is 'from' and @tag(1) is 'FOR'
@@ -79,7 +79,7 @@ exports.Lexer = class Lexer
       @seenFrom = true
       @token 'FROM', id
       return id.length
-    if id in ['to', 'til'] and @seenFrom
+    if @seenFrom and id in <[ to til ]>
       @seenFrom = false
       @token 'TO', id
       return id.length
@@ -134,7 +134,7 @@ exports.Lexer = class Lexer
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
-    @token 'NUMBER', match[0]
+    @token 'STRNUM', match[0]
     match[0].length
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
@@ -143,12 +143,12 @@ exports.Lexer = class Lexer
     switch @chunk.charAt 0
     case "'"
       return 0 unless match = SIMPLESTR.exec @chunk
-      @token 'STRING', (string = match[0]).replace MULTILINER, '\\\n'
+      @token 'STRNUM', (string = match[0]).replace MULTILINER, '\\\n'
     case '"'
       return 0 unless string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
       if 0 < string.indexOf '#{', 1
       then @interpolateString string.slice 1, -1
-      else @token 'STRING', @escapeLines string
+      else @token 'STRNUM', @escapeLines string
     default
       return 0
     @line += count string, '\n'
@@ -163,7 +163,7 @@ exports.Lexer = class Lexer
     doc = @sanitizeHeredoc match[2], {quote, indent: null}
     if quote is '"' and 0 <= doc.indexOf '#{'
     then @interpolateString doc, heredoc: true
-    else @token 'STRING', @makeString doc, quote, true
+    else @token 'STRNUM', @makeString doc, quote, true
     @line += count heredoc, '\n'
     heredoc.length
 
@@ -196,7 +196,7 @@ exports.Lexer = class Lexer
     # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
     #
     # Our list is shorter, due to sans-parentheses method calls.
-    return 0 if @tag() in <[ NUMBER LITERAL ++ -- ]> or
+    return 0 if @tag() in <[ STRNUM LITERAL ++ -- ]> or
                 not match = REGEX.exec @chunk
     [regex] = match
     @token 'LITERAL', if regex is '//' then '/(?:)/' else regex
@@ -218,12 +218,12 @@ exports.Lexer = class Lexer
       else
         continue unless value .= replace HEREGEX_OMIT, ''
         value .= replace /\\/g, '\\\\'
-        tokens.push ['STRING', @makeString(value, '"', true)]
+        tokens.push ['STRNUM', @makeString(value, '"', true)]
       tokens.push <[ + + ]>
     tokens.pop()
-    @tokens.push <[ STRING "" ]>, <[ + + ]> unless tokens[0]?[0] is 'STRING'
+    @tokens.push <[ STRNUM "" ]>, <[ + + ]> unless tokens[0]?[0] is 'STRNUM'
     @tokens.push tokens...
-    @tokens.push <[ , , ]>, ['STRING', '"' + flags + '"'] if flags
+    @tokens.push <[ , , ]>, ['STRNUM', '"' + flags + '"'] if flags
     @token ')', ')'
     heregex.length
 
@@ -233,7 +233,7 @@ exports.Lexer = class Lexer
     [words] = match
     @token '[', '['
     for word in words.slice(2, -2).match(/\S+/g) or ['']
-      @tokens.push ['STRING', @makeString word, '"'], <[ , , ]>
+      @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
     @token ']', ']'
     @line += count words, '\n'
     words.length
@@ -351,7 +351,7 @@ exports.Lexer = class Lexer
     else if value.charAt(0) is '@'
       @tokens.push \
         ['IDENTIFIER', 'arguments', @line],
-        <[ INDEX_START [ ]>, ['NUMBER', value.slice 1], <[ INDEX_END  ] ]>
+        <[ INDEX_START [ ]>, ['STRNUM', value.slice 1], <[ INDEX_END  ] ]>
       return value.length
     else if value is '::'
       id = new String 'prototype'
@@ -469,14 +469,14 @@ exports.Lexer = class Lexer
       pi = i + 1
     tokens.push ['TO_BE_STRING', str.slice pi] if i > pi < str.length
     return tokens if regex
-    return @token 'STRING', '""' unless tokens.length
+    return @token 'STRNUM', '""' unless tokens.length
     tokens.unshift ['', ''] unless tokens[0][0] is 'TO_BE_STRING'
     @token '(', '(' if interpolated = tokens.length > 1
     for [tag, value], i in tokens
       @token '+', '+' if i
       if tag is 'TOKENS'
       then @tokens.push value...
-      else @token 'STRING', @makeString value, '"', heredoc
+      else @token 'STRNUM', @makeString value, '"', heredoc
     @token ')', ')' if interpolated
     tokens
 
@@ -600,4 +600,4 @@ NO_NEWLINE      = /// ^ (?:            # non-capturing group
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
 CALLABLE  = <[ IDENTIFIER THISPROP ) ] } ? SUPER THIS ]>
-INDEXABLE = CALLABLE.concat <[ NUMBER LITERAL ]>
+INDEXABLE = CALLABLE.concat <[ STRNUM LITERAL ]>

@@ -121,8 +121,7 @@ grammar =
   # Alphanumerics are separated from the other **Literal** matchers because
   # they can also serve as keys in object literals.
   AlphaNumeric: [
-    o 'NUMBER', -> new Literal $1
-    o 'STRING', -> new Literal $1
+    o 'STRNUM', -> new Literal $1
   ]
 
   # All of our immediate values. These can (in general), be passed straight
