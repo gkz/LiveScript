@@ -169,7 +169,7 @@ class exports.Rewriter
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
         (tag in IMPLICIT_CALL or
-         tag in <[ + - ]> and not (token.spaced or token.newLine))
+         tag is 'PLUS_MINUS' and not (token.spaced or token.newLine))
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + (if callObject then 2 else 1), (token, i) ->
         return true if not seenSingle and token.fromThen
@@ -325,22 +325,22 @@ for [left, rite] in BALANCED_PAIRS
 
 # Tokens that indicate the close of a clause of an expression.
 EXPRESSION_CLOSE =
-  <[ ELSE WHEN BY CATCH FINALLY CASE DEFAULT ]>.concat EXPRESSION_END
+  <[ ELSE WHEN BY TO CATCH FINALLY CASE DEFAULT ]>.concat EXPRESSION_END
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
 IMPLICIT_FUNC = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
 
 # If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
 IMPLICIT_CALL = <[
-  IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY PARAM_START FUNCTION
-  IF TRY SWITCH CLASS [ ( { -- ++
+  IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT PARAM_START FUNCTION
+  IF TRY SWITCH CLASS [ ( {
 ]>
 
 # Tokens indicating that the implicit call must enclose a block of expressions.
 IMPLICIT_BLOCK = <[ FUNCTION { [ , ]>
 
 # Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END = <[ POST_IF FOR WHILE WHEN BY CASE DEFAULT LOOP TERMINATOR INDENT ]>
+IMPLICIT_END = <[ POST_IF FOR WHILE WHEN BY TO CASE DEFAULT LOOP TERMINATOR INDENT ]>
 
 # Single-line flavors of block expressions that have unclosed endings.
 # The grammar can't disambiguate them, so we insert the implicit indentation.

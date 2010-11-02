@@ -220,9 +220,9 @@ exports.Lexer = class Lexer
         continue unless value .= replace HEREGEX_OMIT, ''
         value .= replace /\\/g, '\\\\'
         tokens.push ['STRNUM', @makeString(value, '"', true)]
-      tokens.push <[ + + ]>
+      tokens.push <[ PLUS_MINUS + ]>
     tokens.pop()
-    @tokens.push <[ STRNUM "" ]>, <[ + + ]> unless tokens[0]?[0] is 'STRNUM'
+    @tokens.push <[ STRNUM "" ]>, <[ PLUS_MINUS + ]> unless tokens[0]?[0] is 'STRNUM'
     @tokens.push tokens...
     @tokens.push <[ , , ]>, ['STRNUM', '"' + flags + '"'] if flags
     @token ')', ')'
@@ -341,6 +341,8 @@ exports.Lexer = class Lexer
         return value.length
     if      value in <[ ! ~ ]>       then tag = 'UNARY'
     else if value in <[ . ?. .= ]>   then tag = 'ACCESS'
+    else if value in <[ + - ]>       then tag = 'PLUS_MINUS'
+    else if value in <[ ++ -- ]>     then tag = 'CREMENT'
     else if value in <[ * / % ]>     then tag = 'MATH'
     else if value in <[ === !== <= < > >= == != ]> \
                                      then tag = 'COMPARE'
@@ -473,7 +475,7 @@ exports.Lexer = class Lexer
     tokens.unshift ['', ''] unless tokens[0][0] is 'TO_BE_STRING'
     @token '(', '(' if interpolated = tokens.length > 1
     for [tag, value], i in tokens
-      @token '+', '+' if i
+      @token 'PLUS_MINUS', '+' if i
       if tag is 'TOKENS'
       then @tokens.push value...
       else @token 'STRNUM', @makeString value, '"', heredoc
@@ -543,7 +545,7 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 # Token matching regexes.
 IDENTIFIER = /// ^
   ( @?[$A-Za-z_][$\w]* )
-  ( [^\n\S]* : (?!:) )?  # Is this a property name?
+  ( [^\n\S]* : (?!:)   )?  # Is this a property name?
 ///
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/

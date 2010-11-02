@@ -473,26 +473,21 @@ grammar =
   # -type rule, but in order to make the precedence binding possible, separate
   # rules are necessary.
   Operation: [
-    o 'UNARY Expression',                 -> new Op $1 , $2
-    o '-     Expression',                (-> new Op '-', $2), prec: 'UNARY'
-    o '+     Expression',                (-> new Op '+', $2), prec: 'UNARY'
+    o 'UNARY      Expression',            -> new Op $1, $2
+    o 'PLUS_MINUS Expression',           (-> new Op $1, $2), prec: 'UNARY'
 
-    o '-- SimpleAssignable',              -> new Op '--', $2
-    o '++ SimpleAssignable',              -> new Op '++', $2
-    o 'SimpleAssignable --',              -> new Op '--', $1, null, true
-    o 'SimpleAssignable ++',              -> new Op '++', $1, null, true
+    o 'CREMENT SimpleAssignable',         -> new Op $1, $2
+    o 'SimpleAssignable CREMENT',         -> new Op $2, $1, null, true
 
     # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
     o 'Expression ?',                     -> new Existence $1
 
-    o 'Expression + Expression',          -> new Op '+' , $1, $3
-    o 'Expression - Expression',          -> new Op '-' , $1, $3
-
-    o 'Expression MATH     Expression',   -> new Op $2, $1, $3
-    o 'Expression SHIFT    Expression',   -> new Op $2, $1, $3
-    o 'Expression COMPARE  Expression',   -> new Op $2, $1, $3
-    o 'Expression LOGIC    Expression',   -> new Op $2, $1, $3
-    o 'Expression RELATION Expression',   ->
+    o 'Expression PLUS_MINUS Expression', -> new Op $2, $1, $3
+    o 'Expression MATH       Expression', -> new Op $2, $1, $3
+    o 'Expression SHIFT      Expression', -> new Op $2, $1, $3
+    o 'Expression COMPARE    Expression', -> new Op $2, $1, $3
+    o 'Expression LOGIC      Expression', -> new Op $2, $1, $3
+    o 'Expression RELATION   Expression', ->
       if $2.charAt(0) is '!'
       then new Op($2.slice(1), $1, $3).invert()
       else new Op $2, $1, $3
@@ -519,13 +514,12 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  ['left',      '.', '?.', '.=']
   ['left',      'CALL_START', 'CALL_END']
-  ['nonassoc',  '++', '--']
+  ['nonassoc',  'CREMENT']
   ['left',      '?']
   ['right',     'UNARY']
   ['left',      'MATH']
-  ['left',      '+', '-']
+  ['left',      'PLUS_MINUS']
   ['left',      'SHIFT']
   ['left',      'RELATION', 'IMPORT']
   ['left',      'COMPARE']
