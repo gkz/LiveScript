@@ -313,7 +313,7 @@ exports.Lexer = class Lexer
   literalToken: ->
     if match = SYMBOL.exec @chunk
       [value] = match
-      if CODE.test value
+      if value in <[ -> => ]>
         @tagParameters()
         @token 'FUNCTION', value
         return value.length
@@ -330,39 +330,41 @@ exports.Lexer = class Lexer
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
-    if      value in <[ ! ~ ]>       then tag = 'UNARY'
-    else if value in <[ . ?. .= ]>   then tag = 'ACCESS'
-    else if value in <[ + - ]>       then tag = 'PLUS_MINUS'
-    else if value in <[ ++ -- ]>     then tag = 'CREMENT'
-    else if value in <[ * / % ]>     then tag = 'MATH'
-    else if value in <[ === !== <= < > >= == != ]> \
-                                     then tag = 'COMPARE'
-    else if value in <[ && || & | ^ ]> or value is '?' and prev.spaced \
-                                     then tag = 'LOGIC'
-    else if value in <[ << >> >>> ]> then tag = 'SHIFT'
-    else if value in <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
-                                     then tag = 'COMPOUND_ASSIGN'
-    else if value in <[ ?[ [= ]>     then tag = 'INDEX_START'
-    else if value is ';'             then tag = 'TERMINATOR'
-    else if value is '@'             then tag = 'THIS'
-    else if value is '\\\n'
+    switch value
+    case <[ ! ~ ]>          then tag = 'UNARY'
+    case <[ . ?. .= ]>      then tag = 'ACCESS'
+    case <[ + - ]>          then tag = 'PLUS_MINUS'
+    case <[ ++ -- ]>        then tag = 'CREMENT'
+    case <[ * / % ]>        then tag = 'MATH'
+    case <[ === !== <= < > >= == != ]> \
+                            then tag = 'COMPARE'
+    case <[ && || & | ^ ]>  then tag = 'LOGIC'
+    case '?'                then tag = 'LOGIC' if prev.spaced
+    case <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
+                            then tag = 'COMPOUND_ASSIGN'
+    case <[ << >> >>> ]>    then tag = 'SHIFT'
+    case <[ ?[ [= ]>        then tag = 'INDEX_START'
+    case '@'                then tag = 'THIS'
+    case ';'                then tag = 'TERMINATOR'
+    case '\\\n'
       return value.length
-    else if value.charAt(0) is '@'
-      @tokens.push \
-        ['IDENTIFIER', 'arguments', @line],
-        <[ INDEX_START [ ]>, ['STRNUM', value.slice 1], <[ INDEX_END  ] ]>
-      return value.length
-    else if value is '::'
-      id = new String 'prototype'
-      id.colon2 = true
-      @tokens.push <[ ACCESS . ]>, ['IDENTIFIER', id, @line]
-      return value.length
-    else unless prev.spaced
-      if value is '(' and prev[0] in CALLABLE
-        prev[0] = 'FUNC_EXIST' if prev[0] is '?'
-        tag = 'CALL_START'
-      else if value is '[' and prev[0] in INDEXABLE
-        tag = 'INDEX_START'
+    default
+      if value.charAt(0) is '@'
+        @tokens.push \
+          ['IDENTIFIER', 'arguments', @line],
+          <[ INDEX_START [ ]>, ['STRNUM', value.slice 1], <[ INDEX_END  ] ]>
+        return value.length
+      if value is '::'
+        id = new String 'prototype'
+        id.colon2 = true
+        @tokens.push <[ ACCESS . ]>, ['IDENTIFIER', id, @line]
+        return value.length
+      unless prev.spaced
+        if value is '(' and prev[0] in CALLABLE
+          prev[0] = 'FUNC_EXIST' if prev[0] is '?'
+          tag = 'CALL_START'
+        else if value is '[' and prev[0] in INDEXABLE
+          tag = 'INDEX_START'
     @token tag, value
     value.length
 
@@ -438,16 +440,15 @@ exports.Lexer = class Lexer
   # If it encounters an interpolation, this method will recursively create a
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
-  interpolateString: (str, options = {}) ->
-    {heredoc, regex} = options
+  interpolateString: (str, {heredoc, regex} = {}) ->
     tokens = []
     pi = 0
     i  = -1
-    while letter = str.charAt i += 1
-      if letter is '\\'
-        i += 1
+    while chr = str.charAt ++i
+      if chr is '\\'
+        ++i
         continue
-      continue unless letter is '#' and str.charAt(i+1) is '{' and
+      continue unless chr is '#' and str.charAt(i+1) is '{' and
                       (expr = @balancedString str.slice(i+1), [<[ { } ]>])
       tokens.push ['TO_BE_STRING', str.slice(pi, i)] if pi < i
       inner = expr.slice(1, -1)
@@ -554,7 +555,6 @@ SYMBOL   = /// ^ (
 ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
-CODE       = /^[-=]>$/
 MULTI_DENT = /^(?:\n[ \t]*)+/
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
