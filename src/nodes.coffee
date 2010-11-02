@@ -158,20 +158,12 @@ exports.Expressions = class Expressions extends Base
 
   isStatement: YES
 
-  constructor: (nodes) -> @expressions = compact flatten nodes or []
+  constructor: (nodes) -> @expressions = if nodes then flatten nodes else []
 
-  # Tack an expression on to the end of this expression list.
-  push: ->
-    @expressions.push it
-    this
+  append  : -> @expressions.push    it; this
+  prepend : -> @expressions.unshift it; this
+  pop     : -> @expressions.pop()
 
-  # Remove and return the last expression of this expression list.
-  pop: -> @expressions.pop()
-
-  # Add an expression at the beginning of this expression list.
-  unshift: ->
-    @expressions.unshift it
-    this
 
   # If this Expressions consists of just a single node, unwrap it by pulling
   # it back out.
@@ -211,13 +203,14 @@ exports.Expressions = class Expressions extends Base
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
+    vars    = ''
     code    = @compileNode o
     {scope} = o
+    if not o.globals and scope.hasDeclarations this
+      vars += @tab + "var #{ scope.compiledDeclarations() };\n"
     if scope.hasAssignments this
-      code = "#{@tab}var #{ multident scope.compiledAssignments(), @tab };\n#{code}"
-    if not o.globals and o.scope.hasDeclarations this
-      code = "#{@tab}var #{ scope.compiledDeclarations() };\n#{code}"
-    code
+      vars += @tab + "var #{ multident scope.compiledAssignments(), @tab };\n"
+    vars + code
 
   # Compiles a single expression within the expressions body. If we need to
   # return the result, and it's an expression, simply return it. If it's a
@@ -300,9 +293,7 @@ exports.Value = class Value extends Base
     @[tag]      = true if tag
 
   # Add a property access to the list.
-  push: (prop) ->
-    @properties.push prop
-    this
+  append: -> @properties.push it; this
 
   hasProperties: -> !!@properties.length
 
@@ -341,7 +332,7 @@ exports.Value = class Value extends Base
       nref = new Literal o.scope.freeVariable 'name'
       name = new Index new Assign nref, name.index, '='
       nref = new Index nref
-    [base.push(name), new Value(bref or base.base, [nref or name])]
+    [base.append(name), new Value(bref or base.base, [nref or name])]
 
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more insteresting if the chain of properties has *soak*
@@ -397,7 +388,7 @@ exports.Comment = class Comment extends Base
 
   makeReturn: THIS
 
-  compileNode: (o) -> @tab + '/*' + multident(@comment, @tab) + '*/'
+  compileNode: -> @tab + '/*' + multident(@comment, @tab) + '*/'
 
 #### Call
 
@@ -670,7 +661,7 @@ exports.Arr = class Arr extends Base
       "[#{objects}]"
 
   assigns: (name) ->
-    for obj in @objects when obj.assigns name then return true
+    return true for obj in @objects when obj.assigns name
     false
 
 #### Class
@@ -713,16 +704,16 @@ exports.Class = class Class extends Base
       if pvar and pvar.base.value is 'constructor'
         if func not instanceof Code
           [func, ref] = func.cache o
-          props.push func if func isnt ref
+          props.append func if func isnt ref
           apply = new Call new Value(ref, [new Accessor new Literal 'apply']),
                            [new Literal('this'), new Literal('arguments')]
           func  = new Code [], new Expressions [apply]
         throw SyntaxError 'cannot define a constructor as a bound function.' if func.bound
         func.name = className
-        func.body.push new Return new Literal 'this'
+        func.body.append new Return new Literal 'this'
         variable = new Value variable
         ctor = func
-        ctor.comment = props.expressions.pop() if last(props.expressions) instanceof Comment
+        ctor.comment = props.pop() if last(props.expressions) instanceof Comment
         continue
       if func instanceof Code and func.bound
         if prop.context is 'this'
@@ -732,18 +723,18 @@ exports.Class = class Class extends Base
           constScope or= new Scope o.scope, ctor.body, ctor
           me or= constScope.freeVariable 'this'
           pname = pvar.compile o
-          ctor.body.push new Return new Literal 'this' if ctor.body.isEmpty()
+          ctor.body.append  new Return new Literal 'this' if ctor.body.isEmpty()
           ret = "return #{className}.prototype.#{pname}.apply(#{me}, arguments);"
-          ctor.body.unshift new Literal "this.#{pname} = function(){ #{ret} }"
+          ctor.body.prepend new Literal "this.#{pname} = function(){ #{ret} }"
       if pvar
         accs = if prop.context is 'this'
         then [pvar.properties[0]]
         else [new Accessor(new Literal 'prototype'), new Accessor(pvar)]
         prop = new Assign new Value(variable, accs), func, '='
-      props.push prop
+      props.append prop
 
     ctor.className = className.match /[$\w]+$/
-    ctor.body.unshift new Literal "#{me} = this" if me
+    ctor.body.prepend new Literal "#{me} = this" if me
     o.sharedScope = constScope
     code  = @tab + new Assign(variable, ctor).compile(o) + ';'
     code += '\n' + @tab + extension.compile(o) + ';' if extension
@@ -810,10 +801,9 @@ exports.Assign = class Assign extends Base
           idx = if isObject
           then (if obj.this then obj.properties[0].name else obj)
           else new Literal 0
-      acc   = IDENTIFIER.test idx.unwrap().value or 0
-      value = new Value value
-      value.properties.push new (if acc then Accessor else Index) idx
-      return new Assign(obj, value).compile o
+      acc = IDENTIFIER.test idx.unwrap().value or 0
+      val = new Value(value).append new (if acc then Accessor else Index) idx
+      return new Assign(obj, val).compile o
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
     splat   = false
@@ -1391,10 +1381,10 @@ exports.For = class For extends Base
 
   pluckDirectCalls: (o, body, name, index) ->
     defs = ''
-    for expr, idx in body.expressions when (expr = do expr.unwrapAll) instanceof Call
-      val = do expr.variable.unwrapAll
+    for exp, idx in body.expressions when (exp = do exp.unwrapAll) instanceof Call
+      val = do exp.variable.unwrapAll
       continue unless \
-        val instanceof Code and not expr.args.length or
+        val instanceof Code and not exp.args.length or
           val instanceof Value and val.base instanceof Code and
           val.properties.length is 1 and
           val.properties[0].name?.value is 'call'
@@ -1535,7 +1525,7 @@ exports.If = class If extends Base
 Push =
   wrap: (name, exps) ->
     return exps if exps.isEmpty() or last(exps.expressions).containsPureStatement()
-    exps.push new Call \
+    exps.append new Call \
       new Value(new Literal(name), [new Accessor new Literal 'push']), [exps.pop()]
 
 #### Closure

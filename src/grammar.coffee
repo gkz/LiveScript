@@ -65,7 +65,7 @@ grammar =
   # Any list of statements and expressions, seperated by line breaks or semicolons.
   Body: [
     o 'Line',                 -> Expressions.wrap [$1]
-    o 'Body TERMINATOR Line', -> $1.push $3
+    o 'Body TERMINATOR Line', -> $1.append $3
     o 'Body TERMINATOR'
   ]
 
@@ -218,7 +218,7 @@ grammar =
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
     o 'Identifier',          -> new Value $1
-    o 'Value      Accessor', -> $1.push $2
+    o 'Value      Accessor', -> $1.append $2
     o 'Invocation Accessor', -> new Value $1, [$2]
     o 'ThisProperty'
   ]
