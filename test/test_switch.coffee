@@ -30,26 +30,11 @@ ok !func(3)
 eq func(8), undefined
 
 
-# Ensure that trailing switch elses don't get rewritten.
-result = false
-switch "word"
-case "one thing"
-  doSomething()
-default
-  result = true unless false
-
-ok result
-
-result = false
-switch "word"
-case "one thing"
-  doSomething()
-case "other thing"
-  doSomething()
-default
-  result = true unless false
-
-ok result
+ok (switch "words"
+case (<[ nonbare words ]>) then false
+case  <[    bare words ]>  then true
+default false
+), '`case`s can take bare arrays'
 
 
 # Should be able to handle switches sans-condition.

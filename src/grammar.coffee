@@ -340,8 +340,8 @@ grammar =
   # this to be separate from the **ArgList** for use in **Switch** blocks, where
   # having the newlines wouldn't make sense.
   SimpleArgs: [
-    o 'Expression'
-    o 'SimpleArgs , Expression', -> [].concat $1, $3
+    o 'Expression',              -> [$1]
+    o 'SimpleArgs , Expression', -> $1.concat $3
   ]
 
   # The variants of *try/catch/finally* exception handling blocks.

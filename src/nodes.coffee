@@ -1415,13 +1415,17 @@ exports.Switch = class Switch extends Base
     this
 
   compileNode: (o) ->
-    {tab} = this
+    {tab, subject} = this
     idt   = o.indent = @idt 1
     code  = tab + "switch (#{ @subject?.compile(o, LEVEL_PAREN) or false }) {\n"
+    addCase = (cond) ->
+      cond .= invert() unless subject
+      code += tab + "case #{ cond.compile o, LEVEL_PAREN }:\n"
     for [conditions, block], i in @cases
-      for cond in flatten [conditions]
-        cond .= invert() unless @subject
-        code += tab + "case #{ cond.compile o, LEVEL_PAREN }:\n"
+      for cond in conditions
+        if cond.=unwrap() instanceof Arr
+        then addCase c for c in cond.objects
+        else addCase cond
       code += body + '\n' if body = block.compile o, LEVEL_TOP
       break if i is @cases.length - 1 and not @otherwise
       for expr in block.expressions by -1 when expr not instanceof Comment
