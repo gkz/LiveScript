@@ -135,17 +135,19 @@ grammar =
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o 'Assignable = Expression',                -> new Assign $1, $3
-    o 'Assignable = INDENT Expression OUTDENT', -> new Assign $1, $4
+    o 'Assignable  = Expression',                -> new Assign $1, $3
+    o 'Assignable  = INDENT Expression OUTDENT', -> new Assign $1, $4
+    o 'Assignable := Expression',                -> new Assign $1, $3, '='
+    o 'Assignable := INDENT Expression OUTDENT', -> new Assign $1, $4, '='
   ]
 
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
     o 'ObjAssignable',              -> new Value $1
-    o 'ObjAssignable : Expression', -> new Assign new Value($1), $3, 'object'
+    o 'ObjAssignable : Expression', -> new Assign new Value($1), $3, ':'
     o 'ObjAssignable :
-       INDENT Expression OUTDENT',  -> new Assign new Value($1), $4, 'object'
+       INDENT Expression OUTDENT',  -> new Assign new Value($1), $4, ':'
     o 'Identifier    ...',          -> new Splat $1
     o 'Parenthetical ...',          -> new Splat $1
     o 'ThisProperty'
@@ -523,7 +525,7 @@ operators = [
   ['left',      'COMPARE']
   ['left',      'LOGIC']
   ['nonassoc',  'INDENT', 'OUTDENT']
-  ['right',     '=', ':', 'COMPOUND_ASSIGN', 'RETURN']
+  ['right',     ':', '=', ':=', 'COMPOUND_ASSIGN', 'RETURN']
   ['right',     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY',
                 'THROW', 'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'LOOP',
                 'SWITCH', 'CASE', 'DEFAULT', 'SUPER', 'CLASS', 'EXTENDS']

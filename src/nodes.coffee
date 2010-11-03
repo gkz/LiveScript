@@ -586,9 +586,9 @@ exports.Obj = class Obj extends Base
     for prop, i in props
       code += idt unless prop instanceof Comment
       code += if prop instanceof Value and prop.this
-      then new Assign(prop.properties[0].name, prop, 'object').compile o
+      then new Assign(prop.properties[0].name, prop, ':').compile o
       else if prop not instanceof [Assign, Comment]
-      then new Assign(prop, prop, 'object').compile o
+      then new Assign(prop, prop, ':').compile o
       else prop.compile o
       code += if i is lastIndex
       then ''
@@ -750,7 +750,7 @@ exports.Assign = class Assign extends Base
   constructor: (@variable, @value, @context) ->
 
   assigns: (name) ->
-    @[if @context is 'object' then 'value' else 'variable'].assigns name
+    @[if @context is ':' then 'value' else 'variable'].assigns name
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, 'variable'
 
@@ -769,7 +769,7 @@ exports.Assign = class Assign extends Base
     if value instanceof Code and match = METHOD_DEF.exec name
       [_, value.clas, value.name] = match
     val = value.compile o, LEVEL_LIST
-    return "#{name}: #{val}" if @context is 'object'
+    return "#{name}: #{val}" if @context is ':'
     unless variable.isAssignable()
       throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
     o.scope.find name unless @context or isValue and variable.hasProperties()
@@ -799,7 +799,7 @@ exports.Assign = class Assign extends Base
           else new Literal 0
       acc = IDENTIFIER.test idx.unwrap().value or 0
       val = new Value(value).append new (if acc then Accessor else Index) idx
-      return new Assign(obj, val).compile o
+      return new Assign(obj, val, @context).compile o
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
     splat   = false
@@ -839,7 +839,7 @@ exports.Assign = class Assign extends Base
           acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar),
                         [new (if acc then Accessor else Index) idx]
-      assigns.push new Assign(obj, val).compile o, LEVEL_LIST
+      assigns.push new Assign(obj, val, @context).compile o, LEVEL_LIST
     assigns.push vvar unless top
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
@@ -852,8 +852,7 @@ exports.Assign = class Assign extends Base
     new Op(@context.slice(0, -1), left, new Assign(rite, @value, '=')).compile o
 
   compileAccess: (o) ->
-    val  = @value
-    val .= variable if call = val instanceof Call
+    val .= variable if (val = @value) instanceof Call
     unless val instanceof Value and
         ((base = val.base) instanceof Literal or
          base instanceof Arr and base.objects.length is 1)
@@ -900,12 +899,12 @@ exports.Code = class Code extends Base
       if param.isComplex()
         val = ref = param.asReference o
         val = new Op '?', ref, param.value if param.value
-        exprs.push new Assign new Value(param.name), val, '='
+        exprs.push new Assign new Value(param.name), val
       else
         ref = param
         if param.value
           lit = new Literal ref.name.value + ' == null'
-          val = new Assign new Value(param.name), param.value, '='
+          val = new Assign new Value(param.name), param.value
           exprs.push new Op '&&', lit, val
       vars.push ref unless splats
     scope.startLevel()

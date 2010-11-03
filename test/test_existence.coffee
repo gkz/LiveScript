@@ -6,12 +6,11 @@ ok(if mySpecialVariable? then true else false)
 
 
 # Existential assignment.
-a = 5
-a = null
+a  = null
 a ?= 10
 b ?= 10
-
-ok a is 10 and b is 10
+eq a, 10
+eq b, 10
 
 
 # The existential operator.

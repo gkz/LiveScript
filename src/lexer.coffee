@@ -312,21 +312,18 @@ exports.Lexer = class Lexer
   # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   literalToken: ->
-    if match = SYMBOL.exec @chunk
-      [value] = match
-      if value in <[ -> => ]>
-        @tagParameters()
-        @token 'FUNCTION', value
-        return value.length
-    else
-      value = @chunk.charAt 0
+    [value] = SYMBOL.exec @chunk
+    if value in <[ -> => ]>
+      @tagParameters()
+      @token 'FUNCTION', value
+      return value.length
     switch tag = value
-    case '='
-      pid = (prev = last @tokens)[1]
-      if not pid.reserved and pid in JS_FORBIDDEN
+    case <[ = := ]>
+      pval = (prev = last @tokens)[1]
+      if not pval.reserved and pval in JS_FORBIDDEN
         throw SyntaxError \
-          "Reserved word \"#{pid}\" on line #{ @line + 1 } cannot be assigned"
-      if pid in <[ || && ]>
+          "Reserved word \"#{pval}\" on line #{ @line + 1 } cannot be assigned"
+      if value is '=' and pval in <[ || && ]>
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
@@ -534,22 +531,23 @@ JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
 IDENTIFIER = /// ^
-  ( @?[$A-Za-z_][$\w]* )
-  ( [^\n\S]* : (?!:)   )?  # Is this a property name?
+  ( @? [$A-Za-z_][$\w]* )
+  ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 ///
 NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
 HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
 SYMBOL   = /// ^ (
-  ?: [-=]>              # function
-   | [!=]==             # strict equality
-   | [-+*/%&|^?.[<>=!]= # compound assign / comparison
-   | >>>=?              # zero-fill right shift
-   | ([-+:])\1          # {in,de}crement / prototype
-   | ([&|<>])\2=?       # logic / shift
-   | \?[.[]             # soak access
-   | \.{3}              # splat
-   | @\d+               # argument shorthand
-   | \\\n               # continued line
+  ?: [-=]>                # function
+   | [!=]==               # strict equality
+   | [-+*/%&|^?:.[<>=!]=  # compound assign / comparison
+   | >>>=?                # zero-fill right shift
+   | ([-+:])\1            # {in,de}crement / prototype access
+   | ([&|<>])\2=?         # logic / shift
+   | \?[.[]               # soak access
+   | \.{3}                # splat
+   | @\d+                 # argument shorthand
+   | \\\n                 # continued line
+   | \S
 ) ///
 WHITESPACE = /^[ \t]+/
 COMMENT    = /^###([^#][\s\S]*?)(?:###[ \t]*\n|(?:###)?$)|^(?:\s*#(?!##[^#]).*)+/
