@@ -45,12 +45,13 @@ exports.OptionParser = class OptionParser
   # of the valid options, for `--help` and such.
   help: ->
     lines = ['Available options:']
-    lines.unshift "#{@banner}\n" if @banner
+    lines.unshift @banner + '\n' if @banner
+    width = Math.max (rule.longFlag.length for rule in @rules)...
+    pad   = Array(width).join ' '
     for rule in @rules
-      spaces  = 15 - rule.longFlag.length
-      spaces  = if spaces > 0 then Array(spaces + 1).join ' ' else ''
-      letPart = if rule.shortFlag then rule.shortFlag + ', '  else '    '
-      lines.push '  ' + letPart + rule.longFlag + spaces + rule.description
+      sf = if rule.shortFlag then rule.shortFlag + ','  else '   '
+      lf = (rule.longFlag + pad).slice 0, width
+      lines.push "  #{sf} #{lf}  #{rule.description}"
     "\n#{ lines.join '\n' }\n"
 
 # Helpers
