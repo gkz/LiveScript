@@ -3,6 +3,15 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 ### Additions
 
+- `:=`
+
+  Assigns without declaring a variable.
+
+        $ coco -bpe 'a := b = c'
+        var b;
+        a = b = c;
+
+
 - `.=` / `[=`
 
         $ coco -bpe 'location.href.=replace /^http:/, "https:"'
@@ -114,6 +123,7 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 ### Incompatibilities
 
+- Assigning to a variable with `=` declares it on the _current_ scope. Use `:=` to modify variables declared on upper scopes.
 - `yes`/`no`/`on`/`off` are not reserved. Define your own or just use `true`/`false`.
 - `undefined` is not reserved.
 - `===`/`!==`/`==`/`!=` each compiles as is.

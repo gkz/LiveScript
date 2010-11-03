@@ -64,7 +64,7 @@ exports.Base = class Base
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
-    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src, true)
+    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src)
       src = "#{ tmp = o.scope.freeVariable name } = #{src}"
     [src, tmp]
 
@@ -84,7 +84,7 @@ exports.Base = class Base
     contains = false
     @traverseChildren false, ->
       if pred it
-        contains = true
+        contains := true
         return false
     contains
 
@@ -1243,7 +1243,7 @@ exports.Existence = class Existence extends Base
 
   compileNode: (o) ->
     code = @expression.compile o
-    code = if IDENTIFIER.test(code) and not o.scope.check code
+    code = if IDENTIFIER.test(code) and not o.scope.check code, true
     then "typeof #{code} != \"undefined\" && #{code} !== null"
     else "#{code} != null"
     if o.level <= LEVEL_COND then code else "(#{code})"
@@ -1321,8 +1321,8 @@ exports.For = class For extends Base
     ivar    = if not index then scope.freeVariable 'i' else index
     varPart = guardPart = defPart = retPart = ''
     idt     = @idt 1
-    scope.find name,  true if name
-    scope.find index, true if index
+    scope.find name  if name
+    scope.find index if index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     if @from
       eq = if @op is 'til' then '' else '='

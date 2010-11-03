@@ -13,8 +13,8 @@ CoffeeScript   = require './coffee-script'
 {EventEmitter} = require 'events'
 
 # Allow CoffeeScript to emit Node.js events, and add it to global scope.
-CoffeeScript import all new EventEmitter
-global.CoffeeScript = CoffeeScript
+(global.CoffeeScript = CoffeeScript) import all new EventEmitter
+
 
 # The help banner that is printed when `coffee` is called without arguments.
 BANNER = '''
@@ -144,8 +144,7 @@ writeJs = (source, js, base) ->
   dir       = if opts.output then path.join opts.output, baseDir else srcDir
   jsPath    = path.join dir, filename
   compile   = ->
-    js = ' ' if js.length <= 0
-    fs.writeFile jsPath, js, (err) ->
+    fs.writeFile jsPath, js or ' ', (err) ->
       if err then console.log err.message
       else if opts.compile and opts.watch then console.log "Compiled #{source}"
   path.exists dir, (exists) ->
@@ -172,12 +171,12 @@ printTokens = (tokens) ->
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
-  optionParser  = new optparse.OptionParser SWITCHES, BANNER
-  o = opts      = optionParser.parse process.argv.slice 2
-  o.compile     or=  !!o.output
+  optionParser := new optparse.OptionParser SWITCHES, BANNER
+  o = opts     := optionParser.parse process.argv.slice 2
+  o.compile   or= !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or (o.eval or o.stdio and o.compile))
-  sources       = o.arguments
+  sources      := o.arguments
 
 # The compile-time options to pass to the CoffeeScript compiler.
 compileOptions = (fileName) -> {fileName, bare: opts.bare}

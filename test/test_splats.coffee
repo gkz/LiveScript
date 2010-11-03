@@ -9,11 +9,11 @@ ok result is "3 4 5"
 gold = silver = bronze = theField = last = null
 
 medalists = (first, second, third, rest..., unlucky) ->
-  gold     = first
-  silver   = second
-  bronze   = third
-  theField = rest.concat([last])
-  last     = unlucky
+  gold     := first
+  silver   := second
+  bronze   := third
+  theField := rest.concat([last])
+  last     := unlucky
 
 contenders = [
   "Michael Phelps"
@@ -30,11 +30,11 @@ contenders = [
 
 medalists "Mighty Mouse", contenders...
 
-ok gold is "Mighty Mouse"
-ok silver is "Michael Phelps"
-ok bronze is "Liu Xiang"
-ok last is "Usain Bolt"
-ok theField.length is 8
+eq gold   , "Mighty Mouse"
+eq silver , "Michael Phelps"
+eq bronze , "Liu Xiang"
+eq last   , "Usain Bolt"
+eq theField.length, 8
 
 contenders.reverse()
 medalists contenders.slice(0, 2)..., "Mighty Mouse", contenders.slice(2)...
@@ -96,7 +96,7 @@ ok (new Child).meth().join(' ') is '3 2 1'
 # Functions with splats being called with too few arguments.
 pen = null
 method = (first, variable..., penultimate, ultimate) ->
-  pen = penultimate
+  pen := penultimate
 
 method 1, 2, 3, 4, 5, 6, 7, 8, 9
 ok pen is 8

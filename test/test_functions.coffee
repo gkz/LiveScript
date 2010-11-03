@@ -202,12 +202,10 @@ ok constructor isnt 'word'
 
 # Trying an implicit object call with a trailing function.
 a = null
-meth = (arg, obj, func) -> a = [obj.a, arg, func()].join ' '
-
+meth = (arg, obj, func) -> a := [obj.a, arg, func()].join ' '
 meth 'apple', b: 1, a: 13, ->
   'orange'
-
-ok a is '13 apple orange'
+eq a, '13 apple orange'
 
 
 # Ensure that empty functions don't return mistaken values.
@@ -284,9 +282,7 @@ eq func(), 5
 result = null
 obj =
   method: (val)  -> this
-  second: (hash) -> result = hash.three
-
-
+  second: (hash) -> result := hash.three
 obj
   .method(
     101
@@ -295,7 +291,6 @@ obj
       two: 2
     three: 3
   )
-
 eq result, 3
 
 

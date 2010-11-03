@@ -42,8 +42,8 @@ exports.Scope = class Scope
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
-  find: (name, immediate) ->
-    return true if @check name, immediate
+  find: (name, above) ->
+    return true if @check name, above
     @add name, 'var'
     false
 
@@ -54,13 +54,13 @@ exports.Scope = class Scope
 
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.
-  parameter: (name) -> @add name, 'param'
+  parameter: -> @add it, 'param'
 
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
-  check: (name, immediate) ->
+  check: (name, above) ->
     found = !!@type name
-    return found if found or immediate
+    return found if found or not above
     !!@parent?.check name
 
   # Generate a temporary variable name at the given index.
@@ -78,7 +78,7 @@ exports.Scope = class Scope
   # compiler-generated variable. `_var`, `_var2`, and so on...
   freeVariable: (type) ->
     index = 0
-    index++ while @check((temp = @temporary type, index), true) and
+    index++ while @check(temp = @temporary type, index) and
                   @type(temp) isnt 'reuse'
     @add temp, 'var'
     @garbage[@garbage.length - 1]?.push temp

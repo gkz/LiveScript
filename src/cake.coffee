@@ -47,9 +47,9 @@ exports.run = ->
     throw new Error("Cakefile not found in #{process.cwd()}") unless exists
     args = process.argv.slice 2
     CoffeeScript.run fs.readFileSync('Cakefile').toString(), fileName: 'Cakefile'
-    oparse = new optparse.OptionParser switches
+    oparse  := new optparse.OptionParser switches
     return printTasks() unless args.length
-    options = oparse.parse(args)
+    options := oparse.parse args
     invoke arg for arg in options.arguments
 
 # Display the list of Cake tasks in a format similar to `rake -T`

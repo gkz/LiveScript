@@ -64,7 +64,7 @@ ok 5 is singleLiner[2][2][1]
 
 # Comprehensions within parentheses.
 result = null
-store = (obj) -> result = obj
+store = -> result := it
 store (x * 2 for x in [3, 2, 1])
 
 ok result.join(' ') is '6 4 2'
@@ -90,17 +90,6 @@ all = (value for all key, value of whiskers)
 ok own.join(' ') is 'Whiskers'
 ok all.sort().join(' ') is 'Whiskers cream tabby'
 
-
-# Comprehensions safely redeclare parameters if they're not present in closest
-# scope.
-rule = (x) -> x
-
-learn = ->
-  rule for rule in [1, 2, 3]
-
-ok learn().join(' ') is '1 2 3'
-
-ok rule(101) is 101
 
 f = -> [-> ok false, 'should cache source']
 ok true for k of [f] = f()

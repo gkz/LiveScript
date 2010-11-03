@@ -132,7 +132,7 @@ class exports.Rewriter
         stack.push [(if tag is 'INDENT' and @tag(i-1) is '{' then '{' else tag), i]
         return 1
       if tag in EXPRESSION_END
-        start = stack.pop()
+        start := stack.pop()
         return 1
       return 1 unless tag is ':' and
         (@tag(i-2) is ':' or  # a: b:
@@ -158,12 +158,12 @@ class exports.Rewriter
     @scanTokens (token, i, tokens) ->
       {(i-1): prev, (i+1): next} = tokens
       [tag]      = token
-      classLine  = true if tag is 'CLASS'
+      classLine := true if tag is 'CLASS'
       callObject = not classLine and tag is 'INDENT' and
                    next and next.generated and next[0] is '{' and
                    prev and prev[0] in IMPLICIT_FUNC
       seenSingle = false
-      classLine  = false if tag in LINEBREAKS
+      classLine := false if tag in LINEBREAKS
       token.call = true  if tag is '?' and prev and not prev.spaced
       return 1 unless callObject or
         prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
@@ -173,7 +173,7 @@ class exports.Rewriter
       @detectEnd i + (if callObject then 2 else 1), (token, i) ->
         return true if not seenSingle and token.fromThen
         [tag] = token
-        seenSingle = true if tag in <[ IF ELSE FUNCTION ]>
+        seenSingle := true if tag in <[ IF ELSE FUNCTION ]>
         return true if tag is 'ACCESS' and @tag(i-1) is 'OUTDENT'
         not token.generated and @tag(i-1) isnt ',' and tag in IMPLICIT_END and
         (tag isnt 'INDENT' or

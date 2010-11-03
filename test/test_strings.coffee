@@ -92,7 +92,7 @@ ok "#{a}#{b}#{c}" is '123'
 
 
 result = null
-stash = (str) -> result = str
+stash = -> result := it
 stash "a #{ ('aa').replace /a/g, 'b' } c"
 ok result is 'a bb c'
 
