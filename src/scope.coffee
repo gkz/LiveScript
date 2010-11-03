@@ -61,7 +61,7 @@ exports.Scope = class Scope
   check: (name, above) ->
     found = !!@type name
     return found if found or not above
-    !!@parent?.check name
+    !!@parent?.check name, above
 
   # Generate a temporary variable name at the given index.
   temporary: (name, index) ->

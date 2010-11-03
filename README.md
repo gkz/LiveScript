@@ -5,11 +5,14 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 - `:=`
 
-  Assigns without declaring a variable.
+  Assigns to a declared variable.
 
-        $ coco -bpe 'a := b = c'
-        var b;
-        a = b = c;
+        $ coco -bpe 'a := a = 1'
+        var a;
+        a = a = 1;
+
+        $ coco -bpe 'a = a := 1'
+        ReferenceError: assignment to undeclared variable "a"
 
 
 - `.=` / `[=`

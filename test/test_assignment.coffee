@@ -73,7 +73,8 @@ for nonref in ['""', '0', 'f()']
   catch e then eq e.message, "\"#{nonref}\" cannot be assigned."
 
 
-eq Math, do -> Math or= 0
+try ok not CoffeeScript.compile 'Math or= 0'
+catch e then eq e.message, 'assignment to undeclared variable "Math"'
 
 
 # Simple variable swapping.

@@ -771,8 +771,13 @@ exports.Assign = class Assign extends Base
     val = value.compile o, LEVEL_LIST
     return "#{name}: #{val}" if @context is ':'
     unless variable.isAssignable()
-      throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned."
-    o.scope.find name unless @context or isValue and variable.hasProperties()
+      throw ReferenceError "\"#{ @variable.compile o }\" cannot be assigned."
+    unless isValue and variable.hasProperties()
+      if @context
+        unless o.scope.check name, true
+          throw ReferenceError "assignment to undeclared variable \"#{name}\""
+      else
+        o.scope.find name
     name += " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then name else "(#{name})"
 
