@@ -13,9 +13,8 @@ exports.OptionParser = class OptionParser
   #     [short-flag, long-flag, description]
   #
   # Along with an an optional banner for the usage help.
-  constructor: (rules, banner) ->
-    @banner = banner
-    @rules  = buildRules rules
+  constructor: (rules, @banner) ->
+    @rules = buildRules rules
 
   # Parse the list of arguments, populating an `options` object with all of the
   # specified options, and returning it. `options.arguments` will be an array
@@ -26,16 +25,18 @@ exports.OptionParser = class OptionParser
     options = arguments: []
     args    = normalizeArguments args
     for arg, i in args
-      isOption = !!(arg.match(LONG_FLAG) or arg.match(SHORT_FLAG))
+      isOption    = !!(LONG_FLAG.test(arg) or SHORT_FLAG.test(arg))
       matchedRule = false
       for rule in @rules
-        if rule.shortFlag is arg or rule.longFlag is arg
+        if arg in [rule.shortFlag, rule.longFlag]
           value = if rule.hasArgument then args[i += 1] else true
-          options[rule.name] = if rule.isList then (options[rule.name] or []).concat value else value
+          options[rule.name] = if rule.isList
+          then (options[rule.name] or []).concat value
+          else value
           matchedRule = true
           break
-      throw new Error "unrecognized option: #{arg}" if isOption and not matchedRule
-      if not isOption
+      throw Error "unrecognized option: #{arg}" if isOption and not matchedRule
+      unless isOption
         options.arguments = args.slice i
         break
     options
@@ -47,17 +48,17 @@ exports.OptionParser = class OptionParser
     lines.unshift "#{@banner}\n" if @banner
     for rule in @rules
       spaces  = 15 - rule.longFlag.length
-      spaces  = if spaces > 0 then Array(spaces + 1).join(' ') else ''
-      letPart = if rule.shortFlag then rule.shortFlag + ', ' else '    '
+      spaces  = if spaces > 0 then Array(spaces + 1).join ' ' else ''
+      letPart = if rule.shortFlag then rule.shortFlag + ', '  else '    '
       lines.push '  ' + letPart + rule.longFlag + spaces + rule.description
-    "\n#{ lines.join('\n') }\n"
+    "\n#{ lines.join '\n' }\n"
 
 # Helpers
 # -------
 
 # Regex matchers for option flags.
-LONG_FLAG  = /^(--\w[\w\-]+)/
-SHORT_FLAG = /^(-\w)/
+LONG_FLAG  = /^--\w[\w\-]+/
+SHORT_FLAG = /^-\w/
 MULTI_FLAG = /^-(\w{2,})/
 OPTIONAL   = /\[(\w+(\*?))\]/
 
@@ -70,27 +71,21 @@ buildRules = (rules) ->
 
 # Build a rule from a `-o` short flag, a `--output [DIR]` long flag, and the
 # description of what the option does.
-buildRule = (shortFlag, longFlag, description, options) ->
-  match     = longFlag.match(OPTIONAL)
-  longFlag  = longFlag.match(LONG_FLAG)[1]
-  options or= {}
+buildRule = (shortFlag, longFlag, description) ->
+  match      = longFlag.match OPTIONAL
+  [longFlag] = longFlag.match LONG_FLAG
   {
-    name:         longFlag.substr 2
-    shortFlag:    shortFlag
-    longFlag:     longFlag
-    description:  description
-    hasArgument:  !!(match and match[1])
-    isList:       !!(match and match[2])
+    shortFlag, longFlag, description
+    name        : longFlag.slice 2
+    hasArgument : !!match?[1]
+    isList      : !!match?[2]
   }
 
 # Normalize arguments by expanding merged flags into multiple flags. This allows
 # you to have `-wl` be the same as `--watch --lint`.
 normalizeArguments = (args) ->
-  args = args.slice 0
-  result = []
-  for arg in args
-    if match = arg.match MULTI_FLAG
-      result.push '-' + l for l in match[1].split ''
-    else
-      result.push arg
-  result
+  results = for arg in args
+    if match = MULTI_FLAG.exec arg
+    then '-' + l for l in match[1].split ''
+    else arg
+  [].concat results...

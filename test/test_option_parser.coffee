@@ -10,18 +10,18 @@ opt = new OptionParser [
 
 result = opt.parse ['one', 'two', 'three', '-r', 'dir']
 
-ok result.arguments.length is 5
-ok result.arguments[3] is '-r'
+eq result.arguments.length, 5
+eq result.arguments[3], '-r'
 
 result = opt.parse ['--optional', '-r', 'folder', 'one', 'two']
 
-ok result.optional is true
-ok result.required is 'folder'
-ok result.arguments.join(' ') is 'one two'
+eq result.optional, true
+eq result.required, 'folder'
+eq result.arguments.join(' '), 'one two'
 
 result = opt.parse ['-l', 'one.txt', '-l', 'two.txt', 'three']
 
 ok result.list instanceof Array
-ok result.list.join(' ') is 'one.txt two.txt'
-ok result.arguments.join(' ') is 'three'
+eq result.list.join(' '), 'one.txt two.txt'
+eq result.arguments.join(' '), 'three'
 
