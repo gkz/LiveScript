@@ -7,8 +7,7 @@
 #
 # Which is a format that can be fed directly into [Jison](http://github.com/zaach/jison).
 
-{Rewriter}    = require './rewriter'
-{count, last} = require './helpers'
+{Rewriter} = require './rewriter'
 
 # The Lexer Class
 # ---------------
@@ -93,7 +92,7 @@ exports.Lexer = class Lexer
     else
       tag = 'IDENTIFIER'
     forcedIdentifier = at or colon or
-      if (prev = last @tokens)[1].colon2
+      if (prev = @tokens[*-1])[1].colon2
       then @token 'ACCESS', '.'
       else prev[0] is 'ACCESS'
     if id in JS_FORBIDDEN
@@ -154,7 +153,7 @@ exports.Lexer = class Lexer
       else @token 'STRNUM', @escapeLines string
     default
       return 0
-    @line += count string, '\n'
+    @countLines string
     string.length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -167,14 +166,14 @@ exports.Lexer = class Lexer
     if quote is '"' and 0 <= doc.indexOf '#{'
     then @interpolateString doc, heredoc: true
     else @token 'STRNUM', @makeString doc, quote, true
-    @line += count heredoc, '\n'
+    @countLines heredoc
     heredoc.length
 
   # Matches and consumes comments.
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
     [comment, here] = match
-    @line += count comment, '\n'
+    @countLines comment
     if here
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
@@ -238,7 +237,7 @@ exports.Lexer = class Lexer
     for word in words.slice(2, -2).match(/\S+/g) or ['']
       @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
     @token ']', ']'
-    @line += count words, '\n'
+    @countLines words
     words.length
 
   # Matches newlines, indents, and outdents, and determines which is which.
@@ -254,7 +253,7 @@ exports.Lexer = class Lexer
   lineToken: ->
     return 0 unless match = MULTI_DENT.exec @chunk
     [indent] = match
-    @line += count indent, '\n'
+    @countLines indent
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
     if size - @indebt is @indent
@@ -298,7 +297,7 @@ exports.Lexer = class Lexer
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
     return 0 unless (match = WHITESPACE.exec @chunk) or @chunk.charAt(0) is '\n'
-    last(@tokens)[if match then 'spaced' else 'eol'] = true
+    @tokens[*-1][if match then 'spaced' else 'eol'] = true
     if match then match[0].length else 0
 
   # Generate a newline token. Consecutive newlines get merged together.
@@ -315,7 +314,8 @@ exports.Lexer = class Lexer
     [value] = SYMBOL.exec @chunk
     switch tag = value
     case <[ = := ]>
-      pval = (prev = last @tokens)[1]
+      prev = @tokens[*-1]
+      pval = prev[1]
       if not pval.reserved and pval in JS_FORBIDDEN
         throw SyntaxError \
           "Reserved word \"#{pval}\" on line #{ @line + 1 } cannot be assigned"
@@ -342,7 +342,7 @@ exports.Lexer = class Lexer
     case <[ ?[ [= ]>        then tag = 'INDEX_START'
     case '@'                then tag = 'THIS'
     case ';'                then tag = 'TERMINATOR'
-    case '?'                then tag = 'LOGIC' if last(@tokens).spaced
+    case '?'                then tag = 'LOGIC' if @tokens[*-1].spaced
     case '\\\n'             then return value.length
     default
       if value.charAt(0) is '@'
@@ -354,7 +354,7 @@ exports.Lexer = class Lexer
         id.colon2 = true
         @tokens.push <[ ACCESS . ]>, ['IDENTIFIER', id, @line]
         return value.length
-      unless (prev = last @tokens).spaced
+      unless (prev = @tokens[*-1]).spaced
         if value is '(' and prev[0] in CALLABLE
           prev[0] = 'FUNC_EXIST' if prev[0] is '?'
           tag = 'CALL_START'
@@ -411,7 +411,7 @@ exports.Lexer = class Lexer
         continue
       for pair in delimited
         [open, close] = pair
-        if levels.length and last(levels) is pair and
+        if levels.length and levels[*-1] is pair and
            close is str.substr i, close.length
           levels.pop()
           i += close.length - 1
@@ -479,9 +479,9 @@ exports.Lexer = class Lexer
 
   # Peek at a tag/value in the current token stream.
   tag  : (index, tag) ->
-    (tok = last @tokens, index) and if tag? then tok[0] = tag else tok[0]
+    (t = @tokens[* - 1 - (index | 0)]) and if tag? then t[0] = tag else t[0]
   value: (index, val) ->
-    (tok = last @tokens, index) and if val? then tok[1] = val else tok[1]
+    (t = @tokens[* - 1 - (index | 0)]) and if val? then t[1] = val else t[1]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
@@ -500,6 +500,12 @@ exports.Lexer = class Lexer
       if escaped in ['\n', quote] then escaped else match
     body .= replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
+
+  # Count the number of lines in a string and add it to `@line`.
+  countLines: (str) ->
+    num = pos = 0
+    ++num while pos = 1 + str.indexOf '\n', pos
+    @line += num
 
 # Constants
 # ---------

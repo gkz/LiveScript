@@ -3,8 +3,7 @@
 # but some are created by other nodes as a method of code generation. To convert
 # the syntax tree into a string of JavaScript code, call `compile()` on the root.
 
-{Scope}     = require './scope'
-{del, last} = require './helpers'
+{Scope} = require './scope'
 
 exports.extend = (left, rite) -> left import all rite  # for parser
 
@@ -315,7 +314,7 @@ exports.Value = class Value extends Base
   # We cache them separately for compiling complex expressions.
   # `a()[b()] ?= c` -> `(_base = a())[_name = b()] ? _base[_name] = c`
   cacheReference: (o) ->
-    name = last @properties
+    name = @properties[*-1]
     if @properties.length < 2 and not @base.isComplex() and not name?.isComplex()
       return [this, this]  # `a` `a.b`
     base = new Value @base, @properties.slice 0, -1
@@ -727,7 +726,7 @@ exports.Class = class Class extends Base
         func.body.append new Return new Literal 'this'
         variable = new Value variable
         ctor = func
-        ctor.comment = props.pop() if last(props.expressions) instanceof Comment
+        ctor.comment = props.pop() if props.expressions[*-1] instanceof Comment
         continue
       if func instanceof Code and func.bound
         if prop.context is 'this'
@@ -1568,7 +1567,7 @@ exports.If = class If extends Base
 # which is helpful for recording the result arrays from comprehensions.
 Push =
   wrap: (name, exps) ->
-    return exps if exps.isEmpty() or last(exps.expressions).containsPureStatement()
+    return exps if exps.isEmpty() or exps.expressions[*-1].containsPureStatement()
     exps.append new Call \
       new Value(new Literal(name), [new Accessor new Literal 'push']), [exps.pop()]
 
@@ -1679,5 +1678,11 @@ utility = (name) ->
   ref = "__#{name}"
   Scope.root.assign ref, UTILITIES[name]
   ref
+
+# Delete a key from an object, returning the value.
+del = (obj, key) ->
+  val =  obj[key]
+  delete obj[key]
+  val
 
 multident = (code, tab) -> code.replace /\n/g, '$&' + tab

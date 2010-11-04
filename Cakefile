@@ -70,8 +70,7 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
       var exports = this;
       #{ fs.readFileSync "lib/#{name}.js" }
     };
-  """ for name in <[ helpers rewriter lexer parser scope nodes
-                     coffee-script browser ]>
+  """ for name in <[ rewriter lexer parser scope nodes coffee-script browser ]>
   jsp = require 'uglifyjs/parse-js'
   pro = require 'uglifyjs/process'
   ast = jsp.parse """
@@ -84,8 +83,8 @@ task 'build:browser', 'rebuild the merged script for inclusion in the browser', 
   #ast = pro.ast_mangle ast
   fs.writeFileSync 'extras/coffee-script.js', """
     // Coco Compiler v#{CoffeeScript.VERSION}
-    // http://github.com/satyr/coffee-script/tree/coco
-    // Copyright 2010, Jeremy Ashkenas + satyr
+    // http://github.com/satyr/coco
+    // Copyright 2010, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
 
     #{ pro.gen_code pro.ast_squeeze ast }
@@ -111,9 +110,11 @@ task 'bench', 'quick benchmark of compilation time (of everything in src)', ->
     console.log stderr.trim()
 
 task 'loc', 'count the lines of source code in the CoffeeScript compiler', ->
-  sources = ['src/coffee-script.coffee', 'src/grammar.coffee', 'src/helpers.coffee', 'src/lexer.coffee', 'src/nodes.coffee', 'src/rewriter.coffee', 'src/scope.coffee']
-  exec "cat #{ sources.join ' ' } | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '", (err, stdout) ->
-    console.log stdout.trim()
+  sources = ("src/#{src}.coffee" for src in <[
+    coffee-script grammar lexer nodes rewriter scope
+  ]>).join ' '
+  exec "cat #{sources} | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '",
+       (err, out) -> console.log out.trim()
 
 
 runTests = (CoffeeScript) ->
