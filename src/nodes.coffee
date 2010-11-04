@@ -36,9 +36,11 @@ exports.Base = class Base
     o.level  = level if level?
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or node.isPureStatement() or not node.isStatement(o)
+    code = if o.level is LEVEL_TOP or node.isPureStatement() or not node.isStatement(o)
     then node.compileNode    o
     else node.compileClosure o
+    o.scope.free tmp for tmp in node.temps if node.temps
+    code
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -319,13 +321,16 @@ exports.Value = class Value extends Base
       return [this, this]  # `a` `a.b`
     base = new Value @base, @properties.slice 0, -1
     if base.isComplex()  # `a().b`
-      bref = new Literal o.scope.temporary 'base'
-      base = new Value new Parens new Assign bref, base, '='
+      ref  = new Literal o.scope.temporary 'base'
+      base = new Value new Parens new Assign ref, base, '='
+      bref = new Value ref
+      bref.temps = [ref.value]
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
-      nref = new Literal o.scope.temporary 'name'
-      name = new Index new Assign nref, name.index, '='
-      nref = new Index nref
+      ref  = new Literal o.scope.temporary 'name'
+      name = new Index new Assign ref, name.index, '='
+      nref = new Index ref
+      nref.temps = [ref.value]
     [base.append(name), new Value(bref or base.base, [nref or name])]
 
   # We compile a value to JavaScript by compiling and joining each property.
@@ -353,6 +358,7 @@ exports.Value = class Value extends Base
       prop.traverseChildren false, find
       continue unless star
       [sub, ref] = new Value(@base, @properties.slice 0, i).cache o
+      @temps = [ref.value] if sub isnt ref
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + '.length'
       return new Value sub, @properties.slice i
@@ -371,7 +377,9 @@ exports.Value = class Value extends Base
         ref = new Literal o.scope.temporary 'ref'
         fst = new Parens new Assign ref, fst, '='
         snd.base = ref
-      return new If new Existence(fst), snd, soak: true
+      ifn = new If new Existence(fst), snd, soak: true
+      ifn.temps = [ref.value] if ref
+      return ifn
     null
 
   unfoldAssign: (o) ->
@@ -616,6 +624,7 @@ exports.Obj = class Obj extends Base
     if @front then "(#{code})" else code
 
   compileDynamic: (o, code, props) ->
+    @temps = []
     for prop, i in props
       if sp = prop instanceof Splat
         impt = new Import(new Literal(oref or code), prop.name, true).compile o
@@ -625,7 +634,7 @@ exports.Obj = class Obj extends Base
         code += ' ' + prop.compile o
         continue
       unless oref
-        oref = o.scope.temporary 'obj'
+        @temps.push oref = o.scope.temporary 'obj'
         code = oref + ' = ' + code
       if prop instanceof Assign
         acc = prop.variable.base
@@ -634,13 +643,12 @@ exports.Obj = class Obj extends Base
       else
         acc = prop.base
         [key, val] = acc.cache o, LEVEL_LIST, ref
-        ref = val if key isnt val
+        @temps.push ref = val if key isnt val
       key = if acc instanceof Literal and IDENTIFIER.test key
       then '.' + key
       else '[' + key + ']'
       code += ', ' + oref + key + ' = ' + val
     code += ', ' + oref unless sp
-    o.scope.free oref if oref
     if o.level <= LEVEL_PAREN then code else "(#{code})"
 
   assigns: (name) ->
@@ -1140,6 +1148,7 @@ exports.Op = class Op extends Base
     fst .= slice 1, -1 if fst.charAt(0) is '('
     code  = "#{fst} && #{ shared.compile o } #{@operator} "
     code += @second.compile o, LEVEL_OP
+    o.scope.free shared.value if @first.second isnt shared
     if o.level < LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
@@ -1168,6 +1177,7 @@ exports.Op = class Op extends Base
     [sub, ref] = @first.cache o, LEVEL_OP
     tests = for item, i in @second.base.objects
       (if i then ref else sub) + ' instanceof ' + item.compile o
+    o.scope.free ref if sub isnt ref
     code = tests.join ' || '
     if o.level < LEVEL_OP then code else "(#{code})"
 
@@ -1194,6 +1204,7 @@ exports.In = class In extends Base
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
     tests = for item, i in @array.base.objects
       (if i then ref else sub) + cmp + item.compile o, LEVEL_OP
+    o.scope.free ref if sub isnt ref
     code  = tests.join cnj
     if o.level < LEVEL_OP then code else "(#{code})"
 
@@ -1203,6 +1214,7 @@ exports.In = class In extends Base
            ".call(#{ @array.compile o, LEVEL_LIST }, #{ref}) " +
            if @negated then '< 0' else '>= 0'
     return code if sub is ref
+    o.scope.free ref
     code = sub + ', ' + code
     if o.level < LEVEL_LIST then code else "(#{code})"
 
@@ -1342,30 +1354,30 @@ exports.For = class For extends Base
   compileNode: (o) ->
     {scope} = o
     {body}  = this
-    refs    = []
+    @temps  = []
     name    = not @pattern and @name?.compile o
     index   = @index?.compile o
     varPart = guardPart = defPart = retPart = ''
     idt     = @idt 1
     scope.find name  if name
     scope.find index if index
-    refs.push ivar = scope.temporary 'i' unless ivar = index
+    @temps.push ivar = scope.temporary 'i' unless ivar = index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
-    refs.push pvar if step isnt pvar
+    @temps.push pvar if step isnt pvar
     if @from
       eq = if @op is 'til' then '' else '='
       [tail, tvar] = @to.compileLoopReference o, 'to'
       vars = ivar + ' = ' + @from.compile o
       if tail isnt tvar
         vars += ', ' + tail
-        refs.push tvar
+        @temps.push tvar
       cond = if +pvar
       then "#{ivar} #{ if pvar < 0 then '>' else '<' }#{eq} #{tvar}"
       else "#{pvar} < 0 ? #{ivar} >#{eq} #{tvar} : #{ivar} <#{eq} #{tvar}"
     else
       if name or @object and not @raw
         [sourcePart, svar] = @source.compileLoopReference o, 'ref'
-        refs.push svar if sourcePart isnt svar
+        @temps.push svar if sourcePart isnt svar
       else
         sourcePart = svar = @source.compile o, LEVEL_PAREN
       namePart = if @pattern
@@ -1377,7 +1389,7 @@ exports.For = class For extends Base
           vars = "#{ivar} = #{svar}.length - 1"
           cond = "#{ivar} >= 0"
         else
-          refs.push lvar = scope.temporary 'len'
+          @temps.push lvar = scope.temporary 'len'
           vars = "#{ivar} = 0, #{lvar} = #{svar}.length"
           cond = "#{ivar} < #{lvar}"
     if @object
@@ -1396,14 +1408,13 @@ exports.For = class For extends Base
     code = guardPart + varPart
     unless body.isEmpty()
       if o.level > LEVEL_TOP or @returns
-        refs.push rvar = scope.temporary 'result'
+        @temps.push rvar = scope.temporary 'result'
         defPart += @tab + rvar + ' = [];\n'
         retPart  = @compileReturnValue o, rvar
         body     = Push.wrap rvar, body
       body     = new Expressions new If @guard, body, {'statement'} if @guard
       o.indent = idt
       code    += body.compile o, LEVEL_TOP
-    scope.free ref for ref in refs
     code = '\n' + code + '\n' + @tab if code
     defPart + @tab + "for (#{forPart}) {#{code}}" + retPart
 
