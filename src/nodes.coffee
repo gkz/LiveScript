@@ -1190,9 +1190,7 @@ exports.In = class In extends Base
 
   constructor: (@object, @array) ->
 
-  invert: ->
-    @negated = not @negated
-    this
+  invert: -> @negated = not @negated; this
 
   compileNode: (o) ->
     if @array instanceof Value and @array.isArray()
@@ -1279,11 +1277,16 @@ exports.Existence = class Existence extends Base
 
   constructor: (@expression) ->
 
+  invert: -> @negated = not @negated; this
+
   compileNode: (o) ->
     code = @expression.compile o
-    code = if IDENTIFIER.test(code) and not o.scope.check code, true
-    then "typeof #{code} != \"undefined\" && #{code} !== null"
-    else "#{code} != null"
+    if IDENTIFIER.test(code) and not o.scope.check code, true
+      code = if @negated
+      then "typeof #{code} == \"undefined\" || #{code} === null"
+      else "typeof #{code} != \"undefined\" && #{code} !== null"
+    else
+      code += " #{ if @negated then '=' else '!' }= null"
     if o.level <= LEVEL_COND then code else "(#{code})"
 
 #### Parens
