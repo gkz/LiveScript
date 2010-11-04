@@ -481,8 +481,9 @@ exports.Call = class Call extends Base
     unless @new
       base = new Value @variable
       if (name = base.properties.pop()) and base.isComplex()
-        ref = o.scope.freeVariable 'this'
+        ref = o.scope.freeVariable 'ref'
         fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
+        o.scope.free ref
       else
         fun = ref = base.compile o, LEVEL_ACCESS
         fun += name.compile o if name
@@ -624,6 +625,7 @@ exports.Obj = class Obj extends Base
       else '[' + key + ']'
       code += ', ' + oref + key + ' = ' + val
     code += ', ' + oref unless sp
+    o.scope.free oref if oref
     if o.level <= LEVEL_PAREN then code else "(#{code})"
 
   assigns: (name) ->
@@ -845,6 +847,7 @@ exports.Assign = class Assign extends Base
         val = new Value new Literal(vvar),
                         [new (if acc then Accessor else Index) idx]
       assigns.push new Assign(obj, val, @context).compile o, LEVEL_LIST
+    o.scope.free ref if ref
     assigns.push vvar unless top
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"
@@ -1049,6 +1052,7 @@ exports.While = class While extends Base
     if @returns
       o.indent = @tab
       code += '\n' + new Return(new Literal rvar).compile o
+    o.scope.free rvar if rvar
     code
 
 #### Op
@@ -1119,19 +1123,23 @@ exports.Op = class Op extends Base
   #     true
   compileChain: (o) ->
     [@first.second, shared] = @first.second.cache o
-    fst  = @first .compile o, LEVEL_OP
+    fst  = @first.compile o, LEVEL_OP
     fst .= slice 1, -1 if fst.charAt(0) is '('
-    code = "#{fst} && #{ shared.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
+    code  = "#{fst} && #{ shared.compile o } #{@operator} "
+    code += @second.compile o, LEVEL_OP
     if o.level < LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
     if @first.isComplex()
-      ref = o.scope.freeVariable 'ref'
+      ref = tmp = o.scope.freeVariable 'ref'
       fst = new Parens new Assign new Literal(ref), @first, '='
     else
       fst = @first
       ref = fst.compile o
-    new Existence(fst).compile(o) + " ? #{ref} : #{ @second.compile o, LEVEL_LIST }"
+    code  = new Existence(fst).compile o
+    code += ' ? ' + ref + ' : ' + @second.compile o, LEVEL_LIST
+    o.scope.free tmp if tmp
+    code
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
@@ -1321,26 +1329,32 @@ exports.For = class For extends Base
   compileNode: (o) ->
     {scope} = o
     {body}  = this
+    refs    = []
     name    = not @pattern and @name?.compile o
     index   = @index?.compile o
-    ivar    = if not index then scope.freeVariable 'i' else index
     varPart = guardPart = defPart = retPart = ''
     idt     = @idt 1
     scope.find name  if name
     scope.find index if index
+    refs.push ivar = scope.freeVariable 'i' unless ivar = index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
+    refs.push pvar if step isnt pvar
     if @from
       eq = if @op is 'til' then '' else '='
       [tail, tvar] = @to.compileLoopReference o, 'to'
-      vars  = ivar + ' = ' + @from.compile o
-      vars += ', ' + tail if tail isnt tvar
+      vars = ivar + ' = ' + @from.compile o
+      if tail isnt tvar
+        vars += ', ' + tail
+        refs.push tvar
       cond = if +pvar
       then "#{ivar} #{ if pvar < 0 then '>' else '<' }#{eq} #{tvar}"
       else "#{pvar} < 0 ? #{ivar} >#{eq} #{tvar} : #{ivar} <#{eq} #{tvar}"
     else
       if name or @object and not @raw
-      then [sourcePart , svar] = @source.compileLoopReference o, 'ref'
-      else  sourcePart = svar  = @source.compile o, LEVEL_PAREN
+        [sourcePart, svar] = @source.compileLoopReference o, 'ref'
+        refs.push svar if sourcePart isnt svar
+      else
+        sourcePart = svar = @source.compile o, LEVEL_PAREN
       namePart = if @pattern
         new Assign(@name, new Literal "#{svar}[#{ivar}]").compile o, LEVEL_TOP
       else if name
@@ -1350,7 +1364,7 @@ exports.For = class For extends Base
           vars = "#{ivar} = #{svar}.length - 1"
           cond = "#{ivar} >= 0"
         else
-          lvar = scope.freeVariable 'len'
+          refs.push lvar = scope.freeVariable 'len'
           vars = "#{ivar} = 0, #{lvar} = #{svar}.length"
           cond = "#{ivar} < #{lvar}"
     if @object
@@ -1369,13 +1383,14 @@ exports.For = class For extends Base
     code = guardPart + varPart
     unless body.isEmpty()
       if o.level > LEVEL_TOP or @returns
-        rvar     = scope.freeVariable 'result'
+        refs.push rvar = scope.freeVariable 'result'
         defPart += @tab + rvar + ' = [];\n'
         retPart  = @compileReturnValue o, rvar
         body     = Push.wrap rvar, body
       body     = new Expressions new If @guard, body, {'statement'} if @guard
       o.indent = idt
       code    += body.compile o, LEVEL_TOP
+    scope.free ref for ref in refs
     code = '\n' + code + '\n' + @tab if code
     defPart + @tab + "for (#{forPart}) {#{code}}" + retPart
 

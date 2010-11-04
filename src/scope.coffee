@@ -56,6 +56,9 @@ exports.Scope = class Scope
   # scope. No `var` required for internal references.
   parameter: -> @add it, 'param'
 
+  # Explicitly allow a temporary variable to be reused.
+  free     : -> @add it, 'reuse'
+
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
   check: (name, above) ->
