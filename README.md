@@ -44,6 +44,38 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
         (function(){}).call(this);
 
 
+- `for`-`from`-`to`/`til`-`by`
+
+  A generic way to loop within certain numeric ranges.
+
+  - `to` for exclusive, `til` for inclusive.
+  - `by` specifies the step value, which is 1 if omitted.
+
+        $ coco -bpe 'i for i from x to y'
+        var i, _to;
+        for (i = x, _to = y; i <= _to; ++i) {
+          i;
+        }
+
+        $ coco -bpe 'i for i from x til y'
+        var i, _to;
+        for (i = x, _to = y; i < _to; ++i) {
+          i;
+        }
+
+        $ coco -bpe 'i for i from x to y by -1'
+        var i, _to;
+        for (i = x, _to = y; i >= _to; --i) {
+          i;
+        }
+
+        $ coco -bpe 'i for i from x to y by z'
+        var i, _step, _to;
+        for (i = x, _to = y, _step = z; _step < 0 ? i >= _to : i <= _to; i += _step) {
+          i;
+        }
+
+
 - `instanceof []`
 
         $ coco -bpe 'A instanceof [B, C]'
