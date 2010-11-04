@@ -17,28 +17,13 @@ exports.Scope = class Scope
   constructor: (@parent, @expressions, @method) ->
     @variables = [{name: 'arguments', type: 'arguments'}]
     @positions = {}
-    if @parent
-      {@garbage} = @parent
-    else
-      @garbage   = []
-      Scope.root = this
+    Scope.root = this unless @parent
 
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
     if typeof (pos = @positions[name]) is 'number'
     then @variables[pos].type = type
     else @positions[name]     = -1 + @variables.push {name, type}
-
-  # Create a new garbage level
-  startLevel: ->
-    @garbage.push []
-    this
-
-  # Return to the previous garbage level and erase referenced temporary
-  # variables in current level from scope.
-  endLevel: ->
-    @add name, 'reuse' for name in @garbage.pop() when @type(name) is 'var'
-    this
 
   # Look up a variable name in lexical scope, and declare it if it does not
   # already exist.
@@ -56,7 +41,7 @@ exports.Scope = class Scope
   # scope. No `var` required for internal references.
   parameter: -> @add it, 'param'
 
-  # Explicitly allow a temporary variable to be reused.
+  # Allow a temporary variable to be reused.
   free     : -> @add it, 'reuse'
 
   # Just check to see if a variable has already been declared, without reserving,
@@ -84,7 +69,6 @@ exports.Scope = class Scope
     index++ while @check(temp = @pickTemp name, index) and
                   @type(temp) isnt 'reuse'
     @add temp, 'var'
-    @garbage[@garbage.length - 1]?.push temp
     temp
 
   # Ensure that an assignment is made at the top of this scope

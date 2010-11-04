@@ -915,7 +915,6 @@ exports.Code = class Code extends Base
           val = new Assign new Value(param.name), param.value
           exprs.push new Op '&&', lit, val
       vars.push ref unless splats
-    scope.startLevel()
     wasEmpty = @body.isEmpty()
     exprs.unshift splats if splats
     @body.expressions.splice 0, 0, exprs... if exprs.length
@@ -934,7 +933,6 @@ exports.Code = class Code extends Base
       open  = 'function('
       close = "#{ code and @tab }}"
     func = "#{open}#{ vars.join ', ' }){#{code}#{close}"
-    scope.endLevel()
     return "#{ utility 'bind' }(#{func}, #{@context})" if @bound
     if @front then "(#{func})" else func
 
