@@ -313,10 +313,6 @@ exports.Lexer = class Lexer
   # parentheses that indicate a method call from regular parentheses, and so on.
   literalToken: ->
     [value] = SYMBOL.exec @chunk
-    if value in <[ -> => ]>
-      @tagParameters()
-      @token 'FUNCTION', value
-      return value.length
     switch tag = value
     case <[ = := ]>
       pval = (prev = last @tokens)[1]
@@ -327,13 +323,18 @@ exports.Lexer = class Lexer
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
+    case <[ -> => ]>
+      @tagParameters()
+      tag = 'FUNCTION'
+    case '*'
+      tag = if @tag() is 'INDEX_START' then 'LITERAL' else 'MATH'
     case <[ ! ~ ]>          then tag = 'UNARY'
     case <[ . ?. .= ]>      then tag = 'ACCESS'
     case <[ + - ]>          then tag = 'PLUS_MINUS'
     case <[ === !== <= < > >= == != ]> \
                             then tag = 'COMPARE'
     case <[ && || & | ^ ]>  then tag = 'LOGIC'
-    case <[ * / % ]>        then tag = 'MATH'
+    case <[ / % ]>          then tag = 'MATH'
     case <[ ++ -- ]>        then tag = 'CREMENT'
     case <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
                             then tag = 'COMPOUND_ASSIGN'

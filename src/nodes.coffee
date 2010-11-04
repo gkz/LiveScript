@@ -297,11 +297,10 @@ exports.Value = class Value extends Base
   hasProperties: -> !!@properties.length
 
   # Some boolean checks for the benefit of other nodes.
-  isArray        : -> not @properties.length and @base instanceof Arr
-  isObject       : -> not @properties.length and @base instanceof Obj
-  isComplex      : -> !!@properties.length or @base.isComplex()
-  isAssignable   : -> !!@properties.length or @base.isAssignable()
-  isSimpleNumber : -> @base instanceof Literal and SIMPLENUM.test @base.value
+  isArray      : -> not @properties.length and @base instanceof Arr
+  isObject     : -> not @properties.length and @base instanceof Obj
+  isComplex    : -> !!@properties.length or @base.isComplex()
+  isAssignable : -> !!@properties.length or @base.isAssignable()
 
   isStatement : (o)    -> not @properties.length and @base.isStatement o
   assigns     : (name) -> not @properties.length and @base.assigns name
@@ -337,11 +336,28 @@ exports.Value = class Value extends Base
   compileNode: (o) ->
     return asn.compile o if asn = @unfoldAssign o
     @base.front = @front
-    props = @properties
-    code  = @base.compile o, if props.length then LEVEL_ACCESS else null
-    code  = "(#{code})" if props[0] instanceof Accessor and @isSimpleNumber()
-    code += prop.compile o for prop in props
+    v  = (@properties.length and @substituteStar o) or this
+    ps = v.properties
+    code  = v.base.compile o, if ps.length then LEVEL_ACCESS else null
+    code += ' ' if ps[0] instanceof Accessor and SIMPLENUM.test code
+    code += p.compile o for p in ps
     code
+
+  substituteStar: (o) ->
+    star = null
+    find = ->
+      return false if it instanceof Index
+      if it instanceof Literal and it.value is '*'
+        star := it
+        false
+    for prop, i in @properties when prop instanceof Index
+      prop.traverseChildren false, find
+      continue unless star
+      [sub, ref] = new Value(@base, @properties.slice 0, i).cache o
+      ref += ' ' if SIMPLENUM.test ref.=compile o
+      star.value = ref + '.length'
+      return new Value sub, @properties.slice i
+    null
 
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
@@ -1652,7 +1668,7 @@ TRAILING_WHITESPACE = /[ \t]+$/gm
 
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
 NUMBER     = /// ^ -? (?: 0x[\da-f]+ | (?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)? ) $ ///i
-SIMPLENUM  = /^[+-]?\d+$/
+SIMPLENUM  = /^\d+$/
 METHOD_DEF = /^(?:(\S+)\.prototype\.)?([$A-Za-z_][$\w]*)$/
 
 # Utility Functions

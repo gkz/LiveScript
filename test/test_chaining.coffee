@@ -69,3 +69,7 @@ ok greeting is "Hello"
 ok not Date
 ::
 ?.foo, '`?.` and `::` should also continue lines'
+
+
+eq [1, 2, 3][*-1], 3
+eq 0[*], void
