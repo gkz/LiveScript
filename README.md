@@ -15,7 +15,19 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
         ReferenceError: assignment to undeclared variable "a"
 
 
-- `.=` / `[=`
+- `[*]`  (starred index)
+
+  An asterisk at the beginning of an indexer represents the length of the indexee.
+
+        $ coco -bpe 'a[* - 1]'
+        a[a.length - 1];
+
+        $ coco -bpe 'arr()[* - 1]'
+        var _ref;
+        (_ref = arr())[_ref.length - 1];
+
+
+- `.=` / `[=]`  (assigning access)
 
         $ coco -bpe 'location.href.=replace /^http:/, "https:"'
         location.href = location.href.replace(/^http:/, "https:");
