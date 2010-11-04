@@ -12,19 +12,10 @@ Coco           = require './coco'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
-# Allow Coco to emit Node.js events, and add it to global scope.
-(global.Coco = Coco) import all new EventEmitter
+# Allow Coco to emit Node.js events.
+Coco import all new EventEmitter
 
-
-# The help banner that is printed when `coco` is called without arguments.
-BANNER = '''
-  coco compiles Coco source files into JavaScript.
-
-  Usage:
-    coco path/to/script
-'''
-
-# The list of all the valid option flags that `coco` knows how to handle.
+BANNER   = 'Usage: coco [options] [files]'
 SWITCHES = [
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-i', '--interactive',     'run an interactive Coco REPL']
@@ -37,7 +28,7 @@ SWITCHES = [
   ['-r', '--require [FILE*]', 'require a library before executing your script']
   ['-b', '--bare',            'compile without the top-level function wrapper']
   ['-t', '--tokens',          'print the tokens that the lexer produces']
-  ['-n', '--nodes',           'print the parse tree that Jison produces']
+  ['-n', '--nodes',           'print the parse tree the parser produces']
   ['-v', '--version',         'display Coco version']
   ['-h', '--help',            'display this help message']
 ]

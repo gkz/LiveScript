@@ -175,3 +175,4 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 - `undefined` is not reserved.
 - `===`/`!==`/`==`/`!=` each compiles as is.
 - switch-when-else has been replaced by switch-case-default.
+- The binaries are named __coco__ and __coke__, to coexist with __coffee__/__cake__.

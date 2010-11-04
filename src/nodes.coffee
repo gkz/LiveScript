@@ -36,7 +36,8 @@ exports.Base = class Base
     o.level  = level if level?
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    code = if o.level is LEVEL_TOP or node.isPureStatement() or not node.isStatement(o)
+    code = if o.level is LEVEL_TOP or
+              node.isPureStatement() or not node.isStatement(o)
     then node.compileNode    o
     else node.compileClosure o
     o.scope.free tmp for tmp in node.temps if node.temps
@@ -792,9 +793,9 @@ exports.Assign = class Assign extends Base
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
     if value instanceof Code and match = METHOD_DEF.exec name
-      [_, value.clas, value.name] = match
+      {1: value.clas, 2: value.name} = match
     val = value.compile o, LEVEL_LIST
-    return "#{name}: #{val}" if @context is ':'
+    return name + ': ' + val if @context is ':'
     unless variable.isAssignable()
       throw ReferenceError "\"#{ @variable.compile o }\" cannot be assigned."
     unless isValue and variable.hasProperties()
@@ -920,8 +921,8 @@ exports.Code = class Code extends Base
     o.indent    = @idt 1
     delete o.bare
     delete o.globals
-    vars  = []
-    exprs = []
+    vars = []
+    exps = []
     for param in @params when param.splat
       splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
                           new Value new Literal 'arguments'
@@ -930,17 +931,17 @@ exports.Code = class Code extends Base
       if param.isComplex()
         val = ref = param.asReference o
         val = new Op '?', ref, param.value if param.value
-        exprs.push new Assign new Value(param.name), val
+        exps.push new Assign new Value(param.name), val
       else
         ref = param
         if param.value
           lit = new Literal ref.name.value + ' == null'
           val = new Assign new Value(param.name), param.value
-          exprs.push new Op '&&', lit, val
+          exps.push new Op '&&', lit, val
       vars.push ref unless splats
     wasEmpty = @body.isEmpty()
-    exprs.unshift splats if splats
-    @body.expressions.splice 0, 0, exprs... if exprs.length
+    exps.unshift splats if splats
+    @body.expressions.splice 0, 0, exps... if exps.length
     @body.makeReturn() unless wasEmpty or @noReturn
     scope.parameter vars[i] = v.compile o for v, i in vars unless splats
     vars.push 'it' if not vars.length and @body.contains (-> it.value is 'it')
@@ -961,7 +962,7 @@ exports.Code = class Code extends Base
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
   # unless `crossScope` is `true`.
-  traverseChildren: (crossScope, func) -> super(crossScope, func) if crossScope
+  traverseChildren: (crossScope, func) -> super crossScope, func if crossScope
 
 #### Param
 
@@ -1000,7 +1001,7 @@ exports.Splat = class Splat extends Base
 
   assigns: -> @name.assigns it
 
-  compile: (o) -> if @index? then @compileParam o else @name.compile o
+  compile: -> @name.compile arguments...
 
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array.
@@ -1039,9 +1040,7 @@ exports.While = class While extends Base
 
   addBody: (@body) -> this
 
-  makeReturn: ->
-    @returns = true
-    this
+  makeReturn: -> @returns = true; this
 
   containsPureStatement: ->
     {expressions} = @body
@@ -1066,7 +1065,7 @@ exports.While = class While extends Base
         rvar = o.scope.temporary 'result'
         set  = "#{@tab}#{rvar} = [];\n"
         body = Push.wrap rvar, body if body
-      body = new Expressions new If @guard, body, {'statement'} if @guard
+      body = new If @guard, body, {'statement'} if @guard
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code  = set + @tab + if code is 'true' then 'for (;;' else "while (#{code}"
     code += ") {#{body}}"
@@ -1203,7 +1202,7 @@ exports.In = class In extends Base
     tests = for item, i in @array.base.objects
       (if i then ref else sub) + cmp + item.compile o, LEVEL_OP
     o.scope.free ref if sub isnt ref
-    code  = tests.join cnj
+    code = tests.join cnj
     if o.level < LEVEL_OP then code else "(#{code})"
 
   compileLoopTest: (o) ->
@@ -1332,16 +1331,13 @@ exports.For = class For extends Base
 
   constructor: (body, head) ->
     if head.index instanceof Value
-      throw SyntaxError 'index variable of "for" cannot be destructuring'
+      throw SyntaxError 'invalid index variable: ' + head.index.compile o, LEVEL_LIST
     this import all head
     @body    = new Expressions body
     @step  or= new Literal 1 unless @object
-    @pattern = @name instanceof Value
     @returns = false
 
-  makeReturn: ->
-    @returns = true
-    this
+  makeReturn: -> @returns = true; this
 
   containsPureStatement: While::containsPureStatement
 
@@ -1358,7 +1354,8 @@ exports.For = class For extends Base
     {scope} = o
     {body}  = this
     @temps  = []
-    name    = not @pattern and @name?.compile o
+    pattern = @name instanceof Value
+    name    = not pattern and @name?.compile o
     index   = @index?.compile o
     varPart = guardPart = defPart = retPart = ''
     idt     = @idt 1
@@ -1383,7 +1380,7 @@ exports.For = class For extends Base
         @temps.push svar if sourcePart isnt svar
       else
         sourcePart = svar = @source.compile o, LEVEL_PAREN
-      namePart = if @pattern
+      namePart = if pattern
         new Assign(@name, new Literal "#{svar}[#{ivar}]").compile o, LEVEL_TOP
       else if name
         "#{name} = #{svar}[#{ivar}]"
@@ -1407,7 +1404,7 @@ exports.For = class For extends Base
       case -1 then '--' + ivar
       default ivar + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
     varPart  = idt + namePart + ';\n' if namePart
-    defPart += @pluckDirectCalls o, body, name, index unless @pattern
+    defPart += @pluckDirectCalls o, body, name, index unless pattern
     code = guardPart + varPart
     unless body.isEmpty()
       if o.level > LEVEL_TOP or @returns
@@ -1415,7 +1412,7 @@ exports.For = class For extends Base
         defPart += @tab + rvar + ' = [];\n'
         retPart  = @compileReturnValue o, rvar
         body     = Push.wrap rvar, body
-      body     = new Expressions new If @guard, body, {'statement'} if @guard
+      body     = new If @guard, body, {'statement'} if @guard
       o.indent = idt
       code    += body.compile o, LEVEL_TOP
     code = '\n' + code + '\n' + @tab if code
@@ -1430,9 +1427,9 @@ exports.For = class For extends Base
           val instanceof Value and val.base instanceof Code and
           val.properties.length is 1 and
           val.properties[0].name?.value is 'call'
+      @temps.push ref = o.scope.temporary 'fn'
       fn   = val.base or val
-      ref  = new Literal o.scope.temporary 'fn'
-      base = new Value ref
+      base = new Value ref = new Literal ref
       args = [].concat name or [], index or []
       args.reverse() if @object
       fn.params.push new Param args[i] = new Literal a for a, i in args

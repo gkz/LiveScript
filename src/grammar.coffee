@@ -514,22 +514,22 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  ['left',      'CALL_START', 'CALL_END']
-  ['nonassoc',  'CREMENT']
-  ['left',      '?']
-  ['right',     'UNARY']
-  ['left',      'MATH']
-  ['left',      'PLUS_MINUS']
-  ['left',      'SHIFT']
-  ['left',      'RELATION', 'IMPORT']
-  ['left',      'COMPARE']
-  ['left',      'LOGIC']
-  ['nonassoc',  'INDENT', 'OUTDENT']
-  ['right',     ':', '=', ':=', 'COMPOUND_ASSIGN', 'RETURN']
-  ['right',     'WHEN', 'LEADING_WHEN', 'FORIN', 'FOROF', 'FROM', 'TO', 'BY',
-                'THROW', 'IF', 'UNLESS', 'ELSE', 'FOR', 'WHILE', 'LOOP',
-                'SWITCH', 'CASE', 'DEFAULT', 'SUPER', 'CLASS', 'EXTENDS']
-  ['right',     'POST_IF']
+  <[ left      CALL_START CALL_END                      ]>
+  <[ nonassoc  CREMENT                                  ]>
+  <[ left      ?                                        ]>
+  <[ right     UNARY                                    ]>
+  <[ left      MATH                                     ]>
+  <[ left      PLUS_MINUS                               ]>
+  <[ left      SHIFT                                    ]>
+  <[ left      RELATION IMPORT                          ]>
+  <[ left      COMPARE                                  ]>
+  <[ left      LOGIC                                    ]>
+  <[ nonassoc  INDENT OUTDENT                           ]>
+  <[ right     : = := COMPOUND_ASSIGN RETURN            ]>
+  <[ right     WHEN LEADING_WHEN FORIN FOROF FROM TO BY
+               THROW IF UNLESS ELSE FOR WHILE LOOP
+               SWITCH CASE DEFAULT SUPER CLASS EXTENDS  ]>
+  <[ right     POST_IF                                  ]>
 ]
 
 # Wrapping Up
