@@ -1,25 +1,16 @@
-# CoffeeScript can be used both on the server, as a command-line compiler based
-# on Node.js/V8, or to run CoffeeScripts directly in the browser. This module
-# contains the main entry functions for tokenzing, parsing, and compiling source
-# CoffeeScript into JavaScript.
+# Coco can be used both on the server, as a command-line compiler based
+# on Node.js/V8, or to run Coco scripts directly in the browser. This module
+# contains the main entry functions for tokenzing, parsing, and compiling
+# Coco source into JavaScript.
 
 fs       = require 'fs'
 path     = require 'path'
 {Lexer}  = require './lexer'
 {parser} = require './parser'
 
-# TODO: Remove registerExtension when fully deprecated
-if require.extensions
-  require.extensions['.coffee'] = (module, filename) ->
-    code = exports.compile fs.readFileSync filename, 'utf8'
-    module._compile code, filename
-else if require.registerExtension
-  require.registerExtension '.coffee', -> exports.compile it
+exports.VERSION = '0.1'
 
-# The current CoffeeScript version number.
-exports.VERSION = '0.9.4'
-
-# Compile a string of CoffeeScript code to JavaScript, using the Coffee/Jison
+# Compile a string of Coco code to JavaScript, using the Coco/Jison
 # compiler.
 exports.compile = (code, options = {}) ->
   try
@@ -28,29 +19,29 @@ exports.compile = (code, options = {}) ->
     err.message = "In #{options.fileName}, #{err.message}" if options.fileName
     throw err
 
-# Tokenize a string of CoffeeScript code, and return the array of tokens.
+# Tokenize a string of Coco code, and return the array of tokens.
 exports.tokens = (code, options) ->
   lexer.tokenize code, options
 
-# Tokenize and parse a string of CoffeeScript code, and return the AST. You can
+# Tokenize and parse a string of Coco code, and return the AST. You can
 # then compile it by calling `.compile()` on the root, or traverse it by using
 # `.traverse()` with a callback.
 exports.nodes = (code, options) ->
   parser.parse lexer.tokenize code, options
 
-# Compile and execute a string of CoffeeScript (on the server), correctly
+# Compile and execute a string of Coco (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run = (code, options) ->
   root = module
   root = root.parent while root.parent
   root.filename = fs.realpathSync options.fileName or '.'
   root.moduleCache and= {}
-  if require.extensions or path.extname(root.filename) isnt '.coffee'
+  if require.extensions or path.extname(root.filename) not in <[ .co .coffee ]>
     code = exports.compile code, options
   root._compile code, root.filename
 
-# Compile and evaluate a string of CoffeeScript (in a Node.js-like environment).
-# The CoffeeScript REPL uses this to run the input.
+# Compile and evaluate a string of Coco (in a Node.js-like environment).
+# The Coco REPL uses this to run the input.
 exports.eval = (code, options) ->
   __filename = options.fileName
   __dirname  = path.dirname __filename
@@ -70,3 +61,12 @@ parser.lexer =
   upcomingInput: -> ''
 
 parser.yy = require './nodes'
+
+# TODO: Remove registerExtension when fully deprecated
+if require.extensions
+  require.extensions['.co'] = require.extensions['.coffee'] = (module, filename) ->
+    code = exports.compile fs.readFileSync filename, 'utf8'
+    module._compile code, filename
+else if require.registerExtension
+  require.registerExtension '.co'    , exports.compile
+  require.registerExtension '.coffee', exports.compile

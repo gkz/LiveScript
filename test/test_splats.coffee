@@ -116,10 +116,9 @@ ok b is 4
 ok list.join(' ') is '0 1 2 3 4'
 
 
-# Splat true a line by itself is invalid.
-failed = true
+# Splat on a line by itself is invalid.
 try
-  CoffeeScript.compile "x 'a'\n...\n"
-  failed = false
-catch err
-ok failed
+  Coco.compile 'x a\n...'
+  ok false, ''
+catch _
+  ok true

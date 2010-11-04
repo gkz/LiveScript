@@ -1,4 +1,4 @@
-# The CoffeeScript language has a good deal of optional syntax, implicit syntax,
+# The Coco language has a good deal of optional syntax, implicit syntax,
 # and shorthand syntax. This can greatly complicate a grammar and bloat
 # the resulting parse table. Instead of making the parser handle it all, we take
 # a series of passes over the token stream, using this **Rewriter** to convert

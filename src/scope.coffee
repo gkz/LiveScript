@@ -1,4 +1,4 @@
-# The **Scope** class regulates lexical scoping within CoffeeScript. As you
+# The **Scope** class regulates lexical scoping within Coco. As you
 # generate code, you create a tree of scopes in the same shape as the nested
 # function bodies. Each scope knows about the variables declared within it,
 # and has a reference to its parent enclosing scope. In this way, we know which

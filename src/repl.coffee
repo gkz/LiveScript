@@ -2,11 +2,10 @@
 # and evaluates it. Good for simple tests, or poking around the **Node.js** API.
 # Using it looks like this:
 #
-#     coffee> console.log "#{num} bottles of beer" for num in [99..1]
+#     coco> console.log "#{num} bottles of beer" for num in [99..1]
 
-# Require the **coffee-script** module to get access to the compiler.
-CoffeeScript = require './coffee-script'
-readline     = require 'readline'
+Coco     = require './coco'
+readline = require 'readline'
 
 # Start by opening up **stdio**.
 stdio = process.openStdin()
@@ -19,7 +18,7 @@ global.quit = -> process.exit 0
 # of exiting.
 run = (buffer) ->
   try
-    val = CoffeeScript.eval buffer.toString(), bare: true, globals: true, fileName: 'repl'
+    val = Coco.eval buffer.toString(), bare: true, globals: true, fileName: 'repl'
     console.log val unless val is void
   catch err
     console.error "#{ err.stack or err }"

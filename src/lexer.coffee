@@ -1,4 +1,4 @@
-# The CoffeeScript Lexer. Uses a series of token-matching regexes to attempt
+# The Coco Lexer. Uses a series of token-matching regexes to attempt
 # matches against the beginning of the source code. When a match is found,
 # a token is produced, we consume the match, and start again. Tokens are in the
 # form:
@@ -12,7 +12,7 @@
 # The Lexer Class
 # ---------------
 
-# The Lexer class reads a stream of CoffeeScript and divvys it up into tagged
+# The Lexer class reads a stream of Coco and divvys it up into tagged
 # tokens. Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 exports.Lexer = class Lexer
@@ -66,7 +66,7 @@ exports.Lexer = class Lexer
 
   # Matches identifying literals: variables, keywords, method names, etc.
   # Check to ensure that JavaScript reserved words aren't being used as
-  # identifiers. Because CoffeeScript reserves a handful of keywords that are
+  # identifiers. Because Coco reserves a handful of keywords that are
   # allowed in JavaScript, we're careful not to tag them as keywords when
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
@@ -510,7 +510,7 @@ exports.Lexer = class Lexer
 # Constants
 # ---------
 
-# Keywords that CoffeeScript shares in common with JavaScript.
+# Keywords that Coco shares in common with JavaScript.
 JS_KEYWORDS = <[
   true false null this void super
   new do delete typeof in instanceof import
@@ -518,7 +518,7 @@ JS_KEYWORDS = <[
   if else switch case default for while try catch finally class extends
 ]>
 
-# CoffeeScript-only keywords.
+# Coco-only keywords.
 COFFEE_KEYWORDS = <[ then unless until loop of by when ]>
 COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   and  : '&&'
@@ -528,7 +528,7 @@ COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
   not  : '!'
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
-# used by CoffeeScript internally. We throw an error when these are encountered,
+# used by Coco internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
 RESERVED = <[ function var with const let enum export native ]>
 

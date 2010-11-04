@@ -1,41 +1,38 @@
 # Override exported methods for non-Node.js engines.
 
-CoffeeScript = require './coffee-script'
-CoffeeScript.require = require
+Coco = require './coco'
+Coco.require = require
 
 # Use standard JavaScript `eval` to eval code.
-CoffeeScript.eval = (code, options) ->
-  eval CoffeeScript.compile code, options
+Coco.eval = -> eval Coco.compile @0, @1
 
 # Running code does not provide access to this scope.
-CoffeeScript.run = (code, options = {}) ->
+Coco.run = (code, options = {}) ->
   options.bare = true
-  Function(CoffeeScript.compile code, options)()
+  Function(Coco.compile code, options)()
 
 # If we're not in a browser environment, we're finished with the public API.
 return unless window?
 
 # Load a remote script from the current domain via XHR.
-CoffeeScript.load = (url, options) ->
-  xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
+Coco.load = (url, options) ->
+  xhr = new (window.ActiveXObject or XMLHttpRequest) 'Microsoft.XMLHTTP'
   xhr.open 'GET', url, true
   xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
   xhr.onreadystatechange = ->
-    CoffeeScript.run xhr.responseText, options if xhr.readyState is 4
+    Coco.run xhr.responseText, options if xhr.readyState is 4
   xhr.send null
 
-# Activate CoffeeScript in the browser by having it compile and evaluate
-# all script tags with a content-type of `text/coffeescript`.
+# Activate Coco in the browser by having it compile and evaluate
+# all script tags with a content-type of `text/Coco`.
 # This happens on page load.
 runScripts = ->
   for script in document.getElementsByTagName 'script'
-    if script.type is 'text/coffeescript'
-      if script.src
-        CoffeeScript.load script.src
-      else
-        CoffeeScript.run script.innerHTML
+    continue unless script.type is 'text/coco'
+    if script.src
+    then Coco.load script.src
+    else Coco.run  script.innerHTML
   null
 if window.addEventListener
-  addEventListener 'DOMContentLoaded', runScripts, false
-else
-  attachEvent 'onload', runScripts
+then addEventListener 'DOMContentLoaded', runScripts, false
+else attachEvent 'onload', runScripts

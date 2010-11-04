@@ -1,28 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-  <title>CoffeeScript Test Suite</title>
+  <meta charset="utf-8" />
+  <title>Coco Test Suite</title>
   <script src="../extras/coffee-script.js"></script>
   <style>
     body {
-      margin: 30px;
-      font-family: Menlo, Monaco, monospace;
+      margin: 2em;
+      font-family: Consolas, Menlo, Monaco, monospace;
     }
-    h1 {
-      font-size: 20px;
-    }
-    #stdout {
-    }
+    h1 { font-size: 2em }
   </style>
 </head>
 <body>
-
-  <h1>CoffeeScript Test Suite</h1>
+  <h1>Coco Test Suite</h1>
   <pre id="stdout"></pre>
-
-  <script type="text/coffeescript">
-
+  <script type="text/coco">
   stdout  = document.getElementById 'stdout'
   start   = new Date
   success = total = done = failed = 0
@@ -44,13 +37,13 @@
     try fun(); throw new String 'No Error'
     catch e then eq e, err
 
-  CoffeeScript.run = (code, cb) ->
-    try Function(CoffeeScript.compile code, bare: true)()
+  Coco.run = (code, cb) ->
+    try Function(Coco.compile code, bare: true)()
     catch e then cb(); throw e
     cb true
 
   run = (name) ->
-    CoffeeScript.load "test_#{name}.coffee", (yay) ->
+    Coco.load "test_#{name}.coffee", (yay) ->
       say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
       ++failed unless yay
       fin() if ++done is names.length
@@ -85,6 +78,5 @@
     'while'
   ]
   </script>
-
 </body>
 </html>

@@ -1,4 +1,3 @@
-# CoffeeScript's operations should be chainable, like Python's.
 ok 500 > 50 > 5 > -5
 
 ok true is not false is true is not false

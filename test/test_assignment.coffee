@@ -29,7 +29,7 @@ tester = ->
 ok tester().example() is 'example function'
 
 
-try throw CoffeeScript.tokens 'in = 1'
+try throw Coco.tokens 'in = 1'
 catch e then eq e.message, 'Reserved word "in" on line 1 cannot be assigned'
 
 
@@ -69,11 +69,11 @@ eq 'rest', parent.child.str
 
 
 for nonref in ['""', '0', 'f()']
-  try ok not CoffeeScript.compile "{k: #{nonref}} = v"
+  try ok not Coco.compile "{k: #{nonref}} = v"
   catch e then eq e.message, "\"#{nonref}\" cannot be assigned."
 
 
-try ok not CoffeeScript.compile 'Math or= 0'
+try ok not Coco.compile 'Math or= 0'
 catch e then eq e.message, 'assignment to undeclared variable "Math"'
 
 

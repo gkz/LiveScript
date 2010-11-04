@@ -1,2 +1,2 @@
-# Loader for CoffeeScript as a Node.js library.
-exports[key] = val for key, val of require './coffee-script'
+# Loader for Coco as a Node.js library.
+exports import require './coco'

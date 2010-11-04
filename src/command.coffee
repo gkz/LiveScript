@@ -1,4 +1,4 @@
-# The `coffee` utility. Handles command-line compilation of CoffeeScript
+# The `coco` utility. Handles command-line compilation of Coco
 # into various forms: saved into `.js` files or printed to stdout, piped to
 # [JSLint](http://javascriptlint.com/) or recompiled every time the source is
 # saved, printed as a token stream or as the syntax tree, or launch an
@@ -8,26 +8,26 @@
 fs             = require 'fs'
 path           = require 'path'
 optparse       = require './optparse'
-CoffeeScript   = require './coffee-script'
+Coco           = require './coco'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
-# Allow CoffeeScript to emit Node.js events, and add it to global scope.
-(global.CoffeeScript = CoffeeScript) import all new EventEmitter
+# Allow Coco to emit Node.js events, and add it to global scope.
+(global.Coco = Coco) import all new EventEmitter
 
 
-# The help banner that is printed when `coffee` is called without arguments.
+# The help banner that is printed when `coco` is called without arguments.
 BANNER = '''
-  coffee compiles CoffeeScript source files into JavaScript.
+  coco compiles Coco source files into JavaScript.
 
   Usage:
-    coffee path/to/script.coffee
+    coco path/to/script
 '''
 
-# The list of all the valid option flags that `coffee` knows how to handle.
+# The list of all the valid option flags that `coco` knows how to handle.
 SWITCHES = [
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
-  ['-i', '--interactive',     'run an interactive CoffeeScript REPL']
+  ['-i', '--interactive',     'run an interactive Coco REPL']
   ['-o', '--output [DIR]',    'set the directory for compiled JavaScript']
   ['-w', '--watch',           'watch scripts for changes, and recompile']
   ['-p', '--print',           'print the compiled JavaScript to stdout']
@@ -38,7 +38,7 @@ SWITCHES = [
   ['-b', '--bare',            'compile without the top-level function wrapper']
   ['-t', '--tokens',          'print the tokens that the lexer produces']
   ['-n', '--nodes',           'print the parse tree that Jison produces']
-  ['-v', '--version',         'display CoffeeScript version']
+  ['-v', '--version',         'display Coco version']
   ['-h', '--help',            'display this help message']
 ]
 
@@ -47,7 +47,7 @@ opts         = {}
 sources      = []
 optionParser = null
 
-# Run `coffee` by parsing passed options and determining what action to take.
+# Run `coco` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
@@ -68,9 +68,9 @@ exports.run = ->
   process.ARGV = process.argv = flags
   compileScripts()
 
-# Asynchronously read in each CoffeeScript in a list of source files and
+# Asynchronously read in each Coco in a list of source files and
 # compile them. If a directory is passed, recursively compile all
-# '.coffee' extension source files in it and all subdirectories.
+# _.co_ or _.coffee_ extension source files in it and all subdirectories.
 compileScripts = ->
   compile = (source, topLevel) ->
     path.exists source, (exists) ->
@@ -80,7 +80,7 @@ compileScripts = ->
           fs.readdir source, (err, files) ->
             compile path.join source, file for file in files
             null
-        else if topLevel or path.extname(source) is '.coffee'
+        else if topLevel or path.extname(source) in <[ .co .coffee ]>
           base = path.join source
           fs.readFile source, (err, code) ->
             compileScript source, code.toString(), base
@@ -98,21 +98,21 @@ compileScript = (file, input, base) ->
       require if req.charAt(0) is '.' then fs.realpathSync req else req
   try
     t = task = {file, input, options}
-    CoffeeScript.emit 'compile', task
+    Coco.emit 'compile', task
     switch
-    case o.tokens then printTokens CoffeeScript.tokens t.input
-    case o.nodes  then console.log CoffeeScript.nodes(t.input).toString().trim()
-    case o.run    then CoffeeScript.run t.input, t.options
+    case o.tokens then printTokens Coco.tokens t.input
+    case o.nodes  then console.log Coco.nodes(t.input).toString().trim()
+    case o.run    then Coco.run t.input, t.options
     default
-      t.output = CoffeeScript.compile t.input, t.options
-      CoffeeScript.emit 'success', task
+      t.output = Coco.compile t.input, t.options
+      Coco.emit 'success', task
       switch
       case o.print   then console.log t.output.trim()
       case o.compile then writeJs t.file, t.output, base
       case o.lint    then lint t.file, t.output
   catch err
-    CoffeeScript.emit 'failure', err, task
-    return if CoffeeScript.listeners('failure').length
+    Coco.emit 'failure', err, task
+    return if Coco.listeners('failure').length
     return console.log err.message if o.watch
     console.error err.stack
     process.exit 1
@@ -125,7 +125,7 @@ compileStdio = ->
   stdin.on 'data', -> code += it if it
   stdin.on 'end' , -> compileScript 'stdio', code
 
-# Watch a source CoffeeScript file using `fs.watchFile`, recompiling it every
+# Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--lint` or `--print`.
 watch = (source, base) ->
@@ -180,7 +180,7 @@ parseOptions = ->
   o.print       = !!  (o.print or o.eval or o.stdio and o.compile)
   sources      := o.arguments
 
-# The compile-time options to pass to the CoffeeScript compiler.
+# The compile-time options to pass to the Coco compiler.
 compileOptions = (fileName) -> {fileName, bare: opts.bare}
 
 # Print the `--help` usage message and exit.
@@ -190,5 +190,5 @@ usage = ->
 
 # Print the `--version` message and exit.
 version = ->
-  console.log "CoffeeScript version #{CoffeeScript.VERSION}"
+  console.log "Coco version #{Coco.VERSION}"
   process.exit 0
