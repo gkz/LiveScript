@@ -67,7 +67,7 @@ exports.Scope = class Scope
     !!@parent?.check name, above
 
   # Generate a temporary variable name at the given index.
-  temporary: (name, index) ->
+  pickTemp: (name, index) ->
     '_' + if name.length > 1
     then name + (if index > 1 then index else '')
     else (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
@@ -79,9 +79,9 @@ exports.Scope = class Scope
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
-  freeVariable: (type) ->
+  temporary: (name) ->
     index = 0
-    index++ while @check(temp = @temporary type, index) and
+    index++ while @check(temp = @pickTemp name, index) and
                   @type(temp) isnt 'reuse'
     @add temp, 'var'
     @garbage[@garbage.length - 1]?.push temp

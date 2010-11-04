@@ -57,7 +57,7 @@ exports.Base = class Base
       ref = if level then @compile o, level else this
       [ref, ref]
     else
-      ref = new Literal reused or o.scope.freeVariable 'ref'
+      ref = new Literal reused or o.scope.temporary 'ref'
       sub = new Assign ref, this, '='
       if level then [sub.compile(o, level), ref.value] else [sub, ref]
 
@@ -65,7 +65,7 @@ exports.Base = class Base
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
     unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src)
-      src = "#{ tmp = o.scope.freeVariable name } = #{src}"
+      src = "#{ tmp = o.scope.temporary name } = #{src}"
     [src, tmp]
 
   # Convenience method to grab the current indentation level, plus tabbing in.
@@ -321,11 +321,11 @@ exports.Value = class Value extends Base
       return [this, this]  # `a` `a.b`
     base = new Value @base, @properties.slice 0, -1
     if base.isComplex()  # `a().b`
-      bref = new Literal o.scope.freeVariable 'base'
+      bref = new Literal o.scope.temporary 'base'
       base = new Value new Parens new Assign bref, base, '='
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
-      nref = new Literal o.scope.freeVariable 'name'
+      nref = new Literal o.scope.temporary 'name'
       name = new Index new Assign nref, name.index, '='
       nref = new Index nref
     [base.append(name), new Value(bref or base.base, [nref or name])]
@@ -353,7 +353,7 @@ exports.Value = class Value extends Base
       fst = new Value @base, @properties.slice 0, i
       snd = new Value @base, @properties.slice i
       if fst.isComplex()
-        ref = new Literal o.scope.freeVariable 'ref'
+        ref = new Literal o.scope.temporary 'ref'
         fst = new Parens new Assign ref, fst, '='
         snd.base = ref
       return new If new Existence(fst), snd, soak: true
@@ -481,7 +481,7 @@ exports.Call = class Call extends Base
     unless @new
       base = new Value @variable
       if (name = base.properties.pop()) and base.isComplex()
-        ref = o.scope.freeVariable 'ref'
+        ref = o.scope.temporary 'ref'
         fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
         o.scope.free ref
       else
@@ -610,7 +610,7 @@ exports.Obj = class Obj extends Base
         code += ' ' + prop.compile o
         continue
       unless oref
-        oref = o.scope.freeVariable 'obj'
+        oref = o.scope.temporary 'obj'
         code = oref + ' = ' + code
       if prop instanceof Assign
         acc = prop.variable.base
@@ -683,7 +683,7 @@ exports.Class = class Class extends Base
   # equivalent syntax tree and compile that, in pieces. You can see the
   # constructor, property assignments, and inheritance getting built out below.
   compileNode: (o) ->
-    variable   = @variable or new Literal o.scope.freeVariable 'ctor'
+    variable   = @variable or new Literal o.scope.temporary 'ctor'
     extension  = @parent  and new Extends variable, @parent
     props      = new Expressions
     me         = null
@@ -719,7 +719,7 @@ exports.Class = class Class extends Base
         else
           func.bound = false
           constScope or= new Scope o.scope, ctor.body, ctor
-          me or= constScope.freeVariable 'this'
+          me or= constScope.temporary 'this'
           pname = pvar.compile o
           ctor.body.append  new Return new Literal 'this' if ctor.body.isEmpty()
           ret = "return #{className}.prototype.#{pname}.apply(#{me}, arguments);"
@@ -811,7 +811,7 @@ exports.Assign = class Assign extends Base
     assigns = []
     splat   = false
     if not IDENTIFIER.test(vvar) or @variable.assigns(vvar)
-      assigns.push "#{ ref = o.scope.freeVariable 'ref' } = #{vvar}"
+      assigns.push "#{ ref = o.scope.temporary 'ref' } = #{vvar}"
       vvar = ref
     for obj, i in objects
       # A regular array pattern-match.
@@ -828,7 +828,7 @@ exports.Assign = class Assign extends Base
       if not splat and obj instanceof Splat
         val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
         if rest = olen - i - 1
-          ivar = o.scope.freeVariable 'i'
+          ivar = o.scope.temporary 'i'
           val += ", #{ivar} = #{vvar}.length - #{rest}) : (#{ivar} = #{i}, [])"
         else
           val += ") : []"
@@ -957,7 +957,7 @@ exports.Param = class Param extends Base
 
   asReference: (o) ->
     return @reference if @reference
-    node = if @isComplex() then new Literal o.scope.freeVariable 'arg' else @name
+    node = if @isComplex() then new Literal o.scope.temporary 'arg' else @name
     node = new Value node
     node = new Splat node if @splat
     @reference = node
@@ -1042,7 +1042,7 @@ exports.While = class While extends Base
       body = ''
     else
       if o.level > LEVEL_TOP or @returns
-        rvar = o.scope.freeVariable 'result'
+        rvar = o.scope.temporary 'result'
         set  = "#{@tab}#{rvar} = [];\n"
         body = Push.wrap rvar, body if body
       body = new Expressions new If @guard, body, {'statement'} if @guard
@@ -1131,7 +1131,7 @@ exports.Op = class Op extends Base
 
   compileExistence: (o) ->
     if @first.isComplex()
-      ref = tmp = o.scope.freeVariable 'ref'
+      ref = tmp = o.scope.temporary 'ref'
       fst = new Parens new Assign new Literal(ref), @first, '='
     else
       fst = @first
@@ -1336,7 +1336,7 @@ exports.For = class For extends Base
     idt     = @idt 1
     scope.find name  if name
     scope.find index if index
-    refs.push ivar = scope.freeVariable 'i' unless ivar = index
+    refs.push ivar = scope.temporary 'i' unless ivar = index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     refs.push pvar if step isnt pvar
     if @from
@@ -1364,7 +1364,7 @@ exports.For = class For extends Base
           vars = "#{ivar} = #{svar}.length - 1"
           cond = "#{ivar} >= 0"
         else
-          refs.push lvar = scope.freeVariable 'len'
+          refs.push lvar = scope.temporary 'len'
           vars = "#{ivar} = 0, #{lvar} = #{svar}.length"
           cond = "#{ivar} < #{lvar}"
     if @object
@@ -1383,7 +1383,7 @@ exports.For = class For extends Base
     code = guardPart + varPart
     unless body.isEmpty()
       if o.level > LEVEL_TOP or @returns
-        refs.push rvar = scope.freeVariable 'result'
+        refs.push rvar = scope.temporary 'result'
         defPart += @tab + rvar + ' = [];\n'
         retPart  = @compileReturnValue o, rvar
         body     = Push.wrap rvar, body
@@ -1404,7 +1404,7 @@ exports.For = class For extends Base
           val.properties.length is 1 and
           val.properties[0].name?.value is 'call'
       fn   = val.base or val
-      ref  = new Literal o.scope.freeVariable 'fn'
+      ref  = new Literal o.scope.temporary 'fn'
       base = new Value ref
       args = [].concat name or [], index or []
       args.reverse() if @object
