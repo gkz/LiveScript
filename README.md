@@ -60,8 +60,8 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
   A generic way to loop within certain numeric ranges.
 
-  - `to` for exclusive, `til` for inclusive.
-  - `by` optinally specifies the step value.
+  - `to` for inclusive, `til` for exclusive.
+  - `by` optionally specifies the step value.
 
         $ coco -bpe 'i for i from x to y'
         var i, _to;
