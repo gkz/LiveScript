@@ -32,7 +32,7 @@ exports.Base = class Base
   # already been asked to return the result (because statements know how to
   # return results).
   compile: (o, level) ->
-    o        = if o then {} import all o else {}
+    o        = {} import all o
     o.level  = level if level?
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
@@ -159,8 +159,6 @@ exports.Expressions = class Expressions extends Base
 
   children: ['expressions']
 
-  isStatement: YES
-
   constructor: (node) ->
     return node if node instanceof Expressions
     @expressions = if node then [node] else []
@@ -169,13 +167,14 @@ exports.Expressions = class Expressions extends Base
   prepend : -> @expressions.unshift it; this
   pop     : -> @expressions.pop()
 
-
-  # If this Expressions consists of just a single node, unwrap it by pulling
-  # it back out.
   unwrap: -> if @expressions.length is 1 then @expressions[0] else this
 
-  # Is this an empty block of code?
   isEmpty: -> not @expressions.length
+
+  isStatement: (o) ->
+    for exp in @expressions when exp.isPureStatement() or exp.isStatement o
+      return true
+    false
 
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
@@ -190,8 +189,22 @@ exports.Expressions = class Expressions extends Base
     if o.scope then super o, level else @compileRoot o
 
   compileNode: (o) ->
-    @tab = o.indent
-    (@compileExpression node, o for node in @expressions).join '\n'
+    @tab  = o.indent
+    top   = o.level is LEVEL_TOP
+    codes = []
+    for node in @expressions
+      node = (do node.=unwrapAll).unfoldSoak(o) or node
+      if top
+        node.front = true
+        code = node.compile o
+        codes.push if node.isStatement o then code else @tab + code + ';'
+      else
+        codes.push node.compile o, LEVEL_LIST
+    return codes.join '\n' if top
+    code = codes.join(', ') or 'void 0'
+    if codes.length > 1 and o.level >= LEVEL_LIST
+    then "(#{code})"
+    else code
 
   # If we happen to be the top-level **Expressions**, wrap everything in
   # a safety closure, unless requested not to.
@@ -208,8 +221,9 @@ exports.Expressions = class Expressions extends Base
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
-    vars    = ''
+    o.level = LEVEL_TOP
     code    = @compileNode o
+    vars    = ''
     {scope} = o
     if not o.globals and scope.hasDeclarations this
       vars += scope.declaredVariables().join ', '
@@ -218,17 +232,6 @@ exports.Expressions = class Expressions extends Base
       vars += multident scope.assignedVariables().join(', '), @tab
     code = @tab + "var #{vars};\n" + code if vars
     code
-
-  # Compiles a single expression within the expressions body. If we need to
-  # return the result, and it's an expression, simply return it. If it's a
-  # statement, ask the statement to do so.
-  compileExpression: (node, o) ->
-    node .= unwrapAll()
-    node  = node.unfoldSoak(o) or node
-    node.front = true
-    o.level = LEVEL_TOP
-    code    = node.compile o
-    if node.isStatement o then code else @tab + code + ';'
 
 #### Literal
 
@@ -239,7 +242,7 @@ exports.Literal = class Literal extends Base
 
   constructor: (@value) ->
 
-  makeReturn: -> if @isStatement() then this else super()
+  makeReturn: -> if @isPureStatement() then this else new Return this
 
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
@@ -1530,11 +1533,9 @@ exports.If = class If extends Base
     if @isStatement o then @compileStatement o else @compileExpression o
 
   makeReturn: ->
-    if @isStatement()
-      @body     and= new Expressions @body    .makeReturn()
-      @elseBody and= new Expressions @elseBody.makeReturn()
-      return this
-    new Return this
+    @body     and= new Expressions @body    .makeReturn()
+    @elseBody and= new Expressions @elseBody.makeReturn()
+    this
 
   # Compile the **If** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
@@ -1548,8 +1549,11 @@ exports.If = class If extends Base
     ifPart   = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
-    then @elseBodyNode().compile o import all {indent: @tab, chainChild: true}
-    else "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
+      o.indent     = @tab
+      o.chainChild = true
+      @elseBody.unwrap().compile o, LEVEL_TOP
+    else
+      "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
 
   # Compile the If as a conditional operator.
   compileExpression: (o) ->
