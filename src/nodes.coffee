@@ -70,9 +70,6 @@ exports.Base = class Base
       src = "#{ tmp = o.scope.temporary name } = #{src}"
     [src, tmp]
 
-  # Convenience method to grab the current indentation level, plus tabbing in.
-  idt: (tabs) -> (@tab or '') + Array((tabs or 0) + 1).join TAB
-
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
   # many statement nodes (eg If, For)...
@@ -202,9 +199,7 @@ exports.Expressions = class Expressions extends Base
         codes.push node.compile o, LEVEL_LIST
     return codes.join '\n' if top
     code = codes.join(', ') or 'void 0'
-    if codes.length > 1 and o.level >= LEVEL_LIST
-    then "(#{code})"
-    else code
+    if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
   # If we happen to be the top-level **Expressions**, wrap everything in
   # a safety closure, unless requested not to.
@@ -515,7 +510,7 @@ exports.Call = class Call extends Base
         fun = ref = base.compile o, LEVEL_ACCESS
         fun += name.compile o if name
       return "#{fun}.apply(#{ref}, #{splatargs})"
-    idt = @idt 1
+    idt = @tab + TAB
     """
     (function(func, args, ctor){
     #{idt}ctor.prototype = func.prototype;
@@ -610,7 +605,7 @@ exports.Obj = class Obj extends Base
       lastNonComment = prop
       break
     code = ''
-    idt  = o.indent = @idt 1
+    idt  = o.indent += TAB
     for prop, i in props
       code += idt unless prop instanceof Comment
       code += if prop instanceof Value and prop.this
@@ -669,7 +664,7 @@ exports.Arr = class Arr extends Base
   constructor: (@objects = []) ->
 
   compileNode: (o) ->
-    o.indent = @idt 1
+    o.indent += TAB
     return code if code = Splat.compileArray o, @objects
     objects = []
     for obj, i in @objects
@@ -921,7 +916,7 @@ exports.Code = class Code extends Base
   compileNode: (o) ->
     sharedScope = del o, 'sharedScope'
     o.scope     = scope = sharedScope or new Scope o.scope, @body, this
-    o.indent    = @idt 1
+    o.indent   += TAB
     delete o.bare
     delete o.globals
     vars = []
@@ -948,11 +943,11 @@ exports.Code = class Code extends Base
     @body.makeReturn() unless wasEmpty or @noReturn
     scope.parameter vars[i] = v.compile o for v, i in vars unless splats
     vars.push 'it' if not vars.length and @body.contains (-> it.value is 'it')
-    comm     = if @comment then @comment.compile(o) + '\n' else ''
-    o.indent = @idt 2 if @className
-    idt      = @idt 1
-    code     = if @body.isEmpty() then ''
-    else "\n#{ @body.compileWithDeclarations o }\n"
+    comm      = if @comment then @comment.compile(o) + '\n' else ''
+    idt       = o.indent
+    o.indent += TAB if @className
+    code      = if @body.isEmpty() then '' else
+      "\n#{ @body.compileWithDeclarations o }\n"
     if @className
       open  = "(function(){\n#{comm}#{idt}function #{@className}("
       close = "#{ code and idt }}\n#{idt}return #{@className};\n#{@tab}})()"
@@ -1057,10 +1052,10 @@ exports.While = class While extends Base
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
   compileNode: (o) ->
-    o.indent = @idt 1
-    set      = ''
-    code     = @condition.compile o, LEVEL_PAREN
-    {body}   = this
+    o.indent += TAB
+    code   = @condition.compile o, LEVEL_PAREN
+    set    = ''
+    {body} = this
     if body.isEmpty()
       body = ''
     else
@@ -1240,7 +1235,7 @@ exports.Try = class Try extends Base
   # Compilation is more or less as you would expect -- the *finally* clause
   # is optional, the *catch* is not.
   compileNode: (o) ->
-    o.indent  = @idt 1
+    o.indent += TAB
     errorPart = if @error then " (#{ @error.compile o }) " else ' '
     catchPart = if @recovery
       " catch#{errorPart}{\n#{ @recovery.compile o, LEVEL_TOP }\n#{@tab}}"
@@ -1361,7 +1356,7 @@ exports.For = class For extends Base
     name    = not pattern and @name?.compile o
     index   = @index?.compile o
     varPart = guardPart = defPart = retPart = ''
-    idt     = @idt 1
+    idt     = o.indent + TAB
     scope.find name  if name
     scope.find index if index
     @temps.push ivar = scope.temporary 'i' unless ivar = index
@@ -1463,12 +1458,12 @@ exports.Switch = class Switch extends Base
     this
 
   compileNode: (o) ->
-    o.indent = @idt 1
-    o.tab = tab = @tab
+    o.indent += TAB
+    {tab} = this
     code  = tab + "switch (#{ @subject.compile o, LEVEL_PAREN }) {\n"
     lastIndex = if @otherwise then -1 else @cases.length - 1
     for cs, i in @cases
-      code += cs.compile o
+      code += cs.compile o, tab
       break if i is lastIndex
       for exp in cs.body.expressions by -1 when exp not instanceof Comment
         code += o.indent + 'break;\n' unless exp instanceof Return
@@ -1484,9 +1479,9 @@ exports.Case = class Case extends Base
 
   constructor: (@tests, @body) ->
 
-  compile: (o) ->
+  compile: (o, tab) ->
     code = ''
-    add  = -> code += o.tab + "case #{ it.compile o, LEVEL_PAREN }:\n"
+    add  = -> code += tab + "case #{ it.compile o, LEVEL_PAREN }:\n"
     for test in @tests
       if test.=unwrap() instanceof Arr
       then add c for c in test.objects
@@ -1540,13 +1535,13 @@ exports.If = class If extends Base
   # Compile the **If** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
   compileStatement: (o) ->
-    child    = del o, 'chainChild'
-    cond     = @condition.compile o, LEVEL_PAREN
-    o.indent = @idt 1
-    body     = new Expressions(@body).compile o
-    body     = "\n#{body}\n#{@tab}" if body
-    ifPart   = "if (#{cond}) {#{body}}"
-    ifPart   = @tab + ifPart unless child
+    child = del o, 'chainChild'
+    cond  = @condition.compile o, LEVEL_PAREN
+    o.indent += TAB
+    body   = new Expressions(@body).compile o
+    body   = "\n#{body}\n#{@tab}" if body
+    ifPart = "if (#{cond}) {#{body}}"
+    ifPart = @tab + ifPart unless child
     return ifPart unless @elseBody
     ifPart + ' else ' + if @isChain
       o.indent     = @tab
