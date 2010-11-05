@@ -12,6 +12,9 @@ YES  = -> true
 NO   = -> false
 THIS = -> this
 
+RETURN = -> @returns = true; this
+NEGATE = -> @negated = not @negated; this
+
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -599,7 +602,9 @@ exports.Obj = class Obj extends Base
   constructor: (props) -> @objects = @properties = props or []
 
   compileNode: (o) ->
-    for prop, i in props = @properties
+    props = @properties
+    return (if @front then '({})' else '{}') unless props.length
+    for prop, i in props
       if prop instanceof Splat or (prop.variable or prop).base instanceof Parens
         rest = props.splice i
         break
@@ -667,6 +672,7 @@ exports.Arr = class Arr extends Base
   constructor: (@objects = []) ->
 
   compileNode: (o) ->
+    return '[]' unless @objects.length
     o.indent += TAB
     return code if code = Splat.compileArray o, @objects
     code = (obj.compile o, LEVEL_LIST for obj in @objects).join ', '
@@ -691,9 +697,7 @@ exports.Class = class Class extends Base
   # list of prototype property assignments.
   constructor: (@variable, @parent, @properties = []) ->
 
-  makeReturn: ->
-    @returns = true
-    this
+  makeReturn: RETURN
 
   # Instead of generating the JavaScript string directly, we build up the
   # equivalent syntax tree and compile that, in pieces. You can see the
@@ -893,9 +897,8 @@ exports.Code = class Code extends Base
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compileNode: (o) ->
-    sharedScope = del o, 'sharedScope'
-    o.scope     = scope = sharedScope or new Scope o.scope, @body, this
-    o.indent   += TAB
+    o.scope   = scope = del(o, 'sharedScope') or new Scope o.scope, @body, this
+    o.indent += TAB
     delete o.bare
     delete o.globals
     vars = []
@@ -1017,7 +1020,7 @@ exports.While = class While extends Base
 
   addBody: (@body) -> this
 
-  makeReturn: -> @returns = true; this
+  makeReturn: RETURN
 
   containsPureStatement: ->
     {expressions} = @body
@@ -1166,7 +1169,7 @@ exports.In = class In extends Base
 
   constructor: (@object, @array) ->
 
-  invert: -> @negated = not @negated; this
+  invert: NEGATE
 
   compileNode: (o) ->
     if @array instanceof Value and @array.isArray()
@@ -1253,7 +1256,7 @@ exports.Existence = class Existence extends Base
 
   constructor: (@expression) ->
 
-  invert: -> @negated = not @negated; this
+  invert: NEGATE
 
   compileNode: (o) ->
     code = @expression.compile o
@@ -1314,7 +1317,7 @@ exports.For = class For extends Base
     @step  or= new Literal 1 unless @object
     @returns = false
 
-  makeReturn: -> @returns = true; this
+  makeReturn: RETURN
 
   containsPureStatement: While::containsPureStatement
 
