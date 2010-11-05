@@ -875,21 +875,6 @@ exports.Assign = class Assign extends Base
     [left, rite] = @variable.cacheReference o
     new Op(@context.slice(0, -1), left, new Assign(rite, @value, '=')).compile o
 
-  compileAccess: (o) ->
-    val .= variable if (val = @value) instanceof Call
-    unless val instanceof Value and
-        ((base = val.base) instanceof Literal or
-         base instanceof Arr and base.objects.length is 1)
-      throw SyntaxError 'invalid right hand side for ".=": ' + @value.compile o
-    [left, rite] = @variable.cacheReference o
-    acc = if base instanceof Arr
-    then new Index    base.objects[0]
-    else new Accessor base
-    val.properties.unshift acc
-    val.base = rite
-    code = left.compile(o) + ' = ' + @value.compile(o)
-    if o.level <= LEVEL_LIST then code else "(#{code})"
-
 #### Code
 
 # A function definition. This is the only node that creates a new Scope.
