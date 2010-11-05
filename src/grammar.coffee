@@ -77,6 +77,7 @@ grammar =
 
   # Pure statements which cannot be expressions.
   Statement: [
+    o 'Comment'
     o 'Return'
     o 'Throw'
     o 'BREAK',    -> new Literal $1
@@ -101,7 +102,6 @@ grammar =
     o 'Switch'
     o 'Extends'
     o 'Class'
-    o 'Comment'
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -332,7 +332,6 @@ grammar =
     o 'INDENT ArgList OptComma OUTDENT',                  -> $2
     o 'ArgList OptComma INDENT ArgList OptComma OUTDENT', -> $1.concat $4
   ]
-  # Valid arguments are Expressions or Splats.
   Arg: [
     o 'Expression'
     o 'Splat'
