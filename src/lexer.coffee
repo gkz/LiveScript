@@ -135,17 +135,17 @@ exports.Lexer = class Lexer
   # Matches numbers, including decimals, hex, and exponential notation.
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
-    return 0 unless match = NUMBER.exec @chunk
-    @token 'STRNUM', match[0]
-    match[0].length
+    return 0 unless number = NUMBER.exec @chunk
+    @token 'STRNUM', number[=0]
+    number.length
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   stringToken: ->
     switch @chunk.charAt 0
     case "'"
-      return 0 unless match = SIMPLESTR.exec @chunk
-      @token 'STRNUM', (string = match[0]).replace MULTILINER, '\\\n'
+      return 0 unless string = SIMPLESTR.exec @chunk
+      @token 'STRNUM', (string[=0]).replace MULTILINER, '\\\n'
     case '"'
       return 0 unless string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
       if 0 < string.indexOf '#{', 1
@@ -162,7 +162,7 @@ exports.Lexer = class Lexer
     return 0 unless match = HEREDOC.exec @chunk
     [heredoc] = match
     quote = heredoc.charAt 0
-    doc = @sanitizeHeredoc match[2], {quote, indent: null}
+    doc   = @sanitizeHeredoc match[2], {quote, indent: null}
     if quote is '"' and 0 <= doc.indexOf '#{'
     then @interpolateString doc, heredoc: true
     else @token 'STRNUM', @makeString doc, quote, true
@@ -182,16 +182,16 @@ exports.Lexer = class Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return 0 unless @chunk.charAt(0) is '`' and match = JSTOKEN.exec @chunk
-    @token 'LITERAL', match[0].slice 1, -1
-    match[0].length
+    return 0 unless @chunk.charAt(0) is '`' and js = JSTOKEN.exec @chunk
+    @token 'LITERAL', (js[=0]).slice 1, -1
+    js.length
 
   # Matches regular expression literals. Lexing regular expressions is difficult
   # to distinguish from division, so we borrow some basic heuristics from
   # JavaScript and Ruby.
   regexToken: ->
     return 0 if @chunk.charAt(0) isnt '/'
-    return @heregexToken match if match = HEREGEX.exec @chunk
+    return @heregexToken regex if regex = HEREGEX.exec @chunk
     # Tokens which a regular expression will never immediately follow, but which
     # a division operator might.
     #
@@ -199,9 +199,8 @@ exports.Lexer = class Lexer
     #
     # Our list is shorter, due to sans-parentheses method calls.
     return 0 if @tag() in <[ STRNUM LITERAL ++ -- ]> or
-                not match = REGEX.exec @chunk
-    [regex] = match
-    @token 'LITERAL', if regex is '//' then '/(?:)/' else regex
+                not regex = REGEX.exec @chunk
+    @token 'LITERAL', if regex[=0] is '//' then '/(?:)/' else regex
     regex.length
 
   # Matches experimental, multiline and extended regular expression literals.
@@ -223,7 +222,8 @@ exports.Lexer = class Lexer
         tokens.push ['STRNUM', @makeString(value, '"', true)]
       tokens.push <[ PLUS_MINUS + ]>
     tokens.pop()
-    @tokens.push <[ STRNUM "" ]>, <[ PLUS_MINUS + ]> unless tokens[0]?[0] is 'STRNUM'
+    unless tokens[0]?[0] is 'STRNUM'
+      @tokens.push <[ STRNUM "" ]>, <[ PLUS_MINUS + ]>
     @tokens.push tokens...
     @tokens.push <[ , , ]>, ['STRNUM', '"' + flags + '"'] if flags
     @token ')', ')'
@@ -231,10 +231,9 @@ exports.Lexer = class Lexer
 
   # Matches words literal, a syntax sugar for an array of strings.
   wordsToken: ->
-    return 0 unless match = WORDS.exec @chunk
-    [words] = match
+    return 0 unless words = WORDS.exec @chunk
     @token '[', '['
-    for word in words.slice(2, -2).match(/\S+/g) or ['']
+    for word in (words[=0]).slice(2, -2).match(/\S+/g) or ['']
       @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
     @token ']', ']'
     @countLines words
@@ -251,9 +250,8 @@ exports.Lexer = class Lexer
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
-    return 0 unless match = MULTI_DENT.exec @chunk
-    [indent] = match
-    @countLines indent
+    return 0 unless indent = MULTI_DENT.exec @chunk
+    @countLines indent[=0]
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
     if size - @indebt is @indent
@@ -372,9 +370,9 @@ exports.Lexer = class Lexer
     {indent, herecomment} = options
     return doc if herecomment and 0 > doc.indexOf '\n'
     unless herecomment
-      while match = HEREDOC_INDENT.exec doc
-        attempt = match[1]
-        indent  = attempt if indent is null or 0 < attempt.length < indent.length
+      while attempt = HEREDOC_INDENT.exec doc
+        attempt[=1]
+        indent = attempt if !indent? or 0 < attempt.length < indent.length
     doc .= replace /// \n #{indent} ///g, '\n' if indent
     doc .= replace /^\n/, '' unless herecomment
     doc
