@@ -399,14 +399,17 @@ exports.Value = class Value extends Base
 # at the same position.
 exports.Comment = class Comment extends Base
 
+  constructor: (@comment) ->
+
   isPureStatement : YES
   isStatement     : YES
 
-  constructor: (@comment) ->
-
   makeReturn: THIS
 
-  compileNode: -> @tab + '/*' + multident(@comment, @tab) + '*/'
+  compile: (o, level) ->
+    code = '/*' + multident(@comment, o.indent) + '*/'
+    code = o.indent + code if (level ? o.level) is LEVEL_TOP
+    code
 
 #### Call
 
@@ -612,7 +615,7 @@ exports.Obj = class Obj extends Base
       then new Assign(prop.properties[0].name, prop, ':').compile o
       else if prop not instanceof [Assign, Comment]
       then new Assign(prop, prop, ':').compile o
-      else prop.compile o
+      else prop.compile o, LEVEL_TOP
       code += if i is lastIndex
       then ''
       else if prop is lastNonComment or prop instanceof Comment
@@ -630,7 +633,7 @@ exports.Obj = class Obj extends Base
         code = if oref then code + ', ' + impt else impt
         continue
       if prop instanceof Comment
-        code += ' ' + prop.compile o
+        code += ' ' + prop.compile o, LEVEL_LIST
         continue
       unless oref
         @temps.push oref = o.scope.temporary 'obj'
@@ -666,19 +669,10 @@ exports.Arr = class Arr extends Base
   compileNode: (o) ->
     o.indent += TAB
     return code if code = Splat.compileArray o, @objects
-    objects = []
-    for obj, i in @objects
-      code = obj.compile o, LEVEL_LIST
-      objects.push (if obj instanceof Comment
-      then "\n#{code}\n#{o.indent}"
-      else if i is @objects.length - 1
-      then code
-      else code + ', ')
-    objects .= join ''
-    if 0 < objects.indexOf '\n'
-      "[\n#{o.indent}#{objects}\n#{@tab}]"
-    else
-      "[#{objects}]"
+    code = (obj.compile o, LEVEL_LIST for obj in @objects).join ', '
+    if 0 < code.indexOf '\n'
+    then "[\n#{o.indent}#{code}\n#{@tab}]"
+    else "[#{code}]"
 
   assigns: (name) ->
     return true for obj in @objects when obj.assigns name
