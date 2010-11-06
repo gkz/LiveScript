@@ -5,19 +5,17 @@
 # variables are new and need to be declared with `var`, and which are shared
 # with the outside.
 
-exports.Scope = class Scope
-
+# Initialize a scope with its parent, for lookups up the chain,
+# as well as a reference to the **Expressions** node is belongs to, which is
+# where it should declare its variables, and a reference to the function that
+# it wraps.
+exports.Scope = Scope = (@parent, @expressions, @method) ->
+  @variables = [{name: 'arguments', type: 'arguments'}]
+  @positions = {}
   # The top-level **Scope** object.
-  @root: null
+  Scope.root = this unless @parent
 
-  # Initialize a scope with its parent, for lookups up the chain,
-  # as well as a reference to the **Expressions** node is belongs to, which is
-  # where it should declare its variables, and a reference to the function that
-  # it wraps.
-  constructor: (@parent, @expressions, @method) ->
-    @variables = [{name: 'arguments', type: 'arguments'}]
-    @positions = {}
-    Scope.root = this unless @parent
+Scope.prototype import
 
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
