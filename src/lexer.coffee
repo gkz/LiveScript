@@ -86,13 +86,13 @@ exports.Lexer = class Lexer
       @seenFrom = false
       @token 'TO', id
       return id.length
-    if at = id.charAt(0) is '@'
+    tag = if at = id.charAt(0) is '@'
       id .= slice 1
-      tag = 'THISPROP'
+      'THISPROP'
     else
-      tag = 'IDENTIFIER'
+      'IDENTIFIER'
     forcedIdentifier = at or colon or
-      if (prev = @tokens[*-1])[1].colon2
+      if not (prev = @tokens[*-1]).spaced and prev[1].colon2
       then @token 'ACCESS', '.'
       else prev[0] is 'ACCESS'
     if id in JS_FORBIDDEN

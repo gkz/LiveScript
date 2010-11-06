@@ -15,7 +15,7 @@ exports.Scope = Scope = (@parent, @expressions, @method) ->
   # The top-level **Scope** object.
   Scope.root = this unless @parent
 
-Scope.prototype import
+Scope:: import all
 
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->

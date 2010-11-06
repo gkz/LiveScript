@@ -71,5 +71,8 @@ ok not Date
 ?.foo, '`?.` and `::` should also continue lines'
 
 
+eq ok, ({prototype: -> it}:: ok), 'space after :: should be significant'
+
+
 eq [1, 2, 3][*-1], 3
 eq 0[*], void
