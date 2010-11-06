@@ -39,7 +39,7 @@ task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
 
 
 task 'build', 'build the Coco language from source', ->
-  files = for file in fs.readdirSync('src') when /\.co(?:ffee)?$/i.test file
+  files = for file of fs.readdirSync('src') when /\.co(?:ffee)?$/i.test file
     'src/' + file
   run ['-c', '-o', 'lib', files...]
 
@@ -56,14 +56,14 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   fs.writeFile 'lib/parser.js', parser.generate()
 
 
-task 'build:browser', 'rebuild the merged script for inclusion in the browser', ->
+task 'build:browser', 'rebuild the merged script for inclusion of the browser', ->
   code = ''
   code += """
     require['./#{name}'] = new function(){
       var exports = this;
       #{ fs.readFileSync "lib/#{name}.js" }
     };
-  """ for name in <[ rewriter lexer parser scope nodes coco browser ]>
+  """ for name of <[ rewriter lexer parser scope nodes coco browser ]>
   jsp = require 'uglifyjs/parse-js'
   pro = require 'uglifyjs/process'
   ast = jsp.parse """
@@ -103,7 +103,7 @@ task 'bench', 'quick benchmark of compilation time (of everything in src)', ->
     console.log stderr.trim()
 
 task 'loc', 'count the lines of source code in the Coco compiler', ->
-  sources = ("src/#{src}.coffee" for src in <[
+  sources = ("src/#{src}.coffee" for src of <[
     coco grammar lexer nodes rewriter scope
   ]>).join ' '
   exec "cat #{sources} | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '",
@@ -114,7 +114,7 @@ runTests = (Coco) ->
   path = require 'path'
   startTime = Date.now()
   passedTests = failedTests = 0
-  for all name, func of require 'assert' then do ->
+  for all name, func in require 'assert' then do ->
     global[name] = ->
       func arguments...
       ++passedTests

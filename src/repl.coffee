@@ -2,7 +2,7 @@
 # and evaluates it. Good for simple tests, or poking around the **Node.js** API.
 # Using it looks like this:
 #
-#     coco> console.log "#{num} bottles of beer" for num in [99..1]
+#     coco> console.log "#{num} bottles of beer" for num from 99 to 1 by -1
 
 Coco     = require './coco'
 readline = require 'readline'

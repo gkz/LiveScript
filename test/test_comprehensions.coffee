@@ -1,14 +1,14 @@
 # Basic array comprehensions.
-nums    = (n * n for n in [1, 2, 3] when n % 2 isnt 0)
-results = (n * 2 for n in nums)
+nums    = (n * n for n of [1, 2, 3] when n % 2 isnt 0)
+results = (n * 2 for n of nums)
 
 ok results.join(',') is '2,18'
 
 
 # Basic object comprehensions.
 obj   = {one: 1, two: 2, three: 3}
-names = (prop + '!' for prop of obj)
-odds  = (prop + '!' for prop, value of obj when value % 2 isnt 0)
+names = (prop + '!' for prop in obj)
+odds  = (prop + '!' for prop, value in obj when value % 2 isnt 0)
 
 ok names.join(' ') is "one! two! three!"
 ok odds.join(' ')  is "one! three!"
@@ -29,7 +29,7 @@ eq "#{ x for x from 3*3 to 0*0 by 0-3 }", '9,6,3,0'
 
 
 # Multiline array comprehension with filter.
-evens = for num in [1, 2, 3, 4, 5, 6] when num % 2 is 0
+evens = for num of [1, 2, 3, 4, 5, 6] when num % 2 is 0
            num *= -1
            num -= 2
            num * -1
@@ -37,12 +37,12 @@ eq evens + '', '4,6,8'
 
 
 # Backward traversing.
-odds = (num for num in [0, 1, 2, 3, 4, 5] by -2)
+odds = (num for num of [0, 1, 2, 3, 4, 5] by -2)
 eq odds + '', '5,3,1'
 
 
 # The in operator still works, standalone.
-ok 2 of evens
+ok 2 in evens
 
 # all/from/to aren't reserved.
 all = from = to = 1
@@ -65,14 +65,14 @@ ok 5 is singleLiner[2][2][1]
 # Comprehensions within parentheses.
 result = null
 store = -> result := it
-store (x * 2 for x in [3, 2, 1])
+store (x * 2 for x of [3, 2, 1])
 
 ok result.join(' ') is '6 4 2'
 
 
 # Closure-wrapped comprehensions that refer to the "arguments" object.
 expr = ->
-  result = (item * item for item in arguments)
+  result = (item * item for item of arguments)
 
 ok expr(2, 4, 8).join(' ') is '4 16 64'
 
@@ -84,29 +84,29 @@ class Cat
   hair:  'cream'
 
 whiskers = new Cat
-own = (value for key, value of whiskers)
-all = (value for all key, value of whiskers)
+own = (value for key, value in whiskers)
+all = (value for all key, value in whiskers)
 
 ok own.join(' ') is 'Whiskers'
 ok all.sort().join(' ') is 'Whiskers cream tabby'
 
 
 f = -> [-> ok false, 'should cache source']
-ok true for k of [f] = f()
+ok true for k in [f] = f()
 
 
 # Lenient true pure statements not trying to reach out of the closure
-val = for i in [1]
-  for j in [] then break
+val = for i of [1]
+  for j of [] then break
   i
 ok val[0] is i
 
 
 # Comprehensions only wrap their last line in a closure, allowing other lines
 # to have pure expressions in them.
-func = -> for i in [1, 2]
+func = -> for i of [1, 2]
   break if i is 2
-  j for j in [1]
+  j for j of [1]
 ok func()[0][0] is 1
 
 i = 6
@@ -127,7 +127,7 @@ fs = for i from 0 to 2 when i > 0
   do ->
     {callee} = arguments
     -> [i, callee]
-[one, two] = (f() for f in fs)
+[one, two] = (f() for f of fs)
 eq one[0], 1
 eq two[0], 2
 eq one[1], two[1]

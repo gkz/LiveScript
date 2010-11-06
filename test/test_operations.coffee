@@ -27,20 +27,20 @@ ok not (a is  b)
 
 # Allow "if x not in y"
 obj = {a: true}
-ok 'a' of obj
-ok 'b' not of obj
+ok 'a' in obj
+ok 'b' not in obj
 
 # And for "a in b" with array presence.
-ok 200 in [100, 200, 300]
+ok 200 of [100, 200, 300]
 array = [100, 200, 300]
-ok 200 in array
-ok 1 not in array
-ok array[0]++ in [99, 100], 'should cache testee'
+ok 200 of array
+ok 1 not of array
+ok array[0]++ of [99, 100], 'should cache testee'
 
 # And with array presence true an instance variable.
 obj = {
   list: [1, 2, 3, 4, 5]
-  in_list: (value) -> value in @list
+  in_list: (value) -> value of @list
 }
 ok obj.in_list 4
 ok not obj.in_list 0
@@ -148,17 +148,17 @@ ok new Number not instanceof String
 
 
 #737: `in` should have higher precedence than logical operators.
-eq 1, 1 in [1] and 1
+eq 1, 1 of [1] and 1
 
 #768: `in` should preserve evaluation order.
 share = 0
 a = -> share++ if share is 0
 b = -> share++ if share is 1
 c = -> share++ if share is 2
-ok a() not in [b(),c()] and share is 3
+ok a() not of [b(),c()] and share is 3
 
 # `in` with cache and `__indexOf` should work in commaed lists.
-eq [Object() in Array()].length, 1
+eq [Object() of Array()].length, 1
 
 
 # Operators should respect new lines as spaced.

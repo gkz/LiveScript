@@ -24,11 +24,11 @@ exports.OptionParser = class OptionParser
   parse: (args) ->
     options = arguments: []
     args    = normalizeArguments args
-    for arg, i in args
+    for arg, i of args
       isOption    = !!(LONG_FLAG.test(arg) or SHORT_FLAG.test(arg))
       matchedRule = false
-      for rule in @rules
-        if arg in [rule.shortFlag, rule.longFlag]
+      for rule of @rules
+        if arg of [rule.shortFlag, rule.longFlag]
           value = if rule.hasArgument then args[i += 1] else true
           options[rule.name] = if rule.isList
           then (options[rule.name] or []).concat value
@@ -46,9 +46,9 @@ exports.OptionParser = class OptionParser
   help: ->
     lines = ['Available options:']
     lines.unshift @banner + '\n' if @banner
-    width = Math.max (rule.longFlag.length for rule in @rules)...
+    width = Math.max (rule.longFlag.length for rule of @rules)...
     pad   = Array(width).join ' '
-    for rule in @rules
+    for rule of @rules
       sf = if rule.shortFlag then rule.shortFlag + ','  else '   '
       lf = (rule.longFlag + pad).slice 0, width
       lines.push "  #{sf} #{lf}  #{rule.description}"
@@ -66,7 +66,7 @@ OPTIONAL   = /\[(\w+(\*?))\]/
 # Build and return the list of option rules. If the optional *short-flag* is
 # unspecified, leave it out by padding with `null`.
 buildRules = (rules) ->
-  for tuple in rules
+  for tuple of rules
     tuple.unshift null if tuple.length < 3
     buildRule tuple...
 
@@ -85,8 +85,8 @@ buildRule = (shortFlag, longFlag, description) ->
 # Normalize arguments by expanding merged flags into multiple flags. This allows
 # you to have `-wl` be the same as `--watch --lint`.
 normalizeArguments = (args) ->
-  results = for arg in args
+  results = for arg of args
     if match = MULTI_FLAG.exec arg
-    then '-' + l for l in match[1].split ''
+    then '-' + l for l of match[1].split ''
     else arg
   [].concat results...

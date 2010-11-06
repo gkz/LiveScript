@@ -221,8 +221,8 @@ grammar =
   # Everything that can be assigned to.
   Assignable: [
     o 'SimpleAssignable'
-    o 'Array',           -> new Value $1
-    o 'Object',          -> new Value $1
+    o 'Array',  -> new Value $1
+    o 'Object', -> new Value $1
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
@@ -306,8 +306,8 @@ grammar =
 
   # The list of arguments to a function call.
   Arguments: [
-    o 'CALL_START CALL_END',                    -> []
-    o 'CALL_START ArgList OptComma CALL_END',   -> $2
+    o 'CALL_START CALL_END',                  -> []
+    o 'CALL_START ArgList OptComma CALL_END', -> $2
   ]
 
   # A reference to a property on `this`.
@@ -318,7 +318,7 @@ grammar =
 
   # The array literal.
   Array: [
-    o '[ ]',                  -> new Arr []
+    o '[                  ]', -> new Arr []
     o '[ ArgList OptComma ]', -> new Arr $2
   ]
 
@@ -349,7 +349,7 @@ grammar =
   Try: [
     o 'TRY Block',                     -> new Try $2
     o 'TRY Block Catch',               -> new Try $2, $3[0], $3[1]
-    o 'TRY Block FINALLY Block',       -> new Try $2, null, null, $4
+    o 'TRY Block       FINALLY Block', -> new Try $2, null, null, $4
     o 'TRY Block Catch FINALLY Block', -> new Try $2, $3[0], $3[1], $5
   ]
   # A catch clause names its error and runs a block of code.
@@ -404,16 +404,16 @@ grammar =
     o 'Array',  -> new Value $1
     o 'Object', -> new Value $1
   ]
-  ForIn: [
-    o 'FORIN Expression',                 -> source: $2
-    o 'FORIN Expression WHEN Expression', -> source: $2,           guard: $4
-    o 'FORIN Expression BY Expression',   -> source: $2, step: $4
-    o 'FORIN Expression BY Expression
+  ForOf: [
+    o 'FOROF Expression',                 -> source: $2
+    o 'FOROF Expression WHEN Expression', -> source: $2,           guard: $4
+    o 'FOROF Expression BY Expression',   -> source: $2, step: $4
+    o 'FOROF Expression BY Expression
                         WHEN Expression', -> source: $2, step: $4, guard: $6
   ]
-  ForOf: [
-    o 'FOROF Expression',                 -> object: true, source: $2
-    o 'FOROF Expression WHEN Expression', -> object: true, source: $2, guard: $4
+  ForIn: [
+    o 'FORIN Expression',                 -> object: true, source: $2
+    o 'FORIN Expression WHEN Expression', -> object: true, source: $2, guard: $4
   ]
   ForTo: [
     o 'TO Expression',                 -> op: $1, to: $2
@@ -426,13 +426,20 @@ grammar =
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
   ForBody: [
-    o 'FOR ForValue ForIn',                   -> extend $3, name: $2
-    o 'FOR ForValue , Identifier ForIn',      -> extend $5, name: $2, index: $4
-    o 'FOR Identifier ForOf',                 -> extend $3, index: $2
-    o 'FOR ForValue , ForValue ForOf',        -> extend $5, index: $2, name: $4
-    o 'FOR ALL Identifier ForOf',             -> extend $4, raw: true, index: $3
-    o 'FOR ALL Identifier , ForValue ForOf',  -> extend $6, raw: true, index: $3, name: $5
-    o 'FOR Identifier FROM Expression ForTo', -> extend $5, index: $2, from: $4
+    o 'FOR ForValue
+       ForOf', -> extend $3, name: $2
+    o 'FOR ForValue , Identifier
+       ForOf', -> extend $5, name: $2, index: $4
+    o 'FOR Identifier
+       ForIn', -> extend $3, index: $2
+    o 'FOR ForValue , ForValue
+       ForIn', -> extend $5, index: $2, name: $4
+    o 'FOR ALL Identifier
+       ForIn', -> extend $4, raw: true, index: $3
+    o 'FOR ALL Identifier , ForValue
+       ForIn', -> extend $6, raw: true, index: $3, name: $5
+    o 'FOR Identifier FROM Expression
+       ForTo', -> extend $5, index: $2, from: $4
   ]
 
   Switch: [
@@ -539,9 +546,9 @@ operators = [
 # terminals (every symbol which does not appear as the name of a rule above)
 # as "tokens".
 tokens = []
-for all name, alternatives of grammar
-  grammar[name] = for alt in alternatives
-    for token in alt[0].split ' '
+for all name, alternatives in grammar
+  grammar[name] = for alt of alternatives
+    for token of alt[0].split ' '
       tokens.push token unless grammar[token]
     alt[1] = "return #{alt[1]}" if name is 'Root'
     alt

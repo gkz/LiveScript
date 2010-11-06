@@ -69,14 +69,14 @@ compileScripts = ->
       fs.stat source, (err, stats) ->
         if stats.isDirectory()
           fs.readdir source, (err, files) ->
-            compile path.join source, file for file in files
+            compile path.join source, file for file of files
             null
-        else if topLevel or path.extname(source) in <[ .co .coffee ]>
+        else if topLevel or path.extname(source) of <[ .co .coffee ]>
           base = path.join source
           fs.readFile source, (err, code) ->
             compileScript source, code.toString(), base
           watch source, base if opts.watch
-  compile source, true for source in sources
+  compile source, true for source of sources
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
@@ -85,7 +85,7 @@ compileScript = (file, input, base) ->
   o = opts
   options = compileOptions file
   if o.require
-    for req in o.require
+    for req of o.require
       require if req.charAt(0) is '.' then fs.realpathSync req else req
   try
     t = task = {file, input, options}
@@ -157,7 +157,7 @@ lint = (file, js) ->
 
 # Pretty-print a stream of tokens.
 printTokens = (tokens) ->
-  strings = for [tag, value] in tokens
+  strings = for [tag, value] of tokens
     "[#{tag} #{ value.toString().replace /\n/, '\\n' }]"
   console.log strings.join ' '
 

@@ -113,7 +113,7 @@ ok del() is 5
 
 # Ensure that functions can have a trailing comma in their argument list
 mult = (x, mids..., y) ->
-  x *= n for n in mids
+  x *= n for n of mids
   x * y
 
 eq 2, mult 1, 2
@@ -233,7 +233,7 @@ type = new Type args
 
 ok type and type instanceof Type
 ok type.args and type.args instanceof Array
-ok v is args[i] for v, i in type.args
+ok v is args[i] for v, i of type.args
 
 Type1 = (@a, @b, @c) ->
 type1 = new Type1 args...

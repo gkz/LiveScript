@@ -174,5 +174,6 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 - `yes`/`no`/`on`/`off` are not reserved. Define your own or just use `true`/`false`.
 - `undefined` is not reserved.
 - `===`/`!==`/`==`/`!=` each compiles as is.
+- The roles of `in` and `of` has been swapped to keep the JS behavior.
 - switch-when-else has been replaced by switch-case-default.
 - The binaries are named __coco__ and __coke__, to coexist with __coffee__/__cake__.

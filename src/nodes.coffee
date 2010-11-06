@@ -43,7 +43,7 @@ exports.Base = class Base
               node.isPureStatement() or not node.isStatement(o)
     then node.compileNode    o
     else node.compileClosure o
-    o.scope.free tmp for tmp in node.temps if node.temps
+    o.scope.free tmp for tmp of node.temps if node.temps
     code
 
   # Statements converted into expressions via closure-wrapping share a scope
@@ -102,7 +102,7 @@ exports.Base = class Base
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coco --nodes` prints out.
   toString: (idt = '', override) ->
-    children = (child.toString idt + TAB for child in @collectChildren())
+    children = (child.toString idt + TAB for child of @collectChildren())
     name  = override or @constructor.name
     name += '?' if @soak
     '\n' + idt + name + children.join ''
@@ -110,9 +110,9 @@ exports.Base = class Base
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
     return this unless @children
-    for name in @children when child = @[name]
-      if 'length' of child
-      then for node in child then return this if false is func node
+    for name of @children when child = @[name]
+      if 'length' in child
+      then for node of child then return this if false is func node
       else                        return this if false is func child
     this
 
@@ -172,14 +172,14 @@ exports.Expressions = class Expressions extends Base
   isEmpty: -> not @expressions.length
 
   isStatement: (o) ->
-    for exp in @expressions when exp.isPureStatement() or exp.isStatement o
+    for exp of @expressions when exp.isPureStatement() or exp.isStatement o
       return true
     false
 
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
   makeReturn: ->
-    for end, idx in @expressions by -1 when end not instanceof Comment
+    for end, idx of @expressions by -1 when end not instanceof Comment
       @expressions[idx] = end.makeReturn()
       break
     this
@@ -192,7 +192,7 @@ exports.Expressions = class Expressions extends Base
     @tab  = o.indent
     top   = o.level is LEVEL_TOP
     codes = []
-    for node in @expressions
+    for node of @expressions
       node = (do node.=unwrapAll).unfoldSoak(o) or node
       if top
         node.front = true
@@ -244,7 +244,7 @@ exports.Literal = class Literal extends Base
 
   # Break and continue must be treated as pure statements -- they lose their
   # meaning when wrapped in a closure.
-  isPureStatement: -> @value in <[ break continue debugger ]>
+  isPureStatement: -> @value of <[ break continue debugger ]>
 
   isAssignable: -> IDENTIFIER.test @value
 
@@ -346,7 +346,7 @@ exports.Value = class Value extends Base
     ps = v.properties
     code  = v.base.compile o, if ps.length then LEVEL_ACCESS else null
     code += ' ' if ps[0] instanceof Accessor and SIMPLENUM.test code
-    code += p.compile o for p in ps
+    code += p.compile o for p of ps
     code
 
   substituteStar: (o) ->
@@ -356,7 +356,7 @@ exports.Value = class Value extends Base
       if it instanceof Literal and it.value is '*'
         star := it
         false
-    for prop, i in @properties when prop instanceof Index
+    for prop, i of @properties when prop instanceof Index
       prop.traverseChildren false, find
       continue unless star
       [sub, ref] = new Value(@base, @properties.slice 0, i).cache o
@@ -371,7 +371,7 @@ exports.Value = class Value extends Base
     if ifn = @base.unfoldSoak o
       ifn.body.properties.push @properties...
       return ifn
-    for prop, i in @properties when prop.soak
+    for prop, i of @properties when prop.soak
       prop.soak = false
       fst = new Value @base, @properties.slice 0, i
       snd = new Value @base, @properties.slice i
@@ -388,7 +388,7 @@ exports.Value = class Value extends Base
     if asn = @base.unfoldAssign o
       asn.value.properties.push @properties...
       return asn
-    for prop, i in @properties when prop.assign
+    for prop, i of @properties when prop.assign
       prop.assign = false
       [lhs, rhs] = new Value(@base, @properties.slice 0, i).cacheReference o
       asn = new Assign lhs, new Value(rhs, @properties.slice i), '='
@@ -454,7 +454,7 @@ exports.Call = class Call extends Base
       rite.new = @new
       left = new Literal "typeof #{ left.compile o } == \"function\""
       return new If left, new Value(rite), soak: true
-    for call in @digCalls()
+    for call of @digCalls()
       if ifn
         if call.variable instanceof Call
         then call.variable      = ifn
@@ -479,7 +479,7 @@ exports.Call = class Call extends Base
   # Compile a vanilla function call.
   compileNode: (o) ->
     if vr = @variable
-      for call in @digCalls()
+      for call of @digCalls()
         if asn
           if call.variable instanceof Call
           then call.variable      = asn
@@ -490,7 +490,7 @@ exports.Call = class Call extends Base
       return asn.compile o if asn
       vr.front = @front
     return @compileSplat o, code if code = Splat.compileArray o, @args, true
-    args = (arg.compile o, LEVEL_LIST for arg in @args).join ', '
+    args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
     if @isSuper
     then @compileSuper args, o
     else @new + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
@@ -566,7 +566,7 @@ exports.Accessor = class Accessor extends Base
     case '.=' then @assign = true
 
   compile: (o) ->
-    if (name = @name.compile o).charAt(0) in <[ \" \' ]>
+    if (name = @name.compile o).charAt(0) of <[ \" \' ]>
     then "[#{name}]"
     else ".#{name}"
 
@@ -604,17 +604,17 @@ exports.Obj = class Obj extends Base
   compileNode: (o) ->
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
-    for prop, i in props
+    for prop, i of props
       if prop instanceof Splat or (prop.variable or prop).base instanceof Parens
         rest = props.splice i
         break
     lastIndex = props.length - 1
-    for prop in props by -1 when prop not instanceof Comment
+    for prop of props by -1 when prop not instanceof Comment
       lastNonComment = prop
       break
     code = ''
     idt  = o.indent += TAB
-    for prop, i in props
+    for prop, i of props
       code += idt unless prop instanceof Comment
       code += if prop instanceof Value and prop.this
       then new Assign(prop.properties[0].name, prop, ':').compile o
@@ -632,7 +632,7 @@ exports.Obj = class Obj extends Base
 
   compileDynamic: (o, code, props) ->
     @temps = []
-    for prop, i in props
+    for prop, i of props
       if sp = prop instanceof Splat
         impt = new Import(new Literal(oref or code), prop.name, true).compile o
         code = if oref then code + ', ' + impt else impt
@@ -659,7 +659,7 @@ exports.Obj = class Obj extends Base
     if o.level <= LEVEL_PAREN then code else "(#{code})"
 
   assigns: (name) ->
-    return true for prop in @properties when prop.assigns name
+    return true for prop of @properties when prop.assigns name
     false
 
 #### Arr
@@ -675,13 +675,13 @@ exports.Arr = class Arr extends Base
     return '[]' unless @objects.length
     o.indent += TAB
     return code if code = Splat.compileArray o, @objects
-    code = (obj.compile o, LEVEL_LIST for obj in @objects).join ', '
+    code = (obj.compile o, LEVEL_LIST for obj of @objects).join ', '
     if 0 < code.indexOf '\n'
     then "[\n#{o.indent}#{code}\n#{@tab}]"
     else "[#{code}]"
 
   assigns: (name) ->
-    return true for obj in @objects when obj.assigns name
+    return true for obj of @objects when obj.assigns name
     false
 
 #### Class
@@ -717,7 +717,7 @@ exports.Class = class Class extends Base
     else
       ctor = new Code [], new Expressions new Return new Literal 'this'
 
-    for prop in @properties
+    for prop of @properties
       {variable: pvar, value: func} = prop
       if pvar and pvar.base.value is 'constructor'
         if func not instanceof Code
@@ -784,7 +784,7 @@ exports.Assign = class Assign extends Base
     {variable, value} = this
     if isValue = variable instanceof Value
       return @compileDestructuring o if variable.isArray() or variable.isObject()
-      return @compileConditional   o if @context in <[ ||= &&= ?= ]>
+      return @compileConditional   o if @context of <[ ||= &&= ?= ]>
     name = variable.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
@@ -833,7 +833,7 @@ exports.Assign = class Assign extends Base
     if not IDENTIFIER.test(vvar) or @variable.assigns(vvar)
       assigns.push "#{ ref = o.scope.temporary 'ref' } = #{vvar}"
       vvar = ref
-    for obj, i in objects
+    for obj, i of objects
       # A regular array pattern-match.
       idx = i
       if isObject
@@ -903,11 +903,11 @@ exports.Code = class Code extends Base
     delete o.globals
     vars = []
     exps = []
-    for param in @params when param.splat
-      splats = new Assign new Value(new Arr(p.asReference o for p in @params)),
+    for param of @params when param.splat
+      splats = new Assign new Value(new Arr(p.asReference o for p of @params)),
                           new Value new Literal 'arguments'
       break
-    for param in @params
+    for param of @params
       if param.isComplex()
         val = ref = param.asReference o
         val = new Op '?', ref, param.value if param.value
@@ -923,7 +923,7 @@ exports.Code = class Code extends Base
     exps.unshift splats if splats
     @body.expressions.splice 0, 0, exps... if exps.length
     @body.makeReturn() unless wasEmpty or @noReturn
-    scope.parameter vars[i] = v.compile o for v, i in vars unless splats
+    scope.parameter vars[i] = v.compile o for v, i of vars unless splats
     vars.push 'it' if not vars.length and @body.contains (-> it.value is 'it')
     comm      = if @comment then @comment.compile(o) + '\n' else ''
     idt       = o.indent
@@ -994,13 +994,13 @@ exports.Splat = class Splat extends Base
       return code if apply
       return "#{ utility 'slice' }.call(#{code})"
     args = list.slice index
-    for node, i in args
+    for node, i of args
       code = node.compile o, LEVEL_LIST
       args[i] = if node instanceof Splat
       then "#{ utility 'slice' }.call(#{code})"
       else "[#{code}]"
     return args[0] + ".concat(#{ args.slice(1).join ', ' })" if index is 0
-    base = (node.compile o, LEVEL_LIST for node in list.slice 0, index)
+    base = (node.compile o, LEVEL_LIST for node of list.slice 0, index)
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
 #### While
@@ -1061,10 +1061,6 @@ exports.While = class While extends Base
 # Coco operations into their JavaScript equivalents.
 exports.Op = class Op extends Base
 
-  # The map of conversions from Coco to JavaScript symbols.
-  CONVERSIONS:
-    'of': 'in'
-
   # The map of invertible operators.
   INVERSIONS:
     '!==': '==='
@@ -1075,7 +1071,7 @@ exports.Op = class Op extends Base
   children: <[ first second ]>
 
   constructor: (op, first, second, flip) ->
-    return new In first, second if op is 'in'
+    return new Of first, second if op is 'of'
     if op is 'do'
       if first instanceof Code and first.bound
         first.bound = false
@@ -1086,7 +1082,7 @@ exports.Op = class Op extends Base
       return first.newInstance() if first instanceof Call
       first = new Parens first   if first instanceof Code and first.bound
       first.keep = true
-    @operator = @CONVERSIONS[op] or op
+    @operator = op
     @first    = first
     @second   = second
     @flip     = !!flip
@@ -1095,7 +1091,7 @@ exports.Op = class Op extends Base
 
   # Am I capable of
   # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
-  isChainable: -> @operator in <[ < > >= <= === !== == != ]>
+  isChainable: -> @operator of <[ < > >= <= === !== == != ]>
 
   invert: ->
     if op = @INVERSIONS[@operator]
@@ -1106,7 +1102,7 @@ exports.Op = class Op extends Base
     else super()
 
   unfoldSoak: (o) ->
-    @operator in <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
+    @operator of <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
 
   compileNode: (o) ->
     return @compileUnary     o if @isUnary()
@@ -1145,8 +1141,8 @@ exports.Op = class Op extends Base
   # Compile a unary **Op**.
   compileUnary: (o) ->
     parts = [op = @operator]
-    parts.push ' ' if op in <[ new typeof delete void ]> or
-                      op in <[ + - ]> and @first.operator is op
+    parts.push ' ' if op of <[ new typeof delete void ]> or
+                      op of <[ + - ]> and @first.operator is op
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
     code = parts.join ''
@@ -1154,7 +1150,7 @@ exports.Op = class Op extends Base
 
   compileMultiIO: (o) ->
     [sub, ref] = @first.cache o, LEVEL_OP
-    tests = for item, i in @second.base.objects
+    tests = for item, i of @second.base.objects
       (if i then ref else sub) + ' instanceof ' + item.compile o
     o.scope.free ref if sub isnt ref
     code = tests.join ' || '
@@ -1162,8 +1158,8 @@ exports.Op = class Op extends Base
 
   toString: (idt) -> super idt, @constructor.name + ' ' + @operator
 
-#### In
-exports.In = class In extends Base
+#### Of
+exports.Of = class Of extends Base
 
   children: <[ object array ]>
 
@@ -1179,7 +1175,7 @@ exports.In = class In extends Base
   compileOrTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
-    tests = for item, i in @array.base.objects
+    tests = for item, i of @array.base.objects
       (if i then ref else sub) + cmp + item.compile o, LEVEL_OP
     o.scope.free ref if sub isnt ref
     code = tests.join cnj
@@ -1400,7 +1396,7 @@ exports.For = class For extends Base
 
   pluckDirectCalls: (o, body, name, index) ->
     defs = ''
-    for exp, idx in body.expressions when (exp = do exp.unwrapAll) instanceof Call
+    for exp, idx of body.expressions when (exp = do exp.unwrapAll) instanceof Call
       val = do exp.variable.unwrapAll
       continue unless \
         val instanceof Code and not exp.args.length or
@@ -1412,7 +1408,7 @@ exports.For = class For extends Base
       base = new Value ref = new Literal ref
       args = [].concat name or [], index or []
       args.reverse() if @object
-      fn.params.push new Param args[i] = new Literal a for a, i in args
+      fn.params.push new Param args[i] = new Literal a for a, i of args
       if val.base
         [val.base, base] = [base, val]
         args.unshift new Literal 'this'
@@ -1432,10 +1428,10 @@ exports.Switch = class Switch extends Base
   constructor: (@subject, @cases, @otherwise) ->
     return if @subject
     @subject = new Literal false
-    cs.tests = (test.invert() for test in cs.tests) for cs in @cases
+    cs.tests = (test.invert() for test of cs.tests) for cs of @cases
 
   makeReturn: ->
-    cs.body.makeReturn() for cs in @cases
+    cs.body.makeReturn() for cs of @cases
     @otherwise?.makeReturn()
     this
 
@@ -1444,10 +1440,10 @@ exports.Switch = class Switch extends Base
     {tab} = this
     code  = tab + "switch (#{ @subject.compile o, LEVEL_PAREN }) {\n"
     lastIndex = if @otherwise then -1 else @cases.length - 1
-    for cs, i in @cases
+    for cs, i of @cases
       code += cs.compile o, tab
       break if i is lastIndex
-      for exp in cs.body.expressions by -1 when exp not instanceof Comment
+      for exp of cs.body.expressions by -1 when exp not instanceof Comment
         code += o.indent + 'break;\n' unless exp instanceof Return
         break
     code += tab + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
@@ -1464,9 +1460,9 @@ exports.Case = class Case extends Base
   compile: (o, tab) ->
     code = ''
     add  = -> code += tab + "case #{ it.compile o, LEVEL_PAREN }:\n"
-    for test in @tests
+    for test of @tests
       if test.=unwrap() instanceof Arr
-      then add c for c in test.objects
+      then add c for c of test.objects
       else add test
     code += body + '\n' if body = @body.compile o, LEVEL_TOP
     code

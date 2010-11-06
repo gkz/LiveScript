@@ -19,7 +19,7 @@ switches  = []
 oparse    = null
 
 # Mixin the top-level coke functions for Cakefiles to use directly.
-global import {
+global import all
 
   # Define a coke task with a short name, an optional sentence description,
   # and the function to run as the action itself.
@@ -37,7 +37,6 @@ global import {
   invoke: (name) ->
     missingTask name unless tasks[name]
     tasks[name].action options
-}
 
 # Run `coke`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
@@ -50,14 +49,14 @@ exports.run = ->
     oparse  := new optparse.OptionParser switches
     return printTasks() unless args.length
     options := oparse.parse args
-    invoke arg for arg in options.arguments
+    invoke arg for arg of options.arguments
 
 # Display the list of tasks in a format similar to `rake -T`
 printTasks = ->
   console.log ''
-  width = Math.max (name.length for all name of tasks)...
+  width = Math.max (name.length for all name in tasks)...
   pad   = Array(width).join ' '
-  for all name, task of tasks
+  for all name, task in tasks
     desc = if task.description then '# ' + task.description else ''
     console.log "coke #{ (name + pad).slice 0, width } #{desc}"
   console.log oparse.help() if switches.length

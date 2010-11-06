@@ -182,7 +182,7 @@ class Mini
         @num
 
 m = new Mini
-eq (func() for func in m.generate()).join(' '), '10 10 10'
+eq (func() for func of m.generate()).join(' '), '10 10 10'
 
 
 # Testing a contructor called with varargs.
@@ -214,7 +214,7 @@ ok c.args.join(' ') is '1 2 3 4'
 # Test `extended` callback.
 class Base
   @extended: (subclass) ->
-    for key, value of @
+    for key, value in @
       subclass[key] = value
 
 class Element extends Base

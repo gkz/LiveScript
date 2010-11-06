@@ -18,7 +18,7 @@ return unless window?
 Coco.load = (url, options) ->
   xhr = new (window.ActiveXObject or XMLHttpRequest) 'Microsoft.XMLHTTP'
   xhr.open 'GET', url, true
-  xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
+  xhr.overrideMimeType 'text/plain' if 'overrideMimeType' in xhr
   xhr.onreadystatechange = ->
     Coco.run xhr.responseText, options if xhr.readyState is 4
   xhr.send null
@@ -27,7 +27,7 @@ Coco.load = (url, options) ->
 # all script tags with a content-type of `text/Coco`.
 # This happens on page load.
 runScripts = ->
-  for script in document.getElementsByTagName 'script'
+  for script of document.getElementsByTagName 'script'
     continue unless script.type is 'text/coco'
     if script.src
     then Coco.load script.src

@@ -32,7 +32,7 @@ Scope:: import all
 
   # Test variables and return `true` the first time `fn(v)` returns `true`
   any: (fn) ->
-    return true for v in @variables when fn v
+    return true for v of @variables when fn v
     false
 
   # Reserve a variable name as originating from a function parameter for this
@@ -45,7 +45,7 @@ Scope:: import all
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
   check: (name, above) ->
-    found = @positions[name] of @variables
+    found = @positions[name] in @variables
     return found if found or not above
     !!@parent?.check name, above
 
@@ -73,7 +73,7 @@ Scope:: import all
   # Does this scope reference any variables that need to be declared in the
   # given function body?
   hasDeclarations: (body) ->
-    body is @expressions and @any -> it.type in <[ var reuse ]>
+    body is @expressions and @any -> it.type of <[ var reuse ]>
 
   # Does this scope reference any assignments that need to be declared at the
   # top of the given function body?
@@ -84,11 +84,11 @@ Scope:: import all
   declaredVariables: ->
     usr = []
     tmp = []
-    for v in @variables when v.type in <[ var reuse ]>
+    for v of @variables when v.type of <[ var reuse ]>
       (if v.name.charAt(0) is '_' then tmp else usr).push v.name
     usr.sort().concat tmp.sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
   assignedVariables: ->
-    v.name + ' = ' + v.type.value for v in @variables when v.type.assigned
+    v.name + ' = ' + v.type.value for v of @variables when v.type.assigned

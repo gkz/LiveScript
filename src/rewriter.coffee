@@ -50,9 +50,9 @@ class exports.Rewriter
         return action.call this, token, i
       if levels < 0
         return action.call this, token, i - 1
-      if token[0] in EXPRESSION_START
+      if token[0] of EXPRESSION_START
         ++levels
-      else if token[0] in EXPRESSION_END
+      else if token[0] of EXPRESSION_END
         --levels
       ++i
     i - 1
@@ -68,7 +68,7 @@ class exports.Rewriter
         if before?[0] is 'OUTDENT' and post?[0] is 'TERMINATOR'
         then tokens.splice i - 2, 1
         else tokens.splice i, 0, after
-      else if prev and prev[0] not in <[ TERMINATOR INDENT OUTDENT ]>
+      else if prev and prev[0] not of <[ TERMINATOR INDENT OUTDENT ]>
         if post?[0] is 'TERMINATOR' and after?[0] is 'OUTDENT'
           tokens.splice i + 2, 0, tokens.splice(i, 2)...
           if tokens[i+2][0] isnt 'TERMINATOR'
@@ -81,14 +81,14 @@ class exports.Rewriter
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
   removeLeadingNewlines: ->
-    break for [tag], i in @tokens when tag isnt 'TERMINATOR'
+    break for [tag], i of @tokens when tag isnt 'TERMINATOR'
     @tokens.splice 0, i if i
 
   # Some blocks occur in the middle of expressions -- when we're expecting
   # this, remove their trailing newlines.
   removeMidExpressionNewlines: ->
     @scanTokens (token, i, tokens) ->
-      return 1 unless token[0] is 'TERMINATOR' and @tag(i+1) in EXPRESSION_CLOSE
+      return 1 unless token[0] is 'TERMINATOR' and @tag(i+1) of EXPRESSION_CLOSE
       tokens.splice i, 1
       0
 
@@ -97,7 +97,7 @@ class exports.Rewriter
   # calls that close on the same line, just before their outdent.
   closeOpenCalls: ->
     condition = (token, i) ->
-      token[0] in <[ ) CALL_END ]> or
+      token[0] of <[ ) CALL_END ]> or
       token[0] is 'OUTDENT' and @tag(i-1) is ')'
     action = (token, i) ->
       @tokens[if token[0] is 'OUTDENT' then i - 1 else i][0] = 'CALL_END'
@@ -108,7 +108,7 @@ class exports.Rewriter
   # The lexer has tagged the opening parenthesis of an indexing operation call.
   # Match it with its paired close.
   closeOpenIndexes: ->
-    condition = (token, i) -> token[0] in <[ ] INDEX_END ]>
+    condition = (token, i) -> token[0] of <[ ] INDEX_END ]>
     action    = (token, i) -> token[0] = 'INDEX_END'
     @scanTokens (token, i) ->
       @detectEnd i + 1, condition, action if token[0] is 'INDEX_START'
@@ -121,17 +121,17 @@ class exports.Rewriter
     start = null
     condition = (token, i) ->
       one = @tag i+1
-      return false if 'HERECOMMENT' in [one, @tag i-1]
+      return false if 'HERECOMMENT' of [one, @tag i-1]
       [tag] = token
       tag is ',' and
-        one not in <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]> or
-      tag in <[ TERMINATOR OUTDENT ]> and @tag(i+2) not in <[ : ... ]>
+        one not of <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]> or
+      tag of <[ TERMINATOR OUTDENT ]> and @tag(i+2) not of <[ : ... ]>
     action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
     @scanTokens (token, i, tokens) ->
-      if (tag = token[0]) in EXPRESSION_START
+      if (tag = token[0]) of EXPRESSION_START
         stack.push [(if tag is 'INDENT' and @tag(i-1) is '{' then '{' else tag), i]
         return 1
-      if tag in EXPRESSION_END
+      if tag of EXPRESSION_END
         start := stack.pop()
         return 1
       return 1 unless tag is ':' and
@@ -161,23 +161,23 @@ class exports.Rewriter
       classLine := true if tag is 'CLASS'
       callObject = not classLine and tag is 'INDENT' and
                    next and next.generated and next[0] is '{' and
-                   prev and prev[0] in IMPLICIT_FUNC
+                   prev and prev[0] of IMPLICIT_FUNC
       seenSingle = false
-      classLine := false if tag in LINEBREAKS
+      classLine := false if tag of LINEBREAKS
       token.call = true  if tag is '?' and prev and not prev.spaced
       return 1 unless callObject or
-        prev?.spaced and (prev.call or prev[0] in IMPLICIT_FUNC) and
-        (tag in IMPLICIT_CALL or
+        prev?.spaced and (prev.call or prev[0] of IMPLICIT_FUNC) and
+        (tag of IMPLICIT_CALL or
          tag is 'PLUS_MINUS' and not (token.spaced or token.eol))
       tokens.splice i, 0, ['CALL_START', '(', token[2]]
       @detectEnd i + (if callObject then 2 else 1), (token, i) ->
         return true if not seenSingle and token.fromThen
         [tag] = token
-        seenSingle := true if tag in <[ IF ELSE FUNCTION ]>
+        seenSingle := true if tag of <[ IF ELSE FUNCTION ]>
         return true if tag is 'ACCESS' and @tag(i-1) is 'OUTDENT'
-        not token.generated and @tag(i-1) isnt ',' and tag in IMPLICIT_END and
+        not token.generated and @tag(i-1) isnt ',' and tag of IMPLICIT_END and
         (tag isnt 'INDENT' or
-         (@tag(i-2) isnt 'CLASS' and @tag(i-1) not in IMPLICIT_BLOCK and
+         (@tag(i-2) isnt 'CLASS' and @tag(i-1) not of IMPLICIT_BLOCK and
           not ((post = @tokens[i+1]) and post.generated and post[0] is '{')))
       , action
       prev[0] = 'FUNC_EXIST' if prev[0] is '?'
@@ -196,10 +196,10 @@ class exports.Rewriter
       if tag is 'ELSE' and @tag(i-1) isnt 'OUTDENT'
         tokens.splice i, 0, @indentation(token)...
         return 2
-      if tag is 'CATCH' and @tag(i+2) in <[ OUTDENT TERMINATOR FINALLY ]>
+      if tag is 'CATCH' and @tag(i+2) of <[ OUTDENT TERMINATOR FINALLY ]>
         tokens.splice i + 2, 0, @indentation(token)...
         return 4
-      if tag in SINGLE_LINERS and @tag(i+1) isnt 'INDENT' and
+      if tag of SINGLE_LINERS and @tag(i+1) isnt 'INDENT' and
          not (tag is 'ELSE' and @tag(i+1) is 'IF')
         starter = tag
         [indent, outdent] = @indentation token
@@ -207,8 +207,8 @@ class exports.Rewriter
         indent.generated  = outdent.generated = true
         tokens.splice i + 1, 0, indent
         condition = (token, i) ->
-          token[1] isnt ';' and token[0] in SINGLE_CLOSERS and
-          not (token[0] is 'ELSE' and starter not in <[ IF THEN ]>)
+          token[1] isnt ';' and token[0] of SINGLE_CLOSERS and
+          not (token[0] is 'ELSE' and starter not of <[ IF THEN ]>)
         action = (token, i) ->
           @tokens.splice (if @tag(i-1) is ',' then i - 1 else i), 0, outdent
         @detectEnd i + 2, condition, action
@@ -219,7 +219,7 @@ class exports.Rewriter
   # Tag postfix conditionals as such, so that we can parse them with a
   # different precedence.
   tagPostfixConditionals: ->
-    condition = (token, i) -> token[0] in <[ TERMINATOR INDENT ]>
+    condition = (token, i) -> token[0] of <[ TERMINATOR INDENT ]>
     @scanTokens (token, i) ->
       return 1 unless token[0] is 'IF'
       original = token
@@ -234,7 +234,7 @@ class exports.Rewriter
     olines = {}
     @scanTokens (token) ->
       [tag] = token
-      for [open, close] in BALANCED_PAIRS
+      for [open, close] of BALANCED_PAIRS
         levels[open] |= 0
         if tag is open
           olines[open] = token[2] if levels[open] is 0
@@ -244,7 +244,7 @@ class exports.Rewriter
         if levels[open] < 0
           throw SyntaxError "too many #{token[1]} on line #{ token[2] + 1 }"
       1
-    for all open, level of levels when level > 0
+    for all open, level in levels when level > 0
       throw SyntaxError \
         "unclosed #{open} on line #{ olines[open] + 1 }"
 
@@ -267,12 +267,12 @@ class exports.Rewriter
   rewriteClosingParens: ->
     stack = []
     debt  = {}
-    debt[key] = 0 for all key of INVERSES
+    debt[key] = 0 for all key in INVERSES
     @scanTokens (token, i, tokens) ->
-      if (tag = token[0]) in EXPRESSION_START
+      if (tag = token[0]) of EXPRESSION_START
         stack.push token
         return 1
-      return 1 unless tag in EXPRESSION_END
+      return 1 unless tag of EXPRESSION_END
       if debt[inv = INVERSES[tag]] > 0
         debt[inv] -= 1
         tokens.splice i, 1
@@ -318,7 +318,7 @@ INVERSES = {}
 EXPRESSION_START = []
 EXPRESSION_END   = []
 
-for [left, rite] in BALANCED_PAIRS
+for [left, rite] of BALANCED_PAIRS
   EXPRESSION_START.push INVERSES[rite] = left
   EXPRESSION_END  .push INVERSES[left] = rite
 

@@ -33,7 +33,7 @@ trailingComma = [
   4, 5, 6
   7, 8, 9,
 ]
-(sum = (sum or 0) + n) for n in trailingComma
+(sum = (sum or 0) + n) for n of trailingComma
 
 trailingComma = {k1: "v1", k2: 4, k3: (-> true),}
 ok trailingComma.k3() and (trailingComma.k2 is 4) and (trailingComma.k1 is "v1")
@@ -185,7 +185,7 @@ ok obj.abc().join(' ') is 'a b c'
 ok obj.one.length is 5
 ok obj.one[4] is 4
 ok obj.one[2].a is 'b'
-ok (key for key of obj.red).length is 2
+ok (key for key in obj.red).length is 2
 ok obj.red.orange.yellow.green is 'blue'
 ok obj.red.indigo is 'violet'
 ok obj.misdent.toString() is ',,,'
@@ -256,7 +256,7 @@ eq obj.splatMe, 'too'
 ok obj.key is obj.s is obj[0]
 
 eq 'braceless dynamic key',
-  (key for key of """braceless #{ 0 of ((0):(0)) and 'dynamic' } key""": 0)[0]
+  (key for key in """braceless #{ 0 in ((0):(0)) and 'dynamic' } key""": 0)[0]
 
 obj.key = 'val'
 obj.val = ok

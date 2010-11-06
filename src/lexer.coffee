@@ -82,7 +82,7 @@ exports.Lexer = class Lexer
       @seenFrom = true
       @token 'FROM', id
       return id.length
-    if @seenFrom and id in <[ to til ]>
+    if @seenFrom and id of <[ to til ]>
       @seenFrom = false
       @token 'TO', id
       return id.length
@@ -95,14 +95,14 @@ exports.Lexer = class Lexer
       if not (prev = @tokens[*-1]).spaced and prev[1].colon2
       then @token 'ACCESS', '.'
       else prev[0] is 'ACCESS'
-    if id in JS_FORBIDDEN
+    if id of JS_FORBIDDEN
       if forcedIdentifier
         id = new String id
         id.reserved = true
-      else if id in RESERVED
+      else if id of RESERVED
         throw SyntaxError "Reserved word \"#{id}\" on line #{ @line + 1 }"
-    if not id.reserved      and id in     JS_KEYWORDS or
-       not forcedIdentifier and id in COFFEE_KEYWORDS
+    if not id.reserved      and id of     JS_KEYWORDS or
+       not forcedIdentifier and id of COFFEE_KEYWORDS
       tag = id.toUpperCase()
       if tag is 'FOR'
         @seenFor = true
@@ -110,9 +110,9 @@ exports.Lexer = class Lexer
         tag = 'IF'
       else if tag is 'UNTIL'
         tag = 'WHILE'
-      else if tag in <[ NEW DO TYPEOF DELETE ]>
+      else if tag of <[ NEW DO TYPEOF DELETE ]>
         tag = 'UNARY'
-      else if tag in <[ IN OF INSTANCEOF ]>
+      else if tag of <[ IN OF INSTANCEOF ]>
         if tag isnt 'INSTANCEOF' and @seenFor
           tag = 'FOR' + tag
           @seenFor = false
@@ -124,9 +124,9 @@ exports.Lexer = class Lexer
     unless forcedIdentifier
       id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
       tag = if id is '!'                        then 'UNARY'
-      else  if id in <[ === !== ]>              then 'COMPARE'
-      else  if id in <[ && || ]>                then 'LOGIC'
-      else  if id in <[ true false null void ]> then 'LITERAL'
+      else  if id of <[ === !== ]>              then 'COMPARE'
+      else  if id of <[ && || ]>                then 'LOGIC'
+      else  if id of <[ true false null void ]> then 'LITERAL'
       else  tag
     @token tag, id
     @token ':', ':' if colon
@@ -198,7 +198,7 @@ exports.Lexer = class Lexer
     # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
     #
     # Our list is shorter, due to sans-parentheses method calls.
-    return 0 if @tag() in <[ STRNUM LITERAL ++ -- ]> or
+    return 0 if @tag() of <[ STRNUM LITERAL ++ -- ]> or
                 not regex = REGEX.exec @chunk
     @token 'LITERAL', if regex[=0] is '//' then '/(?:)/' else regex
     regex.length
@@ -213,7 +213,7 @@ exports.Lexer = class Lexer
     @token 'IDENTIFIER', 'RegExp'
     @tokens.push <[ CALL_START ( ]>
     tokens = []
-    for [tag, value] in @interpolateString(body, regex: true)
+    for [tag, value] of @interpolateString(body, regex: true)
       if tag is 'TOKENS'
         tokens.push value...
       else
@@ -233,7 +233,7 @@ exports.Lexer = class Lexer
   wordsToken: ->
     return 0 unless words = WORDS.exec @chunk
     @token '[', '['
-    for word in (words[=0]).slice(2, -2).match(/\S+/g) or ['']
+    for word of (words[=0]).slice(2, -2).match(/\S+/g) or ['']
       @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
     @token ']', ']'
     @countLines words
@@ -314,10 +314,10 @@ exports.Lexer = class Lexer
     case <[ = := ]>
       prev = @tokens[*-1]
       pval = prev[1]
-      if not pval.reserved and pval in JS_FORBIDDEN
+      if not pval.reserved and pval of JS_FORBIDDEN
         throw SyntaxError \
           "Reserved word \"#{pval}\" on line #{ @line + 1 } cannot be assigned"
-      if value is '=' and pval in <[ || && ]>
+      if value is '=' and pval of <[ || && ]>
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
@@ -353,10 +353,10 @@ exports.Lexer = class Lexer
         @tokens.push <[ ACCESS . ]>, ['IDENTIFIER', id, @line]
         return value.length
       unless (prev = @tokens[*-1]).spaced
-        if value is '(' and prev[0] in CALLABLE
+        if value is '(' and prev[0] of CALLABLE
           prev[0] = 'FUNC_EXIST' if prev[0] is '?'
           tag = 'CALL_START'
-        else if value is '[' and prev[0] in INDEXABLE
+        else if value is '[' and prev[0] of INDEXABLE
           tag = 'INDEX_START'
     @token tag, value
     value.length
@@ -407,7 +407,7 @@ exports.Lexer = class Lexer
       if levels.length and str.charAt(i) is '\\'
         i += 2
         continue
-      for pair in delimited
+      for pair of delimited
         [open, close] = pair
         if levels.length and levels[*-1] is pair and
            close is str.substr i, close.length
@@ -461,7 +461,7 @@ exports.Lexer = class Lexer
     return @token 'STRNUM', '""' unless tokens.length
     tokens.unshift ['', ''] unless tokens[0][0] is 'TO_BE_STRING'
     @token '(', '(' if interpolated = tokens.length > 1
-    for [tag, value], i in tokens
+    for [tag, value], i of tokens
       @token 'PLUS_MINUS', '+' if i
       if tag is 'TOKENS'
       then @tokens.push value...
@@ -483,7 +483,7 @@ exports.Lexer = class Lexer
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    LINE_CONTINUER.test(@chunk) or @tag() in <[
+    LINE_CONTINUER.test(@chunk) or @tag() of <[
       ACCESS INDEX_START PLUS_MINUS MATH COMPARE LOGIC RELATION IMPORT SHIFT
     ]>
 
@@ -495,7 +495,7 @@ exports.Lexer = class Lexer
   makeString: (body, quote, heredoc) ->
     return quote + quote unless body
     body .= replace /\\([\s\S])/g, (match, escaped) ->
-      if escaped in ['\n', quote] then escaped else match
+      if escaped of ['\n', quote] then escaped else match
     body .= replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
 
@@ -518,7 +518,7 @@ JS_KEYWORDS = <[
 
 # Coco-only keywords.
 COFFEE_KEYWORDS = <[ then unless until loop of by when ]>
-COFFEE_KEYWORDS.push op for all op of COFFEE_ALIASES =
+COFFEE_KEYWORDS.push op for all op in COFFEE_ALIASES =
   and  : '&&'
   or   : '||'
   is   : '==='

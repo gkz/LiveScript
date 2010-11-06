@@ -1,12 +1,12 @@
 # Expression conversion under explicit returns.
 first = ->
-  return ('do' for x in [1,2,3])
+  return ('do' for x of [1,2,3])
 
 second = ->
-  return ['re' for x in [1,2,3]]
+  return ['re' for x of [1,2,3]]
 
 third = ->
-  return ('mi' for x in [1,2,3])
+  return ('mi' for x of [1,2,3])
 
 ok first().join(' ')     is 'do do do'
 ok second()[0].join(' ') is 're re re'
@@ -16,7 +16,7 @@ ok third().join(' ')     is 'mi mi mi'
 # Testing returns with multiple branches.
 func = ->
   if false
-    for a in b
+    for a of b
       return c if d
   else
     "word"
@@ -36,7 +36,7 @@ eq func(), 42
 items = [1, 2, 3, "bacon", 4, 5]
 
 findit = (items) ->
-  for item in items
+  for item of items
     return item if item is "bacon"
 
 ok findit(items) is "bacon"

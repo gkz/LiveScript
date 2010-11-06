@@ -36,7 +36,7 @@ exports.run = (code, options) ->
   root = root.parent while root.parent
   root.filename = fs.realpathSync options.fileName or '.'
   root.moduleCache and= {}
-  if require.extensions or path.extname(root.filename) not in <[ .co .coffee ]>
+  if require.extensions or path.extname(root.filename) not of <[ .co .coffee ]>
     code = exports.compile code, options
   root._compile code, root.filename
 
