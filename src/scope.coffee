@@ -45,7 +45,7 @@ Scope:: import all
   # Just check to see if a variable has already been declared, without reserving,
   # walks up to the root scope.
   check: (name, above) ->
-    found = !!@type name
+    found = @positions[name] of @variables
     return found if found or not above
     !!@parent?.check name, above
 
@@ -56,9 +56,7 @@ Scope:: import all
     else (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
 
   # Gets the type of a variable.
-  type: (name) ->
-    return v.type for v in @variables when v.name is name
-    null
+  type: (name) -> @variables[@positions[name]]?.type
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
