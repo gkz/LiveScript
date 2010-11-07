@@ -1,82 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>Coco Test Suite</title>
-  <script src="../extras/coffee-script.js"></script>
-  <style>
-    body {
-      margin: 2em;
-      font-family: Consolas, Menlo, Monaco, monospace;
-    }
-    h1 { font-size: 2em }
-  </style>
+<meta charset="utf-8"/>
+<title>Coco Test Suite</title>
 </head>
 <body>
-  <h1>Coco Test Suite</h1>
-  <pre id="stdout"></pre>
-  <script type="text/coco">
-  stdout  = document.getElementById 'stdout'
-  start   = new Date
-  success = total = done = failed = 0
+<h1>Coco Test Suite</h1>
+<pre id="stdout"></pre>
+<script type="text/coco">
+start   = new Date
+stdout  = document.getElementById 'stdout'
+success = total = done = failed = 0
 
-  say = (msg, yay) ->
-    div = document.createElement 'div'
-    div.appendChild document.createTextNode msg
-    div.style.color = if yay then 'green' else 'red'
-    stdout.appendChild div
-    msg
+say = (msg, yay) ->
+  div = document.createElement 'div'
+  div.appendChild document.createTextNode msg
+  div.style.color = if yay then 'green' else 'red'
+  stdout.appendChild div
+  msg
 
-  this.ok = (good, msg) ->
-    ++total
-    if good then ++success else throw Error say msg
+@ok = (good, msg) ->
+  ++total
+  if good then ++success else throw Error say msg
 
-  this.eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
+@eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
 
-  this.throws = (fun, err, msg) ->
-    try fun(); throw new String 'No Error'
-    catch e then eq e, err
+@throws = (fun, err, msg) ->
+  try fun(); throw new String 'No Error'
+  catch e then eq e, err
 
-  Coco.run = (code, cb) ->
-    try Function(Coco.compile code, bare: true)()
-    catch e then cb(); throw e
-    cb true
+Coco.run = (code, cb) ->
+  try Function(Coco.compile code, bare: true).call self
+  catch e then cb(); throw e
+  cb true
 
-  run = (name) ->
-    Coco.load "test_#{name}.coffee", (yay) ->
-      say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
-      ++failed unless yay
-      fin() if ++done is names.length
+run = (name) ->
+  Coco.load "test_#{name}.coffee", (yay) ->
+    say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
+    ++failed unless yay
+    fin() if ++done is names.length
 
-  fin = ->
-    yay = success is total and not failed
-    sec = (new Date - start) / 1000
-    msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
-    msg = "failed #{ total - success } tests and #{msg}" unless yay
-    say msg, yay
+fin = ->
+  yay = success is total and not failed
+  sec = (new Date - start) / 1e3
+  msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
+  msg = "failed #{ total - success } tests and #{msg}" unless yay
+  say msg, yay
 
-  run name for name in names = [
-    'arguments'
-    'assignment'
-    'break'
-    'chaining'
-    'classes'
-    'comments'
-    'compilation'
-    'comprehensions'
-    'existence'
-    'functions'
-    'if'
-    'literals'
-    'operations'
-    'regexps'
-    'returns'
-    'splats'
-    'strings'
-    'switch'
-    'try_catch'
-    'while'
-  ]
-  </script>
+run name for name of names = <[
+  arguments
+  assignment
+  chaining
+  classes
+  comments
+  compilation
+  comprehensions
+  existence
+  functions
+  if
+  literals
+  operations
+  regexps
+  returns
+  splats
+  strings
+  switch
+  try_catch
+  while
+]>
+</script>
+<script src="../extras/coco.js"></script>
 </body>
 </html>
