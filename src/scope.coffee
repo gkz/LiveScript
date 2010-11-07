@@ -6,7 +6,7 @@
 # with the outside.
 
 # Initialize a scope with its parent, for lookups up the chain,
-# as well as a reference to the **Expressions** node is belongs to, which is
+# as well as a reference to the **Expressions** node it belongs to, which is
 # where it should declare its variables, and a reference to the function that
 # it wraps.
 exports.Scope = Scope = (@parent, @expressions, @method) ->
@@ -61,14 +61,13 @@ Scope:: import all
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
   temporary: (name) ->
-    index = 0
-    index++ while @check(temp = @pickTemp name, index) and
-                  @type(temp) isnt 'reuse'
+    i = 0
+    i++ until @type(temp = @pickTemp name, i) of ['reuse', void]
     @add temp, 'var'
     temp
 
   # Ensure that an assignment is made at the top of this scope
-  assign: (name, value) -> @add name, value: value, assigned: true
+  assign: (name, value) -> @add name, {value, assigned: true}
 
   # Does this scope reference any variables that need to be declared in the
   # given function body?
