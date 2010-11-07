@@ -1056,10 +1056,14 @@ exports.Op = class Op extends Base
 
   # The map of invertible operators.
   INVERSIONS:
-    '!==': '==='
-    '===': '!=='
+    '!==':'==='
+    '===':'!=='
     '!=' : '=='
     '==' : '!='
+    '>'  : '<='
+    '<=' : '>'
+    '<'  : '>='
+    '>=' : '<'
 
   children: <[ first second ]>
 
@@ -1092,7 +1096,7 @@ exports.Op = class Op extends Base
       this
     else if @second
     then new Parens(this).invert()
-    else super()
+    else new Op '!', this
 
   unfoldSoak: (o) ->
     @operator of <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
