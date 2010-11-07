@@ -1597,6 +1597,7 @@ UTILITIES =
       child.prototype = new ctor;
       if (typeof parent.extended == "function") parent.extended(child);
       child.__super__ = parent.prototype;
+      return child;
     }
   '''
 

@@ -100,7 +100,6 @@ grammar =
     o 'While'
     o 'For'
     o 'Switch'
-    o 'Extends'
     o 'Class'
   ]
 
@@ -281,11 +280,6 @@ grammar =
     o 'ClassAssign',                      -> [$1]
     o 'ClassBody TERMINATOR ClassAssign', -> $1.concat $3
     o '{ ClassBody }',                    -> $2
-  ]
-  # Extending an object by setting its prototype chain to reference a parent
-  # object.
-  Extends: [
-    o 'SimpleAssignable EXTENDS Value', -> new Extends $1, $3
   ]
 
   # Ordinary function invocation, or a chained series of calls.
@@ -487,7 +481,6 @@ grammar =
     o 'CREMENT SimpleAssignable',         -> new Op $1, $2
     o 'SimpleAssignable CREMENT',         -> new Op $2, $1, null, true
 
-    # [The existential operator](http://jashkenas.github.com/coffee-script/#existence).
     o 'Expression ?',                     -> new Existence $1
 
     o 'Expression PLUS_MINUS Expression', -> new Op $2, $1, $3
@@ -505,6 +498,8 @@ grammar =
        Expression',                       -> new Assign $1, $3, $2
     o 'SimpleAssignable COMPOUND_ASSIGN
        INDENT Expression OUTDENT',        -> new Assign $1, $4, $2
+
+    o 'SimpleAssignable EXTENDS Expression', -> new Extends $1, $3
   ]
 
 
@@ -531,10 +526,10 @@ operators = [
   <[ left      COMPARE                                  ]>
   <[ left      LOGIC                                    ]>
   <[ nonassoc  INDENT OUTDENT                           ]>
-  <[ right     : = := COMPOUND_ASSIGN RETURN            ]>
+  <[ right     : = := COMPOUND_ASSIGN RETURN EXTENDS    ]>
   <[ right     WHEN LEADING_WHEN FORIN FOROF FROM TO BY
                THROW IF UNLESS ELSE FOR WHILE LOOP
-               SWITCH CASE DEFAULT SUPER CLASS EXTENDS  ]>
+               SWITCH CASE DEFAULT SUPER CLASS          ]>
   <[ right     POST_IF                                  ]>
 ]
 

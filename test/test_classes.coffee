@@ -77,28 +77,23 @@ Base::func = (string) ->
 Base::['func-func'] = (string) ->
   "dynamic-#{string}"
 
-FirstChild = ->
-FirstChild extends Base
-FirstChild::func = (string) ->
-  super('one/') + string
-
+FirstChild  = ->
 SecondChild = ->
-SecondChild extends FirstChild
-SecondChild::func = (string) ->
-  super('two/') + string
-
-ThirdChild = ->
+ThirdChild  = ->
   @array = [1, 2, 3]
   this
-ThirdChild extends SecondChild
+
+ThirdChild extends SecondChild extends FirstChild extends Base
+
+FirstChild::func = (string) ->
+  super('one/') + string
+SecondChild::func = (string) ->
+  super('two/') + string
 ThirdChild::func = (string) ->
   super('three/') + string
 
-result = (new ThirdChild).func 'four'
-
-ok result is 'zero/one/two/three/four'
-
-ok (new ThirdChild)['func-func']('thing') is 'dynamic-thing'
+eq new ThirdChild().func('four'), 'zero/one/two/three/four'
+eq new ThirdChild()['func-func']('thing'), 'dynamic-thing'
 
 
 TopClass = (arg) ->
