@@ -1038,18 +1038,14 @@ exports.While = class While extends Base
     if body.isEmpty()
       body = ''
     else
-      if o.level > LEVEL_TOP or @returns
-        rvar = o.scope.temporary 'result'
-        set  = "#{@tab}#{rvar} = [];\n"
-        body = Push.wrap rvar, body if body
+      if @returns
+        o.scope.assign '_results', '[]'
+        body = Push.wrap '_results', body
       body = new If @guard, body, {'statement'} if @guard
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code  = set + @tab + if code is 'true' then 'for (;;' else "while (#{code}"
     code += ") {#{body}}"
-    if @returns
-      o.indent = @tab
-      code += '\n' + new Return(new Literal rvar).compile o
-    o.scope.free rvar if rvar
+    code += "\n#{@tab}return _results;" if @returns
     code
 
 #### Op
@@ -1358,12 +1354,13 @@ exports.For = class For extends Base
       else if name
         "#{name} = #{svar}[#{ivar}]"
       unless @object
+        sourcePart = "(#{sourcePart})" if sourcePart isnt svar
         if 0 > pvar and (pvar | 0) is +pvar  # negative int
-          vars = "#{ivar} = #{svar}.length - 1"
+          vars = "#{ivar} = #{sourcePart}.length - 1"
           cond = "#{ivar} >= 0"
         else
           @temps.push lvar = scope.temporary 'len'
-          vars = "#{ivar} = 0, #{lvar} = #{svar}.length"
+          vars = "#{ivar} = 0, #{lvar} = #{sourcePart}.length"
           cond = "#{ivar} < #{lvar}"
     if @object
       forPart   = ivar + ' in ' + sourcePart
@@ -1371,7 +1368,6 @@ exports.For = class For extends Base
         idt + "if (!#{ utility 'owns' }.call(#{svar}, #{ivar})) continue;\n"
     else
       vars   += ', ' + step if step isnt pvar
-      defPart = @tab + sourcePart + ';\n' if svar isnt sourcePart
       forPart = vars + "; #{cond}; " + switch +pvar
       case  1 then '++' + ivar
       case -1 then '--' + ivar
@@ -1380,11 +1376,10 @@ exports.For = class For extends Base
     defPart += @pluckDirectCalls o, body, name, index unless pattern
     code = guardPart + varPart
     unless body.isEmpty()
-      if o.level > LEVEL_TOP or @returns
-        @temps.push rvar = scope.temporary 'result'
-        defPart += @tab + rvar + ' = [];\n'
-        retPart  = @compileReturnValue o, rvar
-        body     = Push.wrap rvar, body
+      if @returns
+        o.scope.assign '_results', '[]'
+        body    = Push.wrap '_results', body
+        retPart = "\n#{@tab}return _results;"
       body     = new If @guard, body, {'statement'} if @guard
       o.indent = idt
       code    += body.compile o, LEVEL_TOP
