@@ -912,29 +912,29 @@ exports.Code = class Code extends Base
       else
         ref = param
         if param.value
-          lit = new Literal ref.name.value + ' == null'
-          val = new Assign new Value(param.name), param.value
-          exps.push new Op '&&', lit, val
+          exps.push new Op '&&',
+            new Literal(ref.name.value + ' == null'),
+            new Assign new Value(param.name), param.value
       vars.push ref unless splats
     wasEmpty = @body.isEmpty()
     exps.unshift splats if splats
-    @body.expressions.splice 0, 0, exps... if exps.length
+    @body.expressions.unshift exps... if exps.length
     @body.makeReturn() unless wasEmpty or @noReturn
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
-    vars.push 'it' if not vars.length and @body.contains (-> it.value is 'it')
-    comm      = if @comment then @comment.compile(o) + '\n' else ''
-    idt       = o.indent
+    vars[0] = 'it' if not vars.length and @body.contains (-> it.value is 'it')
+    comm = if @comment then @comment.compile(o) + '\n' else ''
+    idt  = o.indent
     o.indent += TAB if @className
-    code      = if @body.isEmpty() then '' else
+    code = if @body.isEmpty() then '' else
       "\n#{ @body.compileWithDeclarations o }\n"
     if @className
-      open  = "(function(){\n#{comm}#{idt}function #{@className}("
-      close = "#{ code and idt }}\n#{idt}return #{@className};\n#{@tab}})()"
+      open  = "(function(){\n#{comm}#{idt}function #{@className}"
+      close = "#{ code and idt }}\n#{idt}return #{@className};\n#{@tab}}())"
     else
-      open  = 'function('
+      open  = 'function'
       close = "#{ code and @tab }}"
-    func = "#{open}#{ vars.join ', ' }){#{code}#{close}"
-    return "#{ utility 'bind' }(#{func}, #{@context})" if @bound
+    func = open + '(' + vars.join(', ') + '){' + code + close
+    return utility('bind') + "(#{func}, #{@context})" if @bound
     if @front then "(#{func})" else func
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
