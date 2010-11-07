@@ -39,19 +39,18 @@ exports.Base = class Base
     o.level  = level if level?
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    code = if o.level is LEVEL_TOP or
-              node.isPureStatement() or not node.isStatement(o)
-    then node.compileNode    o
-    else node.compileClosure o
-    o.scope.free tmp for tmp of node.temps if node.temps
-    code
+    if o.level is LEVEL_TOP or node.isPureStatement() or not node.isStatement(o)
+      code = node.compileNode o
+      o.scope.free tmp for tmp of node.temps if node.temps
+      code
+    else
+      node.compileClosure o
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
     if @containsPureStatement()
       throw SyntaxError 'cannot include a pure statement in an expression.'
-    o.sharedScope = o.scope
     Closure.wrap(this).compileNode o
 
   # If the code generation wishes to use the result of a complex expression
@@ -708,7 +707,6 @@ exports.Class = class Class extends Base
     props      = new Expressions
     me         = null
     className  = variable.compile o
-    constScope = null
 
     if @parent
       applied = new Value @parent, [new Accessor new Literal 'apply']
@@ -738,12 +736,11 @@ exports.Class = class Class extends Base
           func.context = className
         else
           func.bound = false
-          constScope or= new Scope o.scope, ctor.body, ctor
-          me or= constScope.temporary 'this'
           pname = pvar.compile o
-          ctor.body.append  new Return new Literal 'this' if ctor.body.isEmpty()
-          ret = "return #{className}.prototype.#{pname}.apply(#{me}, arguments);"
-          ctor.body.prepend new Literal "this.#{pname} = function(){ #{ret} }"
+          ctor.body.append new Return new Literal 'this' if ctor.body.isEmpty()
+          val = new Value new Literal('this'), [new Accessor pvar]
+          ctor.body.prepend new Assign \
+            val, new Call new Literal(utility 'bind'), [val, new Literal 'this']
       if pvar
         accs = if prop.context is 'this'
         then [pvar.properties[0]]
@@ -753,7 +750,6 @@ exports.Class = class Class extends Base
 
     ctor.className = className.match /[$\w]+$/
     ctor.body.prepend new Literal "#{me} = this" if me
-    o.sharedScope = constScope
     code  = @tab + new Assign(variable, ctor).compile(o) + ';'
     code += '\n' + @tab + extension.compile(o) + ';' if extension
     code += '\n' + props.compile o                   if !props.isEmpty()
@@ -778,8 +774,6 @@ exports.Assign = class Assign extends Base
 
   unfoldAssign: -> @access and this
 
-  # Compile an assignment, delegating to `compileDestructuring` or
-  # `compileSplice` if appropriate.
   compileNode: (o) ->
     {variable, value} = this
     if isValue = variable instanceof Value
@@ -799,7 +793,7 @@ exports.Assign = class Assign extends Base
         unless o.scope.check name, true
           throw ReferenceError "assignment to undeclared variable \"#{name}\""
       else
-        o.scope.find name
+        o.scope.declare name
     name += " #{ @context or '=' } " + val
     if o.level <= LEVEL_LIST then name else "(#{name})"
 
@@ -859,11 +853,11 @@ exports.Assign = class Assign extends Base
           obj .= name.compile o
           throw SyntaxError \
             "multiple splats are disallowed in an assignment: #{obj} ..."
-        if typeof idx is 'number'
+        acc = if typeof idx is 'number'
           idx = new Literal splat or idx
-          acc = false
+          false
         else
-          acc = isObject and IDENTIFIER.test idx.unwrap().value or 0
+          isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = new Value new Literal(vvar),
                         [new (if acc then Accessor else Index) idx]
       assigns.push new Assign(obj, val, @context).compile o, LEVEL_LIST
@@ -897,10 +891,13 @@ exports.Code = class Code extends Base
   # arrow, generates a wrapper that saves the current value of `this` through
   # a closure.
   compileNode: (o) ->
-    o.scope   = scope = del(o, 'sharedScope') or new Scope o.scope, @body, this
-    o.indent += TAB
+    pscope = o.scope
+    sscope = pscope.shared or pscope
+    scope  = o.scope = new Scope (if @wrapper then pscope else sscope), @body, this
+    scope.shared = sscope if @wrapper
     delete o.bare
     delete o.globals
+    o.indent += TAB
     vars = []
     exps = []
     for param of @params when param.splat
@@ -1335,8 +1332,8 @@ exports.For = class For extends Base
     index   = @index?.compile o
     varPart = guardPart = defPart = retPart = ''
     idt     = o.indent + TAB
-    scope.find name  if name
-    scope.find index if index
+    scope.declare name  if name
+    scope.declare index if index
     @temps.push ivar = scope.temporary 'i' unless ivar = index
     [step, pvar] = @step.compileLoopReference o, 'step' if @step
     @temps.push pvar if step isnt pvar
@@ -1570,6 +1567,7 @@ Closure =
   wrap: (expressions, statement, noReturn) ->
     return expressions if expressions.containsPureStatement()
     func = new Code [], new Expressions expressions
+    func.wrapper = true
     args = []
     if (mentionsArgs = expressions.contains @literalArgs) or
        (               expressions.contains @literalThis)

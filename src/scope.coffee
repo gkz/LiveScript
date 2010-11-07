@@ -22,18 +22,18 @@ Scope:: import all
     if typeof (pos = @positions[name]) is 'number'
     then @variables[pos].type = type
     else @positions[name]     = -1 + @variables.push {name, type}
-
-  # Look up a variable name in lexical scope, and declare it if it does not
-  # already exist.
-  find: (name, above) ->
-    return true if @check name, above
-    @add name, 'var'
-    false
+    this
 
   # Test variables and return `true` the first time `fn(v)` returns `true`
   any: (fn) ->
     return true for v of @variables when fn v
     false
+
+  # Declare a variable unless declared already.
+  declare: (name) ->
+    scope = @shared or this
+    scope.add name, 'var' unless scope.check name
+    this
 
   # Reserve a variable name as originating from a function parameter for this
   # scope. No `var` required for internal references.

@@ -166,11 +166,11 @@ spark = new Dog('Spark')
 fido  = new Dog('Fido')
 fido.bark = spark.bark
 
-ok fido.bark() is 'Spark woofs!'
+eq fido.bark(), 'Spark woofs!'
 
 obj = func: Dog.static
 
-ok obj.func().name is 'Dog'
+eq obj.func().name, 'Dog'
 
 
 # Testing a bound function in a bound function.
