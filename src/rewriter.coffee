@@ -211,13 +211,11 @@ class exports.Rewriter
   # Tag postfix conditionals as such, so that we can parse them with a
   # different precedence.
   tagPostfixConditionals: ->
-    condition = (token, i) -> token[0] of <[ TERMINATOR INDENT ]>
-    @scanTokens (token, i) ->
-      return 1 unless token[0] is 'IF'
-      original = token
-      @detectEnd i + 1, condition, (token) ->
-        original[0] = 'POST_' + original[0] if token[0] isnt 'INDENT'
-      1
+    condition = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
+    action    = ([tag]) -> token[0] = 'POST_IF' if tag isnt 'INDENT'
+    for token, i of @tokens when token[0] is 'IF'
+      @detectEnd i + 1, condition, action
+    this
 
   # Ensure that all listed pairs of tokens are correctly balanced throughout
   # the course of the token stream.
