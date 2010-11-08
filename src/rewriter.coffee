@@ -222,21 +222,18 @@ class exports.Rewriter
   ensureBalance: ->
     levels = {}
     olines = {}
-    @scanTokens (token) ->
+    for token of @tokens
       [tag] = token
       for [open, close] of BALANCED_PAIRS
         levels[open] |= 0
         if tag is open
-          olines[open] = token[2] if levels[open] is 0
-          levels[open] += 1
-        else if tag is close
-          levels[open] -= 1
-        if levels[open] < 0
+          olines[open] = token[2] if levels[open]++ is 0
+        else if tag is close and --levels[open] < 0
           throw SyntaxError "too many #{token[1]} on line #{ token[2] + 1 }"
-      1
     for all open, level in levels when level > 0
       throw SyntaxError \
         "unclosed #{open} on line #{ olines[open] + 1 }"
+    this
 
   # We'd like to support syntax like this:
   #
