@@ -93,7 +93,7 @@ exports.Lexer = class Lexer
       'IDENTIFIER'
     forcedIdentifier = at or colon or
       if not (prev = @tokens[*-1]).spaced and prev[1].colon2
-      then @token 'ACCESS', '.'
+      then @token<[ ACCESS . ]>
       else prev[0] is 'ACCESS'
     if id of JS_FORBIDDEN
       if forcedIdentifier
@@ -129,7 +129,7 @@ exports.Lexer = class Lexer
       else  if id of <[ true false null void ]> then 'LITERAL'
       else  tag
     @token tag, id
-    @token ':', ':' if colon
+    @token<[ : : ]> if colon
     input.length
 
   # Matches numbers, including decimals, hex, and exponential notation.
@@ -177,7 +177,7 @@ exports.Lexer = class Lexer
     if here
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
-      @token 'TERMINATOR', '\n'
+      @token<[ TERMINATOR \n ]>
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -210,8 +210,7 @@ exports.Lexer = class Lexer
       body .= replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
       @token 'LITERAL', "/#{ body or '(?:)' }/#{flags}"
       return heregex.length
-    @token 'IDENTIFIER', 'RegExp'
-    @tokens.push <[ CALL_START ( ]>
+    @tokens.push ['IDENTIFIER', 'RegExp', @line], ['CALL_START', '(', @line]
     tokens = []
     for [tag, value] of @interpolateString(body, regex: true)
       if tag is 'TOKENS'
@@ -226,17 +225,19 @@ exports.Lexer = class Lexer
       @tokens.push <[ STRNUM "" ]>, <[ PLUS_MINUS + ]>
     @tokens.push tokens...
     @tokens.push <[ , , ]>, ['STRNUM', '"' + flags + '"'] if flags
-    @token ')', ')'
+    @token<[ ) ) ]>
     heregex.length
 
   # Matches words literal, a syntax sugar for an array of strings.
   wordsToken: ->
     return 0 unless words = WORDS.exec @chunk
-    @token '[', '['
+    if call = not (prev = @tokens[*-1]).spaced and prev[0] of CALLABLE
+    then @token<[ CALL_START ( ]>
+    else @token<[ [ [ ]>
     for word of (words[=0]).slice(2, -2).match(/\S+/g) or ['']
       @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
-    @token ']', ']'
     @countLines words
+    @tokens.push if call then [')', ')', @line] else [']', ']', @line]
     words.length
 
   # Matches newlines, indents, and outdents, and determines which is which.
@@ -300,7 +301,7 @@ exports.Lexer = class Lexer
 
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: ->
-    @token 'TERMINATOR', '\n' unless @tag() is 'TERMINATOR'
+    @token<[ TERMINATOR \n ]> unless @tag() is 'TERMINATOR'
     this
 
   # We treat all other single characters as a token. Eg.: `( ) , . !`
@@ -389,7 +390,7 @@ exports.Lexer = class Lexer
     while tok = tokens[--i]
       switch tok[0]
       case ')' then ++level
-      case '(', 'CALL_START'
+      case <[ ( CALL_START ]>
         break if level--
         tok[0] = 'PARAM_START'
         return this
@@ -458,15 +459,15 @@ exports.Lexer = class Lexer
       pi = i + 1
     tokens.push ['TO_BE_STRING', str.slice pi] if i > pi < str.length
     return tokens if regex
-    return @token 'STRNUM', '""' unless tokens.length
+    return @token<[ STRNUM "" ]> unless tokens.length
     tokens.unshift ['', ''] unless tokens[0][0] is 'TO_BE_STRING'
-    @token '(', '(' if interpolated = tokens.length > 1
+    @token<[ ( ( ]> if interpolated = tokens.length > 1
     for [tag, value], i of tokens
-      @token 'PLUS_MINUS', '+' if i
+      @token<[ PLUS_MINUS + ]> if i
       if tag is 'TOKENS'
       then @tokens.push value...
       else @token 'STRNUM', @makeString value, '"', heredoc
-    @token ')', ')' if interpolated
+    @token<[ ) ) ]> if interpolated
     tokens
 
   # Helpers

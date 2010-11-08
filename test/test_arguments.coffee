@@ -68,3 +68,6 @@ eq  2, withSplats 1, 1, 1, 1
   eq @2, 2
   eq @999, void
 ) 0, 1, 2
+
+
+eq<[ Q Q words-as-arguments ]>
