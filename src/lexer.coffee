@@ -173,17 +173,18 @@ exports.Lexer = class Lexer
   commentToken: ->
     return 0 unless match = @chunk.match COMMENT
     [comment, here] = match
-    @countLines comment
     if here
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
       @token<[ TERMINATOR \n ]>
+    @countLines comment
     comment.length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and js = JSTOKEN.exec @chunk
     @token 'LITERAL', (js[=0]).slice 1, -1
+    @countLines js
     js.length
 
   # Matches regular expression literals. Lexing regular expressions is difficult
@@ -201,6 +202,7 @@ exports.Lexer = class Lexer
     return 0 if @tag() of <[ STRNUM LITERAL ++ -- ]> or
                 not regex = REGEX.exec @chunk
     @token 'LITERAL', if regex[=0] is '//' then '/(?:)/' else regex
+    @countLines regex
     regex.length
 
   # Matches experimental, multiline and extended regular expression literals.
@@ -209,6 +211,7 @@ exports.Lexer = class Lexer
     if 0 > body.indexOf '#{'
       body .= replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
       @token 'LITERAL', "/#{ body or '(?:)' }/#{flags}"
+      @countLines heregex
       return heregex.length
     @tokens.push ['IDENTIFIER', 'RegExp', @line], ['CALL_START', '(', @line]
     tokens = []
@@ -225,6 +228,7 @@ exports.Lexer = class Lexer
       @tokens.push <[ STRNUM "" ]>, <[ PLUS_MINUS + ]>
     @tokens.push tokens...
     @tokens.push <[ , , ]>, ['STRNUM', '"' + flags + '"'] if flags
+    @countLines heregex
     @token<[ ) ) ]>
     heregex.length
 
