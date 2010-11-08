@@ -86,10 +86,11 @@ class exports.Rewriter
   # Some blocks occur in the middle of expressions -- when we're expecting
   # this, remove their trailing newlines.
   removeMidExpressionNewlines: ->
-    @scanTokens (token, i, tokens) ->
-      return 1 unless token[0] is 'TERMINATOR' and @tag(i+1) of EXPRESSION_CLOSE
-      tokens.splice i, 1
-      0
+    {tokens} = this; i = 0
+    while token = tokens[++i]
+    when tokens[i-1][0] is 'TERMINATOR' and token[0] of EXPRESSION_CLOSE
+      tokens.splice i-1, 1
+    this
 
   # The lexer has tagged each of the opening parenthesis/bracket of
   # a call/indexing. Match it with its closing pair.
