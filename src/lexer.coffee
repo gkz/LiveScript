@@ -103,16 +103,12 @@ exports.Lexer = class Lexer
         throw SyntaxError "Reserved word \"#{id}\" on line #{ @line + 1 }"
     if not id.reserved      and id of     JS_KEYWORDS or
        not forcedIdentifier and id of COFFEE_KEYWORDS
-      tag = id.toUpperCase()
-      if tag is 'FOR'
-        @seenFor = true
-      else if tag is 'UNLESS'
-        tag = 'IF'
-      else if tag is 'UNTIL'
-        tag = 'WHILE'
-      else if tag of <[ NEW DO TYPEOF DELETE ]>
-        tag = 'UNARY'
-      else if tag of <[ IN OF INSTANCEOF ]>
+      switch tag = id.toUpperCase()
+      case 'FOR'                      then @seenFor = true
+      case 'UNLESS'                   then tag = 'IF'
+      case 'UNTIL'                    then tag = 'WHILE'
+      case <[ NEW DO TYPEOF DELETE ]> then tag = 'UNARY'
+      case <[ IN  OF  INSTANCEOF   ]>
         if tag isnt 'INSTANCEOF' and @seenFor
           tag = 'FOR' + tag
           @seenFor = false
@@ -123,11 +119,11 @@ exports.Lexer = class Lexer
             id = '!' + id
     unless forcedIdentifier
       id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
-      tag = if id is '!'                        then 'UNARY'
-      else  if id of <[ === !== ]>              then 'COMPARE'
-      else  if id of <[ && || ]>                then 'LOGIC'
-      else  if id of <[ true false null void ]> then 'LITERAL'
-      else  tag
+      switch id
+      case <[ ! ]>                    then tag = 'UNARY'
+      case <[ &&  ||  ]>              then tag = 'LOGIC'
+      case <[ === !== ]>              then tag = 'COMPARE'
+      case <[ true false null void ]> then tag = 'LITERAL'
     @token tag, id
     @token<[ : : ]> if colon
     input.length
