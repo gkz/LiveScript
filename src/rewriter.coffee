@@ -18,7 +18,6 @@ class exports.Rewriter
   # like this. The order of these passes matters -- indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (@tokens) ->
-    do @adjustComments
     do @removeLeadingNewlines
     do @removeMidExpressionNewlines
     do @closeOpenings
@@ -55,27 +54,6 @@ class exports.Rewriter
         --levels
       ++i
     i - 1
-
-  # Massage newlines and indentations so that comments don't have to be
-  # correctly indented, or appear on a line of their own.
-  adjustComments: ->
-    @scanTokens (token, i, tokens) ->
-      return 1 unless token[0] is 'HERECOMMENT'
-      {(i-2): before, (i-1): prev, (i+1): post, (i+2): after} = tokens
-      if after?[0] is 'INDENT'
-        tokens.splice i + 2, 1
-        if before?[0] is 'OUTDENT' and post?[0] is 'TERMINATOR'
-        then tokens.splice i - 2, 1
-        else tokens.splice i, 0, after
-      else if prev and prev[0] not of <[ TERMINATOR INDENT OUTDENT ]>
-        if post?[0] is 'TERMINATOR' and after?[0] is 'OUTDENT'
-          tokens.splice i + 2, 0, tokens.splice(i, 2)...
-          if tokens[i+2][0] isnt 'TERMINATOR'
-            tokens.splice i + 2, 0, ['TERMINATOR', '\n', prev[2]]
-        else
-          tokens.splice i, 0, ['TERMINATOR', '\n', prev[2]]
-        return 2
-      1
 
   # Leading newlines would introduce an ambiguity in the grammar, so we
   # dispatch them here.
