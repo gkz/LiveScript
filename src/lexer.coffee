@@ -150,8 +150,7 @@ exports.Lexer = class Lexer
       else @token 'STRNUM', @escapeLines string
     default
       return 0
-    @countLines string
-    string.length
+    @countLines(string).length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
@@ -163,8 +162,7 @@ exports.Lexer = class Lexer
     if quote is '"' and 0 <= doc.indexOf '#{'
     then @interpolateString doc, heredoc: true
     else @token 'STRNUM', @makeString doc, quote, true
-    @countLines heredoc
-    heredoc.length
+    @countLines(heredoc).length
 
   # Matches and consumes comments.
   commentToken: ->
@@ -174,15 +172,13 @@ exports.Lexer = class Lexer
       @token 'HERECOMMENT', @sanitizeHeredoc here,
         herecomment: true, indent: Array(@indent + 1).join(' ')
       @token<[ TERMINATOR \n ]>
-    @countLines comment
-    comment.length
+    @countLines(comment).length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     return 0 unless @chunk.charAt(0) is '`' and js = JSTOKEN.exec @chunk
     @token 'LITERAL', (js[=0]).slice 1, -1
-    @countLines js
-    js.length
+    @countLines(js).length
 
   # Matches regular expression literals. Lexing regular expressions is difficult
   # to distinguish from division, so we borrow some basic heuristics from
@@ -199,8 +195,7 @@ exports.Lexer = class Lexer
     return 0 if @tag() of <[ STRNUM LITERAL ++ -- ]> or
                 not regex = REGEX.exec @chunk
     @token 'LITERAL', if regex[=0] is '//' then '/(?:)/' else regex
-    @countLines regex
-    regex.length
+    @countLines(regex).length
 
   # Matches experimental, multiline and extended regular expression literals.
   heregexToken: (match) ->
@@ -208,8 +203,7 @@ exports.Lexer = class Lexer
     if 0 > body.indexOf '#{'
       body .= replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
       @token 'LITERAL', "/#{ body or '(?:)' }/#{flags}"
-      @countLines heregex
-      return heregex.length
+      return @countLines(heregex).length
     @tokens.push ['IDENTIFIER', 'RegExp', @line], ['CALL_START', '(', @line]
     tokens = []
     for [tag, value] of @interpolateString(body, regex: true)
@@ -275,7 +269,7 @@ exports.Lexer = class Lexer
 
   # Record an outdent token or multiple tokens, if we happen to be moving back
   # inwards past several recorded indents.
-  outdentToken: (moveOut, noNewlines, close) ->
+  outdentToken: (moveOut, noNewlines) ->
     while moveOut > 0
       if (len = @indents.length - 1) < 0
         moveOut = 0
@@ -290,7 +284,7 @@ exports.Lexer = class Lexer
         @outdebt = 0
         @token 'OUTDENT', dent
     @outdebt -= moveOut if dent
-    @token 'TERMINATOR', '\n' unless noNewlines or @tag() is 'TERMINATOR'
+    @newlineToken() unless noNewlines
     this
 
   # Matches and consumes non-meaningful whitespace. Tag the previous token
@@ -503,9 +497,9 @@ exports.Lexer = class Lexer
 
   # Count the number of lines in a string and add it to `@line`.
   countLines: (str) ->
-    num = pos = 0
-    ++num while pos = 1 + str.indexOf '\n', pos
-    @line += num
+    pos = 0
+    ++@line while pos = 1 + str.indexOf '\n', pos
+    str
 
 # Constants
 # ---------
