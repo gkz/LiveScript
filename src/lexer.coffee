@@ -535,9 +535,12 @@ IDENTIFIER = /// ^
   ( @? [$A-Za-z_][$\w]* )
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 ///
-NUMBER     = /^0x[\da-f]+|^(?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)?/i
-HEREDOC    = /^("""|''')([\s\S]*?)(?:\n[ \t]*)?\1/
-SYMBOL   = /// ^ (
+NUMBER = ///
+ ^ 0x[\da-f]+ |                              # hex
+ ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?  # decimal
+///i
+HEREDOC = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
+SYMBOL  = /// ^ (
   ?: [-=]>                # function
    | [!=]==               # strict equality
    | [-+*/%&|^?:.[<>=!]=  # compound assign / comparison
@@ -550,12 +553,12 @@ SYMBOL   = /// ^ (
    | \\\n                 # continued line
    | \S
 ) ///
-WHITESPACE = /^[ \t]+/
+WHITESPACE = /^[^\n\S]+/
 COMMENT    = ///
   ^ \### ([^#][\s\S]*?) (?:###|$) |
   ^ (?: \s*# (?!##[^#]) .* )+
 ///
-MULTI_DENT = /^(?:\n[ \t]*)+/
+MULTI_DENT = /^(?:\n[^\n\S]*)+/
 SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 WORDS      = /^<\[[\s\S]*?]>/
@@ -579,7 +582,7 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 # Token cleaning regexes.
 MULTILINER      = /\n/g
-HEREDOC_INDENT  = /\n+([ \t]*)/g
+HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
 LEADING_SPACES  = /^\s+/
 TRAILING_SPACES = /\s+$/
