@@ -1252,7 +1252,7 @@ exports.Existence = class Existence extends Base
   invert: NEGATE
 
   compileNode: (o) ->
-    code = @expression.compile o
+    code = @expression.compile o, LEVEL_OP
     if IDENTIFIER.test(code) and not o.scope.check code, true
       code = if @negated
       then "typeof #{code} == \"undefined\" || #{code} === null"
