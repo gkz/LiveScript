@@ -87,35 +87,41 @@ class exports.Rewriter
   # Object literals may be written with implicit braces, for simple cases.
   # Insert the missing braces here, so that the parser doesn't have to.
   addImplicitBraces: ->
-    stack = []
-    start = null
+    {tokens}  = this
     condition = (token, i) ->
-      one = @tag i+1
-      return false if 'HERECOMMENT' of [one, @tag i-1]
+      one = tokens[i+1]?[0]
+      return false if 'HERECOMMENT' of [one, tokens[i-1]?[0]]
       [tag] = token
       tag is ',' and
         one not of <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]> or
-      tag of <[ TERMINATOR OUTDENT ]> and @tag(i+2) not of <[ : ... ]>
-    action = (token, i) -> @tokens.splice i, 0, ['}', '}', token[2]]
-    @scanTokens (token, i, tokens) ->
-      if (tag = token[0]) of EXPRESSION_START
-        stack.push [(if tag is 'INDENT' and @tag(i-1) is '{' then '{' else tag), i]
-        return 1
+      tag of <[ TERMINATOR OUTDENT ]> and tokens[i+2]?[0] not of <[ : ... ]>
+    action = (token, i) -> tokens.splice i, 0, ['}', '}', token[2]]
+    stack  = []
+    i      = -1
+    while token = tokens[++i]
+      [tag] = token
+      if tag of EXPRESSION_START
+        tag = '{' if tag is 'INDENT' and tokens[i-1]?[0] is '{'
+        stack.push [tag, i]
+        continue
       if tag of EXPRESSION_END
-        start := stack.pop()
-        return 1
-      return 1 unless tag is ':' and
-        (@tag(i-2) is ':' or  # a: b:
-         (paren = @tag(i-1) is ')') and @tag(start[1] - 1) is ':' or  # a: (..):
-         stack[stack.length - 1]?[0] isnt '{')
+        start = stack.pop()
+        continue
+      continue unless tag is ':'
+      paren = tokens[i-1]?[0] is ')'
+      continue unless \
+        paren and tokens[start[1]-1]?[0] is ':' or  # a: (..):
+        tokens[i-2]?[0] is ':' or                   # a: b:
+        stack[ *-1]?[0] isnt '{'
       stack.push ['{']
-      idx = if paren then start[1] else i - 1
-      idx -= 2 if @tag(idx - 2) is 'HERECOMMENT'
-      tok = ['{', '{', token[2]]
+      idx  = if paren then start[1] else i-1
+      idx -= 2 if tokens[idx-2]?[0] is 'HERECOMMENT'
+      tok  = ['{', '{', token[2]]
       tok.generated = true
       tokens.splice idx, 0, tok
-      @detectEnd i + 2, condition, action
-      2
+      @detectEnd i+2, condition, action
+      ++i
+    this
 
   # Methods may be optionally called without parentheses, for simple cases.
   # Insert the implicit parentheses here, so that the parser doesn't have to
