@@ -114,7 +114,7 @@ compileStdio = ->
   code  = ''
   stdin = process.openStdin()
   stdin.on 'data', -> code += it if it
-  stdin.on 'end' , -> compileScript 'stdio', code
+  stdin.on 'end' , -> compileScript null, code
 
 # Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
