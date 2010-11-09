@@ -76,12 +76,12 @@ class exports.Rewriter
     stack = []
     for token of @tokens
       switch token[0]
-      case 'CALL_START', 'INDEX_START', '(', '['
+      case <[ INDEX_START CALL_START [ ( ]>
         stack.push token[0]
-      case 'CALL_END',   'INDEX_END',   ')', ']'
-        switch stack.pop()
-        case  'CALL_START' then token[0] =  'CALL_END'
-        case 'INDEX_START' then token[0] = 'INDEX_END'
+      case <[ INDEX_END ] ]>
+        token[0] = 'INDEX_END' if stack.pop() is 'INDEX_START'
+      case <[ CALL_END  ) ]>
+        token[0] =  'CALL_END' if stack.pop() is  'CALL_START'
     this
 
   # Object literals may be written with implicit braces, for simple cases.
