@@ -158,33 +158,37 @@ class exports.Rewriter
   # blocks, so it doesn't need to. ')' can close a single-line block,
   # but we need to make sure it's balanced.
   addImplicitIndentation: ->
-    @scanTokens (token, i, tokens) ->
+    {tokens} = this; i = -1
+    while token = tokens[++i]
       [tag] = token
-      if tag is 'TERMINATOR' and @tag(i+1) is 'THEN'
-        tokens.splice i, 1
-        return 0
-      if tag is 'ELSE' and @tag(i-1) isnt 'OUTDENT'
+      if tag is 'ELSE' and tokens[i-1]?[0] isnt 'OUTDENT'
         tokens.splice i, 0, @indentation(token)...
-        return 2
-      if tag is 'CATCH' and @tag(i+2) of <[ OUTDENT TERMINATOR FINALLY ]>
-        tokens.splice i + 2, 0, @indentation(token)...
-        return 4
-      if tag of SINGLE_LINERS and @tag(i+1) isnt 'INDENT' and
-         not (tag is 'ELSE' and @tag(i+1) is 'IF')
-        starter = tag
-        [indent, outdent] = @indentation token
-        indent.fromThen   = true if starter is 'THEN'
-        indent.generated  = outdent.generated = true
-        tokens.splice i + 1, 0, indent
-        condition = (token, i) ->
-          token[1] isnt ';' and token[0] of SINGLE_CLOSERS and
-          not (token[0] is 'ELSE' and starter not of <[ IF THEN ]>)
-        action = (token, i) ->
-          @tokens.splice (if @tag(i-1) is ',' then i - 1 else i), 0, outdent
-        @detectEnd i + 2, condition, action
-        tokens.splice i, 1 if tag is 'THEN'
-        return 1
-      1
+        i += 1
+        continue
+      if tag is 'CATCH' and tokens[i+2]?[0] of <[ OUTDENT TERMINATOR FINALLY ]>
+        tokens.splice i+2, 0, @indentation(token)...
+        i += 3
+        continue
+      if tag is 'TERMINATOR' and tokens[i+1]?[0] is 'THEN'
+        tokens.splice i, 1
+        [tag] = token = tokens[i]
+      continue if (next = tokens[i+1]?[0]) is 'INDENT'
+      continue unless tag of <[ FUNCTION THEN DEFAULT TRY FINALLY ]> or
+                      tag is 'ELSE' and next isnt 'IF'
+      [indent, outdent] = @indentation token
+      indent.fromThen   = true if tag is 'THEN'
+      indent.generated  = outdent.generated = true
+      tokens.splice i+1, 0, indent
+      @detectEnd i+2
+      , (token, i) ->
+        [t] = token
+        t of <[ CATCH FINALLY OUTDENT CASE DEFAULT ]> or
+        t is 'TERMINATOR' and token[1] isnt ';' or
+        t is 'ELSE' and tag of <[ IF THEN ]>
+      , (token, i) ->
+        tokens.splice (if tokens[i-1][0] is ',' then i-1 else i), 0, outdent
+      if tag is 'THEN' then tokens.splice i, 1 else ++i
+    this
 
   # Tag postfix conditionals as such, so that we can parse them with a
   # different precedence.
@@ -289,7 +293,7 @@ for [left, rite] of BALANCED_PAIRS
 
 # Tokens that indicate the close of a clause of an expression.
 EXPRESSION_CLOSE =
-  <[ ELSE WHEN BY TO CATCH FINALLY CASE DEFAULT ]>.concat EXPRESSION_END
+  EXPRESSION_END.concat<[ ELSE WHEN BY TO CATCH FINALLY CASE DEFAULT ]>
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
 IMPLICIT_FUNC = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
@@ -305,11 +309,6 @@ IMPLICIT_BLOCK = <[ FUNCTION { [ , ]>
 
 # Tokens that always mark the end of an implicit call for single-liners.
 IMPLICIT_END = <[ POST_IF FOR WHILE WHEN BY TO CASE DEFAULT LOOP TERMINATOR INDENT ]>
-
-# Single-line flavors of block expressions that have unclosed endings.
-# The grammar can't disambiguate them, so we insert the implicit indentation.
-SINGLE_LINERS  = <[ FUNCTION ELSE THEN DEFAULT TRY FINALLY ]>
-SINGLE_CLOSERS = <[ TERMINATOR CATCH FINALLY ELSE OUTDENT CASE DEFAULT ]>
 
 # Tokens that end a line.
 LINEBREAKS = <[ TERMINATOR INDENT OUTDENT ]>
