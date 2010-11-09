@@ -127,37 +127,41 @@ class exports.Rewriter
   # Insert the implicit parentheses here, so that the parser doesn't have to
   # deal with them.
   addImplicitParentheses: ->
-    classLine = false
+    classLine = seenSingle = false
+    condition = (token, i) ->
+      return true if not seenSingle and token.fromThen
+      [tag] = token
+      [pre] = tokens[i-1]
+      seenSingle := true if tag of <[ IF ELSE FUNCTION ]>
+      return true  if tag is 'ACCESS' and pre is 'OUTDENT'
+      return false if token.generated or  pre is ','
+      tag of <[ POST_IF FOR WHILE WHEN BY TO CASE DEFAULT TERMINATOR ]> or
+      tag is 'INDENT' and pre not of <[ FUNCTION { [ , ]> and
+        tokens[i-2]?[0] isnt 'CLASS' and
+        not ((post = tokens[i+1]) and post.generated and post[0] is '{')
     action = (token, i) ->
-      idx = if token[0] is 'OUTDENT' then i + 1 else i
-      @tokens.splice idx, 0, ['CALL_END', ')', token[2]]
-    @scanTokens (token, i, tokens) ->
-      {(i-1): prev, (i+1): next} = tokens
-      [tag]      = token
-      classLine := true if tag is 'CLASS'
+      ++i if token[0] is 'OUTDENT'
+      @tokens.splice i, 0, ['CALL_END', ')', token[2]]
+    {tokens} = this; i = -1;
+    while token = tokens[++i]
+      [tag] = token
+      prev  = tokens[i-1]
+      classLine  = true if tag is 'CLASS'
       callObject = not classLine and tag is 'INDENT' and
-                   next and next.generated and next[0] is '{' and
-                   prev and prev[0] of IMPLICIT_FUNC
-      seenSingle = false
-      classLine := false if tag of LINEBREAKS
+                   prev and prev[0] of IMPLICIT_FUNC and
+                   (next = tokens[i+1]) and next.generated and next[0] is '{'
+      classLine  = false if tag of <[ TERMINATOR INDENT OUTDENT ]>
       token.call = true  if tag is '?' and prev and not prev.spaced
-      return 1 unless callObject or
+      continue unless callObject or
         prev?.spaced and (prev.call or prev[0] of IMPLICIT_FUNC) and
         (tag of IMPLICIT_CALL or
          tag is 'PLUS_MINUS' and not (token.spaced or token.eol))
-      tokens.splice i, 0, ['CALL_START', '(', token[2]]
-      @detectEnd i + (if callObject then 2 else 1), (token, i) ->
-        return true if not seenSingle and token.fromThen
-        [tag] = token
-        seenSingle := true if tag of <[ IF ELSE FUNCTION ]>
-        return true if tag is 'ACCESS' and @tag(i-1) is 'OUTDENT'
-        not token.generated and @tag(i-1) isnt ',' and tag of IMPLICIT_END and
-        (tag isnt 'INDENT' or
-         (@tag(i-2) isnt 'CLASS' and @tag(i-1) not of IMPLICIT_BLOCK and
-          not ((post = @tokens[i+1]) and post.generated and post[0] is '{')))
-      , action
+      tokens.splice i++, 0, ['CALL_START', '(', token[2]]
+      ++i if callObject
+      seenSingle = false
+      @detectEnd i, condition, action
       prev[0] = 'FUNC_EXIST' if prev[0] is '?'
-      2
+    this
 
   # Because our grammar is LALR(1), it can't handle some single-line
   # expressions that lack ending delimiters. The **Rewriter** adds the implicit
@@ -309,12 +313,3 @@ IMPLICIT_CALL = <[
   IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT PARAM_START FUNCTION
   IF TRY SWITCH CLASS [ ( {
 ]>
-
-# Tokens indicating that the implicit call must enclose a block of expressions.
-IMPLICIT_BLOCK = <[ FUNCTION { [ , ]>
-
-# Tokens that always mark the end of an implicit call for single-liners.
-IMPLICIT_END = <[ POST_IF FOR WHILE WHEN BY TO CASE DEFAULT LOOP TERMINATOR INDENT ]>
-
-# Tokens that end a line.
-LINEBREAKS = <[ TERMINATOR INDENT OUTDENT ]>
