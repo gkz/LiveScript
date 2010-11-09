@@ -1019,6 +1019,14 @@ exports.While = class While extends Base
 
   makeReturn: RETURN
 
+  makePush: (o, body) ->
+    exps = body.expressions
+    if (last = exps[*-1]) and not last.containsPureStatement()
+      o.scope.assign '_results', '[]'
+      exps[*-1] = new Call new Literal('_results.push'), [last]
+      res = '_results'
+    "\n#{@tab}return #{ res or '[]' };"
+
   containsPureStatement: ->
     {expressions} = @body
     i = expressions.length
@@ -1038,14 +1046,12 @@ exports.While = class While extends Base
     if body.isEmpty()
       body = ''
     else
-      if @returns
-        o.scope.assign '_results', '[]'
-        body = Push.wrap '_results', body
+      ret  = @makePush o, body if @returns
       body = new If @guard, body, {'statement'} if @guard
       body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
     code  = set + @tab + if code is 'true' then 'for (;;' else "while (#{code}"
     code += ") {#{body}}"
-    code += "\n#{@tab}return _results;" if @returns
+    code += ret if ret
     code
 
 #### Op
@@ -1296,11 +1302,9 @@ exports.Parens = class Parens extends Base
 # Unlike Python array comprehensions, they can be multi-line, and you can pass
 # the current index of the loop as a second parameter. Unlike Ruby blocks,
 # you can map and filter in a single pass.
-exports.For = class For extends Base
+exports.For = class For extends While
 
   children: <[ body source guard step from to ]>
-
-  isStatement: YES
 
   constructor: (body, head) ->
     if head.index instanceof Value
@@ -1309,15 +1313,6 @@ exports.For = class For extends Base
     @body    = new Expressions body
     @step  or= new Literal 1 unless @object
     @returns = false
-
-  makeReturn: RETURN
-
-  containsPureStatement: While::containsPureStatement
-
-  compileReturnValue: (o, val) ->
-    return '\n' + new Return(new Literal val).compile o if @returns
-    return '\n' + val if val
-    ''
 
   # Welcome to the hairiest method in all of Coco. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
@@ -1380,10 +1375,7 @@ exports.For = class For extends Base
     defPart += @pluckDirectCalls o, body, name, index unless pattern
     code = guardPart + varPart
     unless body.isEmpty()
-      if @returns
-        o.scope.assign '_results', '[]'
-        body    = Push.wrap '_results', body
-        retPart = "\n#{@tab}return _results;"
+      retPart  = @makePush o, body if @returns
       body     = new If @guard, body, {'statement'} if @guard
       o.indent = idt
       code    += body.compile o, LEVEL_TOP
@@ -1544,16 +1536,6 @@ exports.If = class If extends Base
 # ----------
 # Faux-nodes are never created by the grammar, but are used during code
 # generation to generate other combinations of nodes.
-
-#### Push
-
-# The **Push** creates the tree for `array.push(value)`,
-# which is helpful for recording the result arrays from comprehensions.
-Push =
-  wrap: (name, exps) ->
-    return exps if exps.isEmpty() or exps.expressions[*-1].containsPureStatement()
-    exps.append new Call \
-      new Value(new Literal(name), [new Accessor new Literal 'push']), [exps.pop()]
 
 #### Closure
 
