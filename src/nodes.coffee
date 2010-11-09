@@ -51,7 +51,23 @@ exports.Base = class Base
   compileClosure: (o) ->
     if @containsPureStatement()
       throw SyntaxError 'cannot include a pure statement in an expression.'
-    Closure.wrap(this).compileNode o
+    args = []
+    func = new Code [], new Expressions this
+    func.wrapper = true
+    if @contains @literalThis
+      args.push new Literal 'this'
+      call = new Value func, [new Accessor new Literal 'call']
+    mentionsArgs = false
+    @traverseChildren false, ->
+      if it instanceof Literal and it.value is 'arguments'
+        mentionsArgs := it.value = '_args'
+    if mentionsArgs
+      args.push new Literal 'arguments'
+      func.params.push new Param new Literal '_args'
+    new Parens(new Call(call or func, args), true).compileNode o
+
+  literalThis: -> it instanceof Literal and it.value is 'this' or
+                  it instanceof Code    and it.bound
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -919,7 +935,7 @@ exports.Code = class Code extends Base
     wasEmpty = @body.isEmpty()
     exps.unshift splats if splats
     @body.expressions.unshift exps... if exps.length
-    @body.makeReturn() unless wasEmpty or @noReturn
+    @body.makeReturn() unless wasEmpty
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
     vars[0] = 'it' if not vars.length and @body.contains (-> it.value is 'it')
     comm = if @comment then @comment.compile(o) + '\n' else ''
@@ -1531,38 +1547,6 @@ exports.If = class If extends Base
     parent[name] = ifn.body
     ifn.body     = new Value parent
     ifn
-
-# Faux-Nodes
-# ----------
-# Faux-nodes are never created by the grammar, but are used during code
-# generation to generate other combinations of nodes.
-
-#### Closure
-
-# A faux-node used to wrap an expressions body in a closure.
-Closure =
-
-  # Wrap the expressions body, unless it contains a pure statement,
-  # in which case, no dice. If the body mentions `this` or `arguments`,
-  # then make sure that the closure wrapper preserves the original values.
-  wrap: (expressions, statement, noReturn) ->
-    return expressions if expressions.containsPureStatement()
-    func = new Code [], new Expressions expressions
-    func.wrapper = true
-    args = []
-    if (mentionsArgs = expressions.contains @literalArgs) or
-       (               expressions.contains @literalThis)
-      meth = new Literal if mentionsArgs then 'apply' else 'call'
-      args = [new Literal 'this']
-      args.push new Literal 'arguments' if mentionsArgs
-      func = new Value func, [new Accessor meth]
-      func.noReturn = noReturn
-    call = new Parens new Call(func, args), true
-    if statement then new Expressions call else call
-
-  literalArgs: -> it instanceof Literal and it.value is 'arguments'
-  literalThis: -> it instanceof Literal and it.value is 'this' or
-                  it instanceof Code    and it.bound
 
 # Constants
 # ---------

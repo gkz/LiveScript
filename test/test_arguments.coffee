@@ -71,3 +71,9 @@ eq  2, withSplats 1, 1, 1, 1
 
 
 eq<[ Q Q words-as-arguments ]>
+
+
+eq arguments,
+  switch case 1
+    eq arguments, (arguments for i from 1 to 1)[0]
+    arguments
