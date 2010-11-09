@@ -7,7 +7,7 @@
 #
 # Which is a format that can be fed directly into [Jison](http://github.com/zaach/jison).
 
-{Rewriter} = require './rewriter'
+Rewriter = require './rewriter'
 
 # The Lexer Class
 # ---------------
@@ -59,7 +59,8 @@ exports.Lexer = class Lexer
     # Close up all remaining open blocks at the end of the file.
     @outdentToken @indent
     @tokens.shift()  # dispose dummy
-    if o.rewrite is false then @tokens else new Rewriter().rewrite @tokens
+    Rewriter.rewrite @tokens unless o.rewrite is false
+    @tokens
 
   # Tokenizers
   # ----------
