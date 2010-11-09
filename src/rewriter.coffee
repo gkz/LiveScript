@@ -243,27 +243,27 @@ class exports.Rewriter
     stack = []
     debt  = {}
     debt[key] = 0 for all key in INVERSES
-    @scanTokens (token, i, tokens) ->
-      if (tag = token[0]) of EXPRESSION_START
+    {tokens} = this; i = -1;
+    while token = tokens[++i]
+      [tag] = token
+      if tag of EXPRESSION_START
         stack.push token
-        return 1
-      return 1 unless tag of EXPRESSION_END
+        continue
+      continue unless tag of EXPRESSION_END
       if debt[inv = INVERSES[tag]] > 0
-        debt[inv] -= 1
-        tokens.splice i, 1
-        return 0
-      match = stack.pop()
-      mtag  = match[0]
-      oppos = INVERSES[mtag]
-      return 1 if tag is oppos
-      debt[mtag] += 1
-      val = [oppos, if mtag is 'INDENT' then match[1] else oppos]
-      if @tag(i+2) is mtag
-        tokens.splice i + 3, 0, val
-        stack.push match
+        --debt[inv]
+        tokens.splice i--, 1
+        continue
+      [start] = stoken = stack.pop()
+      continue if tag is end = INVERSES[start]
+      ++debt[start]
+      tok = [end, if start is 'INDENT' then stoken[1] else end]
+      if tokens[i+2]?[0] is start
+        stack.push stoken
+        tokens.splice i+3, 0, tok
       else
-        tokens.splice i, 0, val
-      1
+        tokens.splice i  , 0, tok
+    this
 
   # Generate the indentation tokens, based on another token on the same line.
   indentation: (token) -> [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
