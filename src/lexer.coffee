@@ -28,9 +28,7 @@ exports.Lexer = class Lexer
   #
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
-  tokenize: (code, o = {}) ->
-    code    .= replace(/\r/g, '').replace TRAILING_SPACES, ''
-    @code    = code         # The remainder of the source code.
+  tokenize: (@code, o = {}) ->
     @line    = o.line or 0  # The current line.
     @indent  = 0            # The current indentation level.
     @indebt  = 0            # The over-indentation at the current level.
@@ -40,25 +38,24 @@ exports.Lexer = class Lexer
     @tokens  = [['DUMMY', '', 0]]
     # Flags for distinguishing FORIN/FOROF/FROM/TO.
     @seenFor = @seenFrom = false
-    # At every position, run through this list of attempted matches,
-    # short-circuiting if any of them succeed. Their order determines precedence:
-    # `@literalToken` is the fallback catch-all.
-    i = 0
+    code = @code.replace(/\r/g, '').replace TRAILING_SPACES, ''
+    i    = 0
     while @chunk = code.slice i
-      i += do @identifierToken or
-           do @commentToken    or
-           do @whitespaceToken or
-           do @lineToken       or
-           do @heredocToken    or
-           do @stringToken     or
-           do @numberToken     or
-           do @regexToken      or
-           do @wordsToken      or
-           do @jsToken         or
-           do @literalToken
+      if comments = COMMENTS.exec @chunk
+        break unless @chunk = code.slice i += @countLines(comments[0]).length
+      switch code.charAt i
+      case '\n'      then step = do @lineToken
+      case ' ', '\t' then step = do @whitespaceToken
+      case "'", '"'  then step = do @heredocToken or do @stringToken
+      case '/'       then step = do @heregexToken or do @regexToken
+      case '<'       then step = do @wordsToken
+      case '#'       then step = do @commentToken
+      case '`'       then step = do @jsToken
+      default step = @whitespaceToken() or @identifierToken() or @numberToken()
+      i += step or @literalToken()
     # Close up all remaining open blocks at the end of the file.
     @outdentToken @indent
-    @tokens.shift()  # dispose dummy
+    @tokens.shift()  # Dispose dummy.
     Rewriter.rewrite @tokens unless o.rewrite is false
     @tokens
 
@@ -164,19 +161,17 @@ exports.Lexer = class Lexer
     else @token 'STRNUM', @makeString doc, quote, true
     @countLines(heredoc).length
 
-  # Matches and consumes comments.
+  # Matches block comments.
   commentToken: ->
-    return 0 unless match = @chunk.match COMMENT
-    [comment, here] = match
-    if here
-      @token 'HERECOMMENT', @sanitizeHeredoc here,
-        herecomment: true, indent: Array(@indent + 1).join(' ')
-      @token<[ TERMINATOR \n ]>
-    @countLines(comment).length
+    return 0 unless match = HERECOMMENT.exec @chunk
+    @token 'HERECOMMENT', @sanitizeHeredoc match[1],
+      comment: true, indent: Array(@indent + 1).join(' ')
+    @token<[ TERMINATOR \n ]>
+    @countLines(match[0]).length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return 0 unless @chunk.charAt(0) is '`' and js = JSTOKEN.exec @chunk
+    return 0 unless js = JSTOKEN.exec @chunk
     @token 'LITERAL', (js[=0]).slice 1, -1
     @countLines(js).length
 
@@ -184,8 +179,6 @@ exports.Lexer = class Lexer
   # to distinguish from division, so we borrow some basic heuristics from
   # JavaScript and Ruby.
   regexToken: ->
-    return 0 if @chunk.charAt(0) isnt '/'
-    return @heregexToken regex if regex = HEREGEX.exec @chunk
     # We distinguish it from the division operator using a list of tokens that
     # a regex never immediately follows.
     prev = @tokens[*-1]
@@ -196,8 +189,9 @@ exports.Lexer = class Lexer
     @token 'LITERAL', if regex[=0] is '//' then '/(?:)/' else regex
     @countLines(regex).length
 
-  # Matches experimental, multiline and extended regular expression literals.
-  heregexToken: (match) ->
+  # Matches multiline and extended regular expression literals.
+  heregexToken: ->
+    return 0 unless match = HEREGEX.exec @chunk
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
       body .= replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
@@ -245,8 +239,9 @@ exports.Lexer = class Lexer
   # Keeps track of the level of indentation, because a single outdent token
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
-    return 0 unless indent = MULTI_DENT.exec @chunk
+    return 0 unless indent = MULTIDENT.exec @chunk
     @countLines indent[=0]
+    @tokens[*-1].eol = true
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
     if size - @indebt is @indent
@@ -289,9 +284,9 @@ exports.Lexer = class Lexer
   # Matches and consumes non-meaningful whitespace. Tag the previous token
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
-    return 0 unless (match = WHITESPACE.exec @chunk) or @chunk.charAt(0) is '\n'
-    @tokens[*-1][if match then 'spaced' else 'eol'] = true
-    if match then match[0].length else 0
+    return 0 unless match = WHITESPACE.exec @chunk
+    @tokens[*-1].spaced = true
+    match[0].length
 
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: ->
@@ -362,14 +357,15 @@ exports.Lexer = class Lexer
   # Sanitize a heredoc or herecomment by
   # erasing all external indentation on the left-hand side.
   sanitizeHeredoc: (doc, options) ->
-    {indent, herecomment} = options
-    return doc if herecomment and 0 > doc.indexOf '\n'
-    unless herecomment
+    {indent, comment} = options
+    if comment
+      return doc if 0 > doc.indexOf '\n'
+    else
       while attempt = HEREDOC_INDENT.exec doc
         attempt[=1]
         indent = attempt if !indent? or 0 < attempt.length < indent.length
     doc .= replace /// \n #{indent} ///g, '\n' if indent
-    doc .= replace /^\n/, '' unless herecomment
+    doc .= replace /^\n/, '' unless comment
     doc
 
   # A source of ambiguity in our grammar used to be parameter lists in function
@@ -552,15 +548,13 @@ SYMBOL  = /// ^ (
    | \\\n                 # continued line
    | \S
 ) ///
-WHITESPACE = /^[^\n\S]+/
-COMMENT    = ///
-  ^ \### ([^#][\s\S]*?) (?:###|$) |
-  ^ (?: \s*# (?!##[^#]) .* )+
-///
-MULTI_DENT = /^(?:\n[^\n\S]*)+/
-SIMPLESTR  = /^'[^\\']*(?:\\.[^\\']*)*'/
-JSTOKEN    = /^`[^\\`]*(?:\\.[^\\`]*)*`/
-WORDS      = /^<\[[\s\S]*?]>/
+WHITESPACE  = /^[^\n\S]+/
+COMMENTS    = /^(?:\s*#(?!##[^#]).*)+/
+HERECOMMENT = /^###([^#][\s\S]*?)(?:###|$)/
+MULTIDENT   = /^(?:\n[^\n\S]*)+/
+SIMPLESTR   = /^'[^\\']*(?:\\.[^\\']*)*'/
+JSTOKEN     = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+WORDS       = /^<\[[\s\S]*?]>/
 
 # Regex-matching-regexes.
 REGEX = /// ^
