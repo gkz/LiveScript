@@ -39,10 +39,9 @@ task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
 
 
 task 'build', 'build the Coco language from source', ->
-  files = for file of fs.readdirSync('src') when /\.co(?:ffee)?$/i.test file
-    'src/' + file
-  run ['-c', '-o', 'lib', files...]
-
+  ext = /\.co(?:ffee)?$/i
+  run <[ -c -o lib ]>.concat \
+    ('src/' + file for file of fs.readdirSync 'src' when ext.test file)
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   exec 'bin/coke build && bin/coke build && bin/coke test', (err, stdout, stderr) ->
@@ -50,53 +49,49 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
     console.log stderr.trim() if stderr
     throw err                 if err
 
-
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
-  {parser} = require './lib/grammar'
-  fs.writeFile 'lib/parser.js', parser.generate()
-
+  fs.writeFile 'lib/parser.js', require('./lib/grammar').generate()
 
 task 'build:browser', 'rebuild the merged script for inclusion of the browser', ->
-  code = ''
+  code  = ''
   code += """
     require['./#{name}'] = new function(){
       var exports = this;
       #{ fs.readFileSync "lib/#{name}.js" }
     };
   """ for name of <[ rewriter lexer parser scope nodes coco browser ]>
-  jsp = require 'uglifyjs/parse-js'
-  pro = require 'uglifyjs/process'
-  ast = jsp.parse """
+  {parser, uglify} = require 'uglify-js'
+  ast = parser.parse """
     this.Coco = function(){
       function require(path){ return require[path] }
       #{code}
       return require['./coco']
     }()
   """
-  #ast = pro.ast_mangle ast
+  #ast = uglify.ast_mangle ast
   fs.writeFileSync 'extras/coco.js', """
     // Coco Compiler v#{Coco.VERSION}
     // http://github.com/satyr/coco
     // Copyright 2010, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
 
-    #{ pro.gen_code pro.ast_squeeze ast }
+    #{ uglify.gen_code uglify.ast_squeeze ast, extra: true }
   """
   invoke 'test:browser'
+
 
 task 'doc:site', 'watch and continually rebuild the documentation for the website', ->
   exec 'rake doc', (err) ->
     throw err if err
 
-
 task 'doc:source', 'rebuild the internal documentation', ->
   exec 'docco src/*.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
 
-
 task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
   exec 'docco examples/underscore.coffee && cp -rf docs documentation && rm -r docs', (err) ->
     throw err if err
+
 
 task 'bench', 'quick benchmark of compilation time (of everything in src)', ->
   exec 'time bin/coco -p src/ > /dev/null', (err, stdout, stderr) ->
