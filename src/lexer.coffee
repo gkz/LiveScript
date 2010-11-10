@@ -576,7 +576,7 @@ REGEX = /// ^
   )*
   / [imgy]{0,4} (?!\w)
 ///
-HEREGEX      = /^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?!\w)/
+HEREGEX      = /// ^ /{3} ([\s\S]+?) /{3} ([imgy]{0,4}) (?!\w) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 # Token cleaning regexes.
@@ -590,4 +590,4 @@ TRAILING_SPACES = /\s+$/
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
 CALLABLE  = <[ IDENTIFIER THISPROP ) ] } ? SUPER THIS ]>
-INDEXABLE = CALLABLE.concat <[ STRNUM LITERAL ]>
+INDEXABLE = CALLABLE.concat<[ STRNUM LITERAL ]>
