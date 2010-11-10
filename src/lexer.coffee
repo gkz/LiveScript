@@ -15,7 +15,7 @@ Rewriter = require './rewriter'
 # The Lexer class reads a stream of Coco and divvys it up into tagged
 # tokens. Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
-exports.Lexer = class Lexer
+class exports.Lexer
 
   # **tokenize** is the Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the

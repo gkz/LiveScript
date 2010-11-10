@@ -42,6 +42,55 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
       arguments[0](arguments[1]);
 
 
+- `class` as a code block
+
+  Unlike CoffeScript, our `class` takes a regular block under which you can declare the constructor (as a bare function on top) and properties (as bare objects on top) as well as have other code like define static methods (`this` points to the constructor within the block).
+
+      $ coco -bsp
+      class exports.B extends A
+        ### constructor ###
+        -> super it
+      
+        ### properties ###
+        member: 'U'
+        method: -> super @member, B.static()
+      
+        private = 42
+        @static = -> private
+      
+      var B, __extends = function(child, parent){
+        function ctor(){ this.constructor = child; }
+        ctor.prototype = parent.prototype;
+        child.prototype = new ctor;
+        if (typeof parent.extended == "function") parent.extended(child);
+        child.__super__ = parent.prototype;
+        return child;
+      }, __importAll = function(obj, src){
+        for (var key in src) obj[key] = src[key];
+        return obj;
+      };
+      exports.B = B = (function(){
+        var private;
+        __extends(B, A);
+        /* constructor */
+        function B(it){
+          B.__super__.constructor.call(this, it);
+        }
+        __importAll(B.prototype, {
+          /* properties */
+          member: 'U',
+          method: function(){
+            return B.__super__.method.call(this, this.member, B.static());
+          }
+        });
+        private = 42;
+        B.static = function(){
+          return private;
+        };
+        return B;
+      }());
+
+
 - `do`
 
   A unary operator that simply calls a function. Helps you write less parentheses.
@@ -175,5 +224,6 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 - `undefined` is not reserved.
 - `===`/`!==`/`==`/`!=` each compiles as is.
 - The roles of `in` and `of` have been swapped to keep the JS behavior.
-- switch-when-else has been replaced by switch-case-default.
+- `class` takes a block rather than a pseudo object.
+- `switch`-`case`-`default` replaces switch-when-else.
 - The binaries are named __coco__ and __coke__ to coexist with __coffee__ and __cake__.

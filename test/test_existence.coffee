@@ -78,7 +78,7 @@ eq ident(non?.existent().method()), void, 'soaks inner values'
 # Soaks constructor invocations.
 a = 0
 class Foo
-  constructor: -> a += 1
+  -> a += 1
   bar: "bat"
 
 ok (new Foo())?.bar is 'bat'

@@ -109,7 +109,6 @@ grammar =
   Block: [
     o 'INDENT Body OUTDENT', -> $2
     o 'INDENT      OUTDENT', -> new Expressions
-    o 'TERMINATOR Comment',  -> new Expressions $2
   ]
 
   # A literal identifier, a variable name or property.
@@ -186,16 +185,16 @@ grammar =
 
   # The list of parameters that a function accepts can be of any length.
   ParamList: [
-    o '',                                       -> []
-    o 'Param',                                  -> [$1]
-    o 'ParamList , Param',                      -> $1.concat $3
+    o '',                  -> []
+    o 'Param',             -> [$1]
+    o 'ParamList , Param', -> $1.concat $3
   ]
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o 'ParamVar',                 -> new Param $1
-    o 'ParamVar ...',             -> new Param $1, null, true
-    o 'ParamVar  =  Expression',  -> new Param $1, $3
+    o 'ParamVar',                -> new Param $1
+    o 'ParamVar ...',            -> new Param $1, null, true
+    o 'ParamVar  =  Expression', -> new Param $1, $3
   ]
   ParamVar: [
     o 'Identifier'
@@ -256,30 +255,14 @@ grammar =
   # Class definitions have optional bodies of prototype property assignments,
   # and optional references to the superclass.
   Class: [
-    o 'CLASS SimpleAssignable',               -> new Class $2
-    o 'CLASS SimpleAssignable EXTENDS Value', -> new Class $2, $4
-    o 'CLASS SimpleAssignable
-       INDENT ClassBody OUTDENT',             -> new Class $2, null, $4
-    o 'CLASS SimpleAssignable EXTENDS Value
-       INDENT ClassBody OUTDENT',             -> new Class $2, $4, $6
-    o 'CLASS INDENT ClassBody OUTDENT',       -> new Class null, null, $3
-    o 'CLASS',                                -> new Class null, null, new Expressions
-    o 'CLASS EXTENDS Value',                  -> new Class null, $3  , new Expressions
-    o 'CLASS EXTENDS Value
-       INDENT ClassBody OUTDENT',             -> new Class null, $3, $5
-  ]
-  # Assignments that can happen directly inside a class declaration.
-  ClassAssign: [
-    o 'AssignObj',                                -> $1
-    o 'ThisProperty : Expression',                -> new Assign new Value($1), $3, 'this'
-    o 'ThisProperty : INDENT Expression OUTDENT', -> new Assign new Value($1), $4, 'this'
-  ]
-  # A list of assignments to a class.
-  ClassBody: [
-    o '',                                 -> []
-    o 'ClassAssign',                      -> [$1]
-    o 'ClassBody TERMINATOR ClassAssign', -> $1.concat $3
-    o '{ ClassBody }',                    -> $2
+    o 'CLASS',                                      -> new Class
+    o 'CLASS Block',                                -> new Class null, null, $2
+    o 'CLASS EXTENDS Value',                        -> new Class null, $3
+    o 'CLASS EXTENDS Value Block',                  -> new Class null, $3, $4
+    o 'CLASS SimpleAssignable',                     -> new Class $2
+    o 'CLASS SimpleAssignable Block',               -> new Class $2, null, $3
+    o 'CLASS SimpleAssignable EXTENDS Value',       -> new Class $2, $4
+    o 'CLASS SimpleAssignable EXTENDS Value Block', -> new Class $2, $4, $5
   ]
 
   # Ordinary function invocation, or a chained series of calls.

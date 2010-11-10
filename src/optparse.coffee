@@ -6,14 +6,14 @@
 #
 # The first non-option is considered to be the start of the file (and file
 # option) list, and all subsequent arguments are left unparsed.
-exports.OptionParser = class OptionParser
+exports.OptionParser = class
 
   # Initialize with a list of valid options, in the form:
   #
   #     [short-flag, long-flag, description]
   #
   # Along with an an optional banner for the usage help.
-  constructor: (rules, @banner) ->
+  (rules, @banner) ->
     @rules = buildRules rules
 
   # Parse the list of arguments, populating an `options` object with all of the

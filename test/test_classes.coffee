@@ -3,7 +3,7 @@ class Base
   func: (string) ->
     "zero/#{string}"
 
-  @static: (string) ->
+  @static = (string) ->
     "static/#{string}"
 
 class FirstChild extends Base
@@ -18,7 +18,7 @@ thirdCtor = ->
   @array = [1, 2, 3]
 
 class ThirdChild extends SecondChild
-  constructor: thirdCtor
+  -> thirdCtor.apply this, arguments
 
   # Gratuitous comment for testing.
   func: (string) ->
@@ -40,32 +40,30 @@ ok (new ThirdChild).array.join(' ') is '1 2 3'
 
 
 class TopClass
-  constructor: (arg) ->
+  (arg) ->
     @prop = 'top-' + arg
 
 class SuperClass extends TopClass
-  constructor: (arg) ->
-    super 'super-' + arg
+  -> super 'super-' + it
 
 class SubClass extends SuperClass
-  constructor: ->
-    super 'sub'
+  -> super 'sub'
 
 ok (new SubClass).prop is 'top-super-sub'
 
 
 class OneClass
-  @new: 'new'
+  @new = 'new'
   function: 'function'
-  constructor: (name) -> @name = name
+  (@name) ->
 
 class TwoClass extends OneClass
 
 Function.prototype.new = -> new this arguments...
 
-ok (TwoClass.new('three')).name is 'three'
-ok (new OneClass).function is 'function'
-ok OneClass.new is 'new'
+eq TwoClass.new('three').name, 'three'
+eq (new OneClass).function, 'function'
+eq OneClass.new, 'new'
 
 delete Function.prototype.new
 
@@ -125,10 +123,10 @@ ok obj.amI()
 
 # super() calls in constructors of classes that are defined as object properties.
 class Hive
-  constructor: (name) -> @name = name
+  (@name) ->
 
 class Hive.Bee extends Hive
-  constructor: (name) -> super
+  (name) -> super
 
 maya = new Hive.Bee 'Maya'
 ok maya.name is 'Maya'
@@ -144,45 +142,27 @@ ok instance.class is 'class'
 ok instance.name() is 'class'
 
 
-# Classes with methods that are pre-bound to the instance.
-# ... or statically, to the class.
+# Static method as a bound function.
 class Dog
+  (@name) ->
+  @static = => new this 'Dog'
 
-  constructor: (name) ->
-    @name = name
-
-  bark: =>
-    "#{@name} woofs!"
-
-  @static: =>
-    new this('Dog')
-
-spark = new Dog('Spark')
-fido  = new Dog('Fido')
-fido.bark = spark.bark
-
-eq fido.bark(), 'Spark woofs!'
-
-obj = func: Dog.static
-
-eq obj.func().name, 'Dog'
+eq {func: Dog.static}.func().name, 'Dog'
 
 
-# Testing a bound function in a bound function.
+# A bound function in a bound method.
 class Mini
+  ->
+    @generate = =>
+      for i from 1 to 3 then do => => @num * i
   num: 10
-  generate: =>
-    for i from 1 to 3
-      =>
-        @num
 
-m = new Mini
-eq (func() for func of m.generate()).join(' '), '10 10 10'
+eq (func() for func of new Mini().generate()) + '', '10,20,30'
 
 
 # Testing a contructor called with varargs.
 class Connection
-  constructor: (one, two, three) ->
+  (one, two, three) ->
     [@one, @two, @three] = [one, two, three]
 
   out: ->
@@ -208,16 +188,16 @@ ok c.args.join(' ') is '1 2 3 4'
 
 # Test `extended` callback.
 class Base
-  @extended: (subclass) ->
+  @extended = (subclass) ->
     for key, value in @
       subclass[key] = value
 
 class Element extends Base
-  @fromHTML: (html) ->
+  @fromHTML = (html) ->
     node = "..."
     new @(node)
 
-  constructor: (node) ->
+  (node) ->
     @node = node
 
 ok Element.extended is Base.extended
@@ -253,7 +233,7 @@ ok instance.method() is 'value'
 
 # Implicit objects as static properties.
 class Static
-  @static:
+  @static =
     one: 1
     two: 2
 
@@ -266,21 +246,14 @@ c = class
 ok c instanceof Function
 
 
-# Classes with value'd constructors.
-counter = 0
-classMaker = ->
-  counter += 1
-  inner = counter
-  ->
-    @value = inner
+Namespace = {}
+Class     = null
 
-class One
-  constructor: classMaker()
+# Namespaced but undeclared.
+Namespace.Class = class
+eq Namespace.Class.name, 'Class'
+eq Class, null
 
-class Two
-  constructor: classMaker()
-
-ok (new One).value is 1
-ok (new Two).value is 2
-ok (new One).value is 1
-ok (new Two).value is 2
+# Namespaced and declared.
+class Namespace.Class
+eq Class, Namespace.Class
