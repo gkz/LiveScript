@@ -1,26 +1,17 @@
 # Regular expression literals.
-ok 'x'.match(/x/g)
-ok 'x'.match /x/g
-ok 'x'.match(/x/)
+ok /x/.test 'x'
 ok 'x'.match /x/
+eq /\\/.source, '\\\\'
 
-ok 4 / 2 / 1 is 2
 
-y = 4
-x = 2
-g = 1
+# Should not be mixed-up with the division operator.
+g = h = i = 2
 
-ok y / x/g is 2
+eq g / h / i, 2 / 2 / 2
 
-obj = {
-  width:  -> 10
-  height: -> 20
-}
-id = 2
+eq g/h/i, 2/2/2
 
-ok (obj.width()/id - obj.height()/id) is -5
-
-eq /\\/.source, "\\\\"
+eq [g][0]/h/i, (2)/2/2
 
 
 eq /^I'm\s+Heregex?\/\/\//gim + '', ///

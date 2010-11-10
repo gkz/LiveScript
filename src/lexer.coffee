@@ -186,13 +186,12 @@ exports.Lexer = class Lexer
   regexToken: ->
     return 0 if @chunk.charAt(0) isnt '/'
     return @heregexToken regex if regex = HEREGEX.exec @chunk
-    # Tokens which a regular expression will never immediately follow, but which
-    # a division operator might.
-    #
-    # See: http://www.mozilla.org/js/language/js20-2002-04/rationale/syntax.html#regular-expressions
-    #
-    # Our list is shorter, due to sans-parentheses method calls.
-    return 0 if @tag() of <[ STRNUM LITERAL ++ -- ]> or
+    # We distinguish it from the division operator using a list of tokens that
+    # a regex never immediately follows.
+    prev = @tokens[*-1]
+    # Our list becomes shorter when spaced, due to sans-parentheses calls.
+    return 0 if prev[0] of <[ STRNUM LITERAL CREMENT ]> or
+                not prev.spaced and prev[0] of CALLABLE or
                 not regex = REGEX.exec @chunk
     @token 'LITERAL', if regex[=0] is '//' then '/(?:)/' else regex
     @countLines(regex).length
@@ -575,9 +574,9 @@ REGEX = /// ^
          ]
     ) [^ [ / \n \\ ]*
   )*
-  / [imgy]{0,4} (?![A-Za-z])
+  / [imgy]{0,4} (?!\w)
 ///
-HEREGEX      = /^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?![A-Za-z])/
+HEREGEX      = /^\/{3}([\s\S]+?)\/{3}([imgy]{0,4})(?!\w)/
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 # Token cleaning regexes.
