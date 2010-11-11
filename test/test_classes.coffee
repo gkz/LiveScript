@@ -193,21 +193,17 @@ class Base
       subclass[key] = value
 
 class Element extends Base
-  @fromHTML = (html) ->
-    node = "..."
-    new @(node)
+  @fromHTML = (html) -> new this html
+  (@node) ->
 
-  (node) ->
-    @node = node
-
-ok Element.extended is Base.extended
-ok Element.__super__ is Base.prototype
+eq Element.extended, Base.extended
+eq Element.superclass, Base
 
 class MyElement extends Element
 
-ok MyElement.extended is Base.extended
-ok MyElement.fromHTML is Element.fromHTML
-ok MyElement.__super__ is Element.prototype
+eq MyElement.extended, Base.extended
+eq MyElement.fromHTML, Element.fromHTML
+eq MyElement.superclass, Element
 
 
 # Test classes wrapped in decorators.

@@ -443,11 +443,11 @@ class exports.Call extends Base
   superReference: (o) ->
     {method} = o.scope
     throw SyntaxError 'cannot call super outside of a function.' unless method
-    {name} = method
+    {name, clas} = method
     throw SyntaxError 'cannot call super on an anonymous function.' unless name
-    if method.clas
-    then "#{method.clas}.__super__.#{name}"
-    else "#{name}.__super__.constructor"
+    if clas
+    then clas + '.superclass.prototype.' + name
+    else name + '.superclass'
 
   unfoldSoak: (o) ->
     if @soak
@@ -1503,7 +1503,7 @@ UTILITIES =
       ctor.prototype = parent.prototype;
       child.prototype = new ctor;
       if (typeof parent.extended == "function") parent.extended(child);
-      child.__super__ = parent.prototype;
+      child.superclass = parent;
       return child;
     }
   '''
