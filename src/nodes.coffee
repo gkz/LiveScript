@@ -716,7 +716,8 @@ class exports.Class extends Base
       exps.unshift ctor = new Code
       if @parent
         ctor.body.append new Call 'super', [new Splat new Literal 'arguments']
-    ctor.ctor = ctor.name = name
+    ctor.ctor = ctor.statement = true
+    ctor.name = name
     ctor.clas = null
     exps.unshift new Extends lname, @parent if @parent
     exps.push lname
@@ -751,8 +752,8 @@ class exports.Assign extends Base
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
     if value instanceof [Code, Class] and match = METHOD_DEF.exec name
-      value.clas = match[1] if match[1]
-      value.name = match[2]
+      value.clas   = match[1] if match[1]
+      value.name or= match[2]
     val = value.compile o, LEVEL_LIST
     return name + ': ' + val if @context is ':'
     unless variable.isAssignable()
@@ -853,7 +854,14 @@ class exports.Code extends Base
 
   children: <[ params body ]>
 
-  isStatement: -> !!@ctor
+  isStatement: -> !!@statement
+
+  makeReturn: ->
+    if @statement
+      @returns = true
+      this
+    else
+      new Return this
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
@@ -894,11 +902,15 @@ class exports.Code extends Base
     @body.makeReturn() unless wasEmpty or @ctor
     idt   = o.indent
     code  = 'function'
-    code += ' ' + @name if @ctor
+    if @statement
+      throw SyntaxError 'cannot declare a nameless function.' unless @name
+      code += ' ' + @name
     code += '(' + vars.join(', ') + '){'
     code += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
     code += '}'
-    return @tab + code if @ctor
+    code += "\n#{@tab}#{@name}.name = \"#{@name}\";" if @statement
+    code += "\n#{@tab}return #{@name};" if @returns
+    return @tab + code if @statement
     return utility('bind') + "(#{code}, #{@context})" if @bound
     if @front then "(#{code})" else code
 

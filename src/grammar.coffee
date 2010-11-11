@@ -92,7 +92,7 @@ grammar =
   Expression: [
     o 'Value'
     o 'Invocation'
-    o 'Code'
+    o 'Function'
     o 'Operation'
     o 'Assign'
     o 'If'
@@ -168,21 +168,19 @@ grammar =
     o 'HERECOMMENT', -> new Comment $1
   ]
 
+  Function: [
+    o 'Code'
+    o 'FUNCTION Code',            -> extend $2, statement: true
+    o 'FUNCTION IDENTIFIER Code', -> extend $3, statement: true, name: $2
+  ]
   # The **Code** node is the function literal. It's defined by an indented block
   # of **Expressions** preceded by a function arrow, with an optional parameter
   # list.
   Code: [
     o 'PARAM_START ParamList PARAM_END
-       FUNCTION Block', -> new Code $2, $5, $4
-    o 'FUNCTION Block', -> new Code [], $2, $1
+       FUNC_ARROW Block', -> new Code $2, $5, $4
+    o 'FUNC_ARROW Block', -> new Code [], $2, $1
   ]
-
-  # An optional, trailing comma.
-  OptComma: [
-    o ''
-    o ','
-  ]
-
   # The list of parameters that a function accepts can be of any length.
   ParamList: [
     o '',                  -> []
@@ -235,6 +233,12 @@ grammar =
   Accessor: [
     o 'ACCESS Identifier',                -> new Accessor $2, $1
     o 'INDEX_START Expression INDEX_END', -> new Index    $2, $1
+  ]
+
+  # An optional, trailing comma.
+  OptComma: [
+    o ''
+    o ','
   ]
 
   # In Coco, an object literal is simply a list of assignments.

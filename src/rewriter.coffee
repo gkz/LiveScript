@@ -116,11 +116,11 @@ addImplicitParentheses = (tokens) ->
     return true if not seenSingle and token.fromThen
     [tag] = token
     [pre] = tokens[i-1]
-    seenSingle := true if tag of <[ IF ELSE FUNCTION ]>
+    seenSingle := true if tag of <[ IF ELSE FUNC_ARROW ]>
     return true  if tag is 'ACCESS' and pre is 'OUTDENT'
     return false if token.generated or  pre is ','
     tag of <[ POST_IF FOR WHILE WHEN BY TO CASE DEFAULT TERMINATOR ]> or
-    tag is 'INDENT' and pre not of <[ FUNCTION { [ , ]> and
+    tag is 'INDENT' and pre not of <[ FUNC_ARROW { [ , ]> and
       tokens[i-2]?[0] isnt 'CLASS' and
       not ((post = tokens[i+1]) and post.generated and post[0] is '{')
   action = (token, i) ->
@@ -138,7 +138,11 @@ addImplicitParentheses = (tokens) ->
     token.call = true  if tag is '?' and prev and not prev.spaced
     continue unless callObject or
       prev?.spaced and (prev.call or prev[0] of IMPLICIT_FUNC) and
-      (tag of IMPLICIT_CALL or
+      (tag of <[
+         IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
+         FUNCTION IF TRY SWITCH CLASS [ ( {
+       ]> or
+       tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION' or
        tag is 'PLUS_MINUS' and not (token.spaced or token.eol))
     tokens.splice i++, 0, ['CALL_START', '(', token[2]]
     ++i if callObject
@@ -167,7 +171,7 @@ addImplicitIndentation = (tokens) ->
       tokens.splice i, 1
       [tag] = token = tokens[i]
     continue if (next = tokens[i+1]?[0]) is 'INDENT'
-    continue unless tag of <[ FUNCTION THEN DEFAULT TRY FINALLY ]> or
+    continue unless tag of <[ FUNC_ARROW THEN DEFAULT TRY FINALLY ]> or
                     tag is 'ELSE' and next isnt 'IF'
     [indent, outdent] = indentation token
     indent.fromThen   = true if tag is 'THEN'
@@ -288,9 +292,3 @@ EXPRESSION_CLOSE =
 
 # Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
 IMPLICIT_FUNC = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
-
-# If preceded by an `IMPLICIT_FUNC`, indicates a function invocation.
-IMPLICIT_CALL = <[
-  IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT PARAM_START FUNCTION
-  IF TRY SWITCH CLASS [ ( {
-]>

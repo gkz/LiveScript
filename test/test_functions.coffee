@@ -341,3 +341,10 @@ eq ok, new ->
   ok
   ### Should `return` implicitly   ###
   ### even with trailing comments. ###
+
+
+function declared ->
+eq 'declared', declared.name
+
+eq 'named', (function named ->).name
+ok !named?, 'should not leak to global when undeclared'

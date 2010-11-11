@@ -313,7 +313,7 @@ class exports.Lexer
         return value.length
     case <[ -> => ]>
       @tagParameters()
-      tag = 'FUNCTION'
+      tag = 'FUNC_ARROW'
     case '*'
       tag = if @tag() is 'INDEX_START' then 'LITERAL' else 'MATH'
     case <[ ! ~ ]>          then tag = 'UNARY'
@@ -502,9 +502,9 @@ class exports.Lexer
 # Keywords that Coco shares in common with JavaScript.
 JS_KEYWORDS = <[
   true false null this void super
-  new do delete typeof in instanceof import
+  if else for while switch case default try catch finally class extends
   return throw break continue debugger
-  if else switch case default for while try catch finally class extends
+  new do delete typeof in instanceof import function
 ]>
 
 # Coco-only keywords.
@@ -519,7 +519,7 @@ COFFEE_KEYWORDS.push op for all op in COFFEE_ALIASES =
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by Coco internally. We throw an error when these are encountered,
 # to avoid having a JavaScript error at runtime.
-RESERVED = <[ function var with const let enum export native ]>
+RESERVED = <[ var with const let enum export native ]>
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.
