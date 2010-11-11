@@ -247,7 +247,6 @@ class exports.Expressions extends Base
 # JavaScript without translation, such as: strings, numbers,
 # `true`, `false`, `null`...
 class exports.Literal extends Base
-
   (@value) ->
 
   makeReturn: -> if @isPureStatement() then this else new Return this
@@ -435,9 +434,7 @@ class exports.Call extends Base
   children: <[ variable args ]>
 
   # Tag this invocation as creating a new instance.
-  newInstance: ->
-    @new = 'new '
-    this
+  newInstance: -> @new = 'new '; this
 
   # Grab the reference to the superclass' implementation of the current method.
   superReference: (o) ->
@@ -499,38 +496,37 @@ class exports.Call extends Base
     return @compileSplat o, code if code = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
     if @isSuper
-    then @compileSuper args, o
+    then @superReference(o) + ".call(this#{ args and ', ' + args })"
     else @new + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
-
-  # `super()` is converted into a call against the superclass's implementation
-  # of the current function.
-  compileSuper: (args, o) ->
-    "#{@superReference(o)}.call(this#{ if args.length then ', ' else '' }#{args})"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o, splatargs) ->
-    return "#{ @superReference o }.apply(this, #{splatargs})" if @isSuper
-    unless @new
-      base = new Value @variable
-      if (name = base.properties.pop()) and base.isComplex()
-        ref = o.scope.temporary 'ref'
-        fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
-        o.scope.free ref
+    return @superReference(o) + ".apply(this, #{splatargs})" if @isSuper
+    if @new
+       idt = @tab + TAB
+       return """
+         (function(func, args, ctor){
+         #{idt}ctor.prototype = func.prototype;
+         #{idt}var child = new ctor, result = func.apply(child, args);
+         #{idt}return typeof result == "object" ? result : child;
+         #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function(){}))
+       """
+    base = new Value @variable
+    if (name = base.properties.pop()) and base.isComplex()
+      ref = o.scope.temporary 'ref'
+      fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
+      o.scope.free ref
+    else
+      fun = base.compile o, LEVEL_ACCESS
+      if name
+        ref  = fun
+        fun += name.compile o
       else
-        fun = ref = base.compile o, LEVEL_ACCESS
-        fun += name.compile o if name
-      return "#{fun}.apply(#{ref}, #{splatargs})"
-    idt = @tab + TAB
-    """
-    (function(func, args, ctor){
-    #{idt}ctor.prototype = func.prototype;
-    #{idt}var child = new ctor, result = func.apply(child, args);
-    #{idt}return typeof result == "object" ? result : child;
-    #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function(){}))
-    """
+        ref  = 'null'
+    "#{fun}.apply(#{ref}, #{splatargs})"
 
 #### Extends
 
@@ -542,7 +538,6 @@ class exports.Extends extends Base
 
   children: <[ child parent ]>
 
-  # Hooks one constructor into another's prototype chain.
   compile: (o) ->
     new Call(new Value(new Literal utility 'extends'), [@child, @parent]).compile o
 
