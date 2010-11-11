@@ -996,7 +996,8 @@ class exports.While extends Base
 
   makePush: (o, body) ->
     exps = body.expressions
-    if (last = exps[*-1]) and not last.containsPureStatement()
+    if (last = exps[*-1]) and not last.containsPureStatement() and
+       last not instanceof Throw
       o.scope.assign '_results', '[]'
       exps[*-1] = new Call new Literal('_results.push'), [last]
       res = '_results'
