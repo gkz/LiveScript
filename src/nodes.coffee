@@ -603,7 +603,7 @@ class exports.Obj extends Base
     return (if @front then '({})' else '{}') unless props.length
     for prop, i of props
       if prop instanceof Splat or (prop.variable or prop).base instanceof Parens
-        rest = props.splice i
+        rest = props.splice i, 1/0
         break
     lastIndex = props.length - 1
     for prop of props by -1 when prop not instanceof Comment
