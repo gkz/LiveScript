@@ -280,12 +280,12 @@ class exports.Return extends Base
   makeReturn: THIS
 
   compile: (o, level) ->
-    expr = @expression?.makeReturn()
-    if expr and expr not instanceof Return then expr.compile o, level else super o, level
-
-  compileNode: (o) ->
-    o.level = LEVEL_PAREN
-    @tab + "return#{ if @expression then ' ' + @expression.compile o else '' };"
+    exp = @expression?.makeReturn()
+    if exp and exp not instanceof Return
+      exp.compile o, level
+    else
+      exp = exp?.expression or ''
+      o.indent + "return#{ exp and ' ' + exp.compile o, LEVEL_PAREN };"
 
 #### Value
 
@@ -1214,7 +1214,7 @@ class exports.Throw extends Base
   # A **Throw** is already a return, of sorts...
   makeReturn: THIS
 
-  compileNode: (o) -> @tab + "throw #{ @expression.compile o };"
+  compile: (o) -> o.indent + "throw #{ @expression.compile o, LEVEL_PAREN };"
 
 #### Existence
 
