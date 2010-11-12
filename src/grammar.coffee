@@ -215,14 +215,14 @@ grammar =
   # Everything that can be assigned to.
   Assignable: [
     o 'SimpleAssignable'
-    o 'Array',  -> Value $1
-    o 'Object', -> Value $1
+    o 'Array'
+    o 'Object'
   ]
 
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
-    o 'Assignable'
+    o 'Assignable',    -> Value $1
     o 'Literal',       -> Value $1
     o 'Parenthetical', -> Value $1
   ]
@@ -366,16 +366,9 @@ grammar =
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
   For: [
-    o 'Statement  ForBody', -> For $1, $2
-    o 'Expression ForBody', -> For $1, $2
-    o 'ForBody    Block',   -> For $2, $1
-  ]
-  # An array of all accepted values for a variable inside the loop. This
-  # enables support for pattern matching.
-  ForValue: [
-    o 'Identifier'
-    o 'Array'
-    o 'Object'
+    o 'Statement  ForHead', -> For $2, Expressions $1
+    o 'Expression ForHead', -> For $2, Expressions $1
+    o 'ForHead    Block',   -> For $1, $2
   ]
   ForOf: [
     o 'FOROF Expression',                 -> source: $2
@@ -398,20 +391,20 @@ grammar =
   # The source of a comprehension is an array or object with an optional guard
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
-  ForBody: [
-    o 'FOR ForValue
+  ForHead: [
+    o 'FOR Assignable
        ForOf', -> mix $3, name: $2
-    o 'FOR ForValue , Identifier
+    o 'FOR Assignable , IDENTIFIER
        ForOf', -> mix $5, name: $2, index: $4
-    o 'FOR Identifier
+    o 'FOR IDENTIFIER
        ForIn', -> mix $3, own: true, index: $2
-    o 'FOR ForValue , ForValue
+    o 'FOR Assignable , Assignable
        ForIn', -> mix $5, own: true, index: $2, name: $4
-    o 'FOR ALL Identifier
+    o 'FOR ALL IDENTIFIER
        ForIn', -> mix $4, index: $3
-    o 'FOR ALL Identifier , ForValue
+    o 'FOR ALL IDENTIFIER , Assignable
        ForIn', -> mix $6, index: $3, name: $5
-    o 'FOR Identifier FROM Expression
+    o 'FOR IDENTIFIER FROM Expression
        ForTo', -> mix $5, index: $2, from: $4
   ]
 

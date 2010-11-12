@@ -131,3 +131,8 @@ fs = for i from 0 to 2 when i > 0
 eq one[0], 1
 eq two[0], 2
 eq one[1], two[1]
+
+
+copy = {}
+continue for k, copy[k] in [4, 2]
+eq copy[0] * copy[1], 8

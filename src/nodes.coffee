@@ -1264,80 +1264,74 @@ class exports.Parens extends Base
 # the current index of the loop as a second parameter. Unlike Ruby blocks,
 # you can map and filter in a single pass.
 class exports.For extends While
-  (body, head) =>
-    if head.index and head.index not instanceof Literal
-      throw SyntaxError 'invalid index assignee: ' + head.index
+  (head, @body) =>
     this import all head
-    @body = Expressions body
+    if @index instanceof Value and not @index .= base.value
+      throw SyntaxError 'invalid index variable: ' + head.index
 
-  children: <[ body source guard step from to ]>
+  children: <[ source name from to step guard body ]>
 
   # Welcome to the hairiest method in all of Coco. Handles the inner
   # loop, filtering, stepping, and result saving for array, object, and range
   # comprehensions. Some of the generated code can be shared in common, and
   # some cannot.
   compileNode: (o) ->
+    {body, index} = this
     {scope} = o
-    {body}  = this
-    code    = ownPart = defPart = retPart = ''
-    idt     = o.indent + TAB
-    pattern = @name and @name not instanceof Literal
-    name    = not pattern and @name?.compile o
-    index   = @index?.compile o
-    scope.declare name  if name
-    scope.declare index if index
     @temps = []
-    @temps.push ivar = scope.temporary 'i' unless ivar = index
+    if index
+    then scope.declare index
+    else @temps.push index = scope.temporary 'i'
     unless @object
       [step, pvar] = (@step || Literal 1).compileLoopReference o, 'step'
       @temps.push pvar if step isnt pvar
     if @from
       eq = if @op is 'til' then '' else '='
       [tail, tvar] = @to.compileLoopReference o, 'to'
-      vars = ivar + ' = ' + @from.compile o
+      vars = index + ' = ' + @from.compile o
       if tail isnt tvar
         vars += ', ' + tail
         @temps.push tvar
       cond = if +pvar
-      then "#{ivar} #{ if pvar < 0 then '>' else '<' }#{eq} #{tvar}"
-      else "#{pvar} < 0 ? #{ivar} >#{eq} #{tvar} : #{ivar} <#{eq} #{tvar}"
+      then "#{index} #{ if pvar < 0 then '>' else '<' }#{eq} #{tvar}"
+      else "#{pvar} < 0 ? #{index} >#{eq} #{tvar} : #{index} <#{eq} #{tvar}"
     else
-      if name or @object and @own
-        [sourcePart, svar] = @source.compileLoopReference o, 'ref'
-        @temps.push svar if sourcePart isnt svar
+      if @name or @object and @own
+        [srcPart, svar] = @source.compileLoopReference o, 'ref'
+        @temps.push svar if srcPart isnt svar
       else
-        sourcePart = svar = @source.compile o, LEVEL_PAREN
-      namePart = if pattern
-        Assign(@name, Literal "#{svar}[#{ivar}]").compile o, LEVEL_TOP
-      else if name
-        "#{name} = #{svar}[#{ivar}]"
+        srcPart = svar = @source.compile o, LEVEL_PAREN
+      if @name
+        name = Assign(@name, Literal svar + "[#{index}]").compile o, LEVEL_TOP
       unless @object
-        sourcePart = "(#{sourcePart})" if sourcePart isnt svar
+        srcPart = "(#{srcPart})" if srcPart isnt svar
         if 0 > pvar and (pvar | 0) is +pvar  # negative int
-          vars = "#{ivar} = #{sourcePart}.length - 1"
-          cond = "#{ivar} >= 0"
+          vars = "#{index} = #{srcPart}.length - 1"
+          cond = "#{index} >= 0"
         else
           @temps.push lvar = scope.temporary 'len'
-          vars = "#{ivar} = 0, #{lvar} = #{sourcePart}.length"
-          cond = "#{ivar} < #{lvar}"
+          vars = "#{index} = 0, #{lvar} = #{srcPart}.length"
+          cond = "#{index} < #{lvar}"
     if @object
-      forPart = ivar + ' in ' + sourcePart
-      ownPart = "if (#{ utility 'owns' }.call(#{svar}, #{ivar})) " if @own
+      forPart = index + ' in ' + srcPart
+      ownPart = "if (#{ utility 'owns' }.call(#{svar}, #{index})) " if @own
     else
       vars   += ', ' + step if step isnt pvar
       forPart = vars + "; #{cond}; " + switch +pvar
-      case  1 then '++' + ivar
-      case -1 then '--' + ivar
-      default ivar + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
-    defPart += @pluckDirectCalls o, body, name, index unless pattern
-    code    += idt + namePart + ';\n' if namePart
+      case  1 then '++' + index
+      case -1 then '--' + index
+      default index + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
+    code = ''
+    unless @name?.isComplex()
+      code += @pluckDirectCalls o, body, @name?.compile(o, LEVEL_LIST), index
+    o.indent += TAB
+    code += @tab + "for (#{forPart}) #{ ownPart or '' }{"
+    code += '\n' + o.indent + name + ';' if name
     unless body.isEmpty()
-      retPart  = @makePush o, body if @returns
-      body     = If @guard, body, {'statement'} if @guard
-      o.indent = idt
-      code    += body.compile o, LEVEL_TOP
-    code = '\n' + code + '\n' + @tab if code
-    defPart + @tab + "for (#{forPart}) #{ownPart}{#{code}}" + retPart
+      ret   = @makePush o, body if @returns
+      body  = If @guard, body, {'statement'} if @guard
+      code += '\n' + body + '\n' + @tab if body .= compile o, LEVEL_TOP
+    code + '}' + (ret or '')
 
   pluckDirectCalls: (o, body, name, index) ->
     defs = ''
