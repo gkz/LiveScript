@@ -7,13 +7,13 @@
 # External dependencies.
 fs             = require 'fs'
 path           = require 'path'
-optparse       = require './optparse'
 Coco           = require './coco'
+{OptionParser} = require './optparse'
 {spawn, exec}  = require 'child_process'
 {EventEmitter} = require 'events'
 
 # Allow Coco to emit Node.js events.
-Coco import all new EventEmitter
+Coco import all EventEmitter::
 
 BANNER   = 'Usage: coco [options] [files]'
 SWITCHES = [
@@ -164,9 +164,9 @@ printTokens = (tokens) ->
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
-  optionParser := new optparse.OptionParser SWITCHES, BANNER
+  optionParser := new OptionParser SWITCHES, BANNER
   o = opts     := optionParser.parse process.argv.slice 2
-  o.compile   or= !!o.output
+  o.compile   ||= !!o.output
   o.run         = not (o.compile or o.print or o.lint)
   o.print       = !!  (o.print or o.eval or o.stdio and o.compile)
   sources      := o.arguments

@@ -691,7 +691,7 @@ class exports.Class extends Base
       decl = if last = @variable.properties[*-1]
       then last instanceof Accessor and last.name.value
       else @variable.base.value
-      decl and= IDENTIFIER.test(decl) and decl
+      decl &&= IDENTIFIER.test(decl) and decl
     name  = decl or @name or '_Class'
     lname = Literal name
     proto = Value lname, [Accessor Literal 'prototype']
@@ -700,7 +700,7 @@ class exports.Class extends Base
         it.value = name
       else if it instanceof Code
         it.clas  = name
-        it.bound and= name
+        it.bound &&= name
     for node, i of exps = @body.expressions
       if node.isObject()
         exps[i] = Import proto, node
@@ -747,7 +747,7 @@ class exports.Assign extends Base
     # we've been assigned to, for correct internal references.
     if value instanceof [Code, Class] and match = METHOD_DEF.exec name
       value.clas   = match[1] if match[1]
-      value.name or= match[2]
+      value.name ||= match[2]
     val = value.compile o, LEVEL_LIST
     return name + ': ' + val if @context is ':'
     unless variable.isAssignable()
@@ -881,8 +881,8 @@ class exports.Code extends Base
       Base::traverseChildren.call this, false, ->
         switch
         case it.value is 'this'   then it.value        = '_this'
-        case it instanceof Code   then it.bound     and= '_this'
-        case it instanceof Return then it.expression or= Literal '_this'
+        case it instanceof Code   then it.bound     &&= '_this'
+        case it instanceof Return then it.expression ||= Literal '_this'
       body.append Literal 'return _this'
     vars = []
     exps = []
@@ -1190,8 +1190,8 @@ class exports.Try extends Base
   isStatement: YES
 
   makeReturn: ->
-    @attempt  and= @attempt .makeReturn()
-    @recovery and= @recovery.makeReturn()
+    @attempt  &&= @attempt .makeReturn()
+    @recovery &&= @recovery.makeReturn()
     this
 
   # Compilation is more or less as you would expect -- the *finally* clause
@@ -1284,7 +1284,7 @@ class exports.For extends While
       throw SyntaxError 'invalid index variable: ' + head.index.compile o, LEVEL_LIST
     this import all head
     @body    = Expressions body
-    @step  or= Literal 1 unless @object
+    @step  ||= Literal 1 unless @object
     @returns = false
 
   children: <[ body source guard step from to ]>
@@ -1466,8 +1466,8 @@ class exports.If extends Base
     if @isStatement o then @compileStatement o else @compileExpression o
 
   makeReturn: ->
-    @body     and= Expressions @body    .makeReturn()
-    @elseBody and= Expressions @elseBody.makeReturn()
+    @body     &&= Expressions @body    .makeReturn()
+    @elseBody &&= Expressions @elseBody.makeReturn()
     this
 
   # Compile the **If** as a regular *if-else* statement. Flattened chains

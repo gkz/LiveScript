@@ -33,9 +33,9 @@ exports.nodes = (code, options) ->
 # setting `__filename`, `__dirname`, and relative `require()`.
 exports.run = (code, options) ->
   root = module
-  root = root.parent while root.parent
+  root.=parent while root.parent
   root.filename = fs.realpathSync options.fileName or '.'
-  root.moduleCache and= {}
+  root.moduleCache &&= {}
   if require.extensions or path.extname(root.filename) not of <[ .co .coffee ]>
     code = exports.compile code, options
   root._compile code, root.filename
