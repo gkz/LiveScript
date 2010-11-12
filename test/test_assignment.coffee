@@ -29,8 +29,8 @@ tester = ->
 ok tester().example() is 'example function'
 
 
-try throw Coco.tokens 'in = 1'
-catch e then eq e.message, 'Reserved word "in" on line 1 cannot be assigned'
+throws 'reserved word "in" on line 1 cannot be assigned', ->
+  Coco.tokens 'in = 1'
 
 
 num = 10

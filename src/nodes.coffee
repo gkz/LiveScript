@@ -42,7 +42,7 @@ class exports.Base
   # object with their parent closure, to preserve the expected lexical scope.
   compileClosure: (o) ->
     if @containsPureStatement()
-      throw SyntaxError 'cannot include a pure statement in an expression.'
+      throw SyntaxError 'cannot include a pure statement in an expression'
     args = []
     func = new Code [], new Expressions this
     func.wrapper = true
@@ -433,9 +433,9 @@ class exports.Call extends Base
   # Grab the reference to the superclass' implementation of the current method.
   superReference: (o) ->
     {method} = o.scope
-    throw SyntaxError 'cannot call super outside of a function.' unless method
+    throw SyntaxError 'cannot call super outside of a function' unless method
     {name, clas} = method
-    throw SyntaxError 'cannot call super on an anonymous function.' unless name
+    throw SyntaxError 'cannot call super on an anonymous function' unless name
     if clas
     then clas + '.superclass.prototype.' + name
     else name + '.superclass'
@@ -703,9 +703,9 @@ class exports.Class extends Base
         exps[i] = new Import proto, node
       else if node instanceof Code
         if ctor
-          throw SyntaxError 'cannot define more than one constructor in a class.'
+          throw SyntaxError 'cannot define more than one constructor in a class'
         if node.bound
-          throw SyntaxError 'cannot define a constructor as a bound function.'
+          throw SyntaxError 'cannot define a constructor as a bound function'
         ctor = node
     unless ctor
       exps.unshift ctor = new Code
@@ -899,9 +899,9 @@ class exports.Code extends Base
     code = 'function'
     if @statement
       unless @name
-        throw SyntaxError 'cannot declare a nameless function.'
+        throw SyntaxError 'cannot declare a nameless function'
       unless o.expressions is pscope.expressions
-        throw SyntaxError 'cannot declare a function under a statement.'
+        throw SyntaxError 'cannot declare a function under a statement'
       pscope.add @name, 'function' unless @returns
       code += ' ' + @name
     code += '(' + vars.join(', ') + '){'

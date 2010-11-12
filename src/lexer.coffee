@@ -98,7 +98,7 @@ class exports.Lexer
         id = new String id
         id.reserved = true
       else if id of RESERVED
-        throw SyntaxError "Reserved word \"#{id}\" on line #{ @line + 1 }"
+        throw SyntaxError "reserved word \"#{id}\" on line #{ @line + 1 }"
     if not id.reserved      and id of     JS_KEYWORDS or
        not forcedIdentifier and id of COFFEE_KEYWORDS
       switch tag = id.toUpperCase()
@@ -306,7 +306,7 @@ class exports.Lexer
       pval = prev[1]
       if not pval.reserved and pval of JS_FORBIDDEN
         throw SyntaxError \
-          "Reserved word \"#{pval}\" on line #{ @line + 1 } cannot be assigned"
+          "reserved word \"#{pval}\" on line #{ @line + 1 } cannot be assigned"
       if value is '=' and pval of <[ || && ]>
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
@@ -413,7 +413,7 @@ class exports.Lexer
       break unless levels.length
       i += 1
     if levels.length then throw SyntaxError \
-      "Unterminated #{ levels.pop()[0] } starting on line #{ @line + 1 }"
+      "unterminated #{ levels.pop()[0] } starting on line #{ @line + 1 }"
     i and str.slice 0, i
 
   # Expand variables and expressions inside double-quoted strings using

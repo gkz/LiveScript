@@ -19,7 +19,7 @@ class exports.Scope
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
     if name of <[ arguments eval ]>
-      throw SyntaxError "redefining \"#{name}\" is deprecated."
+      throw SyntaxError "redefining \"#{name}\" is deprecated"
     if v = @variables[pos = @positions[name]]
       if 'function' of [type, v.type]
         throw SyntaxError "redeclaration of \"#{name}\""

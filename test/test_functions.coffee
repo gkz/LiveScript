@@ -359,5 +359,5 @@ throws 'redeclaration of "B"', -> Coco.compile '''
   B = 1
 '''
 
-throws 'cannot declare a function under a statement.', ->
+throws 'cannot declare a function under a statement', ->
   Coco.compile 'if 1 then function C ->'
