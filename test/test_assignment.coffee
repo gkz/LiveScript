@@ -68,13 +68,11 @@ parent.child.str[='replace'] /./, 'r'
 eq 'rest', parent.child.str
 
 
-for nonref of ['""', '0', 'f()']
-  try ok not Coco.compile "{k: #{nonref}} = v"
-  catch e then eq e.message, "\"#{nonref}\" cannot be assigned."
+for nonref of <[ "" 0 f() ]>
+  throws "\"#{nonref}\" cannot be assigned.", -> Coco.compile "{k: #{nonref}} = v"
 
 
-try ok not Coco.compile 'Math or= 0'
-catch e then eq e.message, 'assignment to undeclared variable "Math"'
+throws 'assignment to undeclared variable "Math"', -> Coco.compile 'Math or= 0'
 
 
 # Simple variable swapping.

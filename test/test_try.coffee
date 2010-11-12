@@ -1,6 +1,5 @@
 # Basic exception throwing.
-block = -> throw 'up'
-throws block, 'up'
+throws 'up', -> throw Error 'up'
 
 
 # Basic try/catch.

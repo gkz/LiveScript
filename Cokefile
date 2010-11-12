@@ -113,6 +113,12 @@ runTests = (Coco) ->
       func arguments...
       ++passedTests
   global.eq = global.strictEqual
+  global.throws = (msg, fun) ->
+    try
+      do fun
+      ok false, 'should throw: ' + msg
+    catch e
+      eq e.message, msg
   global.Coco = Coco
   process.on 'exit', ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
