@@ -697,19 +697,16 @@ class exports.Class extends Base
     lname = new Literal name
     proto = new Value lname, [new Accessor new Literal 'prototype']
     @body.traverseChildren false, ->
-      if it instanceof Literal and it.value is 'this'
-        it.value   = name
+      if it.value is 'this'
+        it.value = name
       else if it instanceof Code
-        it.clas    = name
-        it.context = name if it.bound
+        it.clas  = name
+        it.bound and= name
     for node, i of exps = @body.expressions
       if node.isObject()
         exps[i] = new Import proto, node
       else if node instanceof Code
-        if ctor
-          throw SyntaxError 'cannot define more than one constructor in a class'
-        if node.bound
-          throw SyntaxError 'cannot define a constructor as a bound function'
+        throw SyntaxError 'more than one constructor in a class' if ctor
         ctor = node
     unless ctor
       exps.unshift ctor = new Code
@@ -848,7 +845,7 @@ class exports.Assign extends Base
 # has no *children* -- they're within the inner scope.
 class exports.Code extends Base
   (@params = [], @body = new Expressions, tag) ->
-    @context = 'this' if @bound = tag is '=>'
+    @bound = 'this' if tag is '=>'
 
   children: <[ params body ]>
 
@@ -874,13 +871,28 @@ class exports.Code extends Base
     delete o.bare
     delete o.globals
     o.indent += TAB
+    {params, body, name, statement, tab} = this
+    code = 'function'
+    if @ctor and @bound
+      code += """
+         _ctor(){}
+        #{tab}_ctor.prototype = #{name}.prototype;
+        #{tab}function
+      """
+      scope.assign '_this', 'new _ctor'
+      Base::traverseChildren.call this, false, ->
+        if it.value is 'this'
+          it.value = '_this'
+        else if it instanceof Code
+          it.bound and= '_this'
+      body.append new Literal 'return _this'
     vars = []
     exps = []
-    for param of @params when param.splat
-      splats = new Assign new Arr(p.asReference o for p of @params),
+    for param of params when param.splat
+      splats = new Assign new Arr(p.asReference o for p of params),
                           new Value new Literal 'arguments'
       break
-    for param of @params
+    for param of params
       if param.isComplex()
         val = ref = param.asReference o
         val = new Op '?', ref, param.value if param.value
@@ -892,28 +904,27 @@ class exports.Code extends Base
             new Literal(ref.name.value + ' == null'),
             new Assign param.name, param.value
       vars.push ref unless splats
-    wasEmpty = @body.isEmpty()
+    wasEmpty = body.isEmpty()
     exps.unshift splats if splats
-    @body.expressions.unshift exps... if exps.length
+    body.expressions.unshift exps... if exps.length
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
-    vars[0] = 'it' if not vars.length and @body.contains (-> it.value is 'it')
-    @body.makeReturn() unless wasEmpty or @ctor
-    idt  = o.indent
-    code = 'function'
-    if @statement
-      unless @name
+    vars[0] = 'it' if not vars.length and body.contains (-> it.value is 'it')
+    body.makeReturn() unless wasEmpty or @ctor
+    if statement
+      unless name
         throw SyntaxError 'cannot declare a nameless function'
       unless o.expressions is pscope.expressions
         throw SyntaxError 'cannot declare a function under a statement'
-      pscope.add @name, 'function' unless @returns
-      code += ' ' + @name
+      pscope.add name, 'function' unless @returns
+      code += ' ' + name
     code += '(' + vars.join(', ') + '){'
-    code += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
+    code += "\n#{ body.compileWithDeclarations o }\n#{tab}" unless body.isEmpty()
     code += '}'
-    code += "\n#{@tab}#{@name}.name = \"#{@name}\";" if @statement
-    code += "\n#{@tab}return #{@name};" if @returns
-    return @tab + code if @statement
-    return utility('bind') + "(#{code}, #{@context})" if @bound
+    if statement and name.charAt(0) isnt '_'
+      code += "\n#{tab}#{name}.name = \"#{name}\";"
+    code += "\n#{tab}return #{name};" if @returns
+    return tab + code if statement
+    return utility('bind') + "(#{code}, #{@bound})" if @bound
     if @front then "(#{code})" else code
 
   # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
@@ -1040,7 +1051,7 @@ class exports.Op extends Base
     return new Of first, second if op is 'of'
     if op is 'do'
       if first instanceof Code and first.bound
-        first.bound = false
+        first.bound = ''
         first = new Value first, [new Accessor new Literal 'call']
         args  = [new Literal 'this']
       return new Call first, args

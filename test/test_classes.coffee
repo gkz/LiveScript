@@ -253,3 +253,11 @@ eq Class, null
 # Namespaced and declared.
 class Namespace.Class
 eq Class, Namespace.Class
+
+
+class TestBoundCtor
+  (@attr) =>
+    @method = => this
+tbc = TestBoundCtor 'attr'
+eq tbc.attr, 'attr'
+eq [tbc.method][0](), tbc
