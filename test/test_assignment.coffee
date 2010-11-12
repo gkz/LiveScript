@@ -69,7 +69,7 @@ eq 'rest', parent.child.str
 
 
 for nonref of <[ "" 0 f() ]>
-  throws "\"#{nonref}\" cannot be assigned.", -> Coco.compile "{k: #{nonref}} = v"
+  throws "\"#{nonref}\" cannot be assigned", -> Coco.compile "{k: #{nonref}} = v"
 
 
 throws 'assignment to undeclared variable "Math"', -> Coco.compile 'Math or= 0'

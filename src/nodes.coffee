@@ -699,7 +699,7 @@ class exports.Class extends Base
       if it.value is 'this'
         it.value = name
       else if it instanceof Code
-        it.clas  = name
+        it.clas    = name
         it.bound &&= name
     for node, i of exps = @body.expressions
       if node.isObject()
@@ -751,11 +751,11 @@ class exports.Assign extends Base
     val = value.compile o, LEVEL_LIST
     return name + ': ' + val if @context is ':'
     unless variable.isAssignable()
-      throw ReferenceError "\"#{ @variable.compile o }\" cannot be assigned."
+      throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned"
     unless variable instanceof Value and variable.hasProperties()
       if @context
         unless o.scope.check name, true
-          throw ReferenceError "assignment to undeclared variable \"#{name}\""
+          throw SyntaxError "assignment to undeclared variable \"#{name}\""
       else
         o.scope.declare name
     name += " #{ @context or '=' } " + val
@@ -880,8 +880,8 @@ class exports.Code extends Base
       scope.assign '_this', 'new _ctor'
       Base::traverseChildren.call this, false, ->
         switch
-        case it.value is 'this'   then it.value        = '_this'
-        case it instanceof Code   then it.bound     &&= '_this'
+        case it.value is 'this'   then it.value   = '_this'
+        case it instanceof Code   then it.bound &&= '_this'
         case it instanceof Return then it.expression ||= Literal '_this'
       body.append Literal 'return _this'
     vars = []
@@ -924,8 +924,8 @@ class exports.Code extends Base
     return utility('bind') + "(#{code}, #{@bound})" if @bound
     if @front then "(#{code})" else code
 
-  # Short-circuit `traverseChildren` method to prevent it from crossing scope boundaries
-  # unless `crossScope` is `true`.
+  # Short-circuit `traverseChildren` method to prevent it
+  # from crossing scope boundaries unless `crossScope`.
   traverseChildren: (crossScope, func) -> super crossScope, func if crossScope
 
 #### Param
@@ -954,8 +954,7 @@ class exports.Param extends Base
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
 class exports.Splat extends Base
-  (name) =>
-    @name = if name.compile then name else Literal name
+  (name) => @name = if name.compile then name else Literal name
 
   children: ['name']
 
@@ -974,12 +973,12 @@ class exports.Splat extends Base
     if list.length is 1
       code = list[0].compile o, LEVEL_LIST
       return code if apply
-      return "#{ utility 'slice' }.call(#{code})"
+      return utility('slice') + ".call(#{code})"
     args = list.slice index
     for node, i of args
       code = node.compile o, LEVEL_LIST
       args[i] = if node instanceof Splat
-      then "#{ utility 'slice' }.call(#{code})"
+      then utility('slice') + ".call(#{code})"
       else "[#{code}]"
     return args[0] + ".concat(#{ args.slice(1).join ', ' })" if index is 0
     base = (node.compile o, LEVEL_LIST for node of list.slice 0, index)
@@ -1053,25 +1052,18 @@ class exports.Op extends Base
         args  = [Literal 'this']
       return Call first, args
     if op is 'new'
-      return first.newInstance()     if first instanceof Call
+      return first.newInstance() if first instanceof Call
       first = Parens first, true if first instanceof Code and first.bound
     @operator = op
     @first    = first
     @second   = second
     @flip     = !!flip
 
-  children: <[ first second ]>
-
   # The map of invertible operators.
-  INVERSIONS:
-    '!==':'==='
-    '===':'!=='
-    '!=' : '=='
-    '==' : '!='
-    '>'  : '<='
-    '<=' : '>'
-    '<'  : '>='
-    '>=' : '<'
+  INVERSIONS = '===':'!==', '==':'!=', '>':'<=', '<':'>='
+  INVERSIONS[val] = key for all key, val in INVERSIONS
+
+  children: <[ first second ]>
 
   isUnary: -> not @second
 
@@ -1080,7 +1072,7 @@ class exports.Op extends Base
   isChainable: -> @operator of <[ < > >= <= === !== == != ]>
 
   invert: ->
-    if op = @INVERSIONS[@operator]
+    if op = INVERSIONS[@operator]
       @operator = op
       this
     else if @second
@@ -1237,9 +1229,9 @@ class exports.Existence extends Base
   compileNode: (o) ->
     code = @expression.compile o, LEVEL_OP
     if IDENTIFIER.test(code) and not o.scope.check code, true
-      code = if @negated
-      then "typeof #{code} == \"undefined\" || #{code} === null"
-      else "typeof #{code} != \"undefined\" && #{code} !== null"
+      code = 'typeof ' + code + if @negated
+      then " == \"undefined\" || #{code} === null"
+      else " != \"undefined\" && #{code} !== null"
     else
       code += " #{ if @negated then '=' else '!' }= null"
     if o.level <= LEVEL_COND then code else "(#{code})"
@@ -1511,7 +1503,7 @@ function YES  -> true
 function NO   -> false
 function THIS -> this
 
-function NEGATE -> @negated = not @negated; this
+function NEGATE -> @negated ^= 1; this
 
 UTILITIES =
 
