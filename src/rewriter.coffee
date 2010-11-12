@@ -73,8 +73,7 @@ closeOpenings = (tokens) ->
 # Insert the missing braces here, so that the parser doesn't have to.
 addImplicitBraces = (tokens) ->
   condition = (token, i) ->
-    one = tokens[i+1]?[0]
-    return false if 'HERECOMMENT' of [one, tokens[i-1]?[0]]
+    return false if 'HERECOMMENT' is one = tokens[i+1]?[0]
     [tag] = token
     tag is ',' and
       one not of <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]> or

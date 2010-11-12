@@ -156,3 +156,22 @@ class A
   c: ->
 
 ok A.prototype.b instanceof Function
+
+
+eq '''
+var obj;
+obj = {
+  /* v
+  */
+  key: val
+  /* ^
+  */
+};
+''', Coco.compile '''
+obj =
+   ### v
+   ###
+   key : val
+   ### ^
+   ###
+''', bare: true

@@ -69,8 +69,9 @@ ok obj.is()
 ok not obj.not()
 
 
-# Top-level object literal doesn't break things.
+### Top-level braceless object ###
 obj: 1
+### doesn't break things. ###
 
 
 # Funky indentation within non-comma-seperated arrays.
@@ -82,10 +83,9 @@ ok result[1]['b'] is 'c'
 
 
 # Object literals should be able to include keywords.
-obj = {class: 'höt'}
+obj = class: 'hot'
 obj.function = 'dog'
-
-ok obj.class + obj.function is 'hötdog'
+eq obj.class + obj.function, 'hotdog'
 
 
 # But keyword assignment should be smart enough not to stringify variables.
