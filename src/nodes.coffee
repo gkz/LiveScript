@@ -1528,7 +1528,6 @@ UTILITIES =
       function ctor(){ this.constructor = child; }
       ctor.prototype = parent.prototype;
       child.prototype = new ctor;
-      if (typeof parent.extended == "function") parent.extended(child);
       child.superclass = parent;
       return child;
     }

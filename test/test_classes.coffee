@@ -186,26 +186,6 @@ c.method 1, 2, 3, 4
 ok c.args.join(' ') is '1 2 3 4'
 
 
-# Test `extended` callback.
-class Base
-  @extended = (subclass) ->
-    for key, value in @
-      subclass[key] = value
-
-class Element extends Base
-  @fromHTML = (html) -> new this html
-  (@node) ->
-
-eq Element.extended, Base.extended
-eq Element.superclass, Base
-
-class MyElement extends Element
-
-eq MyElement.extended, Base.extended
-eq MyElement.fromHTML, Element.fromHTML
-eq MyElement.superclass, Element
-
-
 # Test classes wrapped in decorators.
 func = (klass) ->
   klass::prop = 'value'
