@@ -138,13 +138,13 @@ class exports.Base
   isComplex       : YES
   isChainable     : NO
   isAssignable    : NO
+  isArray         : NO
+  isObject        : NO
 
+  assigns      : NO   # Is this node used to assign a certain variable?
   unwrap       : THIS
   unfoldSoak   : NO
   unfoldAssign : NO
-
-  # Is this node used to assign a certain variable?
-  assigns: NO
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coco --nodes` prints out.
@@ -593,6 +593,12 @@ class exports.Obj extends Base
 
   children: ['properties']
 
+  isObject: YES
+
+  assigns: (name) ->
+    return true for prop of @properties when prop.assigns name
+    false
+
   compileNode: (o) ->
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
@@ -650,10 +656,6 @@ class exports.Obj extends Base
     code += ', ' + oref unless sp
     if o.level <= LEVEL_PAREN then code else "(#{code})"
 
-  assigns: (name) ->
-    return true for prop of @properties when prop.assigns name
-    false
-
 #### Arr
 
 # An array literal.
@@ -661,6 +663,12 @@ class exports.Arr extends Base
   (@objects = []) ->
 
   children: ['objects']
+
+  isArray: YES
+
+  assigns: (name) ->
+    return true for obj of @objects when obj.assigns name
+    false
 
   compileNode: (o) ->
     return '[]' unless @objects.length
@@ -670,10 +678,6 @@ class exports.Arr extends Base
     if 0 < code.indexOf '\n'
     then "[\n#{o.indent}#{code}\n#{@tab}]"
     else "[#{code}]"
-
-  assigns: (name) ->
-    return true for obj of @objects when obj.assigns name
-    false
 
 #### Class
 
@@ -699,7 +703,7 @@ class exports.Class extends Base
         it.clas    = name
         it.context = name if it.bound
     for node, i of exps = @body.expressions
-      if node instanceof Value and node.isObject()
+      if node.isObject()
         exps[i] = new Import proto, node
       else if node instanceof Code
         if ctor
@@ -717,7 +721,7 @@ class exports.Class extends Base
     exps.unshift new Extends lname, @parent if @parent
     exps.push lname
     clas = new Parens new Call(new Code [], @body), true
-    clas = new Assign new Value(lname), clas if decl and @variable?.isComplex()
+    clas = new Assign lname, clas if decl and @variable?.isComplex()
     clas = new Assign @variable, clas if @variable
     clas.compile o
 
@@ -740,9 +744,8 @@ class exports.Assign extends Base
 
   compileNode: (o) ->
     {variable, value} = this
-    if isValue = variable instanceof Value
-      return @compileDestructuring o if variable.isArray() or variable.isObject()
-      return @compileConditional   o if @context of <[ ||= &&= ?= ]>
+    return @compileDestructuring o if variable.isArray() or variable.isObject()
+    return @compileConditional   o if @context of <[ ||= &&= ?= ]>
     name = variable.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
@@ -753,7 +756,7 @@ class exports.Assign extends Base
     return name + ': ' + val if @context is ':'
     unless variable.isAssignable()
       throw ReferenceError "\"#{ @variable.compile o }\" cannot be assigned."
-    unless isValue and variable.hasProperties()
+    unless variable instanceof Value and variable.hasProperties()
       if @context
         unless o.scope.check name, true
           throw ReferenceError "assignment to undeclared variable \"#{name}\""
@@ -769,7 +772,7 @@ class exports.Assign extends Base
   compileDestructuring: (o) ->
     top       = o.level is LEVEL_TOP
     {value}   = this
-    {objects} = @variable.base
+    {objects} = @variable.unwrap()
     return value.compile o unless olen = objects.length
     isObject = @variable.isObject()
     if top and olen is 1 and (obj = objects[0]) not instanceof Splat
@@ -874,20 +877,20 @@ class exports.Code extends Base
     vars = []
     exps = []
     for param of @params when param.splat
-      splats = new Assign new Value(new Arr(p.asReference o for p of @params)),
+      splats = new Assign new Arr(p.asReference o for p of @params),
                           new Value new Literal 'arguments'
       break
     for param of @params
       if param.isComplex()
         val = ref = param.asReference o
         val = new Op '?', ref, param.value if param.value
-        exps.push new Assign new Value(param.name), val
+        exps.push new Assign param.name, val
       else
         ref = param
         if param.value
           exps.push new Op '&&',
             new Literal(ref.name.value + ' == null'),
-            new Assign new Value(param.name), param.value
+            new Assign param.name, param.value
       vars.push ref unless splats
     wasEmpty = @body.isEmpty()
     exps.unshift splats if splats
@@ -1142,7 +1145,7 @@ class exports.Of extends Base
   invert: NEGATE
 
   compileNode: (o) ->
-    if @array instanceof Value and @array.isArray()
+    if @array.isArray()
     then @compileOrTest   o
     else @compileLoopTest o
 
