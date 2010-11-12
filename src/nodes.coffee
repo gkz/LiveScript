@@ -5,8 +5,6 @@
 
 {Scope} = require './scope'
 
-exports.extend = (left, rite) -> left import all rite  # for parser
-
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -1495,6 +1493,9 @@ class exports.If extends Base
     parent[name] = ifn.body
     ifn.body     = Value parent
     ifn
+
+# Export `import all` for use in parser, where the operator doesn't work.
+exports.mix = __importAll
 
 # Constants
 # ---------

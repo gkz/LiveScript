@@ -34,7 +34,7 @@ o = (patternString, action, options) ->
   patternString .= replace /\s{2,}/g, ' '
   return [patternString, '$$ = $1;', options] unless action
   action  = if match = unwrap.exec action then match[1] else "(#{action}())"
-  action .= replace /\b(?:[A-Z]|extend)/g, 'yy.$&'
+  action .= replace /\b(?:[A-Z]|mix\b)/g, 'yy.$&'
   [patternString, "$$ = #{action};", options]
 
 # Grammatical Rules
@@ -168,8 +168,8 @@ grammar =
 
   Function: [
     o 'Code'
-    o 'FUNCTION Code',            -> extend $2, statement: true
-    o 'FUNCTION IDENTIFIER Code', -> extend $3, statement: true, name: $2
+    o 'FUNCTION Code',            -> mix $2, statement: true
+    o 'FUNCTION IDENTIFIER Code', -> mix $3, statement: true, name: $2
   ]
   # The **Code** node is the function literal. It's defined by an indented block
   # of **Expressions** preceded by a function arrow, with an optional parameter
@@ -400,19 +400,19 @@ grammar =
   # in fixed-size increments.
   ForBody: [
     o 'FOR ForValue
-       ForOf', -> extend $3, name: $2
+       ForOf', -> mix $3, name: $2
     o 'FOR ForValue , Identifier
-       ForOf', -> extend $5, name: $2, index: $4
+       ForOf', -> mix $5, name: $2, index: $4
     o 'FOR Identifier
-       ForIn', -> extend $3, index: $2
+       ForIn', -> mix $3, index: $2
     o 'FOR ForValue , ForValue
-       ForIn', -> extend $5, index: $2, name: $4
+       ForIn', -> mix $5, index: $2, name: $4
     o 'FOR ALL Identifier
-       ForIn', -> extend $4, raw: true, index: $3
+       ForIn', -> mix $4, raw: true, index: $3
     o 'FOR ALL Identifier , ForValue
-       ForIn', -> extend $6, raw: true, index: $3, name: $5
+       ForIn', -> mix $6, raw: true, index: $3, name: $5
     o 'FOR Identifier FROM Expression
-       ForTo', -> extend $5, index: $2, from: $4
+       ForTo', -> mix $5, index: $2, from: $4
   ]
 
   Switch: [
