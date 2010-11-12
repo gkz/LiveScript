@@ -522,8 +522,6 @@ class exports.Call extends Base
 #### Extends
 
 # Node to extend an object's prototype with an ancestor object.
-# After `goog.inherits` from the
-# [Closure Library](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.html).
 class exports.Extends extends Base
   (@child, @parent) =>
 
@@ -761,8 +759,7 @@ class exports.Assign extends Base
 
   # Brief implementation of recursive destructuring, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
-  # See the [ECMAScript Harmony Wiki](http://wiki.ecmascript.org/doku.php?id=harmony:destructuring)
-  # for details.
+  # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o) ->
     top       = o.level is LEVEL_TOP
     {value}   = this
@@ -1065,8 +1062,6 @@ class exports.Op extends Base
 
   isUnary: -> not @second
 
-  # Am I capable of
-  # [Python-style comparison chaining](http://docs.python.org/reference/expressions.html#notin)?
   isChainable: -> @operator of <[ < > >= <= === !== == != ]>
 
   invert: ->
@@ -1090,16 +1085,16 @@ class exports.Op extends Base
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
-  #
   #     coco -e 'console.log 50 < 65 > 10'
   #     true
+  # See <http://docs.python.org/reference/expressions.html#notin>.
   compileChain: (o) ->
-    [@first.second, shared] = @first.second.cache o
-    fst  = @first.compile o, LEVEL_OP
-    fst .= slice 1, -1 if fst.charAt(0) is '('
-    code  = "#{fst} && #{ shared.compile o } #{@operator} "
-    code += @second.compile o, LEVEL_OP
-    o.scope.free shared.value if @first.second isnt shared
+    [sub, ref] = @first.second.cache o
+    @first.second = sub
+    code  = @first.compile o, LEVEL_OP
+    code .= slice 1, -1 if code.charAt(0) is '('
+    code += " && #{ ref.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
+    o.scope.free ref.value if sub isnt ref
     if o.level < LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
@@ -1507,10 +1502,8 @@ function THIS -> this
 function NEGATE -> @negated ^= 1; this
 
 UTILITIES =
-
   # Correctly set up a prototype chain for inheritance, including a reference
-  # to the superclass for `super()` calls. See:
-  # [goog.inherits](http://closure-library.googlecode.com/svn/docs/closureGoogBase.js.source.html#line1206).
+  # to the superclass for `super()` calls.
   extends: '''
     function(child, parent){
       function ctor(){ this.constructor = child; }
@@ -1531,8 +1524,7 @@ UTILITIES =
   # Discover if an item is in an array.
   indexOf: '''
     Array.prototype.indexOf || function(item){
-      for (var i = 0, l = this.length; i < l; ++i)
-        if (this[i] === item) return i;
+      for (var i = 0, l = this.length; i < l; ++i) if (this[i] === item) return i;
       return -1;
     }
   '''
@@ -1574,15 +1566,14 @@ TRAILING_WHITESPACE = /[ \t]+$/gm
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
 NUMBER     = /// ^ -? (?: 0x[\da-f]+ | (?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)? ) $ ///i
 SIMPLENUM  = /^\d+$/
-METHOD_DEF = /^(?:(\S+)\.prototype\.|\S+?)?\b([$A-Za-z_][$\w]*)$/
+METHOD_DEF = /^(?:(\S+)\.prototype\.|\S*?)\b([$A-Za-z_][$\w]*)$/
 
 # Utility Functions
 # -----------------
 
 # Helper for ensuring that utility functions are assigned at the top level.
 utility = (name) ->
-  ref = "__#{name}"
-  Scope.root.assign ref, UTILITIES[name]
+  Scope.root.assign ref = '__' + name, UTILITIES[name]
   ref
 
 # Delete a key from an object, returning the value.
