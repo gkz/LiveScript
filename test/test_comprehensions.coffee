@@ -118,19 +118,18 @@ eq '5,3,1', '' + odds
 
 # For each dynamic call under `for`,
 # define it outside and pass loop variables to it.
-fs = for i from 0 to 2 when i > 0
+fs = for i, [a, b] in [[], [1, 2], [3, 4]] when a
   me = this
   do =>
     return if i < 2
     eq me, this
-    eq 1, arguments.length
+    eq a * b, 12
   do ->
     {callee} = arguments
-    -> [i, callee]
+    -> [a + b, callee]
 [one, two] = (f() for f of fs)
-eq one[0], 1
-eq two[0], 2
-eq one[1], two[1]
+eq one[0] * two[0], 21
+eq one[1] , two[1]
 
 
 copy = {}

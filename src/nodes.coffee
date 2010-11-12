@@ -1008,7 +1008,7 @@ class exports.While extends Base
 
   containsPureStatement: ->
     {expressions} = @body
-    i = expressions.length
+    return false unless i = expressions.length
     return true if expressions[--i]?.containsPureStatement()
     ret = -> it instanceof Return
     return true while i when expressions[--i].contains ret
@@ -1301,8 +1301,6 @@ class exports.For extends While
         @temps.push svar if srcPart isnt svar
       else
         srcPart = svar = @source.compile o, LEVEL_PAREN
-      if @name
-        name = Assign(@name, Literal svar + "[#{index}]").compile o, LEVEL_TOP
       unless @object
         srcPart = "(#{srcPart})" if srcPart isnt svar
         if 0 > pvar and (pvar | 0) is +pvar  # negative int
@@ -1321,12 +1319,16 @@ class exports.For extends While
       case  1 then '++' + index
       case -1 then '--' + index
       default index + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
-    code = ''
-    unless @name?.isComplex()
-      code += @pluckDirectCalls o, body, @name?.compile(o, LEVEL_LIST), index
+    code = @pluckDirectCalls o, body, @name, index
     o.indent += TAB
     code += @tab + "for (#{forPart}) #{ ownPart or '' }{"
-    code += '\n' + o.indent + name + ';' if name
+    if @name
+      code += '\n' + o.indent
+      item  = svar + "[#{index}]"
+      if @nref
+        code += @nref + ' = ' + item + ', '
+        item  = @nref
+      code += Assign(@name, Literal item).compile(o, LEVEL_TOP) + ';'
     unless body.isEmpty()
       ret   = @makePush o, body if @returns
       body  = If @guard, body, {'statement'} if @guard
@@ -1335,8 +1337,8 @@ class exports.For extends While
 
   pluckDirectCalls: (o, body, name, index) ->
     defs = ''
-    for exp, idx of body.expressions when (exp = do exp.unwrapAll) instanceof Call
-      val = do exp.variable.unwrapAll
+    for exp, idx of body.expressions when exp.=unwrapAll() instanceof Call
+      val = exp.variable.unwrapAll()
       continue unless \
         val instanceof Code and not exp.args.length or
           val instanceof Value and val.base instanceof Code and
@@ -1345,12 +1347,17 @@ class exports.For extends While
       @temps.push ref = o.scope.temporary 'fn'
       fn   = val.base or val
       base = Value ref = Literal ref
-      args = [].concat name or [], index or []
-      args.reverse() if @object
-      fn.params.push Param args[i] = Literal a for a, i of args
+      args = []
       if val.base
+        args.push exp.args[0]
         [val.base, base] = [base, val]
-        args.unshift Literal 'this'
+      if index
+        args.push li = Literal index
+        fn.params.push Param li
+      if name
+        @temps.push @nref = o.scope.temporary 'ref' unless @nref
+        args.push Literal @nref
+        fn.params.push Param name
       body.expressions[idx] = Call base, args
       defs += @tab + Assign(ref, fn, '=').compile(o, LEVEL_TOP) + ';\n'
     defs
