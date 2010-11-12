@@ -65,8 +65,8 @@ parent = child: str: 'test'
 parent.child.str.=replace /./, 'b'
 eq 'best', parent.child.str
 parent.child.str[='replace'] /./, 'r'
-eq 'rest', parent.child.str
-
+parent.=child.valueOf().str
+eq 'rest', parent
 
 for nonref of <[ "" 0 f() ]>
   throws "\"#{nonref}\" cannot be assigned", -> Coco.compile "{k: #{nonref}} = v"

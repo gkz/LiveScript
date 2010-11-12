@@ -471,18 +471,22 @@ class exports.Call extends Base
       break unless call .= variable.base instanceof Call
     list.reverse()
 
+  unfoldAssign: (o) ->
+    return unless @variable
+    for call of @digCalls()
+      if asn
+        if call.variable instanceof Call
+        then call.variable      = asn
+        else call.variable.base = asn
+      if asn = call.variable.unfoldAssign o
+        call.variable = asn.value
+        asn.value = Value call
+    asn
+
   # Compile a vanilla function call.
   compileNode: (o) ->
     if vr = @variable
-      for call of @digCalls()
-        if asn
-          if call.variable instanceof Call
-          then call.variable      = asn
-          else call.variable.base = asn
-        if asn = call.variable.unfoldAssign o
-          call.variable = asn.value
-          asn.value = Value call
-      return asn.compile o if asn
+      return asn.compile o if asn = @unfoldAssign o
       vr.front = @front
     return @compileSplat o, code if code = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
