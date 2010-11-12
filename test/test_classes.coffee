@@ -236,8 +236,10 @@ eq Class, Namespace.Class
 
 
 class TestBoundCtor
-  (@attr) =>
+  (@attr, ret) =>
+    return if ret
     @method = => this
 tbc = TestBoundCtor 'attr'
 eq tbc.attr, 'attr'
 eq [tbc.method][0](), tbc
+eq TestBoundCtor(8, true).attr, 8

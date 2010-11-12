@@ -880,10 +880,10 @@ class exports.Code extends Base
       """
       scope.assign '_this', 'new _ctor'
       Base::traverseChildren.call this, false, ->
-        if it.value is 'this'
-          it.value = '_this'
-        else if it instanceof Code
-          it.bound and= '_this'
+        switch
+        case it.value is 'this'   then it.value        = '_this'
+        case it instanceof Code   then it.bound     and= '_this'
+        case it instanceof Return then it.expression or= new Literal '_this'
       body.append new Literal 'return _this'
     vars = []
     exps = []
