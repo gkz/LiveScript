@@ -402,7 +402,6 @@ class exports.Value extends Base
 # Coco passes through block comments as JavaScript block comments
 # at the same position.
 class exports.Comment extends Base
-
   (@comment) ->
 
   isPureStatement : YES
@@ -505,7 +504,7 @@ class exports.Call extends Base
          (function(func, args, ctor){
          #{idt}ctor.prototype = func.prototype;
          #{idt}var child = new ctor, result = func.apply(child, args);
-         #{idt}return typeof result == "object" ? result : child;
+         #{idt}return result === Object(result) ? result : child;
          #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function(){}))
        """
     base = new Value @variable
