@@ -374,8 +374,8 @@ grammar =
   # enables support for pattern matching.
   ForValue: [
     o 'Identifier'
-    o 'Array',  -> Value $1
-    o 'Object', -> Value $1
+    o 'Array'
+    o 'Object'
   ]
   ForOf: [
     o 'FOROF Expression',                 -> source: $2
@@ -404,13 +404,13 @@ grammar =
     o 'FOR ForValue , Identifier
        ForOf', -> mix $5, name: $2, index: $4
     o 'FOR Identifier
-       ForIn', -> mix $3, index: $2
+       ForIn', -> mix $3, own: true, index: $2
     o 'FOR ForValue , ForValue
-       ForIn', -> mix $5, index: $2, name: $4
+       ForIn', -> mix $5, own: true, index: $2, name: $4
     o 'FOR ALL Identifier
-       ForIn', -> mix $4, raw: true, index: $3
+       ForIn', -> mix $4, index: $3
     o 'FOR ALL Identifier , ForValue
-       ForIn', -> mix $6, raw: true, index: $3, name: $5
+       ForIn', -> mix $6, index: $3, name: $5
     o 'FOR Identifier FROM Expression
        ForTo', -> mix $5, index: $2, from: $4
   ]

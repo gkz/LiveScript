@@ -1265,12 +1265,10 @@ class exports.Parens extends Base
 # you can map and filter in a single pass.
 class exports.For extends While
   (body, head) =>
-    if head.index instanceof Value
-      throw SyntaxError 'invalid index variable: ' + head.index.compile o, LEVEL_LIST
+    if head.index and head.index not instanceof Literal
+      throw SyntaxError 'invalid index assignee: ' + head.index
     this import all head
-    @body    = Expressions body
-    @step  ||= Literal 1 unless @object
-    @returns = false
+    @body = Expressions body
 
   children: <[ body source guard step from to ]>
 
@@ -1281,17 +1279,18 @@ class exports.For extends While
   compileNode: (o) ->
     {scope} = o
     {body}  = this
-    @temps  = []
-    pattern = @name instanceof Value
+    code    = ownPart = defPart = retPart = ''
+    idt     = o.indent + TAB
+    pattern = @name and @name not instanceof Literal
     name    = not pattern and @name?.compile o
     index   = @index?.compile o
-    varPart = guardPart = defPart = retPart = ''
-    idt     = o.indent + TAB
     scope.declare name  if name
     scope.declare index if index
+    @temps = []
     @temps.push ivar = scope.temporary 'i' unless ivar = index
-    [step, pvar] = @step.compileLoopReference o, 'step' if @step
-    @temps.push pvar if step isnt pvar
+    unless @object
+      [step, pvar] = (@step || Literal 1).compileLoopReference o, 'step'
+      @temps.push pvar if step isnt pvar
     if @from
       eq = if @op is 'til' then '' else '='
       [tail, tvar] = @to.compileLoopReference o, 'to'
@@ -1303,7 +1302,7 @@ class exports.For extends While
       then "#{ivar} #{ if pvar < 0 then '>' else '<' }#{eq} #{tvar}"
       else "#{pvar} < 0 ? #{ivar} >#{eq} #{tvar} : #{ivar} <#{eq} #{tvar}"
     else
-      if name or @object and not @raw
+      if name or @object and @own
         [sourcePart, svar] = @source.compileLoopReference o, 'ref'
         @temps.push svar if sourcePart isnt svar
       else
@@ -1322,25 +1321,23 @@ class exports.For extends While
           vars = "#{ivar} = 0, #{lvar} = #{sourcePart}.length"
           cond = "#{ivar} < #{lvar}"
     if @object
-      forPart   = ivar + ' in ' + sourcePart
-      guardPart = if @raw then '' else
-        idt + "if (!#{ utility 'owns' }.call(#{svar}, #{ivar})) continue;\n"
+      forPart = ivar + ' in ' + sourcePart
+      ownPart = "if (#{ utility 'owns' }.call(#{svar}, #{ivar})) " if @own
     else
       vars   += ', ' + step if step isnt pvar
       forPart = vars + "; #{cond}; " + switch +pvar
       case  1 then '++' + ivar
       case -1 then '--' + ivar
       default ivar + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
-    varPart  = idt + namePart + ';\n' if namePart
     defPart += @pluckDirectCalls o, body, name, index unless pattern
-    code = guardPart + varPart
+    code    += idt + namePart + ';\n' if namePart
     unless body.isEmpty()
       retPart  = @makePush o, body if @returns
       body     = If @guard, body, {'statement'} if @guard
       o.indent = idt
       code    += body.compile o, LEVEL_TOP
     code = '\n' + code + '\n' + @tab if code
-    defPart + @tab + "for (#{forPart}) {#{code}}" + retPart
+    defPart + @tab + "for (#{forPart}) #{ownPart}{#{code}}" + retPart
 
   pluckDirectCalls: (o, body, name, index) ->
     defs = ''
