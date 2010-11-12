@@ -7,13 +7,6 @@
 
 exports.extend = (left, rite) -> left import all rite  # for parser
 
-# Constant functions for nodes that don't need customization.
-YES  = -> true
-NO   = -> false
-THIS = -> this
-
-NEGATE = -> @negated = not @negated; this
-
 #### Base
 
 # The **Base** is the abstract base class for all nodes in the syntax tree.
@@ -199,6 +192,7 @@ class exports.Expressions extends Base
     if o.scope then super o, level else @compileRoot o
 
   compileNode: (o) ->
+    o.expressions = this
     @tab  = o.indent
     top   = o.level is LEVEL_TOP
     codes = []
@@ -901,10 +895,14 @@ class exports.Code extends Base
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
     vars[0] = 'it' if not vars.length and @body.contains (-> it.value is 'it')
     @body.makeReturn() unless wasEmpty or @ctor
-    idt   = o.indent
-    code  = 'function'
+    idt  = o.indent
+    code = 'function'
     if @statement
-      throw SyntaxError 'cannot declare a nameless function.' unless @name
+      unless @name
+        throw SyntaxError 'cannot declare a nameless function.'
+      unless o.expressions is pscope.expressions
+        throw SyntaxError 'cannot declare a function under a statement.'
+      pscope.add @name, 'function' unless @returns
       code += ' ' + @name
     code += '(' + vars.join(', ') + '){'
     code += "\n#{ @body.compileWithDeclarations o }\n#{@tab}" unless @body.isEmpty()
@@ -1044,9 +1042,8 @@ class exports.Op extends Base
         args  = [new Literal 'this']
       return new Call first, args
     if op is 'new'
-      return first.newInstance() if first instanceof Call
-      first = new Parens first   if first instanceof Code and first.bound
-      first.keep = true
+      return first.newInstance()     if first instanceof Call
+      first = new Parens first, true if first instanceof Code and first.bound
     @operator = op
     @first    = first
     @second   = second
@@ -1500,6 +1497,12 @@ class exports.If extends Base
 
 # Constants
 # ---------
+
+function YES  -> true
+function NO   -> false
+function THIS -> this
+
+function NEGATE -> @negated = not @negated; this
 
 UTILITIES =
 

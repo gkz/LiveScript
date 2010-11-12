@@ -5,23 +5,27 @@
 # variables are new and need to be declared with `var`, and which are shared
 # with the outside.
 
-# Initialize a scope with its parent, for lookups up the chain,
-# as well as a reference to the **Expressions** node it belongs to, which is
-# where it should declare its variables, and a reference to the function that
-# it wraps.
-exports.Scope = Scope = (@parent, @expressions, @method) ->
-  @variables = [{name: 'arguments', type: 'arguments'}]
-  @positions = {}
-  # The top-level **Scope** object.
-  Scope.root = this unless @parent
-
-Scope:: import all
+class exports.Scope
+  # Initialize a scope with its parent, for lookups up the chain,
+  # as well as a reference to the **Expressions** node it belongs to, which is
+  # where it should declare its variables, and a reference to the function that
+  # it wraps.
+  (@parent, @expressions, @method) ->
+    @variables = [{name: 'arguments', type: 'arguments'}]
+    @positions = arguments: 0
+    # The top-level **Scope** object.
+    Scope.root = this unless @parent
 
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
-    if typeof (pos = @positions[name]) is 'number'
-    then @variables[pos].type = type
-    else @positions[name]     = -1 + @variables.push {name, type}
+    if name of <[ arguments eval ]>
+      throw SyntaxError "redefining \"#{name}\" is deprecated."
+    if v = @variables[pos = @positions[name]]
+      if 'function' of [type, v.type]
+        throw SyntaxError "redeclaration of \"#{name}\""
+      @variables[pos].type = type
+    else
+      @positions[name] = -1 + @variables.push {name, type}
     this
 
   # Test variables and return `true` the first time `fn(v)` returns `true`
@@ -32,7 +36,7 @@ Scope:: import all
   # Declare a variable unless declared already.
   declare: (name) ->
     scope = @shared or this
-    scope.add name, 'var' unless scope.check name
+    scope.add name, 'var' unless scope.type(name) of <[ var param ]>
     this
 
   # Reserve a variable name as originating from a function parameter for this

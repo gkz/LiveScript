@@ -348,3 +348,18 @@ eq 'declared', declared.name
 
 eq 'named', (function named ->).name
 ok !named?, 'should not leak to global when undeclared'
+
+try ok not Coco.compile '''
+  A = 1
+  function A ->
+'''
+catch e then eq e.message, 'redeclaration of "A"'
+
+try ok not Coco.compile '''
+  function B ->
+  B = 1
+'''
+catch e then eq e.message, 'redeclaration of "B"'
+
+try ok not Coco.compile 'if 1 then function C ->'
+catch e then eq e.message, 'cannot declare a function under a statement.'
