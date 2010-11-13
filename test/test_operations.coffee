@@ -184,13 +184,13 @@ ok []    instanceof [String, Array]
 ok 0 not instanceof [String, Array]
 
 
-x = 'X'
-o = new -> @ import {42, '', x, @x, (x + x)} import [0]
+x = 'xx'
+o = (-> {} import {42, '', x, @X, (x + x), ([0])...}).call {X: 'XX'}
 eq o[42], 42
 eq o[''], ''
-eq o.x, 'X'
-eq o.X, 'X'
-eq o.XX, 'XX'
+eq o.x, 'xx'
+eq o.X, 'XX'
+eq o.xxxx, 'xxxx'
 eq o[0], 0
 
 o import all new class then deep: 'copy'
