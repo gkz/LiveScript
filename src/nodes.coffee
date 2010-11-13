@@ -298,16 +298,15 @@ class exports.Value extends Base
 
   hasProperties: -> !!@properties.length
 
-  # Some boolean checks for the benefit of other nodes.
+  assigns      : -> not @properties.length and @base.assigns it
+  isStatement  : -> not @properties.length and @base.isStatement it
   isArray      : -> not @properties.length and @base instanceof Arr
   isObject     : -> not @properties.length and @base instanceof Obj
   isComplex    : -> !!@properties.length or @base.isComplex()
   isAssignable : -> !!@properties.length or @base.isAssignable()
 
-  isStatement : (o)    -> not @properties.length and @base.isStatement o
-  assigns     : (name) -> not @properties.length and @base.assigns name
-
-  makeReturn: -> if @properties.length then super() else @base.makeReturn()
+  makeReturn: ->
+    if @properties.length then Return this else @base.makeReturn()
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
@@ -1522,9 +1521,7 @@ UTILITIES =
 
   # Create a function bound to the current value of "this".
   bind: '''
-    function(func, context){
-      return function(){ return func.apply(context, arguments); };
-    }
+    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
   '''
 
   # Discover if an item is in an array.
