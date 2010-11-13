@@ -47,47 +47,55 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
   Unlike CoffeScript, our `class` takes a regular block under which you can declare the constructor (as a bare function on top) and properties (as bare objects on top) as well as have other code like define static methods (`this` points to the constructor within the block).
 
       $ coco -bsp
-      class exports.B extends A
+      class exports.C extends P
         ### constructor ###
         -> super it
-      
+
+        ### any code ###
+        private = 42
+        @static = -> private
+
         ### properties ###
         member: 'U'
         method: -> super @member, B.static()
-      
-        private = 42
-        @static = -> private
-      
-      var B, __extends = function(child, parent){
+
+      Bound = class then =>
+
+
+      var Bound, C, __extends = function(child, parent){
         function ctor(){ this.constructor = child; }
         ctor.prototype = parent.prototype;
         child.prototype = new ctor;
-        if (typeof parent.extended == "function") parent.extended(child);
-        child.__super__ = parent.prototype;
+        child.superclass = parent;
         return child;
-      }, __importAll = function(obj, src){
-        for (var key in src) obj[key] = src[key];
-        return obj;
       };
-      exports.B = B = (function(){
-        var private;
-        __extends(B, A);
+      exports.C = C = (function(){
+        var private, _ref;
+        __extends(C, P);
         /* constructor */
-        function B(it){
-          B.__super__.constructor.call(this, it);
+        function C(it){
+          C.superclass.call(this, it);
         }
-        __importAll(B.prototype, {
-          /* properties */
-          member: 'U',
-          method: function(){
-            return B.__super__.method.call(this, this.member, B.static());
-          }
-        });
+        C.name = "C";
+        /* any code */
         private = 42;
-        B.static = function(){
+        C.static = function(){
           return private;
         };
-        return B;
+        _ref = C.prototype, /* properties */ _ref.member = 'U', _ref.method = function(){
+          return C.superclass.prototype.method.call(this, this.member, B.static());
+        };
+        return C;
+      }());
+      Bound = (function(){
+        function _ctor(){}
+        _ctor.prototype = Bound.prototype;
+        function Bound(){
+          var _this = new _ctor;
+          return _this;
+        }
+        Bound.name = "Bound";
+        return Bound;
       }());
 
 
