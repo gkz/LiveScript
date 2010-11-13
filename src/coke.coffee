@@ -7,24 +7,23 @@
 # current directory's Cokefile.
 
 # External dependencies.
-fs       = require 'fs'
-path     = require 'path'
-optparse = require './optparse'
-Coco     = require './coco'
+fs     = require 'fs'
+path   = require 'path'
+oparse = require './optparse'
+Coco   = require './coco'
 
 # Keep track of the list of defined tasks, the accepted options, and so on.
-tasks     = {}
-options   = {}
-switches  = []
-oparse    = null
+tasks    = {}
+options  = {}
+switches = []
 
-# Mixin the top-level coke functions for Cakefiles to use directly.
+# Mixin the top-level coke functions for Cokefiles to use directly.
 global import
 
   # Define a coke task with a short name, an optional sentence description,
   # and the function to run as the action itself.
   task: (name, description, action) ->
-    [action, description] = [description, action] unless action
+    [action, description] = [description] unless action
     tasks[name] = {name, description, action}
 
   # Define an option that the Cokefile accepts. The parsed options hash,
@@ -35,7 +34,9 @@ global import
 
   # Invoke another task in the current Cokefile.
   invoke: (name) ->
-    missingTask name unless tasks[name]
+    unless name in tasks
+      console.error "no such task: \"#{task}\""
+      process.exit 1
     tasks[name].action options
 
 # Run `coke`. Executes all of the tasks you pass, in order. Note that Node's
@@ -43,13 +44,15 @@ global import
 # If no tasks are passed, print the help screen.
 exports.run = ->
   path.exists 'Cokefile', (exists) ->
-    throw new Error("Cokefile not found in #{process.cwd()}") unless exists
+    unless exists
+      console.error "no Cokefile in #{ process.cwd() }"
+      process.exit 1
     args = process.argv.slice 2
     Coco.run fs.readFileSync('Cokefile').toString(), fileName: 'Cokefile'
-    oparse  := new optparse.OptionParser switches
+    oparse  := new oparse.OptionParser switches
     return printTasks() unless args.length
     options := oparse.parse args
-    invoke arg for arg of options.arguments
+    options.arguments.forEach invoke
 
 # Display the list of tasks in a format similar to `rake -T`
 printTasks = ->
@@ -60,8 +63,3 @@ printTasks = ->
     desc = if task.description then '# ' + task.description else ''
     console.log "coke #{ (name + pad).slice 0, width } #{desc}"
   console.log oparse.help() if switches.length
-
-# Print an error and exit when attempting to all an undefined task.
-missingTask = (task) ->
-  console.log "No such task: \"#{task}\""
-  process.exit 1
