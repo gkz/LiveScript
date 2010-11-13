@@ -184,8 +184,14 @@ ok []    instanceof [String, Array]
 ok 0 not instanceof [String, Array]
 
 
-target = {} import {42}
-target import all new class then deep: 'copy'
+x = 'X'
+o = new -> @ import {42, '', x, @x, (x + x)} import [0]
+eq o[42], 42
+eq o[''], ''
+eq o.x, 'X'
+eq o.X, 'X'
+eq o.XX, 'XX'
+eq o[0], 0
 
-eq target[42], 42
-eq target.deep, 'copy'
+o import all new class then deep: 'copy'
+eq o.deep, 'copy'

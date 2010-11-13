@@ -555,12 +555,13 @@ class exports.Import extends Base
         code += Import(Literal(lref), node.name, true).compile o, LEVEL_TOP
         continue
       if node instanceof Assign
-        {value: val, variable: base: acc} = node
+        {variable: acc, value: val} = node
+        acc .= properties[0].name if (acc.=unwrap()).this
         key  = acc.compile o, LEVEL_PAREN
         val.name = key if val instanceof [Code, Class] and IDENTIFIER.test key
         val .= compile o, LEVEL_LIST
       else
-        acc = node.base
+        acc = node.unwrap()
         [key, val] = acc.cache o, LEVEL_LIST, ref
         @temps.push ref = val if key isnt val
       key = if acc instanceof Literal and IDENTIFIER.test key
