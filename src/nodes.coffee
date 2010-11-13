@@ -1371,34 +1371,33 @@ class exports.For extends While
 
 #### Switch
 
-# A JavaScript *switch* statement. Converts into a returnable expression on-demand.
 class exports.Switch extends Base
-  (@subject, @cases, @otherwise) =>
-    return if @subject
-    @subject = Literal false
-    cs.tests = (test.invert() for test of cs.tests) for cs of @cases
+  (@switch, @cases, @default) =>
+    unless @switch
+      for {tests} of @cases
+        tests[i].=invert() for i in tests
 
-  children: <[ subject cases otherwise ]>
+  children: <[ switch cases default ]>
 
   isStatement: YES
 
   makeReturn: ->
     cs.body.makeReturn() for cs of @cases
-    @otherwise?.makeReturn()
+    @default?.makeReturn()
     this
 
   compileNode: (o) ->
-    o.indent += TAB
     {tab} = this
-    code  = tab + "switch (#{ @subject.compile o, LEVEL_PAREN }) {\n"
-    lastIndex = if @otherwise then -1 else @cases.length - 1
+    o.indent += TAB
+    code = tab + "switch (#{ @switch?.compile(o, LEVEL_PAREN) or false }) {\n"
+    stop = @default or @cases.length - 1
     for cs, i of @cases
       code += cs.compile o, tab
-      break if i is lastIndex
+      break if i is stop
       for exp of cs.body.expressions by -1 when exp not instanceof Comment
         code += o.indent + 'break;\n' unless exp instanceof Return
         break
-    code += tab + "default:\n#{ @otherwise.compile o, LEVEL_TOP }\n" if @otherwise
+    code += tab + "default:\n#{ @default.compile o, LEVEL_TOP }\n" if @default
     code +  tab + '}'
 
 #### Case
