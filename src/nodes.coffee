@@ -24,8 +24,8 @@ class exports.Base
   # the top level of a block (which would be unnecessary), and we haven't
   # already been asked to return the result (because statements know how to
   # return results).
-  compile: (o, level) ->
-    o        = {} import all o
+  compile: (options, level) ->
+    o = {}; continue for all key, o[key] in options
     o.level  = level if level?
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
@@ -339,7 +339,7 @@ class exports.Value extends Base
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
     return asn.compile o if asn = @unfoldAssign o
-    @base.front = @front
+    @base import {@front}
     v  = (@properties.length and @substituteStar o) or this
     ps = v.properties
     code  = v.base.compile o, if ps.length then LEVEL_ACCESS else null
@@ -479,7 +479,7 @@ class exports.Call extends Base
   compileNode: (o) ->
     unless @super
       return asn.compile o if asn = @unfoldAssign o
-      @variable.front = @front
+      @variable import {@front}
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
     if @super
@@ -933,9 +933,8 @@ class exports.Code extends Base
 
 #### Param
 
-# A parameter in a function definition. Beyond a typical Javascript parameter,
-# these parameters can also attach themselves to the context of the function,
-# as well as be a splat, gathering up a group of parameters into an array.
+# A parameter in a function definition with an arbitrary LHS and
+# an optional default value.
 class exports.Param extends Base
   (@name, @value, @splat) =>
 
@@ -993,9 +992,7 @@ class exports.Splat extends Base
 # it, all other loops can be manufactured. Useful in cases where you need more
 # flexibility or more speed than a comprehension can provide.
 class exports.While extends Base
-  (cond, options = {}) =>
-    @condition = if options.name is 'until' then cond.invert() else cond
-    {@guard}   = options
+  (@condition, {@guard, name} = {}) => @condition.=invert() if name is 'until'
 
   children: <[ condition guard body ]>
 
@@ -1064,15 +1061,13 @@ class exports.Op extends Base
     @second   = second
     @flip     = !!flip
 
-  # The map of invertible operators.
+  # The map of invertible/chainable operators.
   INVERSIONS = '===':'!==', '==':'!=', '>':'<=', '<':'>='
   INVERSIONS[val] = key for all key, val in INVERSIONS
 
   children: <[ first second ]>
 
-  isUnary: -> not @second
-
-  isChainable: -> @operator of <[ < > >= <= === !== == != ]>
+  isChainable: -> @operator in INVERSIONS
 
   invert: ->
     if op = INVERSIONS[@operator]
@@ -1086,11 +1081,11 @@ class exports.Op extends Base
     @operator of <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
 
   compileNode: (o) ->
-    return @compileUnary     o if @isUnary()
+    return @compileUnary     o if not @second
     return @compileChain     o if @isChainable() and @first.isChainable()
     return @compileExistence o if @operator is '?'
     return @compileMultiIO   o if @operator is 'instanceof' and @second.isArray()
-    @first.front = @front
+    @first import {@front}
     code = @first .compile(o, LEVEL_OP) + " #{@operator} " +
            @second.compile(o, LEVEL_OP)
     if o.level <= LEVEL_OP then code else "(#{code})"
@@ -1150,9 +1145,7 @@ class exports.Of extends Base
   invert: NEGATE
 
   compileNode: (o) ->
-    if @array.isArray()
-    then @compileOrTest   o
-    else @compileLoopTest o
+    if @array.isArray() then @compileOrTest o else @compileLoopTest o
 
   compileOrTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_OP
@@ -1214,16 +1207,13 @@ class exports.Throw extends Base
 
   isStatement: YES
 
-  # A **Throw** is already a return, of sorts...
   makeReturn: THIS
 
   compile: (o) -> o.indent + "throw #{ @expression.compile o, LEVEL_PAREN };"
 
 #### Existence
 
-# Checks a variable for existence -- not *null* and not *undefined*. This is
-# similar to `.nil?` in Ruby, and avoids having to consult a JavaScript truth
-# table.
+# Checks a value for existence --  not `undefined` and not `null`.
 class exports.Existence extends Base
   (@expression) =>
 
@@ -1243,10 +1233,7 @@ class exports.Existence extends Base
 
 #### Parens
 
-# An extra set of parentheses, specified explicitly in the source. At one time
-# we tried to clean up the results by detecting and removing redundant
-# parentheses, but no longer -- you can put in as many as you please.
-#
+# An extra set of parentheses, specified explicitly in the source.
 # Parentheses are a good way to force any statement to become an expression.
 class exports.Parens extends Base
   (@expression, @keep) =>
@@ -1258,8 +1245,7 @@ class exports.Parens extends Base
   makeReturn: -> @expression.makeReturn()
 
   compileNode: (o) ->
-    expr = @expression
-    expr.front = @front
+    expr = @expression import {@front}
     return expr.compile o if not @keep and
       (expr instanceof [Value, Call, Code, Parens] or
        o.level < LEVEL_OP and expr instanceof Op)
@@ -1278,7 +1264,7 @@ class exports.Parens extends Base
 class exports.For extends While
   (head, @body) =>
     this import all head
-    if @index instanceof Value and not @index .= base.value
+    if @index instanceof Value and not @index.=base.value
       throw SyntaxError 'invalid index variable: ' + head.index
 
   children: <[ source name from to step guard body ]>
@@ -1424,11 +1410,7 @@ class exports.Case extends Base
 
 #### If
 
-# *If/else* statements. Acts as an expression by pushing down requested returns
-# to the last line of each clause.
-#
-# Single-expression **Ifs** are compiled into conditional operators if possible,
-# because ternaries are already proper expressions, and don't need conversion.
+# The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Base
   (@if, @then, {@statement, @soak, name} = {}) =>
     @if.=invert() if name is 'unless'
