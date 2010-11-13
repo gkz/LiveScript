@@ -235,12 +235,27 @@ class Namespace.Class
 eq Class, Namespace.Class
 
 
-class TestBoundCtor extends (-> {@attr})
+class BoundCtor extends (-> {@attr})
   (@attr, ret) =>
     return if ret
     eq super.attr, @attr
     @method = => this
-tbc = TestBoundCtor 'attr'
+
+tbc = BoundCtor 'attr'
 eq tbc.attr, 'attr'
 eq [tbc.method][0](), tbc
-eq TestBoundCtor(8, true).attr, 8
+eq BoundCtor(8, true).attr, 8
+
+
+class Importer
+  -> this import it
+  method1: this
+  method2: Array
+
+class NewSuper extends Importer
+  -> eq new super({ok}).ok, ok
+  method1: -> new super
+
+ns = new NewSuper
+eq ns.method1({1})[1], 1
+eq ns.method2(2).length, 2

@@ -483,24 +483,29 @@ class exports.Call extends Base
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
     if @super
-    then @superReference(o) + ".call(#{@super.value}#{ args and ', ' + args })"
-    else @new + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
+      sup = @superReference o
+      if @new
+      then "new #{sup}(#{args})"
+      else "#{sup}.call(#{@super.value}#{ args and ', ' + args })"
+    else
+      @new + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o, args) ->
-    return @superReference(o) + ".apply(#{@super.value}, #{args})" if @super
     if @new
        idt = @tab + TAB
+       sup = if @super then @superReference o else @variable.compile o, LEVEL_LIST
        return """
          (function(func, args, ctor){
          #{idt}ctor.prototype = func.prototype;
          #{idt}var child = new ctor, result = func.apply(child, args);
          #{idt}return result === Object(result) ? result : child;
-         #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{args}, function(){}))
+         #{@tab}}(#{sup}, #{args}, function(){}))
        """
+    return @superReference(o) + ".apply(#{@super.value}, #{args})" if @super
     base = Value @variable
     if (name = base.properties.pop()) and base.isComplex()
       ref = o.scope.temporary 'ref'
@@ -1048,7 +1053,9 @@ class exports.Op extends Base
         args  = [Literal 'this']
       return Call first, args
     if op is 'new'
-      return first.newInstance() if first instanceof Call
+      if (call = first.base or first) instanceof Call
+        call.newInstance()
+        return first
       first = Parens first, true if first instanceof Code and first.bound
     @operator = op
     @first    = first
