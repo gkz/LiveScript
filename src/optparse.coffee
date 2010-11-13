@@ -13,8 +13,7 @@ exports.OptionParser = class
   #     [short-flag, long-flag, description]
   #
   # Along with an an optional banner for the usage help.
-  (rules, @banner) ->
-    @rules = buildRules rules
+  (rules, @banner) -> @rules = buildRules rules
 
   # Parse the list of arguments, populating an `options` object with all of the
   # specified options, and returning it. `options.arguments` will be an array
@@ -23,8 +22,7 @@ exports.OptionParser = class
   # flag. Instead, you're responsible for interpreting the options object.
   parse: (args) ->
     options = arguments: []
-    args    = normalizeArguments args
-    for arg, i of args
+    for arg, i of args = normalizeArguments args
       isOption    = !!(LONG_FLAG.test(arg) or SHORT_FLAG.test(arg))
       matchedRule = false
       for rule of @rules
@@ -35,7 +33,9 @@ exports.OptionParser = class
           else value
           matchedRule = true
           break
-      throw Error "unrecognized option: #{arg}" if isOption and not matchedRule
+      if isOption and not matchedRule
+        console.error "unrecognized option: #{arg}"
+        process.exit 1
       unless isOption
         options.arguments = args.slice i
         break
@@ -46,8 +46,8 @@ exports.OptionParser = class
   help: ->
     lines = ['Available options:']
     lines.unshift @banner + '\n' if @banner
-    width = Math.max (rule.longFlag.length for rule of @rules)...
-    pad   = Array(width).join ' '
+    width = Math.max @rules.map(-> it.longFlag.length)...
+    pad   = Array(width >> 1).join '  '
     for rule of @rules
       sf = if rule.shortFlag then rule.shortFlag + ','  else '   '
       lf = (rule.longFlag + pad).slice 0, width
@@ -85,8 +85,6 @@ buildRule = (shortFlag, longFlag, description) ->
 # Normalize arguments by expanding merged flags into multiple flags. This allows
 # you to have `-wl` be the same as `--watch --lint`.
 normalizeArguments = (args) ->
-  results = for arg of args
-    if match = MULTI_FLAG.exec arg
-    then '-' + l for l of match[1].split ''
-    else arg
-  [].concat results...
+  Array::concat.apply [], args.map ->
+    return it unless match = MULTI_FLAG.exec it
+    '-' + l for l of match[1].split ''
