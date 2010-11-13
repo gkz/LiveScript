@@ -138,8 +138,8 @@ addImplicitParentheses = (tokens) ->
     continue unless callObject or
       prev?.spaced and (prev.call or prev[0] of IMPLICIT_FUNC) and
       (tag of <[
-         IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
-         FUNCTION IF TRY SWITCH CLASS [ ( {
+         ( [ { IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
+         FUNCTION IF TRY SWITCH CLASS SUPER
        ]> or
        tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION' or
        tag is 'PLUS_MINUS' and not (token.spaced or token.eol))

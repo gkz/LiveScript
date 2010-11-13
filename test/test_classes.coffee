@@ -238,7 +238,7 @@ eq Class, Namespace.Class
 class TestBoundCtor extends (-> {@attr})
   (@attr, ret) =>
     return if ret
-    eq @attr, (super).attr
+    eq super.attr, @attr
     @method = => this
 tbc = TestBoundCtor 'attr'
 eq tbc.attr, 'attr'
