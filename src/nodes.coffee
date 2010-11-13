@@ -367,7 +367,7 @@ class exports.Value extends Base
   # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     if ifn = @base.unfoldSoak o
-      ifn.body.properties.push @properties...
+      ifn.then.properties.push @properties...
       return ifn
     for prop, i of @properties when prop.soak
       prop.soak = false
@@ -1426,72 +1426,62 @@ class exports.Case extends Base
 # Single-expression **Ifs** are compiled into conditional operators if possible,
 # because ternaries are already proper expressions, and don't need conversion.
 class exports.If extends Base
-  (cond, @body, options = {}) =>
-    @condition = if options.name is 'unless' then cond.invert() else cond
-    @elseBody  = null
-    @isChain   = false
-    {@soak, @statement} = options
+  (@if, @then, {@statement, @soak, name} = {}) =>
+    @if.=invert() if name is 'unless'
 
-  children: <[ condition body elseBody ]>
-
-  bodyNode     : -> @body    ?.unwrap()
-  elseBodyNode : -> @elseBody?.unwrap()
+  children: <[ if then else ]>
 
   # Rewrite a chain of **Ifs** to add a default case as the final *else*.
-  addElse: (elseBody) ->
-    if @isChain
-      @elseBodyNode().addElse elseBody
+  addElse: ->
+    if @chain
+      @else.addElse it
     else
-      @isChain  = elseBody instanceof If
-      @elseBody = Expressions elseBody
+      @chain = it instanceof If
+      @else  = it
     this
 
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
     @statement or o?.level is LEVEL_TOP or
-      @bodyNode().isStatement(o) or @elseBodyNode()?.isStatement(o)
+      @then.isStatement(o) or @else?.isStatement(o)
+
+  makeReturn: ->
+    @then.=makeReturn()
+    @else.=makeReturn() if @else
+    this
 
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o
 
-  makeReturn: ->
-    @body     &&= Expressions @body    .makeReturn()
-    @elseBody &&= Expressions @elseBody.makeReturn()
-    this
-
   # Compile the **If** as a regular *if-else* statement. Flattened chains
   # force inner *else* bodies into statement form.
   compileStatement: (o) ->
-    child = del o, 'chainChild'
-    cond  = @condition.compile o, LEVEL_PAREN
+    code  = if del o, 'chainChild' then '' else @tab
+    code += "if (#{ @if.compile o, LEVEL_PAREN }) {"
     o.indent += TAB
-    body   = Expressions(@body).compile o
-    body   = "\n#{body}\n#{@tab}" if body
-    ifPart = "if (#{cond}) {#{body}}"
-    ifPart = @tab + ifPart unless child
-    return ifPart unless @elseBody
-    ifPart + ' else ' + if @isChain
-      o.indent     = @tab
-      o.chainChild = true
-      @elseBody.unwrap().compile o, LEVEL_TOP
-    else
-      "{\n#{ @elseBody.compile o, LEVEL_TOP }\n#{@tab}}"
+    body  = Expressions(@then).compile o
+    code += (body and "\n#{body}\n#{@tab}") + '}'
+    return code unless @else
+    code + ' else ' + if @chain
+    then @else.compile (o import indent: @tab, chainChild: true), LEVEL_TOP
+    else if body = @else.compile o, LEVEL_TOP
+    then "{\n#{body}\n#{@tab}}"
+    else '{}'
 
   # Compile the If as a conditional operator.
   compileExpression: (o) ->
-    code = @condition .compile(o, LEVEL_COND) + ' ? ' +
-           @bodyNode().compile(o, LEVEL_LIST) + ' : ' +
-           (@elseBodyNode()?.compile(o, LEVEL_LIST) or 'void 0')
-    if o.level >= LEVEL_COND then "(#{code})" else code
+    code = @if   .compile(o, LEVEL_COND) + ' ? ' +
+           @then .compile(o, LEVEL_LIST) + ' : ' +
+          (@else?.compile(o, LEVEL_LIST) or 'void 0')
+    if o.level < LEVEL_COND then code else "(#{code})"
 
   unfoldSoak: -> @soak and this
 
   # Unfold a node's child if soak, then tuck the node under created `If`
   @unfoldSoak = (o, parent, name) ->
     return unless ifn = parent[name].unfoldSoak o
-    parent[name] = ifn.body
-    ifn.body     = Value parent
+    parent[name] = ifn.then; ifn.then = Value parent
     ifn
 
 # Export `import all` for use in parser, where the operator doesn't work.
