@@ -146,7 +146,7 @@ class exports.Base
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coco --nodes` prints out.
-  @::toString = (idt = '', override) ->
+  toString: (idt = '', override) ->
     children = (child.toString idt + TAB for child of @collectChildren())
     name  = override or @constructor.name
     name += '?' if @soak
@@ -255,7 +255,7 @@ class exports.Literal extends Base
 
   compile: -> if @value.reserved then "\"#{@value}\"" else @value
 
-  @::toString = -> ' "' + @value + '"'
+  toString: -> ' "' + @value + '"'
 
 #### Return
 
@@ -591,7 +591,7 @@ class exports.Accessor extends Base
 
   isComplex: NO
 
-  @::toString = (idt) ->
+  toString: (idt) ->
     super idt, @constructor.name + if @assign then '=' else ''
 
 #### Index
@@ -609,7 +609,7 @@ class exports.Index extends Base
 
   isComplex: -> @index.isComplex()
 
-  @::toString = Accessor::toString
+  toString: Accessor::toString
 
 #### Obj
 
@@ -1134,7 +1134,7 @@ class exports.Op extends Base
     code = tests.join ' || '
     if o.level < LEVEL_OP then code else "(#{code})"
 
-  @::toString = (idt) -> super idt, @constructor.name + ' ' + @operator
+  toString: (idt) -> super idt, @constructor.name + ' ' + @operator
 
 #### Of
 class exports.Of extends Base
@@ -1168,7 +1168,7 @@ class exports.Of extends Base
     code = sub + ', ' + code
     if o.level < LEVEL_LIST then code else "(#{code})"
 
-  @::toString = (idt) ->
+  toString: (idt) ->
     super idt, @constructor.name + if @negated then '!' else ''
 
 #### Try
