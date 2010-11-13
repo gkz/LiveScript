@@ -12,7 +12,7 @@ Rewriter = require './rewriter'
 # The Lexer Class
 # ---------------
 
-# The Lexer class reads a stream of Coco and divvys it up into tagged
+# The Lexer class reads a stream of Coco and divvies it up into tagged
 # tokens. Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 class exports.Lexer
@@ -293,7 +293,7 @@ class exports.Lexer
     @token<[ TERMINATOR \n ]> unless @tag() is 'TERMINATOR'
     this
 
-  # We treat all other single characters as a token. Eg.: `( ) , . !`
+  # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
   # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish

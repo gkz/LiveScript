@@ -1,6 +1,6 @@
 # Coco can be used both on the server, as a command-line compiler based
 # on Node.js/V8, or to run Coco scripts directly in the browser. This module
-# contains the main entry functions for tokenzing, parsing, and compiling
+# contains the main entry functions for tokenizing, parsing, and compiling
 # Coco source into JavaScript.
 
 fs       = require 'fs'

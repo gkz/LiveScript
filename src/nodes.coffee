@@ -80,7 +80,7 @@ class exports.Base
 
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
-  # many statement nodes (eg If, For)...
+  # many statement nodes (e.g. If, For etc.).
   makeReturn: -> Return this
 
   # Does this node, or any of its children, contain a node of a certain kind?
@@ -426,7 +426,7 @@ class exports.Call extends Base
   # Tag this invocation as creating a new instance.
   newInstance: -> @new = 'new '; this
 
-  # Grab the reference to the superclass' implementation of the current method.
+  # Grab the reference to the superclass's implementation of the current method.
   superReference: (o) ->
     {method} = o.scope
     throw SyntaxError 'cannot call super outside of a function' unless method
