@@ -1082,7 +1082,9 @@ class exports.Op extends Base
     return @compileExistence o if @operator is '?'
     return @compileMultiIO   o if @operator is 'instanceof' and @second.isArray()
     @first.front = @front
-    "#{ @first.compile o, LEVEL_OP } #{@operator} #{ @second.compile o, LEVEL_OP }"
+    code = @first .compile(o, LEVEL_OP) + " #{@operator} " +
+           @second.compile(o, LEVEL_OP)
+    if o.level <= LEVEL_OP then code else "(#{code})"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
