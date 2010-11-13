@@ -56,7 +56,6 @@ grammar =
   # all parsing must end here.
   Root: [
     o '',           -> Expressions()
-    o 'TERMINATOR', -> Expressions()
     o 'Body'
     o 'Block TERMINATOR'
   ]
@@ -90,7 +89,7 @@ grammar =
   # them somewhat circular.
   Expression: [
     o 'Value'
-    o 'Invocation'
+    o 'Call'
     o 'Function'
     o 'Operation'
     o 'Assign'
@@ -127,6 +126,40 @@ grammar =
     o 'AlphaNumeric'
     o 'THIS',    -> Literal 'this'
     o 'LITERAL', -> if $1 is 'void' then Op 'void', Literal 0 else Literal $1
+  ]
+
+  # Arithmetic and logical operators, working on one or more operands.
+  # Here they are grouped by order of precedence. The actual precedence rules
+  # are defined at the bottom of the page. It would be shorter if we could
+  # combine most of these rules into a single generic *Operand OpSymbol Operand*
+  # -type rule, but in order to make the precedence binding possible, separate
+  # rules are necessary.
+  Operation: [
+    o 'UNARY      Expression',            -> Op $1, $2
+    o 'PLUS_MINUS Expression',           (-> Op $1, $2), prec: 'UNARY'
+
+    o 'CREMENT SimpleAssignable',         -> Op $1, $2
+    o 'SimpleAssignable CREMENT',         -> Op $2, $1, null, true
+
+    o 'Expression ?',                     -> Existence $1
+
+    o 'Expression PLUS_MINUS Expression', -> Op $2, $1, $3
+    o 'Expression MATH       Expression', -> Op $2, $1, $3
+    o 'Expression SHIFT      Expression', -> Op $2, $1, $3
+    o 'Expression COMPARE    Expression', -> Op $2, $1, $3
+    o 'Expression LOGIC      Expression', -> Op $2, $1, $3
+    o 'Expression IMPORT     Expression', -> Import $1, $3, $2
+    o 'Expression RELATION   Expression', ->
+      if $2.charAt(0) is '!'
+      then Op($2.slice(1), $1, $3).invert()
+      else Op $2, $1, $3
+
+    o 'SimpleAssignable COMPOUND_ASSIGN
+       Expression',                          -> Assign $1, $3, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN
+       INDENT Expression OUTDENT',           -> Assign $1, $4, $2
+
+    o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
   ]
 
   # Assignment of a variable, property, or index to a value.
@@ -208,7 +241,7 @@ grammar =
   SimpleAssignable: [
     o 'Identifier',          -> Value $1
     o 'Value      Accessor', -> $1.append $2
-    o 'Invocation Accessor', -> Value $1, [$2]
+    o 'Call Accessor', -> Value $1, [$2]
     o 'ThisProperty'
   ]
 
@@ -231,6 +264,11 @@ grammar =
   Accessor: [
     o 'ACCESS Identifier',                -> Accessor $2, $1
     o 'INDEX_START Expression INDEX_END', -> Index    $2, $1
+  ]
+
+  # A reference to a property on `this`.
+  ThisProperty: [
+    o 'THISPROP', -> Value Literal('this'), [Accessor Literal $1], 'this'
   ]
 
   # An optional, trailing comma.
@@ -267,31 +305,22 @@ grammar =
     o 'CLASS SimpleAssignable EXTENDS Value Block', -> Class $2, $4, $5
   ]
 
-  # Ordinary function invocation, or a chained series of calls.
-  Invocation: [
-    o 'Value      OptFuncExist Arguments', -> Call $1, $3, $2
-    o 'Invocation OptFuncExist Arguments', -> Call $1, $3, $2
-    o 'SUPER'
-    , -> Call 'super', [Splat Literal 'arguments']
-    o 'SUPER Arguments'
-    , -> Call 'super', $2
+  # Function calls.
+  Call: [
+    o 'Value OptFuncExist Arguments', -> Call $1, $3, $2
+    o 'Call  OptFuncExist Arguments', -> Call $1, $3, $2
+    o 'SUPER',           -> Call 'super', [Splat Literal 'arguments']
+    o 'SUPER Arguments', -> Call 'super', $2
   ]
-
   # An optional existence check on a function.
   OptFuncExist: [
     o '',           -> false
     o 'FUNC_EXIST', -> true
   ]
-
   # The list of arguments to a function call.
   Arguments: [
     o 'CALL_START CALL_END',                  -> []
     o 'CALL_START ArgList OptComma CALL_END', -> $2
-  ]
-
-  # A reference to a property on `this`.
-  ThisProperty: [
-    o 'THISPROP', -> Value Literal('this'), [Accessor Literal $1], 'this'
   ]
 
   # The array literal.
@@ -313,14 +342,6 @@ grammar =
   Arg: [
     o 'Expression'
     o 'Splat'
-  ]
-
-  # Just simple, comma-separated, required arguments (no fancy syntax). We need
-  # this to be separate from the **ArgList** for use in **Switch** blocks, where
-  # having the newlines wouldn't make sense.
-  SimpleArgs: [
-    o 'Expression',              -> [$1]
-    o 'SimpleArgs , Expression', -> $1.concat $3
   ]
 
   # The variants of *try/catch/finally* exception handling blocks.
@@ -421,6 +442,13 @@ grammar =
   Case: [
     o 'CASE SimpleArgs Block', -> Case $2, $3
   ]
+  # Just simple, comma-separated, required arguments (no fancy syntax). We need
+  # this to be separate from the **ArgList** for use in **Switch** blocks, where
+  # having the newlines wouldn't make sense.
+  SimpleArgs: [
+    o 'Expression',              -> [$1]
+    o 'SimpleArgs , Expression', -> $1.concat $3
+  ]
 
   # The most basic form of *if* is a condition and an action. The following
   # if-related rules are broken up along these lines in order to avoid
@@ -439,41 +467,6 @@ grammar =
     o 'Expression POST_IF Expression', ->
       If $3, Expressions($1), name: $2, statement: true
   ]
-
-  # Arithmetic and logical operators, working on one or more operands.
-  # Here they are grouped by order of precedence. The actual precedence rules
-  # are defined at the bottom of the page. It would be shorter if we could
-  # combine most of these rules into a single generic *Operand OpSymbol Operand*
-  # -type rule, but in order to make the precedence binding possible, separate
-  # rules are necessary.
-  Operation: [
-    o 'UNARY      Expression',            -> Op $1, $2
-    o 'PLUS_MINUS Expression',           (-> Op $1, $2), prec: 'UNARY'
-
-    o 'CREMENT SimpleAssignable',         -> Op $1, $2
-    o 'SimpleAssignable CREMENT',         -> Op $2, $1, null, true
-
-    o 'Expression ?',                     -> Existence $1
-
-    o 'Expression PLUS_MINUS Expression', -> Op $2, $1, $3
-    o 'Expression MATH       Expression', -> Op $2, $1, $3
-    o 'Expression SHIFT      Expression', -> Op $2, $1, $3
-    o 'Expression COMPARE    Expression', -> Op $2, $1, $3
-    o 'Expression LOGIC      Expression', -> Op $2, $1, $3
-    o 'Expression IMPORT     Expression', -> Import $1, $3, $2
-    o 'Expression RELATION   Expression', ->
-      if $2.charAt(0) is '!'
-      then Op($2.slice(1), $1, $3).invert()
-      else Op $2, $1, $3
-
-    o 'SimpleAssignable COMPOUND_ASSIGN
-       Expression',                          -> Assign $1, $3, $2
-    o 'SimpleAssignable COMPOUND_ASSIGN
-       INDENT Expression OUTDENT',           -> Assign $1, $4, $2
-
-    o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
-  ]
-
 
 # Precedence
 # ----------
