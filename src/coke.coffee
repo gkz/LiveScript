@@ -19,7 +19,7 @@ switches  = []
 oparse    = null
 
 # Mixin the top-level coke functions for Cakefiles to use directly.
-global import all
+global import
 
   # Define a coke task with a short name, an optional sentence description,
   # and the function to run as the action itself.

@@ -537,13 +537,39 @@ class exports.Extends extends Base
 #### Import
 
 class exports.Import extends Base
-  (@left, @right, own) =>
-    @util = if own then 'import' else 'importAll'
+  (@left, @right, own) => @util = if own then 'import' else 'importAll'
 
   children: <[ left right ]>
 
-  compile: (o) ->
-    Call(Value(Literal utility @util), [@left, @right]).compile o
+  compileNode: (o) ->
+    unless @right.isObject() and @util is 'import'
+      return Call(Value(Literal utility @util), [@left, @right]).compile o
+    @temps = []
+    [sub, lref] = Value(@left).cache o, LEVEL_LIST
+    code = if sub is lref then '' else sub + ', '
+    for node, i of props = @right.unwrap().properties
+      if node instanceof Comment
+        code += node.compile(o, LEVEL_LIST) + ' '
+        continue
+      if node instanceof Splat
+        code += Import(Literal(lref), node.name, true).compile(o, LEVEL_TOP) + ', '
+        continue
+      if node instanceof Assign
+        {value: val, variable: base: acc} = node
+        key  = acc.compile o, LEVEL_PAREN
+        val.name = key if val instanceof [Code, Class] and IDENTIFIER.test key
+        val .= compile o, LEVEL_LIST
+      else
+        acc = node.base
+        [key, val] = acc.cache o, LEVEL_LIST, ref
+        @temps.push ref = val if key isnt val
+      key = if acc instanceof Literal and IDENTIFIER.test key
+      then '.' + key
+      else '[' + key + ']'
+      code += lref + key + ' = ' + val + ', '
+    return code.replace /, +$/, '' if o.level is LEVEL_TOP
+    code += lref
+    if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Accessor
 
@@ -628,32 +654,10 @@ class exports.Obj extends Base
     if @front then "(#{code})" else code
 
   compileDynamic: (o, code, props) ->
-    @temps = []
-    for prop, i of props
-      if sp = prop instanceof Splat
-        impt = Import(Literal(oref or code), prop.name, true).compile o
-        code = if oref then code + ', ' + impt else impt
-        continue
-      if prop instanceof Comment
-        code += ' ' + prop.compile o, LEVEL_LIST
-        continue
-      unless oref
-        @temps.push oref = o.scope.temporary 'obj'
-        code = oref + ' = ' + code
-      if prop instanceof Assign
-        acc = prop.variable.base
-        key = acc.compile o, LEVEL_PAREN
-        val = prop.value.compile o, LEVEL_LIST
-      else
-        acc = prop.base
-        [key, val] = acc.cache o, LEVEL_LIST, ref
-        @temps.push ref = val if key isnt val
-      key = if acc instanceof Literal and IDENTIFIER.test key
-      then '.' + key
-      else '[' + key + ']'
-      code += ', ' + oref + key + ' = ' + val
-    code += ', ' + oref unless sp
-    if o.level <= LEVEL_PAREN then code else "(#{code})"
+    code = (oref = o.scope.temporary 'obj') + ' = ' + code + ', ' +
+           Import(Literal(oref), Obj(props), true).compile o, LEVEL_PAREN
+    o.scope.free oref
+    if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Arr
 
@@ -703,20 +707,19 @@ class exports.Class extends Base
         it.bound &&= name
     for node, i of exps = @body.expressions
       if node.isObject()
-        exps[i] = Import proto, node
+        exps[i] = Import proto, node, true
       else if node instanceof Code
         throw SyntaxError 'more than one constructor in a class' if ctor
         ctor = node
     unless ctor
       exps.unshift ctor = Code()
-      if @parent
-        ctor.body.append Call 'super', [Splat Literal 'arguments']
+      ctor.body.append Call 'super', [Splat Literal 'arguments'] if @parent
     ctor.ctor = ctor.statement = true
     ctor.name = name
     ctor.clas = null
     exps.unshift Extends lname, @parent if @parent
     exps.push lname
-    clas = Parens Call(Code [], @body), true
+    clas = Parens (Call Code [], @body), true
     clas = Assign lname, clas if decl and @variable?.isComplex()
     clas = Assign @variable, clas if @variable
     clas.compile o
@@ -773,7 +776,7 @@ class exports.Assign extends Base
     if top and olen is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
       if obj instanceof Assign
-        {variable: {base: idx}, value: obj} = obj
+        {value: obj, variable: base: idx} = obj
       else
         if obj.base instanceof Parens
           [obj, idx] = Value(obj.unwrapAll()).cacheReference o
@@ -813,9 +816,7 @@ class exports.Assign extends Base
         splat = "#{ivar}++"
       else
         if obj instanceof Splat
-          obj .= name.compile o
-          throw SyntaxError \
-            "multiple splats are disallowed in an assignment: #{obj} ..."
+          throw SyntaxError "multiple splats in an assignment: " + obj.compile o
         acc = if typeof idx is 'number'
           idx = Literal splat or idx
           false
