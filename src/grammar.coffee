@@ -309,8 +309,8 @@ grammar =
   Call: [
     o 'Value OptFuncExist Arguments', -> Call $1, $3, $2
     o 'Call  OptFuncExist Arguments', -> Call $1, $3, $2
-    o 'SUPER',           -> Call 'super', [Splat Literal 'arguments']
-    o 'SUPER Arguments', -> Call 'super', $2
+    o 'SUPER',           -> Call null, [Splat Literal 'arguments']
+    o 'SUPER Arguments', -> Call null, $2
   ]
   # An optional existence check on a function.
   OptFuncExist: [

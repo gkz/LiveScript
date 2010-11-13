@@ -416,10 +416,7 @@ class exports.Comment extends Base
 # Node for a function invocation. Takes care of converting `super()` calls into
 # calls against the prototype's function of the same name.
 class exports.Call extends Base
-  (variable, @args = [], @soak) =>
-    @new      = ''
-    @isSuper  = variable is 'super'
-    @variable = if @isSuper then null else variable
+  (@variable = @super = Literal('this'), @args = [], @soak) => @new = ''
 
   children: <[ variable args ]>
 
@@ -428,7 +425,7 @@ class exports.Call extends Base
 
   # Grab the reference to the superclass's implementation of the current method.
   superReference: (o) ->
-    {method} = o.scope
+    {method} = o.scope.shared or o.scope
     throw SyntaxError 'cannot call super outside of a function' unless method
     {name, clas} = method
     throw SyntaxError 'cannot call super on an anonymous function' unless name
@@ -438,12 +435,8 @@ class exports.Call extends Base
 
   unfoldSoak: (o) ->
     if @soak
-      if @variable
-        return ifn if ifn = If.unfoldSoak o, this, 'variable'
-        [left, rite] = Value(@variable).cacheReference o
-      else
-        left = Literal @superReference o
-        rite = Value left
+      return ifn if ifn = If.unfoldSoak o, this, 'variable'
+      [left, rite] = Value(@variable).cacheReference o
       rite = Call rite, @args
       rite.new = @new
       left = Literal "typeof #{ left.compile o } == \"function\""
@@ -471,7 +464,7 @@ class exports.Call extends Base
     list.reverse()
 
   unfoldAssign: (o) ->
-    return unless @variable
+    return if @super
     for call of @digCalls()
       if asn
         if call.variable instanceof Call
@@ -484,21 +477,21 @@ class exports.Call extends Base
 
   # Compile a vanilla function call.
   compileNode: (o) ->
-    if vr = @variable
+    unless @super
       return asn.compile o if asn = @unfoldAssign o
-      vr.front = @front
-    return @compileSplat o, code if code = Splat.compileArray o, @args, true
+      @variable.front = @front
+    return @compileSplat o, args if args = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
-    if @isSuper
-    then @superReference(o) + ".call(this#{ args and ', ' + args })"
+    if @super
+    then @superReference(o) + ".call(#{@super.value}#{ args and ', ' + args })"
     else @new + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   # If it's a constructor, then things get real tricky. We have to inject an
   # inner constructor in order to be able to pass the varargs.
-  compileSplat: (o, splatargs) ->
-    return @superReference(o) + ".apply(this, #{splatargs})" if @isSuper
+  compileSplat: (o, args) ->
+    return @superReference(o) + ".apply(#{@super.value}, #{args})" if @super
     if @new
        idt = @tab + TAB
        return """
@@ -506,7 +499,7 @@ class exports.Call extends Base
          #{idt}ctor.prototype = func.prototype;
          #{idt}var child = new ctor, result = func.apply(child, args);
          #{idt}return result === Object(result) ? result : child;
-         #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{splatargs}, function(){}))
+         #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{args}, function(){}))
        """
     base = Value @variable
     if (name = base.properties.pop()) and base.isComplex()
@@ -520,7 +513,7 @@ class exports.Call extends Base
         fun += name.compile o
       else
         ref  = 'null'
-    "#{fun}.apply(#{ref}, #{splatargs})"
+    "#{fun}.apply(#{ref}, #{args})"
 
 #### Extends
 
@@ -716,7 +709,7 @@ class exports.Class extends Base
         ctor = node
     unless ctor
       exps.unshift ctor = Code()
-      ctor.body.append Call 'super', [Splat Literal 'arguments'] if @parent
+      ctor.body.append Call null, [Splat Literal 'arguments'] if @parent
     ctor.ctor = ctor.statement = true
     ctor.name = name
     ctor.clas = null
