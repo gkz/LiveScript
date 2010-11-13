@@ -542,17 +542,18 @@ class exports.Import extends Base
   children: <[ left right ]>
 
   compileNode: (o) ->
-    unless @right.isObject() and @util is 'import'
+    unless @util is 'import' and @right.isObject()
       return Call(Value(Literal utility @util), [@left, @right]).compile o
+    [sub, lref] = @left.cache o, LEVEL_LIST
     @temps = []
-    [sub, lref] = Value(@left).cache o, LEVEL_LIST
-    code = if sub is lref then '' else sub + ', '
-    for node, i of props = @right.unwrap().properties
-      if node instanceof Comment
-        code += node.compile(o, LEVEL_LIST) + ' '
+    code   = ''
+    for node of @right.unwrap().properties
+      code += if com then ' ' else ', '
+      if com = node instanceof Comment
+        code += node.compile o, LEVEL_LIST
         continue
       if node instanceof Splat
-        code += Import(Literal(lref), node.name, true).compile(o, LEVEL_TOP) + ', '
+        code += Import(Literal(lref), node.name, true).compile o, LEVEL_TOP
         continue
       if node instanceof Assign
         {value: val, variable: base: acc} = node
@@ -566,9 +567,10 @@ class exports.Import extends Base
       key = if acc instanceof Literal and IDENTIFIER.test key
       then '.' + key
       else '[' + key + ']'
-      code += lref + key + ' = ' + val + ', '
-    return code.replace /, +$/, '' if o.level is LEVEL_TOP
-    code += lref
+      code += lref + key + ' = ' + val
+    code = if sub is lref then code.slice 2 else sub + code
+    return code if o.level is LEVEL_TOP
+    code += (if com then ' ' else ', ') + lref unless node instanceof Splat
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Accessor
