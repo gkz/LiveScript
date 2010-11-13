@@ -654,6 +654,7 @@ class exports.Obj extends Base
     if @front then "(#{code})" else code
 
   compileDynamic: (o, code, props) ->
+    o.indent = @tab
     code = (oref = o.scope.temporary 'obj') + ' = ' + code + ', ' +
            Import(Literal(oref), Obj(props), true).compile o, LEVEL_PAREN
     o.scope.free oref
