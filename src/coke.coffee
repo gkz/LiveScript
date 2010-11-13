@@ -7,15 +7,14 @@
 # current directory's Cokefile.
 
 # External dependencies.
-fs     = require 'fs'
-path   = require 'path'
-oparse = require './optparse'
-Coco   = require './coco'
+FS             = require 'fs'
+Path           = require 'path'
+Coco           = require './coco'
+{OptionParser} = require './optparse'
 
 # Keep track of the list of defined tasks, the accepted options, and so on.
-tasks    = {}
-options  = {}
-switches = []
+Tasks    = {}
+Switches = []
 
 # Mixin the top-level coke functions for Cokefiles to use directly.
 global import
@@ -24,42 +23,47 @@ global import
   # and the function to run as the action itself.
   task: (name, description, action) ->
     [action, description] = [description] unless action
-    tasks[name] = {name, description, action}
+    Tasks[name] = {name, description, action}
 
   # Define an option that the Cokefile accepts. The parsed options hash,
   # containing all of the command-line options passed, will be made available
   # as the first argument to the action.
   option: (letter, flag, description) ->
-    switches.push [letter, flag, description]
+    Switches.push [letter, flag, description]
 
   # Invoke another task in the current Cokefile.
   invoke: (name) ->
-    unless name in tasks
-      console.error "no such task: \"#{task}\""
+    unless name in Tasks
+      console.error "no such task: \"#{name}\""
       process.exit 1
-    tasks[name].action options
+    Tasks[name].action this
 
 # Run `coke`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
 # If no tasks are passed, print the help screen.
 exports.run = ->
-  path.exists 'Cokefile', (exists) ->
+  args = process.argv.slice 2
+  fileName = args.splice(0, 2)[1] if args[0] of <[ -f --cokefile ]>
+  Path.exists fileName ||= 'Cokefile', (exists) ->
     unless exists
-      console.error "no Cokefile in #{ process.cwd() }"
+      console.error "no \"#{fileName}\" in #{ process.cwd() }"
       process.exit 1
-    args = process.argv.slice 2
-    Coco.run fs.readFileSync('Cokefile').toString(), fileName: 'Cokefile'
-    oparse  := new oparse.OptionParser switches
-    return printTasks() unless args.length
-    options := oparse.parse args
-    options.arguments.forEach invoke
+    Coco.run "#{ FS.readFileSync fileName }", {fileName}
+    oparser = new OptionParser Switches
+    return printTasks oparser unless args.length
+    options = oparser.parse args
+    options.arguments.forEach invoke, options
 
 # Display the list of tasks in a format similar to `rake -T`
-printTasks = ->
+printTasks = (oparser) ->
   console.log ''
-  width = Math.max (name.length for all name in tasks)...
-  pad   = Array(width).join ' '
-  for all name, task in tasks
+  width = Math.max Object.keys(Tasks).map(-> it.length)...
+  pad   = Array(width >> 1).join '  '
+  for all name, task in Tasks
     desc = if task.description then '# ' + task.description else ''
     console.log "coke #{ (name + pad).slice 0, width } #{desc}"
-  console.log oparse.help() if switches.length
+  console.log if Switches.length then oparser.help() else ''
+  console.log '''
+    Coke options:
+      -f, --cokefile [FILE]   use FILE as the Cokefile
+  '''
