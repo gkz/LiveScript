@@ -135,3 +135,15 @@ eq one[1] , two[1]
 copy = {}
 continue for k, copy[k] in [4, 2]
 eq copy[0] * copy[1], 8
+
+
+# Post-`for` chains.
+eq "#{
+  a * b * c * d * e          \
+  for a in {1}               \
+  for b of [2]               \
+  for c of [3, 4] by -1      \
+  for d of [5, 6] when d & 1 \
+  for e from 7 to 8          \
+  for _ in {9}
+}", '280,210,320,240'

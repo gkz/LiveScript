@@ -480,22 +480,23 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  <[ left      CALL_START CALL_END                      ]>
-  <[ nonassoc  CREMENT                                  ]>
-  <[ left      ?                                        ]>
-  <[ right     UNARY                                    ]>
-  <[ left      MATH                                     ]>
-  <[ left      PLUS_MINUS                               ]>
-  <[ left      SHIFT                                    ]>
-  <[ left      RELATION IMPORT                          ]>
-  <[ left      COMPARE                                  ]>
-  <[ left      LOGIC                                    ]>
-  <[ nonassoc  INDENT OUTDENT                           ]>
-  <[ right     : = := COMPOUND_ASSIGN RETURN EXTENDS    ]>
-  <[ right     WHEN LEADING_WHEN FORIN FOROF FROM TO BY
-               THROW IF UNLESS ELSE FOR WHILE LOOP
-               SWITCH CASE DEFAULT SUPER CLASS          ]>
-  <[ right     POST_IF                                  ]>
+  <[ left      CALL_START CALL_END          ]>
+  <[ nonassoc  CREMENT                      ]>
+  <[ left      ?                            ]>
+  <[ right     UNARY                        ]>
+  <[ left      MATH                         ]>
+  <[ left      PLUS_MINUS                   ]>
+  <[ left      SHIFT                        ]>
+  <[ left      RELATION IMPORT              ]>
+  <[ left      COMPARE                      ]>
+  <[ left      LOGIC                        ]>
+  <[ nonassoc  INDENT OUTDENT               ]>
+  <[ right     : = := COMPOUND_ASSIGN
+               RETURN THROW EXTENDS         ]>
+  <[ right     FORIN FOROF FROM TO BY WHEN  ]>
+  <[ right     IF ELSE FOR WHILE LOOP CLASS
+               SWITCH CASE DEFAULT SUPER    ]>
+  <[ right     POST_IF                      ]>
 ]
 
 # Wrapping Up
