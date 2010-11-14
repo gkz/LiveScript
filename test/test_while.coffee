@@ -51,3 +51,7 @@ ok list.join(' ') is '8 6 4 2'
 
 #759: `if` within `while` condition
 2 while if 1 then 0
+
+
+# https://github.com/jashkenas/coffee-script/issues/843
+eq void, do -> return while 0

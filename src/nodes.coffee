@@ -1017,25 +1017,21 @@ class exports.While extends Base
 
   compileBody: (o) ->
     {body} = this
-    [node, i] = lastNonComment body.expressions
-    body.expressions.splice i, 1 if node?.value is 'continue'
-    ret = if @returns then @compilePush o else ''
-    return '}' + ret if body.isEmpty()
-    body = If @guard, body, {'statement'} if @guard
+    [node, i] = lastNonComment exps = body.expressions
+    if node?.value is 'continue'
+      exps.splice i, 1
+      [node, i] = lastNonComment exps
+    ret = ''
+    if @returns and node not instanceof Return
+      if node and not node.containsPureStatement() and node not instanceof Throw
+        o.scope.assign '_results', '[]'
+        exps[i] = Call Literal('_results.push'), [node]
+        res = '_results'
+      ret = "\n#{@tab}return #{ res or '[]' };"
+    return '}' + ret unless exps.length
+    body  = If @guard, body, {'statement'} if @guard
     body += '\n' + @tab if body.=compile o, LEVEL_TOP
-    '\n'+ body + '}' + ret
-
-  # The main difference from a JavaScript *while* is that the Coco
-  # *while* can be used as a part of a larger expression -- while loops may
-  # return an array containing the computed result of each iteration.
-  compilePush: (o) ->
-    exps = @body.expressions
-    if (last = exps[*-1]) and not last.containsPureStatement() and
-       last not instanceof Throw
-      o.scope.assign '_results', '[]'
-      exps[*-1] = Call Literal('_results.push'), [last]
-      res = '_results'
-    "\n#{@tab}return #{ res or '[]' };"
+    '\n' + body + '}' + ret
 
 #### Op
 
