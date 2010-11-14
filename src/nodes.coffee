@@ -205,12 +205,12 @@ class exports.Expressions extends Base
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent = @tab = if o.bare then '' else TAB
+    o.indent = @tab = if bare = del o, 'bare' then '' else TAB
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
     code     = @compileWithDeclarations o
     code    .= replace TRAILING_WHITESPACE, ''
-    if o.bare then code else "(function(){\n#{code}\n}).call(this);\n"
+    if bare then code else "(function(){\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
@@ -862,7 +862,6 @@ class exports.Code extends Base
     sscope = pscope.shared or pscope
     scope  = o.scope = new Scope (if @wrapper then pscope else sscope), @body, this
     scope.shared = sscope if @wrapper
-    delete o.bare
     delete o.globals
     o.indent += TAB
     {params, body, name, statement, tab} = this
