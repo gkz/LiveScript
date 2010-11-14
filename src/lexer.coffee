@@ -93,36 +93,35 @@ class exports.Lexer
       if not (prev = @last).spaced and prev[1].colon2
       then @token<[ ACCESS . ]>
       else prev[0] is 'ACCESS'
-    if id of JS_FORBIDDEN
-      if forcedIdentifier
+    if forcedIdentifier
+      if id of JS_FORBIDDEN
         id = new String id
         id.reserved = true
+    else
+      if COCO_ALIASES.hasOwnProperty id
+        switch id = COCO_ALIASES[id]
+        case '!'         then tag = 'UNARY'
+        case <[ && || ]> then tag = 'LOGIC'
+        default               tag = 'COMPARE'
+      else if id of COCO_KEYWORDS
+        switch tag = id.toUpperCase()
+        case 'FOR'                         then @seenFor = true
+        case 'UNLESS'                      then tag = 'IF'
+        case 'UNTIL'                       then tag = 'WHILE'
+        case <[ NEW DO TYPEOF DELETE    ]> then tag = 'UNARY'
+        case <[ TRUE FALSE NULL VOID    ]> then tag = 'LITERAL'
+        case <[ BREAK CONTINUE DEBUGGER ]> then tag = 'STATEMENT'
+        case <[ IN OF INSTANCEOF ]>
+          if tag isnt 'INSTANCEOF' and @seenFor
+            tag = 'FOR' + tag
+            @seenFor = false
+          else
+            tag = 'RELATION'
+            if @last[1] is '!'
+              @tokens.pop()
+              id = '!' + id
       else if id of RESERVED
         throw SyntaxError "reserved word \"#{id}\" on line #{ @line + 1 }"
-    if not id.reserved      and id of     JS_KEYWORDS or
-       not forcedIdentifier and id of COFFEE_KEYWORDS
-      switch tag = id.toUpperCase()
-      case 'FOR'                      then @seenFor = true
-      case 'UNLESS'                   then tag = 'IF'
-      case 'UNTIL'                    then tag = 'WHILE'
-      case <[ NEW DO TYPEOF DELETE ]> then tag = 'UNARY'
-      case <[ IN  OF  INSTANCEOF   ]>
-        if tag isnt 'INSTANCEOF' and @seenFor
-          tag = 'FOR' + tag
-          @seenFor = false
-        else
-          tag = 'RELATION'
-          if @last[1] is '!'
-            @tokens.pop()
-            id = '!' + id
-    unless forcedIdentifier
-      id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
-      switch id
-      case <[ ! ]>                       then tag = 'UNARY'
-      case <[ &&  ||  ]>                 then tag = 'LOGIC'
-      case <[ === !== ]>                 then tag = 'COMPARE'
-      case <[ true false null void    ]> then tag = 'LITERAL'
-      case <[ break continue debugger ]> then tag = 'STATEMENT'
     @token tag, id
     @token<[ : : ]> if colon
     input.length
@@ -302,12 +301,7 @@ class exports.Lexer
     [value] = SYMBOL.exec @chunk
     switch tag = value
     case <[ = := ]>
-      prev = @last
-      pval = prev[1]
-      if not pval.reserved and pval of JS_FORBIDDEN
-        throw SyntaxError \
-          "reserved word \"#{pval}\" on line #{ @line + 1 } cannot be assigned"
-      if value is '=' and pval of <[ || && ]>
+      if value is '=' and (prev = @last)[1] of <[ || && ]>
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
@@ -504,13 +498,8 @@ JS_KEYWORDS = <[
 ]>
 
 # Coco-only keywords.
-COFFEE_KEYWORDS = <[ then unless until loop of by when ]>
-COFFEE_KEYWORDS.push op for all op in COFFEE_ALIASES =
-  and  : '&&'
-  or   : '||'
-  is   : '==='
-  isnt : '!=='
-  not  : '!'
+COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until loop of by when ]>
+COCO_ALIASES  = not: '!', and: '&&', or: '||',  is: '===', isnt : '!=='
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
 # used by Coco internally. We throw an error when these are encountered,

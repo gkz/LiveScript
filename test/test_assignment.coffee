@@ -29,10 +29,6 @@ tester = ->
 ok tester().example() is 'example function'
 
 
-throws 'reserved word "in" on line 1 cannot be assigned', ->
-  Coco.tokens 'in = 1'
-
-
 num = 10
 num -= 5
 eq num, 5
