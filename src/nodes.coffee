@@ -383,7 +383,7 @@ class exports.Value extends Base
 
   unfoldAssign: (o) ->
     if asn = @base.unfoldAssign o
-      asn.value.properties.push @properties...
+      asn.right.properties.push @properties...
       return asn
     for prop, i of @properties when prop.assign
       prop.assign = false
@@ -469,8 +469,7 @@ class exports.Call extends Base
         then call.variable      = asn
         else call.variable.base = asn
       if asn = call.variable.unfoldAssign o
-        call.variable = asn.value
-        asn.value = Value call
+        call.variable = asn.right; asn.right = Value call
     asn
 
   # Compile a vanilla function call.
@@ -554,7 +553,7 @@ class exports.Import extends Base
         code += Import(Literal(lref), node.name, true).compile o, LEVEL_TOP
         continue
       if node instanceof Assign
-        {value: val, variable: base: acc} = node
+        {right: val, left: base: acc} = node
         key  = acc.compile o, LEVEL_PAREN
         val.name = key if val instanceof [Code, Class] and IDENTIFIER.test key
         val .= compile o, LEVEL_LIST
@@ -631,7 +630,7 @@ class exports.Obj extends Base
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
     for prop, i of props
-      if prop instanceof Splat or (prop.variable or prop).base instanceof Parens
+      if prop instanceof Splat or (prop.left or prop).base instanceof Parens
         rest = props.splice i, 1/0
         break
     lastIndex = props.length - 1
@@ -731,32 +730,32 @@ class exports.Class extends Base
 # The **Assign** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 class exports.Assign extends Base
-  (@variable, @value, @op = '=') =>
+  (@left, @right, @op = '=') =>
 
-  children: <[ variable value ]>
+  children: <[ left right ]>
 
   assigns: (name) ->
-    @[if @op is ':' then 'value' else 'variable'].assigns name
+    @[if @op is ':' then 'right' else 'left'].assigns name
 
-  unfoldSoak: (o) -> If.unfoldSoak o, this, 'variable'
+  unfoldSoak: (o) -> If.unfoldSoak o, this, 'left'
 
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
-    {variable, value} = this
-    return @compileDestructuring o if variable.isArray() or variable.isObject()
+    {left, right} = this
+    return @compileDestructuring o if left.isArray() or left.isObject()
     return @compileConditional   o if @op of <[ ||= &&= ?= ]>
-    name = variable.compile o, LEVEL_LIST
+    name = left.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
-    if value instanceof [Code, Class] and match = METHOD_DEF.exec name
-      value.clas   = match[1] if match[1]
-      value.name ||= match[2]
-    val = value.compile o, LEVEL_LIST
+    if right instanceof [Code, Class] and match = METHOD_DEF.exec name
+      right.clas   = match[1] if match[1]
+      right.name ||= match[2]
+    val = right.compile o, LEVEL_LIST
     return name + ': ' + val if @op is ':'
-    unless variable.isAssignable()
-      throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned"
-    unless variable instanceof Value and variable.hasProperties()
+    unless left.isAssignable()
+      throw SyntaxError "\"#{ @left.compile o }\" cannot be assigned"
+    unless left instanceof Value and left.hasProperties()
       if @op is '='
         o.scope.declare name
       else unless o.scope.check name, true
@@ -769,14 +768,14 @@ class exports.Assign extends Base
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o) ->
     top       = not o.level
-    {value}   = this
-    {objects} = @variable.unwrap()
-    return value.compile o unless olen = objects.length
-    isObject = @variable.isObject()
+    {right}   = this
+    {objects} = @left.unwrap()
+    return right.compile o unless olen = objects.length
+    isObject = @left.isObject()
     if top and olen is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
       if obj instanceof Assign
-        {value: obj, variable: base: idx} = obj
+        {right: obj, left: base: idx} = obj
       else
         if obj.base instanceof Parens
           [obj, idx] = Value(obj.unwrapAll()).cacheReference o
@@ -785,12 +784,12 @@ class exports.Assign extends Base
           then (if obj.this then obj.properties[0].name else obj)
           else Literal 0
       acc = IDENTIFIER.test idx.unwrap().value or 0
-      val = Value(value).append (if acc then Accessor else Index) idx
+      val = Value(right).append (if acc then Accessor else Index) idx
       return Assign(obj, val, @op).compile o
-    vvar    = value.compile o, LEVEL_LIST
+    vvar    = right.compile o, LEVEL_LIST
     assigns = []
     splat   = false
-    if not IDENTIFIER.test(vvar) or @variable.assigns(vvar)
+    if not IDENTIFIER.test(vvar) or @left.assigns(vvar)
       assigns.push "#{ ref = o.scope.temporary 'ref' } = #{vvar}"
       vvar = ref
     for obj, i of objects
@@ -799,7 +798,7 @@ class exports.Assign extends Base
       if isObject
         if obj instanceof Assign
           # A regular object pattern-match.
-          {variable: {base: idx}, value: obj} = obj
+          {right: obj, left: base: idx} = obj
         else
           # A shorthand `{a, b, @c} = val` pattern-match.
           if obj.base instanceof Parens
@@ -833,8 +832,8 @@ class exports.Assign extends Base
   # operands are only evaluated once, even though we have to reference them
   # more than once.
   compileConditional: (o) ->
-    [left, rite] = @variable.cacheReference o
-    Op(@op.slice(0, -1), left, Assign(rite, @value, ':=')).compile o
+    [left, rite] = @left.cacheReference o
+    Op(@op.slice(0, -1), left, Assign(rite, @right, ':=')).compile o
 
   toString: (idt) -> super idt, @constructor.name + ' ' + @op
 
