@@ -541,10 +541,13 @@ class exports.Import extends Base
   compileNode: (o) ->
     unless @util is 'import' and @right.isObject()
       return Call(Value(Literal utility @util), [@left, @right]).compile o
-    [sub, lref] = @left.cache o, LEVEL_LIST
+    nodes = @right.unwrap().properties
+    if nodes.length > 1
+    then [sub , lref] = @left.cache   o, LEVEL_LIST
+    else  sub = lref  = @left.compile o, LEVEL_LIST
     @temps = []
     code   = ''
-    for node of @right.unwrap().properties
+    for node of nodes
       code += if com then ' ' else ', '
       if com = node instanceof Comment
         code += node.compile o, LEVEL_LIST
