@@ -141,12 +141,10 @@ class exports.Lexer
       return 0 unless string = SIMPLESTR.exec @chunk
       @token 'STRNUM', (string[=0]).replace MULTILINER, '\\\n'
     case '"'
-      return 0 unless string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
+      string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
       if 0 < string.indexOf '#{', 1
       then @interpolateString string.slice 1, -1
       else @token 'STRNUM', @escapeLines string
-    default
-      return 0
     @countLines(string).length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -387,30 +385,22 @@ class exports.Lexer
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
   balancedString: (str, delimited, options = {}) ->
-    levels = []
-    i = 0
-    slen = str.length
-    while i < slen
-      if levels.length and str.charAt(i) is '\\'
-        i += 2
+    stack = [delimited[0]]
+    for i from 1 til str.length
+      switch str.charAt i
+      case '\\'
+        ++i
+        continue
+      case stack[*-1][1]
+        stack.pop()
+        return str.slice 0, i+1 unless stack.length
         continue
       for pair of delimited
-        [open, close] = pair
-        if levels.length and levels[*-1] is pair and
-           close is str.substr i, close.length
-          levels.pop()
-          i += close.length - 1
-          i += 1 unless levels.length
-          break
-        if open is str.substr i, open.length
-          levels.push pair
-          i += open.length - 1
-          break
-      break unless levels.length
-      i += 1
-    if levels.length then throw SyntaxError \
-      "unterminated #{ levels.pop()[0] } starting on line #{ @line + 1 }"
-    i and str.slice 0, i
+      when (open = pair[0]) is str.substr i, open.length
+        stack.push pair
+        i += open.length - 1
+        break
+    throw SyntaxError "unterminated #{ stack.pop()[0] } on line #{ @line + 1 }"
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.
