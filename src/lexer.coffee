@@ -118,10 +118,11 @@ class exports.Lexer
     unless forcedIdentifier
       id  = COFFEE_ALIASES[id] if COFFEE_ALIASES.hasOwnProperty id
       switch id
-      case <[ ! ]>                    then tag = 'UNARY'
-      case <[ &&  ||  ]>              then tag = 'LOGIC'
-      case <[ === !== ]>              then tag = 'COMPARE'
-      case <[ true false null void ]> then tag = 'LITERAL'
+      case <[ ! ]>                       then tag = 'UNARY'
+      case <[ &&  ||  ]>                 then tag = 'LOGIC'
+      case <[ === !== ]>                 then tag = 'COMPARE'
+      case <[ true false null void    ]> then tag = 'LITERAL'
+      case <[ break continue debugger ]> then tag = 'STATEMENT'
     @token tag, id
     @token<[ : : ]> if colon
     input.length

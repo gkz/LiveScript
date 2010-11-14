@@ -78,9 +78,7 @@ grammar =
     o 'Comment'
     o 'Return'
     o 'Throw'
-    o 'BREAK',    -> Literal $1
-    o 'CONTINUE', -> Literal $1
-    o 'DEBUGGER', -> Literal $1
+    o 'STATEMENT', -> Literal $1
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -92,7 +90,6 @@ grammar =
     o 'Call'
     o 'Function'
     o 'Operation'
-    o 'Assign'
     o 'If'
     o 'Try'
     o 'While'
@@ -154,19 +151,16 @@ grammar =
       then Op($2.slice(1), $1, $3).invert()
       else Op $2, $1, $3
 
+    o 'Assignable ASSIGN Expression',                -> Assign $1, $3, $2
+    o 'Assignable ASSIGN INDENT Expression OUTDENT', -> Assign $1, $4, $2
     o 'SimpleAssignable COMPOUND_ASSIGN
-       Expression',                          -> Assign $1, $3, $2
+       Expression',                                  -> Assign $1, $3, $2
     o 'SimpleAssignable COMPOUND_ASSIGN
-       INDENT Expression OUTDENT',           -> Assign $1, $4, $2
+       INDENT Expression OUTDENT',                   -> Assign $1, $4, $2
 
     o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
   ]
 
-  # Assignment of a variable, property, or index to a value.
-  Assign: [
-    o 'Assignable ASSIGN Expression',                -> Assign $1, $3, $2
-    o 'Assignable ASSIGN INDENT Expression OUTDENT', -> Assign $1, $4, $2
-  ]
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
