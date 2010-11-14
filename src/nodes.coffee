@@ -1062,8 +1062,9 @@ class exports.Op extends Base
       this
     else if @second
     then Parens(this).invert()
-    else if @op is '!'
-    then @first
+    else if @op is '!' and (fst = @first.unwrap()) instanceof Op and
+            fst.op of <[ ! in instanceof ]>
+    then fst
     else Op '!', this
 
   unfoldSoak: (o) ->

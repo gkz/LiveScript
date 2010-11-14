@@ -39,11 +39,16 @@ default false
 
 # Should be able to handle switches sans-condition.
 result = switch
-case null then 1
-case 'truthful string' then 2
-default 3
-
-ok result is 2
+case null                    then 0
+case !1                      then 1
+case '' not in {''}          then 2
+case [] not instanceof Array then 3
+case true is false           then 4
+case 'x' < 'y' > 'z'         then 5
+case 'a' of  <[ b c ]>       then 6
+case 'd' of (<[ e f ]>)      then 7
+default ok
+eq result, ok
 
 
 # Should be able to use "@properties" within the switch clause.
