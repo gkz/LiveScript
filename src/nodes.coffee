@@ -110,11 +110,6 @@ class exports.Base
       else                        return this if false is func child
     this
 
-  collectChildren: ->
-    nodes = []
-    @eachChild -> nodes.push it
-    nodes
-
   traverseChildren: (crossScope, func) ->
     @eachChild (child) ->
       return false if false is func child
@@ -146,11 +141,11 @@ class exports.Base
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coco --nodes` prints out.
-  toString: (idt = '', override) ->
-    children = (child.toString idt + TAB for child of @collectChildren())
-    name  = override or @constructor.name
-    name += '?' if @soak
-    '\n' + idt + name + children.join ''
+  toString: (idt = '', name = @constructor.name) ->
+    tree = '\n' + idt + name
+    tree += '?' if @soak
+    @eachChild -> tree += it.toString idt + TAB
+    tree
 
 #### Expressions
 
