@@ -998,19 +998,6 @@ class exports.While extends Base
 
   isStatement: YES
 
-  addBody: (@body) -> this
-
-  makeReturn: -> @returns = true; this
-
-  makePush: (o, body) ->
-    exps = body.expressions
-    if (last = exps[*-1]) and not last.containsPureStatement() and
-       last not instanceof Throw
-      o.scope.assign '_results', '[]'
-      exps[*-1] = Call Literal('_results.push'), [last]
-      res = '_results'
-    "\n#{@tab}return #{ res or '[]' };"
-
   containsPureStatement: ->
     {expressions} = @body
     return false unless i = expressions.length
@@ -1019,30 +1006,37 @@ class exports.While extends Base
     return true while i when expressions[--i].contains ret
     false
 
-  # Remove useless `continue` at end.
-  discontinue: ->
-    [node, i, nodes] = lastNonComment @body.expressions
-    nodes.splice i, 1 if node?.value is 'continue'
+  addBody: (@body) -> this
+
+  makeReturn: -> @returns = true; this
+
+  compileNode: (o) ->
+    code = @condition.compile o, LEVEL_PAREN
+    code = @tab + if code is 'true' then 'for (;;' else "while (#{code}"
+    o.indent += TAB
+    code + ') {' + @compileBody o
+
+  compileBody: (o) ->
+    {body} = this
+    [node, i] = lastNonComment body.expressions
+    body.expressions.splice i, 1 if node?.value is 'continue'
+    ret = if @returns then @compilePush o else ''
+    return '}' + ret if body.isEmpty()
+    body = If @guard, body, {'statement'} if @guard
+    body += '\n' + @tab if body.=compile o, LEVEL_TOP
+    '\n'+ body + '}' + ret
 
   # The main difference from a JavaScript *while* is that the Coco
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
-  compileNode: (o) ->
-    o.indent += TAB
-    code   = @condition.compile o, LEVEL_PAREN
-    set    = ''
-    {body} = this
-    if body.isEmpty()
-      body = ''
-    else
-      @discontinue()
-      ret  = @makePush o, body if @returns
-      body = If @guard, body, {'statement'} if @guard
-      body = "\n#{body}\n#{@tab}" if body.=compile o, LEVEL_TOP
-    code  = set + @tab + if code is 'true' then 'for (;;' else "while (#{code}"
-    code += ") {#{body}}"
-    code += ret if ret
-    code
+  compilePush: (o) ->
+    exps = @body.expressions
+    if (last = exps[*-1]) and not last.containsPureStatement() and
+       last not instanceof Throw
+      o.scope.assign '_results', '[]'
+      exps[*-1] = Call Literal('_results.push'), [last]
+      res = '_results'
+    "\n#{@tab}return #{ res or '[]' };"
 
 #### Op
 
@@ -1081,6 +1075,8 @@ class exports.Op extends Base
       this
     else if @second
     then Parens(this).invert()
+    else if @operator is '!'
+    then @first
     else Op '!', this
 
   unfoldSoak: (o) ->
@@ -1318,24 +1314,19 @@ class exports.For extends While
       case  1 then '++' + idx
       case -1 then '--' + idx
       default idx + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
-    head = @pluckDirectCalls o, @body.expressions, @name, idx
-    code = ''
+    head  = @pluckDirectCalls o, @body.expressions, @name, idx
+    head += @tab + "for (#{forPart}) #{ ownPart or '' }{"
     o.indent += TAB
-    head     += @tab + "for (#{forPart}) #{ ownPart or '' }{"
     if @name
-      code += o.indent
+      head += '\n' + o.indent
       item  = svar + "[#{idx}]"
       if @nref
-        code += @nref + ' = ' + item + ', '
+        head += @nref + ' = ' + item + ', '
         item  = @nref
-      code += Assign(@name, Literal item).compile(o, LEVEL_TOP) + ';'
-    unless (bod = @body).isEmpty()
-      @discontinue()
-      ret = @makePush o, bod if @returns
-      bod = If @guard, bod, {'statement'} if @guard
-      code += (code and '\n') + bod.compile o, LEVEL_TOP
-    code = "\n#{code}\n" + @tab if code
-    head + code + '}' + (ret or '')
+      head += Assign(@name, Literal item).compile(o, LEVEL_TOP) + ';'
+    body  = @compileBody o
+    head += '\n' + @tab if @name and body.charAt(0) is '}'
+    head + body
 
   pluckDirectCalls: (o, exps, name, index) ->
     defs = ''
@@ -1568,4 +1559,4 @@ multident = (code, tab) -> code.replace /\n/g, '$&' + tab
 
 lastNonComment = (nodes) ->
   break for node, i of nodes by -1 when node not instanceof Comment
-  [i >= 0 and node, i, nodes]
+  [i >= 0 and node, i]
