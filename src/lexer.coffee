@@ -35,7 +35,7 @@ class exports.Lexer
     @outdebt = 0            # The under-outdentation at the current level.
     @indents = []           # The stack of all current indentation levels.
     # Stream of parsed tokens in the form `['TYPE', value, line]`.
-    @tokens  = [['DUMMY', '', 0]]
+    @tokens  = [@last = ['DUMMY', '', 0]]
     # Flags for distinguishing FORIN/FOROF/FROM/TO.
     @seenFor = @seenFrom = false
     code = @code.replace(/\r/g, '').replace TRAILING_SPACES, ''
@@ -72,10 +72,10 @@ class exports.Lexer
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
     if id is 'all'
-      switch @tag()
+      switch @last[0]
       case 'FOR'    then @token 'ALL', id; return id.length
-      case 'IMPORT' then @value 0, ''    ; return id.length
-    if id is 'from' and @tag(1) is 'FOR'
+      case 'IMPORT' then @last[1] = ''   ; return id.length
+    if id is 'from' and @tokens[*-2]?[0] is 'FOR'
       @seenFor  = false
       @seenFrom = true
       @token 'FROM', id
@@ -90,7 +90,7 @@ class exports.Lexer
     else
       'IDENTIFIER'
     forcedIdentifier = at or colon or
-      if not (prev = @tokens[*-1]).spaced and prev[1].colon2
+      if not (prev = @last).spaced and prev[1].colon2
       then @token<[ ACCESS . ]>
       else prev[0] is 'ACCESS'
     if id of JS_FORBIDDEN
@@ -112,7 +112,7 @@ class exports.Lexer
           @seenFor = false
         else
           tag = 'RELATION'
-          if @value() is '!'
+          if @last[1] is '!'
             @tokens.pop()
             id = '!' + id
     unless forcedIdentifier
@@ -182,9 +182,8 @@ class exports.Lexer
   regexToken: ->
     # We distinguish it from the division operator using a list of tokens that
     # a regex never immediately follows.
-    prev = @tokens[*-1]
     # Our list becomes shorter when spaced, due to sans-parentheses calls.
-    return 0 if prev[0] of <[ STRNUM LITERAL CREMENT ]> or
+    return 0 if (prev = @last)[0] of <[ STRNUM LITERAL CREMENT ]> or
                 not prev.spaced and prev[0] of CALLABLE or
                 not regex = REGEX.exec @chunk
     @token 'LITERAL', if regex[=0] is '//' then '/(?:)/' else regex
@@ -220,13 +219,13 @@ class exports.Lexer
   # Matches words literal, a syntax sugar for an array of strings.
   wordsToken: ->
     return 0 unless words = WORDS.exec @chunk
-    if call = not (prev = @tokens[*-1]).spaced and prev[0] of CALLABLE
+    if call = not (prev = @last).spaced and prev[0] of CALLABLE
     then @token<[ CALL_START ( ]>
     else @token<[ [ [ ]>
     for word of (words[=0]).slice(2, -2).match(/\S+/g) or ['']
       @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
     @countLines words
-    @tokens.push if call then [')', ')', @line] else [']', ']', @line]
+    if call then @token<[ ) ) ]> else @token<[ ] ] ]>
     words.length
 
   # Matches newlines, indents, and outdents, and determines which is which.
@@ -242,7 +241,7 @@ class exports.Lexer
   lineToken: ->
     return 0 unless indent = MULTIDENT.exec @chunk
     @countLines indent[=0]
-    @tokens[*-1].eol = true
+    @last.eol = true
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = @unfinished()
     if size - @indebt is @indent
@@ -286,12 +285,12 @@ class exports.Lexer
   # as being "spaced", because there are some cases where it makes a difference.
   whitespaceToken: ->
     return 0 unless match = WHITESPACE.exec @chunk
-    @tokens[*-1].spaced = true
+    @last.spaced = true
     match[0].length
 
   # Generate a newline token. Consecutive newlines get merged together.
   newlineToken: ->
-    @token<[ TERMINATOR \n ]> unless @tag() is 'TERMINATOR'
+    @token<[ TERMINATOR \n ]> unless @last[0] is 'TERMINATOR'
     this
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
@@ -303,7 +302,7 @@ class exports.Lexer
     [value] = SYMBOL.exec @chunk
     switch tag = value
     case <[ = := ]>
-      prev = @tokens[*-1]
+      prev = @last
       pval = prev[1]
       if not pval.reserved and pval of JS_FORBIDDEN
         throw SyntaxError \
@@ -317,7 +316,7 @@ class exports.Lexer
       @tagParameters()
       tag = 'FUNC_ARROW'
     case '*'
-      tag = if @tag() is 'INDEX_START' then 'LITERAL' else 'MATH'
+      tag = if @last[0] is 'INDEX_START' then 'LITERAL' else 'MATH'
     case <[ ! ~ ]>          then tag = 'UNARY'
     case <[ . ?. .= ]>      then tag = 'ACCESS'
     case <[ + - ]>          then tag = 'PLUS_MINUS'
@@ -332,7 +331,7 @@ class exports.Lexer
     case <[ ?[ [= ]>        then tag = 'INDEX_START'
     case '@'                then tag = 'THIS'
     case ';'                then tag = 'TERMINATOR'
-    case '?'                then tag = 'LOGIC' if @tokens[*-1].spaced
+    case '?'                then tag = 'LOGIC' if @last.spaced
     case '\\\n'             then return value.length
     default
       if value.charAt(0) is '@'
@@ -342,9 +341,10 @@ class exports.Lexer
       if value is '::'
         id = new String 'prototype'
         id.colon2 = true
-        @tokens.push <[ ACCESS . ]>, ['IDENTIFIER', id, @line]
+        @token<[ ACCESS . ]>
+        @token 'IDENTIFIER', id
         return value.length
-      unless (prev = @tokens[*-1]).spaced
+      unless (prev = @last).spaced
         if value is '(' and prev[0] of CALLABLE
           prev[0] = 'FUNC_EXIST' if prev[0] is '?'
           tag = 'CALL_START'
@@ -374,7 +374,7 @@ class exports.Lexer
   # definitions versus argument lists in function calls. Walk backwards, tagging
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
-    return this if @tag() isnt ')'
+    return this if @last[0] isnt ')'
     {tokens} = this
     level = 0
     i = tokens.length
@@ -466,17 +466,11 @@ class exports.Lexer
   # -------
 
   # Add a token to the results, taking note of the line number.
-  token: (tag, value) -> @tokens.push [tag, value, @line]
-
-  # Peek at a tag/value in the current token stream.
-  tag  : (index, tag) ->
-    (t = @tokens[* - 1 - (index | 0)]) and if tag? then t[0] = tag else t[0]
-  value: (index, val) ->
-    (t = @tokens[* - 1 - (index | 0)]) and if val? then t[1] = val else t[1]
+  token: (tag, value) -> @tokens.push @last = [tag, value, @line]
 
   # Are we in the midst of an unfinished expression?
   unfinished: ->
-    LINE_CONTINUER.test(@chunk) or @tag() of <[
+    LINE_CONTINUER.test(@chunk) or @last[0] of <[
       ACCESS INDEX_START PLUS_MINUS MATH COMPARE LOGIC RELATION IMPORT SHIFT
     ]>
 
