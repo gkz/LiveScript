@@ -68,7 +68,7 @@ for nonref of <[ "" 0 f() ]>
   throws "\"#{nonref}\" cannot be assigned", -> Coco.compile "{k: #{nonref}} = v"
 
 
-throws 'assignment to undeclared variable "Math"', -> Coco.compile 'Math or= 0'
+throws 'assignment to undeclared variable "Math"', -> Coco.compile 'Math ||= 0'
 
 
 # Simple variable swapping.

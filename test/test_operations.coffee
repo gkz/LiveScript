@@ -56,16 +56,16 @@ ok x*+y is -50
 # Compound operators.
 one  = 1
 two  = 0
-one or= 2
-two or= 2
+one ||= 2
+two ||= 2
 
 eq one, 1
 eq two, 2
 
 zero = 0
 
-zero and= 'one'
-one  and= 'one'
+zero &&= 'one'
+one  &&= 'one'
 
 eq zero, 0
 eq one , 'one'
@@ -75,7 +75,7 @@ eq one , 'one'
 count = 0
 list = []
 
-list[++count] or= 1
+list[++count] ||= 1
 eq list[1], 1
 eq count, 1
 
@@ -83,13 +83,13 @@ list[++count] ?= 2
 eq list[2], 2
 eq count, 2
 
-list[count++] and= 'two'
+list[count++] &&= 'two'
 eq list[2], 'two'
 eq count, 3
 
 base = -> ++count; base
 
-base().four or= 4
+base().four ||= 4
 eq base.four, 4
 eq count, 4
 
@@ -100,7 +100,7 @@ eq count, 5
 
 # Ensure that RHS is treated as a group.
 a = b = false
-a and= b or true
+a &&= b or true
 ok a is false
 
 
@@ -127,7 +127,7 @@ obj ?=
 
 ok obj.one is 1
 
-obj and=
+obj &&=
   two: 2
 
 ok not obj.one

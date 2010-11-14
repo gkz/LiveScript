@@ -300,17 +300,12 @@ class exports.Lexer
   literalToken: ->
     [value] = SYMBOL.exec @chunk
     switch tag = value
-    case <[ = := ]>
-      if value is '=' and (prev = @last)[1] of <[ || && ]>
-        prev[0]  = 'COMPOUND_ASSIGN'
-        prev[1] += '='
-        return value.length
-      tag = 'ASSIGN'
     case <[ -> => ]>
       @tagParameters()
       tag = 'FUNC_ARROW'
     case '*'
       tag = if @last[0] is 'INDEX_START' then 'LITERAL' else 'MATH'
+    case <[ = := ]>         then tag = 'ASSIGN'
     case <[ ! ~ ]>          then tag = 'UNARY'
     case <[ . ?. .= ]>      then tag = 'ACCESS'
     case <[ + - ]>          then tag = 'PLUS_MINUS'

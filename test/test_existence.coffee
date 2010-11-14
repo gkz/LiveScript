@@ -140,7 +140,7 @@ eq calendar?[Date()], void
 a = b: {c: null}
 eq a.b?.c?(), void
 
-a.b?.c or= (it) -> it
+a.b?.c ||= (it) -> it
 eq a.b?.c?(1), 1
 eq a.b?.c?([2, 3]...), 2
 
