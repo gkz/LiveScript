@@ -75,10 +75,11 @@ grammar =
 
   # Pure statements which cannot be expressions.
   Statement: [
-    o 'Comment'
-    o 'Return'
-    o 'Throw'
-    o 'STATEMENT', -> Literal $1
+    o 'RETURN',            -> Return()
+    o 'RETURN Expression', -> Return $2
+    o 'THROW Expression',  -> Throw $2
+    o 'STATEMENT',         -> Literal $1
+    o 'HERECOMMENT',       -> Comment $1
   ]
 
   # All the different types of expressions in our language. The basic unit of
@@ -171,23 +172,12 @@ grammar =
     o 'Identifier    ...',          -> Splat $1
     o 'Parenthetical ...',          -> Splat $1
     o 'ThisProperty'
-    o 'Comment'
+    o 'HERECOMMENT',                -> Comment $1
   ]
   ObjAssignable: [
     o 'Identifier'
     o 'AlphaNumeric'
     o 'Parenthetical'
-  ]
-
-  # A return statement from a function body.
-  Return: [
-    o 'RETURN Expression', -> Return $2
-    o 'RETURN',            -> Return()
-  ]
-
-  # A block comment.
-  Comment: [
-    o 'HERECOMMENT', -> Comment $1
   ]
 
   Function: [
@@ -341,11 +331,6 @@ grammar =
     o 'TRY Block CATCH IDENTIFIER Block',               -> Try $2, $4, $5
     o 'TRY Block                        FINALLY Block', -> Try $2, null, null, $4
     o 'TRY Block CATCH IDENTIFIER Block FINALLY Block', -> Try $2, $4, $5, $7
-  ]
-
-  # Throw an exception object.
-  Throw: [
-    o 'THROW Expression', -> Throw $2
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
