@@ -180,9 +180,8 @@ class exports.Expressions extends Base
   # An Expressions node does not return its entire body, rather it
   # ensures that the final expression is returned.
   makeReturn: ->
-    for end, idx of @expressions by -1 when end not instanceof Comment
-      @expressions[idx] = end.makeReturn()
-      break
+    [node, i] = lastNonComment @expressions
+    @expressions[i] = node.makeReturn() if node
     this
 
   # An **Expressions** is the only node that can serve as the root.
@@ -637,9 +636,7 @@ class exports.Obj extends Base
         rest = props.splice i, 1/0
         break
     lastIndex = props.length - 1
-    for prop of props by -1 when prop not instanceof Comment
-      lastNonComment = prop
-      break
+    [lastNC]  = lastNonComment props
     code = ''
     idt  = o.indent += TAB
     for prop, i of props
@@ -651,7 +648,7 @@ class exports.Obj extends Base
       else prop.compile o, LEVEL_TOP
       code += if i is lastIndex
       then ''
-      else if prop is lastNonComment or prop instanceof Comment
+      else if prop is lastNC or prop instanceof Comment
       then '\n'
       else ',\n'
     code = "{#{ code and '\n' + code + '\n' + @tab }}"
@@ -1022,6 +1019,11 @@ class exports.While extends Base
     return true while i when expressions[--i].contains ret
     false
 
+  # Remove useless `continue` at end.
+  discontinue: ->
+    [node, i, nodes] = lastNonComment @body.expressions
+    nodes.splice i, 1 if node?.value is 'continue'
+
   # The main difference from a JavaScript *while* is that the Coco
   # *while* can be used as a part of a larger expression -- while loops may
   # return an array containing the computed result of each iteration.
@@ -1033,9 +1035,10 @@ class exports.While extends Base
     if body.isEmpty()
       body = ''
     else
+      @discontinue()
       ret  = @makePush o, body if @returns
       body = If @guard, body, {'statement'} if @guard
-      body = "\n#{ body.compile o, LEVEL_TOP }\n#{@tab}"
+      body = "\n#{body}\n#{@tab}" if body.=compile o, LEVEL_TOP
     code  = set + @tab + if code is 'true' then 'for (;;' else "while (#{code}"
     code += ") {#{body}}"
     code += ret if ret
@@ -1272,30 +1275,25 @@ class exports.For extends While
 
   children: <[ source name from to step guard body ]>
 
-  # Welcome to the hairiest method in all of Coco. Handles the inner
-  # loop, filtering, stepping, and result saving for array, object, and range
-  # comprehensions. Some of the generated code can be shared in common, and
-  # some cannot.
   compileNode: (o) ->
-    {body, index} = this
     {scope} = o
     @temps = []
-    if index
-    then scope.declare index
-    else @temps.push index = scope.temporary 'i'
+    if idx = @index
+    then scope.declare idx
+    else @temps.push idx = scope.temporary 'i'
     unless @object
       [step, pvar] = (@step || Literal 1).compileLoopReference o, 'step'
       @temps.push pvar if step isnt pvar
     if @from
       eq = if @op is 'til' then '' else '='
       [tail, tvar] = @to.compileLoopReference o, 'to'
-      vars = index + ' = ' + @from.compile o
+      vars = idx + ' = ' + @from.compile o
       if tail isnt tvar
         vars += ', ' + tail
         @temps.push tvar
       cond = if +pvar
-      then "#{index} #{ if pvar < 0 then '>' else '<' }#{eq} #{tvar}"
-      else "#{pvar} < 0 ? #{index} >#{eq} #{tvar} : #{index} <#{eq} #{tvar}"
+      then "#{idx} #{ if pvar < 0 then '>' else '<' }#{eq} #{tvar}"
+      else "#{pvar} < 0 ? #{idx} >#{eq} #{tvar} : #{idx} <#{eq} #{tvar}"
     else
       if @name or @object and @own
         [srcPart, svar] = @source.compileLoopReference o, 'ref'
@@ -1305,40 +1303,43 @@ class exports.For extends While
       unless @object
         srcPart = "(#{srcPart})" if srcPart isnt svar
         if 0 > pvar and (pvar | 0) is +pvar  # negative int
-          vars = "#{index} = #{srcPart}.length - 1"
-          cond = "#{index} >= 0"
+          vars = "#{idx} = #{srcPart}.length - 1"
+          cond = "#{idx} >= 0"
         else
           @temps.push lvar = scope.temporary 'len'
-          vars = "#{index} = 0, #{lvar} = #{srcPart}.length"
-          cond = "#{index} < #{lvar}"
+          vars = "#{idx} = 0, #{lvar} = #{srcPart}.length"
+          cond = "#{idx} < #{lvar}"
     if @object
-      forPart = index + ' in ' + srcPart
-      ownPart = "if (#{ utility 'owns' }.call(#{svar}, #{index})) " if @own
+      forPart = idx + ' in ' + srcPart
+      ownPart = "if (#{ utility 'owns' }.call(#{svar}, #{idx})) " if @own
     else
       vars   += ', ' + step if step isnt pvar
       forPart = vars + "; #{cond}; " + switch +pvar
-      case  1 then '++' + index
-      case -1 then '--' + index
-      default index + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
-    code = @pluckDirectCalls o, body, @name, index
+      case  1 then '++' + idx
+      case -1 then '--' + idx
+      default idx + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
+    head = @pluckDirectCalls o, @body.expressions, @name, idx
+    code = ''
     o.indent += TAB
-    code += @tab + "for (#{forPart}) #{ ownPart or '' }{"
+    head     += @tab + "for (#{forPart}) #{ ownPart or '' }{"
     if @name
-      code += '\n' + o.indent
-      item  = svar + "[#{index}]"
+      code += o.indent
+      item  = svar + "[#{idx}]"
       if @nref
         code += @nref + ' = ' + item + ', '
         item  = @nref
       code += Assign(@name, Literal item).compile(o, LEVEL_TOP) + ';'
-    unless body.isEmpty()
-      ret   = @makePush o, body if @returns
-      body  = If @guard, body, {'statement'} if @guard
-      code += '\n' + body + '\n' + @tab if body .= compile o, LEVEL_TOP
-    code + '}' + (ret or '')
+    unless (bod = @body).isEmpty()
+      @discontinue()
+      ret = @makePush o, bod if @returns
+      bod = If @guard, bod, {'statement'} if @guard
+      code += (code and '\n') + bod.compile o, LEVEL_TOP
+    code = "\n#{code}\n" + @tab if code
+    head + code + '}' + (ret or '')
 
-  pluckDirectCalls: (o, body, name, index) ->
+  pluckDirectCalls: (o, exps, name, index) ->
     defs = ''
-    for exp, idx of body.expressions when exp.=unwrapAll() instanceof Call
+    for exp, idx of exps when exp.=unwrapAll() instanceof Call
       val = exp.variable.unwrapAll()
       continue unless \
         val instanceof Code and not exp.args.length or
@@ -1359,7 +1360,7 @@ class exports.For extends While
         @temps.push @nref = o.scope.temporary 'ref' unless @nref
         args.push Literal @nref
         fn.params.push Param name
-      body.expressions[idx] = Call base, args
+      exps[idx] = Call base, args
       defs += @tab + Assign(ref, fn, '=').compile(o, LEVEL_TOP) + ';\n'
     defs
 
@@ -1388,9 +1389,8 @@ class exports.Switch extends Base
     for cs, i of @cases
       code += cs.compile o, tab
       break if i is stop
-      for exp of cs.body.expressions by -1 when exp not instanceof Comment
-        code += o.indent + 'break;\n' unless exp instanceof Return
-        break
+      unless lastNonComment(cs.body.expressions)[0] instanceof Return
+        code += o.indent + 'break;\n'
     code += tab + "default:\n#{ @default.compile o, LEVEL_TOP }\n" if @default
     code +  tab + '}'
 
@@ -1565,3 +1565,7 @@ del = (obj, key) ->
   val
 
 multident = (code, tab) -> code.replace /\n/g, '$&' + tab
+
+lastNonComment = (nodes) ->
+  break for node, i of nodes by -1 when node not instanceof Comment
+  [i >= 0 and node, i, nodes]
