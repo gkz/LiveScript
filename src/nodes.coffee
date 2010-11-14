@@ -731,13 +731,12 @@ class exports.Class extends Base
 # The **Assign** is used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 class exports.Assign extends Base
-  # Omit @context to declare a variable with it.
-  (@variable, @value, @context) =>
+  (@variable, @value, @op = '=') =>
 
   children: <[ variable value ]>
 
   assigns: (name) ->
-    @[if @context is ':' then 'value' else 'variable'].assigns name
+    @[if @op is ':' then 'value' else 'variable'].assigns name
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, 'variable'
 
@@ -746,7 +745,7 @@ class exports.Assign extends Base
   compileNode: (o) ->
     {variable, value} = this
     return @compileDestructuring o if variable.isArray() or variable.isObject()
-    return @compileConditional   o if @context of <[ ||= &&= ?= ]>
+    return @compileConditional   o if @op of <[ ||= &&= ?= ]>
     name = variable.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
@@ -754,17 +753,16 @@ class exports.Assign extends Base
       value.clas   = match[1] if match[1]
       value.name ||= match[2]
     val = value.compile o, LEVEL_LIST
-    return name + ': ' + val if @context is ':'
+    return name + ': ' + val if @op is ':'
     unless variable.isAssignable()
       throw SyntaxError "\"#{ @variable.compile o }\" cannot be assigned"
     unless variable instanceof Value and variable.hasProperties()
-      if @context
-        unless o.scope.check name, true
-          throw SyntaxError "assignment to undeclared variable \"#{name}\""
-      else
+      if @op is '='
         o.scope.declare name
-    name += " #{ @context or '=' } " + val
-    if o.level <= LEVEL_LIST then name else "(#{name})"
+      else unless o.scope.check name, true
+        throw SyntaxError "assignment to undeclared variable \"#{name}\""
+    code = name + " #{ if @op is ':=' then '=' else @op } " + val
+    if o.level < LEVEL_COND then code else "(#{code})"
 
   # Brief implementation of recursive destructuring, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -788,7 +786,7 @@ class exports.Assign extends Base
           else Literal 0
       acc = IDENTIFIER.test idx.unwrap().value or 0
       val = Value(value).append (if acc then Accessor else Index) idx
-      return Assign(obj, val, @context).compile o
+      return Assign(obj, val, @op).compile o
     vvar    = value.compile o, LEVEL_LIST
     assigns = []
     splat   = false
@@ -825,7 +823,7 @@ class exports.Assign extends Base
         else
           isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = Value Literal(vvar), [(if acc then Accessor else Index) idx]
-      assigns.push Assign(obj, val, @context).compile o, LEVEL_LIST
+      assigns.push Assign(obj, val, @op).compile o, LEVEL_LIST
     o.scope.free ref if ref
     assigns.push vvar unless top
     code = assigns.join ', '
@@ -836,7 +834,9 @@ class exports.Assign extends Base
   # more than once.
   compileConditional: (o) ->
     [left, rite] = @variable.cacheReference o
-    Op(@context.slice(0, -1), left, Assign(rite, @value, '=')).compile o
+    Op(@op.slice(0, -1), left, Assign(rite, @value, ':=')).compile o
+
+  toString: (idt) -> super idt, @constructor.name + ' ' + @op
 
 #### Code
 
@@ -1053,10 +1053,7 @@ class exports.Op extends Base
         call.newInstance()
         return first
       first = Parens first, true if first instanceof Code and first.bound
-    @operator = op
-    @first    = first
-    @second   = second
-    @flip     = !!flip
+    this import {op, first, second, flip}
 
   # The map of invertible/chainable operators.
   INVERSIONS = '===':'!==', '==':'!=', '>':'<=', '<':'>='
@@ -1064,28 +1061,28 @@ class exports.Op extends Base
 
   children: <[ first second ]>
 
-  isChainable: -> @operator in INVERSIONS
+  isChainable: -> @op in INVERSIONS
 
   invert: ->
-    if op = INVERSIONS[@operator]
-      @operator = op
+    if op = INVERSIONS[@op]
+      @op = op
       this
     else if @second
     then Parens(this).invert()
-    else if @operator is '!'
+    else if @op is '!'
     then @first
     else Op '!', this
 
   unfoldSoak: (o) ->
-    @operator of <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
+    @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
 
   compileNode: (o) ->
     return @compileUnary     o if not @second
     return @compileChain     o if @isChainable() and @first.isChainable()
-    return @compileExistence o if @operator is '?'
-    return @compileMultiIO   o if @operator is 'instanceof' and @second.isArray()
+    return @compileExistence o if @op is '?'
+    return @compileMultiIO   o if @op is 'instanceof' and @second.isArray()
     @first import {@front}
-    code = @first .compile(o, LEVEL_OP) + " #{@operator} " +
+    code = @first .compile(o, LEVEL_OP) + " #{@op} " +
            @second.compile(o, LEVEL_OP)
     if o.level <= LEVEL_OP then code else "(#{code})"
 
@@ -1099,7 +1096,7 @@ class exports.Op extends Base
     @first.second = sub
     code  = @first.compile o, LEVEL_OP
     code .= slice 1, -1 if code.charAt(0) is '('
-    code += " && #{ ref.compile o } #{@operator} #{ @second.compile o, LEVEL_OP }"
+    code += " && #{ ref.compile o } #{@op} #{ @second.compile o, LEVEL_OP }"
     o.scope.free ref.value if sub isnt ref
     if o.level < LEVEL_OP then code else "(#{code})"
 
@@ -1117,9 +1114,9 @@ class exports.Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
-    parts = [op = @operator]
+    parts = [op = @op]
     parts.push ' ' if op of <[ new typeof delete void ]> or
-                      op of <[ + - ]> and @first.operator is op
+                      op of <[ + - ]> and @first.op is op
     parts.push @first.compile o, LEVEL_OP
     parts.reverse() if @flip
     code = parts.join ''
@@ -1133,7 +1130,7 @@ class exports.Op extends Base
     code = tests.join ' || '
     if o.level < LEVEL_OP then code else "(#{code})"
 
-  toString: (idt) -> super idt, @constructor.name + ' ' + @operator
+  toString: Assign::toString
 
 #### Of
 class exports.Of extends Base

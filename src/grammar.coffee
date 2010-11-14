@@ -166,8 +166,8 @@ grammar =
   Assign: [
     o 'Assignable  = Expression',                -> Assign $1, $3
     o 'Assignable  = INDENT Expression OUTDENT', -> Assign $1, $4
-    o 'Assignable := Expression',                -> Assign $1, $3, '='
-    o 'Assignable := INDENT Expression OUTDENT', -> Assign $1, $4, '='
+    o 'Assignable := Expression',                -> Assign $1, $3, ':='
+    o 'Assignable := INDENT Expression OUTDENT', -> Assign $1, $4, ':='
   ]
 
   # Assignment when it happens within an object literal. The difference from
