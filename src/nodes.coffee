@@ -1347,9 +1347,8 @@ class exports.For extends While
 
 class exports.Switch extends Base
   (@switch, @cases, @default) =>
-    unless @switch
-      for {tests} of @cases
-        tests[i].=invert() for i in tests
+    return if @switch
+    tests[i].=invert() for i in tests for {tests} of @cases
 
   children: <[ switch cases default ]>
 
@@ -1368,9 +1367,13 @@ class exports.Switch extends Base
     for cs, i of @cases
       code += cs.compile o, tab
       break if i is stop
-      unless lastNonComment(cs.body.expressions)[0] instanceof Return
+      [lnc] = lastNonComment cs.body.expressions
+      unless lnc instanceof [Return, Throw] or
+             lnc.value of <[ continue break ]>
         code += o.indent + 'break;\n'
-    code += tab + "default:\n#{ @default.compile o, LEVEL_TOP }\n" if @default
+    if @default
+      def = @default.compile o, LEVEL_TOP
+      code += tab + "default:#{ def and '\n' + def  }\n"
     code +  tab + '}'
 
 #### Case

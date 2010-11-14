@@ -52,25 +52,46 @@ eq result, ok
 
 
 # Should be able to use "@properties" within the switch clause.
-obj = {
+obj =
   num: 101
   func: ->
     switch @num
     case 101 then '101!'
     default 'other'
-}
-
-ok obj.func() is '101!'
+eq obj.func(), '101!'
 
 
 # Should be able to use "@properties" within the switch cases.
-obj = {
+obj =
   num: 101
   func: (yesOrNo) ->
     result = switch yesOrNo
     case true then @num
     default 'other'
     result
-}
+eq obj.func(true), 101
 
-ok obj.func(true) is 101
+
+eq '''
+switch (false) {
+case !1:
+  return;
+case !2:
+  throw me;
+case !3:
+  continue;
+case !4:
+  break;
+case !5:
+  break;
+default:
+}
+''', Coco.compile '''
+switch
+case 1 then return
+case 2 then throw me
+case 3 then continue
+case 4 then break
+case 5 then
+default
+''', bare: true
