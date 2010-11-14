@@ -693,9 +693,9 @@ class exports.Class extends Base
 
   compileNode: (o) ->
     if @variable
-      decl = if last = @variable.properties[*-1]
-      then last instanceof Accessor and last.name.value
-      else @variable.base.value
+      decl = if @variable instanceof Value
+      then @variable.properties[*-1].name?.value
+      else @variable.value
       decl &&= IDENTIFIER.test(decl) and decl
     name  = decl or @name or '_Class'
     lname = Literal name
@@ -832,7 +832,7 @@ class exports.Assign extends Base
   # operands are only evaluated once, even though we have to reference them
   # more than once.
   compileConditional: (o) ->
-    [left, rite] = @left.cacheReference o
+    [left, rite] = Value(@left).cacheReference o
     Op(@op.slice(0, -1), left, Assign(rite, @right, ':=')).compile o
 
   toString: (idt) -> super idt, @constructor.name + ' ' + @op
@@ -1259,7 +1259,7 @@ class exports.Parens extends Base
 class exports.For extends While
   (head, @body) =>
     this import all head
-    if @index instanceof Value and not @index.=base.value
+    if @index instanceof Base and not @index.=unwrap().value
       throw SyntaxError 'invalid index variable: ' + head.index
 
   children: <[ source name from to step guard body ]>

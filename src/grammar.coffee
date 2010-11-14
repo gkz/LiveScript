@@ -164,12 +164,9 @@ grammar =
 
   # Assignment of a variable, property, or index to a value.
   Assign: [
-    o 'Assignable  = Expression',                -> Assign $1, $3
-    o 'Assignable  = INDENT Expression OUTDENT', -> Assign $1, $4
-    o 'Assignable := Expression',                -> Assign $1, $3, ':='
-    o 'Assignable := INDENT Expression OUTDENT', -> Assign $1, $4, ':='
+    o 'Assignable ASSIGN Expression',                -> Assign $1, $3, $2
+    o 'Assignable ASSIGN INDENT Expression OUTDENT', -> Assign $1, $4, $2
   ]
-
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
@@ -221,9 +218,9 @@ grammar =
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o 'ParamVar',                -> Param $1
-    o 'ParamVar ...',            -> Param $1, null, true
-    o 'ParamVar  =  Expression', -> Param $1, $3
+    o 'ParamVar',                   -> Param $1
+    o 'ParamVar ...',               -> Param $1, null, true
+    o 'ParamVar ASSIGN Expression', -> Param $1, $3
   ]
   ParamVar: [
     o 'Identifier'
@@ -239,10 +236,10 @@ grammar =
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o 'Identifier',          -> Value $1
-    o 'Value      Accessor', -> $1.append $2
-    o 'Call Accessor', -> Value $1, [$2]
+    o 'Identifier'
     o 'ThisProperty'
+    o 'Value Accessor', -> $1.append $2
+    o 'Call  Accessor', -> Value $1, [$2]
   ]
 
   # Everything that can be assigned to.
@@ -491,7 +488,7 @@ operators = [
   <[ left      COMPARE                      ]>
   <[ left      LOGIC                        ]>
   <[ nonassoc  INDENT OUTDENT               ]>
-  <[ right     : = := COMPOUND_ASSIGN
+  <[ right     : ASSIGN COMPOUND_ASSIGN
                RETURN THROW EXTENDS         ]>
   <[ right     FORIN FOROF FROM TO BY WHEN  ]>
   <[ right     IF ELSE FOR WHILE LOOP CLASS

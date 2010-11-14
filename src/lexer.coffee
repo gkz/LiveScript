@@ -311,6 +311,7 @@ class exports.Lexer
         prev[0]  = 'COMPOUND_ASSIGN'
         prev[1] += '='
         return value.length
+      tag = 'ASSIGN'
     case <[ -> => ]>
       @tagParameters()
       tag = 'FUNC_ARROW'
