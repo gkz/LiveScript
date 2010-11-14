@@ -242,7 +242,9 @@ class exports.Lexer
     @countLines indent[=0]
     @last.eol = true
     size = indent.length - 1 - indent.lastIndexOf '\n'
-    noNewlines = @unfinished()
+    noNewlines = LINE_CONTINUER.test(@chunk) or @last[0] of <[
+      ACCESS INDEX_START PLUS_MINUS MATH COMPARE LOGIC RELATION IMPORT SHIFT
+    ]>
     if size - @indebt is @indent
       @newlineToken() unless noNewlines
       return indent.length
@@ -321,17 +323,20 @@ class exports.Lexer
     case '@'                then tag = 'THIS'
     case ';'                then tag = 'TERMINATOR'
     case '?'                then tag = 'LOGIC' if @last.spaced
-    case '\\\n'             then return value.length
+    case '\\\n'
+      return value.length
+    case '::'
+      id = new String 'prototype'
+      id.colon2 = true
+      @token<[ ACCESS . ]>
+      @token 'IDENTIFIER', id
+      return value.length
     default
       if value.charAt(0) is '@'
-        @tokens.push ['IDENTIFIER', 'arguments', @line],
-          <[ INDEX_START [ ]>, ['STRNUM', value.slice 1], <[ INDEX_END  ] ]>
-        return value.length
-      if value is '::'
-        id = new String 'prototype'
-        id.colon2 = true
-        @token<[ ACCESS . ]>
-        @token 'IDENTIFIER', id
+        @token 'IDENTIFIER', 'arguments'
+        @token<[ INDEX_START [ ]>
+        @token 'STRNUM', value.slice 1
+        @token<[ INDEX_END  ] ]>
         return value.length
       unless (prev = @last).spaced
         if value is '(' and prev[0] of CALLABLE
@@ -456,12 +461,6 @@ class exports.Lexer
 
   # Add a token to the results, taking note of the line number.
   token: (tag, value) -> @tokens.push @last = [tag, value, @line]
-
-  # Are we in the midst of an unfinished expression?
-  unfinished: ->
-    LINE_CONTINUER.test(@chunk) or @last[0] of <[
-      ACCESS INDEX_START PLUS_MINUS MATH COMPARE LOGIC RELATION IMPORT SHIFT
-    ]>
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
