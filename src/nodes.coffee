@@ -817,7 +817,7 @@ class exports.Assign extends Base
         else
           isObject and IDENTIFIER.test idx.unwrap().value or 0
         val = Value Literal(vvar), [(if acc then Accessor else Index) idx]
-      assigns.push Assign(obj, val, @op).compile o, LEVEL_LIST
+      assigns.push Assign(obj, val, @op).compile o, LEVEL_TOP
     o.scope.free ref if ref
     assigns.push vvar unless top
     code = assigns.join ', '
