@@ -29,7 +29,7 @@ class exports.Base
     o.level  = level if level?
     node     = @unfoldSoak(o) or this
     node.tab = o.indent
-    if o.level is LEVEL_TOP or node.isPureStatement() or not node.isStatement(o)
+    if not o.level or node.isPureStatement() or not node.isStatement(o)
       code = node.compileNode o
       o.scope.free tmp for tmp of node.temps if node.temps
       code
@@ -191,7 +191,7 @@ class exports.Expressions extends Base
   compileNode: (o) ->
     o.expressions = this
     @tab  = o.indent
-    top   = o.level is LEVEL_TOP
+    top   = not o.level
     codes = []
     for node of @expressions
       node = (do node.=unwrapAll).unfoldSoak(o) or node
@@ -407,8 +407,7 @@ class exports.Comment extends Base
 
   compile: (o, level) ->
     code = '/*' + multident(@comment, o.indent) + '*/'
-    code = o.indent + code if (level ? o.level) is LEVEL_TOP
-    code
+    if level ? o.level then code else o.indent + code
 
 #### Call
 
@@ -571,7 +570,7 @@ class exports.Import extends Base
       else '[' + key + ']'
       code += lref + key + ' = ' + val
     code = if sub is lref then code.slice 2 else sub + code
-    return code if o.level is LEVEL_TOP
+    return code unless o.level
     code += (if com then ' ' else ', ') + lref unless node instanceof Splat
     if o.level < LEVEL_LIST then code else "(#{code})"
 
@@ -771,7 +770,7 @@ class exports.Assign extends Base
   # object literals to a value. Peeks at their properties to assign inner names.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o) ->
-    top       = o.level is LEVEL_TOP
+    top       = not o.level
     {value}   = this
     {objects} = @variable.unwrap()
     return value.compile o unless olen = objects.length
