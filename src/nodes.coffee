@@ -1029,9 +1029,11 @@ class exports.While extends Base
         res = '_results'
       ret = "\n#{@tab}return #{ res or '[]' };"
     return '}' + ret unless exps.length
-    body  = If @guard, body, {'statement'} if @guard
-    body += '\n' + @tab if body.=compile o, LEVEL_TOP
-    '\n' + body + '}' + ret
+    code = '\n'
+    if @guard
+      code += o.indent +
+        "if (#{ @guard.invert().compile o, LEVEL_PAREN }) continue;\n"
+    code + body.compile(o, LEVEL_TOP) + "\n#{@tab}}" + ret
 
 #### Op
 
