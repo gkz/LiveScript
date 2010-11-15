@@ -557,7 +557,7 @@ class exports.Import extends Base
           key = (acc = node.properties[0].name).value
           val = node.compile o, LEVEL_LIST
         else
-          [key, val] = (acc = node.unwrapAll()).cache o, LEVEL_LIST, ref
+          [key, val] = (acc = node.base or node).cache o, LEVEL_LIST, ref
           @temps.push ref = val if key isnt val
       key = if acc instanceof Literal and IDENTIFIER.test key
       then '.' + key
