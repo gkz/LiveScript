@@ -763,40 +763,38 @@ class exports.Assign extends Base
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o) ->
     top       = not o.level
-    {right}   = this
     {objects} = @left.unwrap()
-    return right.compile o unless olen = objects.length
+    return @right.compile o unless olen = objects.length
     isObject = @left.isObject()
     if top and olen is 1 and (obj = objects[0]) not instanceof Splat
       # Unroll simplest cases: `{v} = x` -> `v = x.v`
       if obj instanceof Assign
         {right: obj, left: base: idx} = obj
       else
-        if obj.base instanceof Parens
+        if dyna = obj.base instanceof Parens
           [obj, idx] = Value(obj.unwrapAll()).cacheReference o
         else
           idx = if isObject
           then (if obj.this then obj.properties[0].name else obj)
           else Literal 0
-      acc = IDENTIFIER.test idx.unwrap().value or 0
-      val = Value(right).append (if acc then Accessor else Index) idx
+      acc = not dyna and IDENTIFIER.test idx.unwrap().value or 0
+      val = Value(@right).append (if acc then Accessor else Index) idx
       return Assign(obj, val, @op).compile o
-    vvar    = right.compile o, LEVEL_LIST
+    vvar    = @right.compile o, LEVEL_LIST
     assigns = []
     splat   = false
     if not IDENTIFIER.test(vvar) or @left.assigns(vvar)
       assigns.push "#{ ref = o.scope.temporary 'ref' } = #{vvar}"
       vvar = ref
     for obj, i of objects
-      # A regular array pattern-match.
-      idx = i
       if isObject
+        dyna = false
         if obj instanceof Assign
           # A regular object pattern-match.
           {right: obj, left: base: idx} = obj
         else
-          # A shorthand `{a, b, @c} = val` pattern-match.
-          if obj.base instanceof Parens
+          # A shorthand `{a, @b, (c)} = val` pattern-match.
+          if dyna = obj.base instanceof Parens
           then [obj, idx] = Value(obj.unwrapAll()).cacheReference o
           else idx = if obj.this then obj.properties[0].name else obj
       if not splat and obj instanceof Splat
@@ -805,20 +803,21 @@ class exports.Assign extends Base
           ivar = o.scope.temporary 'i'
           val += ", #{ivar} = #{vvar}.length - #{rest}) : (#{ivar} = #{i}, [])"
         else
-          val += ") : []"
+          val += ') : []'
         val   = Literal val
         splat = "#{ivar}++"
       else
         if obj instanceof Splat
           throw SyntaxError "multiple splats in an assignment: " + obj.compile o
-        acc = if typeof idx is 'number'
-          idx = Literal splat or idx
-          false
+        acc = if isObject
+          not dyna and IDENTIFIER.test idx.unwrap().value or 0
         else
-          isObject and IDENTIFIER.test idx.unwrap().value or 0
+          idx = Literal splat or i
+          false
         val = Value Literal(vvar), [(if acc then Accessor else Index) idx]
       assigns.push Assign(obj, val, @op).compile o, LEVEL_TOP
-    o.scope.free ref if ref
+    o.scope.free ref  if ref
+    o.scope.free ivar if ivar
     assigns.push vvar unless top
     code = assigns.join ', '
     if o.level < LEVEL_LIST then code else "(#{code})"

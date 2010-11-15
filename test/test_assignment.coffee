@@ -198,3 +198,8 @@ eq obj.b, 'b'
 
 
 ok {} = [] = true, 'empty assignment is allowed'
+
+
+x = 'y'
+{(x)} = y: 0xc0c0
+eq x, 49344
