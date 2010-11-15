@@ -6,7 +6,6 @@
 {Scope} = require './scope'
 
 #### Base
-
 # The **Base** is the abstract base class for all nodes in the syntax tree.
 # Each subclass implements the `compileNode` method, which performs the
 # code generation for that node. To compile a node to JavaScript,
@@ -17,7 +16,6 @@
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
 class exports.Base
-
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
@@ -92,10 +90,6 @@ class exports.Base
     @traverseChildren false, -> not contains := true if pred it
     contains
 
-  # Is this node of a certain type, or does it contain the type?
-  containsType: (type) ->
-    this instanceof type or @contains -> it instanceof type
-
   # Convenience for the most common use of contains. Does the node contain
   # a pure statement?
   containsPureStatement: ->
@@ -148,7 +142,6 @@ class exports.Base
     tree
 
 #### Expressions
-
 # The expressions body is the list of expressions that forms the body of an
 # indented block of code -- the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on...
@@ -236,10 +229,9 @@ class exports.Expressions extends Base
     code + post
 
 #### Literal
-
 # Literals are static values that can be passed through directly into
-# JavaScript without translation, such as: strings, numbers,
-# `true`, `false`, `null`...
+# JavaScript without translation, such as identifiers, numbers, `this`, `break`
+# and pretty much everything that doesn't fit in other nodes.
 class exports.Literal extends Base
   (@value) =>
 
@@ -260,9 +252,6 @@ class exports.Literal extends Base
   toString: -> ' "' + @value + '"'
 
 #### Return
-
-# A `return` is a *pureStatement* -- wrapping it in a closure wouldn't
-# make sense.
 class exports.Return extends Base
   (@expression) =>
 
@@ -282,9 +271,8 @@ class exports.Return extends Base
       o.indent + "return#{ exp and ' ' + exp.compile o, LEVEL_PAREN };"
 
 #### Value
-
-# A value, variable or literal or parenthesized, indexed or dotted into,
-# or vanilla.
+# Container for property access chains, by holding `Accessor`/`Index` instances
+# wihtin `@properties`.
 class exports.Value extends Base
   # A **Value** has a base and a list of property accesses.
   (base, props, tag) =>
@@ -295,7 +283,6 @@ class exports.Value extends Base
 
   children: <[ base properties ]>
 
-  # Add a property access to the list.
   append: -> @properties.push it; this
 
   hasProperties: -> !!@properties.length
@@ -397,7 +384,6 @@ class exports.Value extends Base
     null
 
 #### Comment
-
 # Coco passes through block comments as JavaScript block comments
 # at the same position.
 class exports.Comment extends Base
@@ -413,9 +399,7 @@ class exports.Comment extends Base
     if level ? o.level then code else o.indent + code
 
 #### Call
-
-# Node for a function invocation. Takes care of converting `super()` calls into
-# calls against the prototype's function of the same name.
+# Node for a function invocation. Takes care of converting `super()` calls.
 class exports.Call extends Base
   (@variable = @super = Literal('this'), @args = [], @soak) => @new = ''
 
@@ -475,7 +459,6 @@ class exports.Call extends Base
         call.variable = asn.right; asn.right = Value call
     asn
 
-  # Compile a vanilla function call.
   compileNode: (o) ->
     unless @super
       return asn.compile o if asn = @unfoldAssign o
@@ -521,7 +504,6 @@ class exports.Call extends Base
     "#{fun}.apply(#{ref}, #{args})"
 
 #### Extends
-
 # Node to extend an object's prototype with an ancestor object.
 class exports.Extends extends Base
   (@child, @parent) =>
@@ -532,7 +514,7 @@ class exports.Extends extends Base
     Call(Value(Literal utility 'extends'), [@child, @parent]).compile o
 
 #### Import
-
+# Handles the `import` operation that copies properties from right to left.
 class exports.Import extends Base
   (@left, @right, own) => @util = if own then 'import' else 'importAll'
 
@@ -581,9 +563,7 @@ class exports.Import extends Base
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Accessor
-
-# A `.` accessor into a property of a value, or the `::` shorthand for
-# an accessor into the object's prototype.
+# `.` accessor into a property of a value.
 class exports.Accessor extends Base
   (@name, symbol) =>
     switch symbol
@@ -603,8 +583,7 @@ class exports.Accessor extends Base
     super idt, @constructor.name + if @assign then '=' else ''
 
 #### Index
-
-# A `[ ... ]` indexed accessor into an array or object.
+# `[ ... ]` indexed accessor.
 class exports.Index extends Base
   (@index, symbol) =>
     switch symbol
@@ -620,8 +599,7 @@ class exports.Index extends Base
   toString: Accessor::toString
 
 #### Obj
-
-# An object literal, nothing fancy.
+# `{}`
 class exports.Obj extends Base
   (props) => @objects = @properties = props or []
 
@@ -668,8 +646,7 @@ class exports.Obj extends Base
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Arr
-
-# An array literal.
+# `[]`
 class exports.Arr extends Base
   (@objects = []) =>
 
@@ -691,7 +668,6 @@ class exports.Arr extends Base
     else "[#{code}]"
 
 #### Class
-
 # The Coco class definition.
 class exports.Class extends Base
   (@variable, @parent, @body = Expressions()) =>
@@ -733,8 +709,7 @@ class exports.Class extends Base
     clas.compile o
 
 #### Assign
-
-# The **Assign** is used to assign a local variable to value, or to set the
+# Used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 class exports.Assign extends Base
   (@left, @right, @op = '=') =>
@@ -844,8 +819,7 @@ class exports.Assign extends Base
   toString: (idt) -> super idt, @constructor.name + ' ' + @op
 
 #### Code
-
-# A function definition. This is the only node that creates a new Scope.
+# A function definition. This is the only node that creates a new `Scope`.
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 class exports.Code extends Base
@@ -935,7 +909,6 @@ class exports.Code extends Base
   traverseChildren: (crossScope, func) -> super crossScope, func if crossScope
 
 #### Param
-
 # A parameter in a function definition with an arbitrary LHS and
 # an optional default value.
 class exports.Param extends Base
@@ -955,7 +928,6 @@ class exports.Param extends Base
   isComplex: -> @name.isComplex()
 
 #### Splat
-
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
 class exports.Splat extends Base
@@ -990,10 +962,7 @@ class exports.Splat extends Base
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
 #### While
-
-# A while loop, the only sort of low-level loop exposed by Coco. From
-# it, all other loops can be manufactured. Useful in cases where you need more
-# flexibility or more speed than a comprehension can provide.
+# A while loop, the only sort of low-level loop exposed by Coco.
 class exports.While extends Base
   (@condition, {@guard, name} = {}) => @condition.=invert() if name is 'until'
 
@@ -1040,9 +1009,7 @@ class exports.While extends Base
     code + body.compile(o, LEVEL_TOP) + "\n#{@tab}}" + ret
 
 #### Op
-
-# Simple Arithmetic and logical operations. Performs some conversion from
-# Coco operations into their JavaScript equivalents.
+# Simple Arithmetic and logical operations, with some special conversions.
 class exports.Op extends Base
   (op, first, second, flip) =>
     return Of first, second if op is 'of'
@@ -1138,6 +1105,8 @@ class exports.Op extends Base
   toString: Assign::toString
 
 #### Of
+# Handles `of` operation that test if the left operand is included within
+# the right operand, arraywise.
 class exports.Of extends Base
   (@object, @array) =>
 
@@ -1171,8 +1140,7 @@ class exports.Of extends Base
     super idt, @constructor.name + if @negated then '!' else ''
 
 #### Try
-
-# A classic *try/catch/finally* block.
+# Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Base
   (@attempt, @thrown, @recovery, @ensure) =>
 
@@ -1199,7 +1167,6 @@ class exports.Try extends Base
     code
 
 #### Throw
-
 # Simple node to throw an exception.
 class exports.Throw extends Base
   (@expression) =>
@@ -1213,7 +1180,6 @@ class exports.Throw extends Base
   compile: (o) -> o.indent + "throw #{ @expression.compile o, LEVEL_PAREN };"
 
 #### Existence
-
 # Checks a value for existence --  not `undefined` and not `null`.
 class exports.Existence extends Base
   (@expression) =>
@@ -1233,7 +1199,6 @@ class exports.Existence extends Base
     if o.level <= LEVEL_COND then code else "(#{code})"
 
 #### Parens
-
 # An extra set of parentheses, specified explicitly in the source.
 # Parentheses are a good way to force any statement to become an expression.
 class exports.Parens extends Base
@@ -1254,14 +1219,9 @@ class exports.Parens extends Base
     if expr.isStatement() then code else "(#{code})"
 
 #### For
-
-# Coco's replacement for the *for* loop is our array and object
-# comprehensions, that compile into *for* loops here. They also act as an
+# Coco's replacement for the `for` loop is our array and object
+# comprehensions, that compile into `for` loops here. They also act as an
 # expression, able to return the result of each filtered iteration.
-#
-# Unlike Python array comprehensions, they can be multi-line, and you can pass
-# the current index of the loop as a second parameter. Unlike Ruby blocks,
-# you can map and filter in a single pass.
 class exports.For extends While
   (head, @body) =>
     this import all head
@@ -1355,7 +1315,8 @@ class exports.For extends While
     defs
 
 #### Switch
-
+# The regular JavaScript `switch`-`case`-`default`,
+# but with forced `break` after each cases.
 class exports.Switch extends Base
   (@switch, @cases, @default) =>
     return if @switch
@@ -1388,7 +1349,7 @@ class exports.Switch extends Base
     code +  tab + '}'
 
 #### Case
-
+# Convinient container node for `case` blocks.
 class exports.Case extends Base
   (@tests, @body) =>
 
@@ -1405,7 +1366,6 @@ class exports.Case extends Base
     code
 
 #### If
-
 # The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Base
   (@if, @then, {@statement, @soak, name} = {}) =>
@@ -1426,7 +1386,7 @@ class exports.If extends Base
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
     @statement or o?.level is LEVEL_TOP or
-      @then.isStatement(o) or @else?.isStatement(o)
+    @then.isStatement(o) or @else?.isStatement(o)
 
   makeReturn: ->
     @then.=makeReturn()
@@ -1436,8 +1396,6 @@ class exports.If extends Base
   compileNode: (o) ->
     if @isStatement o then @compileStatement o else @compileExpression o
 
-  # Compile the **If** as a regular *if-else* statement. Flattened chains
-  # force inner *else* bodies into statement form.
   compileStatement: (o) ->
     code  = if del o, 'chainChild' then '' else @tab
     code += "if (#{ @if.compile o, LEVEL_PAREN }) {"
@@ -1533,10 +1491,6 @@ LEVEL_ACCESS = 5  # ...[0]
 
 # Tabs are two spaces for pretty printing.
 TAB = '  '
-
-# Trim out all trailing whitespace, so that the generated code plays nice
-# with Git.
-TRAILING_WHITESPACE = /[ \t]+$/gm
 
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
 NUMBER     = /// ^ -? (?: 0x[\da-f]+ | (?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)? ) $ ///i
