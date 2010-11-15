@@ -154,6 +154,7 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 - `import` / `import all`
 
   Infix operators that copy properties from left to right and return the right operand.
+  Optimized to a series of assignments if the right operand of `import` is an object literal.
 
       $ coco -bpe 'x import y import all z'
       var __importAll = function(obj, src){
@@ -165,6 +166,10 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
         return obj;
       };
       __importAll(__import(x, y), z);
+
+      $ coco -bpe 'w = x import {y, (z)}'
+      var w;
+      w = (x.y = y, x[z] = z, x);
 
 
 - `it`
@@ -216,8 +221,13 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 - `<[ quoted words ]>`
 
-      $ coco -bpe '<[ quoted words ]>'
-      ["quoted", "words"];
+  A literal that represents an array of strings or a function call with string arguments.
+
+      $ coco -bpe 'f <[ array of strings ]>'
+      f(["array", "of", "strings"]);
+
+      $ coco -bpe 'f<[ argument of strings ]>'
+      f("argument", "of", "strings");
 
 
 - `void`
