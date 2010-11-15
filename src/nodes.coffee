@@ -215,8 +215,15 @@ class exports.Expressions extends Base
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
+    code = post = ''
+    break for exp, i of @expressions
+    when exp.unwrap() not instanceof [Comment, Literal]
     o.level = LEVEL_TOP
-    code    = @compileNode o
+    if i
+      rest = @expressions.splice i, 1/0
+      code = @compileNode o
+      @expressions = rest
+    post    = if @expressions.length then @compileNode o else ''
     vars    = ''
     {scope} = o
     if not o.globals and scope.hasDeclarations this
@@ -224,8 +231,9 @@ class exports.Expressions extends Base
     if scope.hasAssignments this
       vars += ', ' if vars
       vars += multident scope.assignedVariables().join(', '), @tab
-    code = @tab + "var #{vars};\n" + code if vars
-    code
+    code += '\n' if code and post
+    code += @tab + "var #{vars};\n" if vars
+    code + post
 
 #### Literal
 

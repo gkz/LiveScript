@@ -11,3 +11,16 @@ throws 'unclosed CALL_START on line 1', -> Coco.nodes 'f(->'
 
 eq Coco.compile('for all k in o then', bare: true, globals: true),
    'for (k in o) {}'
+
+eq '''
+/* (c) 2010 me */
+"use strict";
+var I;
+I = function(it){
+  return it;
+};
+''', Coco.compile '''
+### (c) 2010 me ###
+"use strict"
+I = -> it
+''', bare: true
