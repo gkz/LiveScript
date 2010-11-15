@@ -89,13 +89,88 @@ grammar =
   Expression: [
     o 'Value'
     o 'Call'
-    o 'Function'
-    o 'Operation'
-    o 'If'
-    o 'Try'
-    o 'Loop'
-    o 'Switch'
-    o 'Class'
+
+    o 'Code'
+    o 'FUNCTION Code',            -> mix $2, statement: true
+    o 'FUNCTION IDENTIFIER Code', -> mix $3, statement: true, name: $2
+
+    # Arithmetic and logical operators, working on one or more operands.
+    # Here they are grouped by order of precedence. The actual precedence rules
+    # are defined at the bottom of the page. It would be shorter if we could
+    # combine most of these rules into a single generic *Operand OpSymbol Operand*
+    # -type rule, but in order to make the precedence binding possible, separate
+    # rules are necessary.
+    o 'UNARY      Expression',            -> Op $1, $2
+    o 'PLUS_MINUS Expression',           (-> Op $1, $2), prec: 'UNARY'
+
+    o 'CREMENT SimpleAssignable',         -> Op $1, $2
+    o 'SimpleAssignable CREMENT',         -> Op $2, $1, null, true
+
+    o 'Expression ?',                     -> Existence $1
+
+    o 'Expression PLUS_MINUS Expression', -> Op $2, $1, $3
+    o 'Expression MATH       Expression', -> Op $2, $1, $3
+    o 'Expression SHIFT      Expression', -> Op $2, $1, $3
+    o 'Expression COMPARE    Expression', -> Op $2, $1, $3
+    o 'Expression LOGIC      Expression', -> Op $2, $1, $3
+    o 'Expression IMPORT     Expression', -> Import $1, $3, $2
+    o 'Expression RELATION   Expression', ->
+      if $2.charAt(0) is '!'
+      then Op($2.slice(1), $1, $3).invert()
+      else Op $2, $1, $3
+
+    o 'Assignable ASSIGN Expression',                -> Assign $1, $3, $2
+    o 'Assignable ASSIGN INDENT Expression OUTDENT', -> Assign $1, $4, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN
+       Expression',                                  -> Assign $1, $3, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN
+       INDENT Expression OUTDENT',                   -> Assign $1, $4, $2
+
+    o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
+
+    # Array, object, and range comprehensions, at the most generic level.
+    # Comprehensions can either be normal, with a block of expressions to execute,
+    # or postfix, with a single expression.
+    o 'Statement  ForHead', -> For $2, Expressions $1
+    o 'Expression ForHead', -> For $2, Expressions $1
+    o 'ForHead    Block',   -> For $1, $2
+
+    o 'WhileSource Block',      -> $1.addBody $2
+    o 'Statement  WhileSource', -> $2.addBody Expressions $1
+    o 'Expression WhileSource', -> $2.addBody Expressions $1
+
+    o 'FOR EVER   Block',    -> While().addBody $3
+    o 'Statement  FOR EVER', -> While().addBody Expressions $1
+    o 'Expression FOR EVER', -> While().addBody Expressions $1
+
+    # The full complement of `if` expressions,
+    # including postfix one-liner `if` and `unless`.
+    o 'IfBlock'
+    o 'Statement  POST_IF Expression', ->
+      If $3, Expressions($1), name: $2, statement: true
+    o 'Expression POST_IF Expression', ->
+      If $3, Expressions($1), name: $2, statement: true
+
+    o 'SWITCH Expression Cases',               -> Switch $2, $3
+    o 'SWITCH Expression Cases DEFAULT Block', -> Switch $2, $3, $5
+    o 'SWITCH Cases',                          -> Switch null, $2
+    o 'SWITCH Cases DEFAULT Block',            -> Switch null, $2, $4
+
+    o 'TRY Block',                                      -> Try $2
+    o 'TRY Block CATCH IDENTIFIER Block',               -> Try $2, $4, $5
+    o 'TRY Block                        FINALLY Block', -> Try $2, null, null, $4
+    o 'TRY Block CATCH IDENTIFIER Block FINALLY Block', -> Try $2, $4, $5, $7
+
+    # Class definitions have optional bodies of prototype property assignments,
+    # and optional references to the superclass.
+    o 'CLASS',                                      -> Class()
+    o 'CLASS Block',                                -> Class null, null, $2
+    o 'CLASS EXTENDS Value',                        -> Class null, $3
+    o 'CLASS EXTENDS Value Block',                  -> Class null, $3, $4
+    o 'CLASS SimpleAssignable',                     -> Class $2
+    o 'CLASS SimpleAssignable Block',               -> Class $2, null, $3
+    o 'CLASS SimpleAssignable EXTENDS Value',       -> Class $2, $4
+    o 'CLASS SimpleAssignable EXTENDS Value Block', -> Class $2, $4, $5
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
@@ -125,42 +200,6 @@ grammar =
     o 'LITERAL', -> if $1 is 'void' then Op 'void', Literal 0 else Literal $1
   ]
 
-  # Arithmetic and logical operators, working on one or more operands.
-  # Here they are grouped by order of precedence. The actual precedence rules
-  # are defined at the bottom of the page. It would be shorter if we could
-  # combine most of these rules into a single generic *Operand OpSymbol Operand*
-  # -type rule, but in order to make the precedence binding possible, separate
-  # rules are necessary.
-  Operation: [
-    o 'UNARY      Expression',            -> Op $1, $2
-    o 'PLUS_MINUS Expression',           (-> Op $1, $2), prec: 'UNARY'
-
-    o 'CREMENT SimpleAssignable',         -> Op $1, $2
-    o 'SimpleAssignable CREMENT',         -> Op $2, $1, null, true
-
-    o 'Expression ?',                     -> Existence $1
-
-    o 'Expression PLUS_MINUS Expression', -> Op $2, $1, $3
-    o 'Expression MATH       Expression', -> Op $2, $1, $3
-    o 'Expression SHIFT      Expression', -> Op $2, $1, $3
-    o 'Expression COMPARE    Expression', -> Op $2, $1, $3
-    o 'Expression LOGIC      Expression', -> Op $2, $1, $3
-    o 'Expression IMPORT     Expression', -> Import $1, $3, $2
-    o 'Expression RELATION   Expression', ->
-      if $2.charAt(0) is '!'
-      then Op($2.slice(1), $1, $3).invert()
-      else Op $2, $1, $3
-
-    o 'Assignable ASSIGN Expression',                -> Assign $1, $3, $2
-    o 'Assignable ASSIGN INDENT Expression OUTDENT', -> Assign $1, $4, $2
-    o 'SimpleAssignable COMPOUND_ASSIGN
-       Expression',                                  -> Assign $1, $3, $2
-    o 'SimpleAssignable COMPOUND_ASSIGN
-       INDENT Expression OUTDENT',                   -> Assign $1, $4, $2
-
-    o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
-  ]
-
   # Assignment when it happens within an object literal. The difference from
   # the ordinary **Assign** is that these allow numbers and strings as keys.
   AssignObj: [
@@ -179,11 +218,6 @@ grammar =
     o 'Parenthetical'
   ]
 
-  Function: [
-    o 'Code'
-    o 'FUNCTION Code',            -> mix $2, statement: true
-    o 'FUNCTION IDENTIFIER Code', -> mix $3, statement: true, name: $2
-  ]
   # The **Code** node is the function literal. It's defined by an indented block
   # of **Expressions** preceded by a function arrow, with an optional parameter
   # list.
@@ -272,19 +306,6 @@ grammar =
     o 'AssignList OptComma INDENT AssignList OptComma OUTDENT', -> $1.concat $4
   ]
 
-  # Class definitions have optional bodies of prototype property assignments,
-  # and optional references to the superclass.
-  Class: [
-    o 'CLASS',                                      -> Class()
-    o 'CLASS Block',                                -> Class null, null, $2
-    o 'CLASS EXTENDS Value',                        -> Class null, $3
-    o 'CLASS EXTENDS Value Block',                  -> Class null, $3, $4
-    o 'CLASS SimpleAssignable',                     -> Class $2
-    o 'CLASS SimpleAssignable Block',               -> Class $2, null, $3
-    o 'CLASS SimpleAssignable EXTENDS Value',       -> Class $2, $4
-    o 'CLASS SimpleAssignable EXTENDS Value Block', -> Class $2, $4, $5
-  ]
-
   # Function calls.
   Call: [
     o 'Value OptFuncExist Arguments', -> Call $1, $3, $2
@@ -324,14 +345,6 @@ grammar =
     o 'Splat'
   ]
 
-  # The variants of *try/catch/finally* exception handling blocks.
-  Try: [
-    o 'TRY Block',                                      -> Try $2
-    o 'TRY Block CATCH IDENTIFIER Block',               -> Try $2, $4, $5
-    o 'TRY Block                        FINALLY Block', -> Try $2, null, null, $4
-    o 'TRY Block CATCH IDENTIFIER Block FINALLY Block', -> Try $2, $4, $5, $7
-  ]
-
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
   # not an **Expression**, so if you need to use an expression in a place
   # where only values are accepted, wrapping it in parentheses will always do
@@ -340,22 +353,6 @@ grammar =
     o '( Expression )', -> Parens $2
   ]
 
-  # Array, object, and range comprehensions, at the most generic level.
-  # Comprehensions can either be normal, with a block of expressions to execute,
-  # or postfix, with a single expression.
-  Loop: [
-    o 'Statement  ForHead', -> For $2, Expressions $1
-    o 'Expression ForHead', -> For $2, Expressions $1
-    o 'ForHead    Block',   -> For $1, $2
-
-    o 'WhileSource Block',      -> $1.addBody $2
-    o 'Statement  WhileSource', -> $2.addBody Expressions $1
-    o 'Expression WhileSource', -> $2.addBody Expressions $1
-
-    o 'FOR EVER Block',      -> While().addBody $3
-    o 'Statement  FOR EVER', -> While().addBody Expressions $1
-    o 'Expression FOR EVER', -> While().addBody Expressions $1
-  ]
   ForOf: [
     o 'FOROF Expression',                 -> source: $2
     o 'FOROF Expression WHEN Expression', -> source: $2,           guard: $4
@@ -398,12 +395,6 @@ grammar =
     o 'WHILE Expression WHEN Expression', -> While $2, name: $1, guard: $4
   ]
 
-  Switch: [
-    o 'SWITCH Expression Cases',               -> Switch $2, $3
-    o 'SWITCH Expression Cases DEFAULT Block', -> Switch $2, $3, $5
-    o 'SWITCH Cases',                          -> Switch null, $2
-    o 'SWITCH Cases DEFAULT Block',            -> Switch null, $2, $4
-  ]
   Cases: [
     o 'Case',       -> [$1]
     o 'Cases Case', -> $1.concat $2
@@ -426,15 +417,6 @@ grammar =
     o 'IF Expression Block',              -> If $2, $3, name: $1
     o 'IfBlock ELSE IF Expression Block', -> $1.addElse If $4, $5, name: $3
     o 'IfBlock ELSE Block',               -> $1.addElse $3
-  ]
-  # The full complement of *if* expressions, including postfix one-liner
-  # *if* and *unless*.
-  If: [
-    o 'IfBlock'
-    o 'Statement  POST_IF Expression', ->
-      If $3, Expressions($1), name: $2, statement: true
-    o 'Expression POST_IF Expression', ->
-      If $3, Expressions($1), name: $2, statement: true
   ]
 
 # Precedence
