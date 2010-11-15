@@ -113,25 +113,24 @@ class exports.Base
 
   unwrapAll: ->
     node = this
-    continue until node is node .= unwrap()
+    continue until node is node.=unwrap()
     node
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
 
+  isComplex       : YES
   isStatement     : NO
   isPureStatement : NO
-  isComplex       : YES
-  isChainable     : NO
   isAssignable    : NO
   isArray         : NO
   isObject        : NO
 
   assigns      : NO   # Is this node used to assign a certain variable?
-  unwrap       : THIS
   unfoldSoak   : NO
   unfoldAssign : NO
+  unwrap       : THIS
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coco --nodes` prints out.
@@ -201,16 +200,15 @@ class exports.Expressions extends Base
     o.indent = @tab = if bare = del o, 'bare' then '' else TAB
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
-    code     = @compileWithDeclarations o
-    code    .= replace TRAILING_WHITESPACE, ''
+    code = @compileWithDeclarations(o).replace /[^\n\S]+$/gm, ''
     if bare then code else "(function(){\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
     code = post = ''
-    break for exp, i of @expressions
-    when exp.unwrap() not instanceof [Comment, Literal]
+    for exp, i of @expressions
+      break unless exp.unwrap() instanceof [Comment, Literal]
     o.level = LEVEL_TOP
     if i
       rest = @expressions.splice i, 1/0
@@ -698,9 +696,7 @@ class exports.Class extends Base
     unless ctor
       exps.unshift ctor = Code()
       ctor.body.append Call null, [Splat Literal 'arguments'] if @parent
-    ctor.ctor = ctor.statement = true
-    ctor.name = name
-    ctor.clas = null
+    ctor import {name, 'ctor', 'statement', clas: null}
     exps.unshift Extends lname, @parent if @parent
     exps.push lname
     clas = Parens (Call Code [], @body), true
@@ -823,8 +819,8 @@ class exports.Assign extends Base
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
 class exports.Code extends Base
-  (@params = [], @body = Expressions(), tag) =>
-    @bound = 'this' if tag is '=>'
+  (@params = [], @body = Expressions(), arrow) =>
+    @bound = 'this' if arrow is '=>'
 
   children: <[ params body ]>
 
@@ -832,10 +828,8 @@ class exports.Code extends Base
 
   makeReturn: ->
     if @statement
-      @returns = true
-      this
-    else
-      Return this
+    then this import {'returns'}
+    else Return this
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
@@ -984,7 +978,7 @@ class exports.While extends Base
 
   compileNode: (o) ->
     code = @condition.compile o, LEVEL_PAREN
-    code = @tab + if code is 'true' then 'for (;;' else "while (#{code}"
+    code = @tab + if code is 'true' then 'for (;;' else 'while (' + code
     o.indent += TAB
     code + ') {' + @compileBody o
 
@@ -1011,7 +1005,7 @@ class exports.While extends Base
 #### Op
 # Simple Arithmetic and logical operations, with some special conversions.
 class exports.Op extends Base
-  (op, first, second, flip) =>
+  (op, first, second, post) =>
     return Of first, second if op is 'of'
     if op is 'do'
       if first instanceof Code and first.bound
@@ -1024,18 +1018,16 @@ class exports.Op extends Base
         call.newInstance()
         return first
       first = Parens first, true if first instanceof Code and first.bound
-    this import {op, first, second, flip}
+    this import {op, first, second, post}
 
-  # The map of invertible/chainable operators.
-  INVERSIONS = '===':'!==', '==':'!=', '>':'<=', '<':'>='
-  INVERSIONS[val] = key for all key, val in INVERSIONS
+  # Map of comparison operators which are both invertible and chainable.
+  COMPARERS = '===':'!==', '==':'!=', '>':'<=', '<':'>='
+  COMPARERS[val] = key for all key, val in COMPARERS
 
   children: <[ first second ]>
 
-  isChainable: -> @op in INVERSIONS
-
   invert: ->
-    if op = INVERSIONS[@op]
+    if op = COMPARERS[@op]
       @op = op
       this
     else if @second
@@ -1049,8 +1041,9 @@ class exports.Op extends Base
     @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
 
   compileNode: (o) ->
-    return @compileUnary     o if not @second
-    return @compileChain     o if @isChainable() and @first.isChainable()
+    return @compileUnary o if not @second
+    return @compileChain o if @first instanceof Op and
+                              @op in COMPARERS and @first.op in COMPARERS
     return @compileExistence o if @op is '?'
     return @compileMultiIO   o if @op is 'instanceof' and @second.isArray()
     @first import {@front}
@@ -1086,12 +1079,14 @@ class exports.Op extends Base
 
   # Compile a unary **Op**.
   compileUnary: (o) ->
-    parts = [op = @op]
-    parts.push ' ' if op of <[ new typeof delete void ]> or
-                      op of <[ + - ]> and @first.op is op
-    parts.push @first.compile o, LEVEL_OP
-    parts.reverse() if @flip
-    code = parts.join ''
+    {op} = this
+    code = @first.compile o, LEVEL_OP
+    code = if @post
+    then code + op
+    else if op of <[ new typeof delete void ]> or
+            op of <[ + - ]> and @first.op is op
+    then op + ' ' + code
+    else op + code
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   compileMultiIO: (o) ->
