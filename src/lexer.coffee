@@ -333,7 +333,7 @@ class exports.Lexer
       return value.length
     default
       if value.charAt(0) is '@'
-        @token 'IDENTIFIER', 'arguments'
+        @token<[ IDENTIFIER arguments ]>
         @token<[ INDEX_START [ ]>
         @token 'STRNUM', value.slice 1
         @token<[ INDEX_END  ] ]>
@@ -420,22 +420,18 @@ class exports.Lexer
       if chr is '\\'
         ++i
         continue
-      continue unless chr is '#' and str.charAt(i+1) is '{' and
-                      (expr = @balancedString str.slice(i+1), [<[ { } ]>])
+      continue unless chr is '#' and str.charAt(i+1) is '{'
+      code = @balancedString str.slice(i+1), [<[ { } ]>]
       tokens.push ['TO_BE_STRING', str.slice(pi, i)] if pi < i
-      inner = expr.slice(1, -1)
-              .replace( LEADING_SPACES, '')
-              .replace(TRAILING_SPACES, '')
-      if inner.length
-        nested = new Lexer().tokenize inner, {@line, rewrite: false}
+      pi = 1 + i += code.length
+      if code.=slice(1, -1).replace LEADING_SPACES, ''
+        nested = new Lexer().tokenize code, {@line, rewrite: false}
         nested.pop()
         if nested.length > 1
           nested.unshift <[ ( ( ]>
           nested.push    <[ ) ) ]>
         tokens.push ['TOKENS', nested]
-      i += expr.length
-      pi = i + 1
-    tokens.push ['TO_BE_STRING', str.slice pi] if i > pi < str.length
+    tokens.push ['TO_BE_STRING', str.slice pi] if pi < str.length
     return tokens if regex
     return @token<[ STRNUM "" ]> unless tokens.length
     tokens.unshift ['', ''] unless tokens[0][0] is 'TO_BE_STRING'
