@@ -14,11 +14,11 @@ getX = -> 10
 
 if x = getX() then 100
 
-ok x is 10
+eq x, 10
 
 x = if getX() then 100
 
-ok x is 100
+eq x, 100
 
 
 # This-assignment.
@@ -68,7 +68,7 @@ for nonref of <[ "" 0 f() ]>
   throws "\"#{nonref}\" cannot be assigned", -> Coco.compile "{k: #{nonref}} = v"
 
 
-throws 'assignment to undeclared variable "Math"', -> Coco.compile 'Math ||= 0'
+throws 'assignment to undeclared variable "Math"', -> Coco.compile 'Math ||:= 0'
 
 
 # Simple variable swapping.

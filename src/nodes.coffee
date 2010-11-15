@@ -222,7 +222,7 @@ class exports.Expressions extends Base
     if scope.hasAssignments this
       vars += ', ' if vars
       vars += multident scope.assignedVariables().join(', '), @tab
-    code += '\n' if code and post
+    code &&+= '\n' if post
     code += @tab + "var #{vars};\n" if vars
     code + post
 
@@ -521,11 +521,12 @@ class exports.Import extends Base
   compileNode: (o) ->
     unless @util is 'import' and @right.isObject()
       return Call(Value(Literal utility @util), [@left, @right]).compile o
+    top   = not o.level
     nodes = @right.unwrap().properties
-    if nodes.length > 1
-    then [sub , lref] = @left.cache   o, LEVEL_LIST
-    else  sub = lref  = @left.compile o, LEVEL_LIST
-    [delim, space] = if top = not o.level
+    if top and nodes.length < 2
+    then  sub = lref  = @left.compile o, LEVEL_LIST
+    else [sub , lref] = @left.cache   o, LEVEL_LIST
+    [delim, space] = if top
     then [';', '\n' + @tab]
     else [',', ' ']
     delim += space
@@ -708,7 +709,7 @@ class exports.Class extends Base
 # Used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
 class exports.Assign extends Base
-  (@left, @right, @op = '=') =>
+  (@left, @right, @op = '=', @logic = @op.logic) => @op += ''
 
   children: <[ left right ]>
 
@@ -720,9 +721,9 @@ class exports.Assign extends Base
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
+    return @compileConditional o if @logic
     {left, right} = this
     return @compileDestructuring o if left.isArray() or left.isObject()
-    return @compileConditional   o if @op of <[ ||= &&= ?= ]>
     name = left.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
@@ -810,7 +811,7 @@ class exports.Assign extends Base
   # more than once.
   compileConditional: (o) ->
     [left, rite] = Value(@left).cacheReference o
-    Op(@op.slice(0, -1), left, Assign(rite, @right, ':=')).compile o
+    Op(@logic, left, Assign(rite, @right, @op)).compile o
 
   toString: (idt) -> super idt, @constructor.name + ' ' + @op
 

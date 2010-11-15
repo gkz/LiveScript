@@ -310,7 +310,11 @@ class exports.Lexer
       tag = 'FUNC_ARROW'
     case '*'
       tag = if @last[0] is 'INDEX_START' then 'LITERAL' else 'MATH'
-    case <[ = := ]>         then tag = 'ASSIGN'
+    case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
+      tag = if value of <[ = := ]> then 'ASSIGN' else 'COMPOUND_ASSIGN'
+      if @last[0] is 'LOGIC'
+        @tokens.pop()
+        (value = new String value).logic = @last[1]
     case <[ ! ~ ]>          then tag = 'UNARY'
     case <[ . ?. .= ]>      then tag = 'ACCESS'
     case <[ + - ]>          then tag = 'PLUS_MINUS'
@@ -319,8 +323,6 @@ class exports.Lexer
     case <[ && || & | ^ ]>  then tag = 'LOGIC'
     case <[ / % ]>          then tag = 'MATH'
     case <[ ++ -- ]>        then tag = 'CREMENT'
-    case <[ -= += ||= &&= ?= /= *= %= <<= >>= >>>= &= ^= |= ]> \
-                            then tag = 'COMPOUND_ASSIGN'
     case <[ << >> >>> ]>    then tag = 'SHIFT'
     case <[ ?[ [= ]>        then tag = 'INDEX_START'
     case '@'                then tag = 'THIS'
@@ -512,14 +514,13 @@ NUMBER = ///
 SYMBOL  = /// ^ (
   ?: [-=]>                # function
    | [!=]==               # strict equality
-   | [-+*/%&|^?:.[<>=!]=  # compound assign / comparison
-   | >>>=?                # zero-fill right shift
-   | ([-+:])\1            # {in,de}crement / prototype access
-   | ([&|<>])\2=?         # logic / shift
+   | [-+*/%&|^:.[<>=!]=   # compound assign / comparison
+   | ([-+:&|])\1          # {in,de}crement / logic / prototype access
    | \?[.[]               # soak access
    | \.{3}                # splat
    | @\d+                 # argument shorthand
    | \\\n                 # continued line
+   | <<=? | >>>?=?        # left/right shift
    | \S
 ) ///
 HERESINGLE  = /// ^ ''' ([\s\S]*?) (?:\n[^\n\S]*)? ''' ///
