@@ -29,11 +29,12 @@ class exports.Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (@code, o = {}) ->
-    @line    = o.line or 0  # The current line.
-    @indent  = 0            # The current indentation level.
-    @indebt  = 0            # The over-indentation at the current level.
-    @outdebt = 0            # The under-outdentation at the current level.
-    @indents = []           # The stack of all current indentation levels.
+    # The current line.
+    @line    = o.line or 0
+    # The current indentation level, over-indentation and under-outdentation.
+    @indent  = @indebt = @outdebt = 0
+    # The stack of all current indentation levels.
+    @indents = []
     # Stream of parsed tokens in the form `['TYPE', value, line]`.
     @tokens  = [@last = ['DUMMY', '', 0]]
     # Flags for distinguishing FORIN/FOROF/FROM/TO.
@@ -44,13 +45,14 @@ class exports.Lexer
       if comments = COMMENTS.exec @chunk
         break unless @chunk = code.slice i += @countLines(comments[0]).length
       switch code.charAt i
-      case '\n'      then step = do @lineToken
-      case ' ', '\t' then step = do @whitespaceToken
-      case "'", '"'  then step = do @heredocToken or do @stringToken
-      case '/'       then step = do @heregexToken or do @regexToken
-      case '<'       then step = do @wordsToken
-      case '#'       then step = do @commentToken
-      case '`'       then step = do @jsToken
+      case '\n'then step = do @lineToken
+      case ' ' then step = do @whitespaceToken
+      case "'" then step = @heredocToken(HERESINGLE) or @singleStringToken()
+      case '"' then step = @heredocToken(HEREDOUBLE) or @doubleStringToken()
+      case '/' then step = do @heregexToken or do @regexToken
+      case '<' then step = do @wordsToken
+      case '#' then step = do @commentToken
+      case '`' then step = do @jsToken
       default step = @whitespaceToken() or @identifierToken() or @numberToken()
       i += step or @literalToken()
     # Close up all remaining open blocks at the end of the file.
@@ -121,7 +123,7 @@ class exports.Lexer
               @tokens.pop()
               id = '!' + id
       else if id of RESERVED
-        throw SyntaxError "reserved word \"#{id}\" on line #{ @line + 1 }"
+        carp "reserved word \"#{id}\""
     @token tag, id
     @token<[ : : ]> if colon
     input.length
@@ -135,25 +137,25 @@ class exports.Lexer
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
-  stringToken: ->
-    switch @chunk.charAt 0
-    case "'"
-      return 0 unless string = SIMPLESTR.exec @chunk
-      @token 'STRNUM', (string[=0]).replace MULTILINER, '\\\n'
-    case '"'
-      string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
-      if 0 < string.indexOf '#{', 1
-      then @interpolateString string.slice 1, -1
-      else @token 'STRNUM', @escapeLines string
+  singleStringToken : ->
+    carp 'unterminated single quote' unless string = SIMPLESTR.exec @chunk
+    @token 'STRNUM', (string[=0]).replace MULTILINER, '\\\n'
+    @countLines(string).length
+
+  doubleStringToken : ->
+    string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
+    if 0 < string.indexOf '#{', 1
+    then @interpolateString string.slice 1, -1
+    else @token 'STRNUM', @escapeLines string
     @countLines(string).length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
-  heredocToken: ->
-    return 0 unless match = HEREDOC.exec @chunk
+  heredocToken: (regex) ->
+    return 0 unless match = regex.exec @chunk
     [heredoc] = match
     quote = heredoc.charAt 0
-    doc   = @sanitizeHeredoc match[2], {quote, indent: null}
+    doc   = @sanitizeHeredoc match[1], {quote, indent: null}
     if quote is '"' and 0 <= doc.indexOf '#{'
     then @interpolateString doc, heredoc: true
     else @token 'STRNUM', @makeString doc, quote, true
@@ -169,7 +171,7 @@ class exports.Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    return 0 unless js = JSTOKEN.exec @chunk
+    carp 'unterminated JS literal' unless js = JSTOKEN.exec @chunk
     @token 'LITERAL', (js[=0]).slice 1, -1
     @countLines(js).length
 
@@ -400,7 +402,7 @@ class exports.Lexer
         stack.push pair
         i += open.length - 1
         break
-    throw SyntaxError "unterminated #{ stack.pop()[0] } on line #{ @line + 1 }"
+    carp "unterminated #{ stack.pop()[0] }"
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.
@@ -470,6 +472,9 @@ class exports.Lexer
     ++@line while pos = 1 + str.indexOf '\n', pos
     str
 
+  # Throw a syntax error with the current line number.
+  carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
+
 # Constants
 # ---------
 
@@ -503,7 +508,6 @@ NUMBER = ///
  ^ 0x[\da-f]+ |                              # hex
  ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?  # decimal
 ///i
-HEREDOC = /// ^ ("""|''') ([\s\S]*?) (?:\n[^\n\S]*)? \1 ///
 SYMBOL  = /// ^ (
   ?: [-=]>                # function
    | [!=]==               # strict equality
@@ -517,6 +521,8 @@ SYMBOL  = /// ^ (
    | \\\n                 # continued line
    | \S
 ) ///
+HERESINGLE  = /// ^ ''' ([\s\S]*?) (?:\n[^\n\S]*)? ''' ///
+HEREDOUBLE  = /// ^ """ ([\s\S]*?) (?:\n[^\n\S]*)? """ ///
 WHITESPACE  = /^[^\n\S]+/
 COMMENTS    = /^(?:\s*#(?!##[^#]).*)+/
 HERECOMMENT = /^###([^#][\s\S]*?)(?:###|$)/
