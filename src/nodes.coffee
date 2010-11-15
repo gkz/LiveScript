@@ -197,7 +197,7 @@ class exports.Expressions extends Base
   # It would be better not to generate them in the first place, but for now,
   # clean up obvious double-parentheses.
   compileRoot: (o) ->
-    o.indent = @tab = if bare = del o, 'bare' then '' else TAB
+    o.indent = @tab = if bare = delete o.bare then '' else TAB
     o.scope  = new Scope null, this, null
     o.level  = LEVEL_TOP
     code = @compileWithDeclarations(o).replace /[^\n\S]+$/gm, ''
@@ -1079,6 +1079,7 @@ class exports.Op extends Base
   # Compile a unary **Op**.
   compileUnary: (o) ->
     {op} = this
+    return @compileDelete o if op is 'delete' and o.level
     code = @first.compile o, LEVEL_OP
     code = if @post
     then code + op
@@ -1095,6 +1096,14 @@ class exports.Op extends Base
     o.scope.free ref if sub isnt ref
     code = tests.join ' || '
     if o.level < LEVEL_OP then code else "(#{code})"
+
+  compileDelete: (o) ->
+    code = ref = o.scope.temporary 'ref'
+    [get, del] = Value(@first).cacheReference o
+    code += ' = ' + get.compile(o, LEVEL_LIST) + ', delete ' +
+                    del.compile(o, LEVEL_LIST) + ', ' + ref
+    o.scope.free ref
+    if o.level < LEVEL_LIST then code else "(#{code})"
 
   toString: Assign::toString
 
@@ -1391,7 +1400,7 @@ class exports.If extends Base
     if @isStatement o then @compileStatement o else @compileExpression o
 
   compileStatement: (o) ->
-    code  = if del o, 'chainChild' then '' else @tab
+    code  = if delete o.chainChild then '' else @tab
     code += "if (#{ @if.compile o, LEVEL_PAREN }) {"
     o.indent += TAB
     body  = Expressions(@then).compile o
@@ -1498,12 +1507,6 @@ METHOD_DEF = /^(?:(\S+)\.prototype\.|\S*?)\b([$A-Za-z_][$\w]*)$/
 utility = (name) ->
   Scope.root.assign ref = '__' + name, UTILITIES[name]
   ref
-
-# Delete a key from an object, returning the value.
-del = (obj, key) ->
-  val =  obj[key]
-  delete obj[key]
-  val
 
 multident = (code, tab) -> code.replace /\n/g, '$&' + tab
 

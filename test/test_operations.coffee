@@ -193,5 +193,16 @@ eq o.X, 'XX'
 eq o.xx, 'xx'
 eq o[0], 0
 
+
 o import all new class then deep: 'copy'
 eq o.deep, 'copy'
+
+
+i = 0
+O = ->
+  switch ++i
+  case 1 then {7}
+  case 2 then new String 7
+  default ok 0, 'returning delete should cache correctly'
+eq delete (o = new O)[new O], 7
+eq o[7], void

@@ -98,6 +98,15 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
         return Bound;
       }());
 
+- `delete`
+  Returns the deleted value as opposed to the useless
+  [JS behavior](http://people.mozilla.org/~jorendorff/es5.html#sec-11.4.1).
+
+      $ bin/coco -bpe 'ov = delete o.v; delete x'
+      var ov, _ref;
+      ov = (_ref = o.v, delete o.v, _ref);
+      delete x;
+
 
 - `do`
 

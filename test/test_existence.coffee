@@ -153,10 +153,10 @@ eq void, ++a?.b.c
 eq void, delete a?.b.c
 
 a = b: {c: 0}
-eq 1,   a?.b.c +  1
-eq 1,   a?.b.c += 1
-eq 2,   ++a?.b.c
-eq true, delete a?.b.c
+eq 1, a?.b.c +  1
+eq 1, a?.b.c += 1
+eq 2, ++a?.b.c
+eq 2, delete a?.b.c
 
 
 eq (1 or 0)?, true, 'postfix `?` should unwrap correctly'
