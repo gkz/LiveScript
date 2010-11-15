@@ -847,8 +847,7 @@ class exports.Code extends Base
     code = 'function'
     if @ctor and @bound
       code += """
-         _ctor(){}
-        #{tab}_ctor.prototype = #{name}.prototype;
+         _ctor(){} _ctor.prototype = #{name}.prototype;
         #{tab}function
       """
       scope.assign '_this', 'new _ctor'
@@ -892,7 +891,7 @@ class exports.Code extends Base
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" unless body.isEmpty()
     code += '}'
     if statement and name.charAt(0) isnt '_'
-      code += "\n#{tab}#{name}.name = \"#{name}\";"
+      code += " #{name}.name = \"#{name}\";"
     code += "\n#{tab}return #{name};" if @returns
     return tab + code if statement
     return utility('bind') + "(#{code}, #{@bound})" if @bound
