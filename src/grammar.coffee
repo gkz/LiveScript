@@ -246,11 +246,6 @@ grammar =
     o 'Object'
   ]
 
-  # A splat that occurs outside of a parameter list.
-  Splat: [
-    o 'Expression ...', -> Splat $1
-  ]
-
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
     o 'Identifier'
@@ -342,7 +337,7 @@ grammar =
   ]
   Arg: [
     o 'Expression'
-    o 'Splat'
+    o 'Expression ...', -> Splat $1
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
