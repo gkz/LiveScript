@@ -73,23 +73,24 @@ class exports.Lexer
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
     [input, id, colon] = match
-    if id is 'all'
+    switch id
+    case 'all'
       switch @last[0]
-      case 'FOR'    then @token 'ALL', id; return id.length
-      case 'IMPORT' then @last[1] = ''   ; return id.length
-    if id is 'from' and @tokens[*-2]?[0] is 'FOR'
+      case 'FOR'    then return @token('ALL', id).length
+      case 'IMPORT' then @last[1] = ''; return id.length
+    case 'from'
+      break unless @tokens[*-2]?[0] is 'FOR'
       @seenFor  = false
       @seenFrom = true
-      @token 'FROM', id
-      return id.length
-    if id is 'ever' and @last[0] is 'FOR'
+      return @token('FROM', id).length
+    case 'ever'
+      break unless @last[0] is 'FOR'
       @seenFor = false
-      @token 'EVER', id
-      return id.length
-    if @seenFrom and id of <[ to til ]>
+      return @token('EVER', id).length
+    case <[ to til ]>
+      break unless @seenFrom
       @seenFrom = false
-      @token 'TO', id
-      return id.length
+      return @token('TO', id).length
     tag = if at = id.charAt(0) is '@'
       id .= slice 1
       'THISPROP'
@@ -104,12 +105,7 @@ class exports.Lexer
         id = new String id
         id.reserved = true
     else
-      if COCO_ALIASES.hasOwnProperty id
-        switch id = COCO_ALIASES[id]
-        case '!'         then tag = 'UNARY'
-        case <[ && || ]> then tag = 'LOGIC'
-        default               tag = 'COMPARE'
-      else if id of COCO_KEYWORDS
+      if id of COCO_KEYWORDS
         switch tag = id.toUpperCase()
         case 'FOR'                         then @seenFor = true
         case 'UNLESS'                      then tag = 'IF'
@@ -126,6 +122,11 @@ class exports.Lexer
             if @last[1] is '!'
               @tokens.pop()
               id = '!' + id
+      else if COCO_ALIASES.hasOwnProperty id
+        switch id = COCO_ALIASES[id]
+        case '!'         then tag = 'UNARY'
+        case <[ && || ]> then tag = 'LOGIC'
+        default               tag = 'COMPARE'
       else if id of RESERVED
         carp "reserved word \"#{id}\""
     @token tag, id
@@ -135,9 +136,7 @@ class exports.Lexer
   # Matches numbers, including decimals, hex, and exponential notation.
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
-    return 0 unless number = NUMBER.exec @chunk
-    @token 'STRNUM', number[=0]
-    number.length
+    (number = NUMBER.exec @chunk) and @token('STRNUM', number[0]).length
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
@@ -348,8 +347,7 @@ class exports.Lexer
           tag = 'CALL_START'
         else if value is '[' and prev[0] of INDEXABLE
           tag = 'INDEX_START'
-    @token tag, value
-    value.length
+    @token(tag, value).length
 
   # Token Manipulators
   # ------------------
@@ -451,8 +449,11 @@ class exports.Lexer
   # Helpers
   # -------
 
-  # Add a token to the results, taking note of the line number.
-  token: (tag, value) -> @tokens.push @last = [tag, value, @line]
+  # Add a token to the results,
+  # taking note of the line number and returning `value`.
+  token: (tag, value) ->
+    @tokens.push @last = [tag, value, @line]
+    value
 
   # Converts newlines for string literals.
   escapeLines: (str, heredoc) ->
