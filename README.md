@@ -154,6 +154,14 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
         }
 
 
+- `for ever`
+
+  An empty version of `for` that loops forever.
+
+      $ coco -bpe 'continue for ever'
+      for (;;) {}
+
+
 - `instanceof []`
 
       $ coco -bpe 'A instanceof [B, C]'
@@ -253,4 +261,5 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 - The roles of `in` and `of` have been swapped to keep the JS behavior.
 - `class` takes a block rather than a pseudo object.
 - `switch`-`case`-`default` replaces switch-when-else.
+- `loop` is removed. Use `for ever` instead.
 - The binaries are named __coco__ and __coke__ to coexist with __coffee__ and __cake__.
