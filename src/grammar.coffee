@@ -93,8 +93,7 @@ grammar =
     o 'Operation'
     o 'If'
     o 'Try'
-    o 'While'
-    o 'For'
+    o 'Loop'
     o 'Switch'
     o 'Class'
   ]
@@ -341,31 +340,21 @@ grammar =
     o '( Expression )', -> Parens $2
   ]
 
-  # The condition portion of a while loop.
-  WhileSource: [
-    o 'WHILE Expression',                 -> While $2, name: $1
-    o 'WHILE Expression WHEN Expression', -> While $2, name: $1, guard: $4
-  ]
-  # The while loop can either be normal, with a block of expressions to execute,
-  # or postfix, with a single expression. There is no do..while.
-  While: [
-    o 'WhileSource Block',      -> $1.addBody $2
-    o 'Statement  WhileSource', -> $2.addBody Expressions $1
-    o 'Expression WhileSource', -> $2.addBody Expressions $1
-    o 'Loop',                   -> $1
-  ]
-  Loop: [
-    o 'LOOP Block',      -> While(Literal true).addBody $2
-    o 'LOOP Expression', -> While(Literal true).addBody Expressions $2
-  ]
-
   # Array, object, and range comprehensions, at the most generic level.
   # Comprehensions can either be normal, with a block of expressions to execute,
   # or postfix, with a single expression.
-  For: [
+  Loop: [
     o 'Statement  ForHead', -> For $2, Expressions $1
     o 'Expression ForHead', -> For $2, Expressions $1
     o 'ForHead    Block',   -> For $1, $2
+
+    o 'WhileSource Block',      -> $1.addBody $2
+    o 'Statement  WhileSource', -> $2.addBody Expressions $1
+    o 'Expression WhileSource', -> $2.addBody Expressions $1
+
+    o 'FOR EVER Block',      -> While().addBody $3
+    o 'Statement  FOR EVER', -> While().addBody Expressions $1
+    o 'Expression FOR EVER', -> While().addBody Expressions $1
   ]
   ForOf: [
     o 'FOROF Expression',                 -> source: $2
@@ -403,6 +392,10 @@ grammar =
        ForIn', -> mix $6, index: $3, name: $5
     o 'FOR IDENTIFIER FROM Expression
        ForTo', -> mix $5, index: $2, from: $4
+  ]
+  WhileSource: [
+    o 'WHILE Expression',                 -> While $2, name: $1
+    o 'WHILE Expression WHEN Expression', -> While $2, name: $1, guard: $4
   ]
 
   Switch: [
@@ -470,7 +463,7 @@ operators = [
   <[ right     : ASSIGN COMPOUND_ASSIGN
                RETURN THROW EXTENDS         ]>
   <[ right     FORIN FOROF FROM TO BY WHEN  ]>
-  <[ right     IF ELSE FOR WHILE LOOP CLASS
+  <[ right     IF ELSE FOR WHILE CLASS
                SWITCH CASE DEFAULT SUPER    ]>
   <[ right     POST_IF                      ]>
 ]

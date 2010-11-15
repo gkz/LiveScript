@@ -82,6 +82,10 @@ class exports.Lexer
       @seenFrom = true
       @token 'FROM', id
       return id.length
+    if id is 'ever' and @last[0] is 'FOR'
+      @seenFor = false
+      @token 'EVER', id
+      return id.length
     if @seenFrom and id of <[ to til ]>
       @seenFrom = false
       @token 'TO', id
@@ -483,7 +487,7 @@ JS_KEYWORDS = <[
 ]>
 
 # Coco-only keywords.
-COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until loop of by when ]>
+COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until of by when ]>
 COCO_ALIASES  = not: '!', and: '&&', or: '||',  is: '===', isnt : '!=='
 
 # The list of keywords that are reserved by JavaScript, but not used, or are

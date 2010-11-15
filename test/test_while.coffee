@@ -38,10 +38,9 @@ results = until value
 ok i is 6
 
 
-# And, the loop form of while.
 i = 5
 list = []
-loop
+for ever
   i -= 1
   break if i is 0
   list.push i * 2

@@ -436,7 +436,7 @@ class exports.Call extends Base
   digCalls: ->
     call = this
     list = []
-    loop
+    for ever
       if call.variable instanceof Call
         list.push call
         call .= variable
@@ -976,7 +976,7 @@ class exports.While extends Base
   makeReturn: -> @returns = true; this
 
   compileNode: (o) ->
-    code = @condition.compile o, LEVEL_PAREN
+    code = @condition?.compile(o, LEVEL_PAREN) or 'true'
     code = @tab + if code is 'true' then 'for (;;' else 'while (' + code
     o.indent += TAB
     code + ') {' + @compileBody o
