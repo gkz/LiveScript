@@ -545,10 +545,14 @@ class exports.Import extends Base
     if nodes.length > 1
     then [sub , lref] = @left.cache   o, LEVEL_LIST
     else  sub = lref  = @left.compile o, LEVEL_LIST
+    [delim, space] = if top = not o.level
+    then [';', '\n' + @tab]
+    else [',', ' ']
+    delim += space
     @temps = []
     code   = ''
     for node of nodes
-      code += if com then ' ' else ', '
+      code += if com then space else delim
       if com = node instanceof Comment
         code += node.compile o, LEVEL_LIST
         continue
@@ -571,8 +575,8 @@ class exports.Import extends Base
       then '.' + key
       else '[' + key + ']'
       code += lref + key + ' = ' + val
-    code = if sub is lref then code.slice 2 else sub + code
-    return code unless o.level
+    code = if sub is lref then code.slice delim.length else sub + code
+    return code if top
     code += (if com then ' ' else ', ') + lref unless node instanceof Splat
     if o.level < LEVEL_LIST then code else "(#{code})"
 
