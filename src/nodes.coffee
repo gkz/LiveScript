@@ -744,76 +744,68 @@ class exports.Assign extends Base
     code = name + " #{ if @op is ':=' then '=' else @op } " + val
     if o.level < LEVEL_COND then code else "(#{code})"
 
-  # Brief implementation of recursive destructuring, when assigning array or
-  # object literals to a value. Peeks at their properties to assign inner names.
-  # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
-  compileDestructuring: (o) ->
-    top       = not o.level
-    {objects} = @left.unwrap()
-    return @right.compile o unless olen = objects.length
-    isObject = @left.isObject()
-    if top and olen is 1 and (obj = objects[0]) not instanceof Splat
-      # Unroll simplest cases: `{v} = x` -> `v = x.v`
-      if obj instanceof Assign
-        {right: obj, left: base: idx} = obj
-      else
-        if dyna = obj.base instanceof Parens
-          [obj, idx] = Value(obj.unwrapAll()).cacheReference o
-        else
-          idx = if isObject
-          then (if obj.this then obj.properties[0].name else obj)
-          else Literal 0
-      acc = not dyna and IDENTIFIER.test idx.unwrap().value or 0
-      val = Value(@right).append (if acc then Accessor else Index) idx
-      return Assign(obj, val, @op).compile o
-    vvar    = @right.compile o, LEVEL_LIST
-    assigns = []
-    splat   = false
-    if not IDENTIFIER.test(vvar) or @left.assigns(vvar)
-      assigns.push "#{ ref = o.scope.temporary 'ref' } = #{vvar}"
-      vvar = ref
-    for obj, i of objects
-      if isObject
-        dyna = false
-        if obj instanceof Assign
-          # A regular object pattern-match.
-          {right: obj, left: base: idx} = obj
-        else
-          # A shorthand `{a, @b, (c)} = val` pattern-match.
-          if dyna = obj.base instanceof Parens
-          then [obj, idx] = Value(obj.unwrapAll()).cacheReference o
-          else idx = if obj.this then obj.properties[0].name else obj
-      if not splat and obj instanceof Splat
-        val = "#{olen} <= #{vvar}.length ? #{ utility 'slice' }.call(#{vvar}, #{i}"
-        if rest = olen - i - 1
-          ivar = o.scope.temporary 'i'
-          val += ", #{ivar} = #{vvar}.length - #{rest}) : (#{ivar} = #{i}, [])"
-        else
-          val += ') : []'
-        val   = Literal val
-        splat = "#{ivar}++"
-      else
-        if obj instanceof Splat
-          throw SyntaxError "multiple splats in an assignment: " + obj.compile o
-        acc = if isObject
-          not dyna and IDENTIFIER.test idx.unwrap().value or 0
-        else
-          idx = Literal splat or i
-          false
-        val = Value Literal(vvar), [(if acc then Accessor else Index) idx]
-      assigns.push Assign(obj, val, @op).compile o, LEVEL_TOP
-    o.scope.free ref  if ref
-    o.scope.free ivar if ivar
-    assigns.push vvar unless top
-    code = assigns.join ', '
-    if o.level < LEVEL_LIST then code else "(#{code})"
-
   # When compiling a conditional assignment, take care to ensure that the
   # operands are only evaluated once, even though we have to reference them
   # more than once.
   compileConditional: (o) ->
     [left, rite] = Value(@left).cacheReference o
     Op(@logic, left, Assign(rite, @right, @op)).compile o
+
+  # Implementation of recursive destructuring, when assigning array or
+  # object literals to a value. Peeks at their properties to assign inner names.
+  # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
+  compileDestructuring: (o) ->
+    {objects} = left = @left.unwrap()
+    return @right.compile o unless olen = objects.length
+    rite = @right.compile o, if olen is 1 then LEVEL_ACCESS else LEVEL_LIST
+    if (olen > 1 or o.level) and
+       (not IDENTIFIER.test(rite) or left.assigns(rite))
+      cache = "#{ rref = o.scope.temporary 'ref' } = #{rite}"
+      rite  = rref
+    list = @['destruct' + left.constructor.name] o, objects, rite
+    o.scope.free rref  if rref
+    list.unshift cache if cache
+    list.push rite     if o.level
+    code = list.join ', '
+    if o.level < LEVEL_LIST then code else "(#{code})"
+
+  destructArr: (o, nodes, rite) ->
+    if nodes.length is 1 and nodes[0] instanceof Splat
+      asn = Assign nodes[0].name, Arr([Splat rite]), @op
+      return [asn.compile o, LEVEL_TOP]
+    list = []
+    iinc = ''
+    for node, i of nodes
+      if node instanceof Splat
+        if iinc then throw SyntaxError \
+          "multiple splats in an assignment: " + node.compile o
+        val  = "#{nodes.length} <= #{rite}.length" +
+               " ? #{ utility 'slice' }.call(#{rite}, #{i}"
+        val += if rest = nodes.length - i - 1
+          ivar = o.scope.temporary 'i'
+          ", #{ivar} = #{rite}.length - #{rest}) : (#{ivar} = #{i}, [])"
+        else
+          ') : []'
+        val  = Literal val
+        iinc = ivar + '++'
+      else
+        val = Value lr ||= Literal(rite), [Index Literal iinc or i]
+      list.push Assign(node, val, @op).compile o, LEVEL_TOP
+    o.scope.free ivar if ivar
+    list
+
+  destructObj: (o, nodes, rite) ->
+    for node of nodes
+      dyna = false
+      if node instanceof Assign
+        {right: node, left: base: key} = node
+      else if dyna = node.base instanceof Parens
+        [node, key] = Value(node.unwrapAll()).cacheReference o
+      else
+        key = if node.this then node.properties[0].name else node
+      acc = not dyna and IDENTIFIER.test key.unwrap().value or 0
+      val = Value lr ||= Literal(rite), [(if acc then Accessor else Index) key]
+      Assign(node, val, @op).compile o, LEVEL_TOP
 
   toString: (idt) -> super idt, @constructor.name + ' ' + @op
 
