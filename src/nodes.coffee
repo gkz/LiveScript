@@ -765,7 +765,9 @@ class exports.Assign extends Base
        (not IDENTIFIER.test(rite) or left.assigns(rite))
       cache = "#{ rref = o.scope.temporary 'ref' } = #{rite}"
       rite  = rref
-    list = @['destruct' + left.constructor.name] o, objects, rite
+    list = if left instanceof Arr
+    then @destructArr o, objects, rite
+    else @destructObj o, objects, rite
     o.scope.free rref  if rref
     list.unshift cache if cache
     list.push rite     if o.level
