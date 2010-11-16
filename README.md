@@ -15,19 +15,21 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
       ReferenceError: assignment to undeclared variable "a"
 
 
-- `[*]`  (starred index)
+- `[*]`
 
   An asterisk at the beginning of an indexer represents the length of the indexee.
 
-      $ coco -bpe 'a[* - 1]'
-      a[a.length - 1];
+      $ coco -bpe 'a[*] = b'
+      a[a.length] = b;
 
       $ coco -bpe 'arr()[* - 1]'
       var _ref;
       (_ref = arr())[_ref.length - 1];
 
 
-- `.=` / `[=]`  (assigning access)
+- `.=` / `[=]`
+
+  Compound assigments for accessor and indexer.
 
       $ coco -bpe 'location.href.=replace /^http:/, "https:"'
       location.href = location.href.replace(/^http:/, "https:");
@@ -35,8 +37,12 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
       $ coco -bpe 'a[=0]'
       a = a[0];
 
+  - Is at same precedence as `.`/`[]`.
+  - Consumes all property/call chains to the right.
 
 - `@0`, `@1`, ...
+
+  Shorthand for each argument.
 
       $ coco -bpe '@0 @1'
       arguments[0](arguments[1]);
@@ -75,30 +81,32 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
         /* constructor */
         function C(it){
           C.superclass.call(this, it);
-        }
-        C.name = "C";
+        } C.name = "C";
         /* any code */
         private = 42;
         C.static = function(){
           return private;
         };
-        _ref = C.prototype, /* properties */ _ref.member = 'U', _ref.method = function(){
+        _ref = C.prototype;
+        /* properties */
+        _ref.member = 'U';
+        _ref.method = function(){
           return C.superclass.prototype.method.call(this, this.member, B.static());
         };
         return C;
       }());
       Bound = (function(){
-        function _ctor(){}
-        _ctor.prototype = Bound.prototype;
+        function _ctor(){} _ctor.prototype = Bound.prototype;
         function Bound(){
           var _this = new _ctor;
           return _this;
-        }
-        Bound.name = "Bound";
+        } Bound.name = "Bound";
         return Bound;
       }());
 
+
 - `delete`
+
   Returns the deleted value as opposed to the useless
   [JS behavior](http://people.mozilla.org/~jorendorff/es5.html#sec-11.4.1).
 
@@ -126,32 +134,32 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
   A generic way to loop within certain numeric ranges.
 
+      $ coco -bpe 'i for i from x to y'
+      var i, _to;
+      for (i = x, _to = y; i <= _to; ++i) {
+        i;
+      }
+
+      $ coco -bpe 'i for i from x til y'
+      var i, _to;
+      for (i = x, _to = y; i < _to; ++i) {
+        i;
+      }
+
+      $ coco -bpe 'i for i from x to y by -1'
+      var i, _to;
+      for (i = x, _to = y; i >= _to; --i) {
+        i;
+      }
+
+      $ coco -bpe 'i for i from x to y by z'
+      var i, _step, _to;
+      for (i = x, _to = y, _step = z; _step < 0 ? i >= _to : i <= _to; i += _step) {
+        i;
+      }
+
   - `to` for inclusive, `til` for exclusive.
   - `by` optionally specifies the step value.
-
-        $ coco -bpe 'i for i from x to y'
-        var i, _to;
-        for (i = x, _to = y; i <= _to; ++i) {
-          i;
-        }
-
-        $ coco -bpe 'i for i from x til y'
-        var i, _to;
-        for (i = x, _to = y; i < _to; ++i) {
-          i;
-        }
-
-        $ coco -bpe 'i for i from x to y by -1'
-        var i, _to;
-        for (i = x, _to = y; i >= _to; --i) {
-          i;
-        }
-
-        $ coco -bpe 'i for i from x to y by z'
-        var i, _step, _to;
-        for (i = x, _to = y, _step = z; _step < 0 ? i >= _to : i <= _to; i += _step) {
-          i;
-        }
 
 
 - `for ever`
@@ -163,6 +171,8 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 
 - `instanceof []`
+
+  A bare array to the right of `instanceof` is expanded into `or` chains.
 
       $ coco -bpe 'A instanceof [B, C]'
       A instanceof B || A instanceof C;
@@ -202,6 +212,8 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 
 - object splat
+
+  Mixes an object's properties into the created object.
 
       $ coco -bpe 'O = {0, o..., (o.o)..., "0"}'
       var O, _obj;
@@ -263,3 +275,8 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 - `switch`-`case`-`default` replaces switch-when-else.
 - `loop` is removed. Use `for ever` instead.
 - The binaries are named __coco__ and __coke__ to coexist with __coffee__ and __cake__.
+
+
+### Installation
+
+    git clone git:github.com/satyr/coco.git && cd coco && bin/coke install
