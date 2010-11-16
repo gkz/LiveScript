@@ -56,3 +56,9 @@ obj =
 
 eq obj.num, obj.func()
 eq obj.num, obj.result
+
+
+eq 3, do -> (1; 2; 3)
+eq 3, do -> return (1; 2; 3)
+throws 'cannot include a pure statement in an expression'
+, -> Coco.compile 'r = (return)'

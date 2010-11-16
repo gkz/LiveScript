@@ -237,7 +237,7 @@ class exports.Literal extends Base
   (@value) =>
     # Break and continue must be treated as pure statements -- they lose their
     # meaning when wrapped in a closure.
-    isPureStatement = YES if @value of <[ break continue debugger ]>
+    @isPureStatement = YES if @value of <[ break continue debugger ]>
 
   makeReturn   : -> if @isPureStatement() then this else Return this
   isAssignable : -> IDENTIFIER.test @value
@@ -1212,16 +1212,18 @@ class exports.Existence extends Base
 # An extra set of parentheses, specified explicitly in the source.
 # Parentheses are a good way to force any statement to become an expression.
 class exports.Parens extends Base
-  (@expression, @keep) =>
+  (@expressions, @keep) =>
 
-  children: ['expression']
+  children: ['expressions']
 
-  unwrap    : -> @expression
-  isComplex : -> @expression.isComplex()
-  makeReturn: -> @expression.makeReturn()
+  unwrap          : -> @expressions
+  makeReturn      : -> @expressions.makeReturn()
+  isComplex       : -> @expressions.isComplex()
+  isStatement     : -> @expressions.isStatement()
+  isPureStatement : -> @expressions.isPureStatement()
 
   compileNode: (o) ->
-    expr = @expression import {@front}
+    (expr = @expressions.unwrap()) import {@front}
     return expr.compile o if not @keep and
       (expr instanceof [Value, Call, Code, Parens] or
        o.level < LEVEL_OP and expr instanceof Op)

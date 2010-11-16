@@ -347,7 +347,7 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o '( Expression )', -> Parens $2
+    o '( Body )', -> Parens $2
   ]
 
   ForOf: [
