@@ -3,6 +3,7 @@ Coco          = require './lib/coco'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
+bold  = '\033[0;1m'
 red   = '\033[0;31m'
 green = '\033[0;32m'
 reset = '\033[0m'
@@ -127,13 +128,19 @@ runTests = (Coco) ->
     files.forEach (file) ->
       return unless /\.co(?:ffee)?$/i.test file
       fs.readFile (fileName = path.join 'test', file), (err, code) ->
-        try Coco.run code.toString(), {fileName}
-        catch err
+        try Coco.run code += '', {fileName}
+        catch e
           ++failedTests
-          log "failed #{fileName}", red, '\n' + err.stack
+          {1: row, 2: col} =
+            ///#{fileName}:(\d+):(\d+)\)?$///m.exec(e.stack) or ''
+          log "failed #{fileName}:#{row--}:#{col--}",
+              red, '\n' + /^.+/.exec e.stack
+          {(row): line} = lines = Coco.compile(code).split '\n'
+          console.log lines.slice(row-5, row+0).join '\n'
+          console.log line.slice(0, col) + bold + line.slice(col) + reset
+          console.log lines.slice(row+1, row+6).join '\n'
 
-task 'test', 'run the Coco language test suite', ->
-  runTests Coco
+task 'test', 'run the Coco language test suite', -> runTests Coco
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
   runTests new -> eval fs.readFileSync 'extras/coco.js', 'utf-8'
