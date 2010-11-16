@@ -44,7 +44,7 @@ class exports.Base
     func.wrapper = true
     if @contains @literalThis
       args.push Literal 'this'
-      call = Value func, [Accessor Literal 'call']
+      call = Value func, [Access Literal 'call']
     mentionsArgs = false
     @traverseChildren false, ->
       if it instanceof Literal and it.value is 'arguments'
@@ -272,7 +272,7 @@ class exports.Return extends Base
       o.indent + "return#{ exp and ' ' + exp.compile o, LEVEL_PAREN };"
 
 #### Value
-# Container for property access chains, by holding `Accessor`/`Index` instances
+# Container for property access chains, by holding `Access`/`Index` instances
 # wihtin `@properties`.
 class exports.Value extends Base
   # A **Value** has a base and a list of property accesses.
@@ -333,7 +333,7 @@ class exports.Value extends Base
     v  = (@properties.length and @substituteStar o) or this
     ps = v.properties
     code  = v.base.compile o, if ps.length then LEVEL_ACCESS else null
-    code += ' ' if ps[0] instanceof Accessor and SIMPLENUM.test code
+    code += ' ' if ps[0] instanceof Access and SIMPLENUM.test code
     code += p.compile o for p of ps
     code
 
@@ -563,9 +563,9 @@ class exports.Import extends Base
     code += (if com then ' ' else ', ') + lref unless node instanceof Splat
     if o.level < LEVEL_LIST then code else "(#{code})"
 
-#### Accessor
-# `.` accessor into a property of a value.
-class exports.Accessor extends Base
+#### Access
+# `.` accesses into a property of a value.
+class exports.Access extends Base
   (@name, symbol) =>
     switch symbol
     case '?.' then @soak   = true
@@ -584,7 +584,7 @@ class exports.Accessor extends Base
     super idt, @constructor.name + if @assign then '=' else ''
 
 #### Index
-# `[ ... ]` indexed accessor.
+# `[ ... ]` indexed access.
 class exports.Index extends Base
   (@index, symbol) =>
     switch symbol
@@ -597,7 +597,7 @@ class exports.Index extends Base
 
   isComplex: -> @index.isComplex()
 
-  toString: Accessor::toString
+  toString: Access::toString
 
 #### Obj
 # `{}`
@@ -683,7 +683,7 @@ class exports.Class extends Base
       decl &&= IDENTIFIER.test(decl) and decl
     name  = decl or @name or '_Class'
     lname = Literal name
-    proto = Value lname, [Accessor Literal 'prototype']
+    proto = Value lname, [Access Literal 'prototype']
     @body.traverseChildren false, ->
       if it.value is 'this'
         it.value = name
@@ -804,7 +804,7 @@ class exports.Assign extends Base
       else
         key = if node.this then node.properties[0].name else node
       acc = not dyna and IDENTIFIER.test key.unwrap().value or 0
-      val = Value lr ||= Literal(rite), [(if acc then Accessor else Index) key]
+      val = Value lr ||= Literal(rite), [(if acc then Access else Index) key]
       val = Import Obj(), val, true if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
 
@@ -1005,7 +1005,7 @@ class exports.Op extends Base
     if op is 'do'
       if first instanceof Code and first.bound
         first.bound = ''
-        first = Value first, [Accessor Literal 'call']
+        first = Value first, [Access Literal 'call']
         args  = [Literal 'this']
       return Call first, args
     if op is 'new'

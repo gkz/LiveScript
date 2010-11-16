@@ -271,13 +271,13 @@ grammar =
 
   # The general group of accessors into an object.
   Accessor: [
-    o 'ACCESS Identifier',                -> Accessor $2, $1
-    o 'INDEX_START Expression INDEX_END', -> Index    $2, $1
+    o 'ACCESS Identifier',                -> Access $2, $1
+    o 'INDEX_START Expression INDEX_END', -> Index  $2, $1
   ]
 
   # A reference to a property on `this`.
   ThisProperty: [
-    o 'THISPROP', -> Value Literal('this'), [Accessor Literal $1], 'this'
+    o 'THISPROP', -> Value Literal('this'), [Access Literal $1], 'this'
   ]
 
   # An optional, trailing comma.
