@@ -139,7 +139,7 @@ addImplicitParentheses = (tokens) ->
       prev?.spaced and (prev.call or prev[0] of IMPLICIT_FUNC) and
       (tag of <[
          ( [ { IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
-         FUNCTION IF TRY SWITCH CLASS SUPER
+         FUNCTION IF TRY SWITCH CLASS SUPER ...
        ]> or
        tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION' or
        tag is 'PLUS_MINUS' and not (token.spaced or token.eol))
@@ -289,5 +289,5 @@ for [left, rite] of BALANCED_PAIRS
 EXPRESSION_CLOSE =
   EXPRESSION_END.concat<[ ELSE WHEN BY TO CATCH FINALLY CASE DEFAULT ]>
 
-# Tokens that, if followed by an `IMPLICIT_CALL`, indicate a function invocation.
+# Tokens that indicate an implicit function invocation.
 IMPLICIT_FUNC = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>

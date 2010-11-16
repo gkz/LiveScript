@@ -406,7 +406,7 @@ class exports.Call extends Base
   children: <[ variable args ]>
 
   # Tag this invocation as creating a new instance.
-  newInstance: -> @new = 'new '; this
+  newInstance: -> this import {new: 'new '}
 
   # Grab the reference to the superclass's implementation of the current method.
   superReference: (o) ->
@@ -463,6 +463,12 @@ class exports.Call extends Base
     unless @super
       return asn.compile o if asn = @unfoldAssign o
       @variable import {@front}
+    if @args.splat
+      return @compileSplat o, @args[1].value if @new
+      fn = if @super
+      then @superReference o
+      else @variable.compile o, LEVEL_ACCESS
+      return fn + ".apply(#{@args[0].value}, #{@args[1].value})"
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
     if @super
@@ -974,7 +980,7 @@ class exports.While extends Base
 
   addBody: (@body) -> this
 
-  makeReturn: -> @returns = true; this
+  makeReturn: -> this import returns: true
 
   compileNode: (o) ->
     code = @condition?.compile(o, LEVEL_PAREN) or 'true'

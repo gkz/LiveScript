@@ -315,7 +315,9 @@ grammar =
   ]
   # The list of arguments to a function call.
   Arguments: [
-    o 'CALL_START CALL_END',                  -> []
+    o 'CALL_START     CALL_END', -> []
+    o 'CALL_START ... CALL_END', ->
+      mix [Literal('this'), Literal('arguments')], splat: true
     o 'CALL_START ArgList OptComma CALL_END', -> $2
   ]
 

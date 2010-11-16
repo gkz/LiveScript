@@ -130,3 +130,20 @@ eq x[0], 0
 eq y[2], 2
 ok x isnt o.x , 'should copy o.x'
 ok y isnt o[y], 'should copy o[y]'
+
+
+class Thisplat
+  ->
+    [me, [a0, a1, a2]] = @f ...
+    eq me, this
+    eq a0 * a2, 21
+    [me, [a0, a1, a2]] = new @f ...
+    ok this isnt me
+    eq a0 * a2, 21
+  f: -> [this, arguments]
+
+class Thisplat2 extends Thisplat
+  => super ...
+  f: -> super ...
+
+new Thisplat2 3, 5, 7
