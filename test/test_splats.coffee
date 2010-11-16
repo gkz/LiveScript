@@ -122,3 +122,11 @@ try
   ok false, ''
 catch _
   ok true
+
+
+o = x: {0}, (y = 1): {2}
+{x..., (y)...} = o
+eq x[0], 0
+eq y[2], 2
+ok x isnt o.x , 'should copy o.x'
+ok y isnt o[y], 'should copy o[y]'

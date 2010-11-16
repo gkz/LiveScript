@@ -796,15 +796,16 @@ class exports.Assign extends Base
 
   destructObj: (o, nodes, rite) ->
     for node of nodes
-      dyna = false
-      if node instanceof Assign
-        {right: node, left: base: key} = node
-      else if dyna = node.base instanceof Parens
+      node .= name if splat = node instanceof Splat
+      if dyna = (node.base or node) instanceof Parens
         [node, key] = Value(node.unwrapAll()).cacheReference o
+      else if node instanceof Assign
+        {right: node, left: base: key} = node
       else
         key = if node.this then node.properties[0].name else node
       acc = not dyna and IDENTIFIER.test key.unwrap().value or 0
       val = Value lr ||= Literal(rite), [(if acc then Accessor else Index) key]
+      val = Import Obj(), val, true if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
 
   toString: (idt) -> super idt, @constructor.name + ' ' + @op
