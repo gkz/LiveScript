@@ -213,6 +213,11 @@ eq '\\`', `
   "\\\`"
 `
 
+i = 3
+`LABEL:`
+while --i then while --i then `break LABEL`
+eq i, 1
+
 
 # Shorthand objects with property references.
 obj =

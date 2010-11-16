@@ -120,6 +120,8 @@ class exports.Base
   # will override these with custom logic, if needed.
   children: []
 
+  terminater: ';'
+
   isComplex       : YES
   isStatement     : NO
   isPureStatement : NO
@@ -185,7 +187,8 @@ class exports.Expressions extends Base
       if top
         node.front = true
         code = node.compile o
-        codes.push if node.isStatement o then code else @tab + code + ';'
+        codes.push if node.isStatement o
+        then code else @tab + code + node.terminater
       else
         codes.push node.compile o, LEVEL_LIST
     return codes.join '\n' if top
@@ -232,20 +235,20 @@ class exports.Expressions extends Base
 # and pretty much everything that doesn't fit in other nodes.
 class exports.Literal extends Base
   (@value) =>
+    # Break and continue must be treated as pure statements -- they lose their
+    # meaning when wrapped in a closure.
+    isPureStatement = YES if @value of <[ break continue debugger ]>
 
-  makeReturn: -> if @isPureStatement() then this else Return this
-
-  # Break and continue must be treated as pure statements -- they lose their
-  # meaning when wrapped in a closure.
-  isPureStatement: -> @value of <[ break continue debugger ]>
-
-  isAssignable: -> IDENTIFIER.test @value
+  makeReturn   : -> if @isPureStatement() then this else Return this
+  isAssignable : -> IDENTIFIER.test @value
+  assigns      : -> it is @value
 
   isComplex: NO
 
-  assigns: -> it is @value
-
-  compile: -> if @value.reserved then "\"#{@value}\"" else @value
+  compile: (o) ->
+    return "\"#{@value}\"" if @value.reserved
+    @terminater = '' if @value.js
+    @value
 
   toString: -> ' "' + @value + '"'
 
@@ -389,8 +392,7 @@ class exports.Comment extends Base
 
   isPureStatement : YES
   isStatement     : YES
-
-  makeReturn: THIS
+  makeReturn      : THIS
 
   compile: (o, level) ->
     code = '/*' + multident(@comment, o.indent) + '*/'
@@ -857,7 +859,7 @@ class exports.Code extends Base
         case it.value is 'this'   then it.value   = '_this'
         case it instanceof Code   then it.bound &&= '_this'
         case it instanceof Return then it.expression ||= Literal '_this'
-      body.append Literal 'return _this'
+      body.append Return Literal '_this'
     vars = []
     exps = []
     for param of params when param.splat

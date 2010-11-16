@@ -175,8 +175,8 @@ class exports.Lexer
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     carp 'unterminated JS literal' unless js = JSTOKEN.exec @chunk
-    @token 'LITERAL', (js[=0]).slice 1, -1
-    @countLines(js).length
+    (js = new String js[0].slice 1, -1).js = true
+    @countLines(@token 'LITERAL', js).length + 2
 
   # Matches regular expression literals. Lexing regular expressions is difficult
   # to distinguish from division, so we borrow some basic heuristics from
