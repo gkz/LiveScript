@@ -203,3 +203,7 @@ ok {} = [] = true, 'empty assignment is allowed'
 x = 'y'
 {(x)} = y: 0xc0c0
 eq x, 49344
+
+
+throws 'conditional assignment cannot be destructuring'
+, -> Coco.compile '[_] ?= [_]'

@@ -26,11 +26,8 @@ say = (msg, yay) ->
 @eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
 
 @throws = (msg, fun) ->
-  try
-    do fun
-    ok false, 'should throw: ' + msg
-  catch e
-    eq e.message, msg
+  try do fun catch e then return eq e.message, msg
+  ok false, 'should throw: ' + msg
 
 Coco.run = (code, cb) ->
   try Function(Coco.compile code, bare: true).call self

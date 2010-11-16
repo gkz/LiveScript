@@ -723,12 +723,15 @@ class exports.Assign extends Base
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
+    {left} = this
+    if left.isArray() or left.isObject()
+      return @compileDestructuring o unless @logic
+      throw SyntaxError 'conditional assignment cannot be destructuring'
     return @compileConditional o if @logic
-    {left, right} = this
-    return @compileDestructuring o if left.isArray() or left.isObject()
     name = left.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
+    {right} = this
     if right instanceof [Code, Class] and match = METHOD_DEF.exec name
       right.clas   = match[1] if match[1]
       right.name ||= match[2]
