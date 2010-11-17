@@ -398,47 +398,47 @@ class exports.Comment extends Base
 #### Call
 # Node for a function invocation. Takes care of converting `super()` calls.
 class exports.Call extends Base
-  (@variable, @args, @soak) =>
+  (@callee, @args, @soak) =>
     @args or= (@splat = true; [Literal('this'), Literal('arguments')])
 
-  children: <[ variable args ]>
+  children: <[ callee args ]>
 
   # List up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
   digCalls: ->
     list = [call = this]
-    list.push call while call.=variable.base instanceof Call
+    list.push call while call.=callee.base instanceof Call
     list.reverse()
 
   unfoldSoak: (o) ->
     if @soak
-      return ifn if ifn = If.unfoldSoak o, this, 'variable'
-      [left, rite] = Value(@variable).cacheReference o
+      return ifn if ifn = If.unfoldSoak o, this, 'callee'
+      [left, rite] = @callee.cacheReference o
       rite = Call rite, @args
       rite import {@new}
       left = Literal "typeof #{ left.compile o } == \"function\""
       return If left, Value(rite), soak: true
     for call of @digCalls()
-      call.variable.base = ifn if ifn
-      ifn = If.unfoldSoak o, call, 'variable'
+      call.callee.base = ifn if ifn
+      ifn = If.unfoldSoak o, call, 'callee'
     ifn
 
   unfoldAssign: (o) ->
     for call of @digCalls()
-      call.variable.base = asn if asn
-      if asn = call.variable.unfoldAssign o
-        call.variable = asn.right; asn.right = Value call
+      call.callee.base = asn if asn
+      if asn = call.callee.unfoldAssign o
+        call.callee = asn.right; asn.right = Value call
     asn
 
   compileNode: (o) ->
     return asn.compile o if asn = @unfoldAssign o
-    @variable import {@front}
+    @callee import {@front}
     if @splat
       return @compileSplat o, @args[1].value if @new
-      return @variable.compile(o, LEVEL_ACCESS) +
+      return @callee.compile(o, LEVEL_ACCESS) +
              ".apply(#{@args[0].value}, #{@args[1].value})"
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
-    (@new or '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
+    (@new or '') + @callee.compile(o, LEVEL_ACCESS) + "(#{args})"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
@@ -452,9 +452,9 @@ class exports.Call extends Base
         #{idt}ctor.prototype = func.prototype;
         #{idt}var child = new ctor, result = func.apply(child, args);
         #{idt}return result === Object(result) ? result : child;
-        #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{args}, function(){}))
+        #{@tab}}(#{ @callee.compile o, LEVEL_LIST }, #{args}, function(){}))
       """
-    base = Value @variable
+    base = @callee
     if (name = base.properties.pop()) and base.isComplex()
       ref = o.scope.temporary 'ref'
       fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
@@ -635,15 +635,15 @@ class exports.Arr extends Base
 #### Class
 # The Coco class definition.
 class exports.Class extends Base
-  (@variable, @parent, @body = Expressions()) =>
+  (@title, @parent, @body = Expressions()) =>
 
-  children: <[ variable parent body ]>
+  children: <[ title parent body ]>
 
   compileNode: (o) ->
-    if @variable
-      decl = if @variable instanceof Value
-      then @variable.properties[*-1].name?.value
-      else @variable.value
+    if @title
+      decl = if @title instanceof Value
+      then @title.properties[*-1].name?.value
+      else @title.value
       decl &&= IDENTIFIER.test(decl) and decl
     name  = decl or @name or '_Class'
     lname = Literal name
@@ -667,8 +667,8 @@ class exports.Class extends Base
     exps.unshift Extends lname, @parent if @parent
     exps.push lname
     clas = Parens Call(Code([], @body), []), true
-    clas = Assign lname, clas if decl and @variable?.isComplex()
-    clas = Assign @variable, clas if @variable
+    clas = Assign lname, clas if decl and @title?.isComplex()
+    clas = Assign @title, clas if @title
     clas.compile o
 
 #### Assign
@@ -1258,7 +1258,7 @@ class exports.For extends While
   pluckDirectCalls: (o, exps, name, index) ->
     defs = ''
     for exp, idx of exps when exp.=unwrapAll() instanceof Call
-      val = exp.variable.unwrapAll()
+      val = exp.callee.unwrapAll()
       continue unless \
         val instanceof Code and not exp.args.length or
           val instanceof Value and val.base instanceof Code and
