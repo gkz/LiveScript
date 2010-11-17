@@ -55,7 +55,7 @@ grammar =
   # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
   # all parsing must end here.
   Root: [
-    o '',           -> Expressions()
+    o '', -> Expressions()
     o 'Body'
     o 'Block TERMINATOR'
   ]
@@ -66,7 +66,6 @@ grammar =
     o 'Body TERMINATOR Line', -> $1.append $3
     o 'Body TERMINATOR'
   ]
-
   # Expressions and statements, which make up a line in a body.
   Line: [
     o 'Expression'
@@ -77,7 +76,7 @@ grammar =
   Statement: [
     o 'RETURN',            -> Return()
     o 'RETURN Expression', -> Return $2
-    o 'THROW Expression',  -> Throw $2
+    o 'THROW  Expression', -> Throw $2
     o 'STATEMENT',         -> Literal $1
     o 'HERECOMMENT',       -> Comment $1
   ]
@@ -186,16 +185,10 @@ grammar =
     o 'IDENTIFIER', -> Literal $1
   ]
 
-  # Alphanumerics are separated from the other **Literal** matchers because
-  # they can also serve as keys in object literals.
-  AlphaNumeric: [
-    o 'STRNUM', -> Literal $1
-  ]
-
   # All of our immediate values. These can (in general), be passed straight
   # through and printed to JavaScript.
   Literal: [
-    o 'AlphaNumeric'
+    o 'STRNUM',  -> Literal $1
     o 'THIS',    -> Literal 'this'
     o 'LITERAL', -> if $1 is 'void' then Op 'void', Literal 8 else Literal $1
   ]
@@ -213,8 +206,8 @@ grammar =
     o 'HERECOMMENT',                -> Comment $1
   ]
   ObjAssignable: [
+    o 'STRNUM', -> Literal $1
     o 'Identifier'
-    o 'AlphaNumeric'
     o 'Parenthetical'
   ]
 
