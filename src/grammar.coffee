@@ -197,7 +197,7 @@ grammar =
   Literal: [
     o 'AlphaNumeric'
     o 'THIS',    -> Literal 'this'
-    o 'LITERAL', -> if $1 is 'void' then Op 'void', Literal 0 else Literal $1
+    o 'LITERAL', -> if $1 is 'void' then Op 'void', Literal 8 else Literal $1
   ]
 
   # Assignment when it happens within an object literal. The difference from

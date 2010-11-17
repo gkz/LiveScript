@@ -261,7 +261,7 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 - `void`
 
-  A literal that compiles to `void 0`.
+  A literal that compiles to `void 8`.
 
 
 ### Incompatibilities
