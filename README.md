@@ -260,6 +260,13 @@ A literal that represents an array of strings or a function call with string arg
     f("argument", "of", "strings");
 
 
+#### `f(...)` (thisplat)
+A shorthand to delegate the current context to a function.
+
+    $ coco -bpe 'f ...'
+    f.apply(this, arguments);
+
+
 #### `void`
 A literal that compiles to `void 8`.
 
@@ -272,6 +279,7 @@ A literal that compiles to `void 8`.
 - `===`/`!==`/`==`/`!=` each compiles as is.
 - The roles of `in` and `of` have been swapped to keep the JS behavior.
 - `class` takes a block rather than a pseudo object.
+- `super` represents the direct reference to the parent function rather than being a call. Use `super ...` (just `super` in Coffee) for a simple delegation.
 - `switch`-`case`-`default` replaces switch-when-else.
 - `for ever` replaces `loop`.
 - The binaries are named __coco__ and __coke__ to coexist with __coffee__ and __cake__.
