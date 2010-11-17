@@ -87,7 +87,6 @@ grammar =
   # them somewhat circular.
   Expression: [
     o 'Value'
-    o 'Call'
 
     o 'Code'
     o 'FUNCTION Code',            -> mix $2, statement: true
@@ -245,7 +244,6 @@ grammar =
     o 'Identifier'
     o 'ThisProperty'
     o 'Value Accessor', -> $1.append $2
-    o 'Call  Accessor', -> Value $1, [$2]
   ]
 
   # Everything that can be assigned to.
@@ -261,6 +259,7 @@ grammar =
     o 'Assignable',    -> Value $1
     o 'Literal',       -> Value $1
     o 'Parenthetical', -> Value $1
+    o 'Call',          -> Value $1
   ]
 
   # The general group of accessors into an object.
@@ -298,7 +297,6 @@ grammar =
   # Function calls.
   Call: [
     o 'Value OptFuncExist Arguments', -> Call $1, $3, $2
-    o 'Call  OptFuncExist Arguments', -> Call $1, $3, $2
   ]
   # An optional existence check on a function.
   OptFuncExist: [
