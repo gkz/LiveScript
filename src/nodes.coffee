@@ -602,26 +602,25 @@ class exports.Obj extends Base
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
     for prop, i of props
-      if prop instanceof Splat or (prop.left or prop).base instanceof Parens
-        rest = props.splice i, 1/0
-        break
-    lastIndex = props.length - 1
-    [lastNC]  = lastNonComment props
-    code = ''
-    idt  = o.indent += TAB
-    for prop, i of props
-      code += idt unless prop instanceof Comment
-      code += if prop instanceof Value and prop.this
-      then Assign(prop.properties[0].name, prop, ':').compile o
-      else if prop not instanceof [Assign, Comment]
-      then Assign(prop, prop, ':').compile o
-      else prop.compile o, LEVEL_TOP
-      code += if i is lastIndex
-      then ''
-      else if prop is lastNC or prop instanceof Comment
-      then '\n'
-      else ',\n'
-    code = "{#{ code and '\n' + code + '\n' + @tab }}"
+    when prop instanceof Splat or (prop.left or prop).base instanceof Parens
+      rest = props.splice i, 1/0
+      break
+    [last] = lastNonComment props
+    idt    = o.indent += TAB
+    code   = ''
+    for prop of props
+      if prop instanceof Comment
+        code += prop.compile(o, LEVEL_TOP) + '\n'
+        continue
+      code += idt + if prop.this
+        prop.properties[0].name.value + ': ' +
+        prop.compile o, LEVEL_LIST
+      else if prop instanceof Assign
+      then prop.compile o
+      else (c = prop.compile o, LEVEL_LIST) + ': ' + c
+      code += ',' unless prop is last
+      code += '\n'
+    code = "{#{ code and '\n' + code + @tab }}"
     return @compileDynamic o, code, rest if rest
     if @front then "(#{code})" else code
 
