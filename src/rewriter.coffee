@@ -16,23 +16,23 @@
 # stream, with a big ol' efficient switch, but it's much nicer to work with
 # like this. The order of these passes matters -- indentation must be
 # corrected before implicit parentheses can be wrapped around blocks of code.
-exports.rewrite = (tokens) ->
-  removeLeadingNewlines       tokens
-  removeMidExpressionNewlines tokens
-  closeOpenings               tokens
-  addImplicitIndentation      tokens
-  tagPostfixConditionals      tokens
-  addImplicitBraces           tokens
-  addImplicitParentheses      tokens
-  ensureBalance               tokens
-  rewriteClosingParens        tokens
-  tokens
+exports.rewrite = ->
+  removeLeadingNewlines       it
+  removeMidExpressionNewlines it
+  closeOpenings               it
+  addImplicitIndentation      it
+  tagPostfixConditionals      it
+  addImplicitBraces           it
+  addImplicitParentheses      it
+  ensureBalance               it
+  rewriteClosingParens        it
+  it
 
-detectEnd = (tokens, i, condition, action) ->
+detectEnd = (tokens, i, ok, go) ->
   levels = 0
   while token = tokens[i]
-    return action token, i   if levels is 0 and condition token, i
-    return action token, i-1 if levels <  0
+    return go token, i   if not levels and ok token, i
+    return go token, i-1 if 0 > levels
     if token[0] of EXPRESSION_START
       ++levels
     else if token[0] of EXPRESSION_END
@@ -72,15 +72,15 @@ closeOpenings = (tokens) ->
 # Object literals may be written with implicit braces, for simple cases.
 # Insert the missing braces here, so that the parser doesn't have to.
 addImplicitBraces = (tokens) ->
-  condition = (token, i) ->
+  go = (token, i) -> tokens.splice i, 0, ['}', '}', token[2]]
+  ok = (token, i) ->
     return false if 'HERECOMMENT' is one = tokens[i+1]?[0]
     [tag] = token
     tag is ',' and
       one not of <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]> or
     tag of <[ TERMINATOR OUTDENT ]> and tokens[i+2]?[0] not of <[ : ... ]>
-  action = (token, i) -> tokens.splice i, 0, ['}', '}', token[2]]
-  stack  = []
-  i      = -1
+  stack = []
+  i     = -1
   while token = tokens[++i]
     [tag] = token
     if tag of EXPRESSION_START
@@ -102,7 +102,7 @@ addImplicitBraces = (tokens) ->
     tok  = ['{', '{', token[2]]
     tok.generated = true
     tokens.splice idx, 0, tok
-    detectEnd tokens, i+2, condition, action
+    detectEnd tokens, i+2, ok, go
     ++i
   this
 
@@ -111,7 +111,7 @@ addImplicitBraces = (tokens) ->
 # deal with them.
 addImplicitParentheses = (tokens) ->
   classLine = seenSingle = false
-  condition = (token, i) ->
+  ok = (token, i) ->
     return true if not seenSingle and token.fromThen
     [tag] = token
     [pre] = tokens[i-1]
@@ -122,7 +122,7 @@ addImplicitParentheses = (tokens) ->
     tag is 'INDENT' and pre not of <[ FUNC_ARROW { [ , ]> and
       tokens[i-2]?[0] isnt 'CLASS' and
       not ((post = tokens[i+1]) and post.generated and post[0] is '{')
-  action = (token, i) ->
+  go = (token, i) ->
     ++i if token[0] is 'OUTDENT'
     tokens.splice i, 0, ['CALL_END', ')', token[2]]
   i = -1
@@ -148,7 +148,7 @@ addImplicitParentheses = (tokens) ->
     tokens.splice i++, 0
     , ['CALL_START', (if exist then '?(' else '('), token[2]]
     ++i if callObject
-    detectEnd tokens, i, condition, action
+    detectEnd tokens, i, ok, go
   this
 
 # Because our grammar is LALR(1), it can't handle some single-line
@@ -160,8 +160,7 @@ addImplicitIndentation = (tokens) ->
   while token = tokens[++i]
     [tag] = token
     if tag is 'ELSE' and tokens[i-1]?[0] isnt 'OUTDENT'
-      tokens.splice i, 0, indentation(token)...
-      i += 1
+      tokens.splice i++, 0, indentation(token)...
       continue
     if tag is 'CATCH' and tokens[i+2]?[0] of <[ OUTDENT TERMINATOR FINALLY ]>
       tokens.splice i+2, 0, indentation(token)...
@@ -179,10 +178,10 @@ addImplicitIndentation = (tokens) ->
     tokens.splice i+1, 0, indent
     detectEnd tokens, i+2
     , (token, i) ->
-      [t] = token
-      t of <[ CATCH FINALLY OUTDENT CASE DEFAULT ]> or
-      t is 'TERMINATOR' and token[1] isnt ';' or
-      t is 'ELSE' and tag of <[ IF THEN ]>
+      [tg] = token
+      tg of <[ CATCH FINALLY OUTDENT CASE DEFAULT ]> or
+      tg is 'TERMINATOR' and token[1] isnt ';' or
+      tg is 'ELSE' and tag of <[ IF THEN ]>
     , (token, i) ->
       tokens.splice (if tokens[i-1][0] is ',' then i-1 else i), 0, outdent
     if tag is 'THEN' then tokens.splice i, 1 else ++i
@@ -191,10 +190,9 @@ addImplicitIndentation = (tokens) ->
 # Tag postfix conditionals as such, so that we can parse them with a
 # different precedence.
 tagPostfixConditionals = (tokens) ->
-  condition = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
-  action    = ([tag]) -> token[0] = 'POST_IF' if tag isnt 'INDENT'
-  for token, i of tokens when token[0] is 'IF'
-    detectEnd tokens, i + 1, condition, action
+  ok = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
+  go = ([tag]) -> token[0] = 'POST_IF' if tag isnt 'INDENT'
+  detectEnd tokens, i + 1, ok, go for token, i of tokens when token[0] is 'IF'
   this
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
@@ -250,11 +248,8 @@ rewriteClosingParens = (tokens) ->
     continue if tag is end = INVERSES[start]
     ++debt[start]
     tok = [end, if start is 'INDENT' then stoken[1] else end]
-    if tokens[i+2]?[0] is start
-      stack.push stoken
-      tokens.splice i+3, 0, tok
-    else
-      tokens.splice i  , 0, tok
+    pos = if tokens[i+2]?[0] is start then stack.push stoken; i+3 else i
+    tokens.splice pos, 0, tok
   this
 
 # Generate the indentation tokens, based on another token on the same line.
