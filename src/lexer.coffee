@@ -125,7 +125,7 @@ class exports.Lexer
       case <[ && || ]> then tag = 'LOGIC'
       default               tag = 'COMPARE'
     else if id of RESERVED
-      carp "reserved word \"#{id}\""
+      @carp "reserved word \"#{id}\""
     @token tag, id
     @token<[ : : ]> if colon
     input.length
@@ -138,7 +138,7 @@ class exports.Lexer
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   singleStringToken : ->
-    carp 'unterminated single quote' unless string = SIMPLESTR.exec @chunk
+    @carp 'unterminated single quote' unless string = SIMPLESTR.exec @chunk
     @token 'STRNUM', (string[=0]).replace MULTILINER, '\\\n'
     @countLines(string).length
 
@@ -171,7 +171,7 @@ class exports.Lexer
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    carp 'unterminated JS literal' unless js = JSTOKEN.exec @chunk
+    @carp 'unterminated JS literal' unless js = JSTOKEN.exec @chunk
     (js = new String js[0].slice 1, -1).js = true
     @countLines(@token 'LITERAL', js).length + 2
 
@@ -406,7 +406,7 @@ class exports.Lexer
         stack.push pair
         i += open.length - 1
         break
-    carp "unterminated #{ stack.pop()[0] }"
+    @carp "unterminated #{ stack.pop()[0] }"
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.
