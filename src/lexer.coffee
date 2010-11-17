@@ -29,6 +29,7 @@ class exports.Lexer
   # Before returning the token stream, run it through the [Rewriter](rewriter.html)
   # unless explicitly asked not to.
   tokenize: (@code, o = {}) ->
+    code.=replace(/\r/g, '').replace(TRAILING_SPACES, '')
     # The current line.
     @line    = o.line or 0
     # The current indentation level, over-indentation and under-outdentation.
@@ -39,8 +40,7 @@ class exports.Lexer
     @tokens  = [@last = ['DUMMY', '', 0]]
     # Flags for distinguishing FORIN/FOROF/FROM/TO.
     @seenFor = @seenFrom = false
-    code = @code.replace(/\r/g, '').replace TRAILING_SPACES, ''
-    i    = 0
+    i = 0
     while @chunk = code.slice i
       if comments = COMMENTS.exec @chunk
         break unless @chunk = code.slice i += @countLines(comments[0]).length
@@ -511,17 +511,18 @@ NUMBER = ///
  ^ 0x[\da-f]+ |                              # hex
  ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?  # decimal
 ///i
-SYMBOL  = /// ^ (
-  ?: [-=]>                # function
-   | [!=]==               # strict equality
-   | [-+*/%&|^:.[<>=!]=   # compound assign / comparison
-   | ([-+:&|])\1          # {in,de}crement / logic / prototype access
-   | \?[.[]               # soak access
-   | \.{3}                # splat
-   | @\d+                 # argument shorthand
-   | \\\n                 # continued line
-   | <<=? | >>>?=?        # left/right shift
-   | \S
+SYMBOL = /// ^ (?:
+  [-+*/%&|^:.[<>]=  | # compound assign / comparison
+  ([-+&|:])\1       | # {in,de}crement / logic / prototype access
+  [!=]==?           | # strict equality
+  [-=]>             | # function
+  \?[.[]            | # soak access
+  \.{3}             | # splat
+  @\d+              | # argument shorthand
+  \\\n              | # continued line
+  <<=?              | # left shift
+  >>>?=?            | # rite shift
+  \S
 ) ///
 HERESINGLE  = /// ^ ''' ([\s\S]*?) (?:\n[^\n\S]*)? ''' ///
 HEREDOUBLE  = /// ^ """ ([\s\S]*?) (?:\n[^\n\S]*)? """ ///
