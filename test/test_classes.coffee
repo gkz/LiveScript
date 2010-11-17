@@ -44,10 +44,10 @@ class TopClass
     @prop = 'top-' + arg
 
 class SuperClass extends TopClass
-  -> super 'super-' + it
+  -> super.call this, 'super-' + it
 
 class SubClass extends SuperClass
-  -> super 'sub'
+  -> super.call this, 'sub'
 
 ok (new SubClass).prop is 'top-super-sub'
 
@@ -99,11 +99,11 @@ TopClass = (arg) ->
   this
 
 SuperClass = (arg) ->
-  super 'super-' + arg
+  super.call this, 'super-' + arg
   this
 
 SubClass = ->
-  super 'sub'
+  super.call this, 'sub'
   this
 
 SuperClass extends TopClass
@@ -126,7 +126,7 @@ class Hive
   (@name) ->
 
 class Hive.Bee extends Hive
-  (name) -> super
+  (name) -> super ...
 
 maya = new Hive.Bee 'Maya'
 ok maya.name is 'Maya'
@@ -179,7 +179,7 @@ class Parent
   method: (args...) -> @args = args
 
 class Child extends Parent
-  method: -> super
+  method: -> super ...
 
 c = new Child
 c.method 1, 2, 3, 4
@@ -238,7 +238,7 @@ eq Class, Namespace.Class
 class BoundCtor extends (-> {@attr})
   (@attr, ret) =>
     return if ret
-    eq super.attr, @attr
+    eq super(...).attr, @attr
     @method = => this
 
 tbc = BoundCtor 'attr'
@@ -254,7 +254,7 @@ class Importer
 
 class NewSuper extends Importer
   -> eq new super({ok}).ok, ok
-  method1: -> new super
+  method1: -> new super ...
 
 ns = new NewSuper
 eq ns.method1({1})[1], 1

@@ -175,7 +175,7 @@ class exports.Expressions extends Base
 
   # An **Expressions** is the only node that can serve as the root.
   compile: (o = {}, level) ->
-    if o.scope then super o, level else @compileRoot o
+    if o.scope then super ... else @compileRoot o
 
   compileNode: (o) ->
     o.expressions = this
@@ -401,22 +401,14 @@ class exports.Comment extends Base
 #### Call
 # Node for a function invocation. Takes care of converting `super()` calls.
 class exports.Call extends Base
-  (@variable = @super = Literal('this'), @args = [], @soak) => @new = ''
+  (@variable, @args, @soak) =>
+    @new    = ''
+    @args or= (@splat = true; [Literal('this'), Literal('arguments')])
 
   children: <[ variable args ]>
 
   # Tag this invocation as creating a new instance.
   newInstance: -> this import {new: 'new '}
-
-  # Grab the reference to the superclass's implementation of the current method.
-  superReference: (o) ->
-    {method} = o.scope.shared or o.scope
-    throw SyntaxError 'cannot call super outside of a function' unless method
-    {name, clas} = method
-    throw SyntaxError 'cannot call super on an anonymous function' unless name
-    if clas
-    then clas + '.superclass.prototype.' + name
-    else name + '.superclass'
 
   unfoldSoak: (o) ->
     if @soak
@@ -449,7 +441,6 @@ class exports.Call extends Base
     list.reverse()
 
   unfoldAssign: (o) ->
-    return if @super
     for call of @digCalls()
       if asn
         if call.variable instanceof Call
@@ -460,24 +451,15 @@ class exports.Call extends Base
     asn
 
   compileNode: (o) ->
-    unless @super
-      return asn.compile o if asn = @unfoldAssign o
-      @variable import {@front}
-    if @args.splat
+    return asn.compile o if asn = @unfoldAssign o
+    @variable import {@front}
+    if @splat
       return @compileSplat o, @args[1].value if @new
-      fn = if @super
-      then @superReference o
-      else @variable.compile o, LEVEL_ACCESS
-      return fn + ".apply(#{@args[0].value}, #{@args[1].value})"
+      return @variable.compile(o, LEVEL_ACCESS) +
+             ".apply(#{@args[0].value}, #{@args[1].value})"
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
-    if @super
-      sup = @superReference o
-      if @new
-      then "new #{sup}(#{args})"
-      else "#{sup}.call(#{@super.value}#{ args and ', ' + args })"
-    else
-      @new + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
+    @new + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
@@ -485,16 +467,14 @@ class exports.Call extends Base
   # inner constructor in order to be able to pass the varargs.
   compileSplat: (o, args) ->
     if @new
-       idt = @tab + TAB
-       sup = if @super then @superReference o else @variable.compile o, LEVEL_LIST
-       return """
-         (function(func, args, ctor){
-         #{idt}ctor.prototype = func.prototype;
-         #{idt}var child = new ctor, result = func.apply(child, args);
-         #{idt}return result === Object(result) ? result : child;
-         #{@tab}}(#{sup}, #{args}, function(){}))
-       """
-    return @superReference(o) + ".apply(#{@super.value}, #{args})" if @super
+      idt = @tab + TAB
+      return """
+        (function(func, args, ctor){
+        #{idt}ctor.prototype = func.prototype;
+        #{idt}var child = new ctor, result = func.apply(child, args);
+        #{idt}return result === Object(result) ? result : child;
+        #{@tab}}(#{ @variable.compile o, LEVEL_LIST }, #{args}, function(){}))
+      """
     base = Value @variable
     if (name = base.properties.pop()) and base.isComplex()
       ref = o.scope.temporary 'ref'
@@ -587,7 +567,7 @@ class exports.Access extends Base
   isComplex: NO
 
   toString: (idt) ->
-    super idt, @constructor.name + if @assign then '=' else ''
+    super.call this, idt, @constructor.name + if @assign then '=' else ''
 
 #### Index
 # `[ ... ]` indexed access.
@@ -704,11 +684,11 @@ class exports.Class extends Base
         ctor = node
     unless ctor
       exps.unshift ctor = Code()
-      ctor.body.append Call null, [Splat Literal 'arguments'] if @parent
+      ctor.body.append Call Super() if @parent
     ctor import {name, 'ctor', 'statement', clas: null}
     exps.unshift Extends lname, @parent if @parent
     exps.push lname
-    clas = Parens (Call Code [], @body), true
+    clas = Parens Call(Code([], @body), []), true
     clas = Assign lname, clas if decl and @variable?.isComplex()
     clas = Assign @variable, clas if @variable
     clas.compile o
@@ -819,7 +799,7 @@ class exports.Assign extends Base
       val = Import Obj(), val, true if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
 
-  toString: (idt) -> super idt, @constructor.name + ' ' + @op
+  toString: (idt) -> super.call this, idt, @constructor.name + ' ' + @op
 
 #### Code
 # A function definition. This is the only node that creates a new `Scope`.
@@ -906,7 +886,7 @@ class exports.Code extends Base
 
   # Short-circuit `traverseChildren` method to prevent it
   # from crossing scope boundaries unless `crossScope`.
-  traverseChildren: (crossScope, func) -> super crossScope, func if crossScope
+  traverseChildren: -> super ... if it
 
 #### Param
 # A parameter in a function definition with an arbitrary LHS and
@@ -1018,7 +998,7 @@ class exports.Op extends Base
         first.bound = ''
         first = Value first, [Access Literal 'call']
         args  = [Literal 'this']
-      return Call first, args
+      return Call first, args or []
     if op is 'new'
       if (call = first.base or first) instanceof Call
         call.newInstance()
@@ -1147,7 +1127,7 @@ class exports.Of extends Base
     if o.level < LEVEL_LIST then code else "(#{code})"
 
   toString: (idt) ->
-    super idt, @constructor.name + if @negated then '!' else ''
+    super.call this, idt, @constructor.name + if @negated then '!' else ''
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
@@ -1439,6 +1419,20 @@ class exports.If extends Base
     return unless ifn = parent[name].unfoldSoak o
     parent[name] = ifn.then; ifn.then = Value parent
     ifn
+
+class exports.Super extends Base
+  =>
+
+  isAssignable: YES
+
+  compile: (o) ->
+    {method} = o.scope.shared or o.scope
+    throw SyntaxError 'cannot call super outside of a function' unless method
+    {name, clas} = method
+    throw SyntaxError 'cannot call super on an anonymous function' unless name
+    if clas
+    then clas + '.superclass.prototype.' + name
+    else name + '.superclass'
 
 # Export `import all` for use in parser, where the operator doesn't work.
 exports.mix = __importAll

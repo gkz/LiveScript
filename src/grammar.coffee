@@ -191,6 +191,7 @@ grammar =
     o 'STRNUM',  -> Literal $1
     o 'THIS',    -> Literal 'this'
     o 'LITERAL', -> if $1 is 'void' then Op 'void', Literal 8 else Literal $1
+    o 'SUPER',   -> Super()
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -298,8 +299,6 @@ grammar =
   Call: [
     o 'Value OptFuncExist Arguments', -> Call $1, $3, $2
     o 'Call  OptFuncExist Arguments', -> Call $1, $3, $2
-    o 'SUPER',           -> Call null, [Splat Literal 'arguments']
-    o 'SUPER Arguments', -> Call null, $2
   ]
   # An optional existence check on a function.
   OptFuncExist: [
@@ -309,8 +308,7 @@ grammar =
   # The list of arguments to a function call.
   Arguments: [
     o 'CALL_START     CALL_END', -> []
-    o 'CALL_START ... CALL_END', ->
-      mix [Literal('this'), Literal('arguments')], splat: true
+    o 'CALL_START ... CALL_END', -> null
     o 'CALL_START ArgList OptComma CALL_END', -> $2
   ]
 
@@ -436,7 +434,7 @@ operators = [
                RETURN THROW EXTENDS         ]>
   <[ right     FORIN FOROF FROM TO BY WHEN  ]>
   <[ right     IF ELSE FOR WHILE CLASS
-               SWITCH CASE DEFAULT SUPER    ]>
+               SWITCH CASE DEFAULT          ]>
   <[ right     POST_IF                      ]>
 ]
 

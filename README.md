@@ -51,7 +51,7 @@ Unlike CoffeScript, our `class` takes a regular block under which you can declar
     $ coco -bsp
     class exports.C extends P
       ### constructor ###
-      -> super it
+      -> super ...
 
       ### any code ###
       private = 42
@@ -75,8 +75,8 @@ Unlike CoffeScript, our `class` takes a regular block under which you can declar
       var private, _ref;
       __extends(C, P);
       /* constructor */
-      function C(it){
-        C.superclass.call(this, it);
+      function C(){
+        C.superclass.apply(this, arguments);
       } C.name = "C";
       /* any code */
       private = 42;
