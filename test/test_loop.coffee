@@ -1,3 +1,53 @@
+i = 5
+list = while i -= 1
+  i * 2
+eq '' + list, '8,6,4,2'
+
+i = 5
+list = (i * 3 while i -= 1)
+eq '' + list, '12,9,6,3'
+
+i = 5
+func   = -> i -= it
+assert = -> ok false unless 0 < i < 5
+results = while func 1
+  assert()
+  i
+eq '' + results, '4,3,2,1'
+
+i = 10
+results = while --i when i % 2 is 0
+  i * 2
+eq '' + results, '16,12,8,4'
+
+
+value = false
+i = 0
+results = until value
+  value = true if i is 5
+  i += 1
+
+ok i is 6
+
+
+i = 5
+list = []
+for ever
+  i -= 1
+  break if i is 0
+  list.push i * 2
+
+ok list.join(' ') is '8 6 4 2'
+
+
+#759: `if` within `while` condition
+2 while if 1 then 0
+
+
+# https://github.com/jashkenas/coffee-script/issues/843
+eq void, do -> return while 0
+
+
 # Basic array comprehensions.
 nums    = (n * n for n of [1, 2, 3] when n % 2 isnt 0)
 results = (n * 2 for n of nums)
