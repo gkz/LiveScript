@@ -143,11 +143,12 @@ addImplicitParentheses = (tokens) ->
        ]> or
        tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION' or
        tag is 'PLUS_MINUS' and not (token.spaced or token.eol))
-    tokens.splice i++, 0, ['CALL_START', '(', token[2]]
-    ++i if callObject
     seenSingle = false
+    tokens.splice --i, 1 if exist = prev[0] is '?'
+    tokens.splice i++, 0
+    , ['CALL_START', (if exist then '?(' else '('), token[2]]
+    ++i if callObject
     detectEnd tokens, i, condition, action
-    prev[0] = 'FUNC_EXIST' if prev[0] is '?'
   this
 
 # Because our grammar is LALR(1), it can't handle some single-line

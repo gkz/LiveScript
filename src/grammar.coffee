@@ -259,7 +259,9 @@ grammar =
     o 'Assignable',    -> Value $1
     o 'Literal',       -> Value $1
     o 'Parenthetical', -> Value $1
-    o 'Call',          -> Value $1
+    o 'Value CALL_START                  CALL_END', -> Value Call $1, []  , $2
+    o 'Value CALL_START ...              CALL_END', -> Value Call $1, null, $2
+    o 'Value CALL_START ArgList OptComma CALL_END', -> Value Call $1, $3  , $2
   ]
 
   # The general group of accessors into an object.
@@ -292,22 +294,6 @@ grammar =
     o 'AssignList , AssignObj',                                 -> $1.concat $3
     o 'AssignList OptComma TERMINATOR AssignObj',               -> $1.concat $4
     o 'AssignList OptComma INDENT AssignList OptComma OUTDENT', -> $1.concat $4
-  ]
-
-  # Function calls.
-  Call: [
-    o 'Value OptFuncExist Arguments', -> Call $1, $3, $2
-  ]
-  # An optional existence check on a function.
-  OptFuncExist: [
-    o '',           -> false
-    o 'FUNC_EXIST', -> true
-  ]
-  # The list of arguments to a function call.
-  Arguments: [
-    o 'CALL_START     CALL_END', -> []
-    o 'CALL_START ... CALL_END', -> null
-    o 'CALL_START ArgList OptComma CALL_END', -> $2
   ]
 
   # The array literal.

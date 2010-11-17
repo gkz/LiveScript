@@ -398,8 +398,9 @@ class exports.Comment extends Base
 #### Call
 # Node for a function invocation. Takes care of converting `super()` calls.
 class exports.Call extends Base
-  (@callee, @args, @soak) =>
+  (@callee, @args, open) =>
     @args or= (@splat = true; [Literal('this'), Literal('arguments')])
+    @soak   = true if open is '?('
 
   children: <[ callee args ]>
 

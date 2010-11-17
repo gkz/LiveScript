@@ -342,7 +342,10 @@ class exports.Lexer
         return value.length
       unless (prev = @last).spaced
         if value is '(' and prev[0] of CALLABLE
-          prev[0] = 'FUNC_EXIST' if prev[0] is '?'
+          if prev[0] is '?'
+            prev[0]  = 'CALL_START'
+            prev[1] += '('
+            return value.length
           tag = 'CALL_START'
         else if value is '[' and prev[0] of INDEXABLE
           tag = 'INDEX_START'
