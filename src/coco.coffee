@@ -26,8 +26,10 @@ exports.tokens = (code, options) ->
 # Tokenize and parse a string of Coco code, and return the AST. You can
 # then compile it by calling `.compile()` on the root, or traverse it by using
 # `.traverse()` with a callback.
-exports.nodes = (code, options) ->
-  parser.parse lexer.tokenize code, options
+exports.nodes = (source, options) ->
+  if typeof source is 'string'
+  then parser.parse lexer.tokenize source, options
+  else parser.parse source
 
 # Compile and execute a string of Coco (on the server), correctly
 # setting `__filename`, `__dirname`, and relative `require()`.
