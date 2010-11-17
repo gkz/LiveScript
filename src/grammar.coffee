@@ -190,7 +190,6 @@ grammar =
     o 'STRNUM',  -> Literal $1
     o 'THIS',    -> Literal 'this'
     o 'LITERAL', -> if $1 is 'void' then Op 'void', Literal 8 else Literal $1
-    o 'SUPER',   -> Super()
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -244,6 +243,7 @@ grammar =
     o 'Identifier'
     o 'ThisProperty'
     o 'Value Accessor', -> $1.append $2
+    o 'SUPER',          -> Super()
   ]
 
   # Everything that can be assigned to.

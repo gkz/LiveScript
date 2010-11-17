@@ -396,7 +396,7 @@ class exports.Comment extends Base
     if level ? o.level then code else o.indent + code
 
 #### Call
-# Node for a function invocation. Takes care of converting `super()` calls.
+# Node for a function invocation.
 class exports.Call extends Base
   (@callee, @args, open) =>
     @args or= (@splat = true; [Literal('this'), Literal('arguments')])
@@ -704,7 +704,7 @@ class exports.Assign extends Base
     return name + ': ' + val if @op is ':'
     unless left.isAssignable()
       throw SyntaxError "\"#{ @left.compile o }\" cannot be assigned"
-    unless left instanceof Value and left.hasProperties()
+    if IDENTIFIER.test name
       if @op is '='
         o.scope.declare name
       else unless o.scope.check name, true
@@ -1402,6 +1402,8 @@ class exports.If extends Base
     parent[name] = ifn.then; ifn.then = Value parent
     ifn
 
+#### Super
+# A simple node to lookup a reference to the parent method.
 class exports.Super extends Base
   =>
 
