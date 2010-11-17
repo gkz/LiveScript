@@ -234,7 +234,7 @@ class exports.Literal extends Base
   (@value) =>
     # Break and continue must be treated as pure statements -- they lose their
     # meaning when wrapped in a closure.
-    @isPureStatement = YES if @value of <[ break continue debugger ]>
+    @isPureStatement = YES if value of <[ break continue debugger ]>
 
   makeReturn   : -> if @isPureStatement() then this else Return this
   isAssignable : -> IDENTIFIER.test @value
@@ -877,7 +877,12 @@ class exports.Param extends Base
 
   asReference: (o) ->
     return @reference if @reference
-    node = if @isComplex() then Literal o.scope.temporary 'arg' else @name
+    node = @name
+    if node.this
+      node .= properties[0].name
+      node  = Literal '$' + node.value if node.value.reserved
+    else if node.isComplex()
+      node  = Literal o.scope.temporary 'arg'
     node = Value node
     node = Splat node if @splat
     @reference = node
@@ -1288,8 +1293,8 @@ class exports.For extends While
 # but with forced `break` after each cases.
 class exports.Switch extends Base
   (@switch, @cases, @default) =>
-    return if @switch
-    tests[i].=invert() for i in tests for {tests} of @cases
+    return if $switch
+    tests[i].=invert() for i in tests for {tests} of cases
 
   children: <[ switch cases default ]>
 
