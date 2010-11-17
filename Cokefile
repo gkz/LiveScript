@@ -18,6 +18,13 @@ run = (args) ->
 log = (message, color, explanation) ->
   console.log color + message + reset + ' ' + (explanation or '')
 
+sources = ->
+  ext = /\.co(?:ffee)?$/i
+  'src/' + file for file of fs.readdirSync 'src' when ext.test file
+
+coreSources = ->
+  "src/#{src}.coffee" for src of <[coco grammar lexer nodes rewriter scope]>
+
 option '-p', '--prefix [DIR]', 'set the installation prefix for `coke install`'
 
 task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
@@ -40,9 +47,7 @@ task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
 
 
 task 'build', 'build the Coco language from source', ->
-  ext = /\.co(?:ffee)?$/i
-  run <[ -c -o lib ]>.concat \
-    ('src/' + file for file of fs.readdirSync 'src' when ext.test file)
+  run <[ -c -o lib ]>.concat sources()
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   exec 'bin/coke build && bin/coke build && bin/coke test', (err, stdout, stderr) ->
@@ -94,15 +99,18 @@ task 'doc:underscore', 'rebuild the Underscore.coffee documentation page', ->
 
 
 task 'bench', 'quick benchmark of compilation time (of everything in src)', ->
-  exec 'time bin/coco -p src/ > /dev/null', (err, stdout, stderr) ->
-    console.log stderr.trim()
+  co  = coreSources().map(-> fs.readFileSync it).join '\n'
+  now = Date.now()
+  js  = Coco.compile co, bare: true
+  console.log """
+    #{bold}#{ Date.now() - now }[ms]#{reset} compiling #{js.length} bytes
+  """
 
 task 'loc', 'count the lines of source code in the Coco compiler', ->
-  sources = ("src/#{src}.coffee" for src of <[
-    coco grammar lexer nodes rewriter scope
-  ]>).join ' '
-  exec "cat #{sources} | grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '",
-       (err, out) -> console.log out.trim()
+  exec """
+    cat #{ coreSources().join ' ' } | \\
+    grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '
+  """, (err, out) -> console.log out.trim()
 
 
 runTests = (Coco) ->
