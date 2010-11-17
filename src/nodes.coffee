@@ -1339,26 +1339,20 @@ class exports.Switch extends Base
   isStatement: YES
 
   makeReturn: ->
-    cs.body.makeReturn() for cs of @cases
+    cs.makeReturn() for cs of @cases
     @default?.makeReturn()
     this
 
   compileNode: (o) ->
     {tab} = this
-    o.indent += TAB
-    code = tab + "switch (#{ @switch?.compile(o, LEVEL_PAREN) or false }) {\n"
-    stop = @default or @cases.length - 1
-    for cs, i of @cases
-      code += cs.compile o, tab
-      break if i is stop
-      [lnc] = lastNonComment cs.body.expressions
-      unless lnc instanceof [Return, Throw] or
-             lnc.value of <[ continue break ]>
-        code += o.indent + 'break;\n'
+    code  = tab + "switch (#{ @switch?.compile(o, LEVEL_PAREN) or false }) {\n"
+    stop  = @default or @cases.length - 1
+    code += cs.compileCase o, tab, i is stop for cs, i of @cases
     if @default
-      def = @default.compile o, LEVEL_TOP
+      o.indent = tab + TAB
+      def   = @default.compile o, LEVEL_TOP
       code += tab + "default:#{ def and '\n' + def  }\n"
-    code +  tab + '}'
+    code + tab + '}'
 
 #### Case
 # Convinient container node for `case` blocks.
@@ -1367,14 +1361,24 @@ class exports.Case extends Base
 
   children: <[ tests body ]>
 
-  compile: (o, tab) ->
-    code = ''
+  makeReturn: ->
+    [lnc] = lastNonComment @body.expressions
+    @body.makeReturn() if lnc and lnc.value isnt 'fallthrough'
+
+  compileCase: (o, tab, nobr) ->
+    code = br = ''
     add  = -> code += tab + "case #{ it.compile o, LEVEL_PAREN }:\n"
     for test of @tests
       if test.=unwrap() instanceof Arr
       then add c for c of test.objects
       else add test
+    [last, i] = lastNonComment exps = @body.expressions
+    if ft = last?.base?.value is 'fallthrough'
+      @body.expressions[i] = Comment ' fallthrough '
+    o.indent = tab + TAB
     code += body + '\n' if body = @body.compile o, LEVEL_TOP
+    code += o.indent + 'break;\n' unless nobr or ft or
+      last instanceof [Return, Throw] or last.value of <[ continue break ]>
     code
 
 #### If

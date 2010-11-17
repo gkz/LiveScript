@@ -40,6 +40,7 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
   - Is at same precedence as `.`/`[]`.
   - Consumes all property/call chains to the right.
 
+
 - `@0`, `@1`, ...
 
   Shorthand for each argument.
@@ -229,12 +230,21 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 - `switch`-`case`-`default`
 
-  Same as switch-when-else in original, but requires less indentation.
+  Same as switch-when-else in original (multiple conditions, auto `break` insertion), except it:
 
-      $ coco -bpe 'switch x
+  - requires less indentation:
+    `case`/`default` are placed at the same level as `switch`.
+  - supports falling through:
+    If the last expression of `case` block is `fallthrough`,
+    it inserts `/* fallthrough */` instead of `break`.
+
+      $ coco -bsp
+      switch x
       case 1, 2 then 3
       case 4    then 5
-      default 6'
+      case 7    then 8; fallthrough
+      default 6
+
       switch (x) {
       case 1:
       case 2:
@@ -243,6 +253,9 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
       case 4:
         5;
         break;
+      case 7:
+        8;
+        /* fallthrough */
       default:
         6;
       }

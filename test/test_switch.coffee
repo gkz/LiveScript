@@ -83,6 +83,8 @@ case !3:
 case !4:
   break;
 case !5:
+  /* fallthrough */
+case !6:
   break;
 default:
 }
@@ -92,6 +94,7 @@ case 1 then return
 case 2 then throw me
 case 3 then continue
 case 4 then break
-case 5 then
+case 5 then fallthrough
+case 6 then
 default
 ''', bare: true
