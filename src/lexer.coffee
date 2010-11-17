@@ -45,16 +45,16 @@ class exports.Lexer
       if comments = COMMENTS.exec @chunk
         break unless @chunk = code.slice i += @countLines(comments[0]).length
       switch code.charAt i
-      case '\n'then step = do @lineToken
-      case ' ' then step = do @whitespaceToken
-      case "'" then step = @heredocToken(HERESINGLE) or @singleStringToken()
-      case '"' then step = @heredocToken(HEREDOUBLE) or @doubleStringToken()
-      case '/' then step = do @heregexToken or do @regexToken
-      case '<' then step = do @wordsToken
-      case '#' then step = do @commentToken
-      case '`' then step = do @jsToken
-      default step = @whitespaceToken() or @identifierToken() or @numberToken()
-      i += step or @literalToken()
+      case '\n'then i += do @lineToken
+      case ' ' then i += do @whitespaceToken
+      case "'" then i += @heredocToken(HERESINGLE) or do @singleStringToken
+      case '"' then i += @heredocToken(HEREDOUBLE) or do @doubleStringToken
+      case '/' then i += do @heregexToken or do @regexToken or do @literalToken
+      case '<' then i += do @wordsToken or do @literalToken
+      case '#' then i += do @commentToken
+      case '`' then i += do @jsToken
+      default i += do @identifierToken or do @numberToken or
+                   do @literalToken    or do @whitespaceToken
     # Close up all remaining open blocks at the end of the file.
     @outdentToken @indent
     @tokens.shift()  # Dispose dummy.
@@ -92,10 +92,8 @@ class exports.Lexer
       @seenFrom = false
       return @token('TO', id).length
     tag = if at = id.charAt(0) is '@'
-      id .= slice 1
-      'THISPROP'
-    else
-      'IDENTIFIER'
+    then id.=slice 1; 'THISPROP'
+    else 'IDENTIFIER'
     forcedIdentifier = at or colon or
       if not (prev = @last).spaced and prev[1].colon2
       then @token<[ ACCESS . ]>
