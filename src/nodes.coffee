@@ -42,7 +42,7 @@ class exports.Base
     args = []
     func = Code [], Expressions this
     func.wrapper = true
-    if @contains @literalThis
+    if @contains(-> it.value is 'this' or it.bound)
       args.push Literal 'this'
       call = Value func, [Access Literal 'call']
     mentionsArgs = false
@@ -53,9 +53,6 @@ class exports.Base
       args.push Literal 'arguments'
       func.params.push Param Literal '_args'
     Parens(Call(call or func, args), true).compileNode o
-
-  literalThis: -> it instanceof Literal and it.value is 'this' or
-                  it instanceof Code    and it.bound
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -162,8 +159,8 @@ class exports.Expressions extends Base
   isEmpty: -> not @expressions.length
 
   isStatement: (o) ->
-    for exp of @expressions when exp.isPureStatement() or exp.isStatement o
-      return true
+    return true for exp of @expressions
+    when exp.isPureStatement() or exp.isStatement o
     false
 
   # An Expressions node does not return its entire body, rather it
@@ -402,20 +399,16 @@ class exports.Comment extends Base
 # Node for a function invocation. Takes care of converting `super()` calls.
 class exports.Call extends Base
   (@variable, @args, @soak) =>
-    @new    = ''
     @args or= (@splat = true; [Literal('this'), Literal('arguments')])
 
   children: <[ variable args ]>
-
-  # Tag this invocation as creating a new instance.
-  newInstance: -> this import {new: 'new '}
 
   unfoldSoak: (o) ->
     if @soak
       return ifn if ifn = If.unfoldSoak o, this, 'variable'
       [left, rite] = Value(@variable).cacheReference o
       rite = Call rite, @args
-      rite.new = @new
+      rite import {@new}
       left = Literal "typeof #{ left.compile o } == \"function\""
       return If left, Value(rite), soak: true
     for call of @digCalls()
@@ -459,7 +452,7 @@ class exports.Call extends Base
              ".apply(#{@args[0].value}, #{@args[1].value})"
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
     args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
-    @new + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
+    (@new or '') + @variable.compile(o, LEVEL_ACCESS) + "(#{args})"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
@@ -813,9 +806,7 @@ class exports.Code extends Base
   isStatement: -> !!@statement
 
   makeReturn: ->
-    if @statement
-    then this import {'returns'}
-    else Return this
+    if @statement then this import {'returns'} else Return this
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
@@ -1000,7 +991,7 @@ class exports.Op extends Base
       return Call first, args or []
     if op is 'new'
       if (call = first.base or first) instanceof Call
-        call.newInstance()
+        call.new = 'new '
         return first
       first = Parens first, true if first instanceof Code and first.bound
     this import {op, first, second, post}
