@@ -102,31 +102,30 @@ class exports.Lexer
       if id of JS_FORBIDDEN
         id = new String id
         id.reserved = true
-    else
-      if id of COCO_KEYWORDS
-        switch tag = id.toUpperCase()
-        case 'FOR'                         then @seenFor = true
-        case 'UNLESS'                      then tag = 'IF'
-        case 'UNTIL'                       then tag = 'WHILE'
-        case <[ NEW DO TYPEOF DELETE    ]> then tag = 'UNARY'
-        case <[ TRUE FALSE NULL VOID    ]> then tag = 'LITERAL'
-        case <[ BREAK CONTINUE DEBUGGER ]> then tag = 'STATEMENT'
-        case <[ IN OF INSTANCEOF ]>
-          if tag isnt 'INSTANCEOF' and @seenFor
-            tag = 'FOR' + tag
-            @seenFor = false
-          else
-            tag = 'RELATION'
-            if @last[1] is '!'
-              @tokens.pop()
-              id = '!' + id
-      else if COCO_ALIASES.hasOwnProperty id
-        switch id = COCO_ALIASES[id]
-        case '!'         then tag = 'UNARY'
-        case <[ && || ]> then tag = 'LOGIC'
-        default               tag = 'COMPARE'
-      else if id of RESERVED
-        carp "reserved word \"#{id}\""
+    else if id of COCO_KEYWORDS
+      switch tag = id.toUpperCase()
+      case 'FOR'                         then @seenFor = true
+      case 'UNLESS'                      then tag = 'IF'
+      case 'UNTIL'                       then tag = 'WHILE'
+      case <[ NEW DO TYPEOF DELETE    ]> then tag = 'UNARY'
+      case <[ TRUE FALSE NULL VOID    ]> then tag = 'LITERAL'
+      case <[ BREAK CONTINUE DEBUGGER ]> then tag = 'STATEMENT'
+      case <[ IN OF INSTANCEOF ]>
+        if tag isnt 'INSTANCEOF' and @seenFor
+          tag = 'FOR' + tag
+          @seenFor = false
+          break
+        tag = 'RELATION'
+        if @last[1] is '!'
+          @tokens.pop()
+          id = '!' + id
+    else if COCO_ALIASES.hasOwnProperty id
+      switch id = COCO_ALIASES[id]
+      case '!'         then tag = 'UNARY'
+      case <[ && || ]> then tag = 'LOGIC'
+      default               tag = 'COMPARE'
+    else if id of RESERVED
+      carp "reserved word \"#{id}\""
     @token tag, id
     @token<[ : : ]> if colon
     input.length
