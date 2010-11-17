@@ -403,6 +403,12 @@ class exports.Call extends Base
 
   children: <[ variable args ]>
 
+  # List up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
+  digCalls: ->
+    list = [call = this]
+    list.push call while call.=variable.base instanceof Call
+    list.reverse()
+
   unfoldSoak: (o) ->
     if @soak
       return ifn if ifn = If.unfoldSoak o, this, 'variable'
@@ -412,33 +418,13 @@ class exports.Call extends Base
       left = Literal "typeof #{ left.compile o } == \"function\""
       return If left, Value(rite), soak: true
     for call of @digCalls()
-      if ifn
-        if call.variable instanceof Call
-        then call.variable      = ifn
-        else call.variable.base = ifn
+      call.variable.base = ifn if ifn
       ifn = If.unfoldSoak o, call, 'variable'
     ifn
 
-  # List up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
-  digCalls: ->
-    call = this
-    list = []
-    for ever
-      if call.variable instanceof Call
-        list.push call
-        call .= variable
-        continue
-      break unless call.variable instanceof Value
-      list.push call
-      break unless call .= variable.base instanceof Call
-    list.reverse()
-
   unfoldAssign: (o) ->
     for call of @digCalls()
-      if asn
-        if call.variable instanceof Call
-        then call.variable      = asn
-        else call.variable.base = asn
+      call.variable.base = asn if asn
       if asn = call.variable.unfoldAssign o
         call.variable = asn.right; asn.right = Value call
     asn
