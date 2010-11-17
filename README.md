@@ -3,8 +3,8 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 ## Additions
 
-### `:=`
-Assigns to a declared variable.
+### nondeclaring assign `:=`
+Assigns to an existing variable, without declaring a new one.
 
     $ coco -bpe 'a := a = 1'
     var a;
@@ -14,7 +14,7 @@ Assigns to a declared variable.
     SyntaxError: assignment to undeclared variable "a"
 
 
-### `[*]`
+### index star `[*]`
 An asterisk at the beginning of an indexer represents the length of the indexee.
 
     $ coco -bpe 'a[*] = b'
@@ -25,7 +25,7 @@ An asterisk at the beginning of an indexer represents the length of the indexee.
     (_ref = arr())[_ref.length - 1];
 
 
-### `.=` / `[=]`
+### modifying access `.=` `[=]`
 Compound assigments for accessor and indexer.
 
     $ coco -bpe 'location.href.=replace /^http:/, "https:"'
@@ -38,14 +38,13 @@ Compound assigments for accessor and indexer.
 - Consumes all property/call chains to the right.
 
 
-### `@0`, `@1`, ...
-Shorthand for each argument.
+### argument shorthands `@0`
 
     $ coco -bpe '@0 @1'
     arguments[0](arguments[1]);
 
 
-### `class` as a code block
+### class block
 Unlike CoffeScript, our `class` takes a regular block under which you can declare the constructor (as a bare function on top) and properties (as bare objects on top) as well as have other code like define static methods (`this` points to the constructor within the block).
 
     $ coco -bsp
@@ -101,8 +100,8 @@ Unlike CoffeScript, our `class` takes a regular block under which you can declar
     }());
 
 
-### `delete`
-Returns the deleted value as opposed to the useless
+### plucking `delete`
+If used in an expression, `delete` returns the original value as opposed to the useless
 [JS behavior](http://people.mozilla.org/~jorendorff/es5.html#sec-11.4.1).
 
     $ bin/coco -bpe 'ov = delete o.v; delete x'
@@ -111,8 +110,8 @@ Returns the deleted value as opposed to the useless
     delete x;
 
 
-### `do`
-A unary operator that simply calls a function. Helps you write less parentheses.
+### parenless call `do`
+A unary operator that simply calls a function, helping you write less parentheses.
 
     $ coco -bpe 'do f'
     f();
@@ -124,7 +123,7 @@ A unary operator that simply calls a function. Helps you write less parentheses.
     (function(){}).call(this);
 
 
-### `for`-`from`-`to`/`til`-`by`
+### loop in range `for` `from` `to` `til` `by`
 A generic way to loop within certain numeric ranges.
 
     $ coco -bpe 'i for i from x to y'
@@ -155,21 +154,21 @@ A generic way to loop within certain numeric ranges.
 - `by` optionally specifies the step value.
 
 
-### `for ever`
+### loop `for ever`
 An empty version of `for` that loops forever.
 
     $ coco -bpe 'continue for ever'
     for (;;) {}
 
 
-### `instanceof []`
+### chained instance check `instanceof []`
 A bare array to the right of `instanceof` is expanded into `or` chains.
 
     $ coco -bpe 'A instanceof [B, C]'
     A instanceof B || A instanceof C;
 
 
-### `import` / `import all`
+### property importing `import` `import all`
 Infix operators that copy properties from left to right and return the right operand.
 Optimized to a series of assignments if the right operand of `import` is an object literal.
 
@@ -189,7 +188,7 @@ Optimized to a series of assignments if the right operand of `import` is an obje
     w = (x.y = y, x[z] = z, x);
 
 
-### `it`
+### implicit argument `it`
 Represents the first argument of the current function (like in Groovy).
 Available only when the function omits argument declarations.
 
@@ -200,7 +199,7 @@ Available only when the function omits argument declarations.
     };
 
 
-### object splat
+### object splat `{o...}`
 
 Mixes an object's properties into the created object.
 
@@ -216,7 +215,7 @@ Mixes an object's properties into the created object.
     }, o, true), o.o, true), _obj["0"] = "0", _obj);
 
 
-### `switch`-`case`-`default`
+### switching `switch` `case` `default`
 `switch` (as in JS) with multiple conditions and auto `break` insertion per `case`.
 
     $ coco -bsp
@@ -250,7 +249,7 @@ Basically the same as switch-when-else in original, except ours:
   inserts `/* fallthrough */` instead of `break`.
 
 
-### `<[ quoted words ]>`
+### quoted words `<[ q w ]>`
 A literal that represents an array of strings or a function call with string arguments.
 
     $ coco -bpe 'f <[ array of strings ]>'
@@ -260,14 +259,14 @@ A literal that represents an array of strings or a function call with string arg
     f("argument", "of", "strings");
 
 
-### `f(...)` (thisplat)
+### thisplat `f(...)`
 A shorthand to delegate the current context to a function.
 
     $ coco -bpe 'f ...'
     f.apply(this, arguments);
 
 
-### `void`
+### undefined literal `void`
 A literal that compiles to `void 8`.
 
 
