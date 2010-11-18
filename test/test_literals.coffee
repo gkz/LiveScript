@@ -280,3 +280,6 @@ eq '', <[]>[0]
 #764: Boolean/Number should be indexable.
 ok 42['toString']
 ok true['toString']
+
+
+ok 2r101010 == 8r52 == 36r16 == 42

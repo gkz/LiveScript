@@ -135,7 +135,15 @@ class exports.Lexer
   # Matches numbers, including decimals, hex, and exponential notation.
   # Be careful not to interfere with ranges-in-progress.
   numberToken: ->
-    (number = NUMBER.exec @chunk) and @token('STRNUM', number[0]).length
+    return 0 unless match = NUMBER.exec @chunk
+    [num, radix, rnum] = match
+    if radix
+      @carp "invalid radix #{radix}" unless 2 <= radix <= 36
+      num = parseInt rnum, radix
+      if isNaN(num) or num is parseInt rnum.slice(0, -1), radix
+        @carp "invalid number #{rnum} in base #{radix}"
+    @token 'STRNUM', num
+    match[0].length
 
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
@@ -195,7 +203,7 @@ class exports.Lexer
     return 0 unless match = HEREGEX.exec @chunk
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
-      body .= replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
+      body.=replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
       @token 'LITERAL', "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex).length
     @tokens.push ['IDENTIFIER', 'RegExp', @line], ['CALL_START', '(', @line]
@@ -204,8 +212,8 @@ class exports.Lexer
       if tag is 'TOKENS'
         tokens.push value...
       else
-        continue unless value .= replace HEREGEX_OMIT, ''
-        value .= replace /\\/g, '\\\\'
+        continue unless value.=replace HEREGEX_OMIT, ''
+        value.=replace /\\/g, '\\\\'
         tokens.push ['STRNUM', @makeString(value, '"', true)]
       tokens.push <[ PLUS_MINUS + ]>
     tokens.pop()
@@ -366,8 +374,8 @@ class exports.Lexer
       while attempt = HEREDOC_INDENT.exec doc
         attempt[=1]
         indent = attempt if !indent? or 0 < attempt.length < indent.length
-    doc .= replace /// \n #{indent} ///g, '\n' if indent
-    doc .= replace /^\n/, '' unless comment
+    doc.=replace /// \n #{indent} ///g, '\n' if indent
+    doc.=replace /^\n/, '' unless comment
     doc
 
   # A source of ambiguity in our grammar used to be parameter lists in function
@@ -466,9 +474,9 @@ class exports.Lexer
   # Constructs a string token by escaping quotes and newlines.
   makeString: (body, quote, heredoc) ->
     return quote + quote unless body
-    body .= replace /\\([\s\S])/g, (match, escaped) ->
+    body.=replace /\\([\s\S])/g, (match, escaped) ->
       if escaped of ['\n', quote] then escaped else match
-    body .= replace /// #{quote} ///g, '\\$&'
+    body.=replace /// #{quote} ///g, '\\$&'
     quote + @escapeLines(body, heredoc) + quote
 
   # Count the number of lines in a string and add it to `@line`.
@@ -510,8 +518,9 @@ IDENTIFIER = /// ^
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 ///
 NUMBER = ///
- ^ 0x[\da-f]+ |                              # hex
- ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?  # decimal
+  ^ 0x[\da-f]+                                # hex
+| ^ ([1-9]\d*) r ([\da-z]+)                   # any radix
+| ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?  # decimal
 ///i
 SYMBOL = /// ^ (?:
   [-+*/%&|^:.[<>]=  | # compound assign / comparison

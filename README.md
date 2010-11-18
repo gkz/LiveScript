@@ -270,6 +270,13 @@ A shorthand to delegate the current context to a function.
 A literal that compiles to `void 8`.
 
 
+### numbers with variable radix `25rCoco`
+Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form RRrXXX.
+
+    $ coco -bpe '[2r101010, 8r52, 36r16]'
+    [42, 42, 42];
+
+
 ## Incompatibilities
 
 - Assigning to a variable with `=` declares it on the _current_ scope. Use `:=` to modify variables declared on upper scopes.
