@@ -291,6 +291,36 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
 - The binaries are named __coco__ and __coke__ to coexist with __coffee__ and __cake__.
 
 
+## Improvements
+    $ git log -1 --format=oneline
+    bcbf9f7dfd01e1db325cbcf454f65058344308fe "cake bench" now shows total time spent
+
+    $ ls -s extras/coffee-script.js
+    168 extras/coffee-script.js
+
+    $ cake bench
+    Lex     : 1431[ms] (20102 tokens)
+    Rewrite :  160[ms] (22587 tokens)
+    Parse   :  177[ms]
+    Compile :  167[ms] (123517 chars)
+    TOTAL   : 1935[ms]
+
+    $ cd ../coco
+
+    $ git log -1 --format=oneline
+    5f2d3802b9e621b8403f78537365a16d7efd0e42 removed coffee related stuff
+
+    $ ls -s extras/coco.js
+    128 extras/coco.js
+
+    $ coke bench
+    Lex     : 1051[ms] (18544 tokens)
+    Rewrite :  127[ms] (20983 tokens)
+    Parse   :  189[ms]
+    Compile :  216[ms] (121502 chars)
+    TOTAL   : 1583[ms]
+
+
 ## Installation
 
     git clone git:github.com/satyr/coco.git && cd coco && bin/coke install
