@@ -37,7 +37,7 @@ detectEnd = (tokens, i, ok, go) ->
 # Leading newlines would introduce an ambiguity in the grammar, so we
 # dispatch them here.
 removeLeadingNewlines = (tokens) ->
-  break for [tag], i of tokens when tag isnt 'TERMINATOR'
+  for [tag], i of tokens then break unless tag is 'TERMINATOR'
   tokens.splice 0, i if i
   tokens
 
@@ -46,8 +46,8 @@ removeLeadingNewlines = (tokens) ->
 removeMidExpressionNewlines = (tokens) ->
   i = 0
   while token = tokens[++i]
-  when tokens[i-1][0] is 'TERMINATOR' and token[0] of EXPRESSION_CLOSE
-    tokens.splice i-1, 1
+    if tokens[i-1][0] is 'TERMINATOR' and token[0] of EXPRESSION_CLOSE
+      tokens.splice i-1, 1
   tokens
 
 # The lexer has tagged each of the opening parenthesis/bracket of
@@ -189,7 +189,8 @@ addImplicitIndentation = (tokens) ->
 tagPostfixConditionals = (tokens) ->
   ok = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
   go = ([tag]) -> token[0] = 'POST_IF' if tag isnt 'INDENT'
-  detectEnd tokens, i + 1, ok, go for token, i of tokens when token[0] is 'IF'
+  for token, i of tokens then if token[0] is 'IF'
+    detectEnd tokens, i + 1, ok, go
   tokens
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
@@ -205,7 +206,7 @@ ensureBalance = (tokens) ->
         olines[open] = token[2] if levels[open]++ is 0
       else if tag is close and --levels[open] < 0
         throw SyntaxError "too many #{token[1]} on line #{ token[2] + 1 }"
-  for all open, level in levels when level > 0
+  for all open, level in levels then if level > 0
     throw SyntaxError "unclosed #{open} on line #{ olines[open] + 1 }"
   tokens
 

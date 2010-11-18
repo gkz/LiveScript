@@ -73,11 +73,14 @@
   declaredVariables: ->
     usr = []
     tmp = []
-    for v of @variables when v.type of <[ var reuse ]>
+    for v of @variables then if v.type of <[ var reuse ]>
       (if v.name.charAt(0) is '_' then tmp else usr).push v.name
     usr.sort().concat tmp.sort()
 
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
   assignedVariables: ->
-    v.name + ' = ' + v.type.value for v of @variables when v.type.assigned
+    list = []
+    for v of @variables then if v.type.assigned
+      list.push v.name + ' = ' + v.type.value
+    list

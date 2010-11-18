@@ -95,7 +95,7 @@ class exports.Base
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
     return this unless @children
-    for name of @children when child = @[name]
+    for name of @children then if child = @[name]
       if 'length' in child
       then for node of child then return this if false is func node
       else                        return this if false is func child
@@ -154,8 +154,8 @@ class exports.Expressions extends Base
   unwrap: -> if @expressions.length is 1 then @expressions[0] else this
 
   isStatement: (o) ->
-    return true for exp of @expressions
-    when exp.isPureStatement() or exp.isStatement o
+    for exp of @expressions
+      return true if exp.isPureStatement() or exp.isStatement o
     false
 
   # An Expressions node does not return its entire body, rather it
@@ -332,7 +332,7 @@ class exports.Value extends Base
       if it instanceof Literal and it.value is '*'
         star := it
         false
-    for prop, i of @properties when prop instanceof Index
+    for prop, i of @properties then if prop instanceof Index
       prop.traverseChildren false, find
       continue unless star
       [sub, ref] = Value(@base, @properties.slice 0, i).cache o
@@ -347,7 +347,7 @@ class exports.Value extends Base
     if ifn = @base.unfoldSoak o
       ifn.then.properties.push @properties...
       return ifn
-    for prop, i of @properties when prop.soak
+    for prop, i of @properties then if prop.soak
       prop.soak = false
       fst = Value @base, @properties.slice 0, i
       snd = Value @base, @properties.slice i
@@ -364,7 +364,7 @@ class exports.Value extends Base
     if asn = @base.unfoldAssign o
       asn.right.properties.push @properties...
       return asn
-    for prop, i of @properties when prop.assign
+    for prop, i of @properties then if prop.assign
       prop.assign = false
       [lhs, rhs] = Value(@base, @properties.slice 0, i).cacheReference o
       return Assign(lhs, Value rhs, @properties.slice i) import {access: true}
@@ -565,16 +565,16 @@ class exports.Obj extends Base
   isObject: YES
 
   assigns: (name) ->
-    return true for prop of @properties when prop.assigns name
+    for prop of @properties then return true if prop.assigns name
     false
 
   compileNode: (o) ->
     props = @properties
     return (if @front then '({})' else '{}') unless props.length
     for prop, i of props
-    when prop instanceof Splat or (prop.left or prop).base instanceof Parens
-      rest = props.splice i, 1/0
-      break
+      if prop instanceof Splat or (prop.left or prop).base instanceof Parens
+        rest = props.splice i, 1/0
+        break
     [last] = lastNonComment props
     idt    = o.indent += TAB
     code   = ''
@@ -611,7 +611,7 @@ class exports.Arr extends Base
   isArray: YES
 
   assigns: (name) ->
-    return true for obj of @objects when obj.assigns name
+    for obj of @objects then return true if obj.assigns name
     false
 
   compileNode: (o) ->
@@ -813,7 +813,7 @@ class exports.Code extends Base
       body.append Return Literal '_this'
     vars = []
     asns = []
-    for param of params when param.splat
+    for param of params then if param.splat
       splats = Assign Arr(p.asReference o for p of params), Literal 'arguments'
       break
     for param of params
@@ -926,7 +926,7 @@ class exports.While extends Base
     return false unless i = expressions.length
     return true if expressions[--i]?.containsPureStatement()
     ret = -> it instanceof Return
-    return true while i when expressions[--i].contains ret
+    while i then return true if expressions[--i].contains ret
     false
 
   addBody: (@body) -> this
@@ -1251,7 +1251,7 @@ class exports.For extends While
 
   pluckDirectCalls: (o, exps, name, index) ->
     defs = ''
-    for exp, idx of exps when exp.=unwrapAll() instanceof Call
+    for exp, idx of exps then if exp.=unwrapAll() instanceof Call
       val = exp.callee.unwrapAll()
       continue unless \
         val instanceof Code and not exp.args.length or
@@ -1486,5 +1486,5 @@ utility = (name) ->
 multident = (code, tab) -> code.replace /\n/g, '$&' + tab
 
 lastNonComment = (nodes) ->
-  break for node, i of nodes by -1 when node not instanceof Comment
+  for node, i of nodes by -1 then break if node not instanceof Comment
   [i >= 0 and node, i]
