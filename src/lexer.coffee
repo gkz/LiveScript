@@ -156,7 +156,7 @@ class exports.Lexer
     string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
     if 0 < string.indexOf '#{', 1
     then @interpolateString string.slice 1, -1
-    else @token 'STRNUM', @escapeLines string
+    else @token 'STRNUM', string.replace MULTILINER, ''
     @countLines(string).length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -167,8 +167,8 @@ class exports.Lexer
     quote = heredoc.charAt 0
     doc   = @sanitizeHeredoc match[1], {quote, indent: null}
     if quote is '"' and 0 <= doc.indexOf '#{'
-    then @interpolateString doc, heredoc: true
-    else @token 'STRNUM', @makeString doc, quote, true
+    then @interpolateString doc, newline: '\\n'
+    else @token 'STRNUM', @makeString doc, quote, '\\n'
     @countLines(heredoc).length
 
   # Matches block comments.
@@ -214,7 +214,7 @@ class exports.Lexer
       else
         continue unless value.=replace HEREGEX_OMIT, ''
         value.=replace /\\/g, '\\\\'
-        tokens.push ['STRNUM', @makeString(value, '"', true)]
+        tokens.push ['STRNUM', @makeString value, '"', '\\n']
       tokens.push <[ PLUS_MINUS + ]>
     tokens.pop()
     unless tokens[0]?[0] is 'STRNUM'
@@ -426,7 +426,7 @@ class exports.Lexer
   # If it encounters an interpolation, this method will recursively create a
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
-  interpolateString: (str, {heredoc, regex} = {}) ->
+  interpolateString: (str, options = {}) ->
     tokens = []
     pi = 0
     i  = -1
@@ -447,7 +447,7 @@ class exports.Lexer
           nested.push    <[ ) ) ]>
         tokens.push ['TOKENS', nested]
     tokens.push ['TO_BE_STRING', str.slice pi] if pi < str.length
-    return tokens if regex
+    return tokens if options.regex
     return @token<[ STRNUM "" ]> unless tokens.length
     tokens.unshift ['', ''] unless tokens[0][0] is 'TO_BE_STRING'
     @token<[ ( ( ]> if interpolated = tokens.length > 1
@@ -455,7 +455,7 @@ class exports.Lexer
       @token<[ PLUS_MINUS + ]> if i
       if tag is 'TOKENS'
       then @tokens.push value...
-      else @token 'STRNUM', @makeString value, '"', heredoc
+      else @token 'STRNUM', @makeString value, '"', options.newline
     @token<[ ) ) ]> if interpolated
     tokens
 
@@ -468,17 +468,13 @@ class exports.Lexer
     @tokens.push @last = [tag, value, @line]
     value
 
-  # Converts newlines for string literals.
-  escapeLines: (str, heredoc) ->
-    str.replace MULTILINER, if heredoc then '\\n' else ''
-
   # Constructs a string token by escaping quotes and newlines.
-  makeString: (body, quote, heredoc) ->
+  makeString: (body, quote, newline) ->
     return quote + quote unless body
     body.=replace /\\([\s\S])/g, (match, escaped) ->
       if escaped of ['\n', quote] then escaped else match
     body.=replace /// #{quote} ///g, '\\$&'
-    quote + @escapeLines(body, heredoc) + quote
+    quote + body.replace(MULTILINER, newline or '') + quote
 
   # Count the number of lines in a string and add it to `@line`.
   countLines: (str) ->
