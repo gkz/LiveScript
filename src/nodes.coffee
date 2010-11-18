@@ -220,7 +220,7 @@ class exports.Expressions extends Base
       vars.push o.scope.assignedVariables()...
       vars.=join ', '
     code &&+= '\n' if post
-    code += @tab + "var #{vars};\n" if vars
+    code += @tab + "var #{ multident vars, @tab };\n" if vars
     code + post
 
 #### Literal
@@ -1445,14 +1445,6 @@ UTILITIES =
     function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
   '''
 
-  # Discover if an item is in an array.
-  indexOf: '''
-    Array.prototype.indexOf || function(item){
-      for (var i = 0, l = this.length; i < l; ++i) if (this[i] === item) return i;
-      return -1;
-    }
-  '''
-
   # Copies properties from right to left.
   import: '''
     function(obj, src){
@@ -1469,8 +1461,13 @@ UTILITIES =
   '''
 
   # Shortcuts to speed up the lookup time for native functions.
-  owns  : 'Object.prototype.hasOwnProperty'
-  slice : 'Array.prototype.slice'
+  owns    : 'Object.prototype.hasOwnProperty'
+  slice   : 'Array.prototype.slice'
+  indexOf : '''
+    Array.prototype.indexOf || function(x){
+      for (var i = this.length; i-- && this[i] !== x;); return i;
+    }
+  '''
 
 # Levels indicates a node's position in the AST.
 LEVEL_TOP    = 0  # ...;
