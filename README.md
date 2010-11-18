@@ -322,5 +322,10 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
 
 
 ## Installation
-
+Install [node.js](http://nodejs.org/), then
     git clone git:github.com/satyr/coco.git && cd coco && bin/coke install
+
+
+## Help
+
+    coco -h; coke
