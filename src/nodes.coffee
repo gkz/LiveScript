@@ -214,14 +214,11 @@ class exports.Expressions extends Base
       rest = @expressions.splice i, 1/0
       code = @compileNode o
       @expressions = rest
-    post    = if @expressions.length then @compileNode o else ''
-    vars    = ''
-    {scope} = o
-    if not o.globals and scope.hasDeclarations this
-      vars += scope.declaredVariables().join ', '
-    if scope.hasAssignments this
-      vars += ', ' if vars
-      vars += multident scope.assignedVariables().join(', '), @tab
+    post = if @expressions.length then @compileNode o else ''
+    if not o.globals and this is o.scope.expressions
+      vars =    o.scope.declaredVariables()
+      vars.push o.scope.assignedVariables()...
+      vars.=join ', '
     code &&+= '\n' if post
     code += @tab + "var #{vars};\n" if vars
     code + post

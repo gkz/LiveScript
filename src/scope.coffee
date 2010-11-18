@@ -28,11 +28,6 @@ class exports.Scope
       @positions[name] = -1 + @variables.push {name, type}
     this
 
-  # Test variables and return `true` the first time `fn(v)` returns `true`
-  any: (fn) ->
-    return true for v of @variables when fn v
-    false
-
   # Declare a variable unless declared already.
   declare: (name) ->
     scope = @shared or this
@@ -72,16 +67,6 @@ class exports.Scope
 
   # Ensure that an assignment is made at the top of this scope
   assign: (name, value) -> @add name, {value, assigned: true}
-
-  # Does this scope reference any variables that need to be declared in the
-  # given function body?
-  hasDeclarations: (body) ->
-    body is @expressions and @any -> it.type of <[ var reuse ]>
-
-  # Does this scope reference any assignments that need to be declared at the
-  # top of the given function body?
-  hasAssignments: (body) ->
-    body is @expressions and @any -> it.type.assigned
 
   # Return the list of variables first declared in this scope.
   declaredVariables: ->
