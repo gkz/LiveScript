@@ -44,6 +44,8 @@ class exports.Lexer
     while @chunk = code.slice i
       if comments = COMMENTS.exec @chunk
         break unless @chunk = code.slice i += @countLines(comments[0]).length
+        i += do @lineToken
+        continue
       switch code.charAt i
       case '\n'then i += do @lineToken
       case ' ' then i += do @whitespaceToken
@@ -163,7 +165,7 @@ class exports.Lexer
 
   # Matches block comments.
   commentToken: ->
-    return 0 unless match = HERECOMMENT.exec @chunk
+    match = HERECOMMENT.exec(@chunk) or [@chunk, @chunk.slice 3]
     @token 'HERECOMMENT', @sanitizeHeredoc match[1],
       comment: true, indent: Array(@indent + 1).join(' ')
     @token<[ TERMINATOR \n ]>
@@ -528,7 +530,7 @@ HERESINGLE  = /// ^ ''' ([\s\S]*?) (?:\n[^\n\S]*)? ''' ///
 HEREDOUBLE  = /// ^ """ ([\s\S]*?) (?:\n[^\n\S]*)? """ ///
 WHITESPACE  = /^[^\n\S]+/
 COMMENTS    = /^(?:\s*#(?!##[^#]).*)+/
-HERECOMMENT = /^###([^#][\s\S]*?)(?:###|$)/
+HERECOMMENT = /^###([\s\S]*?)###/
 MULTIDENT   = /^(?:\n[^\n\S]*)+/
 SIMPLESTR   = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN     = /^`[^\\`]*(?:\\.[^\\`]*)*`/
