@@ -438,9 +438,10 @@ class exports.Lexer
       code = @balancedString str.slice(i+1), [<[ { } ]>]
       tokens.push ['TO_BE_STRING', str.slice(pi, i)] if pi < i
       pi = 1 + i += code.length
-      if code.=slice(1, -1).replace LEADING_SPACES, ''
+      if code.=slice 1, -1
         nested = new Lexer().tokenize code, {@line, rewrite: false}
         nested.pop()
+        nested.shift() if nested[0]?[0] is 'TERMINATOR'
         if nested.length > 1
           nested.unshift <[ ( ( ]>
           nested.push    <[ ) ) ]>
@@ -566,7 +567,6 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 MULTILINER      = /\n/g
 HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
-LEADING_SPACES  = /^\s+/
 TRAILING_SPACES = /\s+$/
 
 # Tokens which could legitimately be invoked or indexed. A opening

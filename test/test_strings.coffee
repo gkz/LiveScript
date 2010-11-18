@@ -207,8 +207,8 @@ eq """ "\\\" """, ' "\\" '
 eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
 
 eq 'multiline nested "interpolations" work', """multiline #{
-  "nested #{(->
+  "nested #{
     ok true
     "\"interpolations\""
-  )()}"
+  }"
 } work"""
