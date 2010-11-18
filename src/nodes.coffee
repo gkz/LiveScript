@@ -63,7 +63,7 @@ class exports.Base
       [ref, ref]
     else
       ref = Literal reused or o.scope.temporary 'ref'
-      sub = Assign ref, this, '='
+      sub = Assign ref, this
       if level then [sub.compile(o, level), ref.value] else [sub, ref]
 
   # Compile to a source/variable pair suitable for looping.
@@ -150,13 +150,8 @@ class exports.Expressions extends Base
 
   children: ['expressions']
 
-  append  : -> @expressions.push    it; this
-  prepend : -> @expressions.unshift it; this
-  pop     : -> @expressions.pop()
-
+  append: -> @expressions.push it; this
   unwrap: -> if @expressions.length is 1 then @expressions[0] else this
-
-  isEmpty: -> not @expressions.length
 
   isStatement: (o) ->
     return true for exp of @expressions
@@ -182,12 +177,11 @@ class exports.Expressions extends Base
     for node of @expressions
       node = (do node.=unwrapAll).unfoldSoak(o) or node
       if top
-        node.front = true
-        code = node.compile o
-        codes.push if node.isStatement o
-        then code else @tab + code + node.terminater
+        code = (node import front: true).compile o
+        code = @tab + code + node.terminater unless node.isStatement o
       else
-        codes.push node.compile o, LEVEL_LIST
+        code = node.compile o, LEVEL_LIST
+      codes.push code
     return codes.join '\n' if top
     code = codes.join(', ') or 'void 0'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
@@ -306,13 +300,13 @@ class exports.Value extends Base
     base = Value @base, @properties.slice 0, -1
     if base.isComplex()  # `a().b`
       ref  = Literal o.scope.temporary 'base'
-      base = Value Parens Assign ref, base, '='
+      base = Value Parens Assign ref, base
       bref = Value ref
       bref.temps = [ref.value]
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
       ref  = Literal o.scope.temporary 'name'
-      name = Index Assign ref, name.index, '='
+      name = Index Assign ref, name.index
       nref = Index ref
       nref.temps = [ref.value]
     [base.append(name), Value(bref or base.base, [nref or name])]
@@ -359,7 +353,7 @@ class exports.Value extends Base
       snd = Value @base, @properties.slice i
       if fst.isComplex()
         ref = Literal o.scope.temporary 'ref'
-        fst = Parens Assign ref, fst, '='
+        fst = Parens Assign ref, fst
         snd.base = ref
       ifn = If Existence(fst), snd, soak: true
       ifn.temps = [ref.value] if ref
@@ -373,9 +367,7 @@ class exports.Value extends Base
     for prop, i of @properties when prop.assign
       prop.assign = false
       [lhs, rhs] = Value(@base, @properties.slice 0, i).cacheReference o
-      asn = Assign lhs, Value(rhs, @properties.slice i), '='
-      asn.access = true
-      return asn
+      return Assign(lhs, Value rhs, @properties.slice i) import {access: true}
     null
 
 #### Comment
@@ -820,7 +812,7 @@ class exports.Code extends Base
         case it instanceof Return then it.expression ||= Literal '_this'
       body.append Return Literal '_this'
     vars = []
-    exps = []
+    asns = []
     for param of params when param.splat
       splats = Assign Arr(p.asReference o for p of params), Literal 'arguments'
       break
@@ -828,17 +820,16 @@ class exports.Code extends Base
       if param.isComplex()
         val = ref = param.asReference o
         val = Op '?', ref, param.value if param.value
-        exps.push Assign param.name, val
+        asns.push Assign param.name, val
       else
         ref = param
         if param.value
-          exps.push Op '&&',
-            Literal(ref.name.value + ' == null'),
-            Assign param.name, param.value
+          asns.push Op '&&', Literal(ref.name.value + ' == null'),
+                             Assign param.name, param.value
       vars.push ref unless splats
-    wasEmpty = body.isEmpty()
-    exps.unshift splats if splats
-    body.expressions.unshift exps... if exps.length
+    wasEmpty = not (exps = body.expressions).length
+    asns.unshift splats if splats
+    exps.unshift asns... if asns.length
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
     vars[0] = 'it' if not vars.length and body.contains (-> it.value is 'it')
     body.makeReturn() unless wasEmpty or @ctor
@@ -850,7 +841,7 @@ class exports.Code extends Base
       pscope.add name, 'function' unless @returns
       code += ' ' + name
     code += '(' + vars.join(', ') + '){'
-    code += "\n#{ body.compileWithDeclarations o }\n#{tab}" unless body.isEmpty()
+    code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if exps.length
     code += '}'
     if statement and name.charAt(0) isnt '_'
       code += " #{name}.name = \"#{name}\";"
@@ -1034,7 +1025,7 @@ class exports.Op extends Base
   compileExistence: (o) ->
     if @first.isComplex()
       ref = tmp = o.scope.temporary 'ref'
-      fst = Parens Assign Literal(ref), @first, '='
+      fst = Parens Assign Literal(ref), @first
     else
       fst = @first
       ref = fst.compile o
@@ -1283,7 +1274,7 @@ class exports.For extends While
         args.push Literal @nref
         fn.params.push Param name
       exps[idx] = Call base, args
-      defs += @tab + Assign(ref, fn, '=').compile(o, LEVEL_TOP) + ';\n'
+      defs += @tab + Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
     defs
 
 #### Switch
