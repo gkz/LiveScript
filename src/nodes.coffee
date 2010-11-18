@@ -513,6 +513,7 @@ class exports.Import extends Base
       else
         if node.this
           key = (acc = node.properties[0].name).value
+          key = '"' + key + '"' if key.reserved
           val = node.compile o, LEVEL_LIST
         else
           [key, val] = (acc = node.base or node).cache o, LEVEL_LIST, ref

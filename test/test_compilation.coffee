@@ -26,3 +26,6 @@ I = function(it){
 "use strict"
 I = -> it
 ''', bare: true
+
+
+eq 'a["in"] = this["in"];', Coco.compile 'a import {@in}', bare: true
