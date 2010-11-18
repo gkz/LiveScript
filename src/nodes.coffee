@@ -69,7 +69,7 @@ class exports.Base
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
-    unless NUMBER.test(src) or IDENTIFIER.test(src) and o.scope.check(src)
+    unless -1/0 < +src < 1/0 or IDENTIFIER.test(src) and o.scope.check(src)
       src = "#{ tmp = o.scope.temporary name } = #{src}"
     [src, tmp]
 
@@ -1484,7 +1484,6 @@ LEVEL_ACCESS = 5  # ...[0]
 TAB = '  '
 
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
-NUMBER     = /// ^ -? (?: 0x[\da-f]+ | (?:\d+(\.\d+)?|\.\d+)(?:e[+-]?\d+)? ) $ ///i
 SIMPLENUM  = /^\d+$/
 METHOD_DEF = /^(?:(\S+)\.prototype\.|\S*?)\b([$A-Za-z_][$\w]*)$/
 
