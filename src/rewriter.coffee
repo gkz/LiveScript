@@ -17,16 +17,10 @@
 # like this. The order of these passes matters -- indentation must be
 # corrected before implicit parentheses can be wrapped around blocks of code.
 exports.rewrite = ->
-  removeLeadingNewlines       it
-  removeMidExpressionNewlines it
-  closeOpenings               it
-  addImplicitIndentation      it
-  tagPostfixConditionals      it
-  addImplicitBraces           it
-  addImplicitParentheses      it
-  ensureBalance               it
-  rewriteClosingParens        it
-  it
+  rewriteClosingParens ensureBalance \
+  addImplicitParentheses addImplicitBraces \
+  tagPostfixConditionals addImplicitIndentation closeOpenings \
+  removeMidExpressionNewlines removeLeadingNewlines it
 
 detectEnd = (tokens, i, ok, go) ->
   levels = 0
@@ -45,6 +39,7 @@ detectEnd = (tokens, i, ok, go) ->
 removeLeadingNewlines = (tokens) ->
   break for [tag], i of tokens when tag isnt 'TERMINATOR'
   tokens.splice 0, i if i
+  tokens
 
 # Some blocks occur in the middle of expressions -- when we're expecting
 # this, remove their trailing newlines.
@@ -53,7 +48,7 @@ removeMidExpressionNewlines = (tokens) ->
   while token = tokens[++i]
   when tokens[i-1][0] is 'TERMINATOR' and token[0] of EXPRESSION_CLOSE
     tokens.splice i-1, 1
-  this
+  tokens
 
 # The lexer has tagged each of the opening parenthesis/bracket of
 # a call/indexing. Match it with its closing pair.
@@ -67,7 +62,7 @@ closeOpenings = (tokens) ->
       token[0] = 'INDEX_END' if stack.pop() is 'INDEX_START'
     case <[ CALL_END  ) ]>
       token[0] =  'CALL_END' if stack.pop() is  'CALL_START'
-  this
+  tokens
 
 # Object literals may be written with implicit braces, for simple cases.
 # Insert the missing braces here, so that the parser doesn't have to.
@@ -104,7 +99,7 @@ addImplicitBraces = (tokens) ->
     tokens.splice idx, 0, tok
     detectEnd tokens, i+2, ok, go
     ++i
-  this
+  tokens
 
 # Methods may be optionally called without parentheses, for simple cases.
 # Insert the implicit parentheses here, so that the parser doesn't have to
@@ -149,7 +144,7 @@ addImplicitParentheses = (tokens) ->
     , ['CALL_START', (if exist then '?(' else '('), token[2]]
     ++i if callObject
     detectEnd tokens, i, ok, go
-  this
+  tokens
 
 # Because our grammar is LALR(1), it can't handle some single-line
 # expressions that lack ending delimiters. The **Rewriter** adds the implicit
@@ -160,10 +155,12 @@ addImplicitIndentation = (tokens) ->
   while token = tokens[++i]
     [tag] = token
     if tag is 'ELSE' and tokens[i-1]?[0] isnt 'OUTDENT'
-      tokens.splice i++, 0, indentation(token)...
+      [ti, to] = indentation token
+      tokens.splice i++, 0, ti, to
       continue
     if tag is 'CATCH' and tokens[i+2]?[0] of <[ OUTDENT TERMINATOR FINALLY ]>
-      tokens.splice i+2, 0, indentation(token)...
+      [ti, to] = indentation token
+      tokens.splice i+2, 0, ti, to
       i += 3
       continue
     if tag is 'TERMINATOR' and tokens[i+1]?[0] is 'THEN'
@@ -185,7 +182,7 @@ addImplicitIndentation = (tokens) ->
     , (token, i) ->
       tokens.splice (if tokens[i-1][0] is ',' then i-1 else i), 0, outdent
     if tag is 'THEN' then tokens.splice i, 1 else ++i
-  this
+  tokens
 
 # Tag postfix conditionals as such, so that we can parse them with a
 # different precedence.
@@ -193,7 +190,7 @@ tagPostfixConditionals = (tokens) ->
   ok = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
   go = ([tag]) -> token[0] = 'POST_IF' if tag isnt 'INDENT'
   detectEnd tokens, i + 1, ok, go for token, i of tokens when token[0] is 'IF'
-  this
+  tokens
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
 # the course of the token stream.
@@ -209,9 +206,8 @@ ensureBalance = (tokens) ->
       else if tag is close and --levels[open] < 0
         throw SyntaxError "too many #{token[1]} on line #{ token[2] + 1 }"
   for all open, level in levels when level > 0
-    throw SyntaxError \
-      "unclosed #{open} on line #{ olines[open] + 1 }"
-  this
+    throw SyntaxError "unclosed #{open} on line #{ olines[open] + 1 }"
+  tokens
 
 # We'd like to support syntax like this:
 #
@@ -250,7 +246,7 @@ rewriteClosingParens = (tokens) ->
     tok = [end, if start is 'INDENT' then stoken[1] else end]
     pos = if tokens[i+2]?[0] is start then stack.push stoken; i+3 else i
     tokens.splice pos, 0, tok
-  this
+  tokens
 
 # Generate the indentation tokens, based on another token on the same line.
 indentation = (token) -> [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
