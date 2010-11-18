@@ -1186,14 +1186,13 @@ class exports.Parens extends Base
 # comprehensions, that compile into `for` loops here. They also act as an
 # expression, able to return the result of each filtered iteration.
 class exports.For extends While
-  (head, @body) =>
-    this import all head
-    if @index instanceof Base and not @index.=unwrap().value
-      throw SyntaxError 'invalid index variable: ' + head.index
+  =>
 
   children: <[ source name from to step guard body ]>
 
   compileNode: (o) ->
+    if @index instanceof Base and not @index.=unwrap().value
+      throw SyntaxError 'invalid index variable: ' + head.index
     {scope} = o
     @temps = []
     if idx = @index
@@ -1408,7 +1407,7 @@ class exports.Super extends Base
     else name + '.superclass'
 
 # Export `import all` for use in parser, where the operator doesn't work.
-exports.mix = __importAll
+exports import all mix: __importAll
 
 # Constants
 # ---------

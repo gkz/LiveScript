@@ -129,17 +129,9 @@ grammar =
     # Array, object, and range comprehensions, at the most generic level.
     # Comprehensions can either be normal, with a block of expressions to execute,
     # or postfix, with a single expression.
-    o 'Statement  ForHead', -> For $2, Expressions $1
-    o 'Expression ForHead', -> For $2, Expressions $1
-    o 'ForHead    Block',   -> For $1, $2
-
-    o 'WhileSource Block',      -> $1.addBody $2
-    o 'Statement  WhileSource', -> $2.addBody Expressions $1
-    o 'Expression WhileSource', -> $2.addBody Expressions $1
-
-    o 'FOR EVER   Block',    -> While().addBody $3
-    o 'Statement  FOR EVER', -> While().addBody Expressions $1
-    o 'Expression FOR EVER', -> While().addBody Expressions $1
+    o 'LoopHead   Block',    -> $1.addBody $2
+    o 'Statement  LoopHead', -> $2.addBody Expressions $1
+    o 'Expression LoopHead', -> $2.addBody Expressions $1
 
     # The full complement of `if` expressions,
     # including postfix one-liner `if` and `unless`.
@@ -327,31 +319,24 @@ grammar =
   ]
 
   ForOf: [
-    o 'FOROF Expression',                 -> source: $2
-    o 'FOROF Expression WHEN Expression', -> source: $2,           guard: $4
-    o 'FOROF Expression BY Expression',   -> source: $2, step: $4
-    o 'FOROF Expression BY Expression
-                        WHEN Expression', -> source: $2, step: $4, guard: $6
+    o 'FOROF Expression',                 -> mix For(), source: $2
+    o 'FOROF Expression WHEN Expression', -> mix For(), source: $2, guard: $4
+    o 'FOROF Expression BY Expression',   -> mix For(), source: $2, step : $4
+    o 'FOROF Expression BY Expression WHEN Expression'
+    , -> mix For(), source: $2, step: $4, guard: $6
   ]
   ForIn: [
-    o 'FORIN Expression',                 -> object: true, source: $2
-    o 'FORIN Expression WHEN Expression', -> object: true, source: $2, guard: $4
-  ]
-  ForTo: [
-    o 'TO Expression',                 -> op: $1, to: $2
-    o 'TO Expression WHEN Expression', -> op: $1, to: $2,           guard: $4
-    o 'TO Expression BY Expression',   -> op: $1, to: $2, step: $4
-    o 'TO Expression BY Expression
-                     WHEN Expression', -> op: $1, to: $2, step: $4, guard: $6
+    o 'FORIN Expression', -> mix For(), object: true, source: $2
+    o 'FORIN Expression
+       WHEN  Expression', -> mix For(), object: true, source: $2, guard: $4
   ]
   # The source of a comprehension is an array or object with an optional guard
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
-  ForHead: [
-    o 'FOR Assignable
-       ForOf', -> mix $3, name: $2
-    o 'FOR Assignable , IDENTIFIER
-       ForOf', -> mix $5, name: $2, index: $4
+  LoopHead: [
+    o 'FOR Assignable              ForOf', -> mix $3, name: $2
+    o 'FOR Assignable , IDENTIFIER ForOf', -> mix $5, name: $2, index: $4
+
     o 'FOR IDENTIFIER
        ForIn', -> mix $3, own: true, index: $2
     o 'FOR Assignable , Assignable
@@ -360,10 +345,18 @@ grammar =
        ForIn', -> mix $4, index: $3
     o 'FOR ALL IDENTIFIER , Assignable
        ForIn', -> mix $6, index: $3, name: $5
-    o 'FOR IDENTIFIER FROM Expression
-       ForTo', -> mix $5, index: $2, from: $4
-  ]
-  WhileSource: [
+
+    o 'FOR IDENTIFIER FROM Expression TO Expression'
+    , -> mix For(), index: $2, from: $4, op: $5, to: $6
+    o 'FOR IDENTIFIER FROM Expression TO Expression WHEN Expression'
+    , -> mix For(), index: $2, from: $4, op: $5, to: $6, guard: $8
+    o 'FOR IDENTIFIER FROM Expression TO Expression BY Expression'
+    , -> mix For(), index: $2, from: $4, op: $5, to: $6, step : $8
+    o 'FOR IDENTIFIER FROM Expression TO Expression
+        BY Expression WHEN Expression'
+    , -> mix For(), index: $2, from: $4, op: $5, to: $6, step: $8, guard: $10
+
+    o 'FOR EVER',                         -> While()
     o 'WHILE Expression',                 -> While $2, name: $1
     o 'WHILE Expression WHEN Expression', -> While $2, name: $1, guard: $4
   ]
