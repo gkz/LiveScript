@@ -320,6 +320,8 @@ class exports.Lexer
   literalToken: ->
     [value] = SYMBOL.exec @chunk
     switch tag = value
+    case ')'
+      @last[0] = 'CALL_START' if @last[0] is '('
     case <[ -> => ]>
       @tagParameters()
       tag = 'FUNC_ARROW'
