@@ -428,8 +428,8 @@ class exports.Call extends Base
       return @callee.compile(o, LEVEL_ACCESS) +
              ".apply(#{@args[0].value}, #{@args[1].value})"
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
-    args = (arg.compile o, LEVEL_LIST for arg of @args).join ', '
-    (@new or '') + @callee.compile(o, LEVEL_ACCESS) + "(#{args})"
+    (@new or '') + @callee.compile(o, LEVEL_ACCESS) +
+    "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
@@ -566,7 +566,7 @@ class exports.Obj extends Base
   isObject: YES
 
   assigns: (name) ->
-    for prop of @properties then return true if prop.assigns name
+    return true if prop.assigns name for prop of @properties
     false
 
   compileNode: (o) ->
@@ -612,7 +612,7 @@ class exports.Arr extends Base
   isArray: YES
 
   assigns: (name) ->
-    for obj of @objects then return true if obj.assigns name
+    return true if obj.assigns name for obj of @objects
     false
 
   compileNode: (o) ->
@@ -927,7 +927,7 @@ class exports.While extends Base
     return false unless i = expressions.length
     return true if expressions[--i]?.containsPureStatement()
     ret = -> it instanceof Return
-    while i then return true if expressions[--i].contains ret
+    return true if expressions[--i].contains ret while i
     false
 
   addBody: (@body) -> this
@@ -1486,5 +1486,5 @@ utility = (name) ->
 multident = (code, tab) -> code.replace /\n/g, '$&' + tab
 
 lastNonComment = (nodes) ->
-  for node, i of nodes by -1 then break if node not instanceof Comment
+  break if node not instanceof Comment for node, i of nodes by -1
   [i >= 0 and node, i]
