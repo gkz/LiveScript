@@ -86,11 +86,8 @@ odds = (num for num of [0, 1, 2, 3, 4, 5] by -2)
 eq odds + '', '5,3,1'
 
 
-# The in operator still works, standalone.
-ok 2 in evens
-
-# all/from/to aren't reserved.
-all = from = to = 1
+# all/from/to/by aren't reserved.
+all = from = to = by = 1
 
 
 # Nested comprehensions.

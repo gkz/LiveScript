@@ -38,8 +38,8 @@ class exports.Lexer
     @indents = []
     # Stream of parsed tokens in the form `['TYPE', value, line]`.
     @tokens  = [@last = ['DUMMY', '', 0]]
-    # Flags for distinguishing FORIN/FOROF/FROM/TO.
-    @seenFor = @seenFrom = false
+    # Flags for distinguishing FORIN/FOROF/FROM/TO/BY.
+    @seenFor = @seenFrom = @seenRange = false
     i = 0
     while @chunk = code.slice i
       if comments = COMMENTS.exec @chunk
@@ -91,8 +91,13 @@ class exports.Lexer
       return @token('EVER', id).length
     case <[ to til ]>
       break unless @seenFrom
-      @seenFrom = false
+      @seenFrom  = false
+      @seenRange = true
       return @token('TO', id).length
+    case 'by'
+      break unless @seenRange
+      @seenRange = false
+      return @token('BY', id).length
     tag = if at = id.charAt(0) is '@'
     then id.=slice 1; 'THISPROP'
     else 'IDENTIFIER'
@@ -114,13 +119,15 @@ class exports.Lexer
       case <[ BREAK CONTINUE DEBUGGER ]> then tag = 'STATEMENT'
       case <[ IN OF INSTANCEOF ]>
         if tag isnt 'INSTANCEOF' and @seenFor
+          @seenRange = true if tag is 'OF'
+          @seenFor   = false
           tag = 'FOR' + tag
-          @seenFor = false
           break
-        tag = 'RELATION'
         if @last[1] is '!'
           @tokens.pop()
           id = '!' + id
+        tag = 'RELATION'
+      @seenRange = false if @seenRange and tag of <[ FOR THEN ]>
     else if COCO_ALIASES.hasOwnProperty id
       switch id = COCO_ALIASES[id]
       case '!'         then tag = 'UNARY'
@@ -250,7 +257,8 @@ class exports.Lexer
   lineToken: ->
     return 0 unless indent = MULTIDENT.exec @chunk
     @countLines indent[=0]
-    @last.eol = true
+    @last.eol  = true
+    @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = LINE_CONTINUER.test(@chunk) or @last[0] of <[
       ACCESS INDEX_START PLUS_MINUS MATH COMPARE LOGIC RELATION IMPORT SHIFT
@@ -497,7 +505,7 @@ JS_KEYWORDS = <[
 ]>
 
 # Coco-only keywords.
-COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until of by ]>
+COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until of ]>
 COCO_ALIASES  = not: '!', and: '&&', or: '||',  is: '===', isnt : '!=='
 
 # The list of keywords that are reserved by JavaScript, but not used, or are
