@@ -63,12 +63,14 @@ greeting = id(
               """
               Hello
               """)
-
 ok greeting is "Hello"
 
-ok not Date
-::
-?.foo, '`?.` and `::` should also continue lines'
+eq '[object Object]', (
+  {}
+  &.toString
+  ::
+  ?.constructor()
+), 'other accessors should also continue lines'
 
 
 eq ok, ({prototype: -> it}:: ok), 'space after :: should be significant'

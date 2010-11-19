@@ -56,10 +56,10 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
     throw err                 if err
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
-  fs.writeFile 'lib/parser.js'
-  , require('./lib/grammar').parser.generate()
-    .replace(/\nvar /, 'exports.')
-    .replace(/if \(typeof require [\s\S]+/, '')
+  src = require('./lib/grammar').parser.generate()
+        .replace /\nvar /, 'exports.'
+        .replace /if \(typeof require [\s\S]+/, ''
+  fs.writeFile 'lib/parser.js', src
 
 task 'build:browser', 'rebuild the merged script for inclusion of the browser', ->
   code  = ''

@@ -572,7 +572,7 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 # Token cleaning regexes.
 MULTILINER      = /\n/g
 HEREDOC_INDENT  = /\n+([^\n\S]*)/g
-LINE_CONTINUER  = /// ^ \s* (?: , | \??\.(?!\.) | :: ) ///
+LINE_CONTINUER  = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
 TRAILING_SPACES = /\s+$/
 
 # Tokens which could legitimately be invoked or indexed. A opening

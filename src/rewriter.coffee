@@ -109,9 +109,9 @@ addImplicitParentheses = (tokens) ->
   ok = (token, i) ->
     return true if not seenSingle and token.fromThen
     [tag] = token
-    [pre] = tokens[i-1]
+    {0: pre, eol} = tokens[i-1]
     seenSingle := true if tag of <[ IF ELSE FUNC_ARROW ]>
-    return true  if tag is 'ACCESS' and pre is 'OUTDENT'
+    return true  if tag is 'ACCESS' and (eol or pre is 'OUTDENT')
     return false if token.generated or  pre is ','
     tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]> or
     tag is 'INDENT' and pre not of <[ FUNC_ARROW { [ , ]> and
