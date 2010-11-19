@@ -279,21 +279,29 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
 
 ## Incompatibilities
 
+### behavior
 - Assigning to a variable with `=` declares it on the _current_ scope. Use `:=` to modify variables declared on upper scopes.
+- The roles of `in` and `of` have been swapped to keep the JS semantics.
+- `===`/`!==`/`==`/`!=` each compiles as is.
+- `super` represents the direct reference to the parent function rather than being a call. Use `super ...` (just `super` in Coffee) for a simple delegation.
+- Nested comprehensions returns flattened results.
+
+### keyword
 - `yes`/`no`/`on`/`off` are not reserved. Define your own or just use `true`/`false`.
 - `undefined` is not reserved.
-- `===`/`!==`/`==`/`!=` each compiles as is.
-- The roles of `in` and `of` have been swapped to keep the JS behavior.
-- `class` takes a block rather than a pseudo object.
-- `super` represents the direct reference to the parent function rather than being a call. Use `super ...` (just `super` in Coffee) for a simple delegation.
-- `switch`-`case`-`default` replaces switch-when-else.
-- `for ever` replaces `loop`.
+- `switch`-`case`-`default` replaces `switch`-_when_-`else`.
+- `for ever` replaces _loop_.
+- `when` is removed. Write `a if b while c` instead of `a while c when b`.
+
+### other
 - The binaries are named __coco__ and __coke__ to coexist with __coffee__ and __cake__.
 
 
 ## Improvements
+Coco is {small,fast}er than CoffeeScript as shown below.
+
     $ git log -1 --format=oneline
-    bcbf9f7dfd01e1db325cbcf454f65058344308fe "cake bench" now shows total time spent
+    bcbf9f7dfd01e1db325cbcf454f65058344308fe "cake bench" now shows total time ...
 
     $ ls -s extras/coffee-script.js
     168 extras/coffee-script.js
@@ -308,17 +316,17 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
     $ cd ../coco
 
     $ git log -1 --format=oneline
-    5f2d3802b9e621b8403f78537365a16d7efd0e42 removed coffee related stuff
+    5622aef7b9ed2b2377c85cf5b8af3778f2e549e8 grammar: POST_IF now has the same ...
 
     $ ls -s extras/coco.js
-    128 extras/coco.js
+    124 extras/coco.js
 
     $ coke bench
-    Lex     : 1051[ms] (18544 tokens)
-    Rewrite :  127[ms] (20983 tokens)
-    Parse   :  189[ms]
-    Compile :  216[ms] (121502 chars)
-    TOTAL   : 1583[ms]
+    Lex     : 1038[ms] (18370 tokens)
+    Rewrite :  127[ms] (20755 tokens)
+    Parse   :  172[ms]
+    Compile :  214[ms] (119801 chars)
+    TOTAL   : 1551[ms]
 
 
 ## Installation
