@@ -155,6 +155,7 @@ class exports.Expressions extends Base
   unwrap: -> if @expressions.length is 1 then @expressions[0] else this
 
   isStatement: (o) ->
+    return true if o and not o.level
     for exp of @expressions
       return true if exp.isPureStatement() or exp.isStatement o
     false
