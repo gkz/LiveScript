@@ -400,8 +400,7 @@ operators = [
                RETURN THROW EXTENDS         ]>
   <[ right     IF ELSE SWITCH CASE DEFAULT
                CLASS FORIN FOROF FROM TO BY ]>
-  <[ left      FOR WHILE ]>
-  <[ right     POST_IF                      ]>
+  <[ left      POST_IF FOR WHILE            ]>
 ]
 
 # Wrapping Up
