@@ -14,15 +14,12 @@ Assigns to an existing variable, without declaring a new one.
     SyntaxError: assignment to undeclared variable "a"
 
 
-### index star `[*]`
-An asterisk at the beginning of an indexer represents the length of the indexee.
+### conditional assignments `? +=`
+Any assignment operator can be conditional by prefixing with one of the three logical operators (`&&`/`||`/`?`).
 
-    $ coco -bpe 'a[*] = b'
-    a[a.length] = b;
-
-    $ coco -bpe 'arr()[* - 1]'
+    $ coco -bpe 'a.b &&&= c.d ?= e'
     var _ref;
-    (_ref = arr())[_ref.length - 1];
+    a.b && (a.b &= (_ref = c.d) != null ? _ref : c.d = e);
 
 
 ### modifying access `.=` `[=]`
@@ -36,6 +33,17 @@ Compound assigments for accessor and indexer.
 
 - Is at same precedence as `.`/`[]`.
 - Consumes all property/call chains to the right.
+
+
+### index star `[*]`
+An asterisk at the beginning of an indexer represents the length of the indexee.
+
+    $ coco -bpe 'a[*] = b'
+    a[a.length] = b;
+
+    $ coco -bpe 'arr()[* - 1]'
+    var _ref;
+    (_ref = arr())[_ref.length - 1];
 
 
 ### argument shorthands `@0`
