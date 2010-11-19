@@ -102,14 +102,14 @@ all = from = to = 1
 multiLiner =
   for x from 3 to 5
     for y from 3 to 5
-      [x, y]
+      x * y
 
 singleLiner =
-  (([x, y] for y from 3 to 5) for x from 3 to 5)
+  ((x * y for y from 3 to 5) for x from 3 to 5)
 
-ok multiLiner.length is singleLiner.length
-ok 5 is multiLiner[2][2][1]
-ok 5 is singleLiner[2][2][1]
+eq multiLiner.length, singleLiner.length
+eq 25,  multiLiner[*-1]
+eq 25, singleLiner[*-1]
 
 
 # Comprehensions within parentheses.
@@ -154,10 +154,11 @@ ok val[0] is i
 
 # Comprehensions only wrap their last line in a closure, allowing other lines
 # to have pure expressions in them.
-func = -> for i of [1, 2]
-  break if i is 2
-  j for j of [1]
-ok func()[0][0] is 1
+func = ->
+  for i from 1 to 2
+    break if i is 2
+    j for j of [3]
+eq func()[0], 3
 
 i = 6
 odds = while i--

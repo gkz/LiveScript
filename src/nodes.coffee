@@ -76,7 +76,8 @@ class exports.Base
   # Construct a node that returns the current node's result.
   # Note that this is overridden for smarter behavior for
   # many statement nodes (e.g. If, For etc.).
-  makeReturn: -> Return this
+  makeReturn: (name) ->
+    if name then Call Literal(name + '.push'), [this] else Return this
 
   # Does this node, or any of its children, contain a node of a certain kind?
   # Recursively traverses down the *children* of the nodes, yielding to a block
@@ -162,7 +163,7 @@ class exports.Expressions extends Base
   # ensures that the final expression is returned.
   makeReturn: ->
     [node, i] = lastNonComment @expressions
-    @expressions[i] = node.makeReturn() if node
+    @expressions[i] = node.makeReturn it if node
     this
 
   # An **Expressions** is the only node that can serve as the root.
@@ -227,7 +228,7 @@ class exports.Literal extends Base
     # meaning when wrapped in a closure.
     @isPureStatement = YES if value of <[ break continue debugger ]>
 
-  makeReturn   : -> if @isPureStatement() then this else Return this
+  makeReturn   : -> if @isPureStatement() then this else super ...
   isAssignable : -> IDENTIFIER.test @value
   assigns      : -> it is @value
 
@@ -284,7 +285,7 @@ class exports.Value extends Base
   isAssignable : -> !!@properties.length or @base.isAssignable()
 
   makeReturn: ->
-    if @properties.length then Return this else @base.makeReturn()
+    if @properties.length then super ... else @base.makeReturn it
 
   # The value can be unwrapped as its inner node, if there are no attached
   # properties.
@@ -783,7 +784,7 @@ class exports.Code extends Base
   isStatement: -> !!@statement
 
   makeReturn: ->
-    if @statement then this import {'returns'} else Return this
+    if @statement then this import {'returns'} else super ...
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
@@ -931,7 +932,10 @@ class exports.While extends Base
 
   addBody: (@body) -> this
 
-  makeReturn: -> this import returns: true
+  makeReturn: ->
+    if it
+    then @body.makeReturn it; this
+    else this import returns: true
 
   compileNode: (o) ->
     code = @condition?.compile(o, LEVEL_PAREN) or 'true'
@@ -948,9 +952,8 @@ class exports.While extends Base
     ret = ''
     if @returns and node not instanceof Return
       if node and not node.containsPureStatement() and node not instanceof Throw
-        o.scope.assign '_results', '[]'
-        exps[i] = Call Literal('_results.push'), [node]
-        res = '_results'
+        o.scope.assign res = '_results', '[]'
+        exps[i] = node.makeReturn res
       ret = "\n#{@tab}return #{ res or '[]' };"
     return '}' + ret unless exps.length
     code = '\n'
@@ -1110,8 +1113,8 @@ class exports.Try extends Base
   isStatement: YES
 
   makeReturn: ->
-    @attempt  &&= @attempt .makeReturn()
-    @recovery &&= @recovery.makeReturn()
+    @attempt  &&= @attempt .makeReturn it
+    @recovery &&= @recovery.makeReturn it
     this
 
   # Compilation is more or less as you would expect -- the *finally* clause
@@ -1168,7 +1171,7 @@ class exports.Parens extends Base
   children: ['expressions']
 
   unwrap          : -> @expressions
-  makeReturn      : -> @expressions.makeReturn()
+  makeReturn      : -> @expressions.makeReturn it
   isComplex       : -> @expressions.isComplex()
   isStatement     : -> @expressions.isStatement()
   isPureStatement : -> @expressions.isPureStatement()
@@ -1289,8 +1292,8 @@ class exports.Switch extends Base
   isStatement: YES
 
   makeReturn: ->
-    cs.makeReturn() for cs of @cases
-    @default?.makeReturn()
+    cs.makeReturn it for cs of @cases
+    @default?.makeReturn it
     this
 
   compileNode: (o) ->
@@ -1312,8 +1315,8 @@ class exports.Case extends Base
   children: <[ tests body ]>
 
   makeReturn: ->
-    [lnc] = lastNonComment @body.expressions
-    @body.makeReturn() if lnc and lnc.value isnt 'fallthrough'
+    [last] = lastNonComment @body.expressions
+    @body.makeReturn it if last and last.value isnt 'fallthrough'
 
   compileCase: (o, tab, nobr) ->
     code = br = ''
@@ -1355,8 +1358,8 @@ class exports.If extends Base
     @then.isStatement(o) or @else?.isStatement(o)
 
   makeReturn: ->
-    @then.=makeReturn()
-    @else.=makeReturn() if @else
+    @then.=makeReturn it
+    @else.=makeReturn it if @else
     this
 
   compileNode: (o) ->

@@ -412,7 +412,7 @@ class exports.Lexer
         return str.slice 0, i+1 unless stack.length
         continue
       for pair of delimited
-      when (open = pair[0]) is str.substr i, open.length
+        continue unless (open = pair[0]) is str.substr i, open.length
         stack.push pair
         i += open.length - 1
         break

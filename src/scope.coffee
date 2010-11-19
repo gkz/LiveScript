@@ -80,7 +80,4 @@
   # Return the list of assignments that are supposed to be made at the top
   # of this scope.
   assignedVariables: ->
-    list = []
-    for v of @variables then if v.type.assigned
-      list.push v.name + ' = ' + v.type.value
-    list
+    for v of @variables then v.name + ' = ' + v.type.value if v.type.assigned
