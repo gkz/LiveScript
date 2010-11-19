@@ -306,6 +306,9 @@ Coco is {small,fast}er than CoffeeScript as shown below.
     $ ls -s extras/coffee-script.js
     168 extras/coffee-script.js
 
+    $ cake loc
+    2280
+
     $ cake bench
     Lex     : 1431[ms] (20102 tokens)
     Rewrite :  160[ms] (22587 tokens)
@@ -316,10 +319,13 @@ Coco is {small,fast}er than CoffeeScript as shown below.
     $ cd ../coco
 
     $ git log -1 --format=oneline
-    5622aef7b9ed2b2377c85cf5b8af3778f2e549e8 grammar: POST_IF now has the same ...
+    6950c942d388612a0e11be44ffa0031611ffccdd task: tweaked "build:parser" to ...
 
     $ ls -s extras/coco.js
-    124 extras/coco.js
+    120 extras/coco.js
+
+    $ coke loc
+    2080
 
     $ coke bench
     Lex     : 1038[ms] (18370 tokens)
