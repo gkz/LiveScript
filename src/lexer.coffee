@@ -497,7 +497,7 @@ JS_KEYWORDS = <[
 ]>
 
 # Coco-only keywords.
-COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until of by when ]>
+COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until of by ]>
 COCO_ALIASES  = not: '!', and: '&&', or: '||',  is: '===', isnt : '!=='
 
 # The list of keywords that are reserved by JavaScript, but not used, or are

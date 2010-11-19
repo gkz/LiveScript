@@ -15,12 +15,6 @@ results = while func 1
   i
 eq '' + results, '4,3,2,1'
 
-i = 10
-results = while --i when i % 2 is 0
-  i * 2
-eq '' + results, '16,12,8,4'
-
-
 value = false
 i = 0
 results = until value
@@ -49,19 +43,19 @@ eq void, do -> return while 0
 
 
 # Basic array comprehensions.
-nums    = (n * n for n of [1, 2, 3] when n % 2 isnt 0)
+nums    = for n of [1, 2, 3] then n * n if n & 1
 results = (n * 2 for n of nums)
 
-ok results.join(',') is '2,18'
+eq results + '', '2,18'
 
 
 # Basic object comprehensions.
 obj   = {one: 1, two: 2, three: 3}
 names = (prop + '!' for prop in obj)
-odds  = (prop + '!' for prop, value in obj when value % 2 isnt 0)
+odds  = for prop, value in obj then prop + '!' if value & 1
 
-ok names.join(' ') is "one! two! three!"
-ok odds.join(' ')  is "one! three!"
+eq names.join(' '), 'one! two! three!'
+eq odds .join(' '), 'one! three!'
 
 
 # Basic range comprehensions.
@@ -79,10 +73,11 @@ eq "#{ x for x from 3*3 to 0*0 by 0-3 }", '9,6,3,0'
 
 
 # Multiline array comprehension with filter.
-evens = for num of [1, 2, 3, 4, 5, 6] when num % 2 is 0
-           num *= -1
-           num -= 2
-           num * -1
+evens =
+  for num of [1, 2, 3, 4, 5, 6] then if num % 2 is 0
+    num *= -1
+    num -=  2
+    num * -1
 eq evens + '', '4,6,8'
 
 
@@ -169,7 +164,8 @@ eq '5,3,1', '' + odds
 
 # For each dynamic call under `for`,
 # define it outside and pass loop variables to it.
-fs = for i, [a, b] in [[], [1, 2], [3, 4]] when a
+fs = for i, [a, b] in [[], [1, 2], [3, 4]]
+  continue unless a
   me = this
   do =>
     return if i < 2
@@ -190,11 +186,10 @@ eq copy[0] * copy[1], 8
 
 # Post-`for` chains.
 eq "#{
-  a * b * c * d * e          \
-  for a in {1}               \
-  for b of [2]               \
-  for c of [3, 4] by -1      \
-  for d of [5, 6] when d & 1 \
-  for e from 7 to 8          \
-  for _ in {9}
-}", '280,210,320,240'
+  a * b * c * d         \
+  for a in {1}          \
+  for b of [2]          \
+  for c of [3, 4] by -1 \
+  for d from 5 to 6     \
+  for _ in {7}
+}", '40,30,48,36'

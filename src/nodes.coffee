@@ -916,7 +916,7 @@ class exports.Splat extends Base
 #### While
 # A while loop, the only sort of low-level loop exposed by Coco.
 class exports.While extends Base
-  (@condition, {@guard, name} = {}) => @condition.=invert() if name is 'until'
+  (@condition, name) => @condition.=invert() if name is 'until'
 
   children: <[ condition guard body ]>
 
@@ -957,9 +957,6 @@ class exports.While extends Base
       ret = "\n#{@tab}return #{ res or '[]' };"
     return '}' + ret unless exps.length
     code = '\n'
-    if @guard
-      code += o.indent +
-        "if (#{ @guard.invert().compile o, LEVEL_PAREN }) continue;\n"
     code + body.compile(o, LEVEL_TOP) + "\n#{@tab}}" + ret
 
 #### Op

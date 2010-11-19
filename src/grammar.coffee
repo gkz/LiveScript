@@ -318,47 +318,35 @@ grammar =
     o '( INDENT Body OUTDENT )', -> Parens $3
   ]
 
-  ForOf: [
-    o 'FOROF Expression',                 -> mix For(), source: $2
-    o 'FOROF Expression WHEN Expression', -> mix For(), source: $2, guard: $4
-    o 'FOROF Expression BY Expression',   -> mix For(), source: $2, step : $4
-    o 'FOROF Expression BY Expression WHEN Expression'
-    , -> mix For(), source: $2, step: $4, guard: $6
-  ]
-  ForIn: [
-    o 'FORIN Expression', -> mix For(), object: true, source: $2
-    o 'FORIN Expression
-       WHEN  Expression', -> mix For(), object: true, source: $2, guard: $4
-  ]
   # The source of a comprehension is an array or object with an optional guard
   # clause. If it's an array comprehension, you can also choose to step through
   # in fixed-size increments.
   LoopHead: [
-    o 'FOR Assignable              ForOf', -> mix $3, name: $2
-    o 'FOR Assignable , IDENTIFIER ForOf', -> mix $5, name: $2, index: $4
+    o 'FOR Assignable              FOROF Expression'
+    , -> mix For(), name: $2,            source: $4
+    o 'FOR Assignable , IDENTIFIER FOROF Expression'
+    , -> mix For(), name: $2, index: $4, source: $6
+    o 'FOR Assignable              FOROF Expression BY Expression'
+    , -> mix For(), name: $2,            source: $4, step: $6
+    o 'FOR Assignable , IDENTIFIER FOROF Expression BY Expression'
+    , -> mix For(), name: $2, index: $4, source: $6, step: $8
 
-    o 'FOR IDENTIFIER
-       ForIn', -> mix $3, own: true, index: $2
-    o 'FOR Assignable , Assignable
-       ForIn', -> mix $5, own: true, index: $2, name: $4
-    o 'FOR ALL IDENTIFIER
-       ForIn', -> mix $4, index: $3
-    o 'FOR ALL IDENTIFIER , Assignable
-       ForIn', -> mix $6, index: $3, name: $5
+    o 'FOR IDENTIFIER              FORIN Expression'
+    , -> mix For(), object: true, own: true, index: $2,           source: $4
+    o 'FOR Assignable , Assignable FORIN Expression'
+    , -> mix For(), object: true, own: true, index: $2, name: $4, source: $6
+    o 'FOR ALL IDENTIFIER              FORIN Expression'
+    , -> mix For(), object: true, index: $3,           source: $5
+    o 'FOR ALL IDENTIFIER , Assignable FORIN Expression'
+    , -> mix For(), object: true, index: $3, name: $5, source: $7
 
     o 'FOR IDENTIFIER FROM Expression TO Expression'
     , -> mix For(), index: $2, from: $4, op: $5, to: $6
-    o 'FOR IDENTIFIER FROM Expression TO Expression WHEN Expression'
-    , -> mix For(), index: $2, from: $4, op: $5, to: $6, guard: $8
     o 'FOR IDENTIFIER FROM Expression TO Expression BY Expression'
     , -> mix For(), index: $2, from: $4, op: $5, to: $6, step : $8
-    o 'FOR IDENTIFIER FROM Expression TO Expression
-        BY Expression WHEN Expression'
-    , -> mix For(), index: $2, from: $4, op: $5, to: $6, step: $8, guard: $10
 
-    o 'FOR EVER',                         -> While()
-    o 'WHILE Expression',                 -> While $2, name: $1
-    o 'WHILE Expression WHEN Expression', -> While $2, name: $1, guard: $4
+    o 'FOR EVER',         -> While()
+    o 'WHILE Expression', -> While $2, $1
   ]
 
   Cases: [
@@ -410,9 +398,9 @@ operators = [
   <[ nonassoc  INDENT OUTDENT               ]>
   <[ right     : ASSIGN COMPOUND_ASSIGN
                RETURN THROW EXTENDS         ]>
-  <[ right     FORIN FOROF FROM TO BY WHEN  ]>
-  <[ right     IF ELSE FOR WHILE CLASS
-               SWITCH CASE DEFAULT          ]>
+  <[ right     IF ELSE SWITCH CASE DEFAULT
+               CLASS FORIN FOROF FROM TO BY ]>
+  <[ left      FOR WHILE ]>
   <[ right     POST_IF                      ]>
 ]
 

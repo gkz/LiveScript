@@ -113,7 +113,7 @@ addImplicitParentheses = (tokens) ->
     seenSingle := true if tag of <[ IF ELSE FUNC_ARROW ]>
     return true  if tag is 'ACCESS' and pre is 'OUTDENT'
     return false if token.generated or  pre is ','
-    tag of <[ POST_IF FOR WHILE WHEN BY TO CASE DEFAULT TERMINATOR ]> or
+    tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]> or
     tag is 'INDENT' and pre not of <[ FUNC_ARROW { [ , ]> and
       tokens[i-2]?[0] isnt 'CLASS' and
       not ((post = tokens[i+1]) and post.generated and post[0] is '{')
@@ -280,7 +280,7 @@ for [left, rite] of BALANCED_PAIRS
 
 # Tokens that indicate the close of a clause of an expression.
 EXPRESSION_CLOSE =
-  EXPRESSION_END.concat<[ ELSE WHEN BY TO CATCH FINALLY CASE DEFAULT ]>
+  EXPRESSION_END.concat<[ ELSE BY TO CATCH FINALLY CASE DEFAULT ]>
 
 # Tokens that indicate an implicit function invocation.
 IMPLICIT_FUNC = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>

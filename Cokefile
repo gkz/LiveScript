@@ -20,7 +20,7 @@ log = (message, color, explanation) ->
 
 sources = ->
   ext = /\.co(?:ffee)?$/i
-  'src/' + file for file of fs.readdirSync 'src' when ext.test file
+  for file of fs.readdirSync 'src' then 'src/' + file if ext.test file
 
 coreSources = ->
   "src/#{src}.coffee" for src of <[coco grammar lexer nodes rewriter scope]>
