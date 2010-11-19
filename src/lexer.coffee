@@ -333,7 +333,7 @@ class exports.Lexer
         @tokens.pop()
         (value = new String value).logic = @last[1]
     case <[ ! ~ ]>          then tag = 'UNARY'
-    case <[ . ?. .= ]>      then tag = 'ACCESS'
+    case <[ . ?. &. .= ]>   then tag = 'ACCESS'
     case <[ + - ]>          then tag = 'PLUS_MINUS'
     case <[ === !== <= < > >= == != ]> \
                             then tag = 'COMPARE'
@@ -341,7 +341,7 @@ class exports.Lexer
     case <[ / % ]>          then tag = 'MATH'
     case <[ ++ -- ]>        then tag = 'CREMENT'
     case <[ << >> >>> ]>    then tag = 'SHIFT'
-    case <[ ?[ [= ]>        then tag = 'INDEX_START'
+    case <[ ?[ &[ [= ]>     then tag = 'INDEX_START'
     case '@'                then tag = 'THIS'
     case ';'                then tag = 'TERMINATOR'
     case '?'                then tag = 'LOGIC' if @last.spaced
@@ -534,8 +534,8 @@ SYMBOL = /// ^ (?:
   ([-+&|:])\1       | # {in,de}crement / logic / prototype access
   [!=]==?           | # strict equality
   [-=]>             | # function
-  \?[.[]            | # soak access
   \.{3}             | # splat
+  [?&][.[]          | # soak/bound access
   @\d+              | # argument shorthand
   \\\n              | # continued line
   <<=?              | # left shift

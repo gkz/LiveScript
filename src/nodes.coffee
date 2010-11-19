@@ -319,10 +319,11 @@ class exports.Value extends Base
   # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
     return asn.compile o if asn = @unfoldAssign o
+    return val.compile o if val = @unfoldBind   o
     @base import {@front}
-    v  = (@properties.length and @substituteStar o) or this
-    ps = v.properties
-    code  = v.base.compile o, if ps.length then LEVEL_ACCESS else null
+    val = (@properties.length and @substituteStar o) or this
+    ps  = val.properties
+    code  = val.base.compile o, if ps.length then LEVEL_ACCESS else null
     code += ' ' if ps[0] instanceof Access and SIMPLENUM.test code
     code += p.compile o for p of ps
     code
@@ -369,6 +370,15 @@ class exports.Value extends Base
       prop.assign = false
       [lhs, rhs] = Value(@base, @properties.slice 0, i).cacheReference o
       return Assign(lhs, Value rhs, @properties.slice i) import {access: true}
+    null
+
+  unfoldBind: (o) ->
+    for p, i of ps = @properties then if p.bind
+      p.bind = false
+      [ctx, ref] = Value(@base, ps.slice 0, i).cache o
+      fun = Value ref, [p]
+      fun.temps = [ref.value] if ctx isnt ref
+      return Value Call(Literal(utility 'bind'), [ctx, fun]), ps.slice i+1
     null
 
 #### Comment
@@ -526,6 +536,7 @@ class exports.Access extends Base
   (@name, symbol) =>
     switch symbol
     case '?.' then @soak   = true
+    case '&.' then @bind   = true
     case '.=' then @assign = true
 
   children: ['name']
@@ -546,6 +557,7 @@ class exports.Index extends Base
   (@index, symbol) =>
     switch symbol
     case '?[' then @soak   = true
+    case '&[' then @bind   = true
     case '[=' then @assign = true
 
   children: ['index']
@@ -848,7 +860,7 @@ class exports.Code extends Base
       code += " #{name}.name = \"#{name}\";"
     code += "\n#{tab}return #{name};" if @returns
     return tab + code if statement
-    return utility('bind') + "(#{code}, #{@bound})" if @bound
+    return utility('bind') + "(#{@bound}, #{code})" if @bound
     if @front then "(#{code})" else code
 
   # Short-circuit `traverseChildren` method to prevent it
@@ -1433,7 +1445,7 @@ UTILITIES =
 
   # Create a function bound to the current value of "this".
   bind: '''
-    function(fn, me){ return function(){ return fn.apply(me, arguments); }; }
+    function(me, fn){ return function(){ return fn.apply(me, arguments); }; }
   '''
 
   # Copies properties from right to left.

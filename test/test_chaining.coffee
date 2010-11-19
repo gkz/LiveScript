@@ -76,3 +76,11 @@ eq ok, ({prototype: -> it}:: ok), 'space after :: should be significant'
 
 eq [1, 2, 3][*-1], 3
 eq 0[*], void
+
+
+parent =
+  child:
+    method: -> @member
+    member: 42
+eq 42, do(0; parent.child&.method)
+eq 42, do(0; parent.child&["me#{'th'}od"])
