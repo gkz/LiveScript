@@ -330,10 +330,9 @@ class exports.Value extends Base
   substituteStar: (o) ->
     star = null
     find = ->
-      return false if it instanceof Index
-      if it instanceof Literal and it.value is '*'
-        star := it
-        false
+      switch
+      case it.value is '*'     then star := it; fallthrough
+      case it instanceof Index then false
     for prop, i of @properties then if prop instanceof Index
       prop.traverseChildren false, find
       continue unless star
@@ -1314,7 +1313,7 @@ class exports.Case extends Base
 
   makeReturn: ->
     [last] = lastNonComment @body.expressions
-    @body.makeReturn it if last and last.value isnt 'fallthrough'
+    @body.makeReturn it if last and last.base?.value isnt 'fallthrough'
 
   compileCase: (o, tab, nobr) ->
     code = br = ''
