@@ -931,7 +931,7 @@ class exports.Splat extends Base
 class exports.While extends Base
   (@condition, name) => @condition.=invert() if name is 'until'
 
-  children: <[ condition guard body ]>
+  children: <[ condition body ]>
 
   isStatement: YES
 
@@ -1201,7 +1201,7 @@ class exports.Parens extends Base
 class exports.For extends While
   =>
 
-  children: <[ source name from to step guard body ]>
+  children: <[ source name from to step body ]>
 
   compileNode: (o) ->
     if @index instanceof Base and not @index.=unwrap().value
@@ -1294,8 +1294,7 @@ class exports.For extends While
 # but with forced `break` after each cases.
 class exports.Switch extends Base
   (@switch, @cases, @default) =>
-    return if $switch
-    tests[i].=invert() for i in tests for {tests} of cases
+    tests[i].=invert() for i in tests for {tests} of cases unless $switch
 
   children: <[ switch cases default ]>
 
