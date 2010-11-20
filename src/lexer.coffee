@@ -99,15 +99,13 @@ class exports.Lexer
       return @token('BY', id).length
     tag = if at = id.charAt(0) is '@'
     then id.=slice 1; 'THISPROP'
-    else 'IDENTIFIER'
+    else              'IDENTIFIER'
     forcedIdentifier = at or colon or
       if not (prev = @last).spaced and prev[1].colon2
       then @token<[ ACCESS . ]>
       else prev[0] is 'ACCESS'
     if forcedIdentifier
-      if id of JS_FORBIDDEN
-        id = new String id
-        id.reserved = true
+      (id = new String id).reserved = true if id of JS_FORBIDDEN
     else if id of COCO_KEYWORDS
       switch tag = id.toUpperCase()
       case 'FOR'                         then @seenFor = true
@@ -154,7 +152,8 @@ class exports.Lexer
   # Matches strings, including multi-line strings. Ensures that quotation marks
   # are balanced within the string's contents, and within nested interpolations.
   singleStringToken : ->
-    @carp 'unterminated single quote' unless string = SIMPLESTR.exec @chunk
+    unless string = SIMPLESTR.exec @chunk
+      @carp 'unterminated single quoted string'
     @token 'STRNUM', (string[=0]).replace MULTILINER, '\\\n'
     @countLines(string).length
 
@@ -212,7 +211,8 @@ class exports.Lexer
       body.=replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
       @token 'LITERAL', "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex).length
-    @tokens.push ['IDENTIFIER', 'RegExp', @line], ['CALL_START', '(', @line]
+    @token<[ IDENTIFIER RegExp ]>
+    @token<[ CALL_START   (    ]>
     tokens = []
     for [tag, value] of @interpolateString(body, regex: true)
       if tag is 'TOKENS'
@@ -234,13 +234,15 @@ class exports.Lexer
   # Matches words literal, a syntax sugar for an array of strings.
   wordsToken: ->
     return 0 unless words = WORDS.exec @chunk
-    if call = not (prev = @last).spaced and prev[0] of CALLABLE
+    if call = not @last.spaced and @last[0] of CALLABLE
     then @token<[ CALL_START ( ]>
-    else @token<[ [ [ ]>
+    else @token<[ [          [ ]>
     for word of (words[=0]).slice(2, -2).match(/\S+/g) or ['']
       @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
     @countLines words
-    if call then @token<[ ) ) ]> else @token<[ ] ] ]>
+    if call
+    then @token<[ ) ) ]>
+    else @token<[ ] ] ]>
     words.length
 
   # Matches newlines, indents, and outdents, and determines which is which.
