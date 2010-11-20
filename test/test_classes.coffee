@@ -259,3 +259,7 @@ class NewSuper extends Importer
 ns = new NewSuper
 eq ns.method1({1})[1], 1
 eq ns.method2(2).length, 2
+
+
+throws 'reserved word "in" cannot be a class name'
+, -> Coco.compile 'class run.in'

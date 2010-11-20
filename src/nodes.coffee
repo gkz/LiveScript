@@ -627,8 +627,8 @@ class exports.Arr extends Base
 
   compileNode: (o) ->
     return '[]' unless @objects.length
-    o.indent += TAB
     return code if code = Splat.compileArray o, @objects
+    o.indent += TAB
     code = (obj.compile o, LEVEL_LIST for obj of @objects).join ', '
     if 0 < code.indexOf '\n'
     then "[\n#{o.indent}#{code}\n#{@tab}]"
@@ -646,7 +646,10 @@ class exports.Class extends Base
       decl = if @title instanceof Value
       then @title.properties[*-1].name?.value
       else @title.value
-      decl &&= IDENTIFIER.test(decl) and decl
+      if decl
+        if decl.reserved
+          throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
+        decl = '' unless IDENTIFIER.test decl
     name  = decl or @name or '_Class'
     lname = Literal name
     proto = Value lname, [Access Literal 'prototype']
@@ -669,7 +672,7 @@ class exports.Class extends Base
     exps.unshift Extends lname, @parent if @parent
     exps.push lname
     clas = Parens Call(Code([], @body), []), true
-    clas = Assign lname, clas if decl and @title?.isComplex()
+    clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
     clas.compile o
 

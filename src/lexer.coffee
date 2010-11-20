@@ -16,7 +16,6 @@ Rewriter = require './rewriter'
 # tokens. Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 class exports.Lexer
-
   # **tokenize** is the Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
   # remaining code, or a custom recursive token-matching method
