@@ -24,15 +24,14 @@ class exports.Base
   # return results).
   compile: (options, level) ->
     o = {}; continue for all key, o[key] in options
-    o.level  = level if level?
-    node     = @unfoldSoak(o) or this
+    o import {level} if level?
+    node = @unfoldSoak(o) or this
+    if o.level and not node.isPureStatement() and node.isStatement(o)
+      return node.compileClosure o
     node.tab = o.indent
-    if not o.level or node.isPureStatement() or not node.isStatement(o)
-      code = node.compileNode o
-      o.scope.free tmp for tmp of node.temps if node.temps
-      code
-    else
-      node.compileClosure o
+    code = node.compileNode o
+    o.scope.free tmp for tmp of node.temps if node.temps
+    code
 
   # Statements converted into expressions via closure-wrapping share a scope
   # object with their parent closure, to preserve the expected lexical scope.
@@ -95,11 +94,10 @@ class exports.Base
 
   # Passes each child to a function, breaking when the function returns `false`.
   eachChild: (func) ->
-    return this unless @children
     for name of @children then if child = @[name]
       if 'length' in child
-      then for node of child then return this if false is func node
-      else                        return this if false is func child
+      then return this if false is func node for node of child
+      else return this if false is func child
     this
 
   traverseChildren: (crossScope, func) ->
@@ -169,7 +167,7 @@ class exports.Expressions extends Base
 
   # An **Expressions** is the only node that can serve as the root.
   compile: (o = {}, level) ->
-    if o.scope then super ... else @compileRoot o
+    if o.scope then super.call this, o, level else @compileRoot o
 
   compileNode: (o) ->
     o.expressions = this
@@ -185,7 +183,7 @@ class exports.Expressions extends Base
         code = node.compile o, LEVEL_LIST
       codes.push code
     return codes.join '\n' if top
-    code = codes.join(', ') or 'void 0'
+    code = codes.join(', ') or 'void 8'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
   # If we happen to be the top-level **Expressions**, wrap everything in
@@ -1277,7 +1275,7 @@ class exports.For extends While
       args = []
       if val.base
         args.push exp.args[0]
-        [val.base, base] = [base, val]
+        base = val import {base}
       if index
         args.push li = Literal index
         fn.params.push Param li
@@ -1335,8 +1333,7 @@ class exports.Case extends Base
       then add c for c of test.objects
       else add test
     [last, i] = lastNonComment exps = @body.expressions
-    if ft = last?.base?.value is 'fallthrough'
-      @body.expressions[i] = Comment ' fallthrough '
+    exps[i] = Comment ' fallthrough ' if ft = last.base?.value is 'fallthrough'
     o.indent = tab + TAB
     code += body + '\n' if body = @body.compile o, LEVEL_TOP
     code += o.indent + 'break;\n' unless nobr or ft or
@@ -1363,7 +1360,7 @@ class exports.If extends Base
   # The **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
-    @statement or o?.level is LEVEL_TOP or
+    @statement or o and not o.level or
     @then.isStatement(o) or @else?.isStatement(o)
 
   makeReturn: ->
@@ -1378,8 +1375,8 @@ class exports.If extends Base
     code  = if delete o.chainChild then '' else @tab
     code += "if (#{ @if.compile o, LEVEL_PAREN }) {"
     o.indent += TAB
-    body  = Expressions(@then).compile o
-    code += (body and "\n#{body}\n#{@tab}") + '}'
+    code += "\n#{body}\n" + @tab if body = Expressions(@then).compile o
+    code += '}'
     return code unless @else
     code + ' else ' + if @chain
     then @else.compile (o import indent: @tab, chainChild: true), LEVEL_TOP
@@ -1391,7 +1388,7 @@ class exports.If extends Base
   compileExpression: (o) ->
     code = @if   .compile(o, LEVEL_COND) + ' ? ' +
            @then .compile(o, LEVEL_LIST) + ' : ' +
-          (@else?.compile(o, LEVEL_LIST) or 'void 0')
+          (@else?.compile(o, LEVEL_LIST) or 'void 8')
     if o.level < LEVEL_COND then code else "(#{code})"
 
   unfoldSoak: -> @soak and this
