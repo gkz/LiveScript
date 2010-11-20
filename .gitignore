@@ -1,9 +1,3 @@
-raw
-presentation
-test.coffee
-parser.output
-test/fixtures/underscore
+t.*
 test/*.js
-examples/beautiful_code/parse.coffee
-*.gem
-#*#
+*#
