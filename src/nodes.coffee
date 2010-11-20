@@ -212,9 +212,7 @@ class exports.Expressions extends Base
       @expressions = rest
     post = if @expressions.length then @compileNode o else ''
     if not o.globals and this is o.scope.expressions
-      vars =    o.scope.declaredVariables()
-      vars.push o.scope.assignedVariables()...
-      vars.=join ', '
+      vars = o.scope.vars().join ', '
     code &&+= '\n' if post
     code += @tab + "var #{ multident vars, @tab };\n" if vars
     code + post

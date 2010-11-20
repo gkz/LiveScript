@@ -13,7 +13,7 @@
   @variables = [{name: 'arguments', type: 'arguments'}]
   @positions = arguments: 0
   # The top-level **Scope** object.
-  exports.Scope.root = this unless @parent
+  @constructor.root = this unless @parent
   this
 ):: import
 
@@ -69,15 +69,12 @@
   # Ensure that an assignment is made at the top of this scope
   assign: (name, value) -> @add name, {value, assigned: true}
 
-  # Return the list of variables first declared in this scope.
-  declaredVariables: ->
-    usr = []
-    tmp = []
-    for v of @variables then if v.type of <[ var reuse ]>
-      (if v.name.charAt(0) is '_' then tmp else usr).push v.name
-    usr.sort().concat tmp.sort()
-
-  # Return the list of assignments that are supposed to be made at the top
-  # of this scope.
-  assignedVariables: ->
-    for v of @variables then v.name + ' = ' + v.type.value if v.type.assigned
+  # Return the list of variables declared in this scope.
+  vars: ->
+    usr = []; tmp = []; asn = []
+    for {name, type} of @variables
+      if type of <[ var reuse ]>
+        (if name.charAt(0) is '_' then tmp else usr).push name
+      else if type.assigned
+        asn.push name + ' = ' + type.value
+    usr.sort().concat tmp.sort(), asn
