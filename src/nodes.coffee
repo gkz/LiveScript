@@ -946,8 +946,10 @@ class exports.While extends Base
 
   makeReturn: ->
     if it
-    then @body.makeReturn it; this
-    else this import returns: true
+      @body.makeReturn it
+    else unless @containsPureStatement()
+      @returns = true
+    this
 
   compileNode: (o) ->
     code = @condition?.compile(o, LEVEL_PAREN) or 'true'
@@ -957,15 +959,15 @@ class exports.While extends Base
 
   compileBody: (o) ->
     {body} = this
-    [node, i] = lastNonComment exps = body.expressions
-    if node?.value is 'continue'
+    [last, i] = lastNonComment exps = body.expressions
+    if last?.value is 'continue'
       exps.splice i, 1
-      [node, i] = lastNonComment exps
+      [last, i] = lastNonComment exps
     ret = ''
-    if @returns and node not instanceof Return
-      if node and not node.containsPureStatement() and node not instanceof Throw
+    if @returns
+      if last and last not instanceof Throw
         o.scope.assign res = '_results', '[]'
-        exps[i] = node.makeReturn res
+        exps[i] = last.makeReturn res
       ret = "\n#{@tab}return #{ res or '[]' };"
     return '}' + ret unless exps.length
     code = '\n'
