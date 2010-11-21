@@ -358,3 +358,49 @@ throws 'redeclaration of "C"', -> Coco.compile '''
 
 throws 'cannot declare a function under a statement', ->
   Coco.compile 'if 1 then function C ->'
+
+
+# Expression conversion under explicit returns.
+first = ->
+  return ('do' for x of [1,2,3])
+
+second = ->
+  return ['re' for x of [1,2,3]]
+
+third = ->
+  return ('mi' for x in {1,2,3})
+
+ok first().join(' ')     is 'do do do'
+ok second()[0].join(' ') is 're re re'
+ok third().join(' ')     is 'mi mi mi'
+
+
+# Returns with multiple branches.
+func = ->
+  if it
+    return n for n of [1, 2]
+  else
+    0
+eq func(0), 0
+eq func(1), 1
+
+
+# Ensure that we don't wrap Nodes that are "pureStatement" in a closure.
+findIt = (items) ->
+  return item if item is "bacon" for item of items
+eq 'bacon', findIt [1, 2, 3, "bacon", 4, 5]
+eq void   , findIt [   ]
+
+
+# When a closure wrapper is generated for expression conversion, make sure
+# that references to "this" within the wrapper are safely converted as well.
+obj =
+  method: ->
+    [] = switch case 1 then this
+eq obj.method(), obj
+
+
+eq 3, do -> (1; 2; 3)
+eq 3, do -> return (1; 2; 3)
+throws 'cannot include a pure statement in an expression'
+, -> Coco.compile 'r = (return)'
