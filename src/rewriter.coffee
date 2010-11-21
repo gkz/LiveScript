@@ -206,7 +206,7 @@ ensureBalance = (tokens) ->
         olines[open] = token[2] if levels[open]++ is 0
       else if tag is close and --levels[open] < 0
         throw SyntaxError "too many #{token[1]} on line #{ token[2] + 1 }"
-  for all open, level in levels then if level > 0
+  for open, level in levels then if level > 0
     throw SyntaxError "unclosed #{open} on line #{ olines[open] + 1 }"
   tokens
 
@@ -229,7 +229,7 @@ ensureBalance = (tokens) ->
 rewriteClosingParens = (tokens) ->
   stack = []
   debt  = {}
-  debt[key] = 0 for all key in INVERSES
+  debt[key] = 0 for key in INVERSES
   i = -1
   while token = tokens[++i]
     [tag] = token

@@ -73,12 +73,11 @@ class exports.Lexer
   # though `is` means `===` otherwise.
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
-    [input, id, colon] = match
-    switch id
-    case 'all'
-      switch @last[0]
-      case 'FOR'    then return @token('ALL', id).length
-      case 'IMPORT' then @last[1] = ''; return id.length
+    switch id = match[1]
+    case 'own'
+      break unless @last[0] is 'FOR' and @last[1]
+      @last[1] = ''
+      return id.length
     case 'from'
       break unless @tokens[*-2]?[0] is 'FOR'
       @seenFor  = false
@@ -97,9 +96,14 @@ class exports.Lexer
       break unless @seenRange
       @seenRange = false
       return @token('BY', id).length
+    case 'all'
+      break unless @last[0] is 'IMPORT' and @last[1]
+      @last[1] = ''
+      return id.length
     tag = if at = id.charAt(0) is '@'
     then id.=slice 1; 'THISPROP'
     else              'IDENTIFIER'
+    {0: input, 2: colon} = match
     forcedIdentifier = at or colon or
       if not (prev = @last).spaced and prev[1].colon2
       then @token<[ ACCESS . ]>

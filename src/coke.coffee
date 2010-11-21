@@ -59,7 +59,7 @@ printTasks = (oparser) ->
   console.log ''
   width = Math.max Object.keys(Tasks).map(-> it.length)...
   pad   = Array(width >> 1).join '  '
-  for all name, task in Tasks
+  for name, task in Tasks
     desc = if task.description then '# ' + task.description else ''
     console.log "coke #{ (name + pad).slice 0, width } #{desc}"
   console.log if Switches.length then oparser.help() else ''

@@ -332,13 +332,9 @@ grammar =
     , -> mix For(), name: $2, index: $4, source: $6, step: $8
 
     o 'FOR IDENTIFIER              FORIN Expression'
-    , -> mix For(), object: true, own: true, index: $2,           source: $4
+    , -> mix For(), object: true, own: !$1, index: $2,           source: $4
     o 'FOR Assignable , Assignable FORIN Expression'
-    , -> mix For(), object: true, own: true, index: $2, name: $4, source: $6
-    o 'FOR ALL IDENTIFIER              FORIN Expression'
-    , -> mix For(), object: true, index: $3,           source: $5
-    o 'FOR ALL IDENTIFIER , Assignable FORIN Expression'
-    , -> mix For(), object: true, index: $3, name: $5, source: $7
+    , -> mix For(), object: true, own: !$1, index: $2, name: $4, source: $6
 
     o 'FOR IDENTIFIER FROM Expression TO Expression'
     , -> mix For(), index: $2, from: $4, op: $5, to: $6
@@ -411,7 +407,7 @@ operators = [
 # terminals (every symbol which does not appear as the name of a rule above)
 # as "tokens".
 tokens = []
-for all name, alternatives in grammar
+for name, alternatives in grammar
   grammar[name] = for alt of alternatives
     for token of alt[0].split ' '
       tokens.push token unless grammar[token]

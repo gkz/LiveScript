@@ -116,7 +116,7 @@ runTests = (Coco) ->
   path = require 'path'
   startTime = Date.now()
   passedTests = failedTests = 0
-  for all name, func in require 'assert' then do ->
+  for name, func in require 'assert' then do ->
     global[name] = ->
       func arguments...
       ++passedTests

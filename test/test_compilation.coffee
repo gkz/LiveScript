@@ -11,8 +11,8 @@ throws 'unclosed CALL_START on line 1', -> Coco.nodes 'f(->'
 
 throws 'unterminated JS literal on line 3', -> Coco.nodes '\n\n```'
 
-eq 'for (k in o) {}', Coco.compile 'for all k in o then'
-, bare: true, globals: true,
+eq 'for (k in o) {}'
+, Coco.compile 'for k in o then', bare: true, globals: true,
 
 eq '''
 /* (c) 2010 me */

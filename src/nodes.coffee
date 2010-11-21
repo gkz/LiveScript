@@ -23,7 +23,7 @@ class exports.Base
   # already been asked to return the result (because statements know how to
   # return results).
   compile: (options, level) ->
-    o = {}; continue for all key, o[key] in options
+    o = {}; continue for key, o[key] in options
     o import {level} if level?
     node = @unfoldSoak(o) or this
     if o.level and not node.isPureStatement() and node.isStatement(o)
@@ -991,7 +991,7 @@ class exports.Op extends Base
 
   # Map of comparison operators which are both invertible and chainable.
   COMPARERS = '===':'!==', '==':'!=', '>':'<=', '<':'>='
-  COMPARERS[val] = key for all key, val in COMPARERS
+  COMPARERS[val] = key for key, val in COMPARERS
 
   children: <[ first second ]>
 
@@ -1293,7 +1293,7 @@ class exports.For extends While
 # but with forced `break` after each cases.
 class exports.Switch extends Base
   (@switch, @cases, @default) =>
-    tests[i].=invert() for i in tests for {tests} of cases unless $switch
+    tests[i].=invert() for own i in tests for {tests} of cases unless $switch
 
   children: <[ switch cases default ]>
 
