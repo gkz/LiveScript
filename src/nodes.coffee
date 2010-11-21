@@ -795,7 +795,7 @@ class exports.Code extends Base
   isStatement: -> !!@statement
 
   makeReturn: ->
-    if @statement then this import {'returns'} else super ...
+    if @statement then this import returns: true else super ...
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
@@ -850,6 +850,7 @@ class exports.Code extends Base
         throw SyntaxError 'cannot declare a nameless function'
       unless o.expressions is pscope.expressions
         throw SyntaxError 'cannot declare a function under a statement'
+      scope .add name, 'function'
       pscope.add name, 'function' unless @returns
       code += ' ' + name
     code += '(' + vars.join(', ') + '){'
