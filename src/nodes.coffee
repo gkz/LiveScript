@@ -742,24 +742,25 @@ class exports.Assign extends Base
     if o.level < LEVEL_LIST then code else "(#{code})"
 
   destructArr: (o, nodes, rite) ->
-    if nodes.length is 1 and nodes[0] instanceof Splat
-      asn = Assign nodes[0].name, Arr([Splat rite]), @op
-      return [asn.compile o, LEVEL_TOP]
     list = []
     iinc = ''
     for node, i of nodes
       if node instanceof Splat
         if iinc then throw SyntaxError \
           "multiple splats in an assignment: " + node.compile o
-        val  = "#{nodes.length} <= #{rite}.length" +
-               " ? #{ utility 'slice' }.call(#{rite}, #{i}"
-        val += if rest = nodes.length - i - 1
-          ivar = o.scope.temporary 'i'
-          ", #{ivar} = #{rite}.length - #{rest}) : (#{ivar} = #{i}, [])"
+        if i is endi = nodes.length - 1
+          val = utility('slice') + ".call(#{rite}" +
+                if i then ", #{i})" else ')'
         else
-          ') : []'
-        val  = Literal val
-        iinc = ivar + '++'
+          val = "#{nodes.length} <= #{rite}.length" +
+                " ? #{ utility 'slice' }.call(#{rite}, #{i}"
+          val += if rest = endi - i
+            ivar = o.scope.temporary 'i'
+            ", #{ivar} = #{rite}.length - #{rest}) : (#{ivar} = #{i}, [])"
+          else
+            ') : []'
+          iinc = ivar + '++'
+        val = Literal val
       else
         val = Value lr ||= Literal(rite), [Index Literal iinc or i]
       list.push Assign(node, val, @op).compile o, LEVEL_TOP
