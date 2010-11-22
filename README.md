@@ -333,41 +333,84 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
 
 
 ## Improvements
-Coco is {small,fast}er than CoffeeScript as shown below.
+- Smaller/Speedier
 
-    $ git log -1 --format=oneline
-    e5deb2b3c33ac356146a26f2f19b3e8f9e3bb328 CoffeeScript 0.9.5
+      $ git log -1 --format=oneline
+      e5deb2b3c33ac356146a26f2f19b3e8f9e3bb328 CoffeeScript 0.9.5
 
-    $ ls -s extras/coffee-script.js
-    168 extras/coffee-script.js
+      $ ls -s extras/coffee-script.js
+      168 extras/coffee-script.js
 
-    $ cake loc
-    2336
+      $ cake loc
+      2336
 
-    $ cake bench
-    Lex     1494 ms (21083 tokens)
-    Rewrite  167 ms (23624 tokens)
-    Parse    184 ms
-    Compile  179 ms (127749 chars)
-    total   2024 ms
+      $ cake bench
+      Lex     1494 ms (21083 tokens)
+      Rewrite  167 ms (23624 tokens)
+      Parse    184 ms
+      Compile  179 ms (127749 chars)
+      total   2024 ms
 
-    $ cd ../coco
+      $ cd ../coco
 
-    $ git log -1 --format=oneline
-    b4b592015f52f4b4f3aa1610f1f8b2384f96ace8 readme: principles
+      $ git log -1 --format=oneline
+      b4b592015f52f4b4f3aa1610f1f8b2384f96ace8 readme: principles
 
-    $ ls -s extras/coco.js
-    120 extras/coco.js
+      $ ls -s extras/coco.js
+      120 extras/coco.js
 
-    $ coke loc
-    2094
+      $ coke loc
+      2094
 
-    $ coke bench
-    Lex     : 1036[ms] (18468 tokens)
-    Rewrite :  120[ms] (20841 tokens)
-    Parse   :  165[ms]
-    Compile :  209[ms] (120012 chars)
-    TOTAL   : 1530[ms]
+      $ coke bench
+      Lex     : 1036[ms] (18468 tokens)
+      Rewrite :  120[ms] (20841 tokens)
+      Parse   :  165[ms]
+      Compile :  209[ms] (120012 chars)
+      TOTAL   : 1530[ms]
+
+
+- Uses temporary variables more wisely, making compiled code cleaner/faster.
+
+      $ coffee -bpe '[i for i in a, j for j in b]'
+      var i, j, _i, _j, _len, _len2, _results, _results2;
+      [
+        function() {
+          _results = [];
+          for (_i = 0, _len = a.length; _i < _len; _i++) {
+            i = a[_i];
+            _results.push(i);
+          }
+          return _results;
+        }(), function() {
+          _results2 = [];
+          for (_j = 0, _len2 = b.length; _j < _len2; _j++) {
+            j = b[_j];
+            _results2.push(j);
+          }
+          return _results2;
+        }()
+      ];
+
+      $ coco -bpe '[i for i of a, j for j of b]'
+      var i, j;
+      [
+        (function(){
+          var _i, _len, _ref, _results = [];
+          for (_i = 0, _len = (_ref = a).length; _i < _len; ++_i) {
+            i = _ref[_i];
+            _results.push(i);
+          }
+          return _results;
+        }()), (function(){
+          var _i, _len, _ref, _results = [];
+          for (_i = 0, _len = (_ref = b).length; _i < _len; ++_i) {
+            j = _ref[_i];
+            _results.push(j);
+          }
+          return _results;
+        }())
+      ];
 
 
 ## Installation
