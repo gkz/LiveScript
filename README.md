@@ -429,6 +429,10 @@ Install [node.js](http://nodejs.org/), then
 
     git clone git:github.com/satyr/coco.git && cd coco && bin/coke install
 
+Or install [npm](https://github.com/isaacs/npm#readme), then
+
+    npm install coco
+
 
 ## Help
 
