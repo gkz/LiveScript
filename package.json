@@ -2,7 +2,7 @@
 ,"description" : "Unfancy CoffeeScript"
 ,"keywords"    : ["language", "compiler", "coffeescript", "javascript"]
 ,"author"      : "satyr"
-,"version"     : "0.1.0"
+,"version"     : "0.1.1"
 ,"licenses"    :
  [{"type" : "MIT"
   ,"url"  : "https://github.com/satyr/coco/raw/master/LICENSE"
@@ -12,6 +12,6 @@
 ,"main" : "./lib/coco"
 ,"bin"  :
  {"coco" : "./bin/coco"
- ,"cake" : "./bin/coke"
+ ,"coke" : "./bin/coke"
  }
 }
