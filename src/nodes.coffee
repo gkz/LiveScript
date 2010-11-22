@@ -586,17 +586,21 @@ class exports.Obj extends Base
         break
     [last] = lastNonComment items
     idt    = o.indent += TAB
+    dic    = {}
     code   = ''
     for node of items
       if node instanceof Comment
         code += node.compile(o, LEVEL_TOP) + '\n'
         continue
       code += idt + if node.this
-        node.properties[0].name.value + ': ' +
-        node.compile o, LEVEL_LIST
+        key = node.properties[0].name.compile o
+        key + ': ' + node.compile o, LEVEL_LIST
       else if node instanceof Assign
-      then node.compile o
-      else (c = node.compile o, LEVEL_LIST) + ': ' + c
+        key = node.left.compile o
+        node.compile o
+      else (key = node.compile o, LEVEL_LIST) + ': ' + key
+      throw SyntaxError 'duplicated property name: ' + key if dic[key + 0]
+      dic[key + 0] = 1
       code += ',' unless node is last
       code += '\n'
     code = "{#{ code and '\n' + code + @tab }}"

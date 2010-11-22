@@ -1,42 +1,34 @@
 a = [((x) -> x), ((x) -> x * x)]
+eq a.length, 2
 
-ok a.length is 2
 
-
-neg = (3 -4)
-
-ok neg is -1
+eq (3 -4), -1
 
 
 # Decimal number literals.
-value = .25 + .75
-ok value is 1
-value = 0.0 + -.25 - -.75 + 0.0
-ok value is 0.5
+eq 1.0, .25 + .75
+eq 0.5, 0.0 + -.25 - -.75 + 0.0
 
 
-# Can call methods directly true numbers.
-4.valueOf() is 4
+ok 4.valueOf(), 'can access a simple number with dot'
 
 
-func = ->
-  return if true
-
-ok func() is undefined
+eq void, do -> return if true
 
 
-trailingComma = [1, 2, 3,]
-ok (trailingComma[0] is 1) and (trailingComma[2] is 3) and (trailingComma.length is 3)
+# Trailing commas.
+eq [1, 2,] + '', '1,2'
 
-trailingComma = [
+sum  = 0
+sum += n for n of [
   1, 2, 3,
   4, 5, 6
   7, 8, 9,
 ]
-(sum = (sum or 0) + n) for n of trailingComma
+eq sum, 45
 
-trailingComma = {k1: "v1", k2: 4, k3: (-> true),}
-ok trailingComma.k3() and (trailingComma.k2 is 4) and (trailingComma.k1 is "v1")
+o = {k1: "v1", k2: 4, k3: (-> true),}
+ok o.k3() and o.k2 is 4 and o.k1 is "v1"
 
 
 ok {a: (num) -> num is 10 }.a 10
@@ -273,13 +265,18 @@ eq '<[ quoted words ]>', <[ <[ quoted words ]\> ]>.join ' '
 eq  1, <[]>.length
 eq '', <[]>[0]
 
-#542: Objects leading expression statement should be parenthesized.
+
+#coffee-542: Objects leading expression statement should be parenthesized.
 {f: -> ok true }.f() + 1
 
 
-#764: Boolean/Number should be indexable.
+#coffee-764: Boolean/Number should be indexable.
 ok 42['toString']
 ok true['toString']
 
 
 ok 2r101010 == 8r52 == 36r16 == 42
+
+
+#19
+throws 'duplicated property name: a', -> Coco.compile 'a: 1, b: 2, a: 3'
