@@ -413,6 +413,17 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
       ];
 
 
+      $ coffee -bpe 'a.b.c d...; e.f.g h...'
+      var _this, _this2;
+      (_this = a.b).c.apply(_this, d);
+      (_this2 = e.f).g.apply(_this2, h);
+
+      $ coco -bpe 'a.b.c d...; e.f.g h...'
+      var _ref;
+      (_ref = a.b).c.apply(_ref, d);
+      (_ref = e.f).g.apply(_ref, h);
+
+
 ## Installation
 Install [node.js](http://nodejs.org/), then
 
