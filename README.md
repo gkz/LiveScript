@@ -147,6 +147,17 @@ A unary operator that simply calls a function, helping you write less parenthese
     (function(){}).call(this);
 
 
+### loop for own keys `for own`
+A guarded version of `for`-`in` that only exposes own properties of an object.
+
+    $ coco -bpe 'f key, val for own key, val in obj'
+    var key, val, _ref, __owns = Object.prototype.hasOwnProperty;
+    for (key in _ref = obj) if (__owns.call(_ref, key)) {
+      val = _ref[key];
+      f(key, val);
+    }
+
+
 ### loop in range `for` `from` `to` `til` `by`
 A generic way to loop within certain numeric ranges.
 
@@ -178,7 +189,7 @@ A generic way to loop within certain numeric ranges.
 - `by` optionally specifies the step value.
 
 
-### loop `for ever`
+### loop away `for ever`
 An empty version of `for` that loops forever.
 
     $ coco -bpe 'continue for ever'
@@ -325,42 +336,43 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
 Coco is {small,fast}er than CoffeeScript as shown below.
 
     $ git log -1 --format=oneline
-    bcbf9f7dfd01e1db325cbcf454f65058344308fe "cake bench" now shows total time ...
+    e5deb2b3c33ac356146a26f2f19b3e8f9e3bb328 CoffeeScript 0.9.5
 
     $ ls -s extras/coffee-script.js
     168 extras/coffee-script.js
 
     $ cake loc
-    2280
+    2336
 
     $ cake bench
-    Lex     : 1431[ms] (20102 tokens)
-    Rewrite :  160[ms] (22587 tokens)
-    Parse   :  177[ms]
-    Compile :  167[ms] (123517 chars)
-    TOTAL   : 1935[ms]
+    Lex     1494 ms (21083 tokens)
+    Rewrite  167 ms (23624 tokens)
+    Parse    184 ms
+    Compile  179 ms (127749 chars)
+    total   2024 ms
 
     $ cd ../coco
 
     $ git log -1 --format=oneline
-    6950c942d388612a0e11be44ffa0031611ffccdd task: tweaked "build:parser" to ...
+    b4b592015f52f4b4f3aa1610f1f8b2384f96ace8 readme: principles
 
     $ ls -s extras/coco.js
     120 extras/coco.js
 
     $ coke loc
-    2080
+    2094
 
     $ coke bench
-    Lex     : 1038[ms] (18370 tokens)
-    Rewrite :  127[ms] (20755 tokens)
-    Parse   :  172[ms]
-    Compile :  214[ms] (119801 chars)
-    TOTAL   : 1551[ms]
+    Lex     : 1036[ms] (18468 tokens)
+    Rewrite :  120[ms] (20841 tokens)
+    Parse   :  165[ms]
+    Compile :  209[ms] (120012 chars)
+    TOTAL   : 1530[ms]
 
 
 ## Installation
 Install [node.js](http://nodejs.org/), then
+
     git clone git:github.com/satyr/coco.git && cd coco && bin/coke install
 
 
