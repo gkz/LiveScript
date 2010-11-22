@@ -1,6 +1,11 @@
 # Coco
 is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radical and practical.
 
+## Principles
+- Respect JavaScript/ECMAScript semantics, but supply ways to amend their awkwardness.
+- Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
+- Reserve less keywords.
+
 ## Additions
 
 ### nondeclaring assign `:=`
