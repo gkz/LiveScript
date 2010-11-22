@@ -485,9 +485,9 @@ class exports.Import extends Base
   compileNode: (o) ->
     unless @util is 'import' and @right.isObject()
       return Call(Value(Literal utility @util), [@left, @right]).compile o
-    top   = not o.level
-    nodes = @right.unwrap().properties
-    if top and nodes.length < 2
+    top = not o.level
+    {items} = @right.unwrap()
+    if top and items.length < 2
     then  sub = lref  = @left.compile o, LEVEL_LIST
     else [sub , lref] = @left.cache   o, LEVEL_LIST
     [delim, space] = if top
@@ -496,7 +496,7 @@ class exports.Import extends Base
     delim += space
     @temps = []
     code   = ''
-    for node of nodes
+    for node of items
       code += if com then space else delim
       if com = node instanceof Comment
         code += node.compile o, LEVEL_LIST
@@ -567,37 +567,37 @@ class exports.Index extends Base
 #### Obj
 # `{}`
 class exports.Obj extends Base
-  (props) => @objects = @properties = props or []
+  (@items = []) =>
 
-  children: ['properties']
+  children: ['items']
 
   isObject: YES
 
-  assigns: (name) ->
-    return true if prop.assigns name for prop of @properties
+  assigns: ->
+    return true if node.assigns it for node of @items
     false
 
   compileNode: (o) ->
-    props = @properties
-    return (if @front then '({})' else '{}') unless props.length
-    for prop, i of props
-      if prop instanceof Splat or (prop.left or prop).base instanceof Parens
-        rest = props.splice i, 1/0
+    {items} = this
+    return (if @front then '({})' else '{}') unless items.length
+    for node, i of items
+      if node instanceof Splat or (node.left or node).base instanceof Parens
+        rest = items.splice i, 1/0
         break
-    [last] = lastNonComment props
+    [last] = lastNonComment items
     idt    = o.indent += TAB
     code   = ''
-    for prop of props
-      if prop instanceof Comment
-        code += prop.compile(o, LEVEL_TOP) + '\n'
+    for node of items
+      if node instanceof Comment
+        code += node.compile(o, LEVEL_TOP) + '\n'
         continue
-      code += idt + if prop.this
-        prop.properties[0].name.value + ': ' +
-        prop.compile o, LEVEL_LIST
-      else if prop instanceof Assign
-      then prop.compile o
-      else (c = prop.compile o, LEVEL_LIST) + ': ' + c
-      code += ',' unless prop is last
+      code += idt + if node.this
+        node.properties[0].name.value + ': ' +
+        node.compile o, LEVEL_LIST
+      else if node instanceof Assign
+      then node.compile o
+      else (c = node.compile o, LEVEL_LIST) + ': ' + c
+      code += ',' unless node is last
       code += '\n'
     code = "{#{ code and '\n' + code + @tab }}"
     return @compileDynamic o, code, rest if rest
@@ -613,21 +613,19 @@ class exports.Obj extends Base
 #### Arr
 # `[]`
 class exports.Arr extends Base
-  (@objects = []) =>
+  (@items = []) =>
 
-  children: ['objects']
+  children: ['items']
 
   isArray: YES
 
-  assigns: (name) ->
-    return true if obj.assigns name for obj of @objects
-    false
+  assigns: Obj::assigns
 
   compileNode: (o) ->
-    return '[]' unless @objects.length
-    return code if code = Splat.compileArray o, @objects
+    return '[]' unless @items.length
+    return code if code = Splat.compileArray o, @items
     o.indent += TAB
-    code = (obj.compile o, LEVEL_LIST for obj of @objects).join ', '
+    code = (obj.compile o, LEVEL_LIST for obj of @items).join ', '
     if 0 < code.indexOf '\n'
     then "[\n#{o.indent}#{code}\n#{@tab}]"
     else "[#{code}]"
@@ -725,16 +723,16 @@ class exports.Assign extends Base
   # object literals to a value. Peeks at their properties to assign inner names.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o) ->
-    {objects} = left = @left.unwrap()
-    return @right.compile o unless olen = objects.length
+    {items} = left = @left.unwrap()
+    return @right.compile o unless olen = items.length
     rite = @right.compile o, if olen is 1 then LEVEL_ACCESS else LEVEL_LIST
     if (olen > 1 or o.level) and
        (not IDENTIFIER.test(rite) or left.assigns(rite))
       cache = "#{ rref = o.scope.temporary 'ref' } = #{rite}"
       rite  = rref
     list = if left instanceof Arr
-    then @destructArr o, objects, rite
-    else @destructObj o, objects, rite
+    then @destructArr o, items, rite
+    else @destructObj o, items, rite
     o.scope.free rref  if rref
     list.unshift cache if cache
     list.push rite     if o.level
@@ -742,7 +740,6 @@ class exports.Assign extends Base
     if o.level < LEVEL_LIST then code else "(#{code})"
 
   destructArr: (o, nodes, rite) ->
-    list = []
     iinc = ''
     for node, i of nodes
       if node instanceof Splat
@@ -755,7 +752,7 @@ class exports.Assign extends Base
           val = "#{nodes.length} <= #{rite}.length" +
                 " ? #{ utility 'slice' }.call(#{rite}, #{i}"
           val += if rest = endi - i
-            ivar = o.scope.temporary 'i'
+            @temps = [ivar = o.scope.temporary 'i']
             ", #{ivar} = #{rite}.length - #{rest}) : (#{ivar} = #{i}, [])"
           else
             ') : []'
@@ -763,9 +760,7 @@ class exports.Assign extends Base
         val = Literal val
       else
         val = Value lr ||= Literal(rite), [Index Literal iinc or i]
-      list.push Assign(node, val, @op).compile o, LEVEL_TOP
-    o.scope.free ivar if ivar
-    list
+      Assign(node, val, @op).compile o, LEVEL_TOP
 
   destructObj: (o, nodes, rite) ->
     for node of nodes
@@ -1064,7 +1059,7 @@ class exports.Op extends Base
 
   compileMultiIO: (o) ->
     [sub, ref] = @first.cache o, LEVEL_OP
-    tests = for item, i of @second.base.objects
+    tests = for item, i of @second.base.items
       (if i then ref else sub) + ' instanceof ' + item.compile o
     o.scope.free ref if sub isnt ref
     code = tests.join ' || '
@@ -1096,7 +1091,7 @@ class exports.Of extends Base
   compileOrTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
-    tests = for item, i of @array.base.objects
+    tests = for item, i of @array.base.items
       (if i then ref else sub) + cmp + item.compile o, LEVEL_OP
     o.scope.free ref if sub isnt ref
     code = tests.join cnj
@@ -1334,7 +1329,7 @@ class exports.Case extends Base
     add  = -> code += tab + "case #{ it.compile o, LEVEL_PAREN }:\n"
     for test of @tests
       if test.=unwrap() instanceof Arr
-      then add c for c of test.objects
+      then add t for t of test.items
       else add test
     [last, i] = lastNonComment exps = @body.expressions
     exps[i] = Comment ' fallthrough ' if ft = last.base?.value is 'fallthrough'
