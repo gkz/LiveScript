@@ -35,6 +35,17 @@ Compound assigments for accessor and indexer.
 - Consumes all property/call chains to the right.
 
 
+### binding access `&.` `&[]`
+Retrieves an object's method as _bound_ to that object.
+
+    $ coco -e 'm = "abc"&.toString; console.log m()'
+    abc
+
+    $ coco -bpe 'o&.m'
+    var _ref, __bind = function(me, fn){ return function(){ return fn.apply(me, arguments); }; };
+    __bind(o.m, o);
+
+
 ### index star `[*]`
 An asterisk at the beginning of an indexer represents the length of the indexee.
 
@@ -53,7 +64,7 @@ An asterisk at the beginning of an indexer represents the length of the indexee.
 
 
 ### class block
-Unlike CoffeScript, our `class` takes a regular block under which you can declare the constructor (as a bare function on top) and properties (as bare objects on top) as well as have other code like define static methods (`this` points to the constructor within the block).
+Unlike CoffeScript, our `class` define the constructor as a bare function and properties (prototype members) as bare objects, both on top level under the class block. The constructor can be _bound_ using `=>` to be `new`-free, just like native `Array` which works with or without `new`.
 
     $ coco -bsp
     class exports.C extends P
