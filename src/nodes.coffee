@@ -749,18 +749,16 @@ class exports.Assign extends Base
       if node instanceof Splat
         if iinc then throw SyntaxError \
           "multiple splats in an assignment: " + node.compile o
-        if i is endi = nodes.length - 1
-          val = utility('slice') + ".call(#{rite}" +
-                if i then ", #{i})" else ')'
+        len = nodes.length
+        val = utility('slice') + '.call(' + rite
+        val = if i is len - 1
+           val + if i then ", #{i})" else ')'
         else
-          val = "#{nodes.length} <= #{rite}.length" +
-                " ? #{ utility 'slice' }.call(#{rite}, #{i}"
-          val += if rest = endi - i
-            @temps = [ivar = o.scope.temporary 'i']
-            ", #{ivar} = #{rite}.length - #{rest}) : (#{ivar} = #{i}, [])"
-          else
-            ') : []'
-          iinc = ivar + '++'
+          @temps = [ivar = o.scope.temporary 'i']
+          iinc   = ivar + '++'
+          "#{len} <= #{rite}.length" +
+          " ? #{val}, #{i}, #{ivar} = #{rite}.length - #{len - i - 1})" +
+          " : (#{ivar} = #{i}, [])"
         val = Literal val
       else
         val = Value lr ||= Literal(rite), [Index Literal iinc or i]
