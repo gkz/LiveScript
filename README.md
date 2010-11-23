@@ -68,6 +68,24 @@ An asterisk at the beginning of an indexer represents the length of the indexee.
     arguments[0](arguments[1]);
 
 
+### function declaration `function f ->`
+Creates a named function using JS's function statement, without touching the nasty [JScript bug](http://kangax.github.com/nfe/).
+
+    $ coco -bpe 'function f -> it'
+    function f(it){
+      return it;
+    } f.name = "f";
+
+    $ coco -bpe 'f = function -> it'
+    var f;
+    f = (function(){
+      function f(it){
+        return it;
+      } f.name = "f";
+      return f;
+    }());
+
+
 ### class block
 Unlike CoffeScript, our `class` define the constructor as a bare function and properties (prototype members) as bare objects, both on top level under the class block. The constructor can be _bound_ using `=>` to be `new`-free, just like native `Array` which works with or without `new`.
 
