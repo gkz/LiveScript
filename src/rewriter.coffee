@@ -71,9 +71,12 @@ addImplicitBraces = (tokens) ->
   ok = (token, i) ->
     return false if 'HERECOMMENT' is one = tokens[i+1]?[0]
     [tag] = token
+    tag is 'OUTDENT' or
     tag is ',' and
       one not of <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]> or
-    tag of <[ TERMINATOR OUTDENT ]> and tokens[i+2]?[0] not of <[ : ... ]>
+    tag is 'TERMINATOR' and if one is '('
+    then tokens[1 + indexOfPair tokens, i+1]?[0] isnt ':'
+    else tokens[i+2]?[0] not of <[ : ... ]>
   stack = []
   i     = -1
   while token = tokens[++i]
@@ -251,6 +254,16 @@ rewriteClosingParens = (tokens) ->
 
 # Generate the indentation tokens, based on another token on the same line.
 indentation = (token) -> [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
+
+indexOfPair = (tokens, i) ->
+  bgn = tokens[i][0]
+  end = INVERSES[bgn]
+  lvl = 1
+  while token = tokens[++i]
+    switch token[0]
+    case bgn then ++lvl
+    case end then return i unless --lvl
+  -1
 
 # Constants
 # ---------

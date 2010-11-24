@@ -255,6 +255,11 @@ ok obj.key is obj.s is obj[0]
 eq 'braceless dynamic key',
   (key for key in """braceless #{ 0 in ((0):(0)) and 'dynamic' } key""": 0)[0]
 
+obj =
+  one: 1
+  (1 + 2 * 4): 9
+eq obj[9], 9, 'trailing dynamic property should be braced as well'
+
 obj.key = 'val'
 obj.val = ok
 {(obj.key)} = obj
