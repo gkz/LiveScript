@@ -235,8 +235,9 @@ grammar =
   SimpleAssignable: [
     o 'Identifier'
     o 'ThisProperty'
-    o 'Value Accessor', -> $1.append $2
-    o 'SUPER',          -> Super()
+    o 'Value ACCESS Identifier'                ,-> $1.append Access $3, $2
+    o 'Value INDEX_START Expression INDEX_END' ,-> $1.append Index  $3, $2
+    o 'SUPER'                                  ,-> Super()
   ]
 
   # Everything that can be assigned to.
@@ -255,12 +256,6 @@ grammar =
     o 'Value CALL_START                  CALL_END', -> Value Call $1, []  , $2
     o 'Value CALL_START ...              CALL_END', -> Value Call $1, null, $2
     o 'Value CALL_START ArgList OptComma CALL_END', -> Value Call $1, $3  , $2
-  ]
-
-  # The general group of accessors into an object.
-  Accessor: [
-    o 'ACCESS Identifier',                -> Access $2, $1
-    o 'INDEX_START Expression INDEX_END', -> Index  $2, $1
   ]
 
   # A reference to a property on `this`.
