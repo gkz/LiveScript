@@ -68,6 +68,19 @@ An asterisk at the beginning of an indexer represents the length of the indexee.
     arguments[0](arguments[1]);
 
 
+### parenless call `do`
+A unary operator that simply calls a function, helping you write less parentheses.
+
+    $ coco -bpe 'do f'
+    f();
+
+    $ coco -bpe 'do ->'
+    (function(){})();
+
+    $ coco -bpe 'do =>'
+    (function(){}).call(this);
+
+
 ### function declaration `function f ->`
 Creates a named function using JS's function statement, without touching the nasty [JScript bug](http://kangax.github.com/nfe/).
 
@@ -86,8 +99,40 @@ Creates a named function using JS's function statement, without touching the nas
     }());
 
 
+### property importing `import` `import all`
+Infix operators that copy properties from left to right and return the right operand.
+Optimized to a series of assignments if the right operand of `import` is an object literal.
+
+    $ coco -bpe 'x import y import all z'
+    var __importAll = function(obj, src){
+      for (var key in src) obj[key] = src[key];
+      return obj;
+    }, __import = function(obj, src){
+      var own = Object.prototype.hasOwnProperty;
+      for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+      return obj;
+    };
+    __importAll(__import(x, y), z);
+
+    $ coco -bpe 'w = x import {y, (z)}'
+    var w;
+    w = (x.y = y, x[z] = z, x);
+
+
 ### class block
-Unlike CoffeScript, our `class` define the constructor as a bare function and properties (prototype members) as bare objects, both on top level under the class block. The constructor can be _bound_ using `=>` to be `new`-free, just like native `Array` which works with or without `new`.
+Unlike CoffeScript, our `class` define the constructor as a bare function and properties (prototype members) as bare objects, both on top level under the class block.
+
+In short,
+    class C
+      -> ### constructor ###
+      {'property'}
+is a syntax sugar for
+    do ->
+      function C -> ### constructor ###
+      C.prototype import {'property'}
+      C
+
+The constructor can be _bound_ using `=>` to be `new`-free, just like native `Array` which works with or without `new`.
 
     $ coco -bsp
     class exports.C extends P
@@ -152,19 +197,6 @@ If used in an expression, `delete` returns the original value as opposed to the 
     delete x;
 
 
-### parenless call `do`
-A unary operator that simply calls a function, helping you write less parentheses.
-
-    $ coco -bpe 'do f'
-    f();
-
-    $ coco -bpe 'do ->'
-    (function(){})();
-
-    $ coco -bpe 'do =>'
-    (function(){}).call(this);
-
-
 ### loop for own keys `for own`
 A guarded version of `for`-`in` that only exposes own properties of an object.
 
@@ -219,26 +251,6 @@ A bare array to the right of `instanceof` is expanded into `or` chains.
 
     $ coco -bpe 'A instanceof [B, C]'
     A instanceof B || A instanceof C;
-
-
-### property importing `import` `import all`
-Infix operators that copy properties from left to right and return the right operand.
-Optimized to a series of assignments if the right operand of `import` is an object literal.
-
-    $ coco -bpe 'x import y import all z'
-    var __importAll = function(obj, src){
-      for (var key in src) obj[key] = src[key];
-      return obj;
-    }, __import = function(obj, src){
-      var own = Object.prototype.hasOwnProperty;
-      for (var key in src) if (own.call(src, key)) obj[key] = src[key];
-      return obj;
-    };
-    __importAll(__import(x, y), z);
-
-    $ coco -bpe 'w = x import {y, (z)}'
-    var w;
-    w = (x.y = y, x[z] = z, x);
 
 
 ### implicit argument `it`
