@@ -153,14 +153,15 @@ grammar =
 
     # Class definitions have optional bodies of prototype property assignments,
     # and optional references to the superclass.
-    o 'CLASS',                                      -> Class()
-    o 'CLASS Block',                                -> Class null, null, $2
-    o 'CLASS EXTENDS Value',                        -> Class null, $3
-    o 'CLASS EXTENDS Value Block',                  -> Class null, $3, $4
-    o 'CLASS SimpleAssignable',                     -> Class $2
-    o 'CLASS SimpleAssignable Block',               -> Class $2, null, $3
-    o 'CLASS SimpleAssignable EXTENDS Value',       -> Class $2, $4
-    o 'CLASS SimpleAssignable EXTENDS Value Block', -> Class $2, $4, $5
+    o 'CLASS OptExtends',                        -> Class null, $2
+    o 'CLASS OptExtends Block',                  -> Class null, $2, $3
+    o 'CLASS SimpleAssignable OptExtends',       -> Class $2, $3
+    o 'CLASS SimpleAssignable OptExtends Block', -> Class $2, $3, $4
+  ]
+
+  OptExtends: [
+    o '',              -> null
+    o 'EXTENDS Value', -> $2
   ]
 
   # An indented block of expressions. Note that the [Rewriter](rewriter.html)
