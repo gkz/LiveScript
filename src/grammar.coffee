@@ -113,7 +113,7 @@ grammar =
     o 'Expression LOGIC      Expression', -> Op $2, $1, $3
     o 'Expression IMPORT     Expression', -> Import $1, $3, $2
     o 'Expression RELATION   Expression', ->
-      if $2.charAt(0) is '!'
+      [] = if $2.charAt(0) is '!'
       then Op($2.slice(1), $1, $3).invert()
       else Op $2, $1, $3
 
@@ -182,7 +182,7 @@ grammar =
   Literal: [
     o 'STRNUM',  -> Literal $1
     o 'THIS',    -> Literal 'this'
-    o 'LITERAL', -> if $1 is 'void' then Op 'void', Literal 8 else Literal $1
+    o 'LITERAL', -> [] = if $1 is 'void' then Op 'void', Literal 8 else Literal $1
   ]
 
   # Assignment when it happens within an object literal. The difference from
