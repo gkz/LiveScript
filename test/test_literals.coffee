@@ -182,18 +182,6 @@ ok obj.red.orange.yellow.green is 'blue'
 ok obj.red.indigo is 'violet'
 ok obj.misdent.toString() is ',,,'
 
-second = (x, y) -> y
-obj = then second 'the',
-  1: 1
-  two:
-    three: ->
-      four five,
-        six: seven
-  three: 3
-
-ok obj[1] is 1
-ok obj.three is 3
-
 
 # Implicit objects as part of chained calls.
 pluck = (x) -> x.a

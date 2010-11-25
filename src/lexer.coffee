@@ -266,7 +266,8 @@ class exports.Lexer
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewlines = LINE_CONTINUER.test(@chunk) or @last[0] of <[
-      ACCESS INDEX_START PLUS_MINUS MATH COMPARE LOGIC RELATION IMPORT SHIFT
+      ACCESS INDEX_START ASSIGN COMPOUND_ASSIGN IMPORT
+      LOGIC PLUS_MINUS MATH COMPARE RELATION SHIFT
     ]>
     if size - @indebt is @indent
       @newlineToken() unless noNewlines

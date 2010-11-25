@@ -168,10 +168,11 @@ obj = {
   */
 };
 ''', Coco.compile '''
-obj =
+obj = {
    ### v
    ###
    key : val
    ### ^
    ###
+}
 ''', bare: true

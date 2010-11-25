@@ -117,12 +117,8 @@ grammar =
       then Op($2.slice(1), $1, $3).invert()
       else Op $2, $1, $3
 
-    o 'Assignable ASSIGN Expression',                -> Assign $1, $3, $2
-    o 'Assignable ASSIGN INDENT Expression OUTDENT', -> Assign $1, $4, $2
-    o 'SimpleAssignable COMPOUND_ASSIGN
-       Expression',                                  -> Assign $1, $3, $2
-    o 'SimpleAssignable COMPOUND_ASSIGN
-       INDENT Expression OUTDENT',                   -> Assign $1, $4, $2
+    o 'Assignable       ASSIGN          Expression', -> Assign $1, $3, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN Expression', -> Assign $1, $3, $2
 
     o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
 
