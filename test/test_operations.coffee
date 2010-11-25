@@ -16,62 +16,58 @@ i = 0
 ok 1 > i++ < 1, 'chained operations should evaluate each value only once'
 
 
-# `===` and `is` should be interchangeable.
 a = 1
 b = '1'
 
 ok a == b
+ok not a != b
 ok not (a === b)
 ok not (a is  b)
+ok a !==  b
+ok a isnt b
 
 
-# Allow "if x not in y"
-obj = {a: true}
-ok 'a' in obj
-ok 'b' not in obj
+ok 'a' in obj = a: true
+ok 'b' not in obj, 'allow `x not in y`'
 
-# And for "a in b" with array presence.
+
+ok new String instanceof String
+ok new Number not instanceof String, 'allow `x not instanceof Y`'
+
+ok []    instanceof [String, Array]
+ok 0 not instanceof [String, Array]
+
+
 ok 200 of [100, 200, 300]
-array = [100, 200, 300]
-ok 200 of array
+ok 200 of array = [100, 200, 300]
 ok 1 not of array
 ok array[0]++ of [99, 100], 'should cache testee'
 
-# And with array presence true an instance variable.
-obj = {
-  list: [1, 2, 3, 4, 5]
-  in_list: (value) -> value of @list
-}
-ok obj.in_list 4
-ok not obj.in_list 0
 
 # Non-spaced values still work.
 x = 10
 y = -5
+eq x*-y, 50
+eq x*+y, -50
 
-ok x*-y is 50
-ok x*+y is -50
 
-
-# Compound operators.
-one  = 1
-two  = 0
-one ||= 2
-two ||= 2
+# Conditional assignments.
+one = 1
+two = 0
+one || = 2
+two || = 2
 
 eq one, 1
 eq two, 2
 
 zero = 0
-
 zero &&= 'one'
 one  &&= 'one'
 
 eq zero, 0
 eq one , 'one'
 
-
-# Compound assignment should be careful about caching variables.
+# Conditional assignments should be careful about caching variables.
 count = 0
 list = []
 
@@ -97,33 +93,14 @@ base().five ?= 5
 eq base.five, 5
 eq count, 5
 
-
 # Ensure that RHS is treated as a group.
 a = b = false
 a &&= b or true
 ok a is false
 
-
-# Bitwise operators:
-ok (10 &   3) is 2
-ok (10 |   3) is 11
-ok (10 ^   3) is 9
-ok (10 <<  3) is 80
-ok (10 >>  3) is 1
-ok (10 >>> 3) is 1
-
-num = 10; ok (num <<=  3) is 80
-num = 10; ok (num >>=  3) is 1
-num = 10; ok (num >>>= 3) is 1
-num = 10; ok (num &=   3) is 2
-num = 10; ok (num ^=   3) is 9
-num = 10; ok (num |=   3) is 11
-
-
-# Compound assignment with implicit objects.
-obj = undefined
-obj ?=
-  one: 1
+# Conditional assignments with implicit objects.
+obj = void
+obj ?= one: 1
 
 ok obj.one is 1
 
@@ -142,9 +119,20 @@ ok b is 5
 ok c is 3
 
 
-# Instanceof.
-ok new String instanceof String
-ok new Number not instanceof String
+# Bitwise operators:
+ok (10 &   3) is 2
+ok (10 |   3) is 11
+ok (10 ^   3) is 9
+ok (10 <<  3) is 80
+ok (10 >>  3) is 1
+ok (10 >>> 3) is 1
+
+num = 10; ok (num <<=  3) is 80
+num = 10; ok (num >>=  3) is 1
+num = 10; ok (num >>>= 3) is 1
+num = 10; ok (num &=   3) is 2
+num = 10; ok (num ^=   3) is 9
+num = 10; ok (num |=   3) is 11
 
 
 #737: `in` should have higher precedence than logical operators.
@@ -172,16 +160,12 @@ ok a is '123456'
 
 
 # Multiple operators should space themselves.
-ok + +1 is - -1
+eq(+ +1, - -1)
 
 
 eq '', do do do -> -> -> do String
 eq 1, do -> 1
 eq @, do => @
-
-
-ok []    instanceof [String, Array]
-ok 0 not instanceof [String, Array]
 
 
 x = 'xx'
