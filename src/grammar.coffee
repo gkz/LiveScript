@@ -76,7 +76,7 @@ grammar =
   Statement: [
     o 'RETURN',            -> Return()
     o 'RETURN Expression', -> Return $2
-    o 'THROW  Expression', -> Throw $2
+    o 'THROW  Expression', -> Throw  $2
     o 'STATEMENT',         -> Literal $1
     o 'HERECOMMENT',       -> Comment $1
   ]
@@ -126,7 +126,6 @@ grammar =
 
     o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
 
-    # Array, object, and range comprehensions, at the most generic level.
     # Comprehensions can either be normal, with a block of expressions to execute,
     # or postfix, with a single expression.
     o 'LoopHead   Block',    -> $1.addBody $2
@@ -175,14 +174,6 @@ grammar =
   # A literal identifier, a variable name or property.
   Identifier: [
     o 'IDENTIFIER', -> Literal $1
-  ]
-
-  # All of our immediate values. These can (in general), be passed straight
-  # through and printed to JavaScript.
-  Literal: [
-    o 'STRNUM',  -> Literal $1
-    o 'THIS',    -> Literal 'this'
-    o 'LITERAL', -> [] = if $1 is 'void' then Op 'void', Literal 8 else Literal $1
   ]
 
   # Assignment when it happens within an object literal. The difference from
@@ -250,12 +241,14 @@ grammar =
   # The types of things that can be treated as values -- assigned to, invoked
   # as functions, indexed into, named as a class, etc.
   Value: [
-    o 'Assignable',    -> Value $1
-    o 'Literal',       -> Value $1
-    o 'Parenthetical', -> Value $1
-    o 'Value CALL_START                  CALL_END', -> Value Call $1, []  , $2
-    o 'Value CALL_START ...              CALL_END', -> Value Call $1, null, $2
-    o 'Value CALL_START ArgList OptComma CALL_END', -> Value Call $1, $3  , $2
+    o 'THIS'    ,-> Value Literal 'this'
+    o 'STRNUM'  ,-> Value Literal $1
+    o 'LITERAL' ,-> Value if $1 is 'void' then Op 'void', Literal 8 else Literal $1
+    o 'Assignable'    ,-> Value $1
+    o 'Parenthetical' ,-> Value $1
+    o 'Value CALL_START                  CALL_END' ,-> Value Call $1, []  , $2
+    o 'Value CALL_START ...              CALL_END' ,-> Value Call $1, null, $2
+    o 'Value CALL_START ArgList OptComma CALL_END' ,-> Value Call $1, $3  , $2
   ]
 
   # A reference to a property on `this`.
