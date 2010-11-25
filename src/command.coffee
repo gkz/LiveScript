@@ -4,16 +4,13 @@
 # saved, printed as a token stream or as the syntax tree, or launch an
 # interactive REPL.
 
+Coco = require('./coco') import all require('events').EventEmitter::
+
 # External dependencies.
 fs             = require 'fs'
 path           = require 'path'
-Coco           = require './coco'
 {OptionParser} = require './optparse'
 {spawn, exec}  = require 'child_process'
-{EventEmitter} = require 'events'
-
-# Allow Coco to emit Node.js events.
-Coco import all EventEmitter::
 
 BANNER   = 'Usage: coco [options] [files]'
 SWITCHES = [
@@ -34,29 +31,26 @@ SWITCHES = [
 ]
 
 # Top-level objects shared by all the functions.
-opts         = {}
-sources      = []
-optionParser = null
+opts    = {}
+sources = []
+oparser = null
 
 # Run `coco` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  return usage()                      if opts.help
   return version()                    if opts.version
+  return usage()                      if opts.help
   return require './repl'             if opts.interactive
   return compileStdio()               if opts.stdio
   return compileScript '', sources[0] if opts.eval
-  return require './repl'             unless sources.length
-  separator = sources.indexOf '--'
-  flags = []
-  if separator >= 0
-    flags = sources.splice separator + 1
-    sources.pop()
-  if opts.run
-    flags = sources.splice(1).concat flags
-  process.ARGV = process.argv = flags
+  return (version(); usage(); require './repl') unless sources.length
+  args = if ~separator = sources.indexOf '--'
+  then sources.splice(separator, 1/0).slice 1
+  else []
+  args.unshift sources.splice(1, 1/0)... if opts.run
+  process.ARGV = process.argv = args
   compileScripts()
 
 # Asynchronously read in each Coco in a list of source files and
@@ -164,22 +158,18 @@ printTokens = (tokens) ->
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
-  optionParser := new OptionParser SWITCHES, BANNER
-  o = opts     := optionParser.parse process.argv.slice 2
-  o.compile   ||= !!o.output
-  o.run         = not (o.compile or o.print or o.lint)
-  o.print       = !!  (o.print or o.eval or o.stdio and o.compile)
-  sources      := o.arguments
+  oparser := new OptionParser SWITCHES, BANNER
+  opts    := o =oparser.parse process.argv.slice 2
+  sources := o.arguments
+  o.run    = ! (o.compile or o.print or o.lint)
+  o.print  = !!(o.print or o.eval or o.stdio and o.compile)
+  o.compile ||= !!o.output
 
 # The compile-time options to pass to the Coco compiler.
 compileOptions = (fileName) -> {fileName, bare: opts.bare}
 
-# Print the `--help` usage message and exit.
-usage = ->
-  console.log optionParser.help()
-  process.exit 0
+# Print the `--help` usage message.
+usage = -> console.log oparser.help()
 
-# Print the `--version` message and exit.
-version = ->
-  console.log "Coco version #{Coco.VERSION}"
-  process.exit 0
+# Print the `--version` message.
+version = -> console.log "Coco #{Coco.VERSION}"
