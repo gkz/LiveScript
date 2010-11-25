@@ -82,7 +82,7 @@ compileScript = (file, input, base) ->
     case o.run    then Coco.run t.input, t.options
     default
       t.output = Coco.compile t.input, t.options
-      Coco.emit 'success', task
+      Coco.emit 'success', t
       switch
       case o.print   then console.log t.output.trim()
       case o.compile then writeJs t.file, t.output, base
