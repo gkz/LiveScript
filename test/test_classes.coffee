@@ -7,41 +7,30 @@ class Base
     "static/#{string}"
 
 class FirstChild extends Base
-  func: (string) ->
-    super('one/') + string
+  func: -> super('one/') + it
 
 SecondChild = class extends FirstChild
-  func: (string) ->
-    super('two/') + string
+  func: -> super('two/') + it
 
-thirdCtor = ->
-  @array = [1, 2, 3]
+thirdCtor = -> @array = [1, 2, 3]
 
 class ThirdChild extends SecondChild
-  -> thirdCtor.apply this, arguments
+  -> thirdCtor ...
 
   # Gratuitous comment for testing.
-  func: (string) ->
-    super('three/') + string
+  func: -> super('three/') + it
 
-result = (new ThirdChild).func 'four'
+eq (new ThirdChild).func('four'), 'zero/one/two/three/four'
+eq Base.static('word'), 'static/word'
 
-ok result is 'zero/one/two/three/four'
-ok Base.static('word') is 'static/word'
+FirstChild::func = -> super('one/').length + it
 
-FirstChild::func = (string) ->
-  super('one/').length + string
-
-result = (new ThirdChild).func 'four'
-
-ok result is '9two/three/four'
-
-ok (new ThirdChild).array.join(' ') is '1 2 3'
+eq (new ThirdChild).func('four'), '9two/three/four'
+eq (new ThirdChild).array.join(' '), '1 2 3'
 
 
 class TopClass
-  (arg) ->
-    @prop = 'top-' + arg
+  -> @prop = 'top-' + it
 
 class SuperClass extends TopClass
   -> super.call this, 'super-' + it
@@ -49,7 +38,7 @@ class SuperClass extends TopClass
 class SubClass extends SuperClass
   -> super.call this, 'sub'
 
-ok (new SubClass).prop is 'top-super-sub'
+eq (new SubClass).prop, 'top-super-sub'
 
 
 class OneClass
@@ -109,7 +98,7 @@ SubClass = ->
 SuperClass extends TopClass
 SubClass extends SuperClass
 
-ok (new SubClass).prop is 'top-super-sub'
+eq (new SubClass).prop, 'top-super-sub'
 
 
 # '@' referring to the current instance, and not being coerced into a call.
@@ -129,7 +118,7 @@ class Hive.Bee extends Hive
   (name) -> super ...
 
 maya = new Hive.Bee 'Maya'
-ok maya.name is 'Maya'
+eq maya.name, 'Maya'
 
 
 # Class with JS-keyword properties.
@@ -138,8 +127,8 @@ class Class
   name: -> @class
 
 instance = new Class
-ok instance.class is 'class'
-ok instance.name() is 'class'
+eq instance.class, 'class'
+eq instance.name(), 'class'
 
 
 # Static method as a bound function.
@@ -171,7 +160,7 @@ class Connection
 list = [3, 2, 1]
 conn = new Connection list...
 ok conn instanceof Connection
-ok conn.out() is '3-2-1'
+eq conn.out(), '3-2-1'
 
 
 # Test calling super and passing along all arguments.
@@ -183,7 +172,7 @@ class Child extends Parent
 
 c = new Child
 c.method 1, 2, 3, 4
-ok c.args.join(' ') is '1 2 3 4'
+eq c.args.join(' '), '1 2 3 4'
 
 
 # Test classes wrapped in decorators.
@@ -194,8 +183,8 @@ func = (klass) ->
 func class Test
   prop2: 'value2'
 
-ok (new Test).prop  is 'value'
-ok (new Test).prop2 is 'value2'
+eq (new Test).prop , 'value'
+eq (new Test).prop2, 'value2'
 
 
 # Test anonymous classes.
@@ -204,7 +193,7 @@ obj =
     method: -> 'value'
 
 instance = new obj.klass
-ok instance.method() is 'value'
+eq instance.method(), 'value'
 
 
 # Implicit objects as static properties.
@@ -213,14 +202,12 @@ class Static
     one: 1
     two: 2
 
-ok Static.static.one is 1
-ok Static.static.two is 2
+eq Static.static.one, 1
+eq Static.static.two, 2
 
 
 # Nothing classes.
-c = class
-ok c instanceof Function
-
+ok class instanceof Function
 
 Namespace = {}
 Class     = null
@@ -263,3 +250,20 @@ eq ns.method2(2).length, 2
 
 throws 'reserved word "in" cannot be a class name'
 , -> Coco.compile 'class run.in'
+
+
+class OddSuper
+  me = => this
+  super: me
+  $uper: me
+  1234 : me
+
+class OddSuperSub extends OddSuper
+  super: -> super()
+  $uper: -> super()
+  1234 : -> super()
+
+oss = new OddSuperSub
+eq oss.super(), OddSuper
+eq oss.$uper(), OddSuper
+eq oss[1234](), OddSuper

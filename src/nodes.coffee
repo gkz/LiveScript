@@ -644,11 +644,10 @@ class exports.Class extends Base
       decl = if @title instanceof Value
       then @title.properties[*-1].name?.value
       else @title.value
-      if decl
-        if decl.reserved
-          throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
-        decl = '' unless IDENTIFIER.test decl
-    name  = decl or @name or '_Class'
+      if decl and decl.reserved
+        throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
+    name  = decl or @name
+    name  = '_Class' unless name and IDENTIFIER.test name
     lname = Literal name
     proto = Value lname, [Access Literal 'prototype']
     @body.traverseChildren false, ->
@@ -701,7 +700,7 @@ class exports.Assign extends Base
     {right} = this
     if right instanceof [Code, Class] and match = METHOD_DEF.exec name
       right.clas   = match[1] if match[1]
-      right.name ||= match[2]
+      right.name ||= match[2] or match[3]
     val = right.compile o, LEVEL_LIST
     return name + ': ' + val if @op is ':'
     unless left.isAssignable()
@@ -1411,10 +1410,13 @@ class exports.Super extends Base
     {method} = o.scope.shared or o.scope
     throw SyntaxError 'cannot call super outside of a function' unless method
     {name, clas} = method
-    throw SyntaxError 'cannot call super on an anonymous function' unless name
-    if clas
-    then clas + '.superclass.prototype.' + name
-    else name + '.superclass'
+    if name
+      if clas
+        return clas + '.superclass.prototype' +
+               if IDENTIFIER.test name then '.' + name else '[' + name + ']'
+      else if IDENTIFIER.test name
+        return name + '.superclass'
+    throw SyntaxError 'cannot call super on an anonymous function'
 
 # Export `import all` for use in parser, where the operator doesn't work.
 exports import all mix: __importAll
@@ -1483,7 +1485,10 @@ TAB = '  '
 
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
 SIMPLENUM  = /^\d+$/
-METHOD_DEF = /^(?:(\S+)\.prototype\.|\S*?)\b([$A-Za-z_][$\w]*)$/
+METHOD_DEF = /// ^
+  (?: (\S+)\.prototype(?=\.) | \S*? )
+  (?: (?:\.|^)([$A-Za-z_][$\w]*) | \[( ([\"\']).+?\4 | \d+ )])
+$ ///
 
 # Utility Functions
 # -----------------
