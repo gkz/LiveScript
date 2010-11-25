@@ -1,8 +1,4 @@
-# The `coco` utility. Handles command-line compilation of Coco
-# into various forms: saved into `.js` files or printed to stdout, piped to
-# [JSLint](http://javascriptlint.com/) or recompiled every time the source is
-# saved, printed as a token stream or as the syntax tree, or launch an
-# interactive REPL.
+# The `coco` utility.
 
 Coco = require('./coco') import all require('events').EventEmitter::
 
@@ -30,25 +26,24 @@ SWITCHES = [
 ]
 
 # Top-level objects shared by all the functions.
-opts    = {}
+oparser = o = null
 sources = []
-oparser = null
 
 # Run `coco` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
   parseOptions()
-  return version()                    if opts.version
-  return usage()                      if opts.help
-  return require './repl'             if opts.interactive
-  return compileStdio()               if opts.stdio
-  return compileScript '', sources[0] if opts.eval
+  return version()                    if o.version
+  return usage()                      if o.help
+  return require './repl'             if o.interactive
+  return compileStdio()               if o.stdio
+  return compileScript '', sources[0] if o.eval
   return (version(); usage(); require './repl') unless sources.length
   args = if ~separator = sources.indexOf '--'
   then sources.splice(separator, 1/0).slice 1
   else []
-  args.unshift sources.splice(1, 1/0)... if opts.run
+  args.unshift sources.splice(1, 1/0)... if o.run
   process.ARGV = process.argv = args
   compileScripts()
 
@@ -68,21 +63,19 @@ compileScripts = ->
           base = path.join source
           fs.readFile source, (err, code) ->
             compileScript source, code.toString(), base
-          watch source, base if opts.watch
+          watch source, base if o.watch
   compile source, true for source of sources
 
 # Compile a single source script, containing the given code, according to the
 # requested options. If evaluating the script directly sets `__filename`,
 # `__dirname` and `module.filename` to be correct relative to the script's path.
 compileScript = (file, input, base) ->
-  o = opts
-  options = compileOptions file
+  options = fileName: file, bare: o.bare
   if o.require
     for req of o.require
       require if req.charAt(0) is '.' then fs.realpathSync req else req
   try
-    t = task = {file, input, options}
-    Coco.emit 'compile', task
+    Coco.emit 'compile', t = {file, input, options}
     switch
     case o.tokens then printTokens Coco.tokens t.input
     case o.nodes  then console.log Coco.nodes(t.input).toString().trim()
@@ -94,11 +87,10 @@ compileScript = (file, input, base) ->
       case o.print   then console.log t.output.trim()
       case o.compile then writeJs t.file, t.output, base
   catch err
-    Coco.emit 'failure', err, task
+    Coco.emit 'failure', err, t
     return if Coco.listeners('failure').length
-    return console.log err.message if o.watch
-    console.error err.stack
-    process.exit 1
+    return console.error err if o.watch
+    die err.stack
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
@@ -125,13 +117,13 @@ writeJs = (source, js, base) ->
   filename = path.basename(source, path.extname source) + '.js'
   srcDir   = path.dirname source
   baseDir  = srcDir.slice base.length
-  dir      = if opts.output then path.join opts.output, baseDir else srcDir
+  dir      = if o.output then path.join o.output, baseDir else srcDir
   jsPath   = path.join dir, filename
   compile  = ->
     fs.writeFile jsPath, js or ' ', (err) ->
       if err
-        console.log err.message
-      else if opts.compile and opts.watch
+        console.error err
+      else if o.compile and o.watch
         console.log "Compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
@@ -146,14 +138,11 @@ printTokens = (tokens) ->
 # `process.argv` that are specified in `SWITCHES`.
 parseOptions = ->
   oparser := new OptionParser SWITCHES, BANNER
-  opts    := o =oparser.parse process.argv.slice 2
+  o       := oparser.parse process.argv.slice 2
   sources := o.arguments
   o.run    = ! (o.compile or o.print)
   o.print  = !!(o.print or o.eval or o.stdio and o.compile)
   o.compile ||= !!o.output
-
-# The compile-time options to pass to the Coco compiler.
-compileOptions = (fileName) -> {fileName, bare: opts.bare}
 
 # Print the `--help` usage message.
 usage = -> console.log oparser.help()
