@@ -59,7 +59,7 @@ exports.run = ->
 compileScripts = ->
   compile = (source, topLevel) ->
     path.exists source, (exists) ->
-      throw Error "File not found: #{source}" unless exists
+      die "File not found: #{source}" unless exists
       fs.stat source, (err, stats) ->
         if stats.isDirectory()
           fs.readdir source, (err, files) ->
@@ -117,7 +117,7 @@ watch = (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
     return if curr.size is prev.size and curr.mtime.getTime() is prev.mtime.getTime()
     fs.readFile source, (err, code) ->
-      throw err if err
+      die err.stack if err
       compileScript source, code.toString(), base
 
 # Write out a JavaScript source file with the compiled code. By default, files
@@ -173,3 +173,7 @@ usage = -> console.log oparser.help()
 
 # Print the `--version` message.
 version = -> console.log "Coco #{Coco.VERSION}"
+
+die = ->
+  console.error it
+  process.exit 1
