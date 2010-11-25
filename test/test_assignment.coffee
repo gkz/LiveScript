@@ -207,3 +207,8 @@ eq x, 49344
 
 throws 'conditional assignment cannot be destructuring'
 , -> Coco.compile '[_] ?= [_]'
+
+
+{(*>>1): mid, (*-1): last} = [1, 2, 3, 4, 5]
+eq mid , 3
+eq last, 5

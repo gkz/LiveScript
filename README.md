@@ -61,6 +61,10 @@ An asterisk at the beginning of an indexer represents the length of the indexee.
     var _ref;
     (_ref = arr())[_ref.length - 1];
 
+    $ coco -bpe '{(* >> 1): mid} = a'
+    var mid;
+    mid = a[a.length >> 1];
+
 
 ### argument shorthands `@0`
 

@@ -331,7 +331,7 @@ class exports.Lexer
       @tagParameters()
       tag = 'FUNC_ARROW'
     case '*'
-      tag = if @last[0] is 'INDEX_START' then 'LITERAL' else 'MATH'
+      tag = if @last[0] of <[ INDEX_START ( ]> then 'LITERAL' else 'MATH'
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
       tag = if value of <[ = := ]> then 'ASSIGN' else 'COMPOUND_ASSIGN'
       if @last[0] is 'LOGIC'
