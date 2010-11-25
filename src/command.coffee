@@ -19,7 +19,6 @@ SWITCHES = [
   ['-o', '--output [DIR]',    'set the directory for compiled JavaScript']
   ['-w', '--watch',           'watch scripts for changes, and recompile']
   ['-p', '--print',           'print the compiled JavaScript to stdout']
-  ['-l', '--lint',            'pipe the compiled JavaScript through JSLint']
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
   ['-e', '--eval',            'compile a string from the command line']
   ['-r', '--require [FILE*]', 'require a library before executing your script']
@@ -94,7 +93,6 @@ compileScript = (file, input, base) ->
       switch
       case o.print   then console.log t.output.trim()
       case o.compile then writeJs t.file, t.output, base
-      case o.lint    then lint t.file, t.output
   catch err
     Coco.emit 'failure', err, task
     return if Coco.listeners('failure').length
@@ -112,7 +110,7 @@ compileStdio = ->
 
 # Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
-# such as `--lint` or `--print`.
+# such as `--nodes` or `--print`.
 watch = (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
     return if curr.size is prev.size and curr.mtime.getTime() is prev.mtime.getTime()
@@ -138,17 +136,6 @@ writeJs = (source, js, base) ->
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
-# Pipe compiled JS through JSLint (requires a working `jsl` command), printing
-# any errors or warnings that arise.
-lint = (file, js) ->
-  printIt = -> console.log file + ':\t' + it.toString().trim()
-  conf = __dirname + '/../extras/jsl.conf'
-  jsl = spawn 'jsl', ['-nologo', '-stdin', '-conf', conf]
-  jsl.stdout.on 'data', printIt
-  jsl.stderr.on 'data', printIt
-  jsl.stdin.write js
-  jsl.stdin.end()
-
 # Pretty-print a stream of tokens.
 printTokens = (tokens) ->
   strings = for [tag, value] of tokens
@@ -161,7 +148,7 @@ parseOptions = ->
   oparser := new OptionParser SWITCHES, BANNER
   opts    := o =oparser.parse process.argv.slice 2
   sources := o.arguments
-  o.run    = ! (o.compile or o.print or o.lint)
+  o.run    = ! (o.compile or o.print)
   o.print  = !!(o.print or o.eval or o.stdio and o.compile)
   o.compile ||= !!o.output
 
