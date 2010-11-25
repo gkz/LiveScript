@@ -193,9 +193,13 @@ eq o.X, 'XX'
 eq o.xx, 'xx'
 eq o[0], 0
 
-
 o import all new class then deep: 'copy'
 eq o.deep, 'copy'
+
+a = [0]
+a import (*): 1, (*): 2
+eq a[1], 1
+eq a[2], 2
 
 
 i = 0

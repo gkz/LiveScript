@@ -488,11 +488,9 @@ class exports.Import extends Base
     top = not o.level
     {items} = @right.unwrap()
     if top and items.length < 2
-    then  sub = lref  = @left.compile o, LEVEL_LIST
-    else [sub , lref] = @left.cache   o, LEVEL_LIST
-    [delim, space] = if top
-    then [';', '\n' + @tab]
-    else [',', ' ']
+    then  sub = lref  = @left
+    else [sub , lref] = @left.cache o
+    [delim, space] = if top then [';', '\n' + @tab] else [',', ' ']
     delim += space
     @temps = []
     code   = ''
@@ -502,28 +500,28 @@ class exports.Import extends Base
         code += node.compile o, LEVEL_LIST
         continue
       if node instanceof Splat
-        code += Import(Literal(lref), node.name, true).compile o, LEVEL_TOP
+        code += Import(lref, node.name, true).compile o, LEVEL_TOP
         continue
+      dyna = false
       if node instanceof Assign
-        {right: val, left: base: acc} = node
-        key  = acc.compile o, LEVEL_PAREN
-        val.name = key if val instanceof [Code, Class] and IDENTIFIER.test key
-        val .= compile o, LEVEL_LIST
+        {right: val, left: base: key} = node
+      else if node.this
+        key = (val = node).properties[0].name
       else
-        if node.this
-          key = (acc = node.properties[0].name).value
-          key = '"' + key + '"' if key.reserved
-          val = node.compile o, LEVEL_LIST
-        else
-          [key, val] = (acc = node.base or node).cache o, LEVEL_LIST, ref
-          @temps.push ref = val if key isnt val
-      key = if acc instanceof Literal and IDENTIFIER.test key
-      then '.' + key
-      else '[' + key + ']'
-      code += lref + key + ' = ' + val
-    code = if sub is lref then code.slice delim.length else sub + code
+        dyna = node.=unwrap() instanceof Parens
+        [key, val] = node.cache o
+      acc = key instanceof Literal and IDENTIFIER.test key.value
+      asn = Assign Value(lref, [(if acc then Access else Index) key]), val
+      asn.temps = [val.value] if dyna and key isnt val
+      code += asn.compile o, LEVEL_PAREN
+    if sub is lref
+      code.=slice delim.length
+    else
+      code = sub.compile(o, LEVEL_PAREN) + code
+      o.scope.free lref.value
     return code if top
-    code += (if com then ' ' else ', ') + lref unless node instanceof Splat
+    unless node instanceof Splat
+      code += (if com then ' ' else ', ') + lref.compile o, LEVEL_LIST
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Access
