@@ -308,9 +308,11 @@ func = ->
 eq func(), 101
 
 
-# `new` shouldn't add extra parens
 ok new Date().constructor is Date
+, '`new` should not add extra parens'
 
+ok new (Object C: Number).C instanceof Number
+, '`new` should not unwrap parenthesized operand'
 
 # `new` works against bare function
 eq Date, new ->

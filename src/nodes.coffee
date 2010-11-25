@@ -981,10 +981,12 @@ class exports.Op extends Base
         args  = [Literal 'this']
       return Call first, args or []
     if op is 'new'
-      if (call = first.base or first) instanceof Call
-        call.new = 'new '
+      {base} = first
+      if base instanceof Call
+        base.new = 'new '
         return first
-      first = Parens first, true if first instanceof Code and first.bound
+      if base instanceof Parens then base.keep = true
+      else if first.bound       then first = Parens first, true
     this import {op, first, second, post}
 
   # Map of comparison operators which are both invertible and chainable.
