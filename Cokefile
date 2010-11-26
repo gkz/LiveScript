@@ -8,19 +8,17 @@ red   = '\033[0;31m'
 green = '\033[0;32m'
 reset = '\033[0m'
 
+tint = (text, color = green) -> color + text + reset
+
 # Run a Coco through our node/coco interpreter.
 run = (args) ->
   proc = spawn 'bin/coco', args
-  proc.stderr.on 'data', -> console.log "#{it}"
+  proc.stderr.on 'data', say
   proc       .on 'exit', -> process.exit 1 if it isnt 0
-
-# Log a message with a color.
-log = (message, color, explanation) ->
-  console.log color + message + reset + ' ' + (explanation or '')
 
 sources = ->
   ext = /\.co(?:ffee)?$/i
-  for file of fs.readdirSync 'src' then 'src/' + file if ext.test file
+  'src/' + file if ext.test file for file of fs.readdirSync 'src'
 
 coreSources = ->
   "src/#{src}.coffee" for src of <[coco grammar lexer nodes rewriter scope]>
@@ -32,9 +30,9 @@ task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
   lib  = "#{base}/lib/coco"
   bin  = "#{base}/bin"
   node = "~/.node_libraries/coco"
-  console.log "Installing Coco to #{lib}"
-  console.log "Linking to #{node}"
-  console.log "Linking 'coco' to #{bin}/coco"
+  say "Installing Coco to #{lib}"
+  say "Linking to #{node}"
+  say "Linking 'coco' to #{bin}/coco"
   exec [
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README.md package.json src #{lib}"
@@ -43,7 +41,7 @@ task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
     "mkdir -p ~/.node_libraries"
     "ln -sf #{lib}/lib #{node}"
   ].join(' && '), (err, stdout, stderr) ->
-    if err then console.log stderr.trim() else log 'done', green
+    say if err then stderr.trim() else tint 'done'
 
 
 task 'build', 'build the Coco language from source', ->
@@ -51,8 +49,8 @@ task 'build', 'build the Coco language from source', ->
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   exec 'bin/coke build && bin/coke build && bin/coke test', (err, stdout, stderr) ->
-    console.log stdout.trim() if stdout
-    console.log stderr.trim() if stderr
+    say stdout.trim() if stdout
+    say stderr.trim() if stderr
     throw err                 if err
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
@@ -96,20 +94,20 @@ task 'bench', 'quick benchmark of compilation time', ->
   now    = Date.now()
   time   = -> total += ms = -(now - now := Date.now()); fmt ms
   tokens = Coco.tokens co, rewrite: false
-  console.log "Lex    #{time()} (#{tokens.length} tokens)"
+  say "Lex    #{time()} (#{tokens.length} tokens)"
   RW.rewrite tokens
-  console.log "Rewrite#{time()} (#{tokens.length} tokens)"
+  say "Rewrite#{time()} (#{tokens.length} tokens)"
   nodes  = Coco.nodes tokens
-  console.log "Parse  #{time()}"
+  say "Parse  #{time()}"
   js     = nodes.compile bare: true
-  console.log "Compile#{time()} (#{js.length} chars)"
-  console.log "TOTAL  #{ fmt total }"
+  say "Compile#{time()} (#{js.length} chars)"
+  say "TOTAL  #{ fmt total }"
 
 task 'loc', 'count the lines of source code in the Coco compiler', ->
   exec """
     cat #{ coreSources().join ' ' } | \\
     grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '
-  """, (err, out) -> console.log out.trim()
+  """, (err, out) -> say out.trim()
 
 
 runTests = (Coco) ->
@@ -129,8 +127,8 @@ runTests = (Coco) ->
     time = ((Date.now() - startTime) / 1000).toFixed(2)
     message = "passed #{passedTests} tests in #{time} seconds#{reset}"
     if failedTests
-    then log "failed #{failedTests} and #{message}", red
-    else log message, green
+    then say tint "failed #{failedTests} and #{message}", red
+    else say tint message
   fs.readdir 'test', (err, files) ->
     files.forEach (file) ->
       return unless /\.co(?:ffee)?$/i.test file
@@ -140,12 +138,12 @@ runTests = (Coco) ->
           ++failedTests
           {1: row, 2: col} =
             ///#{fileName}:(\d+):(\d+)\)?$///m.exec(e.stack) or ''
-          log "failed #{fileName}:#{row--}:#{col--}",
-              red, '\n' + /^.+/.exec e.stack
+          say tint "failed #{fileName}:#{row--}:#{col--}", red
+          say /^.+/.exec e.stack
           {(row): line} = lines = Coco.compile(code).split '\n'
-          console.log lines.slice(row-5, row+0).join '\n'
-          console.log line.slice(0, col) + bold + line.slice(col) + reset
-          console.log lines.slice(row+1, row+6).join '\n'
+          say lines.slice(row-5, row+0).join '\n'
+          say line.slice(0, col) + bold + line.slice(col) + reset
+          say lines.slice(row+1, row+6).join '\n'
 
 task 'test', 'run the Coco language test suite', -> runTests Coco
 
