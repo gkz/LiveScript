@@ -152,6 +152,8 @@ class exports.Expressions extends Base
   append: -> @expressions.push it; this
   unwrap: -> if @expressions.length is 1 then @expressions[0] else this
 
+  isComplex: -> @expressions.length > 1 or !!@expressions[0]?.isComplex()
+
   isStatement: (o) ->
     return true if o and not o.level
     for exp of @expressions
@@ -1386,9 +1388,11 @@ class exports.If extends Base
 
   # Compile the If as a conditional operator.
   compileExpression: (o) ->
-    code = @if   .compile(o, LEVEL_COND) + ' ? ' +
-           @then .compile(o, LEVEL_LIST) + ' : ' +
-          (@else?.compile(o, LEVEL_LIST) or 'void 8')
+    code = @if.compile o, LEVEL_COND
+    pad  = if @else?.isComplex() and @then.isComplex()
+    then o.indent += TAB; '\n' + @tab else ' '
+    code += pad + '? ' +  @then .compile(o, LEVEL_LIST) +
+            pad + ': ' + (@else?.compile(o, LEVEL_LIST) or 'void 8')
     if o.level < LEVEL_COND then code else "(#{code})"
 
   unfoldSoak: -> @soak and this
