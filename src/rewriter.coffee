@@ -105,7 +105,7 @@ addImplicitBraces = (tokens) ->
 # Insert the implicit parentheses here, so that the parser doesn't have to
 # deal with them.
 addImplicitParentheses = (tokens) ->
-  classLine = seenSingle = false
+  seenSingle = false
   ok = (token, i) ->
     return true if not seenSingle and token.fromThen
     [tag] = token
@@ -124,25 +124,28 @@ addImplicitParentheses = (tokens) ->
   while token = tokens[++i]
     [tag] = token
     prev  = tokens[i-1]
-    classLine  = true if tag is 'CLASS'
-    callObject = not classLine and tag is 'INDENT' and
-                 prev and prev[0] of IMPLICIT_FUNC and
-                 (next = tokens[i+1]) and next.generated and next[0] is '{'
-    classLine  = false if tag of <[ TERMINATOR INDENT OUTDENT ]>
-    token.call = true  if tag is '?' and prev and not prev.spaced
-    continue unless callObject or
-      prev?.spaced and (prev.call or prev[0] of IMPLICIT_FUNC) and
-      (tag of <[
-         ( [ { IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
-         FUNCTION IF TRY SWITCH CLASS SUPER ...
-       ]> or
-       tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION' or
-       tag is 'PLUS_MINUS' and not (token.spaced or token.eol))
+    obj   = false
+    switch tag
+    case 'INDENT'
+      obj = not classLine and (next = tokens[i+1]) and
+            next.generated and next[0] is '{'
+      fallthrough
+    case <[ TERMINATOR OUTDENT ]> then classLine = false
+    case 'CLASS'                  then classLine = true
+    case '?' then token.call = true if prev and not prev.spaced
+    continue unless prev and (prev.call or prev[0] of IMPLICIT_FUNC)
+    continue unless obj or prev.spaced and (
+      tag of <[
+        ( [ { IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
+        FUNCTION IF TRY SWITCH CLASS SUPER ...
+      ]> or
+      tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION' or
+      tag is 'PLUS_MINUS' and not (token.spaced or token.eol)
+    )
     seenSingle = false
-    tokens.splice --i, 1 if exist = prev[0] is '?'
-    tokens.splice i++, 0
-    , ['CALL_START', (if exist then '?(' else '('), token[2]]
-    ++i if callObject
+    tokens.splice --i, 1 if soak = prev[0] is '?'
+    tokens.splice i++, 0, ['CALL_START', (if soak then '?(' else '('), token[2]]
+    ++i if obj
     detectEnd tokens, i, ok, go
   tokens
 
@@ -151,6 +154,13 @@ addImplicitParentheses = (tokens) ->
 # blocks, so it doesn't need to. ')' can close a single-line block,
 # but we need to make sure it's balanced.
 addImplicitIndentation = (tokens) ->
+  ok = (token, i) ->
+    [tg] = token
+    tg of <[ CATCH FINALLY OUTDENT CASE DEFAULT ]> or
+    tg is 'TERMINATOR' and token[1] isnt ';' or
+    tg is 'ELSE' and tag of <[ IF THEN ]>
+  go = (token, i) ->
+    tokens.splice (if tokens[i-1][0] is ',' then i-1 else i), 0, outdent
   i = -1
   while token = tokens[++i]
     [tag] = token
@@ -173,14 +183,7 @@ addImplicitIndentation = (tokens) ->
     indent.fromThen   = true if tag is 'THEN'
     indent.generated  = outdent.generated = true
     tokens.splice i+1, 0, indent
-    detectEnd tokens, i+2
-    , (token, i) ->
-      [tg] = token
-      tg of <[ CATCH FINALLY OUTDENT CASE DEFAULT ]> or
-      tg is 'TERMINATOR' and token[1] isnt ';' or
-      tg is 'ELSE' and tag of <[ IF THEN ]>
-    , (token, i) ->
-      tokens.splice (if tokens[i-1][0] is ',' then i-1 else i), 0, outdent
+    detectEnd tokens, i+2, ok, go
     if tag is 'THEN' then tokens.splice i, 1 else ++i
   tokens
 
@@ -189,8 +192,7 @@ addImplicitIndentation = (tokens) ->
 tagPostfixConditionals = (tokens) ->
   ok = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
   go = ([tag]) -> token[0] = 'POST_IF' if tag isnt 'INDENT'
-  for token, i of tokens then if token[0] is 'IF'
-    detectEnd tokens, i + 1, ok, go
+  detectEnd tokens, i+1, ok, go if token[0] is 'IF' for token, i of tokens
   tokens
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
