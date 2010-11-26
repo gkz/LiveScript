@@ -201,6 +201,8 @@ eq i, 1
 
 # Shorthand objects with property references.
 obj =
+  ### comment one ###
+  ### comment two ###
   one: 1
   two: 2
   object: -> {@one, @two}

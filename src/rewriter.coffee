@@ -96,12 +96,9 @@ addImplicitBraces = (tokens) ->
       stack[ *-1]?[0] isnt '{'
     stack.push ['{']
     idx  = if paren then start[1] else i-1
-    idx -= 2 if tokens[idx-2]?[0] is 'HERECOMMENT'
-    tok  = ['{', '{', token[2]]
-    tok.generated = true
-    tokens.splice idx, 0, tok
-    detectEnd tokens, i+2, ok, go
-    ++i
+    idx -= 2 while tokens[idx-2]?[0] is 'HERECOMMENT'
+    tokens.splice idx, 0, ['{', '{', token[2]] import generated: true
+    detectEnd tokens, ++i+1, ok, go
   tokens
 
 # Methods may be optionally called without parentheses, for simple cases.
