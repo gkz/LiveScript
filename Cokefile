@@ -111,25 +111,23 @@ task 'loc', 'count the lines of source code in the Coco compiler', ->
 
 
 runTests = (Coco) ->
-  path = require 'path'
   startTime = Date.now()
   passedTests = failedTests = 0
   for name, func in require 'assert' then do ->
-    global[name] = ->
-      func arguments...
-      ++passedTests
-  global.eq = global.strictEqual
-  global.throws = (msg, fun) ->
-    try do fun catch e then return eq e.message, msg
-    ok false, 'should throw: ' + msg
-  global.Coco = Coco
+    global[name] = -> func ...; ++passedTests
+  global import {
+    Coco, eq: strictEqual, throws: (msg, fun) ->
+      try do fun catch e then return eq e.message, msg
+      ok false, 'should throw: ' + msg
+  }
   process.on 'exit', ->
-    time = ((Date.now() - startTime) / 1000).toFixed(2)
-    message = "passed #{passedTests} tests in #{time} seconds#{reset}"
-    if failedTests
-    then say tint "failed #{failedTests} and #{message}", red
-    else say tint message
+    time = ((Date.now() - startTime) / 1e3).toFixed 2
+    message = "passed #{passedTests} tests in #{time} seconds"
+    say if failedTests
+    then tint "failed #{failedTests} and #{message}", red
+    else tint message
   fs.readdir 'test', (err, files) ->
+    path = require 'path'
     files.forEach (file) ->
       return unless /\.co(?:ffee)?$/i.test file
       fs.readFile (fileName = path.join 'test', file), (err, code) ->
@@ -139,10 +137,16 @@ runTests = (Coco) ->
           {1: row, 2: col} =
             ///#{fileName}:(\d+):(\d+)\)?$///m.exec(e.stack) or ''
           say tint "failed #{fileName}:#{row--}:#{col--}", red
-          say /^.+/.exec e.stack
-          {(row): line} = lines = Coco.compile(code).split '\n'
+          say msg = '' + /^.+/.exec e.stack
+          if row >= 0
+            code = Coco.compile code
+          else if /\bon line (\d+)\b/.test msg
+            row = RegExp.$1 - 1
+            col = 0
+          else return
+          {(row): line} = lines = code.split '\n'
           say lines.slice(row-5, row+0).join '\n'
-          say line.slice(0, col) + bold + line.slice(col) + reset
+          say line.slice(0, col) + tint line.slice(col), bold
           say lines.slice(row+1, row+6).join '\n'
 
 task 'test', 'run the Coco language test suite', -> runTests Coco
