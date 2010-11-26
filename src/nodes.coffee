@@ -1390,7 +1390,7 @@ class exports.If extends Base
   compileExpression: (o) ->
     code = @if.compile o, LEVEL_COND
     pad  = if @else?.isComplex() and @then.isComplex()
-    then o.indent += TAB; '\n' + @tab else ' '
+    then '\n' + o.indent += TAB else ' '
     code += pad + '? ' +  @then .compile(o, LEVEL_LIST) +
             pad + ': ' + (@else?.compile(o, LEVEL_LIST) or 'void 8')
     if o.level < LEVEL_COND then code else "(#{code})"
