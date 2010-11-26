@@ -28,14 +28,7 @@ obj = {
   unbound: ->
     (-> ok this isnt obj)()
 
-  nested: ->
-    (=>
-      (=>
-        (=>
-          eq this, obj
-        )()
-      )()
-    )()
+  nested: -> do => do => do => eq this, obj
 }
 
 obj.unbound()

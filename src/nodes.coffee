@@ -41,7 +41,7 @@ class exports.Base
     args = []
     func = Code [], Expressions this
     func.wrapper = true
-    if @contains(-> it.value is 'this' or it.bound)
+    if not o.scope.method?.bound and @contains(-> it.value is 'this')
       args.push Literal 'this'
       call = Value func, [Access Literal 'call']
     mentionsArgs = false
@@ -234,9 +234,12 @@ class exports.Literal extends Base
   isComplex: NO
 
   compile: (o) ->
-    return "\"#{@value}\"" if @value.reserved
-    @terminater = '' if @value.js
-    @value
+    val = @value
+    switch
+    case val is 'this' then val = b if b = o.scope.method?.bound
+    case val.reserved  then val = '"' + val + '"'
+    case val.js        then @terminater = ''
+    val
 
   toString: -> ' "' + @value + '"'
 
@@ -434,7 +437,7 @@ class exports.Call extends Base
     if @splat
       return @compileSplat o, @args[1].value if @new
       return @callee.compile(o, LEVEL_ACCESS) +
-             ".apply(#{@args[0].value}, #{@args[1].value})"
+             ".apply(#{ @args[0].compile o }, #{@args[1].value})"
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
     (@new or '') + @callee.compile(o, LEVEL_ACCESS) +
     "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
@@ -652,12 +655,7 @@ class exports.Class extends Base
     name  = '_Class' unless name and IDENTIFIER.test name
     lname = Literal name
     proto = Value lname, [Access Literal 'prototype']
-    @body.traverseChildren false, ->
-      if it.value is 'this'
-        it.value = name
-      else if it instanceof Code
-        it.clas    = name
-        it.bound &&= name
+    @body.traverseChildren false, -> it.clas = name if it instanceof Code
     for node, i of exps = @body.expressions
       if node.isObject()
         exps[i] = Import proto, node, true
@@ -670,7 +668,7 @@ class exports.Class extends Base
     ctor import {name, 'ctor', 'statement', clas: null}
     exps.unshift Extends lname, @parent if @parent
     exps.push lname
-    clas = Parens Call(Code([], @body), []), true
+    clas = Parens Call(Code([], @body) import {bound: name}, []), true
     clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
     clas.compile o
@@ -785,7 +783,7 @@ class exports.Assign extends Base
 # has no *children* -- they're within the inner scope.
 class exports.Code extends Base
   (@params = [], @body = Expressions(), arrow) =>
-    @bound = 'this' if arrow is '=>'
+    @bound = '_this' if arrow is '=>'
 
   children: <[ params body ]>
 
@@ -808,18 +806,20 @@ class exports.Code extends Base
     o.indent += TAB
     {params, body, name, statement, tab} = this
     code = 'function'
-    if @ctor and @bound
-      code += """
-         _ctor(){} _ctor.prototype = #{name}.prototype;
-        #{tab}function
-      """
-      scope.assign '_this', 'new _ctor'
-      Base::traverseChildren.call this, false, ->
-        switch
-        case it.value is 'this'   then it.value   = '_this'
-        case it instanceof Code   then it.bound &&= '_this'
-        case it instanceof Return then it.expression ||= Literal '_this'
-      body.append Return Literal '_this'
+    if @bound is '_this'
+      if @ctor
+        scope.assign '_this', 'new _ctor'
+        code += """
+           _ctor(){} _ctor.prototype = #{name}.prototype;
+          #{tab}function
+        """
+        Base::traverseChildren.call this, false, ->
+          it.expression ||= Literal '_this' if it instanceof Return
+        body.append Return Literal '_this'
+      else if b = sscope.method?.bound
+        @bound = b
+      else
+        sscope.assign '_this', 'this'
     vars = []
     asns = []
     for param of params then if param.splat
@@ -830,11 +830,9 @@ class exports.Code extends Base
         val = ref = param.asReference o
         val = Op '?', ref, param.value if param.value
         asns.push Assign param.name, val
-      else
-        ref = param
-        if param.value
-          asns.push Op '&&', Literal(ref.name.value + ' == null'),
-                             Assign param.name, param.value
+      else if (ref = param).value
+        asns.push Op '&&', Literal(ref.name.value + ' == null'),
+                           Assign ref.name, ref.value
       vars.push ref unless splats
     wasEmpty = not (exps = body.expressions).length
     asns.unshift splats if splats
@@ -857,7 +855,6 @@ class exports.Code extends Base
       code += " #{name}.name = \"#{name}\";"
     code += "\n#{tab}return #{name};" if @returns
     return tab + code if statement
-    return utility('bind') + "(#{@bound}, #{code})" if @bound
     if @front then "(#{code})" else code
 
   # Short-circuit `traverseChildren` method to prevent it
@@ -975,19 +972,13 @@ class exports.While extends Base
 class exports.Op extends Base
   (op, first, second, post) =>
     return Of first, second if op is 'of'
-    if op is 'do'
-      if first instanceof Code and first.bound
-        first.bound = ''
-        first = Value first, [Access Literal 'call']
-        args  = [Literal 'this']
-      return Call first, args or []
+    return Call first, []   if op is 'do'
     if op is 'new'
       {base} = first
       if base instanceof Call
         base.new = 'new '
         return first
-      if base instanceof Parens then base.keep = true
-      else if first.bound       then first = Parens first, true
+      base.keep = true if base instanceof Parens
     this import {op, first, second, post}
 
   # Map of comparison operators which are both invertible and chainable.

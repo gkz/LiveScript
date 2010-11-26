@@ -81,9 +81,6 @@ A unary operator that simply calls a function, helping you write less parenthese
     $ coco -bpe 'do ->'
     (function(){})();
 
-    $ coco -bpe 'do =>'
-    (function(){}).call(this);
-
 
 ### function declaration `function f ->`
 Creates a named function using JS's function statement, without touching the nasty [JScript bug](http://kangax.github.com/nfe/).
