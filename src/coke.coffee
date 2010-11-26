@@ -18,6 +18,7 @@ Switches = []
 
 # Mixin the top-level coke functions for Cokefiles to use directly.
 global import
+  say: -> process.stdout.write it + '\n'
 
   # Define a coke task with a short name, an optional sentence description,
   # and the function to run as the action itself.
@@ -56,14 +57,14 @@ exports.run = ->
 
 # Display the list of tasks in a format similar to `rake -T`
 printTasks = (oparser) ->
-  console.log ''
+  say ''
   width = Math.max Object.keys(Tasks).map(-> it.length)...
   pad   = Array(width >> 1).join '  '
   for name, task in Tasks
     desc = if task.description then '# ' + task.description else ''
-    console.log "coke #{ (name + pad).slice 0, width } #{desc}"
-  console.log if Switches.length then oparser.help() else ''
-  console.log '''
+    say "coke #{ (name + pad).slice 0, width } #{desc}"
+  say if Switches.length then oparser.help() else ''
+  say '''
     Coke options:
       -f, --cokefile [FILE]   use FILE as the Cokefile
   '''

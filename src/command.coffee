@@ -29,6 +29,8 @@ SWITCHES = [
 oparser = o = null
 sources = []
 
+say = -> process.stdout.write it + '\n'
+
 # Run `coco` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
@@ -78,13 +80,13 @@ compileScript = (file, input, base) ->
     Coco.emit 'compile', t = {file, input, options}
     switch
     case o.tokens then printTokens Coco.tokens t.input
-    case o.nodes  then console.log Coco.nodes(t.input).toString().trim()
+    case o.nodes  then say Coco.nodes(t.input).toString().trim()
     case o.run    then Coco.run t.input, t.options
     default
       t.output = Coco.compile t.input, t.options
       Coco.emit 'success', t
       switch
-      case o.print   then console.log t.output.trim()
+      case o.print   then say t.output.trim()
       case o.compile then writeJs t.file, t.output, base
   catch err
     Coco.emit 'failure', err, t
@@ -124,7 +126,7 @@ writeJs = (source, js, base) ->
       if err
         console.error err
       else if o.compile and o.watch
-        console.log "Compiled #{source}"
+        say "Compiled #{source}"
   path.exists dir, (exists) ->
     if exists then compile() else exec "mkdir -p #{dir}", compile
 
@@ -132,7 +134,7 @@ writeJs = (source, js, base) ->
 printTokens = (tokens) ->
   strings = for [tag, value] of tokens
     "[#{tag} #{ value.toString().replace /\n/, '\\n' }]"
-  console.log strings.join ' '
+  say strings.join ' '
 
 # Use the [OptionParser module](optparse.html) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
@@ -145,10 +147,10 @@ parseOptions = ->
   o.compile ||= !!o.output
 
 # Print the `--help` usage message.
-usage = -> console.log oparser.help()
+usage = -> say oparser.help()
 
 # Print the `--version` message.
-version = -> console.log "Coco #{Coco.VERSION}"
+version = -> say "Coco #{Coco.VERSION}"
 
 die = ->
   console.error it
