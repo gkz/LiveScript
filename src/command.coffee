@@ -29,7 +29,9 @@ SWITCHES = [
 oparser = o = null
 sources = []
 
-say = -> process.stdout.write it + '\n'
+say  = -> process.stdout.write                it + '\n'
+warn = -> process.binding('stdio').writeError it + '\n'
+die  = -> warn it; process.exit 1
 
 # Run `coco` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
@@ -88,11 +90,10 @@ compileScript = (file, input, base) ->
       switch
       case o.print   then say t.output.trim()
       case o.compile then writeJs t.file, t.output, base
-  catch err
-    Coco.emit 'failure', err, t
+  catch e
+    Coco.emit 'failure', e, t
     return if Coco.listeners('failure').length
-    return console.error err if o.watch
-    die err.stack
+    (if o.watch then warn else die) e?.stack or e
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
@@ -124,7 +125,7 @@ writeJs = (source, js, base) ->
   compile  = ->
     fs.writeFile jsPath, js or ' ', (err) ->
       if err
-        console.error err
+        warn err
       else if o.compile and o.watch
         say "Compiled #{source}"
   path.exists dir, (exists) ->
@@ -151,7 +152,3 @@ usage = -> say oparser.help()
 
 # Print the `--version` message.
 version = -> say "Coco #{Coco.VERSION}"
-
-die = ->
-  console.error it
-  process.exit 1
