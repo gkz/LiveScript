@@ -55,8 +55,8 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   src = require('./lib/grammar').parser.generate()
-        .replace /\nvar /, 'exports.'
-        .replace /if \(typeof require [\s\S]+/, ''
+        .replace /^[^]+?var (?=parser = {)/, 'exports.'
+        .replace /return parser;[^]+/, ''
   fs.writeFile 'lib/parser.js', src
 
 task 'build:browser', 'rebuild the merged script for inclusion of the browser', ->
