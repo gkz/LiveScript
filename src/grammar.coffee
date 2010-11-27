@@ -30,12 +30,12 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # we pass the pattern-defining string, the action to run, and extra options,
 # optionally. If no action is specified, we simply pass the value of the
 # previous nonterminal.
-o = (patternString, action, options) ->
-  patternString .= replace /\s{2,}/g, ' '
-  return [patternString, '$$ = $1;', options] unless action
-  action  = if match = unwrap.exec action then match[1] else "(#{action}())"
-  action .= replace /\b(?:[A-Z]|mix\b)/g, 'yy.$&'
-  [patternString, "$$ = #{action};", options]
+o = (patterns, action, options) ->
+  patterns.=trim().split /\s+/
+  return [patterns, '$1', options] unless action
+  action = if match = unwrap.exec action then match[1] else "(#{action}())"
+  action.=replace /\b(?:[A-Z]|mix\b)/g, 'yy.$&'
+  [patterns, action, options]
 
 # Grammatical Rules
 # -----------------
@@ -391,13 +391,10 @@ operators = [
 # our **Jison.Parser**. We do this by processing all of our rules, recording all
 # terminals (every symbol which does not appear as the name of a rule above)
 # as "tokens".
-tokens = []
-for name, alternatives in grammar
-  grammar[name] = for alt of alternatives
-    for token of alt[0].split ' '
-      tokens.push token unless grammar[token]
-    alt[1] = "return #{alt[1]}" if name is 'Root'
-    alt
+tokens = for name, alternatives in grammar
+  for alt of alternatives
+    alt[1] = "#{ if name is 'Root' then 'return' else '$$ =' } #{alt[1]};"
+    token if token not in grammar for token of alt[0]
 
 # Initialize the **Parser** with our list of terminal **tokens**, our **grammar**
 # rules, and the name of the root. Reverse the operators because Jison orders
