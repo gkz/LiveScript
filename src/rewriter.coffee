@@ -20,7 +20,7 @@ exports.rewrite = ->
   rewriteClosingParens ensureBalance \
   addImplicitParentheses addImplicitBraces \
   tagPostfixConditionals addImplicitIndentation closeOpenings \
-  removeMidExpressionNewlines removeLeadingNewlines it
+  removeMidExpressionTerminators removeLeadingTerminators it
 
 detectEnd = (tokens, i, ok, go) ->
   levels = 0
@@ -34,16 +34,16 @@ detectEnd = (tokens, i, ok, go) ->
     ++i
   i - 1
 
-# Leading newlines would introduce an ambiguity in the grammar, so we
+# Leading terminators would introduce an ambiguity in the grammar, so we
 # dispatch them here.
-removeLeadingNewlines = (tokens) ->
-  for [tag], i of tokens then break unless tag is 'TERMINATOR'
+removeLeadingTerminators = (tokens) ->
+  break unless tag is 'TERMINATOR' for [tag], i of tokens
   tokens.splice 0, i if i
   tokens
 
 # Some blocks occur in the middle of expressions -- when we're expecting
-# this, remove their trailing newlines.
-removeMidExpressionNewlines = (tokens) ->
+# this, remove their trailing terminators.
+removeMidExpressionTerminators = (tokens) ->
   i = 0
   while token = tokens[++i]
     if tokens[i-1][0] is 'TERMINATOR' and token[0] of EXPRESSION_CLOSE
