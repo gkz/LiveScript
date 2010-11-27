@@ -1,33 +1,20 @@
 # A very simple Read-Eval-Print-Loop. Compiles one line at a time to JavaScript
 # and evaluates it. Good for simple tests, or poking around the **Node.js** API.
-# Using it looks like this:
-#
-#     coco> console.log "#{num} bottles of beer" for num from 99 to 1 by -1
 
-Coco     = require './coco'
-readline = require 'readline'
+Coco = require './coco'
 
-# Start by opening up **stdio**.
-stdio = process.openStdin()
+global.say = -> process.stdout.write it + '\n'; return
+global.__defineGetter__ 'quit', -> process.exit 0
 
-# Quick alias for quitting the REPL.
-global.quit = -> process.exit 0
-
-# The main REPL function. **run** is called every time a line of code is entered.
-# Attempt to evaluate the command. If there's an exception, print it out instead
-# of exiting.
-run = (buffer) ->
+repl = require('readline').createInterface stdin = process.openStdin()
+stdin.on 'data', repl&.write
+repl.on 'close', stdin&.destroy
+repl.on 'line', ->
   try
-    val = Coco.eval buffer.toString(), bare: true, globals: true, fileName: 'repl'
-    console.log val unless val is void
-  catch err
-    console.error "#{ err.stack or err }"
+    r = Coco.eval "#{it}", bare: true, globals: true, fileName: 'repl'
+  catch e
+    r = e?.stack or e
+  say r unless r is void
   repl.prompt()
-
-# Create the REPL by listening to **stdin**.
-repl = readline.createInterface stdio
 repl.setPrompt 'coco> '
-stdio.on 'data',   (buffer) -> repl.write buffer
-repl.on  'close',  -> stdio.destroy()
-repl.on  'line',   run
 repl.prompt()
