@@ -159,15 +159,12 @@ grammar =
     o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
   ]
 
-  # Expressions and statements, which make up a line in a body.
-  Line: [
-    o 'Expression'
-    o 'Statement'
-  ]
   # Any list of statements and expressions, separated by line breaks or semicolons.
   Body: [
-    o 'Line',                 -> Expressions $1
-    o 'Body TERMINATOR Line', -> $1.append $3
+    o 'Expression'                 ,-> Expressions $1
+    o 'Statement'                  ,-> Expressions $1
+    o 'Body TERMINATOR Expression' ,-> $1.append $3
+    o 'Body TERMINATOR Statement'  ,-> $1.append $3
     o 'Body TERMINATOR'
   ]
 
