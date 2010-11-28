@@ -8,15 +8,27 @@ body {margin:0 1% 1ex}
 .section {clear:both; position:relative}
 .anchor  {position:absolute; font:bold small mono-space}
 #navi.menu {
- position:fixed; top:0; right:0;
- margin:0; padding:0 1.2em;
+ position:fixed; top:0; right:0; z-index:5;
+ margin:0; padding:2px 1.2em;
  color:#333; background-color:#efe;
+ -moz-border-radius-bottomleft:1ex;
 }
 .comment:not(:hover) > .anchor,
 #navi.menu > h1,
 #navi.menu:not(:hover) > :not(.pointee),
 #navi.menu:hover > .pointee,
 #navi:not(.menu) > .pointee {display:none}
+.pun, .opn, .clo {color:#660}
+.str {color:#080}
+.kwd {color:#008}
+.com {color:#800}
+.typ {color:#606}
+.lit {color:#066}
+.pln {color:#000}
+.tag {color:#008}
+.atn {color:#606}
+.atv {color:#080}
+.dec {color:#606}
 </style>
 <ul id=navi>
 <div class=pointee>jump &#x2193;</div>
@@ -35,4 +47,5 @@ body {margin:0 1% 1ex}
 </ul>
 <div id=docs></div>
 <script src=../lib/showdown.js></script>
+<script src=../lib/prettify.js></script>
 <script src=../lib/docs.js></script>

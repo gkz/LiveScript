@@ -1,6 +1,6 @@
 # Quick and dirty implementation of
 # [code-illuminated](http://code.google.com/p/code-illuminated/)-esque
-# documentation. Imported from _src/index.html_.
+# documentation. Imported from [src/index.html](#).
 
 navi = document.getElementById 'navi'
 docs = document.getElementById 'docs'
@@ -35,7 +35,7 @@ build = (page, source) ->
         <a class=anchor href=##{name}#{i}>##{i}</a>
         #{ new Showdown.converter().makeHtml comm }
       </div>
-      <pre class=code>#{
+      <pre class="code prettyprint lang-coffee">#{
         code.replace /&/g, '&amp;'
             .replace /</g, '&lt;'
       }</pre>
@@ -48,6 +48,7 @@ load = ([name, sect], html) ->
   docs.innerHTML = html
   docs.style.display = 'block'
   document.getElementById(sect).scrollIntoView() if sect
+  prettyPrint()
 
 do @onhashchange = navigate = ->
   docs.style.display = 'none'
