@@ -247,6 +247,25 @@ An empty version of `for` that loops forever.
     for (;;) {}
 
 
+### loopy call
+Direct calls (such as `do ->`) just under `for` body act like `[].map`, letting them capture loop variables efficiently.
+
+    $ coco -bpe 'r = for k, [a, b] in o then do => k + a + b'
+    var a, b, k, r, _this = this;
+    r = (function(){
+      var _ref, _ref2, _fn = function(k, _arg){
+        var a, b;
+        a = _arg[0], b = _arg[1];
+        return k + a + b;
+      }, _results = [];
+      for (k in _ref = o) {
+        _ref2 = _ref[k], a = _ref2[0], b = _ref2[1];
+        _results.push(_fn(k, _ref2));
+      }
+      return _results;
+    }());
+
+
 ### chained instance check `instanceof []`
 A bare array to the right of `instanceof` is expanded into `or` chains.
 
