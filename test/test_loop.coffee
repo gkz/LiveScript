@@ -159,18 +159,15 @@ odds = while i--
 eq '5,3,1', '' + odds
 
 
-# For each dynamic call under `for`,
+# For each dynamic call below `for`,
 # define it outside and pass loop variables to it.
-fs = for i, [a, b] in [[], [1, 2], [3, 4]]
-  continue unless a
+fs = for i, [a, b] in [[], [1, 2], [3, 4]] then if a
   me = this
   do =>
     return if i < 2
     eq me, this
     eq a * b, 12
-  do ->
-    {callee} = arguments
-    -> [a + b, callee]
+  do function fn -> -> [a + b, fn]
 [one, two] = (f() for f of fs)
 eq one[0] * two[0], 21
 eq one[1] , two[1]

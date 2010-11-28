@@ -1235,7 +1235,7 @@ class exports.For extends While
       case  1 then '++' + idx
       case -1 then '--' + idx
       default idx + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
-    @pluckDirectCalls o, @body.expressions, @name, @index
+    @pluckDirectCalls o
     head = @tab + "for (#{forPart}) #{ ownPart or '' }{"
     o.indent += TAB
     if @name
@@ -1249,24 +1249,22 @@ class exports.For extends While
     head += '\n' + @tab if @name and body.charAt(0) is '}'
     head + body
 
-  pluckDirectCalls: (o, exps, name, index) ->
-    for exp, idx of exps then if exp.=unwrapAll() instanceof Call
-      fn = exp.callee.unwrapAll()
-      continue unless fn instanceof Code and not exp.args.length
-      base = Value Literal ref = o.scope.temporary 'fn'
-      args = []
-      if index
-        args.push li = Literal index
-        fn.params.push Param li
-      if name
-        args.push Literal if name.isComplex()
-        then @nref ||= (@temps.push nref = o.scope.temporary 'ref'; nref)
+  pluckDirectCalls: (o) ->
+    @body.eachChild dig = =>
+      unless it instanceof Call and
+             (fn = it.callee.unwrapAll()) instanceof Code and
+             fn.params.length is it.args.length
+        return it instanceof [Code, For] or it.eachChild dig
+      if @index
+        fn.params.push Param it.args[*] = Literal @index
+      if name = @name
+        it.args.push Literal if name.isComplex()
+        then @nref ||= @temps[*] = o.scope.temporary 'ref'
         else name.value
         fn.params.push Param name
-      exps[idx] = Call base, args
+      it.callee = Value Literal ref = o.scope.temporary 'fn'
       o.scope.assign ref, fn.compile o import {indent: ''}, LEVEL_LIST
       o.indent = @tab
-    this
 
 #### Switch
 # The regular JavaScript `switch`-`case`-`default`,

@@ -248,7 +248,7 @@ An empty version of `for` that loops forever.
 
 
 ### loopy call
-Direct calls (such as `do ->`) just under `for` body act like `[].map`, letting them capture loop variables efficiently.
+Direct calls (such as `do ->`) within `for` body act like `[].map`, capturing loop variables efficiently.
 
     $ coco -bpe 'r = for k, [a, b] in o then do => k + a + b'
     var a, b, k, r, _this = this;
