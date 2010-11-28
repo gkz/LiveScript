@@ -39,3 +39,7 @@ while (0) {
   }
 }
 ''', Coco.compile '(1; 2) while 0 while 0', bare: true
+
+
+throws 'invalid use of void', -> Coco.compile 'do void'
+throws 'invalid use of null', -> Coco.compile 'null.po'

@@ -70,8 +70,7 @@ grammar =
     o 'STRNUM'        ,-> Value Literal $1
     o 'Parenthetical' ,-> Value $1
     o 'THIS'          ,-> Value Literal 'this'
-    o 'LITERAL'
-    ,-> Value if $1 is 'void' then Op 'void', Literal 8 else Literal $1
+    o 'LITERAL'       ,-> Value Literal $1
     o 'Value CALL_START                  CALL_END' ,-> Value Call $1, []  , $2
     o 'Value CALL_START ...              CALL_END' ,-> Value Call $1, null, $2
     o 'Value CALL_START ArgList OptComma CALL_END' ,-> Value Call $1, $3  , $2

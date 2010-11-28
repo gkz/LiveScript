@@ -233,10 +233,13 @@ class exports.Literal extends Base
 
   isComplex: NO
 
-  compile: (o) ->
+  compile: (o, level) ->
     val = @value
     switch
     case val is 'this' then val = b if b = o.scope.method?.bound
+    case val is 'void' then val += ' 8'; fallthrough
+    case val is 'null' then if (level ? o.level) is LEVEL_ACCESS
+      throw SyntaxError 'invalid use of ' + @value 
     case val.reserved  then val = '"' + val + '"'
     case val.js        then @terminater = ''
     val
@@ -1041,7 +1044,7 @@ class exports.Op extends Base
     code = @first.compile o, LEVEL_OP
     code = if @post
     then code + op
-    else if op of <[ new typeof delete void ]> or
+    else if op of <[ new typeof delete ]> or
             op of <[ + - ]> and @first.op is op
     then op + ' ' + code
     else op + code
