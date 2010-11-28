@@ -26,24 +26,30 @@ SWITCHES = [
 ]
 
 # Top-level objects shared by all the functions.
-oparser = o = null
-sources = []
+# Use the [OptionParser module](optparse.html) to extract all options from
+# `process.argv` that are specified in `SWITCHES`.
+oparser = new OptionParser SWITCHES, BANNER
+o       = oparser.parse process.argv.slice 2
+sources = o.arguments
+o.run   = ! (o.compile or o.print)
+o.print = !!(o.print or o.eval or o.stdio and o.compile)
+o.compile ||= !!o.output
 
-say  = -> process.stdout.write                it + '\n'
-warn = -> process.binding('stdio').writeError it + '\n'
-die  = -> warn it; process.exit 1
+global import
+  say  : -> process.stdout.write                it + '\n'
+  warn : -> process.binding('stdio').writeError it + '\n'
+  die  : -> warn it; process.exit 1
 
 # Run `coco` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`
 exports.run = ->
-  parseOptions()
   return version()                    if o.version
-  return usage()                      if o.help
-  return require './repl'             if o.interactive
+  return help()                       if o.help
+  return repl()                       if o.interactive
   return compileStdio()               if o.stdio
   return compileScript '', sources[0] if o.eval
-  return (version(); usage(); require './repl') unless sources.length
+  return (version(); help(); repl())  unless sources.length
   args = if ~separator = sources.indexOf '--'
   then sources.splice(separator, 1/0).slice 1
   else []
@@ -137,18 +143,24 @@ printTokens = (tokens) ->
     "[#{tag} #{ value.toString().replace /\n/, '\\n' }]"
   say strings.join ' '
 
-# Use the [OptionParser module](optparse.html) to extract all options from
-# `process.argv` that are specified in `SWITCHES`.
-parseOptions = ->
-  oparser := new OptionParser SWITCHES, BANNER
-  o       := oparser.parse process.argv.slice 2
-  sources := o.arguments
-  o.run    = ! (o.compile or o.print)
-  o.print  = !!(o.print or o.eval or o.stdio and o.compile)
-  o.compile ||= !!o.output
+# A very simple Read-Eval-Print-Loop. Compiles one line at a time to JavaScript
+# and evaluates it. Good for simple tests, or poking around the **Node.js** API.
+repl = ->
+  global.__defineGetter__ 'quit', -> process.exit 0
+  repl = require('readline').createInterface stdin = process.openStdin()
+  stdin.on 'data', repl&.write
+  repl.on 'close', stdin&.destroy
+  repl.on 'line', ->
+    try
+      r = Coco.eval "#{it}", bare: true, globals: true, fileName: 'repl'
+    catch e
+      r = e?.stack or e
+    say r unless r is void
+    repl.prompt()
+  repl.setPrompt 'coco> '
+  repl.prompt()
 
-# Print the `--help` usage message.
-usage = -> say oparser.help()
-
+# Print the `--help` message.
+help    = -> say oparser.help()
 # Print the `--version` message.
 version = -> say "Coco #{Coco.VERSION}"
