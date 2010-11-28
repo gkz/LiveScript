@@ -5,7 +5,7 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, balance incorrect nestings, and generally clean things up.
 
-# The **Rewriter** is used by the [Lexer](lexer.html), directly against
+# The **Rewriter** is used by the [Lexer](#lexer), directly against
 # its internal array of tokens.
 
 # Helpful snippet for debugging:

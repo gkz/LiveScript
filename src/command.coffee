@@ -26,7 +26,7 @@ SWITCHES = [
 ]
 
 # Top-level objects shared by all the functions.
-# Use the [OptionParser module](optparse.html) to extract all options from
+# Use the [OptionParser](#optparse) to extract all options from
 # `process.argv` that are specified in `SWITCHES`.
 oparser = new OptionParser SWITCHES, BANNER
 o       = oparser.parse process.argv.slice 2

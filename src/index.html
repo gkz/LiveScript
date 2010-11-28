@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<title>Coco Docs</title>
+<style>
+body {margin:0 1% 1ex}
+.comment, .code {display:inline-block}
+.comment {width:40%; margin-bottom:2ex}
+.code    {
+ float:right;
+ width:55%; margin:0 0 2ex 1%;
+ overflow-x:auto; font-size:small;
+}
+.section {clear:both}
+#navi.menu {
+ position:fixed; top:0; right:0;
+ margin:0; padding:0 1.2em;
+ color:#333; background-color:#efe;
+}
+.comment:not(:hover) > .anchor,
+#navi.menu > h1,
+#navi.menu:not(:hover) > :not(.pointee),
+#navi.menu:hover > .pointee,
+#navi:not(.menu) > .pointee {display:none}
+</style>
+<ul id=navi>
+<div class=pointee>jump &#x2193;</div>
+<h1>Coco Source Documentation</h1>
+<li><a href=#coco>coco</a>
+<li><a href=#lexer>lexer</a>
+<li><a href=#rewriter>rewriter</a>
+<li><a href=#nodes>nodes</a>
+<li><a href=#scope>scope</a>
+<li><a href=#grammar>grammar</a>
+<li><a href=#browser>browser</a>
+<li><a href=#command>command</a>
+<li><a href=#coke>coke</a>
+<li><a href=#optparse>optparse</a>
+<li><a href=#docs>docs</a>
+</ul>
+<div id=docs></div>
+<script src=../lib/docs.js></script>

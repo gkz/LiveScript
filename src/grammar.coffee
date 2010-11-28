@@ -216,7 +216,7 @@ grammar =
     o 'HERECOMMENT',       -> Comment $1
   ]
 
-  # An indented block of expressions. Note that the [Rewriter](rewriter.html)
+  # An indented block of expressions. Note that the [Rewriter](#rewriter)
   # will convert some postfix forms into blocks for us, by adjusting the
   # token stream.
   Block: [
