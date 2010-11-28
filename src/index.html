@@ -7,11 +7,12 @@ body {margin:0 1% 1ex}
 .code    {width:55%; float:right; overflow-x:auto; font-size:small}
 .section {clear:both; position:relative}
 .anchor  {position:absolute; font:bold small mono-space}
+.pointee {font-weight:bold}
 #navi.menu {
  position:fixed; top:0; right:0; z-index:5;
- margin:0; padding:2px 1.2em;
- color:#333; background-color:#efe;
- -moz-border-radius-bottomleft:1ex;
+ margin:0; padding:3px 0.5em; list-style:none;
+ border-width:0 0 3px 3px; border-style:solid;
+ -moz-border-radius-bottomleft:1.5ex;
 }
 .comment:not(:hover) > .anchor,
 #navi.menu > h1,
@@ -31,7 +32,7 @@ body {margin:0 1% 1ex}
 .dec {color:#606}
 </style>
 <ul id=navi>
-<div class=pointee>jump &#x2193;</div>
+<div class=pointee>&#x2935;</div>
 <h1>Coco Source Documentation</h1>
 <li><a href=#coco>coco</a>
 <li><a href=#lexer>lexer</a>

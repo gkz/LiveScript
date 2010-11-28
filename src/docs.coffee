@@ -11,7 +11,7 @@ build = (page, source) ->
   [name] = page
   blocks = []
   comm = code = ''
-  re = /^[^\n\S]*#(?!##[^#]|{) *(.*)/
+  re = /^[^\n\S]*#(?!##[^#]|{) ?(.*)/
   br = true
   for line of source.split '\n'
     unless line
