@@ -718,7 +718,7 @@ class exports.Assign extends Base
   # more than once.
   compileConditional: (o) ->
     [left, rite] = Value(@left).cacheReference o
-    Op(@logic, left, Assign(rite, @right, @op)).compile o
+    Op(@logic, left, Assign rite, @right, @op).compile o
 
   # Implementation of recursive destructuring, when assigning array or
   # object literals to a value. Peeks at their properties to assign inner names.
@@ -1239,8 +1239,8 @@ class exports.For extends While
       case  1 then '++' + idx
       case -1 then '--' + idx
       default idx + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
-    head  = @pluckDirectCalls o, @body.expressions, @name, idx
-    head += @tab + "for (#{forPart}) #{ ownPart or '' }{"
+    @pluckDirectCalls o, @body.expressions, @name, @index
+    head = @tab + "for (#{forPart}) #{ ownPart or '' }{"
     o.indent += TAB
     if @name
       head += '\n' + o.indent
@@ -1254,31 +1254,23 @@ class exports.For extends While
     head + body
 
   pluckDirectCalls: (o, exps, name, index) ->
-    defs = ''
     for exp, idx of exps then if exp.=unwrapAll() instanceof Call
-      val = exp.callee.unwrapAll()
-      continue unless \
-        val instanceof Code and not exp.args.length or
-          val instanceof Value and val.base instanceof Code and
-          val.properties.length is 1 and
-          val.properties[0].name?.value is 'call'
-      @temps.push ref = o.scope.temporary 'fn'
-      fn   = val.base or val
-      base = Value ref = Literal ref
+      fn = exp.callee.unwrapAll()
+      continue unless fn instanceof Code and not exp.args.length
+      base = Value Literal ref = o.scope.temporary 'fn'
       args = []
-      if val.base
-        args.push exp.args[0]
-        base = val import {base}
       if index
         args.push li = Literal index
         fn.params.push Param li
       if name
-        @temps.push @nref = o.scope.temporary 'ref' unless @nref
-        args.push Literal @nref
+        args.push Literal if name.isComplex()
+        then @nref ||= (@temps.push nref = o.scope.temporary 'ref'; nref)
+        else name.value
         fn.params.push Param name
       exps[idx] = Call base, args
-      defs += @tab + Assign(ref, fn).compile(o, LEVEL_TOP) + ';\n'
-    defs
+      o.scope.assign ref, fn.compile o import {indent: ''}, LEVEL_LIST
+      o.indent = @tab
+    this
 
 #### Switch
 # The regular JavaScript `switch`-`case`-`default`,
