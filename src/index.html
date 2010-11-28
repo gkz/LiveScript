@@ -3,13 +3,10 @@
 <style>
 body {margin:0 1% 1ex}
 .comment, .code {display:inline-block}
-.comment {width:40%; margin-bottom:2ex}
-.code    {
- float:right;
- width:55%; margin:0 0 2ex 1%;
- overflow-x:auto; font-size:small;
-}
-.section {clear:both}
+.comment {width:40%; margin-left:1%}
+.code    {width:55%; float:right; overflow-x:auto; font-size:small}
+.section {clear:both; position:relative}
+.anchor  {position:absolute; font:bold small mono-space}
 #navi.menu {
  position:fixed; top:0; right:0;
  margin:0; padding:0 1.2em;
@@ -37,4 +34,5 @@ body {margin:0 1% 1ex}
 <li><a href=#docs>docs</a>
 </ul>
 <div id=docs></div>
+<script src=../lib/showdown.js></script>
 <script src=../lib/docs.js></script>

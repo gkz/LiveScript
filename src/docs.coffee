@@ -16,6 +16,7 @@ build = (page, source) ->
   for line of source.split '\n'
     unless line
       br = true
+      code += '\n' if code
       continue
     if m = re.exec line
       if code or comm and br
@@ -32,9 +33,12 @@ build = (page, source) ->
       <div id=#{i} class=section>
       <div class=comment>
         <a class=anchor href=##{name}#{i}>##{i}</a>
-        #{ hesc comm }
+        #{ new Showdown.converter().makeHtml comm }
       </div>
-      <pre class=code>#{ hesc code }</pre>
+      <pre class=code>#{
+        code.replace /&/g, '&amp;'
+            .replace /</g, '&lt;'
+      }</pre>
       </div>
     """
   load page, htmls[name] = html
@@ -44,10 +48,6 @@ load = ([name, sect], html) ->
   docs.innerHTML = html
   docs.style.display = 'block'
   document.getElementById(sect).scrollIntoView() if sect
-
-hesc = ->
-  it.replace /&/g, '&amp;'
-    .replace /</g, '&lt;'
 
 do @onhashchange = navigate = ->
   docs.style.display = 'none'

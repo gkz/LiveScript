@@ -25,7 +25,7 @@ class exports.Lexer
   # Each tokenizing method is responsible for returning the number of characters
   # it has consumed.
   #
-  # Before returning the token stream, run it through the [Rewriter](rewriter.html)
+  # Before returning the token stream, run it through the [Rewriter](#rewriter)
   # unless explicitly asked not to.
   tokenize: (@code, o = {}) ->
     code.=replace(/\r/g, '').replace(TRAILING_SPACES, '')
