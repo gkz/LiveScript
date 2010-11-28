@@ -63,7 +63,7 @@ class exports.Base
     else
       ref = Literal reused or o.scope.temporary 'ref'
       sub = Assign ref, this
-      if level then [sub.compile(o, level), ref.value] else [sub, ref]
+      if level then [sub.compile o, level; ref.value] else [sub, ref]
 
   # Compile to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
@@ -312,7 +312,7 @@ class exports.Value extends Base
       name = Index Assign ref, name.index
       nref = Index ref
       nref.temps = [ref.value]
-    [base.append(name), Value(bref or base.base, [nref or name])]
+    [base.append name; Value bref or base.base, [nref or name]]
 
   # We compile a value to JavaScript by compiling and joining each property.
   # Things get much more insteresting if the chain of properties has *soak*
@@ -379,7 +379,7 @@ class exports.Value extends Base
       [ctx, ref] = Value(@base, ps.slice 0, i).cache o
       fun = Value ref, [p]
       fun.temps = [ref.value] if ctx isnt ref
-      return Value Call(Literal(utility 'bind'), [ctx, fun]), ps.slice i+1
+      return Value Call(Literal utility 'bind'; [ctx, fun]), ps.slice i+1
     null
 
 #### Comment
@@ -400,7 +400,7 @@ class exports.Comment extends Base
 # Node for a function invocation.
 class exports.Call extends Base
   (@callee, @args, open) =>
-    @args or= (@splat = true; [Literal('this'), Literal('arguments')])
+    @args or= (@splat = true; [Literal 'this'; Literal 'arguments'])
     @soak   = true if open is '?('
 
   children: <[ callee args ]>
@@ -478,7 +478,7 @@ class exports.Extends extends Base
   children: <[ child parent ]>
 
   compile: (o) ->
-    Call(Value(Literal utility 'extends'), [@child, @parent]).compile o
+    Call(Value Literal utility 'extends'; [@child, @parent]).compile o
 
 #### Import
 # Handles the `import` operation that copies properties from right to left.
@@ -489,7 +489,7 @@ class exports.Import extends Base
 
   compileNode: (o) ->
     unless @util is 'import' and @right.isObject()
-      return Call(Value(Literal utility @util), [@left, @right]).compile o
+      return Call(Value Literal utility @util; [@left, @right]).compile o
     top = not o.level
     {items} = @right.unwrap()
     if top and items.length < 2
