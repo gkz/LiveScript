@@ -254,13 +254,9 @@ class exports.Return extends Base
 
   makeReturn: THIS
 
-  compile: (o, level) ->
-    exp = @expression?.makeReturn()
-    if exp and exp not instanceof Return
-      exp.compile o, level
-    else
-      exp = exp?.expression or ''
-      o.indent + "return#{ exp and ' ' + exp.compile o, LEVEL_PAREN };"
+  compile: (o) ->
+    exp = @expression?.compile o, LEVEL_PAREN
+    o.indent + "return#{ if exp then ' ' + exp else '' };"
 
 #### Value
 # Container for property access chains, by holding `Access`/`Index` instances
