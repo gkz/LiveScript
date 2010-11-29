@@ -48,8 +48,12 @@ class exports.Lexer
       case ' ' then i += do @whitespaceToken
       case "'" then i += @heredocToken(HERESINGLE) or do @singleStringToken
       case '"' then i += @heredocToken(HEREDOUBLE) or do @doubleStringToken
-      case '/' then i += do @heregexToken or do @regexToken or do @literalToken
-      case '<' then i += do @wordsToken or do @literalToken
+      case '<'
+        i += if '[' is code.charAt i+1 then @wordsToken() else @literalToken()
+      case '/'
+        i += if '//' is code.substr i+1, 2
+        then do @heregexToken
+        else do @regexToken or do @literalToken
       case '#' then i += do @commentToken
       case '`' then i += do @jsToken
       default i += do @identifierToken or do @numberToken or
@@ -156,7 +160,7 @@ class exports.Lexer
   # are balanced within the string's contents, and within nested interpolations.
   singleStringToken : ->
     unless string = SIMPLESTR.exec @chunk
-      @carp 'unterminated single quoted string'
+      @carp 'unterminated string'
     @token 'STRNUM', (string[=0]).replace MULTILINER, '\\\n'
     @countLines(string).length
 
@@ -208,7 +212,7 @@ class exports.Lexer
 
   # Matches multiline and extended regular expression literals.
   heregexToken: ->
-    return 0 unless match = HEREGEX.exec @chunk
+    @carp 'unterminated heregex' unless match = HEREGEX.exec @chunk
     [heregex, body, flags] = match
     if 0 > body.indexOf '#{'
       body.=replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
@@ -236,7 +240,7 @@ class exports.Lexer
 
   # Matches words literal, a syntax sugar for an array of strings.
   wordsToken: ->
-    return 0 unless words = WORDS.exec @chunk
+    @carp 'unterminated words' unless words = WORDS.exec @chunk
     if call = not @last.spaced and @last[0] of CALLABLE
     then @token<[ CALL_START ( ]>
     else @token<[ [          [ ]>

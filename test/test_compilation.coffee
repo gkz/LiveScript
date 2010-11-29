@@ -9,7 +9,11 @@ eq 'passed', Coco.eval '"passed"', bare: true, fileName: 'test'
 #750
 throws 'unclosed CALL_START on line 1', -> Coco.nodes 'f(->'
 
-throws 'unterminated JS literal on line 3', -> Coco.nodes '\n\n```'
+throws 'unterminated JS literal on line 3', -> Coco.nodes '\n\n```\n'
+throws 'unterminated string on line 3'    , -> Coco.nodes "\n\n'\n"
+throws 'unterminated " on line 3'         , -> Coco.nodes '\n\n"\n'
+throws 'unterminated words on line 3'     , -> Coco.nodes '\n\n<[\n'
+throws 'unterminated heregex on line 3'   , -> Coco.nodes '\n\n///\n'
 
 eq 'for (k in o) {}'
 , Coco.compile 'for k in o then', bare: true, globals: true,
