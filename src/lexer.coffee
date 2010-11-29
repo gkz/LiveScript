@@ -1,44 +1,42 @@
 # The Coco Lexer. Uses a series of token-matching regexes to attempt
 # matches against the beginning of the source code. When a match is found,
-# a token is produced, we consume the match, and start again. Tokens are in the
-# form:
+# a token is produced, we consume the match, and start again.
+# Tokens are in the form:
 #
-#     [tag, value, lineNumber]
+#     ['TAG', 'value', lineNumber = 0]
 #
-# Which is a format that can be fed directly into [Jison](http://github.com/zaach/jison).
-
-Rewriter = require './rewriter'
+# Which is a format that can be fed directly into
+# [Jison](http://github.com/zaach/jison).
 
 # The Lexer Class
 # ---------------
 
-# The Lexer class reads a stream of Coco and divvies it up into tagged
-# tokens. Some potential ambiguity in the grammar has been avoided by
+# Reads a stream of Coco and divvies it up into tagged tokens.
+# Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 class exports.Lexer
+
   # **tokenize** is the Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
   # remaining code, or a custom recursive token-matching method
-  # (for interpolations). When the next token has been recorded, we move forward
-  # within the code past the token, and begin again.
-  #
-  # Each tokenizing method is responsible for returning the number of characters
-  # it has consumed.
-  #
-  # Before returning the token stream, run it through the [Rewriter](#rewriter)
-  # unless explicitly asked not to.
-  tokenize: (@code, o = {}) ->
-    code.=replace(/\r/g, '').replace(TRAILING_SPACES, '')
+  # (for interpolations). When the next token has been recorded,
+  # we move forward within the code past the token, and begin again.
+  tokenize: (code, o = {}) ->
+    # Stream of parsed tokens in the form `['TYPE', value, line]`,
+    # initialized with a DUMMY token to ensure `@last` always exists.
+    @tokens = [@last = ['DUMMY', '', 0]]
     # The current line.
-    @line    = o.line or 0
+    @line = o.line or 0
     # The current indentation level, over-indentation and under-outdentation.
-    @indent  = @indebt = @outdebt = 0
+    @indent = @indebt = @outdebt = 0
     # The stack of all current indentation levels.
     @indents = []
-    # Stream of parsed tokens in the form `['TYPE', value, line]`.
-    @tokens  = [@last = ['DUMMY', '', 0]]
     # Flags for distinguishing FORIN/FOROF/FROM/TO/BY.
     @seenFor = @seenFrom = @seenRange = false
+    # Check the first character of current `@chunk`, then call appropriate
+    # tokenizers based on it. Each tokenizing method is responsible for
+    # returning the number of characters it has consumed.
+    code.=replace(/\r/g, '').replace(TRAILING_SPACES, '')
     i = 0
     while @chunk = code.slice i
       if comments = COMMENTS.exec @chunk
@@ -58,12 +56,13 @@ class exports.Lexer
                    do @literalToken    or do @whitespaceToken
     # Close up all remaining open blocks at the end of the file.
     @outdentToken @indent
-    @tokens.shift()  # Dispose dummy.
-    Rewriter.rewrite @tokens unless o.rewrite is false
+    # Dispose dummy.
+    @tokens.shift()
+    # [Rewrite](#rewriter) the token stream unless explicitly asked not to.
+    require('./rewriter').rewrite @tokens unless o.rewrite is false
     @tokens
 
-  # Tokenizers
-  # ----------
+  #### Tokenizers
 
   # Matches identifying literals: variables, keywords, method names, etc.
   # Check to ensure that JavaScript reserved words aren't being used as
@@ -475,8 +474,7 @@ class exports.Lexer
     @token<[ ) ) ]> if interpolated
     tokens
 
-  # Helpers
-  # -------
+  #### Helpers
 
   # Add a token to the results,
   # taking note of the line number and returning `value`.
@@ -501,8 +499,7 @@ class exports.Lexer
   # Throw a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
 
-# Constants
-# ---------
+#### Constants
 
 # Keywords that Coco shares in common with JavaScript.
 JS_KEYWORDS = <[

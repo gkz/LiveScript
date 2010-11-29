@@ -1,6 +1,6 @@
 # Quick and dirty implementation of
 # [code-illuminated](http://code.google.com/p/code-illuminated/)-esque
-# documentation. Imported from [src/index.html](#).
+# documentation system. Imported from [src/index.html](#).
 
 navi = document.getElementById 'navi'
 docs = document.getElementById 'docs'
@@ -27,7 +27,7 @@ build = (page, source) ->
       code += line + '\n'
     br = false
   blocks.push [comm, code] if comm
-  html = "<h2>#{name}</h2>"
+  html = "<h1>#{name}</h1>"
   for [comm, code], i of blocks
     html += """
       <div id=#{i} class=section>
