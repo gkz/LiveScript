@@ -45,7 +45,7 @@ class exports.Base
       args.push Literal 'this'
       call = Value func, [Access Literal 'call']
     mentionsArgs = false
-    @traverseChildren false, ->
+    @traverseChildren ->
       if it instanceof Literal and it.value is 'arguments'
         mentionsArgs := it.value = '_args'
     if mentionsArgs
@@ -84,7 +84,7 @@ class exports.Base
   # scope boundaries.
   contains: (pred) ->
     contains = false
-    @traverseChildren false, -> not contains := true if pred it
+    @traverseChildren -> not contains := true if pred it
     contains
 
   # Convenience for the most common use of contains. Does the node contain
@@ -100,10 +100,10 @@ class exports.Base
       else return this if false is func child
     this
 
-  traverseChildren: (crossScope, func) ->
-    @eachChild (child) ->
-      return false if false is func child
-      child.traverseChildren crossScope, func
+  traverseChildren: (fn, xscope) ->
+    @eachChild ->
+      return false if false is fn it
+      it.traverseChildren fn, xscope
 
   invert: -> Op '!', this
 
@@ -335,7 +335,7 @@ class exports.Value extends Base
       case it.value is '*'     then star := it; fallthrough
       case it instanceof Index then false
     for prop, i of @properties then if prop instanceof Index
-      prop.traverseChildren false, find
+      prop.traverseChildren find
       continue unless star
       [sub, ref] = Value(@base, @properties.slice 0, i).cache o
       @temps = [ref.value] if sub isnt ref
@@ -654,7 +654,7 @@ class exports.Class extends Base
     name  = '_Class' unless name and IDENTIFIER.test name
     lname = Literal name
     proto = Value lname, [Access Literal 'prototype']
-    @body.traverseChildren false, -> it.clas = name if it instanceof Code
+    @body.traverseChildren -> it.clas = name if it instanceof Code
     for node, i of exps = @body.expressions
       if node.isObject()
         exps[i] = Import proto, node, true
@@ -786,6 +786,10 @@ class exports.Code extends Base
 
   children: <[ params body ]>
 
+  # Short-circuit `traverseChildren` method to prevent it
+  # from crossing scope boundaries unless `crossScope`.
+  traverseChildren: (_, xscope) -> super ... if xscope
+
   isStatement: -> !!@statement
 
   makeReturn: ->
@@ -812,7 +816,7 @@ class exports.Code extends Base
            _ctor(){} _ctor.prototype = #{name}.prototype;
           #{tab}function
         """
-        Base::traverseChildren.call this, false, ->
+        Base::traverseChildren.call this, ->
           it.expression ||= Literal '_this' if it instanceof Return
         body.append Return Literal '_this'
       else if b = sscope.method?.bound
@@ -855,10 +859,6 @@ class exports.Code extends Base
     code += "\n#{tab}return #{name};" if @returns
     return tab + code if statement
     if @front then "(#{code})" else code
-
-  # Short-circuit `traverseChildren` method to prevent it
-  # from crossing scope boundaries unless `crossScope`.
-  traverseChildren: -> super ... if it
 
 #### Param
 # A parameter in a function definition with an arbitrary LHS and
