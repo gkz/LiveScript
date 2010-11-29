@@ -2,9 +2,10 @@
 <title>Coco Docs</title>
 <style>
 body {margin:0 1% 1ex}
+pre  {font-size:small; overflow-x:auto}
 .comment, .code {display:inline-block}
-.comment {width:40%; margin-left:1%}
-.code    {width:55%; float:right; overflow-x:auto; font-size:small}
+.comment {width:35%; margin-left:1%}
+.code    {width:60%; float:right}
 .section {clear:both; position:relative}
 .anchor  {position:absolute; font:bold small mono-space}
 .pointee {font-weight:bold}
@@ -14,11 +15,12 @@ body {margin:0 1% 1ex}
  border-width:0 0 3px 3px; border-style:solid;
  -moz-border-radius-bottomleft:1.5ex;
 }
-.comment:not(:hover) > .anchor,
-#navi.menu > h1,
-#navi.menu:not(:hover) > :not(.pointee),
-#navi.menu:hover > .pointee,
-#navi:not(.menu) > .pointee {display:none}
+.comment:not(:hover) > .anchor
+, #navi.menu > h1
+, #navi.menu:not(:hover) > :not(.pointee)
+, #navi.menu:hover > .pointee
+, #navi:not(.menu) > .pointee {display:none}
+/* prettify */
 .pun, .opn, .clo {color:#660}
 .str {color:#080}
 .kwd {color:#008}

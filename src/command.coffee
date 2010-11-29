@@ -5,19 +5,20 @@ Coco = require('./coco') import all require('events').EventEmitter::
 # External dependencies.
 fs             = require 'fs'
 path           = require 'path'
-{OptionParser} = require './optparse'
 {spawn, exec}  = require 'child_process'
 
-BANNER   = 'Usage: coco [options] [files]'
-SWITCHES = [
+# Top-level objects shared by all the functions.
+# Use the [OptionParser](#optparse) to extract all options from
+# `process.argv` that are specified in `SWITCHES`.
+oparser = require('./optparse').OptionParser [
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-i', '--interactive',     'run an interactive Coco REPL']
-  ['-o', '--output [DIR]',    'set the directory for compiled JavaScript']
+  ['-o', '--output DIR',      'set the directory for compiled JavaScript']
   ['-w', '--watch',           'watch scripts for changes, and recompile']
   ['-p', '--print',           'print the compiled JavaScript to stdout']
   ['-s', '--stdio',           'listen for and compile scripts over stdio']
   ['-e', '--eval',            'compile a string from the command line']
-  ['-r', '--require [FILE*]', 'require a library before executing your script']
+  ['-r', '--require FILE*',   'require a library before executing your script']
   ['-b', '--bare',            'compile without the top-level function wrapper']
   ['-t', '--tokens',          'print the tokens that the lexer produces']
   ['-n', '--nodes',           'print the parse tree the parser produces']
@@ -25,10 +26,6 @@ SWITCHES = [
   ['-h', '--help',            'display this help message']
 ]
 
-# Top-level objects shared by all the functions.
-# Use the [OptionParser](#optparse) to extract all options from
-# `process.argv` that are specified in `SWITCHES`.
-oparser = new OptionParser SWITCHES, BANNER
 o       = oparser.parse process.argv.slice 2
 sources = o.arguments
 o.run   = ! (o.compile or o.print)
@@ -161,6 +158,6 @@ repl = ->
   repl.prompt()
 
 # Print the `--help` message.
-help    = -> say oparser.help()
+help    = -> say 'Usage: coco [options] [files]\n\n' + oparser.help()
 # Print the `--version` message.
 version = -> say "Coco #{Coco.VERSION}"

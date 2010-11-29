@@ -1,27 +1,24 @@
-# Ensure that the OptionParser handles arguments correctly.
-return unless require?
 {OptionParser} = require './../lib/optparse'
 
-opt = new OptionParser [
-  ['-r', '--required [DIR]',  'desc required']
-  ['-o', '--optional',        'desc optional']
-  ['-l', '--list [FILES*]',   'desc list']
+opt = OptionParser [
+  ['-r', '--required DIR',  'desc required']
+  ['-o', '--optional',      'desc optional']
+  ['-l', '--list FILES*',   'desc list']
 ]
 
-result = opt.parse ['one', 'two', 'three', '-r', 'dir']
+result = opt.parse <[ one two three -or dir ]>
 
-eq result.arguments.length, 5
-eq result.arguments[3], '-r'
+eq result.arguments.length, 6
+eq result.arguments[4], '-r'
 
-result = opt.parse ['--optional', '-r', 'folder', 'one', 'two']
+result = opt.parse <[ --optional -r folder one two ]>
 
 eq result.optional, true
 eq result.required, 'folder'
-eq result.arguments.join(' '), 'one two'
+eq result.arguments + '', 'one,two'
 
-result = opt.parse ['-l', 'one.txt', '-l', 'two.txt', 'three']
+result = opt.parse <[ -l one.txt -l two.txt three ]>
 
 ok result.list instanceof Array
-eq result.list.join(' '), 'one.txt two.txt'
-eq result.arguments.join(' '), 'three'
-
+eq result.list + '', 'one.txt,two.txt'
+eq result.arguments + '', 'three'

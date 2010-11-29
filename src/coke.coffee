@@ -29,13 +29,12 @@ global import
   # Define an option that the Cokefile accepts. The parsed options hash,
   # containing all of the command-line options passed, will be made available
   # as the first argument to the action.
-  option: (letter, flag, description) ->
-    Switches.push [letter, flag, description]
+  option: -> Switches.push [arguments...]
 
   # Invoke another task in the current Cokefile.
   invoke: (name) ->
     unless name in Tasks
-      console.error "no such task: \"#{name}\""
+      console.error 'no such task: "%s"', name
       process.exit 1
     Tasks[name].action this
 
@@ -47,15 +46,15 @@ exports.run = ->
   fileName = args.splice(0, 2)[1] if args[0] of <[ -f --cokefile ]>
   Path.exists fileName ||= 'Cokefile', (exists) ->
     unless exists
-      console.error "no \"#{fileName}\" in #{ process.cwd() }"
+      console.error 'no "%s" in %s', fileName, process.cwd()
       process.exit 1
     Coco.run "#{ FS.readFileSync fileName }", {fileName}
-    oparser = new OptionParser Switches
+    oparser = OptionParser Switches
     return printTasks oparser unless args.length
     options = oparser.parse args
     options.arguments.forEach invoke, options
 
-# Display the list of tasks in a format similar to `rake -T`
+# Display the list of tasks in a format similar to `rake -T`.
 printTasks = (oparser) ->
   say ''
   width = Math.max Object.keys(Tasks).map(-> it.length)...
@@ -63,8 +62,9 @@ printTasks = (oparser) ->
   for name, task in Tasks
     desc = if task.description then '# ' + task.description else ''
     say "coke #{ (name + pad).slice 0, width } #{desc}"
-  say if Switches.length then oparser.help() else ''
+  say '\n' + oparser.help() if Switches.length
   say '''
+
     Coke options:
       -f, --cokefile [FILE]   use FILE as the Cokefile
   '''
