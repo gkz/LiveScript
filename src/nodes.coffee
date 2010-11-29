@@ -639,9 +639,9 @@ class exports.Arr extends Base
 #### Class
 # The Coco class definition.
 class exports.Class extends Base
-  (@title, @parent, @body = Expressions()) =>
+  (@title, @parent, body) => @code = Code [], body
 
-  children: <[ title parent body ]>
+  children: <[ title parent code ]>
 
   compileNode: (o) ->
     if @title
@@ -652,10 +652,10 @@ class exports.Class extends Base
         throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
     name  = decl or @name
     name  = '_Class' unless name and IDENTIFIER.test name
-    lname = Literal name
+    lname = Literal @code.bound = name
     proto = Value lname, [Access Literal 'prototype']
-    @body.traverseChildren -> it.clas = name if it instanceof Code
-    for node, i of exps = @body.expressions
+    @code.body.traverseChildren -> it.clas = name if it instanceof Code
+    for node, i of exps = @code.body.expressions
       if node.isObject()
         exps[i] = Import proto, node, true
       else if node instanceof Code
@@ -667,7 +667,7 @@ class exports.Class extends Base
     ctor import {name, 'ctor', 'statement', clas: null}
     exps.unshift Extends lname, @parent if @parent
     exps.push lname
-    clas = Parens Call(Code([], @body) import {bound: name}, []), true
+    clas = Parens Call(@code, []), true
     clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
     clas.compile o
