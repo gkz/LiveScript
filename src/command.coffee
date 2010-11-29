@@ -150,9 +150,8 @@ repl = ->
   repl.on 'line', ->
     try
       r = Coco.eval "#{it}", bare: true, globals: true, fileName: 'repl'
-    catch e
-      r = e?.stack or e
-    say r unless r is void
+      console.dir r unless r is void
+    catch e then say e
     repl.prompt()
   repl.setPrompt 'coco> '
   repl.prompt()
