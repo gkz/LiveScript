@@ -4,65 +4,58 @@
 
 navi = document.getElementById 'navi'
 docs = document.getElementById 'docs'
+sdcv = new Showdown.converter
+htms = __proto__: null
 
-htmls = {}
-
-build = (page, source) ->
-  [name] = page
-  blocks = []
-  comm = code = ''
-  re = /^[^\n\S]*#(?!##[^#]|{) ?(.*)/
-  br = true
-  for line of source.split '\n'
-    unless line
-      br = true
-      code += '\n' if code
-      continue
-    if m = re.exec line
-      if code or comm and br
-        blocks.push [comm, code]
-        comm = code = ''
-      comm += m[1] + '\n'
-    else
-      code += line + '\n'
-    br = false
-  blocks.push [comm, code] if comm
-  html = "<h1>#{name}</h1>"
-  for [comm, code], i of blocks
-    html += """
-      <div id=#{i} class=section>
-      <div class=comment>
-        <a class=anchor href=##{name}#{i}>##{i}</a>
-        #{ new Showdown.converter().makeHtml comm }
-      </div>
-      <pre class="code prettyprint lang-coffee">#{
-        code.replace /&/g, '&amp;'
-            .replace /</g, '&lt;'
-      }</pre>
-      </div>
-    """
-  load page, htmls[name] = html
-
-load = ([name, sect], html) ->
-  document.title = name + ' - Coco Docs'
-  docs.innerHTML = html
-  docs.style.display = 'block'
-  document.getElementById(sect).scrollIntoView() if sect
-  prettyPrint()
-
-do @onhashchange = navigate = ->
-  docs.style.display = 'none'
+do @onhashchange = ->
   unless page = /^\D+(?=(\d*)$)/.exec location.hash.slice 1
-    navi.className = ''
+    navi.className = docs.innerHTML = ''
     return
   navi.className = 'menu'
+  docs.innerHTML = '...'
   [name] = page
-  if name in htmls
-    load page, htmls[name]
-    return
+  return load page, htms[name] if name in htms
   xhr = new XMLHttpRequest
   xhr.open 'GET', name + '.coffee', true
   xhr.overrideMimeType? 'text/plain'
   xhr.onreadystatechange = ->
-    build page, xhr.responseText if xhr.readyState is 4
+    if xhr.readyState is 4
+      load page, htms[name] = "<h1>#{name}</h1>" + build xhr.responseText
   xhr.send null
+
+load = ([name, sect], html) ->
+  document.title = name + ' - Coco Docs'
+  docs.innerHTML = html
+  document.getElementById(sect).scrollIntoView() if sect
+  prettyPrint()
+
+build = (source) ->
+  htm = comment = code = i = ''
+  re  = /^[^\n\S]*#(?!##[^#]|{) ?(.*)/
+  for line of source.split '\n'
+    unless line
+      br = true
+      code &&+= '\n'
+      continue
+    if m = re.exec line
+      if code or comment and br
+        htm += block comment, code, i++
+        comment = code = ''
+      comment += m[1] + '\n'
+    else
+      code += line + '\n'
+    br = false
+  htm += block comment, code, i if comment
+  htm
+
+block = (comment, code, i) ->
+  code &&= """
+   <pre class="code prettyprint lang-coffee"
+    >#{ code.replace(/&/g, '&amp;').replace(/</g, '&lt;') }</pre>
+  """
+  """
+   <div id=#{i} class=block><div class=comment
+    ><a class=anchor href=##{name}#{i}>##{i}</a
+    >#{ sdcv.makeHtml comment }</div
+    >#{code}</div>
+  """
