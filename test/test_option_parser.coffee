@@ -1,3 +1,5 @@
+return unless require?
+
 {OptionParser} = require './../lib/optparse'
 
 opt = OptionParser [
