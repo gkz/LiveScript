@@ -320,15 +320,12 @@ grammar =
   ]
 
   Cases: [
-    o 'Case',       -> [$1]
-    o 'Cases Case', -> $1.concat $2
+    o       'CASE SimpleArgs Block', -> [Case $2, $3]
+    o 'Cases CASE SimpleArgs Block', -> $1.concat Case $3, $4
   ]
-  Case: [
-    o 'CASE SimpleArgs Block', -> Case $2, $3
-  ]
-  # Just simple, comma-separated, required arguments (no fancy syntax). We need
-  # this to be separate from the **ArgList** for use in **Switch** blocks, where
-  # having the newlines wouldn't make sense.
+  # Just simple, comma-separated, required arguments (no fancy syntax).
+  # We need this to be separate from the **ArgList** for use in **Cases**,
+  # where having the newlines wouldn't make sense.
   SimpleArgs: [
     o 'Expression',              -> [$1]
     o 'SimpleArgs , Expression', -> $1.concat $3
