@@ -1418,18 +1418,15 @@ UTILITIES =
   # Correctly set up a prototype chain for inheritance, including a reference
   # to the superclass for `super()` calls.
   extends: '''
-    function(child, parent){
-      function ctor(){ this.constructor = child; }
-      ctor.prototype = parent.prototype;
-      child.prototype = new ctor;
-      child.superclass = parent;
-      return child;
+    function(sub, sup){
+      function ctor(){} ctor.prototype = (sub.superclass = sup).prototype;
+      return (sub.prototype = new ctor).constructor = sub;
     }
   '''
 
   # Create a function bound to the current value of "this".
   bind: '''
-    function(me, fn){ return function(){ return fn.apply(me, arguments); }; }
+    function(me, fn){ return function(){ return fn.apply(me, arguments) } }
   '''
 
   # Copies properties from right to left.
@@ -1441,10 +1438,7 @@ UTILITIES =
     }
   '''
   importAll: '''
-    function(obj, src){
-      for (var key in src) obj[key] = src[key];
-      return obj;
-    }
+    function(obj, src){ for (var key in src) obj[key] = src[key]; return obj }
   '''
 
   # Shortcuts to speed up the lookup time for native functions.
