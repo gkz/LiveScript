@@ -11,11 +11,8 @@
 # reduces into the [nonterminal](http://en.wikipedia.org/wiki/Terminal_and_nonterminal_symbols)
 # (the enclosing name at the top), and we proceed from there.
 #
-# If you run the `cake build:parser` command, Jison constructs a parse table
-# from our rules and saves it into `lib/parser.js`.
-
-# The only dependency is on the **Jison.Parser**.
-{Parser} = require 'jison'
+# If you run the `coke build:parser` command, Jison constructs a parse table
+# from our rules and saves it into [lib/parser.js](../lib/parser.js).
 
 # Jison DSL
 # ---------
@@ -63,17 +60,15 @@ grammar =
     o 'Object'
   ]
 
-  # The types of things that can be treated as values -- assigned to, invoked
-  # as functions, indexed into, named as a class, etc.
+  # The types of things that can be accessed or indexed into.
   Value: [
     o 'Assignable'    ,-> Value $1
     o 'STRNUM'        ,-> Value Literal $1
     o 'Parenthetical' ,-> Value $1
     o 'THIS'          ,-> Value Literal 'this'
     o 'LITERAL'       ,-> Value Literal $1
-    o 'Value CALL_START                  CALL_END' ,-> Value Call $1, []  , $2
-    o 'Value CALL_START ...              CALL_END' ,-> Value Call $1, null, $2
     o 'Value CALL_START ArgList OptComma CALL_END' ,-> Value Call $1, $3  , $2
+    o 'Value CALL_START ...              CALL_END' ,-> Value Call $1, null, $2
   ]
 
   # Variables and properties that can be assigned to.
@@ -92,11 +87,11 @@ grammar =
   Expression: [
     o 'Value'
 
-    # Arithmetic and logical operators, working on one or more operands.
-    # Here they are grouped by order of precedence. The actual precedence rules
-    # are defined at the bottom of the page. It would be shorter if we could
-    # combine most of these rules into a single generic *Operand OpSymbol Operand*
-    # -type rule, but in order to make the precedence binding possible, separate
+    # Arithmetic and logical operators, working on one or two operands.
+    # The precedence rules are defined at the bottom of the page.
+    # It would be shorter if we could # combine most of these rules into
+    # a single generic "Operand OpSymbol Operand"-type rule,
+    # but in order to make the precedence binding possible, separate
     # rules are necessary.
     o 'Expression PLUS_MINUS Expression', -> Op $2, $1, $3
     o 'Expression MATH       Expression', -> Op $2, $1, $3
@@ -106,7 +101,7 @@ grammar =
     o 'Expression IMPORT     Expression', -> Import $1, $3, $2
     o 'Expression RELATION   Expression', ->
       [] = if $2.charAt(0) is '!'
-      then Op($2.slice(1), $1, $3).invert()
+      then Op($2.slice 1; $1; $3).invert()
       else Op $2, $1, $3
 
     o 'UNARY      Expression',            -> Op $1, $2
@@ -181,15 +176,14 @@ grammar =
   # as well as the contents of an array literal
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
-    o 'Arg',                                              -> [$1]
-    o 'ArgList , Arg',                                    -> $1.concat $3
-    o 'ArgList OptComma TERMINATOR Arg',                  -> $1.concat $4
-    o 'INDENT ArgList OptComma OUTDENT',                  -> $2
-    o 'ArgList OptComma INDENT ArgList OptComma OUTDENT', -> $1.concat $4
+    o ''                                                 ,-> []
+    o 'Arg'                                              ,-> [$1]
+    o 'ArgList , Arg'                                    ,-> $1.concat $3
+    o 'ArgList OptComma TERMINATOR Arg'                  ,-> $1.concat $4
+    o 'ArgList OptComma INDENT ArgList OptComma OUTDENT' ,-> $1.concat $4
   ]
   # The array literal.
   Array: [
-    o '[                  ]', -> Arr []
     o '[ ArgList OptComma ]', -> Arr $2
   ]
 
@@ -292,10 +286,10 @@ grammar =
     o 'IfBlock ELSE Block',               -> $1.addElse $3
   ]
 
-  # The source of a comprehension is an array or object with an optional guard
-  # clause. If it's an array comprehension, you can also choose to step through
-  # in fixed-size increments.
   LoopHead: [
+    # The source of a `for`-loop is an array, object or range.
+    # Unless it's iterating over an object, you can choose to step through
+    # in fixed-size increments.
     o 'FOR Assignable              FOROF Expression'
     , -> mix For(), name: $2,            source: $4
     o 'FOR Assignable , IDENTIFIER FOROF Expression'
@@ -315,8 +309,8 @@ grammar =
     o 'FOR IDENTIFIER FROM Expression TO Expression BY Expression'
     , -> mix For(), index: $2, from: $4, op: $5, to: $6, step : $8
 
-    o 'FOR EVER',         -> While()
-    o 'WHILE Expression', -> While $2, $1
+    o 'WHILE Expression' ,-> While $2, $1
+    o 'FOR EVER'         ,-> While()
   ]
 
   Cases: [
@@ -337,8 +331,8 @@ grammar =
     o 'EXTENDS Value', -> $2
   ]
 
-  # The **Root** is the top-level node in the syntax tree. Since we parse bottom-up,
-  # all parsing must end here.
+  # The **Root** is the top-level node in the syntax tree.
+  # Since we parse bottom-up, all parsing must end here.
   Root: [
     o '', -> Expressions()
     o 'Body'
@@ -391,7 +385,7 @@ tokens = for name, alternatives in grammar
 # rules, and the name of the root. Reverse the operators because Jison orders
 # precedence from low to high, and we have it high to low
 # (as in [Yacc](http://dinosaur.compilertools.net/yacc/index.html)).
-exports.parser = new Parser
+exports.parser = new (require 'jison').Parser
   tokens      : tokens.join ' '
   bnf         : grammar
   operators   : operators.reverse()
