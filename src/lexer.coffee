@@ -185,11 +185,11 @@ class exports.Lexer
 
   # Matches block comments.
   commentToken: ->
-    match = HERECOMMENT.exec(@chunk) or [@chunk, @chunk.slice 3]
-    @token 'HERECOMMENT', @sanitizeHeredoc match[1],
+    text = @chunk.slice 3, if ~end = @chunk.indexOf '###', 3 then end else 1/0
+    @token 'HERECOMMENT', @sanitizeHeredoc text,
       comment: true, indent: Array(@indent + 1).join(' ')
     @token<[ TERMINATOR \n ]>
-    @countLines(match[0]).length
+    @countLines(text).length + 6
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
@@ -240,17 +240,17 @@ class exports.Lexer
 
   # Matches words literal, a syntax sugar for an array of strings.
   wordsToken: ->
-    @carp 'unterminated words' unless words = WORDS.exec @chunk
+    @carp 'unterminated words' unless ~end = @chunk.indexOf ']>', 2
     if call = not @last.spaced and @last[0] of CALLABLE
     then @token<[ CALL_START ( ]>
     else @token<[ [          [ ]>
-    for word of (words[=0]).slice(2, -2).match(/\S+/g) or ['']
+    for word of (words = @chunk.slice 2, end).match(/\S+/g) or ['']
       @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
     @countLines words
     if call
     then @token<[ ) ) ]>
     else @token<[ ] ] ]>
-    words.length
+    end + 2
 
   # Matches newlines, indents, and outdents, and determines which is which.
   # If we can detect that the current line is continued onto the the next line,
@@ -553,11 +553,9 @@ HERESINGLE  = /// ^ ''' ([\s\S]*?) (?:\n[^\n\S]*)? ''' ///
 HEREDOUBLE  = /// ^ """ ([\s\S]*?) (?:\n[^\n\S]*)? """ ///
 WHITESPACE  = /^[^\n\S]+/
 COMMENTS    = /^(?:\s*#(?!##[^#]).*)+/
-HERECOMMENT = /^###([\s\S]*?)###/
 MULTIDENT   = /^(?:\n[^\n\S]*)+/
 SIMPLESTR   = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN     = /^`[^\\`]*(?:\\.[^\\`]*)*`/
-WORDS       = /^<\[[\s\S]*?]>/
 
 # Regex-matching-regexes.
 REGEX = /// ^
