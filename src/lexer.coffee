@@ -46,8 +46,8 @@ class exports.Lexer
       switch code.charAt i
       case '\n'then i += do @lineToken
       case ' ' then i += do @whitespaceToken
-      case "'" then i += @heredocToken(HERESINGLE) or do @singleStringToken
-      case '"' then i += @heredocToken(HEREDOUBLE) or do @doubleStringToken
+      case "'" then i += @heredocToken("'") or do @singleStringToken
+      case '"' then i += @heredocToken('"') or do @doubleStringToken
       case '<'
         i += if '[' is code.charAt i+1 then @wordsToken() else @literalToken()
       case '/'
@@ -173,15 +173,15 @@ class exports.Lexer
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
-  heredocToken: (regex) ->
-    return 0 unless match = regex.exec @chunk
-    [heredoc] = match
-    quote = heredoc.charAt 0
-    doc   = @sanitizeHeredoc match[1], {quote, indent: null}
-    if quote is '"' and 0 <= doc.indexOf '#{'
+  heredocToken: (q) ->
+    return 0 unless @chunk.slice(1, 3) is q+q and
+                    ~end = @chunk.indexOf q+q+q, 3
+    text = @chunk.slice 3, end
+    doc  = @sanitizeHeredoc text.replace(/\n[^\n\S]*$/, ''), {q}
+    if q is '"' and ~doc.indexOf '#{'
     then @interpolateString doc, newline: '\\n'
-    else @token 'STRNUM', @makeString doc, quote, '\\n'
-    @countLines(heredoc).length
+    else @token 'STRNUM', @makeString doc, q, '\\n'
+    @countLines(text).length + 6
 
   # Matches block comments.
   commentToken: ->
@@ -549,8 +549,6 @@ SYMBOL = /// ^ (?:
   >>>?=?            | # rite shift
   \S
 ) ///
-HERESINGLE  = /// ^ ''' ([\s\S]*?) (?:\n[^\n\S]*)? ''' ///
-HEREDOUBLE  = /// ^ """ ([\s\S]*?) (?:\n[^\n\S]*)? """ ///
 WHITESPACE  = /^[^\n\S]+/
 COMMENTS    = /^(?:\s*#(?!##[^#]).*)+/
 MULTIDENT   = /^(?:\n[^\n\S]*)+/
