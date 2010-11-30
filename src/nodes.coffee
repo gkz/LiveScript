@@ -5,8 +5,8 @@
 
 {Scope} = require './scope'
 
-#### Base
-# The **Base** is the abstract base class for all nodes in the syntax tree.
+#### Node
+# The **Node** is the abstract base class for all nodes in the syntax tree.
 # Each subclass implements the `compileNode` method, which performs the
 # code generation for that node. To compile a node to JavaScript,
 # call `compile` on it, which wraps `compileNode` in some generic extra smarts,
@@ -15,7 +15,7 @@
 # the environment from higher in the tree (such as if a returned value is
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
-class exports.Base
+class exports.Node
   # Common logic for determining whether to wrap this node in a closure before
   # compiling it, or to compile directly. We need to wrap if this node is a
   # *statement*, and it's not a *pureStatement*, and we're not at
@@ -142,7 +142,7 @@ class exports.Base
 # The expressions body is the list of expressions that forms the body of an
 # indented block of code -- the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on...
-class exports.Expressions extends Base
+class exports.Expressions extends Node
   (node) =>
     return node if node instanceof Expressions
     @expressions = if node then [node] else []
@@ -221,7 +221,7 @@ class exports.Expressions extends Base
 # Literals are static values that can be passed through directly into
 # JavaScript without translation, such as identifiers, numbers, `this`, `break`
 # and pretty much everything that doesn't fit in other nodes.
-class exports.Literal extends Base
+class exports.Literal extends Node
   (@value) =>
     # Break and continue must be treated as pure statements -- they lose their
     # meaning when wrapped in a closure.
@@ -247,7 +247,7 @@ class exports.Literal extends Base
   toString: -> ' "' + @value + '"'
 
 #### Return
-class exports.Return extends Base
+class exports.Return extends Node
   (@expression) =>
 
   children: ['expression']
@@ -264,7 +264,7 @@ class exports.Return extends Base
 #### Value
 # Container for property access chains, by holding `Access`/`Index` instances
 # wihtin `@properties`.
-class exports.Value extends Base
+class exports.Value extends Node
   # A **Value** has a base and a list of property accesses.
   (base, props, tag) =>
     return base if not props and base instanceof Value
@@ -384,7 +384,7 @@ class exports.Value extends Base
 #### Comment
 # Coco passes through block comments as JavaScript block comments
 # at the same position.
-class exports.Comment extends Base
+class exports.Comment extends Node
   (@comment) =>
 
   isPureStatement : YES
@@ -397,7 +397,7 @@ class exports.Comment extends Base
 
 #### Call
 # Node for a function invocation.
-class exports.Call extends Base
+class exports.Call extends Node
   (@callee, @args, open) =>
     @args or= (@splat = true; [Literal 'this'; Literal 'arguments'])
     @soak   = true if open is '?('
@@ -471,7 +471,7 @@ class exports.Call extends Base
 
 #### Extends
 # Node to extend an object's prototype with an ancestor object.
-class exports.Extends extends Base
+class exports.Extends extends Node
   (@child, @parent) =>
 
   children: <[ child parent ]>
@@ -481,7 +481,7 @@ class exports.Extends extends Base
 
 #### Import
 # Handles the `import` operation that copies properties from right to left.
-class exports.Import extends Base
+class exports.Import extends Node
   (@left, @right, own) => @util = if own then 'import' else 'importAll'
 
   children: <[ left right ]>
@@ -530,7 +530,7 @@ class exports.Import extends Base
 
 #### Access
 # `.` accesses into a property of a value.
-class exports.Access extends Base
+class exports.Access extends Node
   (@name, symbol) =>
     switch symbol
     case '?.' then @soak   = true
@@ -551,7 +551,7 @@ class exports.Access extends Base
 
 #### Index
 # `[ ... ]` indexed access.
-class exports.Index extends Base
+class exports.Index extends Node
   (@index, symbol) =>
     switch symbol
     case '?[' then @soak   = true
@@ -568,7 +568,7 @@ class exports.Index extends Base
 
 #### Obj
 # `{}`
-class exports.Obj extends Base
+class exports.Obj extends Node
   (@items = []) =>
 
   children: ['items']
@@ -618,7 +618,7 @@ class exports.Obj extends Base
 
 #### Arr
 # `[]`
-class exports.Arr extends Base
+class exports.Arr extends Node
   (@items = []) =>
 
   children: ['items']
@@ -638,7 +638,7 @@ class exports.Arr extends Base
 
 #### Class
 # The Coco class definition.
-class exports.Class extends Base
+class exports.Class extends Node
   (@title, @parent, body) => @code = Code [], body
 
   children: <[ title parent code ]>
@@ -675,7 +675,7 @@ class exports.Class extends Base
 #### Assign
 # Used to assign a local variable to value, or to set the
 # property of an object -- including within object literals.
-class exports.Assign extends Base
+class exports.Assign extends Node
   (@left, @right, @op = '=', @logic = @op.logic) => @op += ''
 
   children: <[ left right ]>
@@ -780,7 +780,7 @@ class exports.Assign extends Base
 # A function definition. This is the only node that creates a new `Scope`.
 # When for the purposes of walking the contents of a function body, the Code
 # has no *children* -- they're within the inner scope.
-class exports.Code extends Base
+class exports.Code extends Node
   (@params = [], @body = Expressions(), arrow) =>
     @bound = '_this' if arrow is '=>'
 
@@ -816,7 +816,7 @@ class exports.Code extends Base
            _ctor(){} _ctor.prototype = #{name}.prototype;
           #{tab}function
         """
-        Base::traverseChildren.call this, ->
+        Node::traverseChildren.call this, ->
           it.expression ||= Literal '_this' if it instanceof Return
         body.append Return Literal '_this'
       else if b = sscope.method?.bound
@@ -863,7 +863,7 @@ class exports.Code extends Base
 #### Param
 # A parameter in a function definition with an arbitrary LHS and
 # an optional default value.
-class exports.Param extends Base
+class exports.Param extends Node
   (@name, @value, @splat) =>
 
   children: <[ name value ]>
@@ -887,7 +887,7 @@ class exports.Param extends Base
 #### Splat
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
-class exports.Splat extends Base
+class exports.Splat extends Node
   (name) => @name = if name.compile then name else Literal name
 
   children: ['name']
@@ -920,7 +920,7 @@ class exports.Splat extends Base
 
 #### While
 # A while loop, the only sort of low-level loop exposed by Coco.
-class exports.While extends Base
+class exports.While extends Node
   (@condition, name) => @condition.=invert() if name is 'until'
 
   children: <[ condition body ]>
@@ -968,7 +968,7 @@ class exports.While extends Base
 
 #### Op
 # Simple Arithmetic and logical operations, with some special conversions.
-class exports.Op extends Base
+class exports.Op extends Node
   (op, first, second, post) =>
     return Of first, second if op is 'of'
     return Call first, []   if op is 'do'
@@ -1071,7 +1071,7 @@ class exports.Op extends Base
 #### Of
 # Handles `of` operation that test if the left operand is included within
 # the right operand, arraywise.
-class exports.Of extends Base
+class exports.Of extends Node
   (@object, @array) =>
 
   children: <[ object array ]>
@@ -1105,7 +1105,7 @@ class exports.Of extends Base
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
-class exports.Try extends Base
+class exports.Try extends Node
   (@attempt, @thrown, @recovery, @ensure) =>
 
   children: <[ attempt recovery ensure ]>
@@ -1132,7 +1132,7 @@ class exports.Try extends Base
 
 #### Throw
 # Simple node to throw an exception.
-class exports.Throw extends Base
+class exports.Throw extends Node
   (@expression) =>
 
   children: ['expression']
@@ -1145,7 +1145,7 @@ class exports.Throw extends Base
 
 #### Existence
 # Checks a value for existence --  not `undefined` and not `null`.
-class exports.Existence extends Base
+class exports.Existence extends Node
   (@expression) =>
 
   children: ['expression']
@@ -1165,7 +1165,7 @@ class exports.Existence extends Base
 #### Parens
 # An extra set of parentheses, specified explicitly in the source.
 # Parentheses are a good way to force any statement to become an expression.
-class exports.Parens extends Base
+class exports.Parens extends Node
   (@expressions, @keep) =>
 
   children: ['expressions']
@@ -1194,7 +1194,7 @@ class exports.For extends While
   children: <[ source name from to step body ]>
 
   compileNode: (o) ->
-    if @index instanceof Base and not @index.=unwrap().value
+    if @index instanceof Node and not @index.=unwrap().value
       throw SyntaxError 'invalid index variable: ' + head.index
     {scope} = o
     @temps = []
@@ -1272,7 +1272,7 @@ class exports.For extends While
 #### Switch
 # The regular JavaScript `switch`-`case`-`default`,
 # but with forced `break` after each cases.
-class exports.Switch extends Base
+class exports.Switch extends Node
   (@switch, @cases, @default) =>
     tests[i].=invert() for own i in tests for {tests} of cases unless $switch
 
@@ -1298,7 +1298,7 @@ class exports.Switch extends Base
 
 #### Case
 # Convinient container node for `case` blocks.
-class exports.Case extends Base
+class exports.Case extends Node
   (@tests, @body) =>
 
   children: <[ tests body ]>
@@ -1324,7 +1324,7 @@ class exports.Case extends Base
 
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
-class exports.If extends Base
+class exports.If extends Node
   (@if, @then, {@statement, @soak, name} = {}) =>
     @if.=invert() if name is 'unless'
 
@@ -1385,7 +1385,7 @@ class exports.If extends Base
 
 #### Super
 # A simple node to lookup a reference to the parent method.
-class exports.Super extends Base
+class exports.Super extends Node
   =>
 
   isAssignable: YES
