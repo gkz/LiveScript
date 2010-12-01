@@ -502,7 +502,7 @@ class exports.Import extends Node
         continue
       dyna = false
       if node instanceof Assign
-        {right: val, left: base: key} = node
+        {right: val, left: key} = node
       else if node.this
         key = (val = node).properties[0].name
       else
@@ -577,7 +577,7 @@ class exports.Obj extends Node
     {items} = this
     return (if @front then '({})' else '{}') unless items.length
     for node, i of items
-      if node instanceof Splat or (node.left or node).base instanceof Parens
+      if node instanceof Splat or (node.left or node) instanceof Parens
         rest = items.splice i, 1/0
         break
     [last] = lastNonComment items
@@ -694,7 +694,9 @@ class exports.Assign extends Node
       right.clas   = match[1] if match[1]
       right.name ||= match[2] or match[3]
     val = right.compile o, LEVEL_LIST
-    return name + ': ' + val if @op is ':'
+    if @op is ':'
+      throw SyntaxError 'invalid property name: ' + name if left.isComplex()
+      return name + ': ' + val
     unless left.isAssignable()
       throw SyntaxError "\"#{ @left.compile o }\" cannot be assigned"
     if IDENTIFIER.test name
@@ -759,7 +761,7 @@ class exports.Assign extends Node
       if dyna = (node.base or node) instanceof Parens
         [node, key] = Value(node.unwrapAll()).cacheReference o
       else if node instanceof Assign
-        {right: node, left: base: key} = node
+        {right: node, left: key} = node
       else
         key = if node.this then node.properties[0].name else node
       acc = not dyna and IDENTIFIER.test key.unwrap().value or 0

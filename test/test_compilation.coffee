@@ -1,10 +1,13 @@
 # Ensure that carriage returns don't break compilation true Windows.
 eq 'one;\ntwo;', Coco.compile 'one\r\ntwo', bare: true
 
+
 # `globals: true` removes `var`s
 eq 'x = y;', Coco.compile 'x = y', bare: true, globals: true
 
+
 eq 'passed', Coco.eval '"passed"', bare: true, fileName: 'test'
+
 
 #750
 throws 'unclosed CALL_START on line 1', -> Coco.nodes 'f(->'
@@ -15,8 +18,10 @@ throws 'unterminated " on line 3'         , -> Coco.nodes '\n\n"\n'
 throws 'unterminated words on line 3'     , -> Coco.nodes '\n\n<[\n'
 throws 'unterminated heregex on line 3'   , -> Coco.nodes '\n\n///\n'
 
+
 eq 'for (k in o) {}'
 , Coco.compile 'for k in o then', bare: true, globals: true,
+
 
 eq '''
 /* (c) 2010 me */
@@ -47,5 +52,8 @@ while (0) {
 
 throws 'invalid use of void', -> Coco.compile 'do void'
 throws 'invalid use of null', -> Coco.compile 'null.po'
+
+throws 'invalid property name: this.p', -> Coco.compile '{@p:@}'
+
 
 eq '(function(){}());', Coco.compile 'do->', bare: true

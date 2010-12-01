@@ -243,23 +243,21 @@ grammar =
     o 'Object'
   ]
 
+  # Things that can be keys within an object literal.
   ObjAssignable: [
-    o 'STRNUM'     ,-> Literal $1
     o 'IDENTIFIER' ,-> Literal $1
+    o 'STRNUM'     ,-> Literal $1
     o 'Parenthetical'
-  ]
-  # Assignment when it happens within an object literal. The difference from
-  # the ordinary **Assign** is that these allow numbers and strings as keys.
-  AssignObj: [
-    o 'ObjAssignable',              -> Value $1
-    o 'ObjAssignable : Expression', -> Assign Value($1), $3, ':'
-    o 'ObjAssignable :
-       INDENT Expression OUTDENT',  -> Assign Value($1), $4, ':'
-    o 'IDENTIFIER    ...' ,-> Splat Literal $1
-    o 'Parenthetical ...' ,-> Splat $1
-    o '... IDENTIFIER'    ,-> Splat Literal $2
-    o '... Parenthetical' ,-> Splat $2
     o 'ThisProperty'
+  ]
+  AssignObj: [
+    o 'ObjAssignable :        Expression'         ,-> Assign $1, $3, ':'
+    o 'ObjAssignable : INDENT Expression OUTDENT' ,-> Assign $1, $4, ':'
+
+    o 'ObjAssignable'     ,-> $1
+    o 'ObjAssignable ...' ,-> Splat $1
+    o '... ObjAssignable' ,-> Splat $1
+
     o 'HERECOMMENT', -> Comment $1
   ]
   # Assignment of properties within an object literal can be separated by
