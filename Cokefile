@@ -134,16 +134,18 @@ runTests = (Coco) ->
         try Coco.run code += '', {fileName}
         catch e
           ++failedTests
-          {1: row, 2: col} =
-            ///#{fileName}:(\d+):(\d+)\)?$///m.exec(e.stack) or ''
+          return say e unless stk = e?.stack
+          msg = '' + /^.+/.exec stk
+          {1: row, 2: col} = ///#{fileName}:(\d+):(\d+)\)?$///m.exec(stk) or ''
           say tint "failed #{fileName}:#{row--}:#{col--}", red
-          say msg = '' + /^.+/.exec e.stack
           if row >= 0
             code = Coco.compile code
           else if /\bon line (\d+)\b/.test msg
             row = RegExp.$1 - 1
             col = 0
-          else return
+          else
+            return say stk
+          say msg
           {(row): line} = lines = code.split '\n'
           say lines.slice(row-5, row+0).join '\n'
           say line.slice(0, col) + tint line.slice(col), bold
