@@ -48,11 +48,6 @@ o = (patterns, action, options) ->
 # for the `UNLESS` terminal, and `$3` would be the value of the second
 # `Expression`.
 grammar =
-  # A literal identifier, a variable name or property.
-  Identifier: [
-    o 'IDENTIFIER', -> Literal $1
-  ]
-
   # Everything that can be assigned to.
   Assignable: [
     o 'SimpleAssignable'
@@ -73,9 +68,9 @@ grammar =
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o 'Identifier'
-    o 'Value ACCESS Identifier'                ,-> $1.append Access $3, $2
-    o 'Value INDEX_START Expression INDEX_END' ,-> $1.append Index  $3, $2
+    o 'IDENTIFIER'                             ,-> Literal $1
+    o 'Value ACCESS IDENTIFIER'                ,-> $1.append Access Literal($3), $2
+    o 'Value INDEX_START Expression INDEX_END' ,-> $1.append Index $3, $2
     o 'ThisProperty'
     o 'SUPER'                                  ,-> Super()
   ]
@@ -242,15 +237,15 @@ grammar =
     o 'ParamVar ASSIGN Expression', -> Param $1, $3
   ]
   ParamVar: [
-    o 'Identifier'
+    o 'IDENTIFIER', -> Literal $1
     o 'ThisProperty'
     o 'Array'
     o 'Object'
   ]
 
   ObjAssignable: [
-    o 'STRNUM', -> Literal $1
-    o 'Identifier'
+    o 'STRNUM'     ,-> Literal $1
+    o 'IDENTIFIER' ,-> Literal $1
     o 'Parenthetical'
   ]
   # Assignment when it happens within an object literal. The difference from
@@ -260,9 +255,9 @@ grammar =
     o 'ObjAssignable : Expression', -> Assign Value($1), $3, ':'
     o 'ObjAssignable :
        INDENT Expression OUTDENT',  -> Assign Value($1), $4, ':'
-    o 'Identifier    ...' ,-> Splat $1
+    o 'IDENTIFIER    ...' ,-> Splat Literal $1
     o 'Parenthetical ...' ,-> Splat $1
-    o '... Identifier'    ,-> Splat $2
+    o '... IDENTIFIER'    ,-> Splat Literal $2
     o '... Parenthetical' ,-> Splat $2
     o 'ThisProperty'
     o 'HERECOMMENT', -> Comment $1
