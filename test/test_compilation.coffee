@@ -47,3 +47,5 @@ while (0) {
 
 throws 'invalid use of void', -> Coco.compile 'do void'
 throws 'invalid use of null', -> Coco.compile 'null.po'
+
+eq '(function(){}());', Coco.compile 'do->', bare: true

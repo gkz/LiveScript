@@ -40,7 +40,7 @@ class Node
     func.wrapper = true
     if @contains(-> it.value is 'this')
       args.push Literal 'this'
-      call = Value func, [Access Literal 'call']
+      val = Value func, [Access Literal 'call']
     mentionsArgs = false
     @traverseChildren ->
       mentionsArgs := it.value = '_args' if it.value is 'arguments'
@@ -48,7 +48,7 @@ class Node
     if mentionsArgs
       args.push Literal 'arguments'
       func.params.push Param Literal '_args'
-    Parens(Call call or func, args; true).compileNode o
+    Call(val or func, args).compileNode o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -427,14 +427,16 @@ class exports.Call extends Node
 
   compileNode: (o) ->
     return asn.compile o if asn = @unfoldAssign o
-    @callee import {@front}
+    unless fun = (@callee.base or @callee) instanceof Code
+      @callee import {@front}
     if @splat
       return @compileSplat o, @args[1].value if @new
       return @callee.compile(o, LEVEL_ACCESS) +
              ".apply(#{ @args[0].compile o }, #{@args[1].value})"
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
-    (@new or '') + @callee.compile(o, LEVEL_ACCESS) +
-    "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
+    code = (@new or '') + @callee.compile(o, LEVEL_ACCESS) +
+           "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
+    if fun then "(#{code})" else code
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
@@ -662,7 +664,7 @@ class exports.Class extends Node
     ctor import {name, 'ctor', 'statement', clas: null}
     exps.unshift Extends lname, @parent if @parent
     exps.push lname
-    clas = Parens Call(@code, []), true
+    clas = Call @code, []
     clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
     clas.compile o
