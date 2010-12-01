@@ -46,7 +46,7 @@ exports.OptionParser = class
   # of the valid options, for `--help` and such.
   help: ->
     lines = ['Available options:']
-    width = Math.max @rules.map(-> it.longFlag.length)...
+    width = Math.max ...@rules.map -> it.longFlag.length
     pad   = Array(width >> 1).join '  '
     for rule of @rules
       sf = (rule.shortFlag &&+= ',') or '   '

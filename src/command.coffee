@@ -50,7 +50,7 @@ exports.run = ->
   args = if ~separator = sources.indexOf '--'
   then sources.splice(separator, 1/0).slice 1
   else []
-  args.unshift sources.splice(1, 1/0)... if o.run
+  args.unshift ...sources.splice 1, 1/0 if o.run
   process.ARGV = process.argv = args
   compileScripts()
 

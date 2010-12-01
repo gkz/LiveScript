@@ -171,6 +171,7 @@ grammar =
   Arg: [
     o 'Expression'
     o 'Expression ...', -> Splat $1
+    o '... Expression', -> Splat $2
   ]
   # The **ArgList** is both the list of objects passed into a function call,
   # as well as the contents of an array literal
@@ -237,6 +238,7 @@ grammar =
   Param: [
     o 'ParamVar',                   -> Param $1
     o 'ParamVar ...',               -> Param $1, null, true
+    o '... ParamVar',               -> Param $2, null, true
     o 'ParamVar ASSIGN Expression', -> Param $1, $3
   ]
   ParamVar: [
@@ -258,10 +260,12 @@ grammar =
     o 'ObjAssignable : Expression', -> Assign Value($1), $3, ':'
     o 'ObjAssignable :
        INDENT Expression OUTDENT',  -> Assign Value($1), $4, ':'
-    o 'Identifier    ...',          -> Splat $1
-    o 'Parenthetical ...',          -> Splat $1
+    o 'Identifier    ...' ,-> Splat $1
+    o 'Parenthetical ...' ,-> Splat $1
+    o '... Identifier'    ,-> Splat $2
+    o '... Parenthetical' ,-> Splat $2
     o 'ThisProperty'
-    o 'HERECOMMENT',                -> Comment $1
+    o 'HERECOMMENT', -> Comment $1
   ]
   # Assignment of properties within an object literal can be separated by
   # comma, as in JavaScript, or simply by newline.

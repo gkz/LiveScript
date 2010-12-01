@@ -57,7 +57,7 @@ exports.run = ->
 # Display the list of tasks in a format similar to `rake -T`.
 printTasks = (oparser) ->
   say ''
-  width = Math.max Object.keys(Tasks).map(-> it.length)...
+  width = Math.max ...Object.keys(Tasks).map -> it.length
   pad   = Array(width >> 1).join '  '
   for name, task in Tasks
     desc = if task.description then '# ' + task.description else ''

@@ -165,12 +165,10 @@ addImplicitIndentation = (tokens) ->
   while token = tokens[++i]
     [tag] = token
     if tag is 'ELSE' and tokens[i-1]?[0] isnt 'OUTDENT'
-      [ti, to] = indentation token
-      tokens.splice i++, 0, ti, to
+      tokens.splice i++, 0, ...indentation token
       continue
     if tag is 'CATCH' and tokens[i+2]?[0] of <[ OUTDENT TERMINATOR FINALLY ]>
-      [ti, to] = indentation token
-      tokens.splice i+2, 0, ti, to
+      tokens.splice i+2, 0, ...indentation token
       i += 3
       continue
     if tag is 'TERMINATOR' and tokens[i+1]?[0] is 'THEN'
