@@ -184,8 +184,6 @@ class exports.Expressions extends Node
 
   # If we happen to be the top-level **Expressions**, wrap everything in
   # a safety closure, unless requested not to.
-  # It would be better not to generate them in the first place, but for now,
-  # clean up obvious double-parentheses.
   compileRoot: (o) ->
     o.indent = @tab = if bare = delete o.bare then '' else TAB
     o.scope  = new Scope null, this, null
@@ -526,7 +524,7 @@ class exports.Import extends Node
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Access
-# `.` accesses into a property of a value.
+# `x.y`
 class exports.Access extends Node
   (@name, symbol) =>
     switch symbol
@@ -547,7 +545,7 @@ class exports.Access extends Node
     super.call this, idt, @constructor.name + if @assign then '=' else ''
 
 #### Index
-# `[ ... ]` indexed access.
+# `x[y]`
 class exports.Index extends Node
   (@index, symbol) =>
     switch symbol
@@ -564,7 +562,7 @@ class exports.Index extends Node
   toString: Access::toString
 
 #### Obj
-# `{}`
+# `{x: y}`
 class exports.Obj extends Node
   (@items = []) =>
 
@@ -614,7 +612,7 @@ class exports.Obj extends Node
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Arr
-# `[]`
+# `[x, y]`
 class exports.Arr extends Node
   (@items = []) =>
 
@@ -634,7 +632,6 @@ class exports.Arr extends Node
     else "[#{code}]"
 
 #### Class
-# The Coco class definition.
 class exports.Class extends Node
   (@title, @parent, body) => @code = Code [], body
 
@@ -671,7 +668,7 @@ class exports.Class extends Node
 
 #### Assign
 # Used to assign a local variable to value, or to set the
-# property of an object -- including within object literals.
+# property of an object--including `:` within object literals.
 class exports.Assign extends Node
   (@left, @right, @op = '=', @logic = @op.logic) => @op += ''
 
@@ -776,7 +773,7 @@ class exports.Assign extends Node
 #### Code
 # A function definition. This is the only node that creates a new `Scope`.
 # When for the purposes of walking the contents of a function body, the Code
-# has no *children* -- they're within the inner scope.
+# has no *children*--they're within the inner scope.
 class exports.Code extends Node
   (@params = [], @body = Expressions(), arrow) =>
     @bound = '_this' if arrow is '=>'
@@ -784,13 +781,12 @@ class exports.Code extends Node
   children: <[ params body ]>
 
   # Short-circuit `traverseChildren` method to prevent it
-  # from crossing scope boundaries unless `crossScope`.
+  # from crossing scope boundaries unless `xscope`.
   traverseChildren: (_, xscope) -> super ... if xscope
 
   isStatement: -> !!@statement
 
-  makeReturn: ->
-    if @statement then this import returns: true else super ...
+  makeReturn: -> if @statement then this import returns: true else super ...
 
   # Compilation creates a new scope unless explicitly asked to share with the
   # outer scope. Handles splat parameters in the parameter list by peeking at
@@ -859,7 +855,7 @@ class exports.Code extends Node
     if @front then "(#{code})" else code
 
 #### Param
-# A parameter in a function definition with an arbitrary LHS and
+# A parameter in a function definition with an arbitrary LHS expression and
 # an optional default value.
 class exports.Param extends Node
   (@name, @value, @splat) =>
@@ -1011,8 +1007,10 @@ class exports.Op extends Node
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
-  #     coco -e 'console.log 50 < 65 > 10'
+  #
+  #     $ coco -e 'console.log 50 < 65 === 9r72 > 10'
   #     true
+  #
   # See <http://docs.python.org/reference/expressions.html#notin>.
   compileChain: (o) ->
     [sub, ref] = @first.second.cache o
@@ -1035,7 +1033,6 @@ class exports.Op extends Node
     o.scope.free tmp if tmp
     code
 
-  # Compile a unary **Op**.
   compileUnary: (o) ->
     {op} = this
     return @compileDelete o if op is 'delete' and o.level
@@ -1115,8 +1112,6 @@ class exports.Try extends Node
     @recovery &&= @recovery.makeReturn it
     this
 
-  # Compilation is more or less as you would expect -- the *finally* clause
-  # is optional, the *catch* is not.
   compileNode: (o) ->
     o.indent += TAB
     code = @tab + "try {\n#{ @attempt.compile o, LEVEL_TOP }\n#{@tab}}"
@@ -1129,7 +1124,6 @@ class exports.Try extends Node
     code
 
 #### Throw
-# Simple node to throw an exception.
 class exports.Throw extends Node
   (@expression) =>
 
@@ -1142,7 +1136,7 @@ class exports.Throw extends Node
   compile: (o) -> o.indent + "throw #{ @expression.compile o, LEVEL_PAREN };"
 
 #### Existence
-# Checks a value for existence --  not `undefined` and not `null`.
+# Checks a value for existence--not `undefined` nor `null`.
 class exports.Existence extends Node
   (@expression) =>
 
@@ -1161,8 +1155,7 @@ class exports.Existence extends Node
     if o.level <= LEVEL_COND then code else "(#{code})"
 
 #### Parens
-# An extra set of parentheses, specified explicitly in the source.
-# Parentheses are a good way to force any statement to become an expression.
+# An extra set of parentheses, specifying explicitly in the source.
 class exports.Parens extends Node
   (@expressions, @keep) =>
 
@@ -1183,9 +1176,9 @@ class exports.Parens extends Node
     if expr.isStatement() then code else "(#{code})"
 
 #### For
-# Coco's replacement for the `for` loop is our array and object
-# comprehensions, that compile into `for` loops here. They also act as an
-# expression, able to return the result of each filtered iteration.
+# Coco's replacement for the `for` loop are array, object or range iterators.
+# They also act as an expression, collecting values from the last expression
+# and returning them as an array.
 class exports.For extends While
   =>
 
@@ -1269,7 +1262,7 @@ class exports.For extends While
       null
 
 #### Switch
-# The regular JavaScript `switch`-`case`-`default`,
+# Compiles to the regular JS `switch`-`case`-`default`,
 # but with forced `break` after each cases.
 class exports.Switch extends Node
   (@switch, @cases, @default) =>
@@ -1329,7 +1322,7 @@ class exports.If extends Node
 
   children: <[ if then else ]>
 
-  # Rewrite a chain of **Ifs** to add a default case as the final *else*.
+  # Rewrite a chain of **If**s to add a default case as the final `else`.
   addElse: ->
     if @chain
       @else.addElse it
@@ -1338,7 +1331,7 @@ class exports.If extends Node
       @else  = it
     this
 
-  # The **If** only compiles into a statement if either of its bodies needs
+  # An **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
     @statement or o and not o.level or
@@ -1365,7 +1358,7 @@ class exports.If extends Node
     then "{\n#{body}\n#{@tab}}"
     else '{}'
 
-  # Compile the If as a conditional operator.
+  # Compile me as a conditional operator.
   compileExpression: (o) ->
     code = @if.compile o, LEVEL_COND
     pad  = if @else?.isComplex() and @then.isComplex()
@@ -1376,14 +1369,14 @@ class exports.If extends Node
 
   unfoldSoak: -> @soak and this
 
-  # Unfold a node's child if soak, then tuck the node under created `If`
+  # Unfold a node's child if soak, then tuck the node under the created **If**.
   @unfoldSoak = (o, parent, name) ->
     return unless ifn = parent[name].unfoldSoak o
     parent[name] = ifn.then; ifn.then = Value parent
     ifn
 
 #### Super
-# A simple node to lookup a reference to the parent method.
+# Reference to the parent method.
 class exports.Super extends Node
   =>
 
@@ -1401,11 +1394,11 @@ class exports.Super extends Node
         return name + '.superclass'
     throw SyntaxError 'cannot call super on an anonymous function'
 
-# Export `import all` for use in parser, where the operator doesn't work.
+# Export `import all` for use in [parser](../lib/parser.js),
+# where the operator doesn't work.
 exports import all mix: __importAll
 
-# Constants
-# ---------
+##### Constants
 
 function YES  -> true
 function NO   -> false
@@ -1467,10 +1460,9 @@ METHOD_DEF = /// ^
   (?: (?:\.|^)([$A-Za-z_][$\w]*) | \[( ([\"\']).+?\4 | \d+ )])
 $ ///
 
-# Utility Functions
-# -----------------
+##### Helpers
 
-# Helper for ensuring that utility functions are assigned at the top level.
+# Declares a utility function at the top level.
 utility = (name) ->
   Scope.root.assign ref = '__' + name, UTILITIES[name]
   ref
