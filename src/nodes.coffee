@@ -234,13 +234,15 @@ class exports.Literal extends Node
   isComplex: NO
 
   compile: (o, level) ->
-    val = @value
+    switch val = @value
+    case 'this' then return o.scope.method?.bound or val
+    case 'void' then val += ' 8'; fallthrough
+    case 'null'
+      if (level ? o.level) is LEVEL_ACCESS
+        throw SyntaxError 'invalid use of ' + @value
+      return val
     switch
-    case val is 'this' then val = b if b = o.scope.method?.bound
-    case val is 'void' then val += ' 8'; fallthrough
-    case val is 'null' then if (level ? o.level) is LEVEL_ACCESS
-      throw SyntaxError 'invalid use of ' + @value 
-    case val.reserved  then val = '"' + val + '"'
+    case val.reserved  then return '"' + val + '"'
     case val.js        then @terminater = ''
     val
 
