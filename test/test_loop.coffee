@@ -187,3 +187,12 @@ eq "#{
   for d from 5 to 6     \
   for _ in {7}
 }", '40,30,48,36'
+
+
+new -> do =>
+  me = this
+  [] = for ever
+    eq me, this
+    eq me, do => this
+    break
+    1

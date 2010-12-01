@@ -38,7 +38,7 @@ class Node
     args = []
     func = Code [], Expressions this
     func.wrapper = true
-    if not o.scope.method?.bound and @contains(-> it.value is 'this')
+    if @contains(-> it.value is 'this')
       args.push Literal 'this'
       call = Value func, [Access Literal 'call']
     mentionsArgs = false
