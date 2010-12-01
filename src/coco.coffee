@@ -20,7 +20,7 @@ parser import
 # Compile a string of Coco code to JavaScript, using the Coco/Jison compiler.
 Coco.compile = (code, options) ->
   try
-    (parser.parse new Lexer().tokenize code).compile options
+    (parser.parse new Lexer().tokenize code).compileRoot options
   catch err
     err.message = "In #{options.fileName}, #{err.message}" if options?.fileName
     throw err

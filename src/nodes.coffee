@@ -1,7 +1,7 @@
 # Contains all of the node classes for the syntax tree. Most
 # nodes are created as the result of actions in the [grammar](#grammar),
 # but some are created by other nodes as a method of code generation. To convert
-# the syntax tree into a string of JavaScript code, call `compile()` on the root.
+# the syntax tree into a string of JavaScript code, call `compileRoot`.
 
 {Scope} = require './scope'
 
@@ -161,20 +161,15 @@ class exports.Expressions extends Node
     @expressions[i] = node.makeReturn it if node
     this
 
-  # An **Expressions** is the only node that can serve as the root.
-  compile: (o = {}, level) ->
-    if o.scope then super.call this, o, level else @compileRoot o
-
   compileNode: (o) ->
     o.expressions = this
-    @tab  = o.indent
     top   = not o.level
     codes = []
     for node of @expressions
       node = (do node.=unwrapAll).unfoldSoak(o) or node
       if top
         code = (node import front: true).compile o
-        code = @tab + code + node.terminater unless node.isStatement o
+        code = o.indent + code + node.terminater unless node.isStatement o
       else
         code = node.compile o, LEVEL_LIST
       codes.push code
@@ -182,9 +177,10 @@ class exports.Expressions extends Node
     code = codes.join(', ') or 'void 8'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
+  # An **Expressions** is the only node that can serve as the root.
   # If we happen to be the top-level **Expressions**, wrap everything in
   # a safety closure, unless requested not to.
-  compileRoot: (o) ->
+  compileRoot: (o = {}) ->
     o.indent = @tab = if bare = delete o.bare then '' else TAB
     o.scope  = @scope = Scope.root = new Scope
     o.level  = LEVEL_TOP
@@ -205,7 +201,7 @@ class exports.Expressions extends Node
     post = if @expressions.length then @compileNode o else ''
     code &&+= '\n' if post
     if not o.globals and vars = @scope?.vars().join ', '
-      code += @tab + "var #{ multident vars, @tab };\n"
+      code += o.indent + "var #{ multident vars, o.indent };\n"
     code + post
 
 #### Literal

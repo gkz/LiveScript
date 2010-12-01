@@ -99,7 +99,7 @@ task 'bench', 'quick benchmark of compilation time', ->
   say "Rewrite#{time()} (#{tokens.length} tokens)"
   nodes  = Coco.nodes tokens
   say "Parse  #{time()}"
-  js     = nodes.compile bare: true
+  js     = nodes.compileRoot bare: true
   say "Compile#{time()} (#{js.length} chars)"
   say "TOTAL  #{ fmt total }"
 
