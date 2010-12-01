@@ -2,14 +2,10 @@
 
 Coco = require('./coco') import all require('events').EventEmitter::
 
-# External dependencies.
-fs             = require 'fs'
-path           = require 'path'
-{spawn, exec}  = require 'child_process'
+fs   = require 'fs'
+path = require 'path'
 
-# Top-level objects shared by all the functions.
-# Use the [OptionParser](#optparse) to extract all options from
-# `process.argv` that are specified in `SWITCHES`.
+# Use the [OptionParser](#optparse) to extract all options from `process.argv`.
 oparser = require('./optparse').OptionParser [
   ['-c', '--compile',         'compile to JavaScript and save as .js files']
   ['-i', '--interactive',     'run an interactive Coco REPL']
@@ -39,7 +35,7 @@ global import
 
 # Run `coco` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
-# `--` will be passed verbatim to your script as arguments in `process.argv`
+# `--` will be passed verbatim to your script as arguments in `process.argv`.
 exports.run = ->
   return version()                    if o.version
   return help()                       if o.help
@@ -54,9 +50,9 @@ exports.run = ->
   process.ARGV = process.argv = args
   compileScripts()
 
-# Asynchronously read in each Coco in a list of source files and
+# Asynchronously read in each Coco script in a list of source files and
 # compile them. If a directory is passed, recursively compile all
-# _.co_ or _.coffee_ extension source files in it and all subdirectories.
+# _.co_ or _.coffee_ files in it and all subdirectories.
 compileScripts = ->
   compile = (source, topLevel) ->
     path.exists source, (exists) ->
@@ -74,25 +70,24 @@ compileScripts = ->
   compile source, true for source of sources
 
 # Compile a single source script, containing the given code, according to the
-# requested options. If evaluating the script directly sets `__filename`,
-# `__dirname` and `module.filename` to be correct relative to the script's path.
+# requested options.
 compileScript = (file, input, base) ->
   options = fileName: file, bare: o.bare
   if o.require
     for req of o.require
-      require if req.charAt(0) is '.' then fs.realpathSync req else req
+      require if req[0] is '.' then fs.realpathSync req else req
   try
     Coco.emit 'compile', t = {file, input, options}
     switch
-    case o.tokens then printTokens Coco.tokens t.input
-    case o.nodes  then say Coco.nodes(t.input).toString().trim()
-    case o.run    then Coco.run t.input, t.options
+    case o.tokens then printTokens Coco.tokens input
+    case o.nodes  then say Coco.nodes(input).toString().trim()
+    case o.run    then Coco.run input, options
     default
-      t.output = Coco.compile t.input, t.options
+      t.output = Coco.compile input, options
       Coco.emit 'success', t
       switch
       case o.print   then say t.output.trim()
-      case o.compile then writeJs t.file, t.output, base
+      case o.compile then writeJs file, t.output, base
   catch e
     Coco.emit 'failure', e, t
     return if Coco.listeners('failure').length
@@ -111,9 +106,9 @@ compileStdio = ->
 # such as `--nodes` or `--print`.
 watch = (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
-    return if curr.size is prev.size and curr.mtime.getTime() is prev.mtime.getTime()
+    return if curr.size is prev.size and +curr.mtime is +prev.mtime
     fs.readFile source, (err, code) ->
-      die err.stack if err
+      die err.stack or err if err
       compileScript source, code.toString(), base
 
 # Write out a JavaScript source file with the compiled code. By default, files
@@ -132,16 +127,18 @@ writeJs = (source, js, base) ->
       else if o.compile and o.watch
         say "Compiled #{source}"
   path.exists dir, (exists) ->
-    if exists then compile() else exec "mkdir -p #{dir}", compile
+    if exists
+    then compile()
+    else require('child_process').exec "mkdir -p #{dir}", compile
 
 # Pretty-print a stream of tokens.
 printTokens = (tokens) ->
   strings = for [tag, value] of tokens
-    "[#{tag} #{ value.toString().replace /\n/, '\\n' }]"
+    "[#{tag} #{ "#{value}".replace /\n/, '\\n' }]"
   say strings.join ' '
 
-# A very simple Read-Eval-Print-Loop. Compiles one line at a time to JavaScript
-# and evaluates it. Good for simple tests, or poking around the **Node.js** API.
+# A simple Read-Eval-Print-Loop. Compiles one line at a time to JavaScript
+# and evaluates it. Good for simple tests or poking around the **node.js** API.
 repl = ->
   global.__defineGetter__ 'quit', -> process.exit 0
   repl = require('readline').createInterface stdin = process.openStdin()
