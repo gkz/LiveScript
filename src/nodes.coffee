@@ -17,11 +17,8 @@
 # scope, and indentation level.
 class Node
   # Common logic for determining whether to wrap this node in a closure before
-  # compiling it, or to compile directly. We need to wrap if this node is a
-  # *statement*, and it's not a *pureStatement*, and we're not at
-  # the top level of a block (which would be unnecessary), and we haven't
-  # already been asked to return the result (because statements know how to
-  # return results).
+  # compiling it, or to compile directly. We need to wrap if it's
+  # a non-_pure_ _statement_, and we're not at the top level of a block.
   compile: (options, level) ->
     o = {}; continue for key, o[key] in options
     o import {level} if level?
@@ -46,12 +43,12 @@ class Node
       call = Value func, [Access Literal 'call']
     mentionsArgs = false
     @traverseChildren ->
-      if it instanceof Literal and it.value is 'arguments'
-        mentionsArgs := it.value = '_args'
+      mentionsArgs := it.value = '_args' if it.value is 'arguments'
+      null
     if mentionsArgs
       args.push Literal 'arguments'
       func.params.push Param Literal '_args'
-    Parens(Call(call or func, args), true).compileNode o
+    Parens(Call call or func, args; true).compileNode o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -73,37 +70,33 @@ class Node
     [src, tmp]
 
   # Construct a node that returns the current node's result.
-  # Note that this is overridden for smarter behavior for
-  # many statement nodes (e.g. If, For etc.).
+  # Note that this is overridden for smarter behavior by
+  # many statement nodes (`If`, `For` etc.).
   makeReturn: (name) ->
     if name then Call Literal(name + '.push'), [this] else Return this
 
-  # Does this node, or any of its children, contain a node of a certain kind?
-  # Recursively traverses down the *children* of the nodes, yielding to a block
-  # and returning true when the block finds a match. `contains` does not cross
-  # scope boundaries.
-  contains: (pred) ->
-    contains = false
-    @traverseChildren -> not contains := true if pred it
-    contains
-
-  # Convenience for the most common use of contains. Does the node contain
-  # a pure statement?
-  containsPureStatement: ->
-    @isPureStatement() or @contains -> it.isPureStatement()
-
-  # Passes each child to a function, breaking when the function returns `false`.
-  eachChild: (func) ->
+  # Passes each child to a function, returning its return value if exists.
+  eachChild: (fn) ->
     for name of @children then if child = @[name]
       if 'length' in child
-      then return this if false is func node for node of child
-      else return this if false is func child
-    this
+      then return v if (v = fn node )? for node of child
+      else return v if (v = fn child)?
+    null
 
+  # Performs `eachChild` on every descendant.
+  # Overridden by `Code` not to cross scope by default.
   traverseChildren: (fn, xscope) ->
-    @eachChild ->
-      return false if false is fn it
-      it.traverseChildren fn, xscope
+    @eachChild -> if (v = fn it)? then v else it.traverseChildren fn, xscope
+
+  # Do I, or any of my children, contain a node of a certain kind?
+  # Recursively traverses down the nodes' descendants and passess them to
+  # `pred`, returning `true` when it finds a match.
+  # Does not cross scope boundaries.
+  contains: (pred) -> !!@traverseChildren -> pred(it) or null
+
+  # Do I contain a pure statement?
+  containsPureStatement: ->
+    @isPureStatement() or @contains -> it.isPureStatement()
 
   invert: -> Op '!', this
 
@@ -125,7 +118,8 @@ class Node
   isArray         : NO
   isObject        : NO
 
-  assigns      : NO   # Is this node used to assign a certain variable?
+  # Is this node used to assign a certain variable?
+  assigns      : NO
   unfoldSoak   : NO
   unfoldAssign : NO
   unwrap       : THIS
@@ -135,7 +129,7 @@ class Node
   toString: (idt = '', name = @constructor.name) ->
     tree = '\n' + idt + name
     tree += '?' if @soak
-    @eachChild -> tree += it.toString idt + TAB
+    @eachChild -> tree += it.toString idt + TAB; null
     tree
 
 #### Expressions
@@ -331,14 +325,13 @@ class exports.Value extends Node
     code
 
   substituteStar: (o) ->
-    star = null
     find = ->
       switch
-      case it.value is '*'     then star := it; fallthrough
+      case it.value is '*'     then it
       case it instanceof Index then false
-    for prop, i of @properties then if prop instanceof Index
-      prop.traverseChildren find
-      continue unless star
+    for prop, i of @properties
+      continue unless prop instanceof Index and
+                      star = prop.traverseChildren find
       [sub, ref] = Value(@base, @properties.slice 0, i).cache o
       @temps = [ref.value] if sub isnt ref
       ref += ' ' if SIMPLENUM.test ref.=compile o
@@ -656,7 +649,7 @@ class exports.Class extends Node
     name  = '_Class' unless name and IDENTIFIER.test name
     lname = Literal @code.bound = name
     proto = Value lname, [Access Literal 'prototype']
-    @code.body.traverseChildren -> it.clas = name if it instanceof Code
+    @code.body.traverseChildren -> it.clas = name if it instanceof Code; null
     for node, i of exps = @code.body.expressions
       if node.isObject()
         exps[i] = Import proto, node, true
@@ -820,6 +813,7 @@ class exports.Code extends Node
         """
         Node::traverseChildren.call this, ->
           it.expression ||= Literal '_this' if it instanceof Return
+          null
         body.append Return Literal '_this'
       else if b = sscope.method?.bound
         @bound = b
@@ -843,7 +837,7 @@ class exports.Code extends Node
     asns.unshift splats if splats
     exps.unshift asns... if asns.length
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
-    vars[0] = 'it' if not vars.length and body.contains (-> it.value is 'it')
+    vars[0] = 'it' if not vars.length and body.contains(-> it.value is 'it')
     body.makeReturn() unless wasEmpty or @ctor
     if statement
       unless name
@@ -1259,7 +1253,7 @@ class exports.For extends While
       unless it instanceof Call and
              (fn = it.callee.unwrapAll()) instanceof Code and
              fn.params.length is it.args.length
-        return it instanceof [Code, For] or it.eachChild dig
+        return if it instanceof [Code, For] then null else it.eachChild dig
       if @index
         fn.params.push Param it.args[*] = Literal @index
       if name = @name
@@ -1270,6 +1264,7 @@ class exports.For extends While
       it.callee = Value Literal ref = o.scope.temporary 'fn'
       o.scope.assign ref, fn.compile o import {indent: ''}, LEVEL_LIST
       o.indent = @tab
+      null
 
 #### Switch
 # The regular JavaScript `switch`-`case`-`default`,
