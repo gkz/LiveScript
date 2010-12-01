@@ -350,7 +350,6 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  <[ left      CALL_START CALL_END          ]>
   <[ nonassoc  CREMENT                      ]>
   <[ left      ?                            ]>
   <[ right     UNARY                        ]>
@@ -360,9 +359,8 @@ operators = [
   <[ left      RELATION IMPORT              ]>
   <[ left      COMPARE                      ]>
   <[ left      LOGIC                        ]>
-  <[ nonassoc  INDENT OUTDENT               ]>
   <[ right     : ASSIGN COMPOUND_ASSIGN
-               RETURN THROW EXTENDS         ]>
+               RETURN THROW EXTENDS INDENT  ]>
   <[ right     IF ELSE SWITCH CASE DEFAULT
                CLASS FORIN FOROF FROM TO BY ]>
   <[ left      POST_IF FOR WHILE            ]>
