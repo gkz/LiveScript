@@ -186,7 +186,7 @@ class exports.Expressions extends Node
   # a safety closure, unless requested not to.
   compileRoot: (o) ->
     o.indent = @tab = if bare = delete o.bare then '' else TAB
-    o.scope  = new Scope null, this, null
+    o.scope  = @scope = Scope.root = new Scope
     o.level  = LEVEL_TOP
     code = @compileWithDeclarations(o).replace /[^\n\S]+$/gm, ''
     if bare then code else "(function(){\n#{code}\n}).call(this);\n"
@@ -203,10 +203,9 @@ class exports.Expressions extends Node
       code = @compileNode o
       @expressions = rest
     post = if @expressions.length then @compileNode o else ''
-    if not o.globals and this is o.scope.expressions
-      vars = o.scope.vars().join ', '
     code &&+= '\n' if post
-    code += @tab + "var #{ multident vars, @tab };\n" if vars
+    if not o.globals and vars = @scope?.vars().join ', '
+      code += @tab + "var #{ multident vars, @tab };\n"
     code + post
 
 #### Literal
@@ -796,8 +795,9 @@ class exports.Code extends Node
   compileNode: (o) ->
     pscope = o.scope
     sscope = pscope.shared or pscope
-    scope  = o.scope = new Scope (if @wrapper then pscope else sscope), @body, this
-    scope.shared = sscope if @wrapper
+    scope  = o.scope = @body.scope =
+      new Scope (if @wrapper then pscope else sscope), @wrapper and sscope
+    scope.method = this
     delete o.globals
     o.indent += TAB
     {params, body, name, statement, tab} = this
@@ -814,9 +814,8 @@ class exports.Code extends Node
           null
         body.append Return Literal '_this'
       else if b = sscope.method?.bound
-        @bound = b
-      else
-        sscope.assign '_this', 'this'
+      then @bound = b
+      else sscope.assign '_this', 'this'
     vars = []
     asns = []
     for param of params then if param.splat
@@ -840,7 +839,7 @@ class exports.Code extends Node
     if statement
       unless name
         throw SyntaxError 'cannot declare a nameless function'
-      unless o.expressions is pscope.expressions
+      unless o.expressions.scope is pscope
         throw SyntaxError 'cannot declare a function under a statement'
       scope .add name, 'function'
       pscope.add name, 'function' unless @returns
