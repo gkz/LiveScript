@@ -30,13 +30,14 @@ class Node
     o.scope.free tmp for tmp of node.temps if node.temps
     code
 
-  # Statements converted into expressions via closure-wrapping share a scope
-  # object with their parent closure, to preserve the expected lexical scope.
+  # Statements are converted into expressions via closure-wrapping.
   compileClosure: (o) ->
     if @containsPureStatement()
       throw SyntaxError 'cannot include a pure statement in an expression'
     args = []
     func = Code [], Expressions this
+    # The wrapper shares a scope with its parent closure
+    # to preserve the expected lexical scope.
     func.wrapper = true
     if @contains(-> it.value is 'this')
       args.push Literal 'this'
@@ -62,14 +63,14 @@ class Node
       sub = Assign ref, this
       if level then [sub.compile o, level; ref.value] else [sub, ref]
 
-  # Compile to a source/variable pair suitable for looping.
+  # Compiles to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
     unless -1/0 < +src < 1/0 or IDENTIFIER.test(src) and o.scope.check(src)
       src = "#{ tmp = o.scope.temporary name } = #{src}"
     [src, tmp]
 
-  # Construct a node that returns the current node's result.
+  # Constructs a node that returns the current node's result.
   # Note that this is overridden for smarter behavior by
   # many statement nodes (`If`, `For` etc.).
   makeReturn: (name) ->
@@ -133,9 +134,9 @@ class Node
     tree
 
 #### Expressions
-# The expressions body is the list of expressions that forms the body of an
-# indented block of code -- the implementation of a function, a clause in an
-# `if`, `switch`, or `try`, and so on...
+# A list of expressions that forms the body of an
+# indented block of code--the implementation of a function, a clause in an
+# `if`, `switch`, or `try`, and so on.
 class exports.Expressions extends Node
   (node) =>
     return node if node instanceof Expressions
@@ -178,13 +179,13 @@ class exports.Expressions extends Node
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
   # An **Expressions** is the only node that can serve as the root.
-  # If we happen to be the top-level **Expressions**, wrap everything in
-  # a safety closure, unless requested not to.
   compileRoot: (o = {}) ->
     o.indent = @tab = if bare = delete o.bare then '' else TAB
     o.scope  = @scope = Scope.root = new Scope
     o.level  = LEVEL_TOP
     code = @compileWithDeclarations(o).replace /[^\n\S]+$/gm, ''
+    # If we happen to be the top-level **Expressions**, wrap everything in
+    # a safety closure, unless requested not to.
     if bare then code else "(function(){\n#{code}\n}).call(this);\n"
 
   # Compile the expressions body for the contents of a function, with
@@ -251,8 +252,8 @@ class exports.Return extends Node
     o.indent + "return#{ if exp then ' ' + exp else '' };"
 
 #### Value
-# Container for property access chains, by holding `Access`/`Index` instances
-# wihtin `@properties`.
+# Acts as a container for property access chains, by holding
+# *Access*/*Index* instances wihtin `@properties`.
 class exports.Value extends Node
   # A **Value** has a base and a list of property accesses.
   (base, props, tag) =>
@@ -282,8 +283,12 @@ class exports.Value extends Node
   unwrap: -> if @properties.length then this else @base
 
   # A reference has base part (`this` value) and name part.
-  # We cache them separately for compiling complex expressions.
-  # `a()[b()] ?= c` -> `(_base = a())[_name = b()] ? _base[_name] = c`
+  # We cache them separately for compiling complex expressions. So that
+  #
+  #     a()[b()] ?= c
+  # compiles to:
+  #
+  #     (_base = a())[_name = b()] ? _base[_name] = c
   cacheReference: (o) ->
     name = @properties[*-1]
     if @properties.length < 2 and not @base.isComplex() and not name?.isComplex()
@@ -303,10 +308,9 @@ class exports.Value extends Node
     [base.append name; Value bref or base.base, [nref or name]]
 
   # We compile a value to JavaScript by compiling and joining each property.
-  # Things get much more insteresting if the chain of properties has *soak*
-  # operators `?.` interspersed. Then we have to take care not to accidentally
-  # evaluate anything twice when building the soak chain.
   compileNode: (o) ->
+    # Things get much more insteresting if the chain of properties has *soak*
+    # (`?.`) or *binding* (`&.`) interspersed.
     return asn.compile o if asn = @unfoldAssign o
     return val.compile o if val = @unfoldBind   o
     @base import {@front}
@@ -332,7 +336,7 @@ class exports.Value extends Node
       return Value sub, @properties.slice i
     null
 
-  # Unfold a soak into an `If`: `a?.b` -> `a.b if a?`
+  # Unfold a soak into an *If*: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     if ifn = @base.unfoldSoak o
       ifn.then.properties.push @properties...
@@ -384,7 +388,7 @@ class exports.Comment extends Node
     if level ? o.level then code else o.indent + code
 
 #### Call
-# Node for a function invocation.
+# A function invocation.
 class exports.Call extends Node
   (@callee, @args, open) =>
     @args or= (@splat = true; [Literal 'this'; Literal 'arguments'])
@@ -433,10 +437,9 @@ class exports.Call extends Node
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
-  # If it's a constructor, then things get real tricky. We have to inject an
-  # inner constructor in order to be able to pass the varargs.
   compileSplat: (o, args) ->
     if @new
+      # If it's a constructor, we have to inject an inner constructor.
       idt = @tab + TAB
       return """
         (function(func, args, ctor){
@@ -460,7 +463,7 @@ class exports.Call extends Node
     "#{fun}.apply(#{ref}, #{args})"
 
 #### Extends
-# Node to extend an object's prototype with an ancestor object.
+# An operator that emulates class-ical inheritance.
 class exports.Extends extends Node
   (@child, @parent) =>
 
@@ -470,7 +473,7 @@ class exports.Extends extends Node
     Call(Value Literal utility 'extends'; [@child, @parent]).compile o
 
 #### Import
-# Handles the `import` operation that copies properties from right to left.
+# Operators that copy properties from right to left.
 class exports.Import extends Node
   (@left, @right, own) => @util = if own then 'import' else 'importAll'
 
@@ -662,8 +665,8 @@ class exports.Class extends Node
     clas.compile o
 
 #### Assign
-# Used to assign a local variable to value, or to set the
-# property of an object--including `:` within object literals.
+# Assignment to a local variable or the property of an object,
+# including `:` within object literals.
 class exports.Assign extends Node
   (@left, @right, @op = '=', @logic = @op.logic) => @op += ''
 
@@ -710,8 +713,8 @@ class exports.Assign extends Node
     [left, rite] = Value(@left).cacheReference o
     Op(@logic, left, Assign rite, @right, @op).compile o
 
-  # Implementation of recursive destructuring, when assigning array or
-  # object literals to a value. Peeks at their properties to assign inner names.
+  # Implementation of recursive destructuring,
+  # when assigning to an array or object literal.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o) ->
     {items} = left = @left.unwrap()
@@ -768,9 +771,7 @@ class exports.Assign extends Node
   toString: (idt) -> super.call this, idt, @constructor.name + ' ' + @op
 
 #### Code
-# A function definition. This is the only node that creates a new `Scope`.
-# When for the purposes of walking the contents of a function body, the Code
-# has no *children*--they're within the inner scope.
+# A function definition. This is the only node that creates a `new Scope`.
 class exports.Code extends Node
   (@params = [], @body = Expressions(), arrow) =>
     @bound = '_this' if arrow is '=>'
@@ -785,11 +786,6 @@ class exports.Code extends Node
 
   makeReturn: -> if @statement then this import returns: true else super ...
 
-  # Compilation creates a new scope unless explicitly asked to share with the
-  # outer scope. Handles splat parameters in the parameter list by peeking at
-  # the JavaScript `arguments` objects. If the function is bound with the `=>`
-  # arrow, generates a wrapper that saves the current value of `this` through
-  # a closure.
   compileNode: (o) ->
     pscope = o.scope
     sscope = pscope.shared or pscope
@@ -892,20 +888,18 @@ class exports.Splat extends Node
   # Utility function that converts arbitrary number of elements, mixed with
   # splats, to a proper array.
   @compileArray = (o, list, apply) ->
-    index = -1
-    continue while (node = list[++index]) and node not instanceof Splat
+    break if node instanceof Splat for node, index of list
     return '' if index >= list.length
     if list.length is 1
       code = list[0].compile o, LEVEL_LIST
-      return code if apply
-      return utility('slice') + ".call(#{code})"
+      return if apply then code else utility('slice') + ".call(#{code})"
     args = list.slice index
     for node, i of args
       code = node.compile o, LEVEL_LIST
       args[i] = if node instanceof Splat
       then utility('slice') + ".call(#{code})"
       else "[#{code}]"
-    return args[0] + ".concat(#{ args.slice(1).join ', ' })" if index is 0
+    return args[0] + ".concat(#{ args.slice(1).join ', ' })" unless index
     base = (node.compile o, LEVEL_LIST for node of list.slice 0, index)
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
