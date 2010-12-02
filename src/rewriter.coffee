@@ -25,12 +25,10 @@ exports.rewrite = ->
 detectEnd = (tokens, i, ok, go) ->
   levels = 0
   while token = tokens[i]
-    return go token, i   if not levels and ok token, i
-    return go token, i-1 if 0 > levels
-    if token[0] of EXPRESSION_START
-      ++levels
-    else if token[0] of EXPRESSION_END
-      --levels
+    if      not levels then return go token, i if ok token, i
+    else if 0 > levels then return go token, i-1
+    if      token[0] of EXPRESSION_START then ++levels
+    else if token[0] of EXPRESSION_END   then --levels
     ++i
   i - 1
 
@@ -64,8 +62,8 @@ closeOpenings = (tokens) ->
       token[0] =  'CALL_END' if stack.pop() is  'CALL_START'
   tokens
 
-# Object literals may be written with implicit braces, for simple cases.
-# Insert the missing braces here, so that the parser doesn't have to.
+# Object literals may be written without braces for simple cases.
+# Insert the missing braces here so that the parser doesn't have to.
 addImplicitBraces = (tokens) ->
   go = (token, i) -> tokens.splice i, 0, ['}', '}', token[2]]
   ok = (token, i) ->
@@ -74,9 +72,8 @@ addImplicitBraces = (tokens) ->
     tag is 'OUTDENT' or
     tag is ',' and
       one not of <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]> or
-    tag is 'TERMINATOR' and if one is '('
-    then tokens[1 + indexOfPair tokens, i+1]?[0] isnt ':'
-    else tokens[i+2]?[0] not of <[ : ... ]>
+    tag is 'TERMINATOR' and ':' isnt
+      tokens[if one is '(' then 1 + indexOfPair tokens, i+1 else i+2]?[0]
   stack = []
   i     = -1
   while token = tokens[++i]
