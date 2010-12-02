@@ -177,7 +177,7 @@ class exports.Lexer
     if ~doc.indexOf '\n'
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
       dent = 0/0
-      dent = len unless (dent <= len = m[0].length - 1) while m = tabs.exec doc
+      dent = len unless dent <= len = m[0].length - 1 while m = tabs.exec doc
       doc  = @dedent(doc, dent).replace /^\n/, ''
     if q is '"' and ~doc.indexOf '#{'
     then @interpolateString doc, newline: '\\n'

@@ -965,19 +965,18 @@ class exports.Op extends Node
       base.keep = true if base instanceof Parens
     this import {op, first, second, post}
 
-  # Map of comparison operators which are both invertible and chainable.
-  COMPARERS = '===':'!==', '==':'!=', '>':'<=', '<':'>='
-  COMPARERS[val] = key for key, val in COMPARERS
+  EQUALITY = /^[!=]==?$/
+  COMPARER = /^(?:[!=]=|[<>])=?$/
 
   children: <[ first second ]>
 
   invert: ->
-    if op = COMPARERS[@op]
-      @op = op
+    if EQUALITY.test op = @op
+      @op = {'=':'!','!':'='}[op.charAt 0] + op.slice 1
       this
     else if @second
-    then Parens(this).invert()
-    else if @op is '!' and (fst = @first.unwrap()) instanceof Op and
+    then Op '!', Parens this
+    else if op is '!' and (fst = @first.unwrap()) instanceof Op and
             fst.op of <[ ! in instanceof ]>
     then fst
     else Op '!', this
@@ -988,7 +987,7 @@ class exports.Op extends Node
   compileNode: (o) ->
     return @compileUnary o if not @second
     return @compileChain o if @first instanceof Op and
-                              @op in COMPARERS and @first.op in COMPARERS
+                              COMPARER.test(@op) and COMPARER.test(@first.op)
     return @compileExistence o if @op is '?'
     return @compileMultiIO   o if @op is 'instanceof' and @second.isArray()
     @first import {@front}
