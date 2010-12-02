@@ -58,7 +58,7 @@ class exports.Lexer
       default i += do @identifierToken or do @numberToken or
                    do @literalToken    or do @whitespaceToken
     # Close up all remaining open blocks.
-    @outdentToken @indent
+    @outdent @indent
     # Dispose dummy.
     @tokens.shift()
     # [Rewrite](#rewriter) the token stream unless explicitly asked not to.
@@ -265,46 +265,24 @@ class exports.Lexer
     @last.eol  = true
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf '\n'
-    noNewlines = LINE_CONTINUER.test(@chunk) or @last[0] of <[
+    noNewline = LINE_CONTINUER.test(@chunk) or @last[0] of <[
       ACCESS INDEX_START ASSIGN COMPOUND_ASSIGN IMPORT
       LOGIC PLUS_MINUS MATH COMPARE RELATION SHIFT
     ]>
     if size - @indebt is @indent
-      @newlineToken() unless noNewlines
+      @newline() unless noNewline
       return indent.length
     if size > @indent
-      if noNewlines
+      if noNewline
         @indebt = size - @indent
         return indent.length
-      diff = size - @indent + @outdebt
-      @token 'INDENT', diff
-      @indents.push diff
+      @indents.push @token 'INDENT', size - @indent + @outdebt
       @outdebt = @indebt = 0
     else
       @indebt = 0
-      @outdentToken @indent - size, noNewlines
+      @outdent @indent - size, noNewline
     @indent = size
     indent.length
-
-  # Record an outdent token or multiple tokens, if we happen to be moving back
-  # inwards past several recorded indents.
-  outdentToken: (moveOut, noNewlines) ->
-    while moveOut > 0
-      if (len = @indents.length - 1) < 0
-        moveOut = 0
-      else if (idt = @indents[len]) is @outdebt
-        moveOut -= idt
-        @outdebt = 0
-      else if idt < @outdebt
-        moveOut  -= idt
-        @outdebt -= idt
-      else
-        moveOut -= dent = @indents.pop() - @outdebt
-        @outdebt = 0
-        @token 'OUTDENT', dent
-    @outdebt -= moveOut if dent
-    @newlineToken() unless noNewlines
-    this
 
   # Matches and consumes tab characters. Tag the previous token
   # as being "spaced", because there are cases where it makes a difference.
@@ -312,11 +290,6 @@ class exports.Lexer
     return 0 unless match = WHITESPACE.exec @chunk
     @last.spaced = true
     match[0].length
-
-  # Generates a newline token. Consecutive newlines get merged together.
-  newlineToken: ->
-    @token<[ TERMINATOR \n ]> unless @last[0] is 'TERMINATOR'
-    this
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
@@ -354,8 +327,7 @@ class exports.Lexer
     case '\\\n'
       return value.length
     case '::'
-      id = new String 'prototype'
-      id.colon2 = true
+      (id = new String 'prototype').colon2 = true
       @token<[ ACCESS . ]>
       @token 'IDENTIFIER', id
       return value.length
@@ -364,7 +336,7 @@ class exports.Lexer
         @token<[ IDENTIFIER arguments ]>
         @token<[ INDEX_START [ ]>
         @token 'STRNUM', value.slice 1
-        @token<[ INDEX_END  ] ]>
+        @token<[ INDEX_END   ] ]>
         return value.length
       unless (prev = @last).spaced
         if value is '(' and prev[0] of CALLABLE
@@ -378,6 +350,24 @@ class exports.Lexer
     @token(tag, value).length
 
   #### Token Manipulators
+
+  # Record an outdent token, or multiple tokens if we happen to be moving back
+  # inwards past several recorded indents.
+  outdent: (moveOut, noNewline) ->
+    while moveOut > 0
+      unless idt = @indents[*-1]
+        moveOut = 0
+      else if idt <= @outdebt
+        moveOut  -= idt
+        @outdebt -= idt
+      else
+        moveOut -= @token 'OUTDENT', @indents.pop() - @outdebt
+        @outdebt = 0
+    @outdebt -= moveOut
+    @newline() unless noNewline
+
+  # Generates a newline token. Consecutive newlines get merged together.
+  newline: -> @token<[ TERMINATOR \n ]> unless @last[0] is 'TERMINATOR'
 
   # Sanitize a heredoc or herecomment by
   # erasing all external indentation on the left-hand side.
@@ -537,7 +527,7 @@ SYMBOL = /// ^ (?:
   [!=]==?           | # strict equality
   [-=]>             | # function
   \.{3}             | # splat
-  [?&][.[]          | # soak/bound access
+  [?&][.[]          | # soak/bind access
   @\d+              | # argument shorthand
   \\\n              | # continued line
   <<=?              | # left shift
