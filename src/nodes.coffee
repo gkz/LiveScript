@@ -970,24 +970,24 @@ class exports.Op extends Node
 
   children: <[ first second ]>
 
+  isChain: ->
+    @first instanceof Op and COMPARER.test(@op) and COMPARER.test(@first.op)
+
   invert: ->
-    if EQUALITY.test op = @op
-      @op = {'=':'!','!':'='}[op.charAt 0] + op.slice 1
-      this
-    else if @second
-    then Op '!', Parens this
-    else if op is '!' and (fst = @first.unwrap()) instanceof Op and
-            fst.op of <[ ! in instanceof ]>
-    then fst
-    else Op '!', this
+    if EQUALITY.test(op = @op) and not @isChain()
+      @op = '!='.charAt(op.indexOf '=') + op.slice 1
+      return this
+    return Op '!', Parens this if @second
+    return fst if op is '!' and (fst = @first.unwrap()) instanceof Op and
+                  fst.op of <[ ! in instanceof < > <= >= ]>
+    Op '!', this
 
   unfoldSoak: (o) ->
     @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
 
   compileNode: (o) ->
     return @compileUnary o if not @second
-    return @compileChain o if @first instanceof Op and
-                              COMPARER.test(@op) and COMPARER.test(@first.op)
+    return @compileChain o if @isChain()
     return @compileExistence o if @op is '?'
     return @compileMultiIO   o if @op is 'instanceof' and @second.isArray()
     @first import {@front}
