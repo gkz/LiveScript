@@ -6,23 +6,22 @@
 #     ['TAG', 'value', lineNumber = 0]
 #
 # Which is a format that can be fed directly into
-# [Jison](http://github.com/zaach/jison).
+# [Jison](http://github.com/zaach/jison) generated [parser](../lib/parser.js).
 
 # The Lexer Class
 # ---------------
 
-# Reads a stream of Coco and divvies it up into tagged tokens.
+# Reads a stream of Coco code and divvies it up into tagged tokens.
 # Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 class exports.Lexer
-
   # **tokenize** is the Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
   # remaining code, or a custom recursive token-matching method
   # (for interpolations). When the next token has been recorded,
   # we move forward within the code past the token, and begin again.
   tokenize: (code, o = {}) ->
-    # Stream of parsed tokens in the form `['TYPE', value, line]`,
+    # Stream of parsed tokens,
     # initialized with a DUMMY token to ensure `@last` always exists.
     @tokens = [@last = ['DUMMY', '', 0]]
     # The current line.
@@ -58,7 +57,7 @@ class exports.Lexer
       case '`' then i += do @jsToken
       default i += do @identifierToken or do @numberToken or
                    do @literalToken    or do @whitespaceToken
-    # Close up all remaining open blocks at the end of the file.
+    # Close up all remaining open blocks.
     @outdentToken @indent
     # Dispose dummy.
     @tokens.shift()
@@ -68,7 +67,7 @@ class exports.Lexer
 
   #### Tokenizers
 
-  # Matches identifying literals: variables, keywords, method names, etc.
+  # Matches an identifying literal: variables, keywords, accessors, etc.
   # Check to ensure that JavaScript reserved words aren't being used as
   # identifiers. Because Coco reserves a handful of keywords that are
   # allowed in JavaScript, we're careful not to tag them as keywords when
@@ -143,8 +142,7 @@ class exports.Lexer
     @token<[ : : ]> if colon
     input.length
 
-  # Matches numbers, including decimals, hex, and exponential notation.
-  # Be careful not to interfere with ranges-in-progress.
+  # Matches a number, including decimal, hex and exponential notation.
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     [num, radix, rnum] = match
@@ -156,15 +154,14 @@ class exports.Lexer
     @token 'STRNUM', num
     match[0].length
 
-  # Matches strings, including multi-line strings. Ensures that quotation marks
-  # are balanced within the string's contents, and within nested interpolations.
-  singleStringToken : ->
-    unless string = SIMPLESTR.exec @chunk
-      @carp 'unterminated string'
+  # Matches a normal string. Ensures that quotation marks are balanced within
+  # the string's contents, and within nested interpolations.
+  singleStringToken: ->
+    @carp 'unterminated string' unless string = SIMPLESTR.exec @chunk
     @token 'STRNUM', (string[=0]).replace MULTILINER, '\\\n'
     @countLines(string).length
 
-  doubleStringToken : ->
+  doubleStringToken: ->
     string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
     if 0 < string.indexOf '#{', 1
     then @interpolateString string.slice 1, -1
@@ -197,9 +194,9 @@ class exports.Lexer
     (js = new String js[0].slice 1, -1).js = true
     @countLines(@token 'LITERAL', js).length + 2
 
-  # Matches regular expression literals. Lexing regular expressions is difficult
-  # to distinguish from division, so we borrow some basic heuristics from
-  # JavaScript and Ruby.
+  # Matches a regular expression literal, aka regex.
+  # Lexing regexes is difficult to distinguish from division,
+  # so we borrow some basic heuristics from JavaScript.
   regexToken: ->
     # We distinguish it from the division operator using a list of tokens that
     # a regex never immediately follows.
@@ -210,7 +207,7 @@ class exports.Lexer
     @token 'LITERAL', if regex[=0] is '//' then '/(?:)/' else regex
     @countLines(regex).length
 
-  # Matches multiline and extended regular expression literals.
+  # Matches a multiline and extended regex literal.
   heregexToken: ->
     @carp 'unterminated heregex' unless match = HEREGEX.exec @chunk
     [heregex, body, flags] = match
@@ -238,7 +235,7 @@ class exports.Lexer
     @token<[ ) ) ]>
     heregex.length
 
-  # Matches words literal, a syntax sugar for an array of strings.
+  # Matches a words literal, a syntax sugar for a list of strings.
   wordsToken: ->
     @carp 'unterminated words' unless ~end = @chunk.indexOf ']>', 2
     if call = not @last.spaced and @last[0] of CALLABLE
@@ -253,7 +250,7 @@ class exports.Lexer
     end + 2
 
   # Matches newlines, indents, and outdents, and determines which is which.
-  # If we can detect that the current line is continued onto the the next line,
+  # If we can detect that the current line is continued onto the next line,
   # then the newline is suppressed:
   #
   #     elements
@@ -309,14 +306,14 @@ class exports.Lexer
     @newlineToken() unless noNewlines
     this
 
-  # Matches and consumes non-meaningful whitespace. Tag the previous token
-  # as being "spaced", because there are some cases where it makes a difference.
+  # Matches and consumes tab characters. Tag the previous token
+  # as being "spaced", because there are cases where it makes a difference.
   whitespaceToken: ->
     return 0 unless match = WHITESPACE.exec @chunk
     @last.spaced = true
     match[0].length
 
-  # Generate a newline token. Consecutive newlines get merged together.
+  # Generates a newline token. Consecutive newlines get merged together.
   newlineToken: ->
     @token<[ TERMINATOR \n ]> unless @last[0] is 'TERMINATOR'
     this
@@ -380,8 +377,7 @@ class exports.Lexer
           tag = 'INDEX_START'
     @token(tag, value).length
 
-  # Token Manipulators
-  # ------------------
+  #### Token Manipulators
 
   # Sanitize a heredoc or herecomment by
   # erasing all external indentation on the left-hand side.
@@ -415,7 +411,7 @@ class exports.Lexer
         return this
     this
 
-  # Matches a balanced group such as a single or double-quoted string. Pass in
+  # Matches a balanced group such as a double-quoted string. Pass in
   # a series of delimiters, all of which must be nested correctly within the
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
@@ -494,13 +490,13 @@ class exports.Lexer
     body.=replace /// #{quote} ///g, '\\$&'
     quote + body.replace(MULTILINER, newline or '') + quote
 
-  # Count the number of lines in a string and add it to `@line`.
+  # Counts the number of lines in a string and add it to `@line`.
   countLines: (str) ->
     pos = 0
     ++@line while pos = 1 + str.indexOf '\n', pos
     str
 
-  # Throw a syntax error with the current line number.
+  # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
 
 #### Constants
@@ -517,9 +513,8 @@ JS_KEYWORDS = <[
 COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until of ]>
 COCO_ALIASES  = not: '!', and: '&&', or: '||',  is: '===', isnt : '!=='
 
-# The list of keywords that are reserved by JavaScript, but not used, or are
-# used by Coco internally. We throw an error when these are encountered,
-# to avoid having a JavaScript error at runtime.
+# The list of keywords that are reserved by JavaScript, but not used.
+# We throw a syntax error for these to avoid a JavaScript error at runtime.
 RESERVED = <[ var with const let enum export native ]>
 
 # The superset of both JavaScript keywords and reserved words, none of which may
