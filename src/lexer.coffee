@@ -5,17 +5,16 @@
 #
 #     ['TAG', 'value', lineNumber = 0]
 #
-# Which is a format that can be fed directly into
+# which is a format that can be fed directly into
 # [Jison](http://github.com/zaach/jison) generated [parser](../lib/parser.js).
 
 # The Lexer Class
 # ---------------
-
 # Reads a stream of Coco code and divvies it up into tagged tokens.
 # Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
 class exports.Lexer
-  # **tokenize** is the Lexer's main method. Scan by attempting to match tokens
+  # `tokenize` is the Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
   # remaining code, or a custom recursive token-matching method
   # (for interpolations). When the next token has been recorded,
@@ -35,7 +34,7 @@ class exports.Lexer
     # Check the first character of current `@chunk`, then call appropriate
     # tokenizers based on it. Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
-    code.=replace(/\r/g, '').replace(TRAILING_SPACES, '')
+    code.=replace(/\r/g, '').replace(/\s+$/, '')
     i = 0
     while @chunk = code.slice i
       if comments = COMMENTS.exec @chunk
@@ -173,18 +172,22 @@ class exports.Lexer
   heredocToken: (q) ->
     return 0 unless @chunk.slice(1, 3) is q+q and
                     ~end = @chunk.indexOf q+q+q, 3
-    text = @chunk.slice 3, end
-    doc  = @sanitizeHeredoc text.replace(/\n[^\n\S]*$/, ''), {q}
+    txt = @chunk.slice 3, end
+    doc = txt.replace /\n[^\n\S]*$/, ''
+    if ~doc.indexOf '\n'
+      tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
+      dent = 0/0
+      dent = len unless (dent <= len = m[0].length - 1) while m = tabs.exec doc
+      doc  = @dedent(doc, dent).replace /^\n/, ''
     if q is '"' and ~doc.indexOf '#{'
     then @interpolateString doc, newline: '\\n'
     else @token 'STRNUM', @makeString doc, q, '\\n'
-    @countLines(text).length + 6
+    @countLines(txt).length + 6
 
   # Matches block comments.
   commentToken: ->
     text = @chunk.slice 3, if ~end = @chunk.indexOf '###', 3 then end else 1/0
-    @token 'HERECOMMENT', @sanitizeHeredoc text,
-      comment: true, indent: Array(@indent + 1).join(' ')
+    @token 'HERECOMMENT', @dedent text, @indent
     @token<[ TERMINATOR \n ]>
     @countLines(text).length + 6
 
@@ -294,7 +297,7 @@ class exports.Lexer
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
-  # here. `;` and newlines are both treated as a `TERMINATOR`, we distinguish
+  # here. `;` and newlines are both treated as a TERMINATOR, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   literalToken: ->
     [value] = SYMBOL.exec @chunk
@@ -368,20 +371,6 @@ class exports.Lexer
 
   # Generates a newline token. Consecutive newlines get merged together.
   newline: -> @token<[ TERMINATOR \n ]> unless @last[0] is 'TERMINATOR'
-
-  # Sanitize a heredoc or herecomment by
-  # erasing all external indentation on the left-hand side.
-  sanitizeHeredoc: (doc, options) ->
-    {indent, comment} = options
-    if comment
-      return doc if 0 > doc.indexOf '\n'
-    else
-      while attempt = HEREDOC_INDENT.exec doc
-        attempt[=1]
-        indent = attempt if !indent? or 0 < attempt.length < indent.length
-    doc.=replace /// \n #{indent} ///g, '\n' if indent
-    doc.=replace /^\n/, '' unless comment
-    doc
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
@@ -486,6 +475,10 @@ class exports.Lexer
     ++@line while pos = 1 + str.indexOf '\n', pos
     str
 
+  # Erases all external indentation on the left-hand side.
+  dedent: (str, num) ->
+    if num then str.replace /// \n [^\n\S]{#{num}} ///g, '\n' else str
+
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
 
@@ -557,11 +550,8 @@ REGEX = /// ^
 HEREGEX      = /// ^ /{3} ([\s\S]+?) /{3} ([imgy]{0,4}) (?!\w) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
-# Token cleaning regexes.
 MULTILINER      = /\n/g
-HEREDOC_INDENT  = /\n+([^\n\S]*)/g
 LINE_CONTINUER  = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
-TRAILING_SPACES = /\s+$/
 
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
