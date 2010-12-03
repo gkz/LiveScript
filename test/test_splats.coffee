@@ -147,3 +147,6 @@ class Thisplat2 extends Thisplat
   f: -> super ...
 
 new Thisplat2 3, 5, 7
+
+
+eq 0, [...[...[0]]][0]

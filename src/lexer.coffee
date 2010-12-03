@@ -556,5 +556,6 @@ LINE_CONTINUER  = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
 # Tokens which could legitimately be invoked or indexed. A opening
 # parentheses or bracket following these tokens will be recorded as the start
 # of a function invocation or indexing operation.
-CALLABLE  = <[ IDENTIFIER THISPROP ) ] } ? SUPER THIS ... ]>
+CALLABLE  = <[ IDENTIFIER THISPROP ) ] } ? SUPER THIS ]>
 INDEXABLE = CALLABLE.concat<[ STRNUM LITERAL ]>
+CALLABLE.push '...'
