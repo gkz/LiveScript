@@ -3,26 +3,21 @@ throws 'up', -> throw Error 'up'
 
 
 # Basic try/catch.
-result = try
-  10
-finally
-  15
+eq 5, try throw 'error' catch e then e.length
 
-ok result is 10
-
-result = try
+eq 2, try
   throw 'up'
-catch err
-  err.length
+catch e
+  e.length
 
-ok result is 2
+eq 1, try
+  throw o = i: 0
+catch e
+  ++e.i
+finally
+  ++o.i
+eq o.i, 2
 
-
-result = try throw 'error' catch err then err.length
-
-ok result is 5
-
-try throw 'catch is optional'
 
 # try/catch with empty clauses still compiles.
 try

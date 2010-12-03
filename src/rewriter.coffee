@@ -122,13 +122,14 @@ addImplicitParentheses = (tokens) ->
     [tag] = token
     {0: pre, eol} = tokens[i-1]
     switch tag
-    case 'CLASS'                  then seenClass  := true
-    case <[ IF ELSE FUNC_ARROW ]> then seenSingle := true
+    case 'CLASS'        then seenClass  := true
+    case <[ IF CATCH ]> then seenSingle := true
     return true  if tag is 'ACCESS' and (eol or pre is 'OUTDENT')
     return false if token.generated or pre is ','
     if tag is 'INDENT'
       return seenClass := false if seenClass
-      return pre not of <[ FUNC_ARROW { [ , ]>
+      return pre not of <[ { [ , FUNC_ARROW TRY FINALLY ]> and
+             tokens[i-2]?[0] isnt 'CATCH'
     tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]>
   function go (token, i) ->
     ++i if token[0] is 'OUTDENT'
