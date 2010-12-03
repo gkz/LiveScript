@@ -41,42 +41,17 @@ result = if true then echo((if false then 'xxx' else 'y') + 'a')
 ok result is 'ya'
 
 
-# Testing inline funcs with inline if-elses.
-func = -> if 1 < 0.5 then 1 else -1
-ok func() is -1
+# Returning if-else.
+eq -1, do -> if 1 < 0.5 then 1 else -1
 
 
-# Testing empty or commented if statements ... should compile:
-result = if false
-else if false
-else
-
-ok result is undefined
-
-result = if false
-  # comment
-else if true
-  # comment
-else
-
-ok result is undefined
+# `else`-less `if` Returns `undefined` with falsy condition.
+eq void, do -> if 0 then
+eq void, do -> return if 0 then
 
 
-# Return an if with false else.
-func = ->
-  return if false then callback()
-
-ok func() is undefined
-
-func = ->
-  return unless false then 100 else -100
-
-ok func() is 100
-
-ident = (x) -> x
-result = ident if false then 300 else 100
-
-ok result is 100
+# As an implicit argument.
+eq 100, (-> it) if false then 300 else 100
 
 
 # If-to-ternary with instanceof requires parentheses (false comment).

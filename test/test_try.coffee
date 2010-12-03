@@ -28,24 +28,11 @@ try throw 'catch is optional'
 try
 
 try
-  # nothing
-catch err
-  # nothing
+finally
 
 try
   # nothing
 finally
   # nothing
 
-try
-catch err
-finally
-
-
-# Try catch with empty clause in a function body.
-func = ->
-  try
-    100
-  catch err
-
-eq func(), 100
+eq 99, do -> try 99

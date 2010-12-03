@@ -5,16 +5,13 @@
 # shorthand into the unambiguous long form, add implicit indentation and
 # parentheses, balance incorrect nestings, and generally clean things up.
 
-# The **Rewriter** is used by the [Lexer](#lexer), directly against
-# its internal array of tokens.
-
-# Helpful snippet for debugging:
-#     console.log (t[0] + '/' + t[1] for t in tokens).join ' '
+# **Rewriter** is used by [Lexer](#lexer),
+# directly against its internal array of tokens.
 
 # Rewrite the token stream in multiple passes, one logical filter at
 # a time. This could certainly be changed into a single pass through the
 # stream, with a big ol' efficient switch, but it's much nicer to work with
-# like this. The order of these passes matters -- indentation must be
+# like this. The order of these passes matters--indentation must be
 # corrected before implicit parentheses can be wrapped around blocks of code.
 exports.rewrite = ->
   rewriteClosingParens ensureBalance \
@@ -133,8 +130,8 @@ addImplicitParentheses = (tokens) ->
     continue unless prev and (prev.call or prev[0] of IMPLICIT_FUNC)
     continue unless obj or prev.spaced and (
       tag of <[
-        ( [ { IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
-        FUNCTION IF TRY SWITCH CLASS SUPER ...
+        ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
+        FUNCTION IF TRY SWITCH CLASS SUPER
       ]> or
       tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION' or
       tag is 'PLUS_MINUS' and not (token.spaced or token.eol)
@@ -147,8 +144,8 @@ addImplicitParentheses = (tokens) ->
   tokens
 
 # Because our grammar is LALR(1), it can't handle some single-line
-# expressions that lack ending delimiters. The **Rewriter** adds the implicit
-# blocks, so it doesn't need to. ')' can close a single-line block,
+# expressions that lack ending delimiters. **Rewriter** adds the implicit
+# blocks, so it doesn't need to. `)` can close a single-line block,
 # but we need to make sure it's balanced.
 addImplicitIndentation = (tokens) ->
   ok = (token, i) ->
@@ -161,19 +158,13 @@ addImplicitIndentation = (tokens) ->
   i = -1
   while token = tokens[++i]
     [tag] = token
-    if tag is 'ELSE' and tokens[i-1]?[0] isnt 'OUTDENT'
-      tokens.splice i++, 0, ...indentation token
-      continue
-    if tag is 'CATCH' and tokens[i+2]?[0] of <[ OUTDENT TERMINATOR FINALLY ]>
-      tokens.splice i+2, 0, ...indentation token
-      i += 3
-      continue
     continue unless tag is 'THEN' or
       (next = tokens[i+1]?[0]) isnt 'INDENT' and
       (tag of <[ FUNC_ARROW DEFAULT TRY FINALLY ]> or
        tag is 'ELSE' and next isnt 'IF')
-    [indent, outdent] = indentation token
-    indent.generated  = outdent.generated = true
+    indent  = ['INDENT' , 2, token[2]]
+    outdent = ['OUTDENT', 2, token[2]]
+    indent.generated = outdent.generated = true
     if tag is 'THEN'
       tokens.splice --i, 1 if tokens[i-1]?[0] is 'TERMINATOR'
       tokens[i] = indent import then: true
@@ -246,9 +237,6 @@ rewriteClosingParens = (tokens) ->
     tokens.splice pos, 0, tok
   tokens
 
-# Generate the indentation tokens, based on another token on the same line.
-indentation = (token) -> [['INDENT', 2, token[2]], ['OUTDENT', 2, token[2]]]
-
 indexOfPair = (tokens, i) ->
   bgn = tokens[i][0]
   end = INVERSES[bgn]
@@ -259,8 +247,7 @@ indexOfPair = (tokens, i) ->
     case end then return i unless --lvl
   -1
 
-# Constants
-# ---------
+#### Constants
 
 # List of the token pairs that must be balanced.
 BALANCED_PAIRS = [
