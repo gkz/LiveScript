@@ -158,10 +158,11 @@ addImplicitIndentation = (tokens) ->
   i = -1
   while token = tokens[++i]
     [tag] = token
-    continue unless tag is 'THEN' or
-      (next = tokens[i+1]?[0]) isnt 'INDENT' and
-      (tag of <[ FUNC_ARROW DEFAULT TRY FINALLY ]> or
-       tag is 'ELSE' and next isnt 'IF')
+    if 'INDENT' is next = tokens[i+1]?[0]
+      tokens.splice i, 1 if tag is 'THEN'
+      continue
+    continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY FINALLY ]> or
+                    tag is 'ELSE' and next isnt 'IF'
     indent  = ['INDENT' , 2, token[2]]
     outdent = ['OUTDENT', 2, token[2]]
     indent.generated = outdent.generated = true
