@@ -133,9 +133,10 @@ writeJs = (source, js, base) ->
 
 # Pretty-print a stream of tokens.
 printTokens = (tokens) ->
-  strings = for [tag, value] of tokens
-    "[#{tag} #{ "#{value}".replace /\n/, '\\n' }]"
-  say strings.join ' '
+  lines = []
+  for [tag, val, lno] of tokens
+    (lines[lno] ||= []).push "[#{tag} #{ "#{val}".replace /\n/g, '\\n' }]"
+  say lines.map(-> if it then it.join ' ' else '').join '\n'
 
 # A simple Read-Eval-Print-Loop. Compiles one line at a time to JavaScript
 # and evaluates it. Good for simple tests or poking around the **node.js** API.
