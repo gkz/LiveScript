@@ -99,48 +99,40 @@ addImplicitBraces = (tokens) ->
 # Insert the implicit parentheses here, so that the parser doesn't have to
 # deal with them.
 addImplicitParentheses = (tokens) ->
-  seenSingle = false
-  ok = (token, i) ->
-    return true if not seenSingle and token.then
-    [tag] = token
-    {0: pre, eol} = tokens[i-1]
-    seenSingle := true if tag of <[ IF ELSE FUNC_ARROW ]>
-    return true  if tag is 'ACCESS' and (eol or pre is 'OUTDENT')
-    return false if token.generated or  pre is ','
-    tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]> or
-    tag is 'INDENT' and pre not of <[ FUNC_ARROW { [ , ]> and
-      tokens[i-2]?[0] isnt 'CLASS' and
-      not ((post = tokens[i+1]) and post.generated and post[0] is '{')
-  go = (token, i) ->
-    ++i if token[0] is 'OUTDENT'
-    tokens.splice i, 0, ['CALL_END', ')', token[2]]
-  i = -1
+  i = 0
   while token = tokens[++i]
     [tag] = token
-    prev  = tokens[i-1]
-    obj   = false
-    switch tag
-    case 'INDENT'
-      obj = not classLine and (next = tokens[i+1]) and
-            next.generated and next[0] is '{'
-      fallthrough
-    case <[ TERMINATOR OUTDENT ]> then classLine = false
-    case 'CLASS'                  then classLine = true
-    case '?' then token.call = true if prev and not prev.spaced
-    continue unless prev and (prev.call or prev[0] of IMPLICIT_FUNC)
-    continue unless obj or prev.spaced and (
-      tag of <[
-        ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
-        FUNCTION IF TRY SWITCH CLASS SUPER
-      ]> or
-      tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION' or
-      tag is 'PLUS_MINUS' and not (token.spaced or token.eol)
-    )
-    seenSingle = false
+    unless (prev = tokens[i-1]).spaced
+      token.call = true if tag is '?'
+      continue
+    continue unless prev.call or
+      prev[0] of <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
+    continue unless token.xthen or
+      tag of <[ ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
+                FUNCTION IF TRY SWITCH CLASS SUPER ]> or
+      tag is 'PLUS_MINUS' and not (token.spaced or token.eol) or
+      tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION'
+    seenSingle = seenClass = false
     tokens.splice --i, 1 if soak = prev[0] is '?'
     tokens.splice i++, 0, ['CALL_START', (if soak then '?(' else '('), token[2]]
-    ++i if obj
     detectEnd tokens, i, ok, go
+  function ok (token, i) ->
+    return false if token.xthen
+    return true  if not seenSingle and token.then
+    [tag] = token
+    {0: pre, eol} = tokens[i-1]
+    switch tag
+    case 'CLASS'                  then seenClass  := true
+    case <[ IF ELSE FUNC_ARROW ]> then seenSingle := true
+    return true  if tag is 'ACCESS' and (eol or pre is 'OUTDENT')
+    return false if token.generated or pre is ','
+    if tag is 'INDENT'
+      return seenClass := false if seenClass
+      return pre not of <[ FUNC_ARROW { [ , ]>
+    tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]>
+  function go (token, i) ->
+    ++i if token[0] is 'OUTDENT'
+    tokens.splice i, 0, ['CALL_END', ')', token[2]]
   tokens
 
 # Because our grammar is LALR(1), it can't handle some single-line
@@ -149,17 +141,19 @@ addImplicitParentheses = (tokens) ->
 # but we need to make sure it's balanced.
 addImplicitIndentation = (tokens) ->
   ok = (token, i) ->
-    [tg] = token
-    tg of <[ CATCH FINALLY OUTDENT CASE DEFAULT ]> or
-    tg is 'TERMINATOR' and token[1] isnt ';' or
-    tg is 'ELSE' and tag of <[ IF THEN ]>
+    switch token[0]
+    case <[ CATCH FINALLY OUTDENT CASE DEFAULT ]> then true
+    case 'TERMINATOR' then token[1] isnt ';'
+    case 'ELSE'       then tag of <[ IF THEN ]>
   go = (token, i) ->
     tokens.splice (if tokens[i-1][0] is ',' then i-1 else i), 0, outdent
   i = -1
   while token = tokens[++i]
     [tag] = token
     if 'INDENT' is next = tokens[i+1]?[0]
-      tokens.splice i, 1 if tag is 'THEN'
+      if tag is 'THEN'
+        tokens.splice i, 1
+        tokens[i] import then: true, xthen: true
       continue
     continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY FINALLY ]> or
                     tag is 'ELSE' and next isnt 'IF'
@@ -268,7 +262,6 @@ INVERSES = {}
 # The tokens that signal the start/end of a balanced pair.
 EXPRESSION_START = []
 EXPRESSION_END   = []
-
 for [left, rite] of BALANCED_PAIRS
   EXPRESSION_START.push INVERSES[rite] = left
   EXPRESSION_END  .push INVERSES[left] = rite
@@ -276,6 +269,3 @@ for [left, rite] of BALANCED_PAIRS
 # Tokens that indicate the close of a clause of an expression.
 EXPRESSION_CLOSE =
   EXPRESSION_END.concat<[ ELSE BY TO CATCH FINALLY CASE DEFAULT ]>
-
-# Tokens that indicate an implicit function invocation.
-IMPLICIT_FUNC = <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>

@@ -193,12 +193,21 @@ ok result.one is 1
 ok constructor isnt 'word'
 
 
-# Trying an implicit object call with a trailing function.
-a = null
-meth = (arg, obj, func) -> a := [obj.a, arg, func()].join ' '
-meth 'apple', b: 1, a: 13, ->
+# Implicit call including an implicit object and a trailing function.
+meth = (arg, obj, func) -> [obj.a, arg, func()].join ' '
+eq '13 apple orange', meth 'apple', b: 1, a: 13, ->
   'orange'
-eq a, '13 apple orange'
+
+
+# Implicit call against a block via explicit `then`.
+o = Object then
+  a: 1
+eq o.a, 1
+
+a = Array then
+  2
+  3
+eq a[1], 3
 
 
 # Ensure that empty functions don't return mistaken values.

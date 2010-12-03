@@ -380,7 +380,7 @@ tokens = for name, alternatives in grammar
 # rules, and the name of the root. Reverse the operators because Jison orders
 # precedence from low to high, and we have it high to low
 # (as in [Yacc](http://dinosaur.compilertools.net/yacc/index.html)).
-exports.parser = new (require 'jison').Parser
+exports.parser = new (require 'jison').Parser then
   tokens      : tokens.join ' '
   bnf         : grammar
   operators   : operators.reverse()

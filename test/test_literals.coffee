@@ -130,19 +130,6 @@ ok obj.options.value is true
 ok obj.fn() is null
 
 
-# Implicit arguments to function calls:
-func = (obj) -> obj.a
-
-result = func
-  a: 10
-
-ok result is 10
-
-result = func
-  "a": 20
-
-ok result is 20
-
 third = (a, b, c) -> c
 obj =
   one: 'one'
