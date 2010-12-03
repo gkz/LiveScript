@@ -104,7 +104,7 @@ addImplicitBraces = (tokens) ->
 addImplicitParentheses = (tokens) ->
   seenSingle = false
   ok = (token, i) ->
-    return true if not seenSingle and token.fromThen
+    return true if not seenSingle and token.then
     [tag] = token
     {0: pre, eol} = tokens[i-1]
     seenSingle := true if tag of <[ IF ELSE FUNC_ARROW ]>
@@ -168,18 +168,18 @@ addImplicitIndentation = (tokens) ->
       tokens.splice i+2, 0, ...indentation token
       i += 3
       continue
-    if tag is 'TERMINATOR' and tokens[i+1]?[0] is 'THEN'
-      tokens.splice i, 1
-      [tag] = token = tokens[i]
-    continue if (next = tokens[i+1]?[0]) is 'INDENT'
-    continue unless tag of <[ FUNC_ARROW THEN DEFAULT TRY FINALLY ]> or
-                    tag is 'ELSE' and next isnt 'IF'
+    continue unless tag is 'THEN' or
+      (next = tokens[i+1]?[0]) isnt 'INDENT' and
+      (tag of <[ FUNC_ARROW DEFAULT TRY FINALLY ]> or
+       tag is 'ELSE' and next isnt 'IF')
     [indent, outdent] = indentation token
-    indent.fromThen   = true if tag is 'THEN'
     indent.generated  = outdent.generated = true
-    tokens.splice i+1, 0, indent
-    detectEnd tokens, i+2, ok, go
-    if tag is 'THEN' then tokens.splice i, 1 else ++i
+    if tag is 'THEN'
+      tokens.splice --i, 1 if tokens[i-1]?[0] is 'TERMINATOR'
+      tokens[i] = indent import then: true
+    else
+      tokens.splice ++i, 0, indent
+    detectEnd tokens, i+1, ok, go
   tokens
 
 # Tag postfix conditionals as such, so that we can parse them with a
