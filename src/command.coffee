@@ -16,7 +16,8 @@ oparser = require('./optparse').OptionParser [
   ['-e', '--eval',            'compile a string from the command line']
   ['-r', '--require FILE*',   'require a library before executing your script']
   ['-b', '--bare',            'compile without the top-level function wrapper']
-  ['-t', '--tokens',          'print the tokens that the lexer produces']
+  ['-l', '--lex',             'print the tokens that the lexer produces']
+  ['-t', '--tokens',          'print the tokens that the rewriter produces']
   ['-n', '--nodes',           'print the parse tree the parser produces']
   ['-v', '--version',         'display Coco version']
   ['-h', '--help',            'display this help message']
@@ -79,9 +80,9 @@ compileScript = (file, input, base) ->
   try
     Coco.emit 'compile', t = {file, input, options}
     switch
-    case o.tokens then printTokens Coco.tokens input
-    case o.nodes  then say Coco.nodes(input).toString().trim()
-    case o.run    then Coco.run input, options
+    case o.lex, o.tokens then printTokens Coco.tokens input, rewrite: !o.lex
+    case o.nodes         then say Coco.nodes(input).toString().trim()
+    case o.run           then Coco.run input, options
     default
       t.output = Coco.compile input, options
       Coco.emit 'success', t
