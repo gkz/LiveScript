@@ -960,7 +960,7 @@ class exports.Op extends Node
     if op is 'new'
       {base} = first
       if base instanceof Call
-        base.new = 'new '
+        base.digCalls()[0].new = 'new '
         return first
       base.keep = true if base instanceof Parens
     this import {op, first, second, post}

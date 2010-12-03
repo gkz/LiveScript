@@ -220,26 +220,25 @@ func.withThis()
 
 
 # Ensure that constructors invoked with splats return a new object.
-args = [1, 2, 3]
-Type = (@args) ->
-type = new Type args
+Type = (@a, @b) ->
+args = [1, 2]
 
-ok type and type instanceof Type
-ok type.args and type.args instanceof Array
-ok v is args[i] for v, i of type.args
+type = new Type(args).valueOf()
+ok type instanceof   Type
+eq type.constructor, Type
+eq type.a, args
+eq type.b, void
 
-Type1 = (@a, @b, @c) ->
-type1 = new Type1 args...
+type = new Type(...args).valueOf()
+ok type instanceof   Type
+eq type.constructor, Type
+eq type.a, 1
+eq type.b, 2
 
-ok type1 instanceof   Type1
-eq type1.constructor, Type1
-ok type1.a is args[0] and type1.b is args[1] and type1.c is args[2]
 
-
-# Ensure that constructors invoked with splats cache the function.
-called = 0
-get = -> if called++ then false else class Type
-new get() args...
+# `new` should apply to the first function of a call chain.
+eq 3, new (-> fun: -> @0 + @1)().fun ...args
+eq 3, new (->      -> @0 + @1)()     ...args
 
 
 # Chained blocks, with proper indentation levels:
