@@ -224,7 +224,7 @@ eq Class, Namespace.Class
 
 class BoundCtor extends (-> {@attr})
   (@attr, ret) =>
-    return if ret
+    return this if ret
     eq super(...).attr, @attr
     @method = => this
 

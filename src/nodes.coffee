@@ -803,9 +803,6 @@ class exports.Code extends Node
            _ctor(){} _ctor.prototype = #{name}.prototype;
           #{tab}function
         """
-        Node::traverseChildren.call this, ->
-          it.it ||= Literal '_this' if it instanceof Return
-          null
         body.append Return Literal '_this'
       else if b = sscope.method?.bound
       then @bound = b
