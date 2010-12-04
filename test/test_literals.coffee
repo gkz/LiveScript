@@ -186,20 +186,14 @@ while --i then while --i then `break LABEL`
 eq i, 1
 
 
-# Shorthand objects with property references.
+# Braceless objects.
 obj =
   ### comment one ###
   ### comment two ###
-  one: 1
-  two: 2
-  object: -> {@one, @two}
-  list:   -> [@one, @two]
+  one: 1, two: 2
+  fun: -> [zero: 0; three: @one + @two][1]
 
-
-result = obj.object()
-eq result.one, 1
-eq result.two, 2
-eq result.two, obj.list()[1]
+eq obj.fun().three, 3
 
 
 # Dynamic object keys.

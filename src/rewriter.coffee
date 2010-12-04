@@ -64,15 +64,13 @@ closeOpenings = (tokens) ->
 addImplicitBraces = (tokens) ->
   go = (token, i) -> tokens.splice i, 0, ['}', '}', token[2]]
   ok = (token, i) ->
-    return false if 'HERECOMMENT' is one = tokens[i+1]?[0]
-    [tag] = token
-    tag is 'OUTDENT' or
-    tag is ',' and
-      one not of <[ IDENTIFIER STRNUM THISPROP TERMINATOR OUTDENT ( ]> or
-    tag is 'TERMINATOR' and ':' isnt
+    return true  if token[1] is ';' or 'OUTDENT' is tag = token[0]
+    return false if tag not of <[ , TERMINATOR ]>
+    one = tokens[i+1]?[0]
+    tag is ',' and one not of <[ IDENTIFIER STRNUM TERMINATOR ( ]> or
+    tag is 'TERMINATOR' and one isnt 'HERECOMMENT' and ':' isnt
       tokens[if one is '(' then 1 + indexOfPair tokens, i+1 else i+2]?[0]
-  stack = []
-  i     = -1
+  stack = []; i = -1
   while token = tokens[++i]
     [tag] = token
     if tag of EXPRESSION_START
