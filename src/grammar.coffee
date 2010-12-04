@@ -189,7 +189,7 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o '( Body )',                -> Parens $2
+    o '(        Body         )', -> Parens $2
     o '( INDENT Body OUTDENT )', -> Parens $3
   ]
 
@@ -248,8 +248,9 @@ grammar =
     o 'ObjAssignable :        Expression'         ,-> Assign $1, $3, ':'
     o 'ObjAssignable : INDENT Expression OUTDENT' ,-> Assign $1, $4, ':'
 
-    o     'ObjAssignable' ,-> $1
-    o '... ObjAssignable' ,-> Splat $2
+    o            'ObjAssignable' ,-> $1
+    o '...        ObjAssignable' ,-> Splat  $2
+    o 'PLUS_MINUS ObjAssignable' ,-> Assign $2, Literal($1 is '+'), ':'
 
     o 'HERECOMMENT', -> Comment $1
   ]

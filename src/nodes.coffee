@@ -165,7 +165,7 @@ class exports.Lines extends Node
     for node of @lines
       node = (do node.=unwrapAll).unfoldSoak(o) or node
       if top
-        code = (node import front: true).compile o
+        code = (node import {+front}).compile o
         code = o.indent + code + node.terminater unless node.isStatement o
       else
         code = node.compile o, LEVEL_LIST
@@ -351,7 +351,7 @@ class exports.Value extends Node
         ref = Literal o.scope.temporary 'ref'
         fst = Parens Assign ref, fst
         snd.head = ref
-      ifn = If Existence(fst), snd, soak: true
+      ifn = If Existence(fst), snd, {+soak}
       ifn.temps = [ref.value] if ref
       return ifn
     null
@@ -363,7 +363,7 @@ class exports.Value extends Node
     for prop, i of @tails then if prop.assign
       prop.assign = false
       [lhs, rhs] = Value(@head, @tails.slice 0, i).cacheReference o
-      return Assign(lhs; Value rhs, @tails.slice i) import access: true
+      return Assign(lhs; Value rhs, @tails.slice i) import {+access}
     null
 
   unfoldBind: (o) ->
@@ -411,7 +411,7 @@ class exports.Call extends Node
       rite = Call rite, @args
       rite import {@new}
       left = Literal "typeof #{ left.compile o } == \"function\""
-      return If left, Value(rite), soak: true
+      return If left, Value(rite), {+soak}
     for call of @digCalls()
       call.callee.head = ifn if ifn
       ifn = If.unfoldSoak o, call, 'callee'
@@ -655,7 +655,7 @@ class exports.Class extends Node
         throw SyntaxError 'more than one constructor in a class' if ctor
         ctor = node
     exps.unshift ctor = Code() unless ctor
-    ctor import {name, 'ctor', 'statement', clas: null}
+    ctor import {name, +ctor, +statement, -clas}
     exps.unshift Extends lname, @sup if @sup
     exps.push lname
     clas = Call @code, []
@@ -783,7 +783,7 @@ class exports.Code extends Node
 
   isStatement: -> !!@statement
 
-  makeReturn: -> if @statement then this import returns: true else super ...
+  makeReturn: -> if @statement then this import {+returns} else super ...
 
   compileNode: (o) ->
     pscope = o.scope
@@ -1314,14 +1314,14 @@ class exports.If extends Node
     if @isStatement o then @compileStatement o else @compileExpression o
 
   compileStatement: (o) ->
-    code  = if delete o.chainChild then '' else @tab
+    code  = if delete o.elsed then '' else @tab
     code += "if (#{ @if.compile o, LEVEL_PAREN }) {"
     o.indent += TAB
     code += "\n#{body}\n" + @tab if body = Lines(@then).compile o
     code += '}'
     return code unless @else
     code + ' else ' + if @chain
-    then @else.compile (o import indent: @tab, chainChild: true), LEVEL_TOP
+    then @else.compile o import {indent: @tab, +elsed}, LEVEL_TOP
     else if body = @else.compile o, LEVEL_TOP
     then "{\n#{body}\n#{@tab}}"
     else '{}'
