@@ -206,10 +206,11 @@ class exports.Lines extends Node
 # JavaScript without translation, such as identifiers, numbers, `this`, `break`
 # and pretty much everything that doesn't fit in other nodes.
 class exports.Literal extends Node
-  (@value) =>
-    # Break and continue must be treated as pure statements--they lose their
-    # meaning when wrapped in a closure.
+  (@value, reserved) =>
+    # `break`, `continue` and `debugger` must be treated as pure statements.
+    # They lose their meaning when wrapped in a closure.
     @isPureStatement = YES if value of <[ break continue debugger ]>
+    @isAssignable    = NO  if reserved
 
   makeReturn   : -> if @isPureStatement() then this else super ...
   isAssignable : -> IDENTIFIER.test @value

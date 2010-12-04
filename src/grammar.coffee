@@ -60,8 +60,8 @@ grammar =
     o 'Assignable'    ,-> Value $1
     o 'STRNUM'        ,-> Value Literal $1
     o 'Parenthetical' ,-> Value $1
-    o 'THIS'          ,-> Value Literal 'this'
-    o 'LITERAL'       ,-> Value Literal $1
+    o 'THIS'          ,-> Value Literal 'this', true
+    o 'LITERAL'       ,-> Value Literal $1    , true
     o 'Value CALL_START ArgList OptComma CALL_END' ,-> Value Call $1, $3  , $2
     o 'Value CALL_START ...              CALL_END' ,-> Value Call $1, null, $2
   ]
