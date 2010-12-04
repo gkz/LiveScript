@@ -1,7 +1,7 @@
-# comment before a ...
+# line comment
 
 ###
-... block comment.
+block comment
 ###
 
 

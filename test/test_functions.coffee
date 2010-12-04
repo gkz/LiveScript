@@ -40,7 +40,7 @@ obj.nested()
 memoize = (fn) ->
   cache = {}
   self  = this
-  (args...) ->
+  (...args) ->
     key = args.toString()
     return cache[key] if cache[key]
     cache[key] = fn.apply(self, args)
@@ -105,13 +105,13 @@ del = -> 5
 ok del() is 5
 
 # Ensure that functions can have a trailing comma in their argument list
-mult = (x, mids..., y) ->
+mult = (x, ...mids, y) ->
   x *= n for n of mids
   x * y
 
 eq 2, mult 1, 2
 eq 6, mult 1, 2, 3
-eq 7200, mult 10, (i for i from 1 to 6)...
+eq 7200, mult 10, ...(i for i from 1 to 6)
 
 
 # Test for inline functions with parentheses and implicit calls.
@@ -212,7 +212,7 @@ eq a[1], 3
 
 # Ensure that empty functions don't return mistaken values.
 obj =
-  func: (@param, @rest...) ->
+  func: (@param, ...@rest) ->
 
 ok obj.func(101, 102, 103, 104) is undefined
 ok obj.param is 101

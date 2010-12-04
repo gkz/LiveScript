@@ -48,7 +48,7 @@ class OneClass
 
 class TwoClass extends OneClass
 
-Function.prototype.new = -> new this arguments...
+Function.prototype.new = -> new this ...arguments
 
 eq TwoClass.new('three').name, 'three'
 eq (new OneClass).function, 'function'
@@ -158,14 +158,14 @@ class Connection
     "#{@one}-#{@two}-#{@three}"
 
 list = [3, 2, 1]
-conn = new Connection list...
+conn = new Connection ...list
 ok conn instanceof Connection
 eq conn.out(), '3-2-1'
 
 
 # Test calling super and passing along all arguments.
 class Parent
-  method: (args...) -> @args = args
+  method: (...args) -> @args = args
 
 class Child extends Parent
   method: -> super ...

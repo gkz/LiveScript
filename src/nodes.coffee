@@ -347,7 +347,7 @@ class exports.Value extends Node
   # Unfold a soak into an *If*: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     if ifn = @base.unfoldSoak o
-      ifn.then.properties.push @properties...
+      ifn.then.properties.push ...@properties
       return ifn
     for prop, i of @properties then if prop.soak
       prop.soak = false
@@ -364,7 +364,7 @@ class exports.Value extends Node
 
   unfoldAssign: (o) ->
     if asn = @base.unfoldAssign o
-      asn.right.properties.push @properties...
+      asn.right.properties.push ...@properties
       return asn
     for prop, i of @properties then if prop.assign
       prop.assign = false
@@ -830,8 +830,8 @@ class exports.Code extends Node
                            Assign ref.name, ref.value
       vars.push ref unless splats
     wasEmpty = not (exps = body.lines).length
-    asns.unshift splats if splats
-    exps.unshift asns... if asns.length
+    asns.unshift splats  if splats
+    exps.unshift ...asns if asns.length
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
     vars[0] = 'it' if not vars.length and body.contains(-> it.value is 'it')
     body.makeReturn() unless wasEmpty or @ctor

@@ -211,8 +211,8 @@ obj = {
   ### cached shorthand ###
   (++i)
   ###      splat       ###
-  o...
-  ({splatMe: 'too'})...
+  ...o
+  ...({splatMe: 'too'})
   ###   normal keys    ###
   key: ok
   's': ok

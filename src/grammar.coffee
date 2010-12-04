@@ -161,8 +161,7 @@ grammar =
   ]
 
   Arg: [
-    o 'Expression'
-    o 'Expression ...', -> Splat $1
+    o     'Expression'
     o '... Expression', -> Splat $2
   ]
   # The **ArgList** is both the list of objects passed into a function call,
@@ -227,10 +226,9 @@ grammar =
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o 'ParamVar',                   -> Param $1
-    o 'ParamVar ...',               -> Param $1, null, true
-    o '... ParamVar',               -> Param $2, null, true
-    o 'ParamVar ASSIGN Expression', -> Param $1, $3
+    o     'ParamVar'                   ,-> Param $1
+    o '... ParamVar'                   ,-> Param $2, null, true
+    o     'ParamVar ASSIGN Expression' ,-> Param $1, $3
   ]
   ParamVar: [
     o 'IDENTIFIER', -> Literal $1
@@ -250,9 +248,8 @@ grammar =
     o 'ObjAssignable :        Expression'         ,-> Assign $1, $3, ':'
     o 'ObjAssignable : INDENT Expression OUTDENT' ,-> Assign $1, $4, ':'
 
-    o 'ObjAssignable'     ,-> $1
-    o 'ObjAssignable ...' ,-> Splat $1
-    o '... ObjAssignable' ,-> Splat $1
+    o     'ObjAssignable' ,-> $1
+    o '... ObjAssignable' ,-> Splat $2
 
     o 'HERECOMMENT', -> Comment $1
   ]

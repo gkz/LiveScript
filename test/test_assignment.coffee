@@ -89,12 +89,12 @@ ok a is c is 1 and b is d is 2
 
 
 # Array destructuring, including splats.
-[x, y..., z] = [1, 2, 3, 4, 5]
+[x, ...y, z] = [1, 2, 3, 4, 5]
 eq x, 1
 eq y.length, 3
 eq z, 5
 
-[heads..., [head, tails...], tail] = [1,2,3, [4, 5,6], 7]
+[...heads, [head, ...tails], tail] = [1,2,3, [4, 5,6], 7]
 eq head, 4
 eq tail, 7
 eq heads + '', '1,2,3'
@@ -119,7 +119,7 @@ eq c, 30
 eq a, 'Moe'
 eq b, 'Moquasset NY, 10021'
 
-{person: {address: [ignore, addr...]}} =
+{person: {address: [ignore, ...addr]}} =
   person:
     address: [
       "------"

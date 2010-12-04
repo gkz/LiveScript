@@ -172,7 +172,7 @@ eq @, do => @
 
 
 x = 'xx'
-o = (-> {} import {42, '', x, @X, (x), ([0])...}).call {X: 'XX'}
+o = (-> {} import {42, '', x, @X, (x), ...([0])}).call {X: 'XX'}
 eq o[42], 42
 eq o[''], ''
 eq o.x, 'xx'

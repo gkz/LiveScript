@@ -29,7 +29,7 @@ global import
   # Define an option that the Cokefile accepts. The parsed options hash,
   # containing all of the command-line options passed, will be made available
   # as the first argument to the action.
-  option: -> Switches.push [arguments...]
+  option: -> Switches.push [...arguments]
 
   # Invoke another task in the current Cokefile.
   invoke: (name) ->
