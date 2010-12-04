@@ -34,13 +34,8 @@ class exports.Lexer
     # Check the first character of current `@chunk`, then call appropriate
     # tokenizers based on it. Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
-    code.=replace(/\r/g, '').replace(/\s+$/, '')
-    i = 0
+    code.=replace(/\r/g, '').replace(/\s+$/, ''); i = 0
     while @chunk = code.slice i
-      if comments = COMMENTS.exec @chunk
-        break unless @chunk = code.slice i += @countLines(comments[0]).length
-        i += do @lineToken
-        continue
       switch code.charAt i
       case '\n'then i += do @lineToken
       case ' ' then i += do @whitespaceToken
@@ -52,7 +47,7 @@ class exports.Lexer
         i += if '//' is code.substr i+1, 2
         then do @heregexToken
         else do @regexToken or do @literalToken
-      case '#' then i += do @commentToken
+      case '#' then i += do @whitespaceToken or do @commentToken
       case '`' then i += do @jsToken
       default i += do @identifierToken or do @numberToken or
                    do @literalToken    or do @whitespaceToken
@@ -289,7 +284,7 @@ class exports.Lexer
     @indent = size
     indent.length
 
-  # Matches and consumes tab characters. Tag the previous token
+  # Matches and consumes non-newline whitespaces. Tag the previous token
   # as being "spaced", because there are cases where it makes a difference.
   whitespaceToken: ->
     return 0 unless match = WHITESPACE.exec @chunk
@@ -532,9 +527,8 @@ SYMBOL = /// ^ (?:
   >>>?=?            | # rite shift
   \S
 ) ///
-WHITESPACE  = /^[^\n\S]+/
-COMMENTS    = /^(?:\s*#(?!##[^#]).*)+/
-MULTIDENT   = /^(?:\n[^\n\S]*)+/
+WHITESPACE  = /^(?=.)[^\n\S]*(?:#(?!##[^#]).*)?/
+MULTIDENT   = /^(?:\s*#(?!##[^#]).*)*(?:\n[^\n\S]*)+/
 SIMPLESTR   = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN     = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
