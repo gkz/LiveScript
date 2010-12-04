@@ -35,7 +35,7 @@ class Node
     if @containsPureStatement()
       throw SyntaxError 'cannot include a pure statement in an expression'
     args = []
-    func = Code [], Expressions this
+    func = Code [], Lines this
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
     func.wrapper = true
@@ -132,40 +132,40 @@ class Node
     @eachChild -> tree += it.toString idt + TAB; null
     tree
 
-#### Expressions
+#### Lines
 # A list of expressions that forms the body of an
 # indented block of code--the implementation of a function, a clause in an
 # `if`, `switch`, or `try`, and so on.
-class exports.Expressions extends Node
+class exports.Lines extends Node
   (node) =>
-    return node if node instanceof Expressions
-    @expressions = if node then [node] else []
+    return node if node instanceof Lines
+    @lines = if node then [node] else []
 
-  children: ['expressions']
+  children: ['lines']
 
-  append: -> @expressions.push it; this
-  unwrap: -> if @expressions.length is 1 then @expressions[0] else this
+  append: -> @lines.push it; this
+  unwrap: -> if @lines.length is 1 then @lines[0] else this
 
-  isComplex: -> @expressions.length > 1 or !!@expressions[0]?.isComplex()
+  isComplex: -> @lines.length > 1 or !!@lines[0]?.isComplex()
 
   isStatement: (o) ->
     return true if o and not o.level
-    for exp of @expressions
+    for exp of @lines
       return true if exp.isPureStatement() or exp.isStatement o
     false
 
-  # An Expressions node does not return its entire body, rather it
-  # ensures that the final expression is returned.
+  # **Lines** does not return its entire body, rather it
+  # ensures that the final line is returned.
   makeReturn: ->
-    [node, i] = lastNonComment @expressions
-    @expressions[i] = node.makeReturn it if node
+    [node, i] = lastNonComment @lines
+    @lines[i] = node.makeReturn it if node
     this
 
   compileNode: (o) ->
-    o.expressions = this
+    o.lines = this
     top   = not o.level
     codes = []
-    for node of @expressions
+    for node of @lines
       node = (do node.=unwrapAll).unfoldSoak(o) or node
       if top
         code = (node import front: true).compile o
@@ -177,13 +177,13 @@ class exports.Expressions extends Node
     code = codes.join(', ') or 'void 8'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
-  # An **Expressions** is the only node that can serve as the root.
+  # **Lines** is the only node that can serve as the root.
   compileRoot: (o = {}) ->
     o.indent = @tab = if bare = delete o.bare then '' else TAB
     o.scope  = @scope = Scope.root = new Scope
     o.level  = LEVEL_TOP
     code = @compileWithDeclarations(o).replace /[^\n\S]+$/gm, ''
-    # If we happen to be the top-level **Expressions**, wrap everything in
+    # If we happen to be the top-level **Lines**, wrap everything in
     # a safety closure, unless requested not to.
     if bare then code else "(function(){\n#{code}\n}).call(this);\n"
 
@@ -191,14 +191,14 @@ class exports.Expressions extends Node
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
     code = post = ''
-    for exp, i of @expressions
+    for exp, i of @lines
       break unless exp.unwrap() instanceof [Comment, Literal]
     o.level = LEVEL_TOP
     if i
-      rest = @expressions.splice i, 1/0
-      code = @compileNode o
-      @expressions = rest
-    post = if @expressions.length then @compileNode o else ''
+      rest   = @lines.splice i, 1/0
+      code   = @compileNode o
+      @lines = rest
+    post = if @lines.length then @compileNode o else ''
     code &&+= '\n' if post
     if not o.globals and vars = @scope?.vars().join ', '
       code += o.indent + "var #{ multident vars, o.indent };\n"
@@ -655,7 +655,7 @@ class exports.Class extends Node
     lname = Literal @code.bound = name
     proto = Value lname, [Access Literal 'prototype']
     @code.body.traverseChildren -> it.clas = name if it instanceof Code; null
-    for node, i of exps = @code.body.expressions
+    for node, i of exps = @code.body.lines
       if node.isObject()
         exps[i] = Import proto, node, true
       else if node instanceof Code
@@ -781,7 +781,7 @@ class exports.Assign extends Node
 #### Code
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Code extends Node
-  (@params = [], @body = Expressions(), arrow) =>
+  (@params = [], @body = Lines(), arrow) =>
     @bound = '_this' if arrow is '=>'
 
   children: <[ params body ]>
@@ -829,7 +829,7 @@ class exports.Code extends Node
         asns.push Op '&&', Literal(ref.name.value + ' == null'),
                            Assign ref.name, ref.value
       vars.push ref unless splats
-    wasEmpty = not (exps = body.expressions).length
+    wasEmpty = not (exps = body.lines).length
     asns.unshift splats if splats
     exps.unshift asns... if asns.length
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
@@ -838,7 +838,7 @@ class exports.Code extends Node
     if statement
       unless name
         throw SyntaxError 'cannot declare a nameless function'
-      unless o.expressions.scope is pscope
+      unless o.lines.scope is pscope
         throw SyntaxError 'cannot declare a function under a statement'
       scope .add name, 'function'
       pscope.add name, 'function' unless @returns
@@ -915,11 +915,11 @@ class exports.While extends Node
   isStatement: YES
 
   containsPureStatement: ->
-    {expressions} = @body
-    return false unless i = expressions.length
-    return true if expressions[--i]?.containsPureStatement()
+    {lines} = @body
+    return false unless i = lines.length
+    return true if lines[--i]?.containsPureStatement()
     ret = -> it instanceof Return
-    return true if expressions[--i].contains ret while i
+    return true if lines[--i].contains ret while i
     false
 
   addBody: (@body) -> this
@@ -939,7 +939,7 @@ class exports.While extends Node
 
   compileBody: (o) ->
     {body} = this
-    [last, i] = lastNonComment exps = body.expressions
+    [last, i] = lastNonComment exps = body.lines
     if last?.value is 'continue'
       exps.splice i, 1
       [last, i] = lastNonComment exps
@@ -1134,18 +1134,18 @@ class exports.Existence extends Node
 #### Parens
 # An extra set of parentheses, specifying explicitly in the source.
 class exports.Parens extends Node
-  (@expressions, @keep) =>
+  (@lines, @keep) =>
 
-  children: ['expressions']
+  children: ['lines']
 
-  unwrap          : -> @expressions
-  makeReturn      : -> @expressions.makeReturn it
-  isComplex       : -> @expressions.isComplex()
-  isStatement     : -> @expressions.isStatement()
-  isPureStatement : -> @expressions.isPureStatement()
+  unwrap          : -> @lines
+  makeReturn      : -> @lines.makeReturn it
+  isComplex       : -> @lines.isComplex()
+  isStatement     : -> @lines.isStatement()
+  isPureStatement : -> @lines.isPureStatement()
 
   compileNode: (o) ->
-    (expr = @expressions.unwrap()) import {@front}
+    (expr = @lines.unwrap()) import {@front}
     return expr.compile o if not @keep and
       (expr instanceof [Value, Call, Code, Parens] or
        o.level < LEVEL_OP and expr instanceof Op)
@@ -1273,7 +1273,7 @@ class exports.Case extends Node
   children: <[ tests body ]>
 
   makeReturn: ->
-    [last] = lastNonComment @body.expressions
+    [last] = lastNonComment @body.lines
     @body.makeReturn it if last and last.base?.value isnt 'fallthrough'
 
   compileCase: (o, tab, nobr) ->
@@ -1283,7 +1283,7 @@ class exports.Case extends Node
       if test.=unwrap() instanceof Arr
       then add t for t of test.items
       else add test
-    [last, i] = lastNonComment exps = @body.expressions
+    [last, i] = lastNonComment exps = @body.lines
     exps[i] = Comment ' fallthrough ' if ft = last.base?.value is 'fallthrough'
     o.indent = tab + TAB
     code += body + '\n' if body = @body.compile o, LEVEL_TOP
@@ -1326,7 +1326,7 @@ class exports.If extends Node
     code  = if delete o.chainChild then '' else @tab
     code += "if (#{ @if.compile o, LEVEL_PAREN }) {"
     o.indent += TAB
-    code += "\n#{body}\n" + @tab if body = Expressions(@then).compile o
+    code += "\n#{body}\n" + @tab if body = Lines(@then).compile o
     code += '}'
     return code unless @else
     code + ' else ' + if @chain

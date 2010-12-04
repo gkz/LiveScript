@@ -75,10 +75,7 @@ grammar =
     o 'SUPER'                                  ,-> Super()
   ]
 
-  # All the different types of expressions in our language. The basic unit of
-  # Coco is the **Expression** -- everything that can be an expression
-  # is one. Expressions serve as the building blocks of many other rules, making
-  # them somewhat circular.
+  # All the different types of expressions in our language.
   Expression: [
     o 'Value'
 
@@ -118,15 +115,15 @@ grammar =
     # including postfix one-liner `if` and `unless`.
     o 'IfBlock'
     o 'Statement  POST_IF Expression', ->
-      If $3, Expressions($1), name: $2, statement: true
+      If $3, Lines($1), name: $2, statement: true
     o 'Expression POST_IF Expression', ->
-      If $3, Expressions($1), name: $2, statement: true
+      If $3, Lines($1), name: $2, statement: true
 
     # Comprehensions can either be normal, with a block of expressions to execute,
     # or postfix, with a single expression.
     o 'LoopHead   Block',    -> $1.addBody $2
-    o 'Statement  LoopHead', -> $2.addBody Expressions $1
-    o 'Expression LoopHead', -> $2.addBody Expressions $1
+    o 'Statement  LoopHead', -> $2.addBody Lines $1
+    o 'Expression LoopHead', -> $2.addBody Lines $1
 
     o 'SWITCH Expression Cases',               -> Switch $2, $3
     o 'SWITCH Expression Cases DEFAULT Block', -> Switch $2, $3, $5
@@ -150,8 +147,8 @@ grammar =
 
   # Any list of statements and expressions, separated by line breaks or semicolons.
   Body: [
-    o 'Expression'                 ,-> Expressions $1
-    o 'Statement'                  ,-> Expressions $1
+    o 'Expression'                 ,-> Lines $1
+    o 'Statement'                  ,-> Lines $1
     o 'Body TERMINATOR Expression' ,-> $1.append $3
     o 'Body TERMINATOR Statement'  ,-> $1.append $3
     o 'Body TERMINATOR'
@@ -211,12 +208,11 @@ grammar =
   # token stream.
   Block: [
     o 'INDENT Body OUTDENT', -> $2
-    o 'INDENT      OUTDENT', -> Expressions()
+    o 'INDENT      OUTDENT', -> Lines()
   ]
 
-  # The **Code** node is the function literal. It's defined by an indented block
-  # of **Expressions** preceded by a function arrow, with an optional parameter
-  # list.
+  # **Code** node is the function literal, defined by an indented **Block**
+  # preceded by a function arrow, with an optional parameter list.
   Code: [
     o 'PARAM_START ParamList PARAM_END
        FUNC_ARROW Block', -> Code $2, $5, $4
@@ -331,7 +327,7 @@ grammar =
   # The **Root** is the top-level node in the syntax tree.
   # Since we parse bottom-up, all parsing must end here.
   Root: [
-    o '', -> Expressions()
+    o '', -> Lines()
     o 'Body'
     o 'Block TERMINATOR'
   ]
