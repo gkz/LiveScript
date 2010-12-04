@@ -238,9 +238,9 @@ class exports.Literal extends Node
 
 #### Return
 class exports.Return extends Node
-  (@expression) =>
+  (@it) =>
 
-  children: ['expression']
+  children: ['it']
 
   isStatement     : YES
   isPureStatement : YES
@@ -248,7 +248,7 @@ class exports.Return extends Node
   makeReturn: THIS
 
   compile: (o) ->
-    exp = @expression?.compile o, LEVEL_PAREN
+    exp = @it?.compile o, LEVEL_PAREN
     o.indent + "return#{ if exp then ' ' + exp else '' };"
 
 #### Value
@@ -804,7 +804,7 @@ class exports.Code extends Node
           #{tab}function
         """
         Node::traverseChildren.call this, ->
-          it.expression ||= Literal '_this' if it instanceof Return
+          it.it ||= Literal '_this' if it instanceof Return
           null
         body.append Return Literal '_this'
       else if b = sscope.method?.bound
@@ -1109,27 +1109,27 @@ class exports.Try extends Node
 
 #### Throw
 class exports.Throw extends Node
-  (@expression) =>
+  (@it) =>
 
-  children: ['expression']
+  children: ['it']
 
   isStatement: YES
 
   makeReturn: THIS
 
-  compile: (o) -> o.indent + "throw #{ @expression.compile o, LEVEL_PAREN };"
+  compile: (o) -> o.indent + "throw #{ @it.compile o, LEVEL_PAREN };"
 
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
 class exports.Existence extends Node
-  (@expression) =>
+  (@it) =>
 
-  children: ['expression']
+  children: ['it']
 
   invert: NEGATE
 
   compileNode: (o) ->
-    code = @expression.compile o, LEVEL_OP
+    code = @it.compile o, LEVEL_OP
     if IDENTIFIER.test(code) and not o.scope.check code, true
       code = 'typeof ' + code + if @negated
       then " == \"undefined\" || #{code} === null"
