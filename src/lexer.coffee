@@ -219,19 +219,20 @@ class exports.Lexer
       @token 'LITERAL', "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex).length
     @token<[ IDENTIFIER RegExp ]>
-    @token<[ CALL_START   (    ]>
+    @token<[ CALL_START (      ]>
     tokens = []
-    for token of @interpolateString body
+    for token, i of @interpolateString body
       if token[0] is 'TOKENS'
         tokens.push token[1]...
       else
-        continue unless val = token[1].replace HEREGEX_OMIT, ''
+        val = token[1].replace HEREGEX_OMIT, ''
+        continue if i and not val
         val.=replace bs ||= /\\/g, '\\\\'
-        tokens.push ['STRNUM', @makeString val, '"', '\\n']
+        tokens.push ['STRNUM', @makeString val, "'", '\\n']
       tokens.push <[ PLUS_MINUS + ]>
     tokens.pop()
     @tokens.push tokens...
-    @tokens.push <[ , , ]>, ['STRNUM', "'" + flags + "'"] if flags
+    @tokens.push <[ , , ]>, ['STRNUM', "'#{flags}'"] if flags
     @countLines heregex
     @token<[ ) ) ]>
     heregex.length
