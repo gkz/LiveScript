@@ -163,7 +163,7 @@ class exports.Lexer
   doubleStringToken: ->
     string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
     if 0 < string.indexOf '#{', 1
-    then @interpolateString string.slice 1, -1
+    then @interpolateString string.slice(1, -1), ''
     else @token 'STRNUM', string.replace MULTILINER, ''
     @countLines(string).length
 
@@ -180,7 +180,7 @@ class exports.Lexer
       dent = len unless dent <= len = m[0].length - 1 while m = tabs.exec doc
       doc  = @dedent(doc, dent).replace /^\n/, ''
     if q is '"' and ~doc.indexOf '#{'
-    then @interpolateString doc, newline: '\\n'
+    then @interpolateString doc, '\\n'
     else @token 'STRNUM', @makeString doc, q, '\\n'
     @countLines(txt).length + 6
 
@@ -221,19 +221,17 @@ class exports.Lexer
     @token<[ IDENTIFIER RegExp ]>
     @token<[ CALL_START   (    ]>
     tokens = []
-    for [tag, value] of @interpolateString(body, regex: true)
-      if tag is 'TOKENS'
-        tokens.push value...
+    for token of @interpolateString body
+      if token[0] is 'TOKENS'
+        tokens.push token[1]...
       else
-        continue unless value.=replace HEREGEX_OMIT, ''
-        value.=replace /\\/g, '\\\\'
-        tokens.push ['STRNUM', @makeString value, '"', '\\n']
+        continue unless val = token[1].replace HEREGEX_OMIT, ''
+        val.=replace bs ||= /\\/g, '\\\\'
+        tokens.push ['STRNUM', @makeString val, '"', '\\n']
       tokens.push <[ PLUS_MINUS + ]>
     tokens.pop()
-    unless tokens[0]?[0] is 'STRNUM'
-      @tokens.push <[ STRNUM "" ]>, <[ PLUS_MINUS + ]>
     @tokens.push tokens...
-    @tokens.push <[ , , ]>, ['STRNUM', '"' + flags + '"'] if flags
+    @tokens.push <[ , , ]>, ['STRNUM', "'" + flags + "'"] if flags
     @countLines heregex
     @token<[ ) ) ]>
     heregex.length
@@ -247,9 +245,7 @@ class exports.Lexer
     for word of (words = @chunk.slice 2, end).match(/\S+/g) or ['']
       @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
     @countLines words
-    if call
-    then @token<[ ) ) ]>
-    else @token<[ ] ] ]>
+    if call then @token<[ ) ) ]> else @token<[ ] ] ]>
     end + 2
 
   # Matches newlines, indents, and outdents, and determines which is which.
@@ -268,10 +264,9 @@ class exports.Lexer
     @last.eol  = true
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf '\n'
-    noNewline = LINE_CONTINUER.test(@chunk) or @last[0] of <[
-      ACCESS INDEX_START ASSIGN COMPOUND_ASSIGN IMPORT
-      LOGIC PLUS_MINUS MATH COMPARE RELATION SHIFT
-    ]>
+    noNewline = LINE_CONTINUER.test(@chunk) or @last[0] of
+      <[ ACCESS INDEX_START ASSIGN COMPOUND_ASSIGN IMPORT
+         LOGIC PLUS_MINUS MATH COMPARE RELATION SHIFT     ]>
     if size - @indebt is @indent
       @newline() unless noNewline
       return indent.length
@@ -394,7 +389,7 @@ class exports.Lexer
   # a series of delimiters, all of which must be nested correctly within the
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
-  balancedString: (str, delimited, options = {}) ->
+  balancedString: (str, delimited) ->
     stack = [delimited[0]]
     for i from 1 til str.length
       switch str.charAt i
@@ -420,17 +415,15 @@ class exports.Lexer
   # If it encounters an interpolation, this method will recursively create a
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
-  interpolateString: (str, options = {}) ->
-    tokens = []
-    pi = 0
-    i  = -1
+  interpolateString: (str, newline) ->
+    tokens = []; pi = 0; i  = -1
     while chr = str.charAt ++i
       if chr is '\\'
         ++i
         continue
       continue unless chr is '#' and str.charAt(i+1) is '{'
       code = @balancedString str.slice(i+1), [<[ { } ]>]
-      tokens.push ['TO_BE_STRING', str.slice(pi, i)] if pi < i
+      tokens.push ['S'; str.slice pi, i] if pi < i
       pi = 1 + i += code.length
       if code.=slice 1, -1
         nested = new Lexer().tokenize code, {@line, rewrite: false}
@@ -440,26 +433,23 @@ class exports.Lexer
           nested.unshift <[ ( ( ]>
           nested.push    <[ ) ) ]>
         tokens.push ['TOKENS', nested]
-    tokens.push ['TO_BE_STRING', str.slice pi] if pi < str.length
-    return tokens if options.regex
-    return @token<[ STRNUM "" ]> unless tokens.length
-    tokens.unshift ['', ''] unless tokens[0][0] is 'TO_BE_STRING'
-    @token<[ ( ( ]> if interpolated = tokens.length > 1
+    tokens.push    ['S', str.slice pi] if pi < str.length
+    tokens.unshift ['S', '']           if tokens[0]?[0] isnt 'S'
+    return tokens unless newline?
+    @token<[ ( ( ]>
     for [tag, value], i of tokens
       @token<[ PLUS_MINUS + ]> if i
       if tag is 'TOKENS'
       then @tokens.push value...
-      else @token 'STRNUM', @makeString value, '"', options.newline
-    @token<[ ) ) ]> if interpolated
+      else @token 'STRNUM', @makeString value, '"', newline
+    @token<[ ) ) ]>
     tokens
 
   #### Helpers
 
   # Add a token to the results,
   # taking note of the line number and returning `value`.
-  token: (tag, value) ->
-    @tokens.push @last = [tag, value, @line]
-    value
+  token: (tag, value) -> @tokens.push @last = [tag, value, @line]; value
 
   # Constructs a string token by escaping quotes and newlines.
   makeString: (body, quote, newline) ->
