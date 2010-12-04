@@ -57,3 +57,42 @@ throws 'invalid property name: this.p', -> Coco.compile '{@p:@}'
 
 
 eq '(function(){}());', Coco.compile 'do->', bare: true
+
+
+tokens = Coco.tokens '''
+"""
+  1 #{
+    2
+    3
+  } 4
+"""
+<[
+  7
+  8
+]>
+''', rewrite: false
+eq tokens.join('\n'), '''
+(,(,1
+STRNUM,"1 ",1
+PLUS_MINUS,+,1
+(,(,2
+INDENT,2,2
+STRNUM,2,2
+TERMINATOR,
+,3
+STRNUM,3,3
+OUTDENT,2,3
+),),3
+PLUS_MINUS,+,3
+STRNUM," 4",4
+),),4
+TERMINATOR,
+,6
+[,[,6
+STRNUM,'7',7
+,,,,7
+STRNUM,'8',8
+],],9
+TERMINATOR,
+,9
+'''

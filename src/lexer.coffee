@@ -173,16 +173,22 @@ class exports.Lexer
     return 0 unless @chunk.slice(1, 3) is q+q and
                     ~end = @chunk.indexOf q+q+q, 3
     txt = @chunk.slice 3, end
-    doc = txt.replace /\n[^\n\S]*$/, ''
+    lnl = txt isnt doc = txt.replace /\n[^\n\S]*$/, ''
     if ~doc.indexOf '\n'
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
       dent = 0/0
       dent = len unless dent <= len = m[0].length - 1 while m = tabs.exec doc
-      doc  = @dedent(doc, dent).replace /^\n/, ''
+      doc  = @dedent doc, dent
+      if doc.charAt(0) is '\n'
+        doc.=slice 1
+        ++@line
     if q is '"' and ~doc.indexOf '#{'
-    then @interpolateString doc, '\\n'
-    else @token 'STRNUM', @makeString doc, q, '\\n'
-    @countLines(txt).length + 6
+      @interpolateString doc, '\\n'
+    else
+      @token 'STRNUM', @string doc, q, '\\n'
+      @countLines doc
+    ++@line if lnl
+    txt.length + 6
 
   # Matches block comments.
   commentToken: ->
@@ -220,20 +226,18 @@ class exports.Lexer
       return @countLines(heregex).length
     @token<[ IDENTIFIER RegExp ]>
     @token<[ CALL_START (      ]>
-    tokens = []
+    {tokens} = this
     for token, i of @interpolateString body
       if token[0] is 'TOKENS'
-        tokens.push token[1]...
+        tokens.push ...token[1]
       else
         val = token[1].replace HEREGEX_OMIT, ''
         continue if i and not val
         val.=replace bs ||= /\\/g, '\\\\'
-        tokens.push ['STRNUM', @makeString val, "'", '\\n']
-      tokens.push <[ PLUS_MINUS + ]>
+        tokens.push ['STRNUM'; @string val, "'", '\\n'; token[2]]
+      tokens.push ['PLUS_MINUS', '+', tokens[*-1][2]]
     tokens.pop()
-    @tokens.push tokens...
-    @tokens.push <[ , , ]>, ['STRNUM', "'#{flags}'"] if flags
-    @countLines heregex
+    (@token<[ , , ]>; @token 'STRNUM', "'#{flags}'") if flags
     @token<[ ) ) ]>
     heregex.length
 
@@ -241,11 +245,13 @@ class exports.Lexer
   wordsToken: ->
     @carp 'unterminated words' unless ~end = @chunk.indexOf ']>', 2
     if call = not @last.spaced and @last[0] of CALLABLE
-    then @token<[ CALL_START ( ]>
-    else @token<[ [          [ ]>
-    for word of (words = @chunk.slice 2, end).match(/\S+/g) or ['']
-      @tokens.push ['STRNUM', @makeString word, '"'], <[ , , ]>
-    @countLines words
+    then @token<[ CALL_START ( ]> else @token<[ [ [ ]>
+    for line of @chunk.slice(2, end).split '\n'
+      if words = line.match re ||= /\S+/g then for word of words
+        @tokens.push ['STRNUM'; @string word, "'"; @line], [',', ',', @line]
+      ++@line
+    --@line
+    if word then @tokens.pop()   else @token<[ STRNUM '' ]>
     if call then @token<[ ) ) ]> else @token<[ ] ] ]>
     end + 2
 
@@ -417,34 +423,41 @@ class exports.Lexer
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, newline) ->
-    tokens = []; pi = 0; i  = -1
+    {line} = this
+    ts = []; pi = 0; i = -1
     while chr = str.charAt ++i
       if chr is '\\'
         ++i
         continue
       continue unless chr is '#' and str.charAt(i+1) is '{'
+      if pi < i
+        ts.push ['S'; s = str.slice pi, i; @line]
+        @countLines s
       code = @balancedString str.slice(i+1), [<[ { } ]>]
-      tokens.push ['S'; str.slice pi, i] if pi < i
-      pi = 1 + i += code.length
-      if code.=slice 1, -1
-        nested = new Lexer().tokenize code, {@line, rewrite: false}
-        nested.pop()
-        nested.shift() if nested[0]?[0] is 'TERMINATOR'
-        if nested.length > 1
-          nested.unshift <[ ( ( ]>
-          nested.push    <[ ) ) ]>
-        tokens.push ['TOKENS', nested]
-    tokens.push    ['S', str.slice pi] if pi < str.length
-    tokens.unshift ['S', '']           if tokens[0]?[0] isnt 'S'
-    return tokens unless newline?
-    @token<[ ( ( ]>
-    for [tag, value], i of tokens
-      @token<[ PLUS_MINUS + ]> if i
-      if tag is 'TOKENS'
-      then @tokens.push value...
-      else @token 'STRNUM', @makeString value, '"', newline
+      pi   = 1 + i += code.length
+      continue unless code.=slice 1, -1
+      nested = new Lexer().tokenize code, {@line, rewrite: false}
+      nested.pop()
+      nested.shift() if nested[0]?[0] is 'TERMINATOR'
+      if nested.length > 1
+        nested.unshift ['(', '(', nested[ 0 ][2]]
+        nested.push    [')', ')', nested[*-1][2]]
+      ts.push ['TOKENS', nested]
+      @countLines code
+    if pi < str.length
+      ts.push ['S'; s = str.slice pi; @line]
+      @countLines s
+    ts.unshift ['S', '', line] if ts[0]?[0] isnt 'S'
+    return ts unless newline?
+    {tokens} = this
+    tokens.push ['(', '(', line]
+    for t, i of ts
+      tokens.push ['PLUS_MINUS', '+', tokens[*-1][2]] if i
+      if t[0] is 'TOKENS'
+      then tokens.push ...t[1]
+      else tokens.push ['STRNUM'; @string t[1], '"', newline; t[2]]
     @token<[ ) ) ]>
-    tokens
+    ts
 
   #### Helpers
 
@@ -453,12 +466,13 @@ class exports.Lexer
   token: (tag, value) -> @tokens.push @last = [tag, value, @line]; value
 
   # Constructs a string token by escaping quotes and newlines.
-  makeString: (body, quote, newline) ->
+  string: (body, quote, newline) ->
     return quote + quote unless body
     body.=replace /\\([\s\S])/g, (match, escaped) ->
       if escaped of ['\n', quote] then escaped else match
     body.=replace /// #{quote} ///g, '\\$&'
-    quote + body.replace(MULTILINER, newline or '') + quote
+    body.=replace MULTILINER, newline if newline?
+    quote + body + quote
 
   # Counts the number of lines in a string and add it to `@line`.
   countLines: (str) ->
