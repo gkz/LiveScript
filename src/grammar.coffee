@@ -181,7 +181,7 @@ grammar =
 
   # A reference to a property on `this`.
   ThisProperty: [
-    o 'THISPROP', -> Value Literal('this'), [Access Literal $1], 'this'
+    o 'THISPROP', -> Value Literal('this'), [Access Literal $1], true
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,

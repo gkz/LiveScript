@@ -258,34 +258,30 @@ class exports.Return extends Throw
 
 #### Value
 # Acts as a container for property access chains, by holding
-# *Access*/*Index* instances wihtin `@properties`.
+# *Access*/*Index* instances within `@tails`.
 class exports.Value extends Node
-  # A **Value** has a base and a list of property accesses.
-  (base, props, tag) =>
-    return base if not props and base instanceof Value
-    @base       = base
-    @properties = props or []
-    @[tag]      = true if tag
+  (head, tails, at) =>
+    return head if not tails and head instanceof Value
+    this import {head, tails: tails || [], at}
 
-  children: <[ base properties ]>
+  children: <[ head tails ]>
 
-  add: -> @properties.push it; this
+  add: -> @tails.push it; this
 
-  hasProperties: -> !!@properties.length
+  hasProperties: -> !!@tails.length
 
-  assigns      : -> not @properties.length and @base.assigns it
-  isStatement  : -> not @properties.length and @base.isStatement it
-  isArray      : -> not @properties.length and @base instanceof Arr
-  isObject     : -> not @properties.length and @base instanceof Obj
-  isComplex    : -> !!@properties.length or @base.isComplex()
-  isAssignable : -> !!@properties.length or @base.isAssignable()
+  assigns      : -> not @tails.length and @head.assigns it
+  isStatement  : -> not @tails.length and @head.isStatement it
+  isArray      : -> not @tails.length and @head instanceof Arr
+  isObject     : -> not @tails.length and @head instanceof Obj
+  isComplex    : -> !!@tails.length or @head.isComplex()
+  isAssignable : -> !!@tails.length or @head.isAssignable()
 
   makeReturn: ->
-    if @properties.length then super ... else @base.makeReturn it
+    if @tails.length then super ... else @head.makeReturn it
 
-  # The value can be unwrapped as its inner node, if there are no attached
-  # properties.
-  unwrap: -> if @properties.length then this else @base
+  # The value can be unwrapped as its inner node, if there are no accessors.
+  unwrap: -> if @tails.length then this else @head
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions. So that
@@ -295,10 +291,10 @@ class exports.Value extends Node
   #
   #     (_base = a())[_name = b()] ? _base[_name] = c
   cacheReference: (o) ->
-    name = @properties[*-1]
-    if @properties.length < 2 and not @base.isComplex() and not name?.isComplex()
+    name = @tails[*-1]
+    if @tails.length < 2 and not @head.isComplex() and not name?.isComplex()
       return [this, this]  # `a` `a.b`
-    base = Value @base, @properties.slice 0, -1
+    base = Value @head, @tails.slice 0, -1
     if base.isComplex()  # `a().b`
       ref  = Literal o.scope.temporary 'base'
       base = Value Parens Assign ref, base
@@ -310,18 +306,18 @@ class exports.Value extends Node
       name = Index Assign ref, name.index
       nref = Index ref
       nref.temps = [ref.value]
-    [base.add name; Value bref or base.base, [nref or name]]
+    [base.add name; Value bref or base.head, [nref or name]]
 
   # We compile a value to JavaScript by compiling and joining each property.
   compileNode: (o) ->
-    # Things get much more insteresting if the chain of properties has *soak*
+    # Things get much more insteresting if the chain of accessors has *soak*
     # (`?.`) or *binding* (`&.`) interspersed.
     return asn.compile o if asn = @unfoldAssign o
     return val.compile o if val = @unfoldBind   o
-    @base import {@front}
-    val = (@properties.length and @substituteStar o) or this
-    ps  = val.properties
-    code  = val.base.compile o, if ps.length then LEVEL_ACCESS else null
+    @head import {@front}
+    val = (@tails.length and @substituteStar o) or this
+    ps  = val.tails
+    code  = val.head.compile o, if ps.length then LEVEL_ACCESS else null
     code += ' ' if ps[0] instanceof Access and SIMPLENUM.test code
     code += p.compile o for p of ps
     code
@@ -331,48 +327,48 @@ class exports.Value extends Node
       switch
       case it.value is '*'     then it
       case it instanceof Index then false
-    for prop, i of @properties
+    for prop, i of @tails
       continue unless prop instanceof Index and
                       star = prop.traverseChildren find
-      [sub, ref] = Value(@base, @properties.slice 0, i).cache o
+      [sub, ref] = Value(@head, @tails.slice 0, i).cache o
       @temps = [ref.value] if sub isnt ref
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + '.length'
-      return Value sub, @properties.slice i
+      return Value sub, @tails.slice i
     null
 
   # Unfold a soak into an *If*: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
-    if ifn = @base.unfoldSoak o
-      ifn.then.properties.push ...@properties
+    if ifn = @head.unfoldSoak o
+      ifn.then.tails.push ...@tails
       return ifn
-    for prop, i of @properties then if prop.soak
+    for prop, i of @tails then if prop.soak
       prop.soak = false
-      fst = Value @base, @properties.slice 0, i
-      snd = Value @base, @properties.slice i
+      fst = Value @head, @tails.slice 0, i
+      snd = Value @head, @tails.slice i
       if fst.isComplex()
         ref = Literal o.scope.temporary 'ref'
         fst = Parens Assign ref, fst
-        snd.base = ref
+        snd.head = ref
       ifn = If Existence(fst), snd, soak: true
       ifn.temps = [ref.value] if ref
       return ifn
     null
 
   unfoldAssign: (o) ->
-    if asn = @base.unfoldAssign o
-      asn.right.properties.push ...@properties
+    if asn = @head.unfoldAssign o
+      asn.right.tails.push ...@tails
       return asn
-    for prop, i of @properties then if prop.assign
+    for prop, i of @tails then if prop.assign
       prop.assign = false
-      [lhs, rhs] = Value(@base, @properties.slice 0, i).cacheReference o
-      return Assign(lhs; Value rhs, @properties.slice i) import access: true
+      [lhs, rhs] = Value(@head, @tails.slice 0, i).cacheReference o
+      return Assign(lhs; Value rhs, @tails.slice i) import access: true
     null
 
   unfoldBind: (o) ->
-    for p, i of ps = @properties then if p.bind
+    for p, i of ps = @tails then if p.bind
       p.bind = false
-      [ctx, ref] = Value(@base, ps.slice 0, i).cache o
+      [ctx, ref] = Value(@head, ps.slice 0, i).cache o
       fun = Value ref, [p]
       fun.temps = [ref.value] if ctx isnt ref
       return Value Call(Literal utility 'bind'; [ctx, fun]), ps.slice i+1
@@ -404,7 +400,7 @@ class exports.Call extends Node
   # List up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
   digCalls: ->
     list = [call = this]
-    list.push call while call.=callee.base instanceof Call
+    list.push call while call.=callee.head instanceof Call
     list.reverse()
 
   unfoldSoak: (o) ->
@@ -416,20 +412,20 @@ class exports.Call extends Node
       left = Literal "typeof #{ left.compile o } == \"function\""
       return If left, Value(rite), soak: true
     for call of @digCalls()
-      call.callee.base = ifn if ifn
+      call.callee.head = ifn if ifn
       ifn = If.unfoldSoak o, call, 'callee'
     ifn
 
   unfoldAssign: (o) ->
     for call of @digCalls()
-      call.callee.base = asn if asn
+      call.callee.head = asn if asn
       if asn = call.callee.unfoldAssign o
         call.callee = asn.right; asn.right = Value call
     asn
 
   compileNode: (o) ->
     return asn.compile o if asn = @unfoldAssign o
-    unless fun = (@callee.base or @callee) instanceof Code
+    unless fun = (@callee.head or @callee) instanceof Code
       @callee import {@front}
     if @splat
       return @compileSplat o, @args[1].value if @new
@@ -454,7 +450,7 @@ class exports.Call extends Node
         #{@tab}}(#{ @callee.compile o, LEVEL_LIST }, #{args}, function(){}))
       """
     base = @callee
-    if (name = base.properties.pop()) and base.isComplex()
+    if (name = base.tails.pop()) and base.isComplex()
       ref = o.scope.temporary 'ref'
       fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
       o.scope.free ref
@@ -507,8 +503,8 @@ class exports.Import extends Node
       dyna = false
       if node instanceof Assign
         {right: val, left: key} = node
-      else if node.this
-        key = (val = node).properties[0].name
+      else if node.at
+        key = (val = node).tails[0].name
       else
         dyna = node.=unwrap() instanceof Parens
         [key, val] = node.cache o
@@ -592,8 +588,8 @@ class exports.Obj extends Node
       if node instanceof Comment
         code += node.compile(o, LEVEL_TOP) + '\n'
         continue
-      code += idt + if node.this
-        key = node.properties[0].name.compile o
+      code += idt + if node.at
+        key = node.tails[0].name.compile o
         key + ': ' + node.compile o, LEVEL_LIST
       else if node instanceof Assign
         key = node.left.compile o
@@ -643,7 +639,7 @@ class exports.Class extends Node
   compileNode: (o) ->
     if @title
       decl = if @title instanceof Value
-      then @title.properties[*-1].name?.value
+      then @title.tails[*-1].name?.value
       else @title.value
       if decl and decl.reserved
         throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
@@ -762,12 +758,12 @@ class exports.Assign extends Node
   destructObj: (o, nodes, rite) ->
     for node of nodes
       node.=it if splat = node instanceof Splat
-      if dyna = (node.base or node) instanceof Parens
+      if dyna = (node.head or node) instanceof Parens
         [node, key] = Value(node.unwrapAll()).cacheReference o
       else if node instanceof Assign
         {right: node, left: key} = node
       else
-        key = if node.this then node.properties[0].name else node
+        key = if node.at then node.tails[0].name else node
       acc = not dyna and IDENTIFIER.test key.unwrap().value or 0
       val = Value lr ||= Literal(rite), [(if acc then Access else Index) key]
       val = Import Obj(), val, true if splat
@@ -862,8 +858,8 @@ class exports.Param extends Node
   asReference: (o) ->
     return @reference if @reference
     node = @name
-    if node.this
-      node .= properties[0].name
+    if node.at
+      node .= tails[0].name
       node  = Literal '$' + node.value if node.value.reserved
     else if node.isComplex()
       node  = Literal o.scope.temporary 'arg'
@@ -957,11 +953,11 @@ class exports.Op extends Node
     return Of first, second if op is 'of'
     return Call first, []   if op is 'do'
     if op is 'new'
-      {base} = first
-      if base instanceof Call
-        base.digCalls()[0].new = 'new '
+      {head} = first
+      if head instanceof Call
+        head.digCalls()[0].new = 'new '
         return first
-      base.keep = true if base instanceof Parens
+      head.keep = true if head instanceof Parens
     this import {op, first, second, post}
 
   EQUALITY = /^[!=]==?$/
@@ -1033,7 +1029,7 @@ class exports.Op extends Node
 
   compileMultiIO: (o) ->
     [sub, ref] = @first.cache o, LEVEL_OP
-    tests = for item, i of @second.base.items
+    tests = for item, i of @second.head.items
       (if i then ref else sub) + ' instanceof ' + item.compile o
     o.scope.free ref if sub isnt ref
     code = tests.join ' || '
@@ -1065,7 +1061,7 @@ class exports.Of extends Node
   compileOrTest: (o) ->
     [sub, ref] = @object.cache o, LEVEL_OP
     [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
-    tests = for item, i of @array.base.items
+    tests = for item, i of @array.head.items
       (if i then ref else sub) + cmp + item.compile o, LEVEL_OP
     o.scope.free ref if sub isnt ref
     code = tests.join cnj
@@ -1271,7 +1267,7 @@ class exports.Case extends Node
 
   makeReturn: ->
     [last] = lastNonComment @body.lines
-    @body.makeReturn it if last and last.base?.value isnt 'fallthrough'
+    @body.makeReturn it if last and last.head?.value isnt 'fallthrough'
 
   compileCase: (o, tab, nobr) ->
     code = br = ''
@@ -1281,7 +1277,7 @@ class exports.Case extends Node
       then add t for t of test.items
       else add test
     [last, i] = lastNonComment exps = @body.lines
-    exps[i] = Comment ' fallthrough ' if ft = last.base?.value is 'fallthrough'
+    exps[i] = Comment ' fallthrough ' if ft = last.head?.value is 'fallthrough'
     o.indent = tab + TAB
     code += body + '\n' if body = @body.compile o, LEVEL_TOP
     code += o.indent + 'break;\n' unless nobr or ft or
