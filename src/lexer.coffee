@@ -37,20 +37,20 @@ class exports.Lexer
     code.=replace(/\r/g, '').replace(/\s+$/, ''); i = 0
     while @chunk = code.slice i
       switch code.charAt i
+      case ' ' then i += do @spaceToken
       case '\n'then i += do @lineToken
-      case ' ' then i += do @whitespaceToken
-      case "'" then i += @heredocToken("'") or do @singleStringToken
-      case '"' then i += @heredocToken('"') or do @doubleStringToken
+      case "'" then i += @heredocToken("'") or @singleStringToken()
+      case '"' then i += @heredocToken('"') or @doubleStringToken()
       case '<'
         i += if '[' is code.charAt i+1 then @wordsToken() else @literalToken()
       case '/'
         i += if '//' is code.substr i+1, 2
         then do @heregexToken
         else do @regexToken or do @literalToken
-      case '#' then i += do @whitespaceToken or do @commentToken
+      case '#' then i += do @spaceToken or do @commentToken
       case '`' then i += do @jsToken
       default i += do @identifierToken or do @numberToken or
-                   do @literalToken    or do @whitespaceToken
+                   do @literalToken    or do @spaceToken
     # Close up all remaining open blocks.
     @outdent @indent
     # Dispose dummy.
@@ -284,10 +284,11 @@ class exports.Lexer
     @indent = size
     indent.length
 
-  # Matches and consumes non-newline whitespaces. Tag the previous token
-  # as being "spaced", because there are cases where it makes a difference.
-  whitespaceToken: ->
-    return 0 unless match = WHITESPACE.exec @chunk
+  # Consumes non-newline whitespaces and a line comment after them if any.
+  spaceToken: ->
+    return 0 unless match = SPACE.exec @chunk
+    # Tag the previous token as being `.spaced`,
+    # because there are cases where it makes a difference.
     @last.spaced = true
     match[0].length
 
@@ -527,10 +528,10 @@ SYMBOL = /// ^ (?:
   >>>?=?            | # rite shift
   \S
 ) ///
-WHITESPACE  = /^(?=.)[^\n\S]*(?:#(?!##[^#]).*)?/
-MULTIDENT   = /^(?:\s*#(?!##[^#]).*)*(?:\n[^\n\S]*)+/
-SIMPLESTR   = /^'[^\\']*(?:\\.[^\\']*)*'/
-JSTOKEN     = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+SPACE     = /^(?=.)[^\n\S]*(?:#(?!##[^#]).*)?/
+MULTIDENT = /^(?:\s*#(?!##[^#]).*)*(?:\n[^\n\S]*)+/
+SIMPLESTR = /^'[^\\']*(?:\\.[^\\']*)*'/
+JSTOKEN   = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
 # Regex-matching-regexes.
 REGEX = /// ^
