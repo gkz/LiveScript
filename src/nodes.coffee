@@ -653,9 +653,7 @@ class exports.Class extends Node
       else if node instanceof Code
         throw SyntaxError 'more than one constructor in a class' if ctor
         ctor = node
-    unless ctor
-      exps.unshift ctor = Code()
-      ctor.body.add Call Super() if @sup
+    exps.unshift ctor = Code() unless ctor
     ctor import {name, 'ctor', 'statement', clas: null}
     exps.unshift Extends lname, @sup if @sup
     exps.push lname

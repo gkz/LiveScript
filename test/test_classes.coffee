@@ -46,15 +46,15 @@ class OneClass
   function: 'function'
   (@name) ->
 
-class TwoClass extends OneClass
+class TwoClass extends OneClass then -> super ...
 
-Function.prototype.new = -> new this ...arguments
+Function::new = -> new this ...arguments
 
 eq TwoClass.new('three').name, 'three'
 eq (new OneClass).function, 'function'
 eq OneClass.new, 'new'
 
-delete Function.prototype.new
+delete Function::new
 
 
 # And now the same tests, but written in the manual style:
