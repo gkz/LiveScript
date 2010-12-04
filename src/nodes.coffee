@@ -95,7 +95,6 @@ class Node
   # Does not cross scope boundaries.
   contains: (pred) -> !!@traverseChildren -> pred(it) or null
 
-  # Do I contain a pure statement?
   containsPureStatement: ->
     @isPureStatement() or @contains -> it.isPureStatement()
 
@@ -211,7 +210,7 @@ class exports.Expressions extends Node
 # and pretty much everything that doesn't fit in other nodes.
 class exports.Literal extends Node
   (@value) =>
-    # Break and continue must be treated as pure statements -- they lose their
+    # Break and continue must be treated as pure statements--they lose their
     # meaning when wrapped in a closure.
     @isPureStatement = YES if value of <[ break continue debugger ]>
 
@@ -236,20 +235,29 @@ class exports.Literal extends Node
 
   toString: -> ' "' + @value + '"'
 
-#### Return
-class exports.Return extends Node
+#### Throw
+class exports.Throw extends Node
   (@it) =>
 
   children: ['it']
 
-  isStatement     : YES
-  isPureStatement : YES
+  verb: 'throw'
+
+  isStatement: YES
 
   makeReturn: THIS
 
   compile: (o) ->
     exp = @it?.compile o, LEVEL_PAREN
-    o.indent + "return#{ if exp then ' ' + exp else '' };"
+    o.indent + @verb + (if exp then ' ' + exp else '') + ';'
+
+#### Return
+class exports.Return extends Throw
+  (@it) =>
+
+  verb: 'return'
+
+  isPureStatement: YES
 
 #### Value
 # Acts as a container for property access chains, by holding
@@ -1104,18 +1112,6 @@ class exports.Try extends Node
     code += " finally {\n#{ @ensure.compile o, LEVEL_TOP }\n#{@tab}}" if @ensure
     code
 
-#### Throw
-class exports.Throw extends Node
-  (@it) =>
-
-  children: ['it']
-
-  isStatement: YES
-
-  makeReturn: THIS
-
-  compile: (o) -> o.indent + "throw #{ @it.compile o, LEVEL_PAREN };"
-
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
 class exports.Existence extends Node
@@ -1292,7 +1288,7 @@ class exports.Case extends Node
     o.indent = tab + TAB
     code += body + '\n' if body = @body.compile o, LEVEL_TOP
     code += o.indent + 'break;\n' unless nobr or ft or
-      last instanceof [Return, Throw] or last.value of <[ continue break ]>
+      last instanceof Throw or last.value of <[ continue break ]>
     code
 
 #### If
