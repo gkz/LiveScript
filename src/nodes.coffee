@@ -361,7 +361,7 @@ class exports.Value extends Node
     for prop, i of @properties then if prop.assign
       prop.assign = false
       [lhs, rhs] = Value(@base, @properties.slice 0, i).cacheReference o
-      return Assign(lhs, Value rhs, @properties.slice i) import {access: true}
+      return Assign(lhs; Value rhs, @properties.slice i) import access: true
     null
 
   unfoldBind: (o) ->
@@ -865,9 +865,7 @@ class exports.Param extends Node
       node  = Literal '$' + node.value if node.value.reserved
     else if node.isComplex()
       node  = Literal o.scope.temporary 'arg'
-    node = Value node
-    node = Splat node if @splat
-    @reference = node
+    @reference = if @splat then Splat node else node
 
   isComplex: -> @name.isComplex()
 
