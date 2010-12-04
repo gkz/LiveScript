@@ -497,7 +497,7 @@ class exports.Import extends Node
         code += node.compile o, LEVEL_LIST
         continue
       if node instanceof Splat
-        code += Import(lref, node.name, true).compile o, LEVEL_TOP
+        code += Import(lref, node.it, true).compile o, LEVEL_TOP
         continue
       dyna = false
       if node instanceof Assign
@@ -756,7 +756,7 @@ class exports.Assign extends Node
 
   destructObj: (o, nodes, rite) ->
     for node of nodes
-      node .= name if splat = node instanceof Splat
+      node.=it if splat = node instanceof Splat
       if dyna = (node.base or node) instanceof Parens
         [node, key] = Value(node.unwrapAll()).cacheReference o
       else if node instanceof Assign
@@ -873,18 +873,17 @@ class exports.Param extends Node
 # A splat, either as a parameter to a function, an argument to a call,
 # or as part of a destructuring assignment.
 class exports.Splat extends Node
-  (name) => @name = if name.compile then name else Literal name
+  => @it = if it instanceof Node then it else Literal it
 
-  children: ['name']
+  children: ['it']
 
   isAssignable: YES
 
-  assigns: -> @name.assigns it
+  assigns: -> @it.assigns it
 
-  compile: -> @name.compile arguments...
+  compile: -> @it.compile ...arguments
 
-  # Utility function that converts arbitrary number of elements, mixed with
-  # splats, to a proper array.
+  # Compiles a list of nodes mixed with splats to a proper array.
   @compileArray = (o, list, apply) ->
     break if node instanceof Splat for node, index of list
     return '' if index >= list.length
