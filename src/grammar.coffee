@@ -69,8 +69,8 @@ grammar =
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
     o 'IDENTIFIER'                             ,-> Literal $1
-    o 'Value ACCESS IDENTIFIER'                ,-> $1.append Access Literal($3), $2
-    o 'Value INDEX_START Expression INDEX_END' ,-> $1.append Index $3, $2
+    o 'Value ACCESS IDENTIFIER'                ,-> $1.add Access Literal($3), $2
+    o 'Value INDEX_START Expression INDEX_END' ,-> $1.add Index $3, $2
     o 'ThisProperty'
     o 'SUPER'                                  ,-> Super()
   ]
@@ -149,8 +149,8 @@ grammar =
   Body: [
     o 'Expression'                 ,-> Lines $1
     o 'Statement'                  ,-> Lines $1
-    o 'Body TERMINATOR Expression' ,-> $1.append $3
-    o 'Body TERMINATOR Statement'  ,-> $1.append $3
+    o 'Body TERMINATOR Expression' ,-> $1.add $3
+    o 'Body TERMINATOR Statement'  ,-> $1.add $3
     o 'Body TERMINATOR'
   ]
 

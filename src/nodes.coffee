@@ -100,10 +100,7 @@ class Node
 
   invert: -> Op '!', this
 
-  unwrapAll: ->
-    node = this
-    continue until node is node.=unwrap()
-    node
+  unwrapAll: -> node = this; continue until node is node.=unwrap(); node
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -143,8 +140,8 @@ class exports.Lines extends Node
 
   children: ['lines']
 
-  append: -> @lines.push it; this
-  unwrap: -> if @lines.length is 1 then @lines[0] else this
+  add    : -> @lines.push it; this
+  unwrap : -> if @lines.length is 1 then @lines[0] else this
 
   isComplex: -> @lines.length > 1 or !!@lines[0]?.isComplex()
 
@@ -272,7 +269,7 @@ class exports.Value extends Node
 
   children: <[ base properties ]>
 
-  append: -> @properties.push it; this
+  add: -> @properties.push it; this
 
   hasProperties: -> !!@properties.length
 
@@ -313,7 +310,7 @@ class exports.Value extends Node
       name = Index Assign ref, name.index
       nref = Index ref
       nref.temps = [ref.value]
-    [base.append name; Value bref or base.base, [nref or name]]
+    [base.add name; Value bref or base.base, [nref or name]]
 
   # We compile a value to JavaScript by compiling and joining each property.
   compileNode: (o) ->
@@ -663,7 +660,7 @@ class exports.Class extends Node
         ctor = node
     unless ctor
       exps.unshift ctor = Code()
-      ctor.body.append Call Super() if @parent
+      ctor.body.add Call Super() if @parent
     ctor import {name, 'ctor', 'statement', clas: null}
     exps.unshift Extends lname, @parent if @parent
     exps.push lname
@@ -811,7 +808,7 @@ class exports.Code extends Node
            _ctor(){} _ctor.prototype = #{name}.prototype;
           #{tab}function
         """
-        body.append Return Literal '_this'
+        body.add Return Literal '_this'
       else if b = sscope.method?.bound
       then @bound = b
       else sscope.assign '_this', 'this'
