@@ -94,6 +94,7 @@ task 'bench', 'quick benchmark of compilation time', ->
   now    = Date.now()
   time   = -> total += ms = -(now - now := Date.now()); fmt ms
   tokens = Coco.tokens co, rewrite: false
+  console.log token unless token[2] >= 0 for token of tokens
   say "Lex    #{time()} (#{tokens.length} tokens)"
   RW.rewrite tokens
   say "Rewrite#{time()} (#{tokens.length} tokens)"

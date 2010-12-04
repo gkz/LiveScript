@@ -553,9 +553,9 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 MULTILINER      = /\n/g
 LINE_CONTINUER  = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
 
-# Tokens which could legitimately be invoked or indexed. A opening
-# parentheses or bracket following these tokens will be recorded as the start
-# of a function invocation or indexing operation.
-CALLABLE  = <[ IDENTIFIER THISPROP ) ] } ? SUPER THIS ]>
-INDEXABLE = CALLABLE.concat<[ STRNUM LITERAL ]>
-CALLABLE.push '...'
+# Tokens which could legitimately be invoked or indexed.
+# An opening parenthesis or bracket following these tokens will be recorded as
+# the start of a function invocation or property indexing operation.
+CALLABLE  = <[ IDENTIFIER THISPROP ) ] SUPER THIS ]>
+INDEXABLE = CALLABLE.concat<[ STRNUM LITERAL } ]>
+CALLABLE.push '?'
