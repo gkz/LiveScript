@@ -466,12 +466,11 @@ class exports.Call extends Node
 #### Extends
 # An operator that emulates class-ical inheritance.
 class exports.Extends extends Node
-  (@child, @parent) =>
+  (@sub, @sup) =>
 
-  children: <[ child parent ]>
+  children: <[ sub sup ]>
 
-  compile: (o) ->
-    Call(Value Literal utility 'extends'; [@child, @parent]).compile o
+  compile: (o) -> Call(Value Literal utility 'extends'; [@sub, @sup]).compile o
 
 #### Import
 # Operators that copy properties from right to left.
@@ -632,9 +631,9 @@ class exports.Arr extends Node
 
 #### Class
 class exports.Class extends Node
-  (@title, @parent, body) => @code = Code [], body
+  (@title, @sup, body) => @code = Code [], body
 
-  children: <[ title parent code ]>
+  children: <[ title sup code ]>
 
   compileNode: (o) ->
     if @title
@@ -656,9 +655,9 @@ class exports.Class extends Node
         ctor = node
     unless ctor
       exps.unshift ctor = Code()
-      ctor.body.add Call Super() if @parent
+      ctor.body.add Call Super() if @sup
     ctor import {name, 'ctor', 'statement', clas: null}
-    exps.unshift Extends lname, @parent if @parent
+    exps.unshift Extends lname, @sup if @sup
     exps.push lname
     clas = Call @code, []
     clas = Assign lname , clas if decl and @title?.isComplex()
@@ -859,10 +858,10 @@ class exports.Param extends Node
     return @reference if @reference
     node = @name
     if node.at
-      node .= tails[0].name
-      node  = Literal '$' + node.value if node.value.reserved
+      node.=tails[0].name
+      node = Literal '$' + node.value if node.value.reserved
     else if node.isComplex()
-      node  = Literal o.scope.temporary 'arg'
+      node = Literal o.scope.temporary 'arg'
     @reference = if @splat then Splat node else node
 
   isComplex: -> @name.isComplex()
@@ -1090,8 +1089,8 @@ class exports.Try extends Node
   isStatement: YES
 
   makeReturn: ->
-    @attempt  &&= @attempt .makeReturn it
-    @recovery &&= @recovery.makeReturn it
+    @attempt .=makeReturn it
+    @recovery.=makeReturn it if @recovery
     this
 
   compileNode: (o) ->
