@@ -198,17 +198,6 @@ If used in an expression, `delete` returns the original value as opposed to the 
     delete x;
 
 
-### loop for own keys `for own`
-A guarded version of `for`-`in` that only exposes own properties of an object.
-
-    $ coco -bpe 'f key, val for own key, val in obj'
-    var key, val, _ref, __owns = Object.prototype.hasOwnProperty;
-    for (key in _ref = obj) if (__owns.call(_ref, key)) {
-      val = _ref[key];
-      f(key, val);
-    }
-
-
 ### loop in range `for` `from` `to` `til` `by`
 A generic way to loop within certain numeric ranges.
 
@@ -284,20 +273,17 @@ Available only when the function omits argument declarations.
     };
 
 
-### object splat `{o...}`
+### object splat `{...o}`
 
 Mixes an object's properties into the created object.
 
-    $ coco -bpe 'O = {0, o..., (o.o)..., "0"}'
-    var O, _obj;
-    var __import = function(obj, src, own){
-      if (own) own = Object.prototype.hasOwnProperty;
-      for (var key in src) if (!own || own.call(src, key)) obj[key] = src[key];
+    $ coco -bpe 'O = {...o, ...(o.o), o}'
+    var O, _obj, __import = function(obj, src){
+      var own = Object.prototype.hasOwnProperty;
+      for (var key in src) if (own.call(src, key)) obj[key] = src[key];
       return obj;
     };
-    O = (_obj = __import(__import({
-      0: 0
-    }, o, true), o.o, true), _obj["0"] = "0", _obj);
+    O = (_obj = {}, __import(_obj, o), __import(_obj, o.o), _obj.o = o, _obj);
 
 
 ### switching `switch` `case` `default`
@@ -368,6 +354,7 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
 - Assigning to a variable with `=` declares it on the _current_ scope. Use `:=` to modify variables declared on upper scopes.
 - The roles of `in` and `of` have been swapped to keep the JS semantics.
 - `===`/`!==`/`==`/`!=` each compiles as is.
+- `...` is prefix.
 - `super` represents the direct reference to the parent function rather than being a call. Use `super ...` (just `super` in Coffee) for a simple delegation.
 - Nested comprehensions returns flattened results.
 
@@ -463,15 +450,15 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
       ];
 
 
-      $ coffee -bpe 'a.b.c d...; e.f.g h...'
-      var _this, _this2;
-      (_this = a.b).c.apply(_this, d);
-      (_this2 = e.f).g.apply(_this2, h);
+      $ coffee -bpe 'a < b()< c; d > e() > f'
+      var _ref, _ref2;
+      (a < (_ref = b()) && _ref < c);
+      (d > (_ref2 = e()) && _ref2 > f);
 
-      $ coco -bpe 'a.b.c d...; e.f.g h...'
+      $ coco -bpe 'a < b()< c; d > e() > f'
       var _ref;
-      (_ref = a.b).c.apply(_ref, d);
-      (_ref = e.f).g.apply(_ref, h);
+      a < (_ref = b()) && _ref < c;
+      d > (_ref = e()) && _ref > f;
 
 
 ## Installation
