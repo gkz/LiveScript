@@ -16,8 +16,8 @@ oparser = require('./optparse').OptionParser [
   ['-e', '--eval',            'compile a string from the command line']
   ['-r', '--require FILE*',   'require a library before executing your script']
   ['-b', '--bare',            'compile without the top-level function wrapper']
-  ['-l', '--lex',             'print the tokens that the lexer produces']
-  ['-t', '--tokens',          'print the tokens that the rewriter produces']
+  ['-l', '--lex',             'print the tokens the lexer produces']
+  ['-t', '--tokens',          'print the tokens the rewriter produces']
   ['-n', '--nodes',           'print the parse tree the parser produces']
   ['-v', '--version',         'display Coco version']
   ['-h', '--help',            'display this help message']
@@ -136,8 +136,8 @@ writeJs = (source, js, base) ->
 printTokens = (tokens) ->
   lines = []
   for [tag, val, lno] of tokens
-    (lines[lno] ||= []).push "[#{tag} #{ "#{val}".replace /\n/g, '\\n' }]"
-  say lines.map(-> if it then it.join ' ' else '').join '\n'
+    (lines[lno] ||= []).push tag + ",#{val}".replace /\n/g, '\\n'
+  say(if l then l.join ' ' else '') for l of lines
 
 # A simple Read-Eval-Print-Loop. Compiles one line at a time to JavaScript
 # and evaluates it. Good for simple tests or poking around the **node.js** API.
