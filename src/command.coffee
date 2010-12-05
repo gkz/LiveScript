@@ -152,6 +152,7 @@ repl = ->
       console.dir r unless r is void
     catch e then say e
     repl.prompt()
+  process.on 'uncaughtException', -> say '\n' + (it?.stack or it)
   repl.setPrompt 'coco> '
   repl.prompt()
 
