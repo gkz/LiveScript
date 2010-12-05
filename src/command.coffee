@@ -126,7 +126,7 @@ writeJs = (source, js, base) ->
       if err
         warn err
       else if o.compile and o.watch
-        say "Compiled #{source}"
+        (try require('util').log catch e then say) "Compiled #{source}"
   path.exists dir, (exists) ->
     if exists
     then compile()
