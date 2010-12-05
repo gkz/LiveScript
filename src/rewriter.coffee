@@ -29,8 +29,7 @@ detectEnd = (tokens, i, ok, go) ->
     ++i
   i - 1
 
-# Leading terminators would introduce an ambiguity in the grammar, so we
-# dispatch them here.
+# Dispatch leading terminators that would introduce ambiguity in the grammar.
 removeLeadingTerminators = (tokens) ->
   break unless tag is 'TERMINATOR' for [tag], i of tokens
   tokens.splice 0, i if i
@@ -51,51 +50,48 @@ closeOpenings = (tokens) ->
   stack = []
   for token of tokens
     switch token[0]
-    case <[ INDEX_START CALL_START [ ( ]>
+    case <[ ( CALL_START [ INDEX_START ]>
       stack.push token[0]
-    case <[ INDEX_END ] ]>
-      token[0] = 'INDEX_END' if stack.pop() is 'INDEX_START'
-    case <[ CALL_END  ) ]>
+    case <[ )  CALL_END ]>
       token[0] =  'CALL_END' if stack.pop() is  'CALL_START'
+    case <[ ] INDEX_END ]>
+      token[0] = 'INDEX_END' if stack.pop() is 'INDEX_START'
   tokens
 
 # Object literals may be written without braces for simple cases.
-# Insert the missing braces here so that the parser doesn't have to.
+# Insert the missing braces here to aid the parser.
 addImplicitBraces = (tokens) ->
   go = (token, i) -> tokens.splice i, 0, ['}', '}', token[2]]
   ok = (token, i) ->
     return true  if token[1] is ';' or 'OUTDENT' is tag = token[0]
     return false if tag not of <[ , TERMINATOR ]>
     one = tokens[i+1]?[0]
-    tag is ',' and one not of <[ IDENTIFIER STRNUM TERMINATOR ( ]> or
-    tag is 'TERMINATOR' and one isnt 'HERECOMMENT' and ':' isnt
+    if tag is ',' then one not of <[ IDENTIFIER STRNUM TERMINATOR ( ]>
+    else one isnt 'HERECOMMENT' and ':' isnt
       tokens[if one is '(' then 1 + indexOfPair tokens, i+1 else i+2]?[0]
   stack = []; i = -1
   while token = tokens[++i]
-    [tag] = token
-    if tag of EXPRESSION_START
-      tag = '{' if tag is 'INDENT' and tokens[i-1]?[0] is '{'
-      stack.push [tag, i]
+    unless ':' is tag = token[0]
+      switch
+      case tag of EXPRESSION_START
+        tag = '{' if tag is 'INDENT' and tokens[i-1]?[0] is '{'
+        stack.push [tag, i]
+      case tag of EXPRESSION_END
+        start = stack.pop()
       continue
-    if tag of EXPRESSION_END
-      start = stack.pop()
-      continue
-    continue unless tag is ':'
     paren = tokens[i-1]?[0] is ')'
-    continue unless \
-      paren and tokens[start[1]-1]?[0] is ':' or  # a: (..):
-      tokens[i-2]?[0] is ':' or                   # a: b:
-      stack[ *-1]?[0] isnt '{'
+    continue unless paren and tokens[start[1]-1]?[0] is ':' or # a: (..):
+                    tokens[i-2]?[0] is   ':'                or # a: b:
+                    stack[ *-1]?[0] isnt '{'
     stack.push ['{']
     idx  = if paren then start[1] else i-1
     idx -= 2 while tokens[idx-2]?[0] is 'HERECOMMENT'
-    tokens.splice idx, 0, ['{', '{', token[2]] import generated: true
+    tokens.splice idx, 0, ['{', '{', token[2]] import {+generated}
     detectEnd tokens, ++i+1, ok, go
   tokens
 
-# Methods may be optionally called without parentheses, for simple cases.
-# Insert the implicit parentheses here, so that the parser doesn't have to
-# deal with them.
+# Methods may be optionally called without parentheses for simple cases.
+# Insert the missing parentheses here to aid the parser.
 addImplicitParentheses = (tokens) ->
   i = 0
   while token = tokens[++i]
@@ -105,7 +101,7 @@ addImplicitParentheses = (tokens) ->
       continue
     continue unless prev.call or
       prev[0] of <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
-    continue unless token.xthen or
+    continue unless token.argument or
       tag of <[ ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
                 FUNCTION IF TRY SWITCH CLASS SUPER ]> or
       tag is 'PLUS_MINUS' and not (token.spaced or token.eol) or
@@ -115,8 +111,8 @@ addImplicitParentheses = (tokens) ->
     tokens.splice i++, 0, ['CALL_START', (if soak then '?(' else '('), token[2]]
     detectEnd tokens, i, ok, go
   function ok (token, i) ->
-    return false if token.xthen
-    return true  if not seenSingle and token.then
+    return false if token.argument
+    return true  if not seenSingle and token.fromThen
     [tag] = token
     {0: pre, eol} = tokens[i-1]
     switch tag
@@ -152,7 +148,7 @@ addImplicitIndentation = (tokens) ->
     if 'INDENT' is next = tokens[i+1]?[0]
       if tag is 'THEN'
         tokens.splice i, 1
-        tokens[i] import then: true, xthen: true
+        tokens[i] import {+fromThen, +argument}
       continue
     continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY FINALLY ]> or
                     tag is 'ELSE' and next isnt 'IF'
@@ -161,7 +157,7 @@ addImplicitIndentation = (tokens) ->
     indent.generated = outdent.generated = true
     if tag is 'THEN'
       tokens.splice --i, 1 if tokens[i-1]?[0] is 'TERMINATOR'
-      tokens[i] = indent import then: true
+      tokens[i] = indent import {+fromThen}
     else
       tokens.splice ++i, 0, indent
     detectEnd tokens, i+1, ok, go
@@ -178,8 +174,7 @@ tagPostfixConditionals = (tokens) ->
 # Ensure that all listed pairs of tokens are correctly balanced throughout
 # the course of the token stream.
 ensureBalance = (tokens) ->
-  levels = {}
-  olines = {}
+  levels = {}; olines = {}
   for token of tokens
     [tag] = token
     for [open, close] of BALANCED_PAIRS
@@ -210,21 +205,19 @@ ensureBalance = (tokens) ->
 #    rewriting.
 rewriteClosingParens = (tokens) ->
   stack = []
-  debt  = {}
-  debt[key] = 0 for key in INVERSES
-  i = -1
+  debt  = {}; debt[key] = 0 for key in INVERSES
+  i     = -1
   while token = tokens[++i]
     [tag] = token
-    if tag of EXPRESSION_START
-      stack.push token
+    unless tag of EXPRESSION_END
+      stack.push token if tag of EXPRESSION_START
       continue
-    continue unless tag of EXPRESSION_END
     if debt[inv = INVERSES[tag]] > 0
       --debt[inv]
       tokens.splice i--, 1
       continue
-    [start] = stoken = stack.pop()
-    continue if tag is end = INVERSES[start]
+    stoken = stack.pop()
+    continue if tag is end = INVERSES[start = stoken[0]]
     ++debt[start]
     tok = [end, if start is 'INDENT' then stoken[1] else end]
     pos = if tokens[i+2]?[0] is start then stack.push stoken; i+3 else i
@@ -232,13 +225,11 @@ rewriteClosingParens = (tokens) ->
   tokens
 
 indexOfPair = (tokens, i) ->
-  bgn = tokens[i][0]
-  end = INVERSES[bgn]
-  lvl = 1
+  level = 1; end = INVERSES[start = tokens[i][0]]
   while token = tokens[++i]
     switch token[0]
-    case bgn then ++lvl
-    case end then return i unless --lvl
+    case start then ++level
+    case end   then return i unless --level
   -1
 
 #### Constants
@@ -257,8 +248,7 @@ BALANCED_PAIRS = [
 # The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
 # look things up from either end.
 INVERSES = {}
-
-# The tokens that signal the start/end of a balanced pair.
+# Tokens that signal the start/end of a balanced pair.
 EXPRESSION_START = []
 EXPRESSION_END   = []
 for [left, rite] of BALANCED_PAIRS
