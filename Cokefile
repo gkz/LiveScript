@@ -87,20 +87,19 @@ task 'build:browser', 'rebuild the merged script for inclusion of the browser', 
 
 
 task 'bench', 'quick benchmark of compilation time', ->
-  RW     = require './lib/rewriter'
+  rw     = require './lib/rewriter'
   co     = coreSources().map(-> fs.readFileSync it).join '\n'
   fmt    = -> " : #{bold}#{ "   #{it}".slice -4 }#{reset}[ms]"
   total  = 0
   now    = Date.now()
   time   = -> total += ms = -(now - now := Date.now()); fmt ms
-  tokens = Coco.tokens co, rewrite: false
-  console.log token unless token[2] >= 0 for token of tokens
+  tokens = Coco.tokens co, {-rewrite}
   say "Lex    #{time()} (#{tokens.length} tokens)"
-  RW.rewrite tokens
+  rw.rewrite tokens
   say "Rewrite#{time()} (#{tokens.length} tokens)"
   nodes  = Coco.nodes tokens
   say "Parse  #{time()}"
-  js     = nodes.compileRoot bare: true
+  js     = nodes.compileRoot {+bare}
   say "Compile#{time()} (#{js.length} chars)"
   say "TOTAL  #{ fmt total }"
 
