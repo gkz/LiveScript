@@ -67,7 +67,7 @@ addImplicitBraces = (tokens) ->
     return false if tag not of <[ , TERMINATOR ]>
     one = tokens[i+1]?[0]
     if tag is ',' then one not of <[ IDENTIFIER STRNUM TERMINATOR ( ]>
-    else one isnt 'HERECOMMENT' and ':' isnt
+    else one isnt 'COMMENT' and ':' isnt
       tokens[if one is '(' then 1 + indexOfPair tokens, i+1 else i+2]?[0]
   stack = []; i = -1
   while token = tokens[++i]
@@ -85,7 +85,7 @@ addImplicitBraces = (tokens) ->
                     stack[ *-1]?[0] isnt '{'
     stack.push ['{']
     idx  = if paren then start[1] else i-1
-    idx -= 2 while tokens[idx-2]?[0] is 'HERECOMMENT'
+    idx -= 2 while tokens[idx-2]?[0] is 'COMMENT'
     tokens.splice idx, 0, ['{', '{', token[2]] import {+generated}
     detectEnd tokens, ++i+1, ok, go
   tokens

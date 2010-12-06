@@ -188,7 +188,7 @@ class exports.Lexer
   # Matches block comments.
   commentToken: ->
     text = @chunk.slice 3, if ~end = @chunk.indexOf '###', 3 then end else 1/0
-    @token 'HERECOMMENT', @dedent text, @indent
+    @token 'COMMENT', @dedent text, @indent
     @token<[ TERMINATOR \n ]>
     @countLines(text).length + 6
 
@@ -232,7 +232,7 @@ class exports.Lexer
         tokens.push ['STRNUM'; @string val, "'", '\\n'; token[2]]
       tokens.push ['PLUS_MINUS', '+', tokens[*-1][2]]
     tokens.pop()
-    (@token<[ , , ]>; @token 'STRNUM', "'#{flags}'") if flags
+    if flags then @token<[ , , ]>; @token 'STRNUM', "'#{flags}'"
     @token<[ ) ) ]>
     heregex.length
 

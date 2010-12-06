@@ -195,11 +195,11 @@ grammar =
 
   # Pure statements which cannot be expressions.
   Statement: [
-    o 'RETURN',            -> Return()
-    o 'RETURN Expression', -> Return $2
-    o 'THROW  Expression', -> Throw  $2
-    o 'STATEMENT',         -> Literal $1
-    o 'HERECOMMENT',       -> Comment $1
+    o 'RETURN Expression' ,-> Return $2
+    o 'RETURN'            ,-> Return()
+    o 'THROW  Expression' ,-> Throw  $2
+    o 'STATEMENT'         ,-> Literal $1
+    o 'COMMENT'           ,-> Comment $1
   ]
 
   # An indented block of expressions. Note that the [Rewriter](#rewriter)
@@ -252,7 +252,7 @@ grammar =
     o '...        ObjAssignable' ,-> Splat  $2
     o 'PLUS_MINUS ObjAssignable' ,-> Assign $2, Literal($1 is '+'), ':'
 
-    o 'HERECOMMENT', -> Comment $1
+    o 'COMMENT', -> Comment $1
   ]
   # Assignment of properties within an object literal can be separated by
   # comma, as in JavaScript, or simply by newline.
