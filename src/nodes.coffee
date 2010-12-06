@@ -70,12 +70,6 @@ class Node
       src = "#{ tmp = o.scope.temporary name } = #{src}"
     [src, tmp]
 
-  # Constructs a node that returns the current node's result.
-  # Note that this is overridden for smarter behavior by
-  # many statement nodes (`If`, `For` etc.).
-  makeReturn: (name) ->
-    if name then Call Literal(name + '.push'), [this] else Return this
-
   # Passes each child to a function, returning its return value if exists.
   eachChild: (fn) ->
     for name of @children then if child = @[name]
@@ -98,15 +92,13 @@ class Node
   containsPureStatement: ->
     @isPureStatement() or @contains -> it.isPureStatement()
 
-  invert: -> Op '!', this
-
   unwrapAll: -> node = this; continue until node is node.=unwrap(); node
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
 
-  terminater: ';'
+  terminator: ';'
 
   isComplex       : YES
   isStatement     : NO
@@ -114,12 +106,18 @@ class Node
   isAssignable    : NO
   isArray         : NO
   isObject        : NO
-
   # Is this node used to assign a certain variable?
-  assigns      : NO
+  assigns         : NO
+
   unfoldSoak   : NO
   unfoldAssign : NO
   unwrap       : THIS
+
+  invert: -> Op '!', this
+
+  # Constructs a node that returns the current node's result.
+  makeReturn: (name) ->
+    if name then Call Literal(name + '.push'), [this] else Return this
 
   # `toString` representation of the node, for inspecting the parse tree.
   # This is what `coco --nodes` prints out.
@@ -166,7 +164,7 @@ class exports.Lines extends Node
       node = (do node.=unwrapAll).unfoldSoak(o) or node
       if top
         code = (node import {+front}).compile o
-        code = o.indent + code + node.terminater unless node.isStatement o
+        code = o.indent + code + node.terminator unless node.isStatement o
       else
         code = node.compile o, LEVEL_LIST
       codes.push code
@@ -228,7 +226,7 @@ class exports.Literal extends Node
       return val
     switch
     case val.reserved  then return '"' + val + '"'
-    case val.js        then @terminater = ''
+    case val.js        then @terminator = ''
     val
 
   toString: -> ' "' + @value + '"'
