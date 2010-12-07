@@ -20,7 +20,7 @@ Assigns to an existing variable, without declaring a new one.
 
 
 ### conditional assignments `? +=`
-Any assignment operator can be conditional by prefixing with one of the three logical operators (`&&`/`||`/`?`).
+Any assignment operator can be conditional by prefixing with `&&`, `||` or `?`.
 
     $ coco -bpe 'a.b &&&= c.d ?= e'
     var _ref;
@@ -121,7 +121,7 @@ Optimized to a series of assignments if the right operand of `import` is an obje
 
 
 ### class block
-Unlike CoffeScript, our `class` define the constructor as a bare function and properties (prototype members) as bare objects, both on top level under the class block.
+Unlike CoffeScript, our `class` defines the constructor as a bare function and properties (prototype members) as bare objects, both on top level under the class block.
 
 In short,
     class C
@@ -130,7 +130,7 @@ In short,
 is a syntax sugar for
     do ->
       function C -> ### constructor ###
-      C.prototype import {'property'}
+      C:: import {'property'}
       C
 
 The constructor can be _bound_ using `=>` to be `new`-free, just like native `Array` which works with or without `new`.
@@ -450,19 +450,19 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
       ];
 
 
-      $ coffee -bpe 'a < b()< c; d > e() > f'
+      $ coffee -bpe 'a < b() < c; d > e() > f'
       var _ref, _ref2;
       (a < (_ref = b()) && _ref < c);
       (d > (_ref2 = e()) && _ref2 > f);
 
-      $ coco -bpe 'a < b()< c; d > e() > f'
+      $ coco -bpe 'a < b() < c; d > e() > f'
       var _ref;
       a < (_ref = b()) && _ref < c;
       d > (_ref = e()) && _ref > f;
 
 
 ## Installation
-Install [node.js](http://nodejs.org/), then
+Install [node.js](http://nodejs.org), then
 
     git clone git:github.com/satyr/coco.git && cd coco && bin/coke install
 
@@ -474,3 +474,14 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 ## Help
 
     coco -h; coke
+
+## Changelog
+
+### 0.1.2
+- `...` is now prefix.
+- `{0: first, (*-1): last} = array` now works.
+- Added `--lex` to the `coco` utility. Removed `--lint`.
+- _src/_ now has [doc view](http://satyr.github.com/coco/src/).
+
+### 0.1.1
+Release.

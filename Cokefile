@@ -14,7 +14,7 @@ tint = (text, color = green) -> color + text + reset
 run = (args) ->
   proc = spawn 'bin/coco', args
   proc.stderr.on 'data', say
-  proc       .on 'exit', -> process.exit 1 if it isnt 0
+  proc       .on 'exit', -> process.exit it if it
 
 sources = ->
   ext = /\.co(?:ffee)?$/i
@@ -51,7 +51,7 @@ task 'build:full', 'rebuild the source twice, and run the tests', ->
   exec 'bin/coke build && bin/coke build && bin/coke test', (err, stdout, stderr) ->
     say stdout.trim() if stdout
     say stderr.trim() if stderr
-    throw err                 if err
+    throw err         if err
 
 task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   src = require('./lib/grammar').parser.generate()
@@ -68,19 +68,21 @@ task 'build:browser', 'rebuild the merged script for inclusion of the browser', 
     };
   """ for name of <[ rewriter lexer parser scope nodes coco browser ]>
   {parser, uglify} = require 'uglify-js'
-  ast = uglify.ast_mangle parser.parse """
+  ast = parser.parse """
     this.Coco = function(){
       function require(path){ return require[path] }
       #{code}
       return require['./coco']
     }()
   """
+  ast = uglify.ast_mangle  ast
+  ast = uglify.ast_squeeze ast, extra: true
   fs.writeFileSync 'extras/coco.js', """
     // Coco Compiler v#{Coco.VERSION}
     // http://github.com/satyr/coco
     // Copyright 2010, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
-    #{ uglify.gen_code uglify.ast_squeeze ast, extra: true }
+    #{ uglify.gen_code ast }
 
   """
   invoke 'test:browser'
