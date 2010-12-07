@@ -731,25 +731,25 @@ class exports.Assign extends Node
     if list.length < 2 or o.level < LEVEL_LIST then code else "(#{code})"
 
   destructArr: (o, nodes, rite) ->
-    iinc = ''
     for node, i of nodes
       continue if (node.=unwrap()).items and not node.items.length
       if node instanceof Splat
-        if iinc then throw SyntaxError \
+        if ivar then throw SyntaxError \
           "multiple splats in an assignment: " + node.compile o
         len = nodes.length
         val = utility('slice') + '.call(' + rite
         val = if i is len - 1
-           val + if i then ", #{i})" else ')'
+          val + if i then ", #{i})" else ')'
         else
           @temps = [ivar = o.scope.temporary 'i']
-          iinc   = ivar + '++'
+          start  = i + 1
           "#{len} <= #{rite}.length" +
           " ? #{val}, #{i}, #{ivar} = #{rite}.length - #{len - i - 1})" +
           " : (#{ivar} = #{i}, [])"
         val = Literal val
       else
-        val = Value lr ||= Literal(rite), [Index Literal iinc or i]
+        if (inc = ivar) and start < i then inc += " + #{ i - start }"
+        val = Value lr ||= Literal(rite), [Index Literal inc or i]
       Assign(node, val, @op).compile o, LEVEL_TOP
 
   destructObj: (o, nodes, rite) ->

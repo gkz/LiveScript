@@ -149,3 +149,8 @@ new Thisplat2 3, 5, 7
 
 
 eq 0, [...[...[0]]][0]
+
+
+[...onetwo, [], {}, five] = [1, 2, 3, 4, 5]
+eq onetwo + '', '1,2'
+eq five, 5
