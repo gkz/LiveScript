@@ -1151,13 +1151,14 @@ class exports.For extends While
   children: <[ source name from to step body ]>
 
   compileNode: (o) ->
-    if @index instanceof Node and not @index.=unwrap().value
-      throw SyntaxError 'invalid index variable: ' + head.index
-    {scope} = o
+    if @index instanceof Node
+      if @index.=unwrap() not instanceof Literal
+        throw SyntaxError 'invalid index variable: ' + @index.compile o
+      @index.=value
     @temps = []
     if idx = @index
-    then scope.declare idx
-    else @temps.push idx = scope.temporary 'i'
+    then o.scope.declare idx
+    else @temps.push idx = o.scope.temporary 'i'
     unless @object
       [step, pvar] = (@step || Literal 1).compileLoopReference o, 'step'
       @temps.push pvar if step isnt pvar
@@ -1183,7 +1184,7 @@ class exports.For extends While
           vars = "#{idx} = #{srcPart}.length - 1"
           cond = "#{idx} >= 0"
         else
-          @temps.push lvar = scope.temporary 'len'
+          @temps.push lvar = o.scope.temporary 'len'
           vars = "#{idx} = 0, #{lvar} = #{srcPart}.length"
           cond = "#{idx} < #{lvar}"
     if @object
