@@ -728,11 +728,12 @@ class exports.Assign extends Node
     list.unshift cache if cache
     list.push rite     if o.level
     code = list.join ', '
-    if o.level < LEVEL_LIST then code else "(#{code})"
+    if list.length < 2 or o.level < LEVEL_LIST then code else "(#{code})"
 
   destructArr: (o, nodes, rite) ->
     iinc = ''
     for node, i of nodes
+      continue if (node.=unwrap()).items and not node.items.length
       if node instanceof Splat
         if iinc then throw SyntaxError \
           "multiple splats in an assignment: " + node.compile o
