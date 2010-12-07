@@ -373,38 +373,38 @@ Borrowing from Smalltalk, numbers can have any base between 2 to 36 in the form 
 - Smaller/Speedier
 
       $ git log -1 --format=oneline
-      e5deb2b3c33ac356146a26f2f19b3e8f9e3bb328 CoffeeScript 0.9.5
+      fa53a4c057324a3488e4f2e96d9cf4ed747fed65 CoffeeScript 0.9.6
 
       $ ls -s extras/coffee-script.js
       168 extras/coffee-script.js
 
       $ cake loc
-      2336
+      2312
 
       $ cake bench
-      Lex     1494 ms (21083 tokens)
-      Rewrite  167 ms (23624 tokens)
-      Parse    184 ms
-      Compile  179 ms (127749 chars)
-      total   2024 ms
+      Lex     1471 ms (20838 tokens)
+      Rewrite  182 ms (23328 tokens)
+      Parse    189 ms
+      Compile  158 ms (126167 chars)
+      total   2000 ms
 
       $ cd ../coco
 
       $ git log -1 --format=oneline
-      b4b592015f52f4b4f3aa1610f1f8b2384f96ace8 readme: principles
+      7e19eebbb55b7b571a72431eaf1a7c1a77586ab1 0.1.2
 
       $ ls -s extras/coco.js
-      120 extras/coco.js
+      112 extras/coco.js
 
       $ coke loc
-      2094
+      1988
 
       $ coke bench
-      Lex     : 1036[ms] (18468 tokens)
-      Rewrite :  120[ms] (20841 tokens)
-      Parse   :  165[ms]
-      Compile :  209[ms] (120012 chars)
-      TOTAL   : 1530[ms]
+      Lex     :  929[ms] (17925 tokens)
+      Rewrite :  119[ms] (20311 tokens)
+      Parse   :  142[ms]
+      Compile :  191[ms] (116201 chars)
+      TOTAL   : 1381[ms]
 
 
 - Uses temporary variables more wisely, making compiled code cleaner/faster.
