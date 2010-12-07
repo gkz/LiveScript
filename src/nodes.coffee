@@ -9,29 +9,26 @@
 # The **Node** is the abstract base class for all nodes in the syntax tree.
 # Each subclass implements the `compileNode` method, which performs the
 # code generation for that node. To compile a node to JavaScript,
-# call `compile` on it, which wraps `compileNode` in some generic extra smarts,
-# to know when the generated code needs to be wrapped up in a closure.
+# call `compile` on it, which wraps `compileNode` in some generic extra smarts.
 # An options hash is passed and cloned throughout, containing information about
 # the environment from higher in the tree (such as if a returned value is
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
 class Node
-  # Common logic for determining whether to wrap this node in a closure before
-  # compiling it, or to compile directly. We need to wrap if it's
-  # a non-_pure_ _statement_, and we're not at the top level of a block.
   compile: (options, level) ->
     o = {}; continue for key, o[key] in options
     o import {level} if level?
     node = @unfoldSoak(o) or this
-    if o.level and not node.isPureStatement() and node.isStatement(o)
-      return node.compileClosure o
+    # If a statement appears within an expression, wrap it in a closure.
+    return node.compileClosure o if o.level and node.isStatement o
     node.tab = o.indent
     code = node.compileNode o
     o.scope.free tmp for tmp of node.temps if node.temps
     code
 
-  # Statements are converted into expressions via closure-wrapping.
   compileClosure: (o) ->
+    # _Pure_ statements are statements that loses their meaning when wrapped in
+    # a closure (e.g. `return`, `continue` etc.).
     if @containsPureStatement()
       throw SyntaxError 'cannot include a pure statement in an expression'
     args = []
@@ -205,8 +202,6 @@ class exports.Lines extends Node
 # and pretty much everything that doesn't fit in other nodes.
 class exports.Literal extends Node
   (@value, reserved) =>
-    # `break`, `continue` and `debugger` must be treated as pure statements.
-    # They lose their meaning when wrapped in a closure.
     @isPureStatement = YES if value of <[ break continue debugger ]>
     @isAssignable    = NO  if reserved
 
