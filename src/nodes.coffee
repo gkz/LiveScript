@@ -1122,25 +1122,25 @@ class exports.Existence extends Node
     if o.level <= LEVEL_COND then code else "(#{code})"
 
 #### Parens
-# An extra set of parentheses, specifying explicitly in the source.
+# An extra set of parentheses, specifying evaluation order.
 class exports.Parens extends Node
-  (@lines, @keep) =>
+  (@it, @keep) =>
 
-  children: ['lines']
+  children: ['it']
 
-  unwrap          : -> @lines
-  makeReturn      : -> @lines.makeReturn it
-  isComplex       : -> @lines.isComplex()
-  isStatement     : -> @lines.isStatement()
-  isPureStatement : -> @lines.isPureStatement()
+  unwrap          : -> @it
+  makeReturn      : -> @it.makeReturn it
+  isComplex       : -> @it.isComplex()
+  isStatement     : -> @it.isStatement()
+  isPureStatement : -> @it.isPureStatement()
 
   compileNode: (o) ->
-    (expr = @lines.unwrap()) import {@front}
-    return expr.compile o if not @keep and
-      (expr instanceof [Value, Call, Code, Parens] or
-       o.level < LEVEL_OP and expr instanceof Op)
-    code = expr.compile o, LEVEL_PAREN
-    if expr.isStatement() then code else "(#{code})"
+    {it} = this
+    return (it import {@front}).compile o if not @keep and
+      (it instanceof [Value, Call, Code, Parens] or
+       o.level < LEVEL_OP and it instanceof Op)
+    code = it.compile o, LEVEL_PAREN
+    if it.isStatement() then code else "(#{code})"
 
 #### For
 # Coco's replacement for the `for` loop are array, object or range iterators.

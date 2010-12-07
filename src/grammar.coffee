@@ -189,8 +189,8 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o '(        Body         )', -> Parens $2
-    o '( INDENT Body OUTDENT )', -> Parens $3
+    o '(        Body         )', -> Parens $2.unwrap()
+    o '( INDENT Body OUTDENT )', -> Parens $3.unwrap()
   ]
 
   # Pure statements which cannot be expressions.
