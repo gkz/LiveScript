@@ -159,6 +159,8 @@ ok A.prototype.b instanceof Function
 
 
 eq '''
+/* leading comments */
+/* are placed before declarations */
 var obj;
 obj = {
   /* v
@@ -167,7 +169,12 @@ obj = {
   /* ^
   */
 };
+if (1) {
+  /* no semicolon at end -> */
+}
 ''', Coco.compile '''
+### leading comments ###
+### are placed before declarations ###
 obj = {
    ### v
    ###
@@ -175,4 +182,5 @@ obj = {
    ### ^
    ###
 }
-''', bare: true
+if 1 then ### no semicolon at end -> ###
+''', {+bare}

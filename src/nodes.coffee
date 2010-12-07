@@ -374,13 +374,9 @@ class exports.Value extends Node
 class exports.Comment extends Node
   (@comment) =>
 
-  isPureStatement : YES
-  isStatement     : YES
-  makeReturn      : THIS
+  terminator: ''
 
-  compile: (o, level) ->
-    code = '/*' + multident(@comment, o.indent) + '*/'
-    if level ? o.level then code else o.indent + code
+  compile: (o) -> '/*' + multident(@comment, o.indent) + '*/'
 
 #### Call
 # A function invocation.
@@ -579,7 +575,7 @@ class exports.Obj extends Node
     code   = ''
     for node of items
       if node instanceof Comment
-        code += node.compile(o, LEVEL_TOP) + '\n'
+        code += idt + node.compile(o, LEVEL_TOP) + '\n'
         continue
       code += idt + if node.at
         key = node.tails[0].name.compile o
