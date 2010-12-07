@@ -710,7 +710,7 @@ class exports.Assign extends Node
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o) ->
     {items} = left = @left.unwrap()
-    return @right.compile o unless olen = items.length
+    return @right.compile o, LEVEL_ACCESS unless olen = items.length
     rite = @right.compile o, if olen is 1 then LEVEL_ACCESS else LEVEL_LIST
     if (olen > 1 or o.level) and
        (not IDENTIFIER.test(rite) or left.assigns(rite))

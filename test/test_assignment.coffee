@@ -212,3 +212,6 @@ throws 'conditional assignment cannot be destructuring'
 {(*>>1): mid, (*-1): last} = [1, 2, 3, 4, 5]
 eq mid , 3
 eq last, 5
+
+
+eq 9, 3 * [] = 2 + 1
