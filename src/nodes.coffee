@@ -1289,8 +1289,7 @@ class exports.Case extends Node
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Node
-  (@if, @then, {@statement, @soak, name} = {}) =>
-    @if.=invert() if name is 'unless'
+  (@if, @then, {@soak, name} = {}) => @if.=invert() if name is 'unless'
 
   children: <[ if then else ]>
 
@@ -1306,8 +1305,7 @@ class exports.If extends Node
   # An **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
-    @statement or o and not o.level or
-    @then.isStatement(o) or @else?.isStatement(o)
+    o and not o.level or @then.isStatement(o) or @else?.isStatement(o)
 
   jumps: -> @then.jumps(it) or @else?.jumps(it)
 

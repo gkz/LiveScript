@@ -114,10 +114,8 @@ grammar =
     # The full complement of `if` expressions,
     # including postfix one-liner `if` and `unless`.
     o 'IfBlock'
-    o 'Statement  POST_IF Expression', ->
-      If $3, Lines($1), name: $2, statement: true
-    o 'Expression POST_IF Expression', ->
-      If $3, Lines($1), name: $2, statement: true
+    o 'Statement  POST_IF Expression' ,-> If $3, Lines($1), name: $2
+    o 'Expression POST_IF Expression' ,-> If $3, Lines($1), name: $2
 
     # Comprehensions can either be normal, with a block of expressions to execute,
     # or postfix, with a single expression.
