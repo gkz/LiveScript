@@ -723,7 +723,7 @@ class exports.Assign extends Node
     else @destructObj o, items, rite
     o.scope.free rref  if rref
     list.unshift cache if cache
-    list.push rite     if o.level
+    list.push rite     if o.level or not list.length
     code = list.join ', '
     if list.length < 2 or o.level < LEVEL_LIST then code else "(#{code})"
 
