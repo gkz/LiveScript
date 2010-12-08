@@ -1,20 +1,16 @@
-num = 10
-
-result = switch num
-case 5 then false
+switch 10
+case 5 then ok 0
 case 'a'
   true
-  true
   false
-case 10 then true
-
+  ok 0
+case 10 then ok 1
 
   # Mid-switch comment with whitespace
-  # and multi line
-case 11 then false
-default false
 
-ok result
+    # and multi line
+case 11 then ok 0
+default ok 0
 
 
 func = (num) ->
@@ -24,10 +20,10 @@ func = (num) ->
   case 1, 3, 5
     false
 
-ok func(2)
-ok func(6)
-ok !func(3)
-eq func(8), undefined
+eq func(2), true
+eq func(6), true
+eq func(3), false
+eq func(8), void
 
 
 ok (switch "words"
@@ -49,27 +45,6 @@ case 'a' of  <[ b c ]>       then 6
 case 'd' of (<[ e f ]>)      then 7
 default ok
 eq result, ok
-
-
-# Should be able to use "@properties" within the switch clause.
-obj =
-  num: 101
-  func: ->
-    switch @num
-    case 101 then '101!'
-    default 'other'
-eq obj.func(), '101!'
-
-
-# Should be able to use "@properties" within the switch cases.
-obj =
-  num: 101
-  func: (yesOrNo) ->
-    result = switch yesOrNo
-    case true then @num
-    default 'other'
-    result
-eq obj.func(true), 101
 
 
 eq '''

@@ -29,7 +29,7 @@ class Node
   compileClosure: (o) ->
     # _Pure_ statements are statements that loses their meaning when wrapped in
     # a closure (e.g. `return`, `continue` etc.).
-    if @containsPureStatement()
+    if @isPureStatement()
       throw SyntaxError 'cannot include a pure statement in an expression'
     args = []
     func = Code [], Lines this
@@ -86,9 +86,6 @@ class Node
   # Does not cross scope boundaries.
   contains: (pred) -> !!@traverseChildren -> pred(it) or null
 
-  containsPureStatement: ->
-    @isPureStatement() or @contains -> it.isPureStatement()
-
   unwrapAll: -> node = this; continue until node is node.=unwrap(); node
 
   # Default implementations of the common node properties and methods. Nodes
@@ -142,8 +139,11 @@ class exports.Lines extends Node
 
   isStatement: (o) ->
     return true if o and not o.level
-    for exp of @lines
-      return true if exp.isPureStatement() or exp.isStatement o
+    return true if node.isStatement o for node of @lines
+    false
+
+  isPureStatement: ->
+    return true if node.isPureStatement it for node of @lines
     false
 
   # **Lines** does not return its entire body, rather it
@@ -263,6 +263,8 @@ class exports.Value extends Node
   add: -> @tails.push it; this
 
   hasProperties: -> !!@tails.length
+
+  isPureStatement: -> not @tails.length and @head.isPureStatement it
 
   assigns      : -> not @tails.length and @head.assigns it
   isStatement  : -> not @tails.length and @head.isStatement it
@@ -773,6 +775,8 @@ class exports.Code extends Node
 
   isStatement: -> !!@statement
 
+  isPureStatement: NO
+
   makeReturn: -> if @statement then this import {+returns} else super ...
 
   compileNode: (o) ->
@@ -895,10 +899,10 @@ class exports.While extends Node
 
   isStatement: YES
 
-  containsPureStatement: ->
+  isPureStatement: ->
     {lines} = @body
     return false unless i = lines.length
-    return true if lines[--i]?.containsPureStatement()
+    return true if lines[--i]?.isPureStatement it
     ret = -> it instanceof Return
     return true if lines[--i].contains ret while i
     false
@@ -908,7 +912,7 @@ class exports.While extends Node
   makeReturn: ->
     if it
       @body.makeReturn it
-    else unless @containsPureStatement()
+    else unless @isPureStatement()
       @returns = true
     this
 
@@ -1077,6 +1081,9 @@ class exports.Try extends Node
 
   isStatement: YES
 
+  isPureStatement: ->
+    @attempt.isPureStatement(it) or @recovery?.isPureStatement(it)
+
   makeReturn: ->
     @attempt .=makeReturn it
     @recovery.=makeReturn it if @recovery
@@ -1122,8 +1129,8 @@ class exports.Parens extends Node
   unwrap          : -> @it
   makeReturn      : -> @it.makeReturn it
   isComplex       : -> @it.isComplex()
-  isStatement     : -> @it.isStatement()
-  isPureStatement : -> @it.isPureStatement()
+  isStatement     : -> @it.isStatement it
+  isPureStatement : -> @it.isPureStatement it
 
   compileNode: (o) ->
     {it} = this
@@ -1231,6 +1238,10 @@ class exports.Switch extends Node
 
   isStatement: YES
 
+  isPureStatement: ->
+    return true if cs.body.isPureStatement it for cs of @cases
+    @default?.isPureStatement it
+
   makeReturn: ->
     cs.makeReturn it for cs of @cases
     @default?.makeReturn it
@@ -1295,6 +1306,8 @@ class exports.If extends Node
   isStatement: (o) ->
     @statement or o and not o.level or
     @then.isStatement(o) or @else?.isStatement(o)
+
+  isPureStatement: -> @then.isPureStatement(it) or @else?.isPureStatement(it)
 
   makeReturn: ->
     @then.=makeReturn it

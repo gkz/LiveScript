@@ -137,19 +137,12 @@ f = -> [-> ok false, 'should cache source']
 ok true for k in [f] = f()
 
 
-# Lenient true pure statements not trying to reach out of the closure
-val = for i of [1]
-  for j of [] then break
-  i
-ok val[0] is i
-
-
-# Comprehensions only wrap their last line in a closure, allowing other lines
-# to have pure expressions in them.
+# Comprehensions only closure-wrap their very last lines, allowing other lines
+# to have `continue` or `break` in them.
 func = ->
   for i from 1 to 2
     break if i is 2
-    j for j of [3]
+    i * j for j of [3]
 eq func()[0], 3
 
 i = 6
@@ -157,6 +150,8 @@ odds = while i--
   continue unless i & 1
   i
 eq '5,3,1', '' + odds
+
+eq (while 1 then break; 1).length, 0
 
 
 # For each dynamic call below `for`,
