@@ -32,7 +32,7 @@ class Node
       @compile(o import indent: ''; LEVEL_TOP) + ' // cannot be an expression'
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
-    (fun = Code [], Lines this).wrapper = true
+    (fun = Fun [], Lines this).wrapper = true
     args = []
     if @contains(-> it.value is 'this')
       args.push Literal 'this'
@@ -74,7 +74,7 @@ class Node
     null
 
   # Performs `eachChild` on every descendant.
-  # Overridden by `Code` not to cross scope by default.
+  # Overridden by `Fun` not to cross scope by default.
   traverseChildren: (fn, xscope) ->
     @eachChild -> if (v = fn it)? then v else it.traverseChildren fn, xscope
 
@@ -423,7 +423,7 @@ class exports.Call extends Node
 
   compileNode: (o) ->
     return asn.compile o if asn = @unfoldAssign o
-    unless fun = (@callee.head or @callee) instanceof Code
+    unless fun = (@callee.head or @callee) instanceof Fun
       @callee import {@front}
     if @splat
       return @compileSplat o, @args[1].value if @new
@@ -630,11 +630,12 @@ class exports.Arr extends Node
 
 #### Class
 class exports.Class extends Node
-  (@title, @sup, body) => @code = Code [], body
+  (@title, @sup, body) => @fun = Fun [], body
 
-  children: <[ title sup code ]>
+  children: <[ title sup fun ]>
 
   compileNode: (o) ->
+    {fun} = this; {lines} = fun.body
     if @title
       decl = if @title instanceof Value
       then @title.tails[*-1].name?.value
@@ -643,20 +644,20 @@ class exports.Class extends Node
         throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
     name  = decl or @name
     name  = '_Class' unless name and IDENTIFIER.test name
-    lname = Literal @code.bound = name
+    lname = Literal fun.bound = name
     proto = Value lname, [Access Literal 'prototype']
-    @code.body.traverseChildren -> it.clas = name if it instanceof Code; null
-    for node, i of exps = @code.body.lines
+    fun.body.traverseChildren -> it.clas = name if it instanceof Fun; null
+    for node, i of lines
       if node.isObject()
-        exps[i] = Import proto, node, true
-      else if node instanceof Code
+        lines[i] = Import proto, node, true
+      else if node instanceof Fun
         throw SyntaxError 'more than one constructor in a class' if ctor
         ctor = node
-    exps.unshift ctor = Code() unless ctor
+    lines.unshift ctor = Fun() unless ctor
     ctor import {name, +ctor, +statement, -clas}
-    exps.unshift Extends lname, @sup if @sup
-    exps.push lname
-    clas = Call @code, []
+    lines.unshift Extends lname, @sup if @sup
+    lines.push lname
+    clas = Call fun, []
     clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
     clas.compile o
@@ -685,7 +686,7 @@ class exports.Assign extends Node
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
     {right} = this
-    if right instanceof [Code, Class] and match = METHOD_DEF.exec name
+    if right instanceof [Fun, Class] and match = METHOD_DEF.exec name
       right.clas   = match[1] if match[1]
       right.name ||= match[2] or match[3]
     val = right.compile o, LEVEL_LIST
@@ -764,9 +765,9 @@ class exports.Assign extends Node
 
   toString: (idt) -> super.call this, idt, @constructor.name + ' ' + @op
 
-#### Code
+#### Fun
 # A function definition. This is the only node that creates a `new Scope`.
-class exports.Code extends Node
+class exports.Fun extends Node
   (@params = [], @body = Lines(), arrow) =>
     @bound = '_this' if arrow is '=>'
 
@@ -1130,7 +1131,7 @@ class exports.Parens extends Node
   compileNode: (o) ->
     {it} = this
     return (it import {@front}).compile o if not @keep and
-      (it instanceof [Value, Call, Code, Parens] or
+      (it instanceof [Value, Call, Fun, Parens] or
        o.level < LEVEL_OP and it instanceof Op)
     o.level = LEVEL_PAREN
     if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
@@ -1207,9 +1208,9 @@ class exports.For extends While
   pluckDirectCalls: (o) ->
     @body.eachChild dig = =>
       unless it instanceof Call and
-             (fn = it.callee.unwrapAll()) instanceof Code and
+             (fn = it.callee.unwrapAll()) instanceof Fun and
              fn.params.length is it.args.length
-        return if it instanceof [Code, For] then null else it.eachChild dig
+        return if it instanceof [Fun, For] then null else it.eachChild dig
       if @index
         fn.params.push Param it.args[*] = Literal @index
       if name = @name

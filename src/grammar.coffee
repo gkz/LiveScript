@@ -42,10 +42,10 @@ o = (patterns, action, options) ->
 # dollar-sign variables are provided by Jison as references to the value of
 # their numeric position, so in this rule:
 #
-#     "Expression UNLESS Expression"
+#     "Expression MATH Expression"
 #
 # `$1` would be the value of the first `Expression`, `$2` would be the token
-# for the `UNLESS` terminal, and `$3` would be the value of the second
+# for the `MATH` terminal, and `$3` would be the value of the second
 # `Expression`.
 grammar =
   # Everything that can be assigned to.
@@ -104,12 +104,12 @@ grammar =
     o 'Assignable       ASSIGN          Expression', -> Assign $1, $3, $2
     o 'SimpleAssignable COMPOUND_ASSIGN Expression', -> Assign $1, $3, $2
 
-    o 'CREMENT SimpleAssignable',         -> Op $1, $2
-    o 'SimpleAssignable CREMENT',         -> Op $2, $1, null, true
+    o 'CREMENT SimpleAssignable' ,-> Op $1, $2
+    o 'SimpleAssignable CREMENT' ,-> Op $2, $1, null, true
 
-    o 'Code'
-    o 'FUNCTION Code',            -> mix $2, statement: true
-    o 'FUNCTION IDENTIFIER Code', -> mix $3, statement: true, name: $2
+    o 'Fun'
+    o 'FUNCTION Fun'            ,-> mix $2, statement: true
+    o 'FUNCTION IDENTIFIER Fun' ,-> mix $3, statement: true, name: $2
 
     # The full complement of `if` expressions,
     # including postfix one-liner `if` and `unless`.
@@ -117,8 +117,8 @@ grammar =
     o 'Statement  POST_IF Expression' ,-> If $3, Lines($1), name: $2
     o 'Expression POST_IF Expression' ,-> If $3, Lines($1), name: $2
 
-    # Comprehensions can either be normal, with a block of expressions to execute,
-    # or postfix, with a single expression.
+    # Comprehensions can either be normal, with a block of expressions
+    # to execute, or postfix, with a single expression.
     o 'LoopHead   Block',    -> $1.addBody $2
     o 'Statement  LoopHead', -> $2.addBody Lines $1
     o 'Expression LoopHead', -> $2.addBody Lines $1
@@ -143,7 +143,8 @@ grammar =
     o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
   ]
 
-  # Any list of statements and expressions, separated by line breaks or semicolons.
+  # Any list of statements and expressions,
+  # separated by line breaks or semicolons.
   Body: [
     o 'Expression'                 ,-> Lines $1
     o 'Statement'                  ,-> Lines $1
@@ -162,7 +163,7 @@ grammar =
     o     'Expression'
     o '... Expression', -> Splat $2
   ]
-  # The **ArgList** is both the list of objects passed into a function call,
+  # **ArgList** is both the list of objects passed into a function call,
   # as well as the contents of an array literal
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
@@ -172,7 +173,6 @@ grammar =
     o 'ArgList OptComma TERMINATOR Arg'                  ,-> $1.concat $4
     o 'ArgList OptComma INDENT ArgList OptComma OUTDENT' ,-> $1.concat $4
   ]
-  # The array literal.
   Array: [
     o '[ ArgList OptComma ]', -> Arr $2
   ]
@@ -208,12 +208,11 @@ grammar =
     o 'INDENT      OUTDENT', -> Lines()
   ]
 
-  # **Code** node is the function literal, defined by an indented **Block**
+  # **Fun** node is the function literal, defined by an indented **Block**
   # preceded by a function arrow, with an optional parameter list.
-  Code: [
-    o 'PARAM_START ParamList PARAM_END
-       FUNC_ARROW Block', -> Code $2, $5, $4
-    o 'FUNC_ARROW Block', -> Code [], $2, $1
+  Fun: [
+    o 'PARAM_START ParamList PARAM_END FUNC_ARROW Block' ,-> Fun $2, $5, $4
+    o                                 'FUNC_ARROW Block' ,-> Fun [], $2, $1
   ]
   # The list of parameters that a function accepts can be of any length.
   ParamList: [
