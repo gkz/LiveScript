@@ -273,8 +273,7 @@ class exports.Value extends Node
   isComplex    : -> !!@tails.length or @head.isComplex()
   isAssignable : -> !!@tails.length or @head.isAssignable()
 
-  makeReturn: ->
-    if @tails.length then super ... else @head.makeReturn it
+  makeReturn: -> if @tails.length then super ... else @head.makeReturn it
 
   # The value can be unwrapped as its inner node, if there are no accessors.
   unwrap: -> if @tails.length then this else @head
@@ -311,11 +310,11 @@ class exports.Value extends Node
     return asn.compile o if asn = @unfoldAssign o
     return val.compile o if val = @unfoldBind   o
     @head import {@front}
-    val = (@tails.length and @substituteStar o) or this
-    ps  = val.tails
-    code  = val.head.compile o, if ps.length then LEVEL_ACCESS else null
-    code += ' ' if ps[0] instanceof Access and SIMPLENUM.test code
-    code += p.compile o for p of ps
+    return @head.compile o unless @tails.length
+    {tails} = val = @substituteStar(o) or this
+    code  = val.head.compile o, LEVEL_ACCESS
+    code += ' ' if tails[0] instanceof Access and SIMPLENUM.test code
+    code += t.compile o for t of tails
     code
 
   substituteStar: (o) ->
@@ -323,9 +322,9 @@ class exports.Value extends Node
       switch
       case it.value is '*'     then it
       case it instanceof Index then false
-    for prop, i of @tails
-      continue unless prop instanceof Index and
-                      star = prop.traverseChildren find
+    for tail, i of @tails
+      continue unless tail instanceof Index and
+                      star = tail.traverseChildren find
       [sub, ref] = Value(@head, @tails.slice 0, i).cache o
       @temps = [ref.value] if sub isnt ref
       ref += ' ' if SIMPLENUM.test ref.=compile o
@@ -338,8 +337,8 @@ class exports.Value extends Node
     if ifn = @head.unfoldSoak o
       ifn.then.tails.push ...@tails
       return ifn
-    for prop, i of @tails then if prop.soak
-      prop.soak = false
+    for tail, i of @tails then if tail.soak
+      tail.soak = false
       fst = Value @head, @tails.slice 0, i
       snd = Value @head, @tails.slice i
       if fst.isComplex()
@@ -355,8 +354,8 @@ class exports.Value extends Node
     if asn = @head.unfoldAssign o
       asn.right.tails.push ...@tails
       return asn
-    for prop, i of @tails then if prop.assign
-      prop.assign = false
+    for tail, i of @tails then if tail.assign
+      tail.assign = false
       [lhs, rhs] = Value(@head, @tails.slice 0, i).cacheReference o
       return Assign(lhs; Value rhs, @tails.slice i) import {+access}
     null
