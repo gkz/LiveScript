@@ -188,6 +188,10 @@ a import (*): 1, (*): 2
 eq a[1], 1
 eq a[2], 2
 
+i = 0
+++i import {}
+eq i, 1
+
 
 i = 0
 O = ->

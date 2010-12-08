@@ -478,8 +478,9 @@ class exports.Import extends Node
   compileNode: (o) ->
     unless @util is 'import' and @right.isObject()
       return Call(Value Literal utility @util; [@left, @right]).compile o
-    top = not o.level
     {items} = @right.unwrap()
+    return @left.compile o unless items.length
+    top = not o.level
     if top and items.length < 2
     then  sub = lref  = @left
     else [sub , lref] = @left.cache o
