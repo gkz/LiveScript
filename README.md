@@ -88,14 +88,14 @@ Creates a named function using JS's function statement, without touching the nas
     $ coco -bpe 'function f -> it'
     function f(it){
       return it;
-    } f.name = "f";
+    }
 
     $ coco -bpe 'f = function -> it'
     var f;
     f = (function(){
       function f(it){
         return it;
-      } f.name = "f";
+      }
       return f;
     }());
 

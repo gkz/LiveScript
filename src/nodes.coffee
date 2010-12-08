@@ -790,7 +790,7 @@ class exports.Code extends Node
     scope.method = this
     delete o.globals
     o.indent += TAB
-    {params, body, name, statement, tab} = this
+    {params, body, name, tab} = this
     code = 'function'
     if @bound is '_this'
       if @ctor
@@ -823,7 +823,7 @@ class exports.Code extends Node
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
     vars[0] = 'it' if not vars.length and body.contains(-> it.value is 'it')
     body.makeReturn() unless wasEmpty or @ctor
-    if statement
+    if @statement
       unless name
         throw SyntaxError 'cannot declare a nameless function'
       unless o.lines.scope is pscope
@@ -834,10 +834,9 @@ class exports.Code extends Node
     code += '(' + vars.join(', ') + '){'
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if exps.length
     code += '}'
-    if statement and name.charAt(0) isnt '_'
-      code += " #{name}.name = \"#{name}\";"
+    code += " #{name}.name = \"#{name}\";" if @ctor and name.charAt(0) isnt '_'
     code += "\n#{tab}return #{name};" if @returns
-    return tab + code if statement
+    return tab + code if @statement
     if @front then "(#{code})" else code
 
 #### Param
