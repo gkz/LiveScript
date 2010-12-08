@@ -388,11 +388,10 @@ eq func(0), 0
 eq func(1), 1
 
 
-# Ensure that we don't wrap Nodes that are "pureStatement" in a closure.
-findIt = (items) ->
-  return item if item is "bacon" for item of items
-eq 'bacon', findIt [1, 2, 3, "bacon", 4, 5]
-eq void   , findIt [   ]
+# Don't gather results from a loop that _jumps_ out of a closure.
+findIt = (items) -> return item if item is 'bacon' for item of items
+eq 'bacon', findIt [1, 2, 3, 'bacon', 4, 5]
+eq void   , findIt []
 
 
 # When a closure wrapper is generated for expression conversion, make sure
@@ -405,5 +404,4 @@ eq obj.method(), obj
 
 eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
-throws 'cannot include a pure statement in an expression'
-, -> Coco.compile 'r = (return)'
+throws 'return; // cannot be an expression', -> Coco.compile 'r = (return)'

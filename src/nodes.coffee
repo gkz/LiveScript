@@ -21,21 +21,19 @@ class Node
     node = @unfoldSoak(o) or this
     # If a statement appears within an expression, wrap it in a closure.
     return node.compileClosure o if o.level and node.isStatement o
-    node.tab = o.indent
-    code = node.compileNode o
+    code = (node import tab: o.indent).compileNode o
     o.scope.free tmp for tmp of node.temps if node.temps
     code
 
   compileClosure: (o) ->
-    # _Pure_ statements are statements that loses their meaning when wrapped in
-    # a closure (e.g. `return`, `continue` etc.).
-    if @isPureStatement()
-      throw SyntaxError 'cannot include a pure statement in an expression'
-    args = []
-    func = Code [], Lines this
+    # Statements that _jump_ out of current context (like `return`) can't be
+    # an expression via closure-wrapping, as their meaning will change.
+    if @jumps() then throw SyntaxError \
+      @compile(o import indent: ''; LEVEL_TOP) + ' // cannot be an expression'
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
-    func.wrapper = true
+    (func = Code [], Lines this).wrapper = true
+    args = []
     if @contains(-> it.value is 'this')
       args.push Literal 'this'
       val = Value func, [Access Literal 'call']
@@ -94,14 +92,15 @@ class Node
 
   terminator: ';'
 
-  isComplex       : YES
-  isStatement     : NO
-  isPureStatement : NO
-  isAssignable    : NO
-  isArray         : NO
-  isObject        : NO
-  # Is this node used to assign a certain variable?
-  assigns         : NO
+  isComplex    : YES
+  isStatement  : NO
+  isAssignable : NO
+  isArray      : NO
+  isObject     : NO
+  # Do I contain a statement that jumps out of me?
+  jumps: NO
+  # Do I assign a certain variable?
+  assigns: NO
 
   unfoldSoak   : NO
   unfoldAssign : NO
@@ -142,8 +141,8 @@ class exports.Lines extends Node
     return true if node.isStatement o for node of @lines
     false
 
-  isPureStatement: ->
-    return true if node.isPureStatement it for node of @lines
+  jumps: ->
+    return true if node.jumps it for node of @lines
     false
 
   # **Lines** does not return its entire body, rather it
@@ -202,14 +201,20 @@ class exports.Lines extends Node
 # and pretty much everything that doesn't fit in other nodes.
 class exports.Literal extends Node
   (@value, reserved) =>
-    @isPureStatement = YES if value of <[ break continue debugger ]>
-    @isAssignable    = NO  if reserved
+    if value of <[ break continue debugger ]>
+      @isStatement = YES
+      @makeReturn  = THIS
+    else if reserved
+      @isAssignable = NO
 
-  makeReturn   : -> if @isPureStatement() then this else super ...
+  isComplex: NO
+
   isAssignable : -> IDENTIFIER.test @value
   assigns      : -> it is @value
 
-  isComplex: NO
+  jumps: ->
+    @isStatement() and
+    not (it and (it.loop or it.block and @value isnt 'continue'))
 
   compile: (o, level) ->
     switch val = @value
@@ -220,8 +225,9 @@ class exports.Literal extends Node
         throw SyntaxError 'invalid use of ' + @value
       return val
     switch
-    case val.reserved  then return '"' + val + '"'
-    case val.js        then @terminator = ''
+    case @isStatement() then return o.indent + val + ';'
+    case val.reserved   then return '"' + val + '"'
+    case val.js         then @terminator = ''
     val
 
   toString: -> ' "' + @value + '"'
@@ -248,7 +254,7 @@ class exports.Return extends Throw
 
   verb: 'return'
 
-  isPureStatement: YES
+  jumps: YES
 
 #### Value
 # Acts as a container for property access chains, by holding
@@ -264,8 +270,7 @@ class exports.Value extends Node
 
   hasProperties: -> !!@tails.length
 
-  isPureStatement: -> not @tails.length and @head.isPureStatement it
-
+  jumps        : -> not @tails.length and @head.jumps it
   assigns      : -> not @tails.length and @head.assigns it
   isStatement  : -> not @tails.length and @head.isStatement it
   isArray      : -> not @tails.length and @head instanceof Arr
@@ -774,7 +779,7 @@ class exports.Code extends Node
 
   isStatement: -> !!@statement
 
-  isPureStatement: NO
+  jumps: NO
 
   makeReturn: -> if @statement then this import {+returns} else super ...
 
@@ -898,12 +903,11 @@ class exports.While extends Node
 
   isStatement: YES
 
-  isPureStatement: ->
+  jumps: ->
     {lines} = @body
-    return false unless i = lines.length
-    return true if lines[--i]?.isPureStatement it
-    ret = -> it instanceof Return
-    return true if lines[--i].contains ret while i
+    return false unless lines.length
+    context = {+loop}
+    return true if node.jumps context for node of lines
     false
 
   addBody: (@body) -> this
@@ -911,7 +915,7 @@ class exports.While extends Node
   makeReturn: ->
     if it
       @body.makeReturn it
-    else unless @isPureStatement()
+    else unless @jumps()
       @returns = true
     this
 
@@ -1080,8 +1084,7 @@ class exports.Try extends Node
 
   isStatement: YES
 
-  isPureStatement: ->
-    @attempt.isPureStatement(it) or @recovery?.isPureStatement(it)
+  jumps: -> @attempt.jumps(it) or @recovery?.jumps(it)
 
   makeReturn: ->
     @attempt .=makeReturn it
@@ -1125,11 +1128,11 @@ class exports.Parens extends Node
 
   children: ['it']
 
-  unwrap          : -> @it
-  makeReturn      : -> @it.makeReturn it
-  isComplex       : -> @it.isComplex()
-  isStatement     : -> @it.isStatement it
-  isPureStatement : -> @it.isPureStatement it
+  unwrap      : -> @it
+  isComplex   : -> @it.isComplex()
+  isStatement : -> @it.isStatement it
+  makeReturn  : -> @it.makeReturn it
+  jumps       : -> @it.jumps it
 
   compileNode: (o) ->
     {it} = this
@@ -1237,9 +1240,9 @@ class exports.Switch extends Node
 
   isStatement: YES
 
-  isPureStatement: ->
-    return true if cs.body.isPureStatement it for cs of @cases
-    @default?.isPureStatement it
+  jumps: (x = {+block}) ->
+    return true if cs.body.jumps x for cs of @cases
+    @default?.jumps x
 
   makeReturn: ->
     cs.makeReturn it for cs of @cases
@@ -1306,7 +1309,7 @@ class exports.If extends Node
     @statement or o and not o.level or
     @then.isStatement(o) or @else?.isStatement(o)
 
-  isPureStatement: -> @then.isPureStatement(it) or @else?.isPureStatement(it)
+  jumps: -> @then.jumps(it) or @else?.jumps(it)
 
   makeReturn: ->
     @then.=makeReturn it

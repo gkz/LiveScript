@@ -19,14 +19,24 @@ func = (num) ->
     true
   case 1, 3, 5
     false
-
 eq func(2), true
 eq func(6), true
 eq func(3), false
 eq func(8), void
 
 
-ok (switch "words"
+eq (switch case 1 then break), void
+eq (switch case 0 then break default 1), 1
+eq (switch case 1 then continue while 0; 1), 1
+throws '''
+switch (false) {
+case !1:
+  continue;
+} // cannot be an expression
+''', -> Coco.compile 'f(switch case 1 then continue)'
+
+
+ok (switch 'words'
 case (<[ nonbare words ]>) then false
 case  <[    bare words ]>  then true
 default false

@@ -151,6 +151,13 @@ odds = while i--
   i
 eq '5,3,1', '' + odds
 
+r = for i from 0 to 2
+  switch i
+  case 0 then continue
+  case 1 then i
+  default break
+eq r + '', '1'
+
 eq (while 1 then break; 1).length, 0
 
 
