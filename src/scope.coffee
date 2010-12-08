@@ -27,13 +27,17 @@
     this
 
   # Ensures that an assignment is made at the top of this scope.
-  assign: (name, value) -> @add name, {value, assigned: true}
+  assign: (name, value) -> @add name, {value}
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
   temporary: (name) ->
     i = 0
-    continue until @type(temp = @pickTemp name, i++) of ['reuse', void]
+    for ever
+      temp = '_' + if name.length > 1
+      then name + (if i++ then i else '')
+      else (i++ + parseInt name, 36).toString 36
+      break if @type(temp) of ['reuse', void]
     @add temp, 'var'
     temp
 
@@ -49,14 +53,8 @@
     return found if (found = @positions[name] in @variables) or not above
     !!@parent?.check name, above
 
-  # Generates a temporary variable name at the given index.
-  pickTemp: (name, index) ->
-    '_' + if name.length > 1
-    then name + (if index > 1 then index else '')
-    else (index + parseInt name, 36).toString(36).replace /\d/g, 'a'
-
-  # Gets the type of a variable.
-  type: (name) -> @variables[@positions[name]]?.type
+  # Gets the type of a variable from name.
+  type: -> @variables[@positions[it]]?.type
 
   # Returns the list of variables declared in this scope.
   vars: ->
@@ -64,6 +62,6 @@
     for {name, type} of @variables
       if type of <[ var reuse ]>
         (if name.charAt(0) is '_' then tmp else usr).push name
-      else if type.assigned
+      else if type.value
         asn.push name + ' = ' + type.value
     usr.sort().concat tmp.sort(), asn.sort()
