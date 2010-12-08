@@ -32,19 +32,19 @@ class Node
       @compile(o import indent: ''; LEVEL_TOP) + ' // cannot be an expression'
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
-    (func = Code [], Lines this).wrapper = true
+    (fun = Code [], Lines this).wrapper = true
     args = []
     if @contains(-> it.value is 'this')
       args.push Literal 'this'
-      val = Value func, [Access Literal 'call']
+      val = Value fun, [Access Literal 'call']
     mentionsArgs = false
     @traverseChildren ->
       mentionsArgs := it.value = '_args' if it.value is 'arguments'
       null
     if mentionsArgs
       args.push Literal 'arguments'
-      func.params.push Param Literal '_args'
-    Call(val or func, args).compileNode o
+      fun.params.push Param Literal '_args'
+    Call(val or fun, args).compileNode o
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -498,7 +498,7 @@ class exports.Import extends Node
         continue
       dyna = false
       if node instanceof Assign
-        {right: val, left: key} = node
+        {left: key, right: val} = node
       else if node.at
         key = (val = node).tails[0].name
       else
@@ -675,11 +675,10 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
-    {left} = this
-    if left.isArray() or left.isObject()
-      return @compileDestructuring o unless @logic
+    if (left = @left.unwrap()).items
+      return @compileDestructuring o, left unless @logic
       throw SyntaxError 'conditional assignment cannot be destructuring'
-    return @compileConditional o if @logic
+    return @compileConditional o, left if @logic
     name = left.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
@@ -701,21 +700,18 @@ class exports.Assign extends Node
     code = name + " #{ if @op is ':=' then '=' else @op } " + val
     if o.level < LEVEL_COND then code else "(#{code})"
 
-  # When compiling a conditional assignment, take care to ensure that the
-  # operands are only evaluated once, even though we have to reference them
-  # more than once.
-  compileConditional: (o) ->
-    [left, rite] = Value(@left).cacheReference o
-    Op(@logic, left, Assign rite, @right, @op).compile o
+  compileConditional: (o, left) ->
+    [left, ref] = Value(left).cacheReference o
+    Op(@logic; left; Assign ref, @right, @op).compile o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
-  compileDestructuring: (o) ->
-    {items} = left = @left.unwrap()
-    return @right.compile o, LEVEL_ACCESS unless olen = items.length
-    rite = @right.compile o, if olen is 1 then LEVEL_ACCESS else LEVEL_LIST
-    if (olen > 1 or o.level) and
+  compileDestructuring: (o, left) ->
+    {items} = left
+    return @right.compile o, LEVEL_ACCESS unless len = items.length
+    rite = @right.compile o, if len is 1 then LEVEL_ACCESS else LEVEL_LIST
+    if (len > 1 or o.level) and
        (not IDENTIFIER.test(rite) or left.assigns(rite))
       cache = "#{ rref = o.scope.temporary 'ref' } = #{rite}"
       rite  = rref
@@ -753,10 +749,10 @@ class exports.Assign extends Node
   destructObj: (o, nodes, rite) ->
     for node of nodes
       node.=it if splat = node instanceof Splat
-      if dyna = (node.head or node) instanceof Parens
-        [node, key] = Value(node.unwrapAll()).cacheReference o
+      if dyna = node.=unwrapAll() instanceof Parens
+        [node, key] = Value(node.it).cacheReference o
       else if node instanceof Assign
-        {right: node, left: key} = node
+        {left: key, right: node} = node
       else
         key = if node.at then node.tails[0].name else node
       acc = not dyna and IDENTIFIER.test key.unwrap().value or 0
@@ -1128,19 +1124,15 @@ class exports.Parens extends Node
 
   children: ['it']
 
-  unwrap      : -> @it
-  isComplex   : -> @it.isComplex()
-  isStatement : -> @it.isStatement it
-  makeReturn  : -> @it.makeReturn it
-  jumps       : -> @it.jumps it
+  isComplex: -> @it.isComplex()
 
   compileNode: (o) ->
     {it} = this
     return (it import {@front}).compile o if not @keep and
       (it instanceof [Value, Call, Code, Parens] or
        o.level < LEVEL_OP and it instanceof Op)
-    code = it.compile o, LEVEL_PAREN
-    if it.isStatement() then code else "(#{code})"
+    o.level = LEVEL_PAREN
+    if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
 
 #### For
 # Coco's replacement for the `for` loop are array, object or range iterators.

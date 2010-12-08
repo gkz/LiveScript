@@ -96,8 +96,7 @@ multiLiner =
     for y from 3 to 5
       x * y
 
-singleLiner =
-  ((x * y for y from 3 to 5) for x from 3 to 5)
+singleLiner = (x * y for y from 3 to 5 for x from 3 to 5)
 
 eq multiLiner.length, singleLiner.length
 eq 25,  multiLiner[*-1]

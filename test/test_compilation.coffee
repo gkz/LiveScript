@@ -43,8 +43,7 @@ eq 'a["in"] = this["in"];', Coco.compile 'a import {@in}', bare: true
 eq '''
 while (0) {
   while (0) {
-    1;
-    2;
+    (1, 2);
   }
 }
 ''', Coco.compile '(1; 2) while 0 while 0', bare: true
