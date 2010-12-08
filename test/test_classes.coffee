@@ -267,3 +267,10 @@ oss = new OddSuperSub
 eq oss.super(), OddSuper
 eq oss.$uper(), OddSuper
 eq oss[1234](), OddSuper
+
+
+eq 'declared', (class declared).name
+ok declared?
+
+eq 'named', (new -> @named = class).name
+ok !named?, 'should not leak to global when undeclared'

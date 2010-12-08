@@ -346,21 +346,8 @@ eq ok, new ->
   ### even with trailing comments. ###
 
 
-function declared ->
-eq 'declared', declared.name
-
-eq 'named', (function named ->).name
-ok !named?, 'should not leak to global when undeclared'
-
-throws 'redeclaration of "A"', -> Coco.compile 'A = 1; function A ->'
-throws 'redeclaration of "B"', -> Coco.compile 'function B -> B = 1'
-throws 'redeclaration of "C"', -> Coco.compile '''
-  function C ->
-  C = 1
-'''
-
 throws 'cannot declare a function under a statement', ->
-  Coco.compile 'if 1 then function C ->'
+  Coco.compile 'if 1 then function F ->'
 
 
 # Expression conversion under explicit returns.

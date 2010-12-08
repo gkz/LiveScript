@@ -13,11 +13,8 @@
     if name of <[ arguments eval ]>
       throw SyntaxError "redefining \"#{name}\" is deprecated"
     if v = @variables[@positions[name]]
-      if 'function' of [type, v.type]
-        throw SyntaxError "redeclaration of \"#{name}\""
-      v import {type}
-    else
-      @positions[name] = -1 + @variables.push {name, type}
+    then v import {type}
+    else @positions[name] = -1 + @variables.push {name, type}
     this
 
   # Declares a variable unless declared already.

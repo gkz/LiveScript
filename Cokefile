@@ -78,10 +78,10 @@ task 'build:browser', 'rebuild the merged script for inclusion of the browser', 
   ast = uglify.ast_mangle  ast
   ast = uglify.ast_squeeze ast, extra: true
   fs.writeFileSync 'extras/coco.js', """
-    // Coco Compiler v#{Coco.VERSION}
-    // http://github.com/satyr/coco
+    // Coco #{Coco.VERSION}
     // Copyright 2010, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
+    http://satyr.github.com/coco
     #{ uglify.gen_code ast }
 
   """
