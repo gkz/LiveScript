@@ -197,24 +197,15 @@ class exports.Lines extends Node
 
 #### Literal
 # Literals are static values that can be passed through directly into
-# JavaScript without translation, such as identifiers, numbers, `this`, `break`
+# JavaScript without translation, such as identifiers, numbers, `this`,
 # and pretty much everything that doesn't fit in other nodes.
 class exports.Literal extends Node
-  (@value, reserved) =>
-    if value of <[ break continue debugger ]>
-      @isStatement = YES
-      @makeReturn  = THIS
-    else if reserved
-      @isAssignable = NO
+  (@value, reserved) => @isAssignable = NO if reserved
 
   isComplex: NO
 
   isAssignable : -> IDENTIFIER.test @value
   assigns      : -> it is @value
-
-  jumps: ->
-    @isStatement() and
-    not (it and (it.loop or it.block and @value isnt 'continue'))
 
   compile: (o, level) ->
     switch val = @value
@@ -225,34 +216,43 @@ class exports.Literal extends Node
         throw SyntaxError 'invalid use of ' + @value
       return val
     switch
-    case @isStatement() then return o.indent + val + ';'
-    case val.reserved   then return '"' + val + '"'
-    case val.js         then @terminator = ''
+    case val.reserved then return '"' + val + '"'
+    case val.js       then @terminator = ''
     val
 
   toString: -> ' "' + @value + '"'
 
+#### Statement
+# `continue`, `break` or `debugger`
+class exports.Statement extends Node
+  (@name) =>
+
+  isStatement : YES
+  makeReturn  : THIS
+
+  jumps: -> not (it and (it.loop or it.block and @name isnt 'continue'))
+
+  compile: -> it.indent + @name + ';'
+
 #### Throw
-class exports.Throw extends Node
+class exports.Throw extends Statement
   (@it) =>
 
   children: ['it']
 
-  verb: 'throw'
+  name: 'throw'
 
-  isStatement: YES
-
-  makeReturn: THIS
+  jumps: NO
 
   compile: (o) ->
     exp = @it?.compile o, LEVEL_PAREN
-    o.indent + @verb + (if exp then ' ' + exp else '') + ';'
+    o.indent + @name + (if exp then ' ' + exp else '') + ';'
 
 #### Return
 class exports.Return extends Throw
   (@it) =>
 
-  verb: 'return'
+  name: 'return'
 
   jumps: YES
 
@@ -910,7 +910,11 @@ class exports.While extends Node
     return true if node.jumps context for node of lines
     false
 
-  addBody: (@body) -> this
+  addBody: (@body) ->
+    [last, i] = lastNonComment body.lines
+    if last instanceof Statement and last.name is 'continue'
+      body.lines.splice i, 1
+    this
 
   makeReturn: ->
     if it
@@ -926,20 +930,15 @@ class exports.While extends Node
     code + ') {' + @compileBody o
 
   compileBody: (o) ->
-    {body} = this
-    [last, i] = lastNonComment exps = body.lines
-    if last?.value is 'continue'
-      exps.splice i, 1
-      [last, i] = lastNonComment exps
-    ret = ''
+    {lines} = @body; end = '}'
     if @returns
+      [last, i] = lastNonComment lines
       if last and last not instanceof Throw
         o.scope.assign res = '_results', '[]'
-        exps[i] = last.makeReturn res
-      ret = "\n#{@tab}return #{ res or '[]' };"
-    return '}' + ret unless exps.length
-    code = '\n'
-    code + body.compile(o, LEVEL_TOP) + "\n#{@tab}}" + ret
+        lines[i] = last.makeReturn res
+      end = "}\n#{@tab}return #{ res or '[]' };"
+    return end unless lines.length
+    "\n#{ @body.compile o, LEVEL_TOP }\n" + @tab + end
 
 #### Op
 # Simple Arithmetic and logical operations, with some special conversions.
@@ -1283,7 +1282,7 @@ class exports.Case extends Node
     o.indent = tab + TAB
     code += body + '\n' if body = @body.compile o, LEVEL_TOP
     code += o.indent + 'break;\n' unless nobr or ft or
-      last instanceof Throw or last.value of <[ continue break ]>
+      last instanceof Statement and last.name isnt 'debugger'
     code
 
 #### If

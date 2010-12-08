@@ -195,8 +195,8 @@ grammar =
   Statement: [
     o 'RETURN Expression' ,-> Return $2
     o 'RETURN'            ,-> Return()
-    o 'THROW  Expression' ,-> Throw  $2
-    o 'STATEMENT'         ,-> Literal $1
+    o 'STATEMENT'         ,-> Statement $1
+    o 'THROW Expression'  ,-> Throw $2
     o 'COMMENT'           ,-> Comment $1
   ]
 
