@@ -13,7 +13,7 @@
 # Reads a stream of Coco code and divvies it up into tagged tokens.
 # Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
-class exports.Lexer
+(exports.Lexer = function ->):: import
   # `tokenize` is the Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
   # remaining code, or a custom recursive token-matching method
@@ -432,7 +432,7 @@ class exports.Lexer
       code = @balancedString str.slice(i+1), [<[ { } ]>]
       pi   = 1 + i += code.length
       continue unless code.=slice 1, -1
-      nested = new Lexer().tokenize code, {@line, rewrite: false}
+      nested = new @constructor().tokenize code, {@line, rewrite: false}
       nested.pop()
       nested.shift() if nested[0]?[0] is 'TERMINATOR'
       if nested.length > 1
