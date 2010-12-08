@@ -64,4 +64,4 @@
         (if name.charAt(0) is '_' then tmp else usr).push name
       else if type.value
         asn.push name + ' = ' + type.value
-    usr.sort().concat tmp.sort(), asn.sort()
+    usr.concat tmp, asn
