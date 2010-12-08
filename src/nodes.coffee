@@ -234,6 +234,8 @@ class exports.Statement extends Node
 
   compile: -> it.indent + @name + ';'
 
+  toString: -> "\n#{ it or '' }#{@constructor.name} #{@name}"
+
 #### Throw
 class exports.Throw extends Statement
   (@it) =>
