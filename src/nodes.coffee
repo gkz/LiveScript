@@ -1039,36 +1039,30 @@ class exports.Op extends Node
   toString: Assign::toString
 
 #### Of
-# Handles `of` operation that test if the left operand is included within
+# Handles `of` operation that tests if the left operand is included within
 # the right operand, arraywise.
 class exports.Of extends Node
-  (@object, @array) =>
+  (@item, arr) => @array = arr.unwrap()
 
-  children: <[ object array ]>
+  children: <[ item array ]>
 
   invert: NEGATE
 
   compileNode: (o) ->
-    if @array.isArray() then @compileOrTest o else @compileLoopTest o
-
-  compileOrTest: (o) ->
-    [sub, ref] = @object.cache o, LEVEL_OP
-    [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
-    tests = for item, i of @array.head.items
-      (if i then ref else sub) + cmp + item.compile o, LEVEL_OP
+    lvl = if arr = @array instanceof Arr then LEVEL_OP else LEVEL_LIST
+    [sub, ref] = @item.cache o, lvl
+    if arr
+      [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
+      tests = for item, i of @array.items
+        (if i then ref else sub) + cmp + item.compile o, lvl
+      code = tests.join cnj
+    else
+      code = utility('indexOf') + ".call(#{ @array.compile o, lvl }, #{ref}) " +
+             if @negated then '< 0' else '>= 0'
+      return code if sub is ref
+      code = sub + ', ' + code
     o.scope.free ref if sub isnt ref
-    code = tests.join cnj
-    if o.level < LEVEL_OP then code else "(#{code})"
-
-  compileLoopTest: (o) ->
-    [sub, ref] = @object.cache o, LEVEL_LIST
-    code = utility('indexOf') +
-           ".call(#{ @array.compile o, LEVEL_LIST }, #{ref}) " +
-           if @negated then '< 0' else '>= 0'
-    return code if sub is ref
-    o.scope.free ref
-    code = sub + ', ' + code
-    if o.level < LEVEL_LIST then code else "(#{code})"
+    if o.level < lvl then code else "(#{code})"
 
   toString: (idt) ->
     super.call this, idt, @constructor.name + if @negated then '!' else ''
