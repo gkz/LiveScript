@@ -95,8 +95,6 @@ class Node
   isComplex    : YES
   isStatement  : NO
   isAssignable : NO
-  isArray      : NO
-  isObject     : NO
   # Do I contain a statement that jumps out of me?
   jumps: NO
   # Do I assign a certain variable?
@@ -275,8 +273,6 @@ class exports.Value extends Node
   jumps        : -> not @tails.length and @head.jumps it
   assigns      : -> not @tails.length and @head.assigns it
   isStatement  : -> not @tails.length and @head.isStatement it
-  isArray      : -> not @tails.length and @head instanceof Arr
-  isObject     : -> not @tails.length and @head instanceof Obj
   isComplex    : -> !!@tails.length or @head.isComplex()
   isAssignable : -> !!@tails.length or @head.isAssignable()
 
@@ -478,9 +474,10 @@ class exports.Import extends Node
   children: <[ left right ]>
 
   compileNode: (o) ->
-    unless @util is 'import' and @right.isObject()
-      return Call(Value Literal utility @util; [@left, @right]).compile o
-    {items} = @right.unwrap()
+    rite = @right.unwrap()
+    unless @util is 'import' and rite instanceof Obj
+      return Call(Value Literal utility @util; [@left, rite]).compile o
+    {items} = rite
     return @left.compile o unless items.length
     top = not o.level
     if top and items.length < 2
@@ -565,8 +562,6 @@ class exports.Obj extends Node
 
   children: ['items']
 
-  isObject: YES
-
   assigns: ->
     return true if node.assigns it for node of @items
     false
@@ -615,8 +610,6 @@ class exports.Arr extends Node
 
   children: ['items']
 
-  isArray: YES
-
   assigns: Obj::assigns
 
   compileNode: (o) ->
@@ -648,7 +641,7 @@ class exports.Class extends Node
     proto = Value lname, [Access Literal 'prototype']
     fun.body.traverseChildren -> it.clas = name if it instanceof Fun; null
     for node, i of lines
-      if node.isObject()
+      if node.=unwrap() instanceof Obj
         lines[i] = Import proto, node, true
       else if node instanceof Fun
         throw SyntaxError 'more than one constructor in a class' if ctor
@@ -974,7 +967,8 @@ class exports.Op extends Node
     return @compileUnary o if not @second
     return @compileChain o if COMPARER.test(@op) and COMPARER.test(@first.op)
     return @compileExistence o if @op is '?'
-    return @compileMultiIO   o if @op is 'instanceof' and @second.isArray()
+    return @compileMultiIO   o if @op is 'instanceof' and
+                                  @second.unwrap() instanceof Arr
     @first import {@front}
     code = @first .compile(o, LEVEL_OP) + " #{@op} " +
            @second.compile(o, LEVEL_OP)
