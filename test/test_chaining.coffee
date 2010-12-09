@@ -94,6 +94,9 @@ eq 0, a."0"
 eq 0, a."#{0}"
 eq 0, a.(0)
 
+eq 1, [-> it]. 0  1
+eq 1, [-> it].'0' 1
+
 
 # Dots have to workaround syntax error when accessing a simple number.
 eq '0 .go;'  , Coco.compile '0.go', {+bare}

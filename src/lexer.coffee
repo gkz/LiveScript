@@ -69,18 +69,18 @@
   # though `is` means `===` otherwise.
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
-    switch id = match[1]
+    switch id = match.1
     case 'own'
-      break unless @last[0] is 'FOR' and @last[1]
-      @last[1] = ''
+      break unless @last.0 is 'FOR' and @last.1
+      @last.1 = ''
       return id.length
     case 'from'
-      break unless @tokens[*-2]?[0] is 'FOR'
+      break unless @tokens[*-2]?.0 is 'FOR'
       @seenFor  = false
       @seenFrom = true
       return @token('FROM', id).length
     case 'ever'
-      break unless @last[0] is 'FOR'
+      break unless @last.0 is 'FOR'
       @seenFor = false
       return @token('EVER', id).length
     case <[ to til ]>
@@ -93,17 +93,17 @@
       @seenRange = false
       return @token('BY', id).length
     case 'all'
-      break unless @last[0] is 'IMPORT' and @last[1]
-      @last[1] = ''
+      break unless @last.0 is 'IMPORT' and @last.1
+      @last.1 = ''
       return id.length
     tag = if at = id.charAt(0) is '@'
     then id.=slice 1; 'THISPROP'
     else              'IDENTIFIER'
-    {0: input, 2: colon} = match
+    [input, [], colon] = match
     forcedIdentifier = at or colon or
-      if not (prev = @last).spaced and prev[1].colon2
+      if not (prev = @last).spaced and prev.1.colon2
       then @token<[ ACCESS . ]>
-      else prev[0] is 'ACCESS'
+      else prev.0 is 'ACCESS'
     if forcedIdentifier
       (id = new String id).reserved = true if id of JS_FORBIDDEN
     else if id of COCO_KEYWORDS
@@ -120,7 +120,7 @@
           @seenFor   = false
           tag = 'FOR' + tag
           break
-        if @last[1] is '!'
+        if @last.1 is '!'
           @tokens.pop()
           id = '!' + id
         tag = 'RELATION'
@@ -148,13 +148,13 @@
       if isNaN(num) or num is parseInt rnum.slice(0, -1), radix
         @carp "invalid number #{rnum} in base #{radix}"
     @token 'STRNUM', num
-    match[0].length
+    match.0.length
 
   # Matches a normal string. Ensures that quotation marks are balanced within
   # the string's contents, and within nested interpolations.
   singleStringToken: ->
     @carp 'unterminated string' unless string = SIMPLESTR.exec @chunk
-    @token 'STRNUM', (string[=0]).replace MULTILINER, '\\\n'
+    @token 'STRNUM', (string.=0).replace MULTILINER, '\\\n'
     @countLines(string).length
 
   doubleStringToken: ->
@@ -174,7 +174,7 @@
     if ~doc.indexOf '\n'
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
       dent = 0/0
-      dent = len unless dent <= len = m[0].length - 1 while m = tabs.exec doc
+      dent = len unless dent <= len = m.0.length - 1 while m = tabs.exec doc
       doc  = @dedent doc, dent
       if doc.charAt(0) is '\n'
         doc.=slice 1
@@ -197,7 +197,7 @@
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     @carp 'unterminated JS literal' unless js = JSTOKEN.exec @chunk
-    (js = new String js[0].slice 1, -1).js = true
+    (js = new String js.0.slice 1, -1).js = true
     @countLines(@token 'LITERAL', js).length + 2
 
   # Matches a regular expression literal, aka regex.
@@ -207,10 +207,10 @@
     # We distinguish it from the division operator using a list of tokens that
     # a regex never immediately follows.
     # Our list becomes shorter when spaced, due to sans-parentheses calls.
-    return 0 if (prev = @last)[0] of <[ STRNUM LITERAL CREMENT ]> or
-                not prev.spaced and prev[0] of CALLABLE or
+    return 0 if (prev = @last).0 of <[ STRNUM LITERAL CREMENT ]> or
+                not prev.spaced and prev.0 of CALLABLE or
                 not regex = REGEX.exec @chunk
-    @token 'LITERAL', if regex[=0] is '//' then '/(?:)/' else regex
+    @token 'LITERAL', if regex.=0 is '//' then '/(?:)/' else regex
     @countLines(regex).length
 
   # Matches a multiline and extended regex literal.
@@ -225,14 +225,14 @@
     @token<[ CALL_START (      ]>
     {tokens} = this
     for token, i of @interpolateString body
-      if token[0] is 'TOKENS'
-        tokens.push ...token[1]
+      if token.0 is 'TOKENS'
+        tokens.push ...token.1
       else
-        val = token[1].replace HEREGEX_OMIT, ''
+        val = token.1.replace HEREGEX_OMIT, ''
         continue if i and not val
         val.=replace bs ||= /\\/g, '\\\\'
-        tokens.push ['STRNUM'; @string val, "'", '\\n'; token[2]]
-      tokens.push ['PLUS_MINUS', '+', tokens[*-1][2]]
+        tokens.push ['STRNUM'; @string val, "'", '\\n'; token.2]
+      tokens.push ['PLUS_MINUS', '+', tokens[*-1].2]
     tokens.pop()
     if flags then @token<[ , , ]>; @token 'STRNUM', "'#{flags}'"
     @token<[ ) ) ]>
@@ -241,7 +241,7 @@
   # Matches a words literal, a syntax sugar for a list of strings.
   wordsToken: ->
     @carp 'unterminated words' unless ~end = @chunk.indexOf ']>', 2
-    if call = not @last.spaced and @last[0] of CALLABLE
+    if call = not @last.spaced and @last.0 of CALLABLE
     then @token<[ CALL_START ( ]> else @token<[ [ [ ]>
     for line of @chunk.slice(2, end).split '\n'
       if words = line.match re ||= /\S+/g then for word of words
@@ -264,11 +264,11 @@
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
     return 0 unless indent = MULTIDENT.exec @chunk
-    @countLines indent[=0]
+    @countLines indent.=0
     @last.eol  = true
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf '\n'
-    noNewline = LINE_CONTINUER.test(@chunk) or @last[0] of
+    noNewline = LINE_CONTINUER.test(@chunk) or @last.0 of
       <[ ACCESS INDEX_START ASSIGN COMPOUND_ASSIGN IMPORT
          LOGIC PLUS_MINUS MATH COMPARE RELATION SHIFT     ]>
     if size - @indebt is @indent
@@ -292,7 +292,7 @@
     # Tag the previous token as being `.spaced`,
     # because there are cases where it makes a difference.
     @last.spaced = true
-    match[0].length
+    match.0.length
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
@@ -303,17 +303,17 @@
     [value] = SYMBOL.exec @chunk
     switch tag = value
     case ')'
-      @last[0] = 'CALL_START' if @last[0] is '('
+      @last.0 = 'CALL_START' if @last.0 is '('
     case <[ -> => ]>
       @tagParameters()
       tag = 'FUNC_ARROW'
     case '*'
-      tag = if @last[0] of <[ INDEX_START ( ]> then 'LITERAL' else 'MATH'
+      tag = if @last.0 of <[ INDEX_START ( ]> then 'LITERAL' else 'MATH'
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
       tag = if value of <[ = := ]> then 'ASSIGN' else 'COMPOUND_ASSIGN'
-      if @last[0] is 'LOGIC'
+      if @last.0 is 'LOGIC'
         @tokens.pop()
-        (value = new String value).logic = @last[1]
+        (value = new String value).logic = @last.1
     case <[ ! ~ ]>          then tag = 'UNARY'
     case <[ . ?. &. .= ]>   then tag = 'ACCESS'
     case <[ + - ]>          then tag = 'PLUS_MINUS'
@@ -342,13 +342,13 @@
         @token<[ INDEX_END   ] ]>
         return value.length
       unless (prev = @last).spaced
-        if value is '(' and prev[0] of CALLABLE
-          if prev[0] is '?'
-            prev[0]  = 'CALL_START'
-            prev[1] += '('
+        if value is '(' and prev.0 of CALLABLE
+          if prev.0 is '?'
+            prev.0  = 'CALL_START'
+            prev.1 += '('
             return value.length
           tag = 'CALL_START'
-        else if value is '[' and prev[0] of INDEXABLE
+        else if value is '[' and prev.0 of INDEXABLE
           tag = 'INDEX_START'
     @token(tag, value).length
 
@@ -370,23 +370,23 @@
     @newline() unless noNewline
 
   # Generates a newline token. Consecutive newlines get merged together.
-  newline: -> @token<[ TERMINATOR \n ]> unless @last[0] is 'TERMINATOR'
+  newline: -> @token<[ TERMINATOR \n ]> unless @last.0 is 'TERMINATOR'
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
-    return this if @last[0] isnt ')'
+    return this if @last.0 isnt ')'
     {tokens} = this
     level = 0
     i = tokens.length
-    tokens[--i][0] = 'PARAM_END'
+    tokens[--i].0 = 'PARAM_END'
     while tok = tokens[--i]
-      switch tok[0]
+      switch tok.0
       case ')' then ++level
       case <[ ( CALL_START ]>
         break if level--
-        tok[0] = 'PARAM_START'
+        tok.0 = 'PARAM_START'
         return this
     this
 
@@ -395,22 +395,22 @@
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
   balancedString: (str, delimited) ->
-    stack = [delimited[0]]
+    stack = [delimited.0]
     for i from 1 til str.length
       switch str.charAt i
       case '\\'
         ++i
         continue
-      case stack[*-1][1]
+      case stack[*-1].1
         stack.pop()
         return str.slice 0, i+1 unless stack.length
         continue
       for pair of delimited
-        continue unless (open = pair[0]) is str.substr i, open.length
+        continue unless (open = pair.0) is str.substr i, open.length
         stack.push pair
         i += open.length - 1
         break
-    @carp "unterminated #{ stack.pop()[0] }"
+    @carp "unterminated #{ stack.pop().0 }"
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.
@@ -436,24 +436,24 @@
       continue unless code.=slice 1, -1
       nested = new @constructor().tokenize code, {@line, rewrite: false}
       nested.pop()
-      nested.shift() if nested[0]?[0] is 'TERMINATOR'
+      nested.shift() if nested.0?.0 is 'TERMINATOR'
       if nested.length > 1
-        nested.unshift ['(', '(', nested[ 0 ][2]]
-        nested.push    [')', ')', nested[*-1][2]]
+        nested.unshift ['(', '(', nested[ 0 ].2]
+        nested.push    [')', ')', nested[*-1].2]
       ts.push ['TOKENS', nested]
       @countLines code
     if pi < str.length
       ts.push ['S'; s = str.slice pi; @line]
       @countLines s
-    ts.unshift ['S', '', line] if ts[0]?[0] isnt 'S'
+    ts.unshift ['S', '', line] if ts.0?.0 isnt 'S'
     return ts unless newline?
     {tokens} = this
     tokens.push ['(', '(', line]
     for t, i of ts
-      tokens.push ['PLUS_MINUS', '+', tokens[*-1][2]] if i
-      if t[0] is 'TOKENS'
-      then tokens.push ...t[1]
-      else tokens.push ['STRNUM'; @string t[1], '"', newline; t[2]]
+      tokens.push ['PLUS_MINUS', '+', tokens[*-1].2] if i
+      if t.0 is 'TOKENS'
+      then tokens.push ...t.1
+      else tokens.push ['STRNUM'; @string t.1, '"', newline; t.2]
     @token<[ ) ) ]>
     ts
 
@@ -558,6 +558,6 @@ LINE_CONTINUER  = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
 # Tokens which could legitimately be invoked or indexed.
 # An opening parenthesis or bracket following these tokens will be recorded as
 # the start of a function invocation or property indexing operation.
-CALLABLE  = <[ IDENTIFIER THISPROP ) ] SUPER THIS ]>
-INDEXABLE = CALLABLE.concat<[ STRNUM LITERAL } ]>
+CALLABLE  = <[ IDENTIFIER THISPROP ) ] STRNUM SUPER THIS  ]>
+INDEXABLE = CALLABLE.concat<[ } LITERAL ]>
 CALLABLE.push '?'

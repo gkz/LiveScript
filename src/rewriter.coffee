@@ -24,8 +24,8 @@ detectEnd = (tokens, i, ok, go) ->
   while token = tokens[i]
     if      not levels then return go token, i if ok token, i
     else if 0 > levels then return go token, i-1
-    if      token[0] of EXPRESSION_START then ++levels
-    else if token[0] of EXPRESSION_END   then --levels
+    if      token.0 of EXPRESSION_START then ++levels
+    else if token.0 of EXPRESSION_END   then --levels
     ++i
   i - 1
 
@@ -40,7 +40,7 @@ removeLeadingTerminators = (tokens) ->
 removeMidExpressionTerminators = (tokens) ->
   i = 0
   while token = tokens[++i]
-    if tokens[i-1][0] is 'TERMINATOR' and token[0] of EXPRESSION_CLOSE
+    if tokens[i-1].0 is 'TERMINATOR' and token.0 of EXPRESSION_CLOSE
       tokens.splice i-1, 1
   tokens
 
@@ -49,44 +49,44 @@ removeMidExpressionTerminators = (tokens) ->
 closeOpenings = (tokens) ->
   stack = []
   for token of tokens
-    switch token[0]
+    switch token.0
     case <[ ( CALL_START [ INDEX_START ]>
-      stack.push token[0]
+      stack.push token.0
     case <[ )  CALL_END ]>
-      token[0] =  'CALL_END' if stack.pop() is  'CALL_START'
+      token.0 =  'CALL_END' if stack.pop() is  'CALL_START'
     case <[ ] INDEX_END ]>
-      token[0] = 'INDEX_END' if stack.pop() is 'INDEX_START'
+      token.0 = 'INDEX_END' if stack.pop() is 'INDEX_START'
   tokens
 
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
 addImplicitBraces = (tokens) ->
-  go = (token, i) -> tokens.splice i, 0, ['}', '}', token[2]]
+  go = (token, i) -> tokens.splice i, 0, ['}', '}', token.2]
   ok = (token, i) ->
-    return true  if token[1] is ';' or 'OUTDENT' is tag = token[0]
+    return true  if token.1 is ';' or 'OUTDENT' is tag = token.0
     return false if tag not of <[ , TERMINATOR ]>
-    one = tokens[i+1]?[0]
+    one = tokens[i+1]?.0
     if tag is ',' then one not of <[ IDENTIFIER STRNUM TERMINATOR ( ]>
     else one isnt 'COMMENT' and ':' isnt
-      tokens[if one is '(' then 1 + indexOfPair tokens, i+1 else i+2]?[0]
+      tokens[if one is '(' then 1 + indexOfPair tokens, i+1 else i+2]?.0
   stack = []; i = -1
   while token = tokens[++i]
-    unless ':' is tag = token[0]
+    unless ':' is tag = token.0
       switch
       case tag of EXPRESSION_START
-        tag = '{' if tag is 'INDENT' and tokens[i-1]?[0] is '{'
+        tag = '{' if tag is 'INDENT' and tokens[i-1]?.0 is '{'
         stack.push [tag, i]
       case tag of EXPRESSION_END
         start = stack.pop()
       continue
-    paren = tokens[i-1]?[0] is ')'
-    continue unless paren and tokens[start[1]-1]?[0] is ':' or # a: (..):
-                    tokens[i-2]?[0] is   ':'                or # a: b:
-                    stack[ *-1]?[0] isnt '{'
+    paren = tokens[i-1]?.0 is ')'
+    continue unless paren and tokens[start.1 - 1]?.0 is ':' or # a: (..):
+                    tokens[i-2]?.0 is   ':'                 or # a: b:
+                    stack[ *-1]?.0 isnt '{'
     stack.push ['{']
-    idx  = if paren then start[1] else i-1
-    idx -= 2 while tokens[idx-2]?[0] is 'COMMENT'
-    tokens.splice idx, 0, ['{', '{', token[2]]
+    idx  = if paren then start.1 else i-1
+    idx -= 2 while tokens[idx-2]?.0 is 'COMMENT'
+    tokens.splice idx, 0, ['{', '{', token.2]
     detectEnd tokens, ++i+1, ok, go
   tokens
 
@@ -100,15 +100,16 @@ addImplicitParentheses = (tokens) ->
       token.call = true if tag is '?'
       continue
     continue unless prev.call or
-      prev[0] of <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
+      prev.0 of <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]> or
+      prev.0 is 'STRNUM' and tokens[i-2]?.0 is 'ACCESS'
     continue unless token.argument or
       tag of <[ ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS
                 UNARY CREMENT IF TRY CLASS FUNCTION SUPER ]> or
       tag is 'PLUS_MINUS' and not (token.spaced or token.eol) or
-      tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION'
+      tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?.0 isnt 'FUNCTION'
     seenSingle = seenClass = false
-    tokens.splice --i, 1 if soak = prev[0] is '?'
-    tokens.splice i++, 0, ['CALL_START', (if soak then '?(' else '('), token[2]]
+    tokens.splice --i, 1 if soak = prev.0 is '?'
+    tokens.splice i++, 0, ['CALL_START', (if soak then '?(' else '('), token.2]
     detectEnd tokens, i, ok, go
   function ok (token, i) ->
     return false if token.argument
@@ -123,11 +124,11 @@ addImplicitParentheses = (tokens) ->
     if tag is 'INDENT'
       return seenClass := false if seenClass
       return pre not of <[ { [ , FUNC_ARROW TRY FINALLY ]> and
-             tokens[i-2]?[0] isnt 'CATCH'
+             tokens[i-2]?.0 isnt 'CATCH'
     tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]>
   function go (token, i) ->
-    ++i if token[0] is 'OUTDENT'
-    tokens.splice i, 0, ['CALL_END', ')', token[2]]
+    ++i if token.0 is 'OUTDENT'
+    tokens.splice i, 0, ['CALL_END', ')', token.2]
   tokens
 
 # Because our grammar is LALR(1), it can't handle some single-line
@@ -136,27 +137,27 @@ addImplicitParentheses = (tokens) ->
 # but we need to make sure it's balanced.
 addImplicitIndentation = (tokens) ->
   ok = (token, i) ->
-    switch token[0]
+    switch token.0
     case <[ CATCH FINALLY OUTDENT CASE DEFAULT ]> then true
-    case 'TERMINATOR' then token[1] isnt ';'
+    case 'TERMINATOR' then token.1 isnt ';'
     case 'ELSE'       then tag of <[ IF THEN ]>
   go = (token, i) ->
-    tokens.splice (if tokens[i-1][0] is ',' then i-1 else i), 0, outdent
+    tokens.splice (if tokens[i-1].0 is ',' then i-1 else i), 0, outdent
   i = -1
   while token = tokens[++i]
     [tag] = token
-    if 'INDENT' is next = tokens[i+1]?[0]
+    if 'INDENT' is next = tokens[i+1]?.0
       if tag is 'THEN'
         tokens.splice i, 1
         tokens[i] import {+fromThen, +argument}
       continue
     continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY FINALLY ]> or
                     tag is 'ELSE' and next isnt 'IF'
-    indent  = ['INDENT' , 2, token[2]]
-    outdent = ['OUTDENT', 2, token[2]]
+    indent  = ['INDENT' , 2, token.2]
+    outdent = ['OUTDENT', 2, token.2]
     indent.generated = outdent.generated = true
     if tag is 'THEN'
-      tokens.splice --i, 1 if tokens[i-1]?[0] is 'TERMINATOR'
+      tokens.splice --i, 1 if tokens[i-1]?.0 is 'TERMINATOR'
       tokens[i] = indent import {+fromThen}
     else
       tokens.splice ++i, 0, indent
@@ -167,8 +168,8 @@ addImplicitIndentation = (tokens) ->
 # different precedence.
 tagPostfixConditionals = (tokens) ->
   ok = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
-  go = ([tag]) -> token[0] = 'POST_IF' if tag isnt 'INDENT'
-  detectEnd tokens, i+1, ok, go if token[0] is 'IF' for token, i of tokens
+  go = ([tag]) -> token.0 = 'POST_IF' if tag isnt 'INDENT'
+  detectEnd tokens, i+1, ok, go if token.0 is 'IF' for token, i of tokens
   tokens
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
@@ -180,9 +181,9 @@ ensureBalance = (tokens) ->
     for [open, close] of BALANCED_PAIRS
       levels[open] |= 0
       if tag is open
-        olines[open] = token[2] if levels[open]++ is 0
+        olines[open] = token.2 if levels[open]++ is 0
       else if tag is close and --levels[open] < 0
-        throw SyntaxError "too many #{token[1]} on line #{ token[2] + 1 }"
+        throw SyntaxError "too many #{token.1} on line #{ token.2 + 1 }"
   for open, level in levels then if level > 0
     throw SyntaxError "unclosed #{open} on line #{ olines[open] + 1 }"
   tokens
@@ -217,17 +218,17 @@ rewriteClosingParens = (tokens) ->
       tokens.splice i--, 1
       continue
     stoken = stack.pop()
-    continue if tag is end = INVERSES[start = stoken[0]]
+    continue if tag is end = INVERSES[start = stoken.0]
     ++debt[start]
-    tok = [end, if start is 'INDENT' then stoken[1] else end]
-    pos = if tokens[i+2]?[0] is start then stack.push stoken; i+3 else i
+    tok = [end, if start is 'INDENT' then stoken.1 else end]
+    pos = if tokens[i+2]?.0 is start then stack.push stoken; i+3 else i
     tokens.splice pos, 0, tok
   tokens
 
 indexOfPair = (tokens, i) ->
-  level = 1; end = INVERSES[start = tokens[i][0]]
+  level = 1; end = INVERSES[start = tokens[i].0]
   while token = tokens[++i]
-    switch token[0]
+    switch token.0
     case start then ++level
     case end   then return i unless --level
   -1
