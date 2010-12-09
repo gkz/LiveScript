@@ -84,8 +84,6 @@ class Node
   # Does not cross scope boundaries.
   contains: (pred) -> !!@traverseChildren -> pred(it) or null
 
-  unwrapAll: -> node = this; continue until node is node.=unwrap(); node
-
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
@@ -158,7 +156,7 @@ class exports.Lines extends Node
     top   = not o.level
     codes = []
     for node of @lines
-      node = (do node.=unwrapAll).unfoldSoak(o) or node
+      node = node.unfoldSoak(o) or node
       if top
         code = (node import {+front}).compile o
         code = o.indent + code + node.terminator unless node.isStatement o
@@ -184,8 +182,7 @@ class exports.Lines extends Node
   compileWithDeclarations: (o) ->
     o.level = LEVEL_TOP
     code = post = ''
-    for node, i of @lines
-      break unless node.unwrap() instanceof [Comment, Literal]
+    break unless node instanceof [Comment, Literal] for node, i of @lines
     if i
       rest   = @lines.splice i, 1/0
       code   = @compileNode o
@@ -480,10 +477,9 @@ class exports.Import extends Node
   show: -> @util.slice 6
 
   compileNode: (o) ->
-    rite = @right.unwrap()
-    unless @util is 'import' and rite instanceof Obj
-      return Call(Value Literal utility @util; [@left, rite]).compile o
-    {items} = rite
+    unless @util is 'import' and @right instanceof Obj
+      return Call(Value Literal utility @util; [@left, @right]).compile o
+    {items} = @right
     return @left.compile o unless items.length
     top = not o.level
     if top and items.length < 2
@@ -642,7 +638,7 @@ class exports.Class extends Node
     proto = Value lname, [Access Literal 'prototype']
     fun.body.traverseChildren -> it.clas = name if it instanceof Fun; null
     for node, i of lines
-      if node.=unwrap() instanceof Obj
+      if node instanceof Obj
         lines[i] = Import proto, node
       else if node instanceof Fun
         throw SyntaxError 'more than one constructor in a class' if ctor
@@ -673,10 +669,11 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
-    if (left = @left.unwrap()).items
-      return @compileDestructuring o, left unless @logic
+    {left} = this
+    if left.items
+      return @compileDestructuring o unless @logic
       throw SyntaxError 'conditional assignment cannot be destructuring'
-    return @compileConditional o, left if @logic
+    return @compileConditional o if @logic
     name = left.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
@@ -698,22 +695,22 @@ class exports.Assign extends Node
     code = name + " #{ if @op is ':=' then '=' else @op } " + val
     if o.level < LEVEL_COND then code else "(#{code})"
 
-  compileConditional: (o, left) ->
-    [left, ref] = Value(left).cacheReference o
-    Op(@logic; left; Assign ref, @right, @op).compile o
+  compileConditional: (o) ->
+    [lef, ref] = Value(@left).cacheReference o
+    Op(@logic; lef; Assign ref, @right, @op).compile o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
-  compileDestructuring: (o, left) ->
-    {items} = left
+  compileDestructuring: (o) ->
+    {items} = @left
     return @right.compile o, LEVEL_ACCESS unless len = items.length
     rite = @right.compile o, if len is 1 then LEVEL_ACCESS else LEVEL_LIST
     if (len > 1 or o.level) and
-       (not IDENTIFIER.test(rite) or left.assigns(rite))
+       (not IDENTIFIER.test(rite) or @left.assigns(rite))
       cache = "#{ rref = o.scope.temporary 'ref' } = #{rite}"
       rite  = rref
-    list = if left instanceof Arr
+    list = if @left instanceof Arr
     then @destructArr o, items, rite
     else @destructObj o, items, rite
     o.scope.free rref  if rref
@@ -724,7 +721,7 @@ class exports.Assign extends Node
 
   destructArr: (o, nodes, rite) ->
     for node, i of nodes
-      continue if (node.=unwrap()).items and not node.items.length
+      continue if node.items and not node.items.length
       if node instanceof Splat
         if ivar then throw SyntaxError \
           "multiple splats in an assignment: " + node.compile o
@@ -750,7 +747,7 @@ class exports.Assign extends Node
       if dyna = node instanceof Parens
         [node, key] = Value(node.it).cacheReference o
       else if node instanceof Assign
-        key = node.left.unwrap(); node.=right
+        key = node.left; node.=right
       else
         key = if node.at then node.tails[0].key else node
       acc = not dyna and key instanceof Literal and IDENTIFIER.test key.value
@@ -943,11 +940,10 @@ class exports.Op extends Node
     return Of first, second if op is 'of'
     return Call first, []   if op is 'do'
     if op is 'new'
-      {head} = first
-      if head instanceof Call
-        head.digCalls()[0].new = 'new '
+      if first instanceof Call
+        first.digCalls()[0].new = 'new '
         return first
-      head.keep = true if head instanceof Parens
+      p.keep = true if (p = first.head or first) instanceof Parens
     this import {op, first, second, post}
 
   EQUALITY = /^[!=]==?$/
@@ -962,8 +958,7 @@ class exports.Op extends Node
       @op = '!='.charAt(op.indexOf '=') + op.slice 1
       return this
     return Op '!', Parens this if @second
-    return fst if op is '!' and
-                  (fst = @first.unwrap()).op of <[ ! in instanceof < > <= >= ]>
+    return @first if op is '!' and @first.op of <[ ! in instanceof < > <= >= ]>
     Op '!', this
 
   unfoldSoak: (o) ->
@@ -973,8 +968,7 @@ class exports.Op extends Node
     return @compileUnary o if not @second
     return @compileChain o if COMPARER.test(@op) and COMPARER.test(@first.op)
     return @compileExistence o if @op is '?'
-    return @compileMultiIO   o if @op is 'instanceof' and
-                                  @second.unwrap() instanceof Arr
+    return @compileMultiIO   o if @op is 'instanceof' and @second instanceof Arr
     @first import {@front}
     code = @first .compile(o, LEVEL_OP) + " #{@op} " +
            @second.compile(o, LEVEL_OP)
@@ -1022,7 +1016,7 @@ class exports.Op extends Node
 
   compileMultiIO: (o) ->
     [sub, ref] = @first.cache o, LEVEL_OP
-    tests = for item, i of @second.head.items
+    tests = for item, i of @second.items
       (if i then ref else sub) + ' instanceof ' + item.compile o
     o.scope.free ref if sub isnt ref
     code = tests.join ' || '
@@ -1040,7 +1034,7 @@ class exports.Op extends Node
 # Handles `of` operation that tests if the left operand is included within
 # the right operand, arraywise.
 class exports.Of extends Node
-  (@item, arr) => @array = arr.unwrap()
+  (@item, @array) =>
 
   children: <[ item array ]>
 
@@ -1140,7 +1134,7 @@ class exports.For extends While
 
   compileNode: (o) ->
     if @index instanceof Node
-      if @index.=unwrap() not instanceof Literal
+      if @index not instanceof Literal
         throw SyntaxError 'invalid index variable: ' + @index.compile o
       @index.=value
     @temps = []
@@ -1201,7 +1195,7 @@ class exports.For extends While
   pluckDirectCalls: (o) ->
     @body.eachChild dig = =>
       unless it instanceof Call and
-             (fn = it.callee.unwrapAll()) instanceof Fun and
+             (fn = it.callee.unwrap()) instanceof Fun and
              fn.params.length is it.args.length
         return if it instanceof [Fun, For] then null else it.eachChild dig
       if @index
@@ -1256,17 +1250,17 @@ class exports.Case extends Node
 
   makeReturn: ->
     [last] = lastNonComment @body.lines
-    @body.makeReturn it if last and last.head?.value isnt 'fallthrough'
+    @body.makeReturn it unless last?.value is 'fallthrough'
 
   compileCase: (o, tab, nobr) ->
     code = br = ''
     add  = -> code += tab + "case #{ it.compile o, LEVEL_PAREN }:\n"
     for test of @tests
-      if test.=unwrap() instanceof Arr
+      if test instanceof Arr
       then add t for t of test.items
       else add test
     [last, i] = lastNonComment exps = @body.lines
-    exps[i] = Comment ' fallthrough ' if ft = last.head?.value is 'fallthrough'
+    exps[i] = Comment ' fallthrough ' if ft = last?.value is 'fallthrough'
     o.indent = tab + TAB
     code += body + '\n' if body = @body.compile o, LEVEL_TOP
     code += o.indent + 'break;\n' unless nobr or ft or

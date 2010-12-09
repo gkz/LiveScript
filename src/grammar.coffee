@@ -77,7 +77,7 @@ grammar =
 
   # All the different types of expressions in our language.
   Expression: [
-    o 'Value'
+    o 'Value' ,-> $1.unwrap()
 
     o 'Assignable       ASSIGN          Expression' ,-> Assign $1, $3, $2
     o 'SimpleAssignable COMPOUND_ASSIGN Expression' ,-> Assign $1, $3, $2
