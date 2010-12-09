@@ -824,10 +824,10 @@ class exports.Fun extends Node
       scope .add name, 'function'
       pscope.add name, 'function' unless @returns
       code += ' ' + name
-    code += '(' + vars.join(', ') + '){'
+    code += "(#{ vars.join ', ' }){"
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if exps.length
     code += '}'
-    code += " #{name}.name = \"#{name}\";" if @ctor and name.charAt(0) isnt '_'
+    code += " #{name}.name = '#{name}';" if @ctor and name.charAt(0) isnt '_'
     code += "\n#{tab}return #{name};" if @returns
     return tab + code if @statement
     if @front then "(#{code})" else code
