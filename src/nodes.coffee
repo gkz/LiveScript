@@ -501,15 +501,13 @@ class exports.Import extends Node
       if node instanceof Splat
         code += Import(lref, node.it).compile o, LEVEL_TOP
         continue
-      dyna = false
-      if node instanceof Assign
+      if dyna = node instanceof Parens
+        [key, val] = node.it.cache o
+      else if node instanceof Assign
         {left: key, right: val} = node
-      else if node.at
-        key = (val = node).tails[0].name
-      else
-        dyna = node.=unwrap() instanceof Parens
-        [key, val] = node.cache o
-      acc = key instanceof Literal and IDENTIFIER.test key.value
+      else if (key = val = node).at
+        [{key}] = val.tails
+      acc = not dyna and key instanceof Literal and IDENTIFIER.test key.value
       asn = Assign Value(lref, [(if acc then Access else Index) key]), val
       asn.temps = [val.value] if dyna and key isnt val
       code += asn.compile o, LEVEL_PAREN
@@ -526,21 +524,20 @@ class exports.Import extends Node
 #### Access
 # `x.y`
 class exports.Access extends Node
-  (@name, @symbol) =>
+  (@key, @symbol) =>
     switch symbol
     case '?.' then @soak   = true
     case '&.' then @bind   = true
     case '.=' then @assign = true
 
-  children: ['name']
+  children: ['key']
 
   show: -> @symbol
 
   isComplex: NO
 
   compile: (o) ->
-    key = @name.compile o
-    if key.charAt(0) is "'" then "[#{key}]" else ".#{key}"
+    if (key = @key.compile o).charAt(0) is "'" then "[#{key}]" else ".#{key}"
 
 #### Index
 # `x[y]`
@@ -586,7 +583,7 @@ class exports.Obj extends Node
         code += idt + node.compile(o, LEVEL_TOP) + '\n'
         continue
       code += idt + if node.at
-        key = node.tails[0].name.compile o
+        key = node.tails[0].key.compile o
         key + ': ' + node.compile o, LEVEL_LIST
       else if node instanceof Assign
         key = node.left.compile o
@@ -635,7 +632,7 @@ class exports.Class extends Node
     {fun} = this; {lines} = fun.body
     if @title
       decl = if @title instanceof Value
-      then @title.tails[*-1].name?.value
+      then @title.tails[*-1].key?.value
       else @title.value
       if decl and decl.reserved
         throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
@@ -750,13 +747,13 @@ class exports.Assign extends Node
   destructObj: (o, nodes, rite) ->
     for node of nodes
       node.=it if splat = node instanceof Splat
-      if dyna = node.=unwrapAll() instanceof Parens
+      if dyna = node instanceof Parens
         [node, key] = Value(node.it).cacheReference o
       else if node instanceof Assign
-        {left: key, right: node} = node
+        key = node.left.unwrap(); node.=right
       else
-        key = if node.at then node.tails[0].name else node
-      acc = not dyna and IDENTIFIER.test key.unwrap().value or 0
+        key = if node.at then node.tails[0].key else node
+      acc = not dyna and key instanceof Literal and IDENTIFIER.test key.value
       val = Value lr ||= Literal(rite), [(if acc then Access else Index) key]
       val = Import Obj(), val if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
@@ -854,7 +851,7 @@ class exports.Param extends Node
     return @reference if @reference
     node = @name
     if node.at
-      node.=tails[0].name
+      node.=tails[0].key
       node = Literal '$' + node.value if node.value.reserved
     else if node.isComplex()
       node = Literal o.scope.temporary 'arg'
