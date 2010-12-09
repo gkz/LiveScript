@@ -213,9 +213,8 @@ class exports.Literal extends Node
       if (level ? o.level) is LEVEL_ACCESS
         throw SyntaxError 'invalid use of ' + @value
       return val
-    switch
-    case val.reserved then return '"' + val + '"'
-    case val.js       then @terminator = ''
+    return "'#{val}'" if val.reserved
+    @terminator = ''  if val.js
     val
 
   toString: -> ' "' + @value + '"'

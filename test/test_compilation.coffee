@@ -37,7 +37,7 @@ I = -> it
 ''', bare: true
 
 
-eq 'a["in"] = this["in"];', Coco.compile 'a import {@in}', bare: true
+eq "a['in'] = this['in'];", Coco.compile 'a import {@in}', bare: true
 
 
 eq '''
