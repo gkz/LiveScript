@@ -131,9 +131,9 @@ class exports.Lines extends Node
   children: ['lines']
 
   add    : -> @lines.push it; this
-  unwrap : -> if @lines.length is 1 then @lines[0] else this
+  unwrap : -> if @lines.length is 1 then @lines.0 else this
 
-  isComplex: -> @lines.length > 1 or !!@lines[0]?.isComplex()
+  isComplex: -> @lines.length > 1 or !!@lines.0?.isComplex()
 
   isStatement: (o) ->
     return true if o and not o.level
@@ -418,9 +418,9 @@ class exports.Call extends Node
     unless fun = (@callee.head or @callee) instanceof Fun
       @callee import {@front}
     if @splat
-      return @compileSplat o, @args[1].value if @new
+      return @compileSplat o, @args.1.value if @new
       return @callee.compile(o, LEVEL_ACCESS) +
-             ".apply(#{ @args[0].compile o }, #{@args[1].value})"
+             ".apply(#{ @args.0.compile o }, #{@args.1.value})"
     return @compileSplat o, args if args = Splat.compileArray o, @args, true
     code = (@new or '') + @callee.compile(o, LEVEL_ACCESS) +
            "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
@@ -574,7 +574,7 @@ class exports.Obj extends Node
         code += idt + node.compile(o, LEVEL_TOP) + '\n'
         continue
       code += idt + if node.at
-        key = node.tails[0].key.compile o
+        key = node.tails.0.key.compile o
         key + ': ' + node.compile o, LEVEL_LIST
       else if node instanceof Assign
         key = node.left.compile o
@@ -674,8 +674,8 @@ class exports.Assign extends Node
     # we've been assigned to, for correct internal references.
     {right} = this
     if right instanceof [Fun, Class] and match = METHOD_DEF.exec name
-      right.clas   = match[1] if match[1]
-      right.name ||= match[2] or match[3]
+      right.clas   = match.1 if match.1
+      right.name ||= match.2 or match.3
     val = right.compile o, LEVEL_LIST
     if @op is ':'
       throw SyntaxError 'invalid property name: ' + name if left.isComplex()
@@ -744,7 +744,7 @@ class exports.Assign extends Node
       else if node instanceof Assign
         key = node.left; node.=right
       else
-        key = if node.at then node.tails[0].key else node
+        key = if node.at then node.tails.0.key else node
       acc = not dyna and key instanceof Literal and IDENTIFIER.test key.value
       val = Value lr ||= Literal(rite), [(if acc then Access else Index) key]
       val = Import Obj(), val if splat
@@ -809,7 +809,7 @@ class exports.Fun extends Node
     asns.unshift splats  if splats
     exps.unshift ...asns if asns.length
     scope.parameter vars[i] = v.compile o for v, i of vars unless splats
-    vars[0] = 'it' if not vars.length and body.contains(-> it.value is 'it')
+    vars.0 = 'it' if not vars.length and body.contains(-> it.value is 'it')
     body.makeReturn() unless wasEmpty or @ctor
     if @statement
       unless name
@@ -843,7 +843,7 @@ class exports.Param extends Node
     return @reference if @reference
     node = @name
     if node.at
-      node.=tails[0].key
+      node.=tails.0.key
       node = Literal '$' + node.value if node.value.reserved
     else if node.isComplex()
       node = Literal o.scope.temporary 'arg'
@@ -870,7 +870,7 @@ class exports.Splat extends Node
     break if node instanceof Splat for node, index of list
     return '' if index >= list.length
     if list.length is 1
-      code = list[0].compile o, LEVEL_LIST
+      code = list.0.compile o, LEVEL_LIST
       return if apply then code else utility('slice') + ".call(#{code})"
     args = list.slice index
     for node, i of args
@@ -878,7 +878,7 @@ class exports.Splat extends Node
       args[i] = if node instanceof Splat
       then utility('slice') + ".call(#{code})"
       else "[#{code}]"
-    return args[0] + ".concat(#{ args.slice(1).join ', ' })" unless index
+    return args.0 + ".concat(#{ args.slice(1).join ', ' })" unless index
     base = (node.compile o, LEVEL_LIST for node of list.slice 0, index)
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
@@ -936,7 +936,7 @@ class exports.Op extends Node
     return Call first, []   if op is 'do'
     if op is 'new'
       if first instanceof Call
-        first.digCalls()[0].new = 'new '
+        first.digCalls().0.new = 'new '
         return first
       p.keep = true if (p = first.head or first) instanceof Parens
     this import {op, first, second, post}

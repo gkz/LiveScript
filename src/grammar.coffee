@@ -30,7 +30,7 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
   return [patterns, '$1', options] unless action
-  action = if match = unwrap.exec action then match[1] else "(#{action}())"
+  action = if match = unwrap.exec action then match.1 else "(#{action}())"
   action.=replace /\b(?:[A-Z]|mix\b)/g, 'yy.$&'
   [patterns, action, options]
 
@@ -366,8 +366,8 @@ operators = [
 # as "tokens".
 tokens = for name, alternatives in grammar
   for alt of alternatives
-    alt[1] = "#{ if name is 'Root' then 'return' else '$$ =' } #{alt[1]};"
-    token if token not in grammar for token of alt[0]
+    alt.1 = "#{ if name is 'Root' then 'return' else '$$ =' } #{alt.1};"
+    token if token not in grammar for token of alt.0
 
 # Initialize the **Parser** with our list of terminal **tokens**, our **grammar**
 # rules, and the name of the root. Reverse the operators because Jison orders

@@ -42,7 +42,7 @@ exports.run = ->
   return help()                       if o.help
   return repl()                       if o.interactive
   return compileStdio()               if o.stdio
-  return compileScript '', sources[0] if o.eval
+  return compileScript '', sources.0 if o.eval
   return (version(); help(); repl())  unless sources.length
   args = if ~separator = sources.indexOf '--'
   then sources.splice(separator, 1/0).slice 1
@@ -76,7 +76,7 @@ compileScript = (file, input, base) ->
   options = fileName: file, bare: o.bare
   if o.require
     for req of o.require
-      require if req[0] is '.' then fs.realpathSync req else req
+      require if req.0 is '.' then fs.realpathSync req else req
   try
     Coco.emit 'compile', t = {file, input, options}
     switch

@@ -41,7 +41,7 @@ build = (source) ->
       if code or comment and br
         htm += block comment, code, i++
         comment = code = ''
-      comment += m[1] + '\n'
+      comment += m.1 + '\n'
     else
       code += line + '\n'
     br = false
