@@ -110,11 +110,14 @@ class Node
   makeReturn: (name) ->
     if name then Call Literal(name + '.push'), [this] else Return this
 
-  # `toString` representation of the node, for inspecting the parse tree.
+  # Extra info for `toString`.
+  show: String
+
+  # String representation of the node for inspecting the parse tree.
   # This is what `coco --nodes` prints out.
-  toString: (idt = '', name = @constructor.name) ->
-    tree = '\n' + idt + name
-    tree += '?' if @soak
+  toString: (idt = '') ->
+    tree = '\n' + idt + @constructor.name
+    tree += ' ' + info if info = @show()
     @eachChild -> tree += it.toString idt + TAB; null
     tree
 
@@ -224,14 +227,14 @@ class exports.Literal extends Node
 class exports.Statement extends Node
   (@name) =>
 
+  show: -> @name
+
   isStatement : YES
   makeReturn  : THIS
 
   jumps: -> not (it and (it.loop or it.block and @name isnt 'continue'))
 
   compile: -> it.indent + @name + ';'
-
-  toString: -> "\n#{ it or '' }#{@constructor.name} #{@name}"
 
 #### Throw
 class exports.Throw extends Statement
@@ -390,6 +393,8 @@ class exports.Call extends Node
 
   children: <[ callee args ]>
 
+  show: -> @soak and '?'
+
   # List up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
   digCalls: ->
     list = [call = this]
@@ -472,6 +477,8 @@ class exports.Import extends Node
 
   children: <[ left right ]>
 
+  show: -> @util.slice 6
+
   compileNode: (o) ->
     rite = @right.unwrap()
     unless @util is 'import' and rite instanceof Obj
@@ -519,7 +526,7 @@ class exports.Import extends Node
 #### Access
 # `x.y`
 class exports.Access extends Node
-  (@name, symbol) =>
+  (@name, @symbol) =>
     switch symbol
     case '?.' then @soak   = true
     case '&.' then @bind   = true
@@ -527,20 +534,18 @@ class exports.Access extends Node
 
   children: ['name']
 
-  compile: (o) ->
-    if (name = @name.compile o).charAt(0) of <[ \" \' ]>
-    then "[#{name}]"
-    else ".#{name}"
+  show: -> @symbol
 
   isComplex: NO
 
-  toString: (idt) ->
-    super.call this, idt, @constructor.name + if @assign then '=' else ''
+  compile: (o) ->
+    key = @name.compile o
+    if key.charAt(0) is "'" then "[#{key}]" else ".#{key}"
 
 #### Index
 # `x[y]`
 class exports.Index extends Node
-  (@index, symbol) =>
+  (@index, @symbol) =>
     switch symbol
     case '?[' then @soak   = true
     case '&[' then @bind   = true
@@ -548,11 +553,11 @@ class exports.Index extends Node
 
   children: ['index']
 
+  show: Access::show
+
   compile: (o) -> "[#{ @index.compile o, LEVEL_PAREN }]"
 
   isComplex: -> @index.isComplex()
-
-  toString: Access::toString
 
 #### Obj
 # `{x: y}`
@@ -662,6 +667,8 @@ class exports.Assign extends Node
 
   children: <[ left right ]>
 
+  show: -> (@logic or '') + @op
+
   assigns: -> @[if @op is ':' then 'right' else 'left'].assigns it
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, 'left'
@@ -754,15 +761,15 @@ class exports.Assign extends Node
       val = Import Obj(), val if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
 
-  toString: (idt) -> super.call this, idt, @constructor.name + ' ' + @op
-
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params = [], @body = Lines(), arrow) =>
+  (@params = [], @body = Lines(), @arrow) =>
     @bound = '_this' if arrow is '=>'
 
   children: <[ params body ]>
+
+  show: -> @arrow
 
   # Short-circuit `traverseChildren` method to prevent it
   # from crossing scope boundaries unless `xscope`.
@@ -839,6 +846,8 @@ class exports.Param extends Node
 
   children: <[ name value ]>
 
+  show: -> @splat and '...'
+
   compile: (o) -> @name.compile o, LEVEL_LIST
 
   asReference: (o) ->
@@ -887,7 +896,7 @@ class exports.Splat extends Node
 #### While
 # A while loop, the only sort of low-level loop exposed by Coco.
 class exports.While extends Node
-  (@condition, name) => @condition.=invert() if name is 'until'
+  (@condition, @name) => @condition.=invert() if name is 'until'
 
   children: <[ condition body ]>
 
@@ -948,6 +957,8 @@ class exports.Op extends Node
   COMPARER = /^(?:[!=]=|[<>])=?$/
 
   children: <[ first second ]>
+
+  show: Assign::show
 
   invert: ->
     if EQUALITY.test(op = @op) and not COMPARER.test(@first.op)
@@ -1028,8 +1039,6 @@ class exports.Op extends Node
     o.scope.free ref
     if o.level < LEVEL_LIST then code else "(#{code})"
 
-  toString: Assign::toString
-
 #### Of
 # Handles `of` operation that tests if the left operand is included within
 # the right operand, arraywise.
@@ -1038,7 +1047,8 @@ class exports.Of extends Node
 
   children: <[ item array ]>
 
-  invert: NEGATE
+  show   : -> @negated and '!'
+  invert : -> @negated ^= 1; this
 
   compileNode: (o) ->
     lvl = if arr = @array instanceof Arr then LEVEL_OP else LEVEL_LIST
@@ -1056,15 +1066,14 @@ class exports.Of extends Node
     o.scope.free ref if sub isnt ref
     if o.level < lvl then code else "(#{code})"
 
-  toString: (idt) ->
-    super.call this, idt, @constructor.name + if @negated then '!' else ''
-
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Node
   (@attempt, @thrown, @recovery, @ensure) =>
 
   children: <[ attempt recovery ensure ]>
+
+  show: -> @thrown
 
   isStatement: YES
 
@@ -1093,7 +1102,8 @@ class exports.Existence extends Node
 
   children: ['it']
 
-  invert: NEGATE
+  show   : Of::show
+  invert : Of::invert
 
   compileNode: (o) ->
     code = @it.compile o, LEVEL_OP
@@ -1355,8 +1365,6 @@ exports import all mix: __importAll
 function YES  -> true
 function NO   -> false
 function THIS -> this
-
-function NEGATE -> @negated ^= 1; this
 
 UTILITIES =
   # Correctly set up a prototype chain for inheritance, including a reference
