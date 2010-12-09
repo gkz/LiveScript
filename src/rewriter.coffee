@@ -86,7 +86,7 @@ addImplicitBraces = (tokens) ->
     stack.push ['{']
     idx  = if paren then start[1] else i-1
     idx -= 2 while tokens[idx-2]?[0] is 'COMMENT'
-    tokens.splice idx, 0, ['{', '{', token[2]] import {+generated}
+    tokens.splice idx, 0, ['{', '{', token[2]]
     detectEnd tokens, ++i+1, ok, go
   tokens
 
@@ -102,8 +102,8 @@ addImplicitParentheses = (tokens) ->
     continue unless prev.call or
       prev[0] of <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]>
     continue unless token.argument or
-      tag of <[ ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS UNARY CREMENT
-                FUNCTION IF TRY SWITCH CLASS SUPER ]> or
+      tag of <[ ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS
+                UNARY CREMENT IF TRY CLASS FUNCTION SUPER ]> or
       tag is 'PLUS_MINUS' and not (token.spaced or token.eol) or
       tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?[0] isnt 'FUNCTION'
     seenSingle = seenClass = false
