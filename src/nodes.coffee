@@ -263,11 +263,15 @@ class exports.Value extends Node
     return head if not tails and head instanceof Value
     this import {head, tails: tails || [], at}
 
+  SIMPLENUM = /^\d+$/
+  STARSEEK  = ->
+    switch
+    case it.value is '*'     then it
+    case it instanceof Index then false
+
   children: <[ head tails ]>
 
   add: -> @tails.push it; this
-
-  hasProperties: -> !!@tails.length
 
   jumps        : -> not @tails.length and @head.jumps it
   assigns      : -> not @tails.length and @head.assigns it
@@ -305,34 +309,25 @@ class exports.Value extends Node
       nref.temps = [ref.value]
     [base.add name; Value bref or base.head, [nref or name]]
 
-  # We compile a value to JavaScript by compiling and joining each property.
   compileNode: (o) ->
-    # Things get much more insteresting if the chain of accessors has *soak*
-    # (`?.`) or *binding* (`&.`) interspersed.
-    return asn.compile o if asn = @unfoldAssign o
-    return val.compile o if val = @unfoldBind   o
+    return val.compile o if val = @unfoldAssign(o) or @unfoldBind(o)
     @head import {@front}
     return @head.compile o unless @tails.length
-    {tails} = val = @substituteStar(o) or this
-    code  = val.head.compile o, LEVEL_ACCESS
-    code += ' ' if tails[0] instanceof Access and SIMPLENUM.test code
-    code += t.compile o for t of tails
-    code
+    val  = @poleStar o
+    base = val.head.compile o, LEVEL_ACCESS
+    rest = ''; rest += t.compile o for t of val.tails
+    base += ' ' if rest.charAt(0) is '.' and SIMPLENUM.test base
+    base + rest
 
-  substituteStar: (o) ->
-    find = ->
-      switch
-      case it.value is '*'     then it
-      case it instanceof Index then false
-    for tail, i of @tails
-      continue unless tail instanceof Index and
-                      star = tail.traverseChildren find
+  poleStar: (o) ->
+    for t, i of @tails
+      continue unless t instanceof Index and star = t.traverseChildren STARSEEK
       [sub, ref] = Value(@head, @tails.slice 0, i).cache o
       @temps = [ref.value] if sub isnt ref
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + '.length'
       return Value sub, @tails.slice i
-    null
+    this
 
   # Unfold a soak into an *If*: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
@@ -1405,7 +1400,6 @@ LEVEL_ACCESS = 5  # ...[0]
 TAB = '  '
 
 IDENTIFIER = /^[$A-Za-z_][$\w]*$/
-SIMPLENUM  = /^\d+$/
 METHOD_DEF = /// ^
   (?: (\S+)\.prototype(?=\.) | \S*? )
   (?: (?:\.|^)([$A-Za-z_][$\w]*) | \[( ([\"\']).+?\4 | \d+ )])

@@ -57,7 +57,7 @@ eq value?.toString().toLowerCase(), void
 value = 10
 eq value?.toString().toLowerCase(), '10'
 
-eq 0.nothing?.property() or 101, 101
+eq ''.nothing?.property() or 101, 101
 
 counter = 0
 func = ->

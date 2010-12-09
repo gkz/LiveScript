@@ -93,3 +93,9 @@ eq 0, a.0
 eq 0, a."0"
 eq 0, a."#{0}"
 eq 0, a.(0)
+
+
+# Dots have to workaround syntax error when accessing a simple number.
+eq '0 .go;'  , Coco.compile '0.go', {+bare}
+# Brackets don't.
+eq "0['do'];", Coco.compile '0.do', {+bare}

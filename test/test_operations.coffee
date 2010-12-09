@@ -138,10 +138,10 @@ num = 10; ok (num ^=   3) is 9
 num = 10; ok (num |=   3) is 11
 
 
-#737: `in` should have higher precedence than logical operators.
+#coffee-737: `in` should have higher precedence than logical operators.
 eq 1, 1 of [1] and 1
 
-#768: `in` should preserve evaluation order.
+#coffee-768: `in` should preserve evaluation order.
 share = 0
 a = -> share++ if share is 0
 b = -> share++ if share is 1
