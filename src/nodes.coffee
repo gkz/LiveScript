@@ -404,7 +404,7 @@ class exports.Call extends Node
       [left, rite] = @callee.cacheReference o
       rite = Call rite, @args
       rite import {@new}
-      left = Literal "typeof #{ left.compile o } == \"function\""
+      left = Literal "typeof #{ left.compile o } == 'function'"
       return If left, Value(rite), {+soak}
     for call of @digCalls()
       call.callee.head = ifn if ifn
@@ -1100,8 +1100,8 @@ class exports.Existence extends Node
     code = @it.compile o, LEVEL_OP
     if IDENTIFIER.test(code) and not o.scope.check code, true
       code = 'typeof ' + code + if @negated
-      then " == \"undefined\" || #{code} === null"
-      else " != \"undefined\" && #{code} !== null"
+      then " == 'undefined' || #{code} === null"
+      else " != 'undefined' && #{code} !== null"
     else
       code += " #{ if @negated then '=' else '!' }= null"
     if o.level <= LEVEL_COND then code else "(#{code})"
