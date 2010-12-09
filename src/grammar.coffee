@@ -79,9 +79,12 @@ grammar =
   Expression: [
     o 'Value'
 
+    o 'Assignable       ASSIGN          Expression' ,-> Assign $1, $3, $2
+    o 'SimpleAssignable COMPOUND_ASSIGN Expression' ,-> Assign $1, $3, $2
+
     # Arithmetic and logical operators, working on one or two operands.
     # The precedence rules are defined at the bottom of the page.
-    # It would be shorter if we could # combine most of these rules into
+    # It would be shorter if we could combine most of these rules into
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
@@ -90,19 +93,16 @@ grammar =
     o 'Expression SHIFT      Expression', -> Op $2, $1, $3
     o 'Expression COMPARE    Expression', -> Op $2, $1, $3
     o 'Expression LOGIC      Expression', -> Op $2, $1, $3
-    o 'Expression IMPORT     Expression', -> Import $1, $3, $2
+    o 'Expression IMPORT     Expression', -> Import $1, $3, !$2
     o 'Expression RELATION   Expression', ->
       return if $2.charAt(0) is '!'
       then Op($2.slice 1; $1; $3).invert()
       else Op $2, $1, $3
 
-    o 'UNARY      Expression',            -> Op $1, $2
-    o 'PLUS_MINUS Expression',           (-> Op $1, $2), prec: 'UNARY'
+    o 'UNARY      Expression' , -> Op $1, $2
+    o 'PLUS_MINUS Expression' ,(-> Op $1, $2), prec: 'UNARY'
 
     o 'Expression ?', -> Existence $1
-
-    o 'Assignable       ASSIGN          Expression', -> Assign $1, $3, $2
-    o 'SimpleAssignable COMPOUND_ASSIGN Expression', -> Assign $1, $3, $2
 
     o 'CREMENT SimpleAssignable' ,-> Op $1, $2
     o 'SimpleAssignable CREMENT' ,-> Op $2, $1, null, true

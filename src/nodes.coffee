@@ -179,10 +179,10 @@ class exports.Lines extends Node
   # Compile the expressions body for the contents of a function, with
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
-    code = post = ''
-    for exp, i of @lines
-      break unless exp.unwrap() instanceof [Comment, Literal]
     o.level = LEVEL_TOP
+    code = post = ''
+    for node, i of @lines
+      break unless node.unwrap() instanceof [Comment, Literal]
     if i
       rest   = @lines.splice i, 1/0
       code   = @compileNode o
@@ -380,7 +380,7 @@ class exports.Comment extends Node
 
   terminator: ''
 
-  compile: (o) -> '/*' + multident(@comment, o.indent) + '*/'
+  compile: (o) -> "/*#{ multident @comment, o.indent }*/"
 
 #### Call
 # A function invocation.
@@ -469,7 +469,7 @@ class exports.Extends extends Node
 #### Import
 # Operators that copy properties from right to left.
 class exports.Import extends Node
-  (@left, @right, own) => @util = if own then 'import' else 'importAll'
+  (@left, @right, all) => @util = if all then 'importAll' else 'import'
 
   children: <[ left right ]>
 
@@ -493,7 +493,7 @@ class exports.Import extends Node
         code += node.compile o, LEVEL_LIST
         continue
       if node instanceof Splat
-        code += Import(lref, node.it, true).compile o, LEVEL_TOP
+        code += Import(lref, node.it).compile o, LEVEL_TOP
         continue
       dyna = false
       if node instanceof Assign
@@ -599,7 +599,7 @@ class exports.Obj extends Node
   compileDynamic: (o, code, props) ->
     o.indent = @tab
     code = (oref = o.scope.temporary 'obj') + ' = ' + code + ', ' +
-           Import(Literal(oref), Obj(props), true).compile o, LEVEL_PAREN
+           Import(Literal oref; Obj props).compile o, LEVEL_PAREN
     o.scope.free oref
     if o.level < LEVEL_LIST then code else "(#{code})"
 
@@ -642,7 +642,7 @@ class exports.Class extends Node
     fun.body.traverseChildren -> it.clas = name if it instanceof Fun; null
     for node, i of lines
       if node.=unwrap() instanceof Obj
-        lines[i] = Import proto, node, true
+        lines[i] = Import proto, node
       else if node instanceof Fun
         throw SyntaxError 'more than one constructor in a class' if ctor
         ctor = node
@@ -663,8 +663,7 @@ class exports.Assign extends Node
 
   children: <[ left right ]>
 
-  assigns: (name) ->
-    @[if @op is ':' then 'right' else 'left'].assigns name
+  assigns: -> @[if @op is ':' then 'right' else 'left'].assigns it
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, 'left'
 
@@ -753,7 +752,7 @@ class exports.Assign extends Node
         key = if node.at then node.tails[0].name else node
       acc = not dyna and IDENTIFIER.test key.unwrap().value or 0
       val = Value lr ||= Literal(rite), [(if acc then Access else Index) key]
-      val = Import Obj(), val, true if splat
+      val = Import Obj(), val if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
 
   toString: (idt) -> super.call this, idt, @constructor.name + ' ' + @op
