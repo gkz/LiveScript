@@ -88,13 +88,13 @@ grammar =
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
-    o 'Expression PLUS_MINUS Expression', -> Op $2, $1, $3
-    o 'Expression MATH       Expression', -> Op $2, $1, $3
-    o 'Expression SHIFT      Expression', -> Op $2, $1, $3
-    o 'Expression COMPARE    Expression', -> Op $2, $1, $3
-    o 'Expression LOGIC      Expression', -> Op $2, $1, $3
-    o 'Expression IMPORT     Expression', -> Import $1, $3, !$2
-    o 'Expression RELATION   Expression', ->
+    o 'Expression PLUS_MINUS Expression' ,-> Op $2, $1, $3
+    o 'Expression MATH       Expression' ,-> Op $2, $1, $3
+    o 'Expression SHIFT      Expression' ,-> Op $2, $1, $3
+    o 'Expression COMPARE    Expression' ,-> Op $2, $1, $3
+    o 'Expression LOGIC      Expression' ,-> Op $2, $1, $3
+    o 'Expression IMPORT     Expression' ,-> Import $1, $3, !$2
+    o 'Expression RELATION   Expression' ,->
       return if $2.charAt(0) is '!'
       then Op($2.slice 1; $1; $3).invert()
       else Op $2, $1, $3
@@ -102,7 +102,7 @@ grammar =
     o 'UNARY      Expression' , -> Op $1, $2
     o 'PLUS_MINUS Expression' ,(-> Op $1, $2), prec: 'UNARY'
 
-    o 'Expression ?', -> Existence $1
+    o 'Expression ?' ,-> Existence $1
 
     o 'CREMENT SimpleAssignable' ,-> Op $1, $2
     o 'SimpleAssignable CREMENT' ,-> Op $2, $1, null, true
@@ -119,28 +119,28 @@ grammar =
 
     # Comprehensions can either be normal, with a block of expressions
     # to execute, or postfix, with a single expression.
-    o 'LoopHead   Block',    -> $1.addBody $2
-    o 'Statement  LoopHead', -> $2.addBody Lines $1
-    o 'Expression LoopHead', -> $2.addBody Lines $1
+    o 'LoopHead   Block'    ,-> $1.addBody $2
+    o 'Statement  LoopHead' ,-> $2.addBody Lines $1
+    o 'Expression LoopHead' ,-> $2.addBody Lines $1
 
-    o 'SWITCH Expression Cases',               -> Switch $2, $3
-    o 'SWITCH Expression Cases DEFAULT Block', -> Switch $2, $3, $5
-    o 'SWITCH Cases',                          -> Switch null, $2
-    o 'SWITCH Cases DEFAULT Block',            -> Switch null, $2, $4
+    o 'SWITCH Expression Cases'               ,-> Switch $2, $3
+    o 'SWITCH Expression Cases DEFAULT Block' ,-> Switch $2, $3, $5
+    o 'SWITCH Cases'                          ,-> Switch null, $2
+    o 'SWITCH Cases DEFAULT Block'            ,-> Switch null, $2, $4
 
-    o 'TRY Block',                                      -> Try $2
-    o 'TRY Block CATCH IDENTIFIER Block',               -> Try $2, $4, $5
-    o 'TRY Block                        FINALLY Block', -> Try $2, null, null, $4
-    o 'TRY Block CATCH IDENTIFIER Block FINALLY Block', -> Try $2, $4, $5, $7
+    o 'TRY Block'                                      ,-> Try $2
+    o 'TRY Block CATCH IDENTIFIER Block'               ,-> Try $2, $4, $5
+    o 'TRY Block                        FINALLY Block' ,-> Try $2, null, null, $4
+    o 'TRY Block CATCH IDENTIFIER Block FINALLY Block' ,-> Try $2, $4, $5, $7
 
     # Class definitions have optional bodies of prototype property assignments,
     # and optional references to the superclass.
-    o 'CLASS OptExtends',                        -> Class null, $2
-    o 'CLASS OptExtends Block',                  -> Class null, $2, $3
-    o 'CLASS SimpleAssignable OptExtends',       -> Class $2, $3
-    o 'CLASS SimpleAssignable OptExtends Block', -> Class $2, $3, $4
+    o 'CLASS OptExtends'                        ,-> Class null, $2
+    o 'CLASS OptExtends Block'                  ,-> Class null, $2, $3
+    o 'CLASS SimpleAssignable OptExtends'       ,-> Class $2, $3
+    o 'CLASS SimpleAssignable OptExtends Block' ,-> Class $2, $3, $4
 
-    o 'SimpleAssignable EXTENDS Expression', -> Extends $1, $3
+    o 'SimpleAssignable EXTENDS Expression' ,-> Extends $1, $3
   ]
 
   # Any list of statements and expressions,
@@ -161,7 +161,7 @@ grammar =
 
   Arg: [
     o     'Expression'
-    o '... Expression', -> Splat $2
+    o '... Expression' ,-> Splat $2
   ]
   # **ArgList** is both the list of objects passed into a function call,
   # as well as the contents of an array literal
@@ -174,12 +174,12 @@ grammar =
     o 'ArgList OptComma INDENT ArgList OptComma OUTDENT' ,-> $1.concat $4
   ]
   Array: [
-    o '[ ArgList OptComma ]', -> Arr $2
+    o '[ ArgList OptComma ]' ,-> Arr $2
   ]
 
   # A reference to a property on `this`.
   ThisProperty: [
-    o 'THISPROP', -> Value Literal('this'), [Access Literal $1], true
+    o 'THISPROP' ,-> Value Literal('this'), [Access Literal $1], true
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
@@ -187,8 +187,8 @@ grammar =
   # where only values are accepted, wrapping it in parentheses will always do
   # the trick.
   Parenthetical: [
-    o '(        Body         )', -> Parens $2.unwrap()
-    o '( INDENT Body OUTDENT )', -> Parens $3.unwrap()
+    o '(        Body         )' ,-> Parens $2.unwrap()
+    o '( INDENT Body OUTDENT )' ,-> Parens $3.unwrap()
   ]
 
   # Pure statements which cannot be expressions.
@@ -204,8 +204,8 @@ grammar =
   # will convert some postfix forms into blocks for us, by adjusting the
   # token stream.
   Block: [
-    o 'INDENT Body OUTDENT', -> $2
-    o 'INDENT      OUTDENT', -> Lines()
+    o 'INDENT Body OUTDENT' ,-> $2
+    o 'INDENT      OUTDENT' ,-> Lines()
   ]
 
   # **Fun** node is the function literal, defined by an indented **Block**
@@ -216,9 +216,9 @@ grammar =
   ]
   # The list of parameters that a function accepts can be of any length.
   ParamList: [
-    o '',                  -> []
-    o 'Param',             -> [$1]
-    o 'ParamList , Param', -> $1.concat $3
+    o ''                  ,-> []
+    o 'Param'             ,-> [$1]
+    o 'ParamList , Param' ,-> $1.concat $3
   ]
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
@@ -228,7 +228,7 @@ grammar =
     o     'ParamVar ASSIGN Expression' ,-> Param $1, $3
   ]
   ParamVar: [
-    o 'IDENTIFIER', -> Literal $1
+    o 'IDENTIFIER' ,-> Literal $1
     o 'ThisProperty'
     o 'Array'
     o 'Object'
@@ -249,29 +249,29 @@ grammar =
     o '...        ObjAssignable' ,-> Splat  $2
     o 'PLUS_MINUS ObjAssignable' ,-> Assign $2, Literal($1 is '+'), ':'
 
-    o 'COMMENT', -> Comment $1
+    o 'COMMENT' ,-> Comment $1
   ]
   # Assignment of properties within an object literal can be separated by
   # comma, as in JavaScript, or simply by newline.
   AssignList: [
-    o '',                                                       -> []
-    o 'AssignObj',                                              -> [$1]
-    o 'AssignList , AssignObj',                                 -> $1.concat $3
-    o 'AssignList OptComma TERMINATOR AssignObj',               -> $1.concat $4
-    o 'AssignList OptComma INDENT AssignList OptComma OUTDENT', -> $1.concat $4
+    o ''                                                       ,-> []
+    o 'AssignObj'                                              ,-> [$1]
+    o 'AssignList , AssignObj'                                 ,-> $1.concat $3
+    o 'AssignList OptComma TERMINATOR AssignObj'               ,-> $1.concat $4
+    o 'AssignList OptComma INDENT AssignList OptComma OUTDENT' ,-> $1.concat $4
   ]
   # In Coco, an object literal is simply a list of assignments.
   Object: [
-    o '{ AssignList OptComma }', -> Obj $2
+    o '{ AssignList OptComma }' ,-> Obj $2
   ]
 
   # The most basic form of *if* is a condition and an action. The following
   # if-related rules are broken up along these lines in order to avoid
   # ambiguity.
   IfBlock: [
-    o 'IF Expression Block',              -> If $2, $3, name: $1
-    o 'IfBlock ELSE IF Expression Block', -> $1.addElse If $4, $5, name: $3
-    o 'IfBlock ELSE Block',               -> $1.addElse $3
+    o 'IF Expression Block'              ,-> If $2, $3, name: $1
+    o 'IfBlock ELSE IF Expression Block' ,-> $1.addElse If $4, $5, name: $3
+    o 'IfBlock ELSE Block'               ,-> $1.addElse $3
   ]
 
   LoopHead: [
@@ -302,27 +302,27 @@ grammar =
   ]
 
   Cases: [
-    o       'CASE SimpleArgs Block', -> [Case $2, $3]
-    o 'Cases CASE SimpleArgs Block', -> $1.concat Case $3, $4
+    o       'CASE SimpleArgs Block' ,-> [Case $2, $3]
+    o 'Cases CASE SimpleArgs Block' ,-> $1.concat Case $3, $4
   ]
   # Just simple, comma-separated, required arguments (no fancy syntax).
   # We need this to be separate from the **ArgList** for use in **Cases**,
   # where having the newlines wouldn't make sense.
   SimpleArgs: [
-    o 'Expression',              -> [$1]
-    o 'SimpleArgs , Expression', -> $1.concat $3
+    o 'Expression'              ,-> [$1]
+    o 'SimpleArgs , Expression' ,-> $1.concat $3
   ]
 
   # Optional `extends` clause for class definition.
   OptExtends: [
-    o '',              -> null
-    o 'EXTENDS Value', -> $2
+    o ''              ,-> null
+    o 'EXTENDS Value' ,-> $2
   ]
 
   # The **Root** is the top-level node in the syntax tree.
   # Since we parse bottom-up, all parsing must end here.
   Root: [
-    o '', -> Lines()
+    o '' ,-> Lines()
     o 'Body'
     o 'Block TERMINATOR'
   ]
