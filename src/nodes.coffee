@@ -540,9 +540,9 @@ class exports.Access extends Node
 class exports.Index extends Node
   (@index, @symbol) =>
     switch symbol
-    case '?[' then @soak   = true
-    case '&[' then @bind   = true
-    case '[=' then @assign = true
+    case <[ ?[ ?. ]> then @soak   = true
+    case <[ &[ &. ]> then @bind   = true
+    case <[ [= .= ]> then @assign = true
 
   children: ['index']
 

@@ -86,3 +86,10 @@ parent =
     member: 42
 eq 42, do(0; parent.child&.method)
 eq 42, do(0; parent.child&["me#{'th'}od"])
+
+
+a = [0]
+eq 0, a.0
+eq 0, a."0"
+eq 0, a."#{0}"
+eq 0, a.(0)

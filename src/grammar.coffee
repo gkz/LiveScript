@@ -70,7 +70,9 @@ grammar =
   SimpleAssignable: [
     o 'IDENTIFIER'                             ,-> Literal $1
     o 'Value ACCESS IDENTIFIER'                ,-> $1.add Access Literal($3), $2
-    o 'Value INDEX_START Expression INDEX_END' ,-> $1.add Index $3, $2
+    o 'Value ACCESS STRNUM'                    ,-> $1.add Index  Literal($3), $2
+    o 'Value ACCESS Parenthetical'             ,-> $1.add Index  $3.it,       $2
+    o 'Value INDEX_START Expression INDEX_END' ,-> $1.add Index  $3,          $2
     o 'ThisProperty'
     o 'SUPER'                                  ,-> Super()
   ]

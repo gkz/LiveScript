@@ -140,6 +140,8 @@
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     [num, radix, rnum] = match
+    return 0 if num.charAt(0) is '.' and
+                not @last.spaced and @last.0 of INDEXABLE
     if radix
       @carp "invalid radix #{radix}" unless 2 <= radix <= 36
       num = parseInt rnum, radix
