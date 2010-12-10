@@ -642,7 +642,7 @@ class exports.Class extends Node
     args = []
     if @sup
       args.push @sup
-      lines.unshift Extends lname, fun.params[*] = Literal '_super'
+      lines.unshift Extends lname, fun.params.* = Literal '_super'
     clas = Call fun, args
     clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
@@ -1184,10 +1184,10 @@ class exports.For extends While
              fn.params.length is it.args.length
         return if it instanceof [Fun, For] then null else it.eachChild dig
       if @index
-        fn.params.push it.args[*] = Literal @index
+        fn.params.push it.args.* = Literal @index
       if name = @name
         it.args.push Literal if name.isComplex()
-        then @nref ||= @temps[*] = o.scope.temporary 'ref'
+        then @nref ||= @temps.* = o.scope.temporary 'ref'
         else name.value
         fn.params.push name
       it.callee = Value Literal ref = o.scope.temporary 'fn'

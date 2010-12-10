@@ -308,7 +308,7 @@
       @tagParameters()
       tag = 'FUNC_ARROW'
     case '*'
-      tag = if @last.0 of <[ INDEX_START ( ]> then 'LITERAL' else 'MATH'
+      tag = if @last.0 of <[ INDEX_START ( ACCESS ]> then 'STRNUM' else 'MATH'
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
       tag = if value of <[ = := ]> then 'ASSIGN' else 'COMPOUND_ASSIGN'
       if @last.0 is 'LOGIC'
@@ -421,8 +421,7 @@
   # new Lexer, tokenize the interpolated contents, and merge them into the
   # token stream.
   interpolateString: (str, newline) ->
-    {line} = this
-    ts = []; pi = 0; i = -1
+    {line} = this; ts = []; pi = 0; i = -1
     while chr = str.charAt ++i
       if chr is '\\'
         ++i
@@ -497,7 +496,7 @@ JS_KEYWORDS = <[
 
 # Coco-only keywords.
 COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until of ]>
-COCO_ALIASES  = not: '!', and: '&&', or: '||',  is: '===', isnt : '!=='
+COCO_ALIASES  = not: '!', and: '&&', or: '||',  is: '===', isnt: '!=='
 
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid a JavaScript error at runtime.
@@ -558,6 +557,6 @@ LINE_CONTINUER  = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
 # Tokens which could legitimately be invoked or indexed.
 # An opening parenthesis or bracket following these tokens will be recorded as
 # the start of a function invocation or property indexing operation.
-CALLABLE  = <[ IDENTIFIER THISPROP ) ] STRNUM SUPER THIS  ]>
+CALLABLE  = <[ IDENTIFIER THISPROP ) ] STRNUM SUPER THIS ]>
 INDEXABLE = CALLABLE.concat<[ } LITERAL ]>
 CALLABLE.push '?'
