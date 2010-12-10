@@ -16,11 +16,11 @@ run = (args) ->
   proc       .on 'exit', -> process.exit it if it
 
 sources = ->
-  ext = /\.co(?:ffee)?$/i
+  ext = /\.co$/i
   'src/' + file if ext.test file for file of dir 'src'
 
 coreSources = ->
-  "src/#{src}.coffee" for src of <[coco grammar lexer nodes rewriter scope]>
+  "src/#{src}.co" for src of <[coco grammar lexer nodes rewriter scope]>
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `coke install`'
 
@@ -128,7 +128,7 @@ runTests = (Coco) ->
     then tint "failed #{failedTests} and #{message}", red
     else tint message
   dir('test').forEach (file) ->
-    return unless /\.co(?:ffee)?$/i.test file
+    return unless /\.co$/i.test file
     code = slurp fileName = path.join 'test', file
     try Coco.run code, {fileName}
     catch e

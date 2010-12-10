@@ -31,7 +31,7 @@ Coco.run = (code, cb) ->
   cb true
 
 run = (name) ->
-  Coco.load "test_#{name}.coffee", (yay) ->
+  Coco.load name + '.co', (yay) ->
     say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
     ++failed unless yay
     fin() if ++done is names.length
