@@ -139,13 +139,13 @@
   # Matches a number, including decimal, hex and exponential notation.
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
-    [num, radix, rnum] = match
+    [num] = match
     if num.charAt(0) is '.' and not @last.spaced and @last.0 of INDEXABLE
       @token<[ ACCESS . ]>; @token 'STRNUM', num.slice 1
-      return match.0.length
-    if radix
+      return num.length
+    if radix = match.1
       @carp "invalid radix #{radix}" unless 2 <= radix <= 36
-      num = parseInt rnum, radix
+      num = parseInt rnum = match.2, radix
       if isNaN(num) or num is parseInt rnum.slice(0, -1), radix
         @carp "invalid number #{rnum} in base #{radix}"
     @token 'STRNUM', num
@@ -154,36 +154,35 @@
   # Matches a normal string. Ensures that quotation marks are balanced within
   # the string's contents, and within nested interpolations.
   singleStringToken: ->
-    @carp 'unterminated string' unless string = SIMPLESTR.exec @chunk
-    @token 'STRNUM', (string.=0).replace MULTILINER, '\\\n'
-    @countLines(string).length
+    @carp 'unterminated string' unless str = SIMPLESTR.exec @chunk
+    @token 'STRNUM', (str.=0).replace MULTILINER, '\\\n'
+    @countLines(str).length
 
   doubleStringToken: ->
-    string = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
-    if 0 < string.indexOf '#{', 1
-    then @interpolateString string.slice(1, -1), ''
-    else @token 'STRNUM', string.replace MULTILINER, ''
-    @countLines(string).length
+    str = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
+    if 0 < str.indexOf '#{', 1
+    then @interpolateString str.slice(1, -1), ''
+    else @token 'STRNUM', str.replace MULTILINER, ''
+    @countLines(str).length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
   heredocToken: (q) ->
-    return 0 unless @chunk.slice(1, 3) is q+q and
-                    ~end = @chunk.indexOf q+q+q, 3
+    return 0 unless @chunk.slice(1, 3) is q+q and ~end = @chunk.indexOf q+q+q, 3
     txt = @chunk.slice 3, end
     lnl = txt isnt doc = txt.replace /\n[^\n\S]*$/, ''
     if ~doc.indexOf '\n'
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
       dent = 0/0
       dent = len unless dent <= len = m.0.length - 1 while m = tabs.exec doc
-      doc  = @dedent doc, dent
+      doc  = dedent doc, dent
       if doc.charAt(0) is '\n'
         doc.=slice 1
         ++@line
     if q is '"' and ~doc.indexOf '#{'
       @interpolateString doc, '\\n'
     else
-      @token 'STRNUM', @string doc, q, '\\n'
+      @token 'STRNUM', string doc, q, '\\n'
       @countLines doc
     ++@line if lnl
     txt.length + 6
@@ -191,7 +190,7 @@
   # Matches block comments.
   commentToken: ->
     text = @chunk.slice 3, if ~end = @chunk.indexOf '###', 3 then end else 1/0
-    @token 'COMMENT', @dedent text, @indent
+    @token 'COMMENT', dedent text, @indent
     @token<[ TERMINATOR \n ]>
     @countLines(text).length + 6
 
@@ -232,7 +231,7 @@
         val = token.1.replace HEREGEX_OMIT, ''
         continue if i and not val
         val.=replace bs ||= /\\/g, '\\\\'
-        tokens.push ['STRNUM'; @string val, "'", '\\n'; token.2]
+        tokens.push ['STRNUM'; string val, "'", '\\n'; token.2]
       tokens.push ['PLUS_MINUS', '+', tokens[*-1].2]
     tokens.pop()
     if flags then @token<[ , , ]>; @token 'STRNUM', "'#{flags}'"
@@ -246,7 +245,7 @@
     then @token<[ CALL_START ( ]> else @token<[ [ [ ]>
     for line of @chunk.slice(2, end).split '\n'
       if words = line.match re ||= /\S+/g then for word of words
-        @tokens.push ['STRNUM'; @string word, "'"; @line], [',', ',', @line]
+        @tokens.push ['STRNUM'; string word, "'"; @line], [',', ',', @line]
       ++@line
     --@line
     if word then @tokens.pop()   else @token<[ STRNUM '' ]>
@@ -308,32 +307,30 @@
     case <[ -> => ]>
       @tagParameters()
       tag = 'FUNC_ARROW'
-    case '*'
-      tag = if @last.0 of <[ INDEX_START ( ACCESS ]> then 'STRNUM' else 'MATH'
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
       tag = if value of <[ = := ]> then 'ASSIGN' else 'COMPOUND_ASSIGN'
       if @last.0 is 'LOGIC'
         @tokens.pop()
         (value = new String value).logic = @last.1
-    case <[ ! ~ ]>          then tag = 'UNARY'
-    case <[ . ?. &. .= ]>   then tag = 'ACCESS'
-    case <[ + - ]>          then tag = 'PLUS_MINUS'
-    case <[ === !== <= < > >= == != ]> \
-                            then tag = 'COMPARE'
-    case <[ && || & | ^ ]>  then tag = 'LOGIC'
-    case <[ / % ]>          then tag = 'MATH'
-    case <[ ++ -- ]>        then tag = 'CREMENT'
-    case <[ << >> >>> ]>    then tag = 'SHIFT'
-    case <[ ?[ &[ [= ]>     then tag = 'INDEX_START'
-    case '@'                then tag = 'THIS'
-    case ';'                then tag = 'TERMINATOR'
-    case '?'                then tag = 'LOGIC' if @last.spaced
+    case <[ . ?. &. .= ]>              then tag = 'ACCESS'
+    case <[ + - ]>                     then tag = 'PLUS_MINUS'
+    case <[ ! ~ ]>                     then tag = 'UNARY'
+    case <[ === !== <= < > >= == != ]> then tag = 'COMPARE'
+    case <[ && || & | ^ ]>             then tag = 'LOGIC'
+    case '?'                           then tag = 'LOGIC' if @last.spaced
+    case <[ / % ]>                     then tag = 'MATH'
+    case <[ ++ -- ]>                   then tag = 'CREMENT'
+    case <[ << >> >>> ]>               then tag = 'SHIFT'
+    case <[ ?[ &[ [= ]>                then tag = 'INDEX_START'
+    case '@'                           then tag = 'THIS'
+    case ';'                           then tag = 'TERMINATOR'
+    case '*'
+      tag = if @last.0 of <[ INDEX_START ( ACCESS ]> then 'STRNUM' else 'MATH'
     case '\\\n'
       return value.length
     case '::'
       (id = new String 'prototype').colon2 = true
-      @token<[ ACCESS . ]>
-      @token 'IDENTIFIER', id
+      @token<[ ACCESS . ]>; @token 'IDENTIFIER', id
       return value.length
     default
       if value.charAt(0) is '@'
@@ -378,9 +375,7 @@
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
     return this if @last.0 isnt ')'
-    {tokens} = this
-    level = 0
-    i = tokens.length
+    {tokens} = this; level = 0; i = tokens.length
     tokens[--i].0 = 'PARAM_END'
     while tok = tokens[--i]
       switch tok.0
@@ -434,7 +429,7 @@
       code = @balancedString str.slice(i+1), [<[ { } ]>]
       pi   = 1 + i += code.length
       continue unless code.=slice 1, -1
-      nested = new @constructor().tokenize code, {@line, rewrite: false}
+      nested = new @constructor().tokenize code, {@line, -rewrite}
       nested.pop()
       nested.shift() if nested.0?.0 is 'TERMINATOR'
       if nested.length > 1
@@ -453,7 +448,7 @@
       tokens.push ['PLUS_MINUS', '+', tokens[*-1].2] if i
       if t.0 is 'TOKENS'
       then tokens.push ...t.1
-      else tokens.push ['STRNUM'; @string t.1, '"', newline; t.2]
+      else tokens.push ['STRNUM'; string t.1, '"', newline; t.2]
     @token<[ ) ) ]>
     ts
 
@@ -463,40 +458,39 @@
   # taking note of the line number and returning `value`.
   token: (tag, value) -> @tokens.push @last = [tag, value, @line]; value
 
-  # Constructs a string token by escaping quotes and newlines.
-  string: (body, quote, newline) ->
-    return quote + quote unless body
-    body.=replace /\\([\s\S])/g, (match, escaped) ->
-      if escaped of ['\n', quote] then escaped else match
-    body.=replace /// #{quote} ///g, '\\$&'
-    body.=replace MULTILINER, newline if newline?
-    quote + body + quote
-
   # Counts the number of lines in a string and add it to `@line`.
   countLines: (str) ->
     pos = 0
     ++@line while pos = 1 + str.indexOf '\n', pos
     str
 
-  # Erases all external indentation on the left-hand side.
-  dedent: (str, num) ->
-    if num then str.replace /// \n [^\n\S]{#{num}} ///g, '\n' else str
-
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
+
+# Constructs a string token by escaping quotes and newlines.
+string = (body, quote, newline) ->
+  return quote + quote unless body
+  body.=replace /\\([\s\S])/g, (match, escaped) ->
+    if escaped of ['\n', quote] then escaped else match
+  body.=replace /// #{quote} ///g, '\\$&'
+  body.=replace MULTILINER, newline if newline?
+  quote + body + quote
+
+# Erases all external indentation on the left-hand side.
+dedent = (str, num) ->
+  if num then str.replace /// \n [^\n\S]{#{num}} ///g, '\n' else str
 
 #### Constants
 
 # Keywords that Coco shares in common with JavaScript.
 JS_KEYWORDS = <[
-  true false null this void super
+  true false null this void super return throw break continue
   if else for while switch case default try catch finally class extends
-  return throw break continue debugger
-  new do delete typeof in instanceof import function
+  new do delete typeof in instanceof import function debugger
 ]>
 
 # Coco-only keywords.
-COCO_KEYWORDS = JS_KEYWORDS.concat<[ then unless until of ]>
+COCO_KEYWORDS = JS_KEYWORDS.concat<[ then of unless until ]>
 COCO_ALIASES  = not: '!', and: '&&', or: '||',  is: '===', isnt: '!=='
 
 # The list of keywords that are reserved by JavaScript, but not used.
