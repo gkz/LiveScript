@@ -222,7 +222,7 @@ class exports.Literal extends Node
 #### Statement
 # `continue`, `break` or `debugger`
 class exports.Statement extends Node
-  (@name) =>
+  (@name) ->
 
   show: -> @name
 
@@ -235,7 +235,7 @@ class exports.Statement extends Node
 
 #### Throw
 class exports.Throw extends Statement
-  (@it) =>
+  (@it) ->
 
   children: ['it']
 
@@ -543,8 +543,8 @@ class exports.Arr extends Obj
 # Simple Arithmetic and logical operations, with some special conversions.
 class exports.Op extends Node
   (op, first, second, post) =>
-    return Of first, second if op is 'of'
-    return Call first, []   if op is 'do'
+    return new Of first, second if op is 'of'
+    return Call first, []       if op is 'do'
     if op is 'new'
       if first instanceof Call
         first.digCalls().0.new = 'new '
@@ -791,7 +791,7 @@ class exports.Import extends Node
 # Handles `of` operation that tests if the left operand is included within
 # the right operand, arraywise.
 class exports.Of extends Node
-  (@item, @array) =>
+  (@item, @array) ->
 
   children: <[ item array ]>
 
@@ -930,7 +930,7 @@ class exports.Fun extends Node
 
 #### Class
 class exports.Class extends Node
-  (@title, @sup, body) => @fun = Fun [], body
+  (@title, @sup, body) -> @fun = Fun [], body
 
   children: <[ title sup fun ]>
 
@@ -977,8 +977,6 @@ class exports.Extends extends Node
 #### Super
 # Reference to the parent method.
 class exports.Super extends Node
-  =>
-
   isAssignable: YES
 
   compile: (o) ->
@@ -1045,7 +1043,7 @@ class exports.Splat extends Parens
 # The traditional `while` loop.
 # Returns an array of values collected from the last expression when requested.
 class exports.While extends Node
-  (@test, name) => @negated = name is 'until'
+  (@test, name) -> @negated = name is 'until'
 
   children: <[ test body ]>
 
@@ -1175,7 +1173,7 @@ class exports.For extends While
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Node
-  (@attempt, @thrown, @recovery, @ensure) =>
+  (@attempt, @thrown, @recovery, @ensure) ->
 
   children: <[ attempt recovery ensure ]>
 
@@ -1205,7 +1203,7 @@ class exports.Try extends Node
 # Compiles to the regular JS `switch`-`case`-`default`,
 # but with forced `break` after each cases.
 class exports.Switch extends Node
-  (@switch, @cases, @default) =>
+  (@switch, @cases, @default) ->
 
   children: <[ switch cases default ]>
 

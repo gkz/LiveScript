@@ -74,7 +74,7 @@ grammar =
     o 'Value ACCESS Parenthetical'             ,-> $1.add Index  $3.it,       $2
     o 'Value INDEX_START Expression INDEX_END' ,-> $1.add Index  $3,          $2
     o 'ThisProperty'
-    o 'SUPER'                                  ,-> Super()
+    o 'SUPER'                                  ,-> new Super
   ]
 
   # All the different types of expressions in our language.
@@ -125,22 +125,24 @@ grammar =
     o 'Statement  LoopHead' ,-> $2.addBody Lines $1
     o 'Expression LoopHead' ,-> $2.addBody Lines $1
 
-    o 'SWITCH Expression Cases'               ,-> Switch $2, $3
-    o 'SWITCH Expression Cases DEFAULT Block' ,-> Switch $2, $3, $5
-    o 'SWITCH Cases'                          ,-> Switch null, $2
-    o 'SWITCH Cases DEFAULT Block'            ,-> Switch null, $2, $4
+    o 'SWITCH Expression Cases'               ,-> new Switch $2, $3
+    o 'SWITCH Expression Cases DEFAULT Block' ,-> new Switch $2, $3, $5
+    o 'SWITCH Cases'                          ,-> new Switch null, $2
+    o 'SWITCH Cases DEFAULT Block'            ,-> new Switch null, $2, $4
 
-    o 'TRY Block'                                      ,-> Try $2
-    o 'TRY Block CATCH IDENTIFIER Block'               ,-> Try $2, $4, $5
-    o 'TRY Block                        FINALLY Block' ,-> Try $2, null, null, $4
-    o 'TRY Block CATCH IDENTIFIER Block FINALLY Block' ,-> Try $2, $4, $5, $7
+    o 'TRY Block'                        ,-> new Try $2
+    o 'TRY Block CATCH IDENTIFIER Block' ,-> new Try $2, $4, $5
+    o 'TRY Block
+       FINALLY Block'                    ,-> new Try $2, null, null, $4
+    o 'TRY Block CATCH IDENTIFIER Block
+       FINALLY Block'                    ,-> new Try $2, $4, $5, $7
 
     # Class definitions have optional bodies of prototype property assignments,
     # and optional references to the superclass.
-    o 'CLASS OptExtends'                        ,-> Class null, $2
-    o 'CLASS OptExtends Block'                  ,-> Class null, $2, $3
-    o 'CLASS SimpleAssignable OptExtends'       ,-> Class $2, $3
-    o 'CLASS SimpleAssignable OptExtends Block' ,-> Class $2, $3, $4
+    o 'CLASS OptExtends'                        ,-> new Class null, $2
+    o 'CLASS OptExtends Block'                  ,-> new Class null, $2, $3
+    o 'CLASS SimpleAssignable OptExtends'       ,-> new Class $2, $3
+    o 'CLASS SimpleAssignable OptExtends Block' ,-> new Class $2, $3, $4
 
     o 'SimpleAssignable EXTENDS Expression' ,-> Extends $1, $3
   ]
@@ -197,8 +199,8 @@ grammar =
   Statement: [
     o 'RETURN Expression' ,-> Return $2
     o 'RETURN'            ,-> Return()
-    o 'STATEMENT'         ,-> Statement $1
-    o 'THROW Expression'  ,-> Throw $2
+    o 'STATEMENT'         ,-> new Statement $1
+    o 'THROW Expression'  ,-> new Throw $2
     o 'COMMENT'           ,-> Comment $1
   ]
 
@@ -295,8 +297,8 @@ grammar =
     o 'FOR IDENTIFIER FROM Expression TO Expression BY Expression'
     , -> mix new For, index: $2, from: $4, op: $5, to: $6, step : $8
 
-    o 'WHILE Expression' ,-> While $2, $1
-    o 'FOR EVER'         ,-> While()
+    o 'WHILE Expression' ,-> new While $2, $1
+    o 'FOR EVER'         ,-> new While
   ]
 
   Cases: [
