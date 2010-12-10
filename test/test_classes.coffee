@@ -29,18 +29,6 @@ eq (new ThirdChild).func('four'), '9two/three/four'
 eq (new ThirdChild).array.join(' '), '1 2 3'
 
 
-class TopClass
-  -> @prop = 'top-' + it
-
-class SuperClass extends TopClass
-  -> super.call this, 'super-' + it
-
-class SubClass extends SuperClass
-  -> super.call this, 'sub'
-
-eq (new SubClass).prop, 'top-super-sub'
-
-
 class OneClass
   @new = 'new'
   function: 'function'
@@ -83,31 +71,8 @@ eq new ThirdChild().func('four'), 'zero/one/two/three/four'
 eq new ThirdChild()['func-func']('thing'), 'dynamic-thing'
 
 
-TopClass = (arg) ->
-  @prop = 'top-' + arg
-  this
-
-SuperClass = (arg) ->
-  super.call this, 'super-' + arg
-  this
-
-SubClass = ->
-  super.call this, 'sub'
-  this
-
-SuperClass extends TopClass
-SubClass extends SuperClass
-
-eq (new SubClass).prop, 'top-super-sub'
-
-
 # '@' referring to the current instance, and not being coerced into a call.
-class ClassName
-  amI: ->
-    @ instanceof ClassName
-
-obj = new ClassName
-ok obj.amI()
+ok (new class I then amI: -> @ instanceof I).amI()
 
 
 # super() calls in constructors of classes that are defined as object properties.
@@ -274,3 +239,9 @@ ok declared?
 
 eq 'named', (new -> @named = class).name
 ok !named?, 'should not leak to global when undeclared'
+
+
+class Sup
+  class @Sub extends this
+
+ok new Sup.Sub instanceof Sup

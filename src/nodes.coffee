@@ -638,9 +638,12 @@ class exports.Class extends Node
         ctor = node
     lines.unshift ctor = Fun() unless ctor
     ctor import {name, +ctor, +statement, -clas}
-    lines.unshift Extends lname, @sup if @sup
     lines.push lname
-    clas = Call fun, []
+    args = []
+    if @sup
+      args.push @sup
+      lines.unshift Extends lname, fun.params[*] = Literal '_super'
+    clas = Call fun, args
     clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
     clas.compile o
