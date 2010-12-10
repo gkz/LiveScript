@@ -12,7 +12,7 @@ Coco.run = (code, options = {}) ->
   do Function Coco.compile code, options
 
 # If we're not in a browser environment, we're finished with the public API.
-return 0 unless window?
+return unless window?
 
 # Load a remote script from the current domain via XHR.
 Coco.load = (url, options) ->

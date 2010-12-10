@@ -384,7 +384,7 @@ class exports.Call extends Node
 
   unfoldSoak: (o) ->
     if @soak
-      return if If.unfoldSoak o, this, 'callee'
+      return ifn if ifn = If.unfoldSoak o, this, 'callee'
       [left, rite] = @callee.cacheReference o
       rite = Call rite, @args
       rite import {@new}
@@ -532,7 +532,7 @@ class exports.Arr extends Obj
 
   compileNode: (o) ->
     return '[]' unless @items.length
-    return if Splat.compileArray o, @items
+    return code if code = Splat.compileArray o, @items
     o.indent += TAB
     code = (obj.compile o, LEVEL_LIST for obj of @items).join ', '
     if 0 < code.indexOf '\n'
@@ -916,7 +916,7 @@ class exports.Fun extends Node
     if @front then "(#{code})" else code
 
   paramName = (o, node) ->
-    return if node.param
+    return node.param if node.param
     prm = node
     if splat = prm instanceof Splat  then prm.=it
     else    if prm instanceof Assign then prm.=left
@@ -1094,8 +1094,6 @@ class exports.While extends Node
 #### For
 # Coco's replacements for the `for` loop are array, object or range iterators.
 class exports.For extends While
-  =>
-
   children: <[ name source from to step body ]>
 
   show: -> @index
@@ -1264,7 +1262,7 @@ class exports.Case extends Node
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Node
-  (@if, @then, {@soak, @post, name} = {}) => @negated = name is 'unless'
+  (@if, @then, {@soak, name} = {}) => @negated = name is 'unless'
 
   children: <[ if then else ]>
 
@@ -1295,9 +1293,6 @@ class exports.If extends Node
     if @isStatement o then @compileStatement o else @compileExpression o
 
   compileStatement: (o) ->
-    if @post and @then instanceof Return and not @then.it
-      [@if, ref] = @if.cache o, true
-      @then = Return ref
     code  = if delete o.elsed then '' else @tab
     cond  = if @negated then @if.invert() else @if
     code += "if (#{ cond.compile o, LEVEL_PAREN }) {"

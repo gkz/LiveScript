@@ -110,14 +110,14 @@ grammar =
     o 'SimpleAssignable CREMENT' ,-> Op $2, $1, null, true
 
     o 'Fun'
-    o 'FUNCTION Fun'            ,-> mix $2, statement: true
-    o 'FUNCTION IDENTIFIER Fun' ,-> mix $3, statement: true, name: $2
+    o 'FUNCTION Fun'            ,-> mix $2, {+statement}
+    o 'FUNCTION IDENTIFIER Fun' ,-> mix $3, {+statement, name: $2}
 
     # The full complement of `if` expressions,
     # including postfix one-liner `if` and `unless`.
     o 'IfBlock'
-    o 'Statement  POST_IF Expression' ,-> If $3, $1, {name: $2, +post}
-    o 'Expression POST_IF Expression' ,-> If $3, $1, {name: $2}
+    o 'Statement  POST_IF Expression' ,-> If $3, $1, name: $2
+    o 'Expression POST_IF Expression' ,-> If $3, $1, name: $2
 
     # Comprehensions can either be normal, with a block of expressions
     # to execute, or postfix, with a single expression.
@@ -281,19 +281,19 @@ grammar =
     # Unless it's iterating over an object, you can choose to step through
     # in fixed-size increments.
     o 'FOR Assignable FOROF Expression'
-    , -> mix For(), name: $2, index: $3, source: $4
+    , -> mix new For, name: $2, index: $3, source: $4
     o 'FOR Assignable FOROF Expression BY Expression'
-    , -> mix For(), name: $2, index: $3, source: $4, step: $6
+    , -> mix new For, name: $2, index: $3, source: $4, step: $6
 
     o 'FOR IDENTIFIER              FORIN Expression'
-    , -> mix For(), object: true, own: !$1, index: $2,           source: $4
+    , -> mix new For, object: true, own: !$1, index: $2,           source: $4
     o 'FOR IDENTIFIER , Assignable FORIN Expression'
-    , -> mix For(), object: true, own: !$1, index: $2, name: $4, source: $6
+    , -> mix new For, object: true, own: !$1, index: $2, name: $4, source: $6
 
     o 'FOR IDENTIFIER FROM Expression TO Expression'
-    , -> mix For(), index: $2, from: $4, op: $5, to: $6
+    , -> mix new For, index: $2, from: $4, op: $5, to: $6
     o 'FOR IDENTIFIER FROM Expression TO Expression BY Expression'
-    , -> mix For(), index: $2, from: $4, op: $5, to: $6, step : $8
+    , -> mix new For, index: $2, from: $4, op: $5, to: $6, step : $8
 
     o 'WHILE Expression' ,-> While $2, $1
     o 'FOR EVER'         ,-> While()
