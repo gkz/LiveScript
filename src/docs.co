@@ -16,7 +16,7 @@ do @onhashchange = ->
   [name] = page
   return load page, htms[name] if name in htms
   xhr = new XMLHttpRequest
-  xhr.open 'GET', name + '.coffee', true
+  xhr.open 'GET', name + '.co', true
   xhr.overrideMimeType? 'text/plain'
   xhr.onreadystatechange = ->
     if xhr.readyState is 4

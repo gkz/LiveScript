@@ -43,7 +43,8 @@ Coco.run = (code, options) ->
   root.=parent while root.parent
   root.filename = fs.realpathSync options?.fileName or '.'
   root.moduleCache &&= {}
-  if require.extensions or path.extname(root.filename) not of <[ .co .coffee ]>
+  if require.extensions or
+     path.extname(root.filename).toLowerCase() isnt '.co'
     code = Coco.compile code, options
   root._compile code, root.filename
 
@@ -54,11 +55,9 @@ Coco.eval = (code, options) ->
   eval Coco.compile code, options
 
 if require.extensions
-  require.extensions['.co'] = require.extensions['.coffee'] =
-  (module, filename) ->
+  require.extensions['.co'] = (module, filename) ->
     code = Coco.compile fs.readFileSync filename, 'utf8'
     module._compile code, filename
 # __TODO__: Remove `registerExtension` when fully deprecated.
 else if require.registerExtension
-  require.registerExtension '.co'    , Coco.compile
-  require.registerExtension '.coffee', Coco.compile
+  require.registerExtension '.co', Coco.compile
