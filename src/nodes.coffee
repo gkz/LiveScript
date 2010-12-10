@@ -49,14 +49,13 @@ class Node
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable. Pass a level to precompile.
-  cache: (o, level, reused) ->
+  cache: (o, once, level) ->
     unless @isComplex()
-      ref = if level then @compile o, level else this
-      [ref, ref]
-    else
-      ref = Literal reused or o.scope.temporary 'ref'
-      sub = Assign ref, this
-      if level then [sub.compile o, level; ref.value] else [sub, ref]
+      return [ref = (if level? then @compile o, level else this), ref]
+    sub = Assign ref = Literal(o.scope.temporary 'ref'), this
+    return [sub.compile o, level; ref.value] if level?
+    ref.temp = once
+    [sub, ref]
 
   # Compiles to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
@@ -214,7 +213,8 @@ class exports.Literal extends Node
         throw SyntaxError 'invalid use of ' + @value
       return val
     return "'#{val}'" if val.reserved
-    @terminator = ''  if val.js
+    if      val.js then @terminator = ''
+    else if @temp  then o.scope.free val
     val
 
   toString: -> ' "' + @value + '"'
@@ -360,10 +360,9 @@ class exports.Value extends Node
   unfoldBind: (o) ->
     for p, i of ps = @tails then if p.bind
       p.bind = false
-      [ctx, ref] = Value(@head, ps.slice 0, i).cache o
-      fun = Value ref, [p]
-      fun.temps = [ref.value] if ctx isnt ref
-      return Value Call(Literal utility 'bind'; [ctx, fun]), ps.slice i+1
+      args   = Value(@head, ps.slice 0, i).cache o, true
+      args.1 = Value args.1, [p]
+      return Value Call(Literal utility 'bind'; args), ps.slice i+1
     null
 
 #### Comment
@@ -493,14 +492,13 @@ class exports.Import extends Node
         code += Import(lref, node.it).compile o, LEVEL_TOP
         continue
       if dyna = node instanceof Parens
-        [key, val] = node.it.cache o
+        [key, val] = node.it.cache o, true
       else if node instanceof Assign
         {left: key, right: val} = node
       else if (key = val = node).at
         [{key}] = val.tails
       acc = not dyna and key instanceof Literal and IDENTIFIER.test key.value
       asn = Assign Value(lref, [(if acc then Access else Index) key]), val
-      asn.temps = [val.value] if dyna and key isnt val
       code += asn.compile o, LEVEL_PAREN
     if sub is lref
       code.=slice delim.length
@@ -938,12 +936,11 @@ class exports.Op extends Node
   #
   # See <http://docs.python.org/reference/expressions.html#notin>.
   compileChain: (o) ->
-    [sub, ref] = @first.second.cache o
+    [sub, ref] = @first.second.cache o, true
     @first.second = sub
     code  = @first.compile o, LEVEL_OP
     code .= slice 1, -1 if code.charAt(0) is '('
     code += " && #{ ref.compile o } #{@op} #{ @second.compile o, LEVEL_OP }"
-    o.scope.free ref.value if sub isnt ref
     if o.level < LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
@@ -971,7 +968,7 @@ class exports.Op extends Node
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   compileMultiIO: (o) ->
-    [sub, ref] = @first.cache o, LEVEL_OP
+    [sub, ref] = @first.cache o, false, LEVEL_OP
     tests = for item, i of @second.items
       (if i then ref else sub) + ' instanceof ' + item.compile o
     o.scope.free ref if sub isnt ref
@@ -999,7 +996,7 @@ class exports.Of extends Node
 
   compileNode: (o) ->
     lvl = if arr = @array instanceof Arr then LEVEL_OP else LEVEL_LIST
-    [sub, ref] = @item.cache o, lvl
+    [sub, ref] = @item.cache o, false, lvl
     if arr
       [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
       tests = for item, i of @array.items
@@ -1288,9 +1285,8 @@ class exports.If extends Node
 
   compileStatement: (o) ->
     if @post and @then instanceof Return and not @then.it
-      [@if, ref] = @if.cache o
-      @then  = Return ref
-      @temps = [ref.value] if @if isnt ref
+      [@if, ref] = @if.cache o, true
+      @then = Return ref
     code  = if delete o.elsed then '' else @tab
     cond  = if @negated then @if.invert() else @if
     code += "if (#{ cond.compile o, LEVEL_PAREN }) {"
