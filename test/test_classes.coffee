@@ -243,5 +243,6 @@ ok !named?, 'should not leak to global when undeclared'
 
 class Sup
   class @Sub extends this
+    eq super, Sup
 
 ok new Sup.Sub instanceof Sup

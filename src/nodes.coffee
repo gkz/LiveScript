@@ -1338,6 +1338,7 @@ class exports.Super extends Node
                if IDENTIFIER.test name then '.' + name else '[' + name + ']'
       else if IDENTIFIER.test name
         return name + '.superclass'
+    return '_super' if o.scope.check '_super'
     throw SyntaxError 'cannot call super on an anonymous function'
 
 # Export `import all` for use in [parser](../lib/parser.js),
