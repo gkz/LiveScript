@@ -18,8 +18,6 @@ Switches = []
 
 # Mixin the top-level coke functions for Cokefiles to use directly.
 global import
-  say: -> process.stdout.write it + '\n'
-
   # Define a coke task with a short name, an optional sentence description,
   # and the function to run as the action itself.
   task: (name, description, action) ->
@@ -38,12 +36,20 @@ global import
       process.exit 1
     Tasks[name].action this
 
+  # Utilities.
+  say   : -> process.stdout.write it + '\n'
+  slurp : -> '' + FS.readFileSync ...
+  spit  : FS.writeFileSync
+  dir   : FS.readdirSync
+  fs    : FS
+  path  : Path
+
 # Run `coke`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
 # If no tasks are passed, print the help screen.
 exports.run = ->
   args = process.argv.slice 2
-  fileName = args.splice(0, 2)[1] if args[0] of <[ -f --cokefile ]>
+  fileName = args.splice(0, 2).1 if args.0 of <[ -f --cokefile ]>
   Path.exists fileName ||= 'Cokefile', (exists) ->
     unless exists
       console.error 'no "%s" in %s', fileName, process.cwd()

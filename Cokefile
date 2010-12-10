@@ -1,4 +1,3 @@
-fs            = require 'fs'
 Coco          = require './lib/coco'
 {spawn, exec} = require 'child_process'
 
@@ -18,7 +17,7 @@ run = (args) ->
 
 sources = ->
   ext = /\.co(?:ffee)?$/i
-  'src/' + file if ext.test file for file of fs.readdirSync 'src'
+  'src/' + file if ext.test file for file of dir 'src'
 
 coreSources = ->
   "src/#{src}.coffee" for src of <[coco grammar lexer nodes rewriter scope]>
@@ -57,14 +56,14 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   src = require('./lib/grammar').parser.generate()
         .replace /^[^]+?var (?=parser = {)/, 'exports.'
         .replace /return parser;[^]+/, ''
-  fs.writeFile 'lib/parser.js', src
+  spit 'lib/parser.js', src
 
 task 'build:browser', 'rebuild the merged script for inclusion of the browser', ->
   code  = ''
   code += """
     require['./#{name}'] = new function(){
       var exports = this;
-      #{ fs.readFileSync "lib/#{name}.js" }
+      #{ slurp "lib/#{name}.js" }
     };
   """ for name of <[ rewriter lexer parser scope nodes coco browser ]>
   {parser, uglify} = require 'uglify-js'
@@ -76,8 +75,8 @@ task 'build:browser', 'rebuild the merged script for inclusion of the browser', 
     }()
   """
   ast = uglify.ast_mangle  ast
-  ast = uglify.ast_squeeze ast, extra: true
-  fs.writeFileSync 'extras/coco.js', """
+  ast = uglify.ast_squeeze ast, {+extra}
+  spit 'extras/coco.js', """
     // Coco #{Coco.VERSION}
     // Copyright 2010, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
@@ -90,7 +89,7 @@ task 'build:browser', 'rebuild the merged script for inclusion of the browser', 
 
 task 'bench', 'quick benchmark of compilation time', ->
   rw     = require './lib/rewriter'
-  co     = coreSources().map(-> fs.readFileSync it).join '\n'
+  co     = coreSources().map(-> slurp it).join '\n'
   fmt    = -> " : #{bold}#{ "   #{it}".slice -4 }#{reset}[ms]"
   total  = 0
   now    = Date.now()
@@ -128,32 +127,30 @@ runTests = (Coco) ->
     say if failedTests
     then tint "failed #{failedTests} and #{message}", red
     else tint message
-  fs.readdir 'test', (err, files) ->
-    path = require 'path'
-    files.forEach (file) ->
-      return unless /\.co(?:ffee)?$/i.test file
-      fs.readFile (fileName = path.join 'test', file), (err, code) ->
-        try Coco.run code += '', {fileName}
-        catch e
-          ++failedTests
-          return say e unless stk = e?.stack
-          msg = '' + /^.+/.exec stk
-          {1: row, 2: col} = ///#{fileName}:(\d+):(\d+)\)?$///m.exec(stk) or ''
-          say tint "failed #{fileName}:#{row--}:#{col--}", red
-          if row >= 0
-            code = Coco.compile code
-          else if /\bon line (\d+)\b/.test msg
-            row = RegExp.$1 - 1
-            col = 0
-          else
-            return say stk
-          say msg
-          {(row): line} = lines = code.split '\n'
-          say lines.slice(row-5, row+0).join '\n'
-          say line.slice(0, col) + tint line.slice(col), bold
-          say lines.slice(row+1, row+6).join '\n'
+  dir('test').forEach (file) ->
+    return unless /\.co(?:ffee)?$/i.test file
+    code = slurp fileName = path.join 'test', file
+    try Coco.run code, {fileName}
+    catch e
+      ++failedTests
+      return say e unless stk = e?.stack
+      msg = '' + /^.+/.exec stk
+      {1: row, 2: col} = ///#{fileName}:(\d+):(\d+)\)?$///m.exec(stk) or ''
+      say tint "failed #{fileName}:#{row--}:#{col--}", red
+      if row >= 0
+        code = Coco.compile code
+      else if /\bon line (\d+)\b/.test msg
+        row = RegExp.$1 - 1
+        col = 0
+      else
+        return say stk
+      say msg
+      {(row): line} = lines = code.split '\n'
+      say lines.slice(row-5, row+0).join '\n'
+      say line.slice(0, col) + tint line.slice(col), bold
+      say lines.slice(row+1, row+6).join '\n'
 
 task 'test', 'run the Coco language test suite', -> runTests Coco
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
-  runTests new -> eval fs.readFileSync 'extras/coco.js', 'utf-8'
+  runTests new -> eval slurp 'extras/coco.js', 'utf8'
