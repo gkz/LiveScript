@@ -263,12 +263,6 @@ class exports.Value extends Node
     return head if not tails and head instanceof Value
     this import {head, tails: tails || [], at}
 
-  SIMPLENUM = /^\d+$/
-  STARSEEK  = ->
-    switch
-    case it.value is '*'     then it
-    case it instanceof Index then false
-
   children: <[ head tails ]>
 
   add: -> @tails.push it; this
@@ -308,6 +302,12 @@ class exports.Value extends Node
       nref = Index ref
       nref.temps = [ref.value]
     [base.add name; Value bref or base.head, [nref or name]]
+
+  SIMPLENUM = /^\d+$/
+  STARSEEK  = ->
+    switch
+    case it.value is '*'     then it
+    case it instanceof Index then false
 
   compileNode: (o) ->
     return val.compile o if val = @unfoldAssign(o) or @unfoldBind(o)
@@ -628,22 +628,22 @@ class exports.Class extends Node
     name  = decl or @name
     name  = '_Class' unless name and IDENTIFIER.test name
     lname = Literal fun.bound = name
-    proto = Value lname, [Access Literal 'prototype']
     fun.body.traverseChildren -> it.clas = name if it instanceof Fun; null
     for node, i of lines
       if node instanceof Obj
-        lines[i] = Import proto, node
+        lines[i] = Import Literal('_proto'), node
+        proto = lname
       else if node instanceof Fun
         throw SyntaxError 'more than one constructor in a class' if ctor
-        ctor = node
+        proto = lname if (ctor = node).bound
     lines.unshift ctor = Fun() unless ctor
-    ctor import {name, +ctor, +statement, -clas}
     lines.push lname
+    ctor import {name, +ctor, +statement, -clas}
     args = []
     if @sup
       args.push @sup
-      lines.unshift Extends lname, fun.params.* = Literal '_super'
-    clas = Call fun, args
+      proto = Extends lname, fun.params.* = Literal '_super'
+    clas = Call fun import {proto}, args
     clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
     clas.compile o
@@ -777,6 +777,7 @@ class exports.Fun extends Node
       new Scope (if @wrapper then pscope else sscope), @wrapper and sscope
     scope.method = this
     delete o.globals
+    scope.assign '_proto', @proto.compile(o) + '.prototype' if @proto
     o.indent += TAB
     {params, body, name, tab} = this
     code = 'function'
@@ -784,7 +785,7 @@ class exports.Fun extends Node
       if @ctor
         scope.assign '_this', 'new _ctor'
         code += """
-           _ctor(){} _ctor.prototype = #{name}.prototype;
+           _ctor(){} _ctor.prototype = _proto;
           #{tab}function
         """
         body.add Return Literal '_this'
