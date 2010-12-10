@@ -55,12 +55,18 @@ obj = f: (q = 123, @p = 456) -> q
 eq obj.f(), 123
 eq obj.p  , 456
 
-withSplats = (a = 2, ...b, c = 3, d = 5) -> a * (b.length + 1) * c * d
+withSplats = (a = 2, ...b, c = 3, d ?= 5) -> a * (b.length + 1) * c * d
 eq 30, withSplats()
 eq 15, withSplats 1
 eq  5, withSplats 1, 1
 eq  1, withSplats 1, 1, 1
 eq  2, withSplats 1, 1, 1, 1
+
+f = (a ||= 2, b &&= 5) -> a + b
+eq 7, f 0, 1
+eq 1, f 1, 0
+eq 6, f 1, 1
+eq 2, f 0, 0
 
 
 (->

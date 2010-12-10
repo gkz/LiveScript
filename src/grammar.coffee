@@ -225,9 +225,9 @@ grammar =
   # A single parameter in a function definition can be ordinary, or a splat
   # that hoovers up the remaining arguments.
   Param: [
-    o     'ParamVar'                   ,-> Param $1
-    o '... ParamVar'                   ,-> Param $2, null, true
-    o     'ParamVar ASSIGN Expression' ,-> Param $1, $3
+    o     'ParamVar'
+    o '... ParamVar'                   ,-> Splat $2
+    o     'ParamVar ASSIGN Expression' ,-> Assign $1, $3, null, $2.logic or '?'
   ]
   ParamVar: [
     o 'IDENTIFIER' ,-> Literal $1

@@ -43,7 +43,7 @@ class Node
       null
     if mentionsArgs
       args.push Literal 'arguments'
-      fun.params.push Param Literal '_args'
+      fun.params.push Literal '_args'
     Call(val or fun, args).compileNode o
 
   # If the code generation wishes to use the result of a complex expression
@@ -753,12 +753,11 @@ class exports.Assign extends Node
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params = [], @body = Lines(), @arrow) =>
-    @bound = '_this' if arrow is '=>'
+  (@params = [], @body = Lines(), @arrow) => @bound = '_this' if arrow is '=>'
 
   children: <[ params body ]>
 
-  show: -> @arrow
+  show: -> @bound
 
   # Short-circuit `traverseChildren` method to prevent it
   # from crossing scope boundaries unless `xscope`.
@@ -791,25 +790,29 @@ class exports.Fun extends Node
       else if b = sscope.method?.bound
       then @bound = b
       else sscope.assign '_this', 'this'
-    vars = []
-    asns = []
-    for param of params then if param.splat
-      splats = Assign Arr(p.asReference o for p of params), Literal 'arguments'
+    args = []; asns = []
+    for prm of params then if prm instanceof Splat
+      splats = Assign Arr(paramName o, p for p of params), Literal 'arguments'
       break
-    for param of params
-      if param.isComplex()
-        val = ref = param.asReference o
-        val = Op '?', ref, param.value if param.value
-        asns.push Assign param.name, val
-      else if (ref = param).value
-        asns.push Op '&&', Literal(ref.name.value + ' == null'),
-                           Assign ref.name, ref.value
-      vars.push ref unless splats
+    for prm of params
+      arg = prm
+      if asn = arg instanceof Assign then arg.=left
+      else  if arg instanceof Splat  then arg.=it
+      if arg.isComplex()
+        val = ref = paramName o, prm
+        val = Op prm.logic, ref, prm.right if asn
+        asns.push a = Assign arg, val
+        arg = ref
+      else if asn
+        if prm.logic is '?'
+          prm = Op '&&', Literal(arg.value + ' == null'), prm import {-logic}
+        asns.push prm
+      args.push arg unless splats
     wasEmpty = not (exps = body.lines).length
     asns.unshift splats  if splats
     exps.unshift ...asns if asns.length
-    scope.parameter vars[i] = v.compile o for v, i of vars unless splats
-    vars.0 = 'it' if not vars.length and body.contains(-> it.value is 'it')
+    scope.parameter args[i] = a.compile o for a, i of args unless splats
+    args.0 = 'it' if not args.length and body.contains(-> it.value is 'it')
     body.makeReturn() unless wasEmpty or @ctor
     if @statement
       unless name
@@ -819,7 +822,7 @@ class exports.Fun extends Node
       scope .add name, 'function'
       pscope.add name, 'function' unless @returns
       code += ' ' + name
-    code += "(#{ vars.join ', ' }){"
+    code += "(#{ args.join ', ' }){"
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if exps.length
     code += '}'
     code += " #{name}.name = '#{name}';" if @ctor and name.charAt(0) isnt '_'
@@ -827,60 +830,18 @@ class exports.Fun extends Node
     return tab + code if @statement
     if @front then "(#{code})" else code
 
-#### Param
-# A parameter in a function definition with an arbitrary LHS expression and
-# an optional default value.
-class exports.Param extends Node
-  (@name, @value, @splat) =>
-
-  children: <[ name value ]>
-
-  show: -> @splat and '...'
-
-  compile: (o) -> @name.compile o, LEVEL_LIST
-
-  asReference: (o) ->
-    return @reference if @reference
-    node = @name
-    if node.at
-      node.=tails.0.key
-      node = Literal '$' + node.value if node.value.reserved
-    else if node.isComplex()
-      node = Literal o.scope.temporary 'arg'
-    @reference = if @splat then Splat node else node
-
-  isComplex: -> @name.isComplex()
-
-#### Splat
-# A splat, either as a parameter to a function, an argument to a call,
-# or as part of a destructuring assignment.
-class exports.Splat extends Node
-  => @it = if it instanceof Node then it else Literal it
-
-  children: ['it']
-
-  isAssignable: YES
-
-  assigns: -> @it.assigns it
-
-  compile: -> @it.compile ...arguments
-
-  # Compiles a list of nodes mixed with splats to a proper array.
-  @compileArray = (o, list, apply) ->
-    break if node instanceof Splat for node, index of list
-    return '' if index >= list.length
-    if list.length is 1
-      code = list.0.compile o, LEVEL_LIST
-      return if apply then code else utility('slice') + ".call(#{code})"
-    args = list.slice index
-    for node, i of args
-      code = node.compile o, LEVEL_LIST
-      args[i] = if node instanceof Splat
-      then utility('slice') + ".call(#{code})"
-      else "[#{code}]"
-    return args.0 + ".concat(#{ args.slice(1).join ', ' })" unless index
-    base = (node.compile o, LEVEL_LIST for node of list.slice 0, index)
-    "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
+  paramName = (o, node) ->
+    return node.param if node.param
+    prm = node
+    if splat = prm instanceof Splat  then prm.=it
+    else    if prm instanceof Assign then prm.=left
+    if prm.at
+      prm.=tails.0.key
+      prm = Literal '$' + prm.value if prm.value.reserved
+    else if prm.isComplex()
+      prm = Literal o.scope.temporary 'arg'
+    prm = Splat prm if splat
+    node.param = prm
 
 #### While
 # A while loop, the only sort of low-level loop exposed by Coco.
@@ -1118,6 +1079,35 @@ class exports.Parens extends Node
     o.level = LEVEL_PAREN
     if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
 
+#### Splat
+# A splat, either as a parameter to a function, an argument to a call,
+# or as part of a destructuring assignment.
+class exports.Splat extends Parens
+  (@it) =>
+
+  isAssignable: YES
+
+  assigns: -> @it.assigns it
+
+  compile: -> @it.compile @0, @1
+
+  # Compiles a list of nodes mixed with splats to a proper array.
+  @compileArray = (o, list, apply) ->
+    break if node instanceof Splat for node, index of list
+    return '' if index >= list.length
+    if list.length is 1
+      code = list.0.compile o, LEVEL_LIST
+      return if apply then code else utility('slice') + ".call(#{code})"
+    args = list.slice index
+    for node, i of args
+      code = node.compile o, LEVEL_LIST
+      args[i] = if node instanceof Splat
+      then utility('slice') + ".call(#{code})"
+      else "[#{code}]"
+    return args.0 + ".concat(#{ args.slice(1).join ', ' })" unless index
+    base = (node.compile o, LEVEL_LIST for node of list.slice 0, index)
+    "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
+
 #### For
 # Coco's replacement for the `for` loop are array, object or range iterators.
 # They also act as an expression, collecting values from the last expression
@@ -1194,12 +1184,12 @@ class exports.For extends While
              fn.params.length is it.args.length
         return if it instanceof [Fun, For] then null else it.eachChild dig
       if @index
-        fn.params.push Param it.args[*] = Literal @index
+        fn.params.push it.args[*] = Literal @index
       if name = @name
         it.args.push Literal if name.isComplex()
         then @nref ||= @temps[*] = o.scope.temporary 'ref'
         else name.value
-        fn.params.push Param name
+        fn.params.push name
       it.callee = Value Literal ref = o.scope.temporary 'fn'
       o.scope.assign ref, fn.compile o import {indent: ''}, LEVEL_LIST
       o.indent = @tab
