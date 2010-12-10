@@ -116,8 +116,11 @@
       case <[ BREAK CONTINUE DEBUGGER ]> then tag = 'STATEMENT'
       case <[ IN OF INSTANCEOF ]>
         if tag isnt 'INSTANCEOF' and @seenFor
-          @seenRange = true if tag is 'OF'
-          @seenFor   = false
+          if tag is 'OF'
+            @seenRange = true
+            id = @last.0 is 'IDENTIFIER' and @tokens[*-2].0 is ',' and
+                 (@tokens.splice -2, 2; @last.1)
+          @seenFor = false
           tag = 'FOR' + tag
           break
         if @last.1 is '!'

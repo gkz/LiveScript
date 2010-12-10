@@ -280,18 +280,14 @@ grammar =
     # The source of a `for`-loop is an array, object or range.
     # Unless it's iterating over an object, you can choose to step through
     # in fixed-size increments.
-    o 'FOR Assignable              FOROF Expression'
-    , -> mix For(), name: $2,            source: $4
-    o 'FOR Assignable , IDENTIFIER FOROF Expression'
-    , -> mix For(), name: $2, index: $4, source: $6
-    o 'FOR Assignable              FOROF Expression BY Expression'
-    , -> mix For(), name: $2,            source: $4, step: $6
-    o 'FOR Assignable , IDENTIFIER FOROF Expression BY Expression'
-    , -> mix For(), name: $2, index: $4, source: $6, step: $8
+    o 'FOR Assignable FOROF Expression'
+    , -> mix For(), name: $2, index: $3, source: $4
+    o 'FOR Assignable FOROF Expression BY Expression'
+    , -> mix For(), name: $2, index: $3, source: $4, step: $6
 
     o 'FOR IDENTIFIER              FORIN Expression'
     , -> mix For(), object: true, own: !$1, index: $2,           source: $4
-    o 'FOR Assignable , Assignable FORIN Expression'
+    o 'FOR IDENTIFIER , Assignable FORIN Expression'
     , -> mix For(), object: true, own: !$1, index: $2, name: $4, source: $6
 
     o 'FOR IDENTIFIER FROM Expression TO Expression'

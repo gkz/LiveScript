@@ -1101,31 +1101,27 @@ class exports.For extends While
   show: -> @index
 
   compileNode: (o) ->
-    if @index instanceof Node
-      if @index not instanceof Literal
-        throw SyntaxError 'invalid index variable: ' + @index.compile o
-      @index.=value
-    @temps = []
+    temps = @temps = []
     if idx = @index
     then o.scope.declare idx
-    else @temps.push idx = o.scope.temporary 'i'
+    else temps.push idx = o.scope.temporary 'i'
     unless @object
       [step, pvar] = (@step || Literal 1).compileLoopReference o, 'step'
-      @temps.push pvar if step isnt pvar
+      temps.push pvar if step isnt pvar
     if @from
       eq = if @op is 'til' then '' else '='
       [tail, tvar] = @to.compileLoopReference o, 'to'
       vars = idx + ' = ' + @from.compile o
       if tail isnt tvar
         vars += ', ' + tail
-        @temps.push tvar
+        temps.push tvar
       cond = if +pvar
       then "#{idx} #{ if pvar < 0 then '>' else '<' }#{eq} #{tvar}"
       else "#{pvar} < 0 ? #{idx} >#{eq} #{tvar} : #{idx} <#{eq} #{tvar}"
     else
       if @name or @object and @own
         [srcPart, svar] = @source.compileLoopReference o, 'ref'
-        @temps.push svar if srcPart isnt svar
+        temps.push svar if srcPart isnt svar
       else
         srcPart = svar = @source.compile o, LEVEL_PAREN
       unless @object
@@ -1134,7 +1130,7 @@ class exports.For extends While
           vars = "#{idx} = #{srcPart}.length - 1"
           cond = "#{idx} >= 0"
         else
-          @temps.push lvar = o.scope.temporary 'len'
+          temps.push lvar = o.scope.temporary 'len'
           vars = "#{idx} = 0, #{lvar} = #{srcPart}.length"
           cond = "#{idx} < #{lvar}"
     if @object
