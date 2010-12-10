@@ -6,7 +6,7 @@
 {Scope} = require './scope'
 
 #### Node
-# The **Node** is the abstract base class for all nodes in the syntax tree.
+# The abstract base class for all nodes in the syntax tree.
 # Each subclass implements the `compileNode` method, which performs the
 # code generation for that node. To compile a node to JavaScript,
 # call `compile` on it, which wraps `compileNode` in some generic extra smarts.
@@ -121,7 +121,7 @@ class Node
 #### Lines
 # A list of expressions that forms the body of an
 # indented block of code--the implementation of a function, a clause in an
-# `if`, `switch`, or `try`, and so on.
+# `if`, `switch`, `try`, and so on.
 class exports.Lines extends Node
   (node) =>
     return node if node instanceof Lines
@@ -239,25 +239,25 @@ class exports.Throw extends Statement
 
   children: ['it']
 
-  name: 'throw'
+  verb: 'throw'
 
   jumps: NO
 
   compile: (o) ->
     exp = @it?.compile o, LEVEL_PAREN
-    o.indent + @name + (if exp then ' ' + exp else '') + ';'
+    o.indent + @verb + (if exp then ' ' + exp else '') + ';'
 
 #### Return
 class exports.Return extends Throw
   (@it) =>
 
-  name: 'return'
+  verb: 'return'
 
   jumps: YES
 
 #### Value
 # Acts as a container for property access chains, by holding
-# *Access*/*Index* instances within `@tails`.
+# __Access__/__Index__ instances within `@tails`.
 class exports.Value extends Node
   (head, tails, at) =>
     return head if not tails and head instanceof Value
@@ -329,7 +329,7 @@ class exports.Value extends Node
       return Value sub, @tails.slice i
     this
 
-  # Unfold a soak into an *If*: `a?.b` -> `a.b if a?`
+  # Unfold a soak into an __If__: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     if ifn = @head.unfoldSoak o
       ifn.then.tails.push ...@tails
@@ -365,18 +365,8 @@ class exports.Value extends Node
       return Value Call(Literal utility 'bind'; args), ps.slice i+1
     null
 
-#### Comment
-# Coco passes through block comments as JavaScript block comments
-# at the same position.
-class exports.Comment extends Node
-  (@comment) =>
-
-  terminator: ''
-
-  compile: (o) -> "/*#{ multident @comment, o.indent }*/"
-
 #### Call
-# A function invocation.
+# `x(y)`
 class exports.Call extends Node
   (@callee, @args, open) =>
     @args or= (@splat = true; [Literal 'this'; Literal 'arguments'])
@@ -386,7 +376,7 @@ class exports.Call extends Node
 
   show: -> @soak and '?'
 
-  # List up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
+  # Lists up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
   digCalls: ->
     list = [call = this]
     list.push call while call.=callee.head instanceof Call
@@ -451,64 +441,6 @@ class exports.Call extends Node
       else
         ref  = 'null'
     "#{fun}.apply(#{ref}, #{args})"
-
-#### Extends
-# An operator that emulates class-ical inheritance.
-class exports.Extends extends Node
-  (@sub, @sup) =>
-
-  children: <[ sub sup ]>
-
-  compile: (o) -> Call(Value Literal utility 'extends'; [@sub, @sup]).compile o
-
-#### Import
-# Operators that copy properties from right to left.
-class exports.Import extends Node
-  (@left, @right, all) => @util = if all then 'importAll' else 'import'
-
-  children: <[ left right ]>
-
-  show: -> @util.slice 6
-
-  compileNode: (o) ->
-    unless @util is 'import' and @right instanceof Obj
-      return Call(Value Literal utility @util; [@left, @right]).compile o
-    {items} = @right
-    return @left.compile o unless items.length
-    top = not o.level
-    if top and items.length < 2
-    then  sub = lref  = @left
-    else [sub , lref] = @left.cache o
-    [delim, space] = if top then [';', '\n' + @tab] else [',', ' ']
-    delim += space
-    @temps = []
-    code   = ''
-    for node of items
-      code += if com then space else delim
-      if com = node instanceof Comment
-        code += node.compile o, LEVEL_LIST
-        continue
-      if node instanceof Splat
-        code += Import(lref, node.it).compile o, LEVEL_TOP
-        continue
-      if dyna = node instanceof Parens
-        [key, val] = node.it.cache o, true
-      else if node instanceof Assign
-        {left: key, right: val} = node
-      else if (key = val = node).at
-        [{key}] = val.tails
-      acc = not dyna and key instanceof Literal and IDENTIFIER.test key.value
-      asn = Assign Value(lref, [(if acc then Access else Index) key]), val
-      code += asn.compile o, LEVEL_PAREN
-    if sub is lref
-      code.=slice delim.length
-    else
-      code = sub.compile(o, LEVEL_PAREN) + code
-      o.scope.free lref.value
-    return code if top
-    unless node instanceof Splat
-      code += (if com then ' ' else ', ') + lref.compile o, LEVEL_LIST
-    if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Access
 # `x.y`
@@ -595,12 +527,8 @@ class exports.Obj extends Node
 
 #### Arr
 # `[x, y]`
-class exports.Arr extends Node
+class exports.Arr extends Obj
   (@items = []) =>
-
-  children: ['items']
-
-  assigns: Obj::assigns
 
   compileNode: (o) ->
     return '[]' unless @items.length
@@ -611,42 +539,101 @@ class exports.Arr extends Node
     then "[\n#{o.indent}#{code}\n#{@tab}]"
     else "[#{code}]"
 
-#### Class
-class exports.Class extends Node
-  (@title, @sup, body) => @fun = Fun [], body
+#### Op
+# Simple Arithmetic and logical operations, with some special conversions.
+class exports.Op extends Node
+  (op, first, second, post) =>
+    return Of first, second if op is 'of'
+    return Call first, []   if op is 'do'
+    if op is 'new'
+      if first instanceof Call
+        first.digCalls().0.new = 'new '
+        return first
+      p.keep = true if (p = first.head or first) instanceof Parens
+    this import {op, first, second, post}
 
-  children: <[ title sup fun ]>
+  children: <[ first second ]>
+
+  show: -> @op
+
+  EQUALITY = /^[!=]==?$/
+  COMPARER = /^(?:[!=]=|[<>])=?$/
+
+  invert: ->
+    if EQUALITY.test(op = @op) and not COMPARER.test(@first.op)
+      @op = '!='.charAt(op.indexOf '=') + op.slice 1
+      return this
+    return Op '!', Parens this if @second
+    return @first if op is '!' and @first.op of <[ ! in instanceof < > <= >= ]>
+    Op '!', this
+
+  unfoldSoak: (o) ->
+    @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
 
   compileNode: (o) ->
-    {fun} = this; {lines} = fun.body
-    if @title
-      decl = if @title instanceof Value
-      then @title.tails[*-1].key?.value
-      else @title.value
-      if decl and decl.reserved
-        throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
-    name  = decl or @name
-    name  = '_Class' unless name and IDENTIFIER.test name
-    lname = Literal fun.bound = name
-    fun.body.traverseChildren -> it.clas = name if it instanceof Fun; null
-    for node, i of lines
-      if node instanceof Obj
-        lines[i] = Import Literal('_proto'), node
-        proto = lname
-      else if node instanceof Fun
-        throw SyntaxError 'more than one constructor in a class' if ctor
-        proto = lname if (ctor = node).bound
-    lines.unshift ctor = Fun() unless ctor
-    lines.push lname
-    ctor import {name, +ctor, +statement, -clas}
-    args = []
-    if @sup
-      args.push @sup
-      proto = Extends lname, fun.params.* = Literal '_super'
-    clas = Call fun import {proto}, args
-    clas = Assign lname , clas if decl and @title?.isComplex()
-    clas = Assign @title, clas if @title
-    clas.compile o
+    return @compileUnary o if not @second
+    return @compileChain o if COMPARER.test(@op) and COMPARER.test(@first.op)
+    return @compileExistence o if @op is '?'
+    return @compileMultiIO   o if @op is 'instanceof' and @second instanceof Arr
+    @first import {@front}
+    code = @first .compile(o, LEVEL_OP) + " #{@op} " +
+           @second.compile(o, LEVEL_OP)
+    if o.level <= LEVEL_OP then code else "(#{code})"
+
+  # Mimic Python's chained comparisons when multiple comparison operators are
+  # used sequentially. For example:
+  #
+  #     $ coco -e 'console.log 50 < 65 === 9r72 > 10'
+  #     true
+  #
+  # See <http://docs.python.org/reference/expressions.html#notin>.
+  compileChain: (o) ->
+    [sub, ref] = @first.second.cache o, true
+    @first.second = sub
+    code  = @first.compile o, LEVEL_OP
+    code .= slice 1, -1 if code.charAt(0) is '('
+    code += " && #{ ref.compile o } #{@op} #{ @second.compile o, LEVEL_OP }"
+    if o.level < LEVEL_OP then code else "(#{code})"
+
+  compileExistence: (o) ->
+    if @first.isComplex()
+      ref = tmp = o.scope.temporary 'ref'
+      fst = Parens Assign Literal(ref), @first
+    else
+      fst = @first
+      ref = fst.compile o
+    code  = Existence(fst).compile o
+    code += ' ? ' + ref + ' : ' + @second.compile o, LEVEL_LIST
+    o.scope.free tmp if tmp
+    code
+
+  compileUnary: (o) ->
+    {op} = this
+    return @compileDelete o if op is 'delete' and o.level
+    code = @first.compile o, LEVEL_OP
+    code = if @post
+    then code + op
+    else if op of <[ new typeof delete ]> or
+            op of <[ + - ]> and @first.op is op
+    then op + ' ' + code
+    else op + code
+    if o.level <= LEVEL_OP then code else "(#{code})"
+
+  compileMultiIO: (o) ->
+    [sub, ref] = @first.cache o, false, LEVEL_OP
+    tests = for item, i of @second.items
+      (if i then ref else sub) + ' instanceof ' + item.compile o
+    o.scope.free ref if sub isnt ref
+    code = tests.join ' || '
+    if o.level < LEVEL_OP then code else "(#{code})"
+
+  compileDelete: (o) ->
+    code = ref = o.scope.temporary 'ref'
+    [get, del] = Value(@first).cacheReference o
+    code += ' = ' + get.compile(o, LEVEL_LIST) + ', delete ' +
+                    del.compile(o, LEVEL_LIST) + ', ' + ref
+    o.scope.free ref
+    if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Assign
 # Assignment to a local variable or the property of an object,
@@ -751,6 +738,102 @@ class exports.Assign extends Node
       val = Import Obj(), val if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
 
+#### Import
+# Operators that copy properties from right to left.
+class exports.Import extends Node
+  (@left, @right, all) => @util = if all then 'importAll' else 'import'
+
+  children: <[ left right ]>
+
+  show: -> @util.slice 6
+
+  compileNode: (o) ->
+    unless @util is 'import' and @right instanceof Obj
+      return Call(Value Literal utility @util; [@left, @right]).compile o
+    {items} = @right
+    return @left.compile o unless items.length
+    top = not o.level
+    if top and items.length < 2
+    then  sub = lref  = @left
+    else [sub , lref] = @left.cache o
+    [delim, space] = if top then [';', '\n' + @tab] else [',', ' ']
+    delim += space
+    @temps = []
+    code   = ''
+    for node of items
+      code += if com then space else delim
+      if com = node instanceof Comment
+        code += node.compile o, LEVEL_LIST
+        continue
+      if node instanceof Splat
+        code += Import(lref, node.it).compile o, LEVEL_TOP
+        continue
+      if dyna = node instanceof Parens
+        [key, val] = node.it.cache o, true
+      else if node instanceof Assign
+        {left: key, right: val} = node
+      else if (key = val = node).at
+        [{key}] = val.tails
+      acc = not dyna and key instanceof Literal and IDENTIFIER.test key.value
+      asn = Assign Value(lref, [(if acc then Access else Index) key]), val
+      code += asn.compile o, LEVEL_PAREN
+    if sub is lref
+      code.=slice delim.length
+    else
+      code = sub.compile(o, LEVEL_PAREN) + code
+      o.scope.free lref.value
+    return code if top
+    unless node instanceof Splat
+      code += (if com then ' ' else ', ') + lref.compile o, LEVEL_LIST
+    if o.level < LEVEL_LIST then code else "(#{code})"
+
+#### Of
+# Handles `of` operation that tests if the left operand is included within
+# the right operand, arraywise.
+class exports.Of extends Node
+  (@item, @array) =>
+
+  children: <[ item array ]>
+
+  show   : -> @negated and '!'
+  invert : -> @negated ^= 1; this
+
+  compileNode: (o) ->
+    lvl = if arr = @array instanceof Arr then LEVEL_OP else LEVEL_LIST
+    [sub, ref] = @item.cache o, false, lvl
+    if arr
+      [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
+      tests = for item, i of @array.items
+        (if i then ref else sub) + cmp + item.compile o, lvl
+      code = tests.join cnj
+    else
+      code = utility('indexOf') + ".call(#{ @array.compile o, lvl }, #{ref}) " +
+             if @negated then '< 0' else '>= 0'
+      return code if sub is ref
+      code = sub + ', ' + code
+    o.scope.free ref if sub isnt ref
+    if o.level < lvl then code else "(#{code})"
+
+#### Existence
+# Checks a value for existence--not `undefined` nor `null`.
+class exports.Existence extends Node
+  (@it) =>
+
+  children: ['it']
+
+  show   : Of::show
+  invert : Of::invert
+
+  compileNode: (o) ->
+    code = @it.compile o, LEVEL_OP
+    if IDENTIFIER.test(code) and not o.scope.check code, true
+      code = 'typeof ' + code + if @negated
+      then " == 'undefined' || #{code} === null"
+      else " != 'undefined' && #{code} !== null"
+    else
+      code += " #{ if @negated then '=' else '!' }= null"
+    if o.level <= LEVEL_COND then code else "(#{code})"
+
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
@@ -761,7 +844,7 @@ class exports.Fun extends Node
   show: -> @bound
 
   # Short-circuit `traverseChildren` method to prevent it
-  # from crossing scope boundaries unless `xscope`.
+  # from crossing scope boundaries by default.
   traverseChildren: (_, xscope) -> super ... if xscope
 
   isStatement: -> !!@statement
@@ -845,226 +928,75 @@ class exports.Fun extends Node
     prm = Splat prm if splat
     node.param = prm
 
-#### While
-# A while loop, the only sort of low-level loop exposed by Coco.
-class exports.While extends Node
-  (@condition, @name) => @condition.=invert() if name is 'until'
+#### Class
+class exports.Class extends Node
+  (@title, @sup, body) => @fun = Fun [], body
 
-  children: <[ condition body ]>
-
-  isStatement: YES
-
-  jumps: ->
-    {lines} = @body
-    return false unless lines.length
-    context = {+loop}
-    return true if node.jumps context for node of lines
-    false
-
-  addBody: (@body) ->
-    [last, i] = lastNonComment body.lines
-    if last instanceof Statement and last.name is 'continue'
-      body.lines.splice i, 1
-    this
-
-  makeReturn: ->
-    if it
-      @body.makeReturn it
-    else unless @jumps()
-      @returns = true
-    this
+  children: <[ title sup fun ]>
 
   compileNode: (o) ->
-    code = @condition?.compile(o, LEVEL_PAREN) or 'true'
-    code = @tab + if code is 'true' then 'for (;;' else 'while (' + code
-    o.indent += TAB
-    code + ') {' + @compileBody o
+    {fun} = this; {lines} = fun.body
+    if @title
+      decl = if @title instanceof Value
+      then @title.tails[*-1].key?.value
+      else @title.value
+      if decl and decl.reserved
+        throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
+    name  = decl or @name
+    name  = '_Class' unless name and IDENTIFIER.test name
+    lname = Literal fun.bound = name
+    fun.body.traverseChildren -> it.clas = name if it instanceof Fun; null
+    for node, i of lines
+      if node instanceof Obj
+        lines[i] = Import Literal('_proto'), node
+        proto = lname
+      else if node instanceof Fun
+        throw SyntaxError 'more than one constructor in a class' if ctor
+        proto = lname if (ctor = node).bound
+    lines.unshift ctor = Fun() unless ctor
+    lines.push lname
+    ctor import {name, +ctor, +statement, -clas}
+    args = []
+    if @sup
+      args.push @sup
+      proto = Extends lname, fun.params.* = Literal '_super'
+    clas = Call fun import {proto}, args
+    clas = Assign lname , clas if decl and @title?.isComplex()
+    clas = Assign @title, clas if @title
+    clas.compile o
 
-  compileBody: (o) ->
-    {lines} = @body; end = '}'
-    if @returns
-      [last, i] = lastNonComment lines
-      if last and last not instanceof Throw
-        o.scope.assign res = '_results', '[]'
-        lines[i] = last.makeReturn res
-      end = "}\n#{@tab}return #{ res or '[]' };"
-    return end unless lines.length
-    "\n#{ @body.compile o, LEVEL_TOP }\n" + @tab + end
+#### Extends
+# An operator that emulates class-ical inheritance.
+class exports.Extends extends Node
+  (@sub, @sup) =>
 
-#### Op
-# Simple Arithmetic and logical operations, with some special conversions.
-class exports.Op extends Node
-  (op, first, second, post) =>
-    return Of first, second if op is 'of'
-    return Call first, []   if op is 'do'
-    if op is 'new'
-      if first instanceof Call
-        first.digCalls().0.new = 'new '
-        return first
-      p.keep = true if (p = first.head or first) instanceof Parens
-    this import {op, first, second, post}
+  children: <[ sub sup ]>
 
-  EQUALITY = /^[!=]==?$/
-  COMPARER = /^(?:[!=]=|[<>])=?$/
+  compile: (o) -> Call(Value Literal utility 'extends'; [@sub, @sup]).compile o
 
-  children: <[ first second ]>
+#### Super
+# Reference to the parent method.
+class exports.Super extends Node
+  =>
 
-  show: Assign::show
+  isAssignable: YES
 
-  invert: ->
-    if EQUALITY.test(op = @op) and not COMPARER.test(@first.op)
-      @op = '!='.charAt(op.indexOf '=') + op.slice 1
-      return this
-    return Op '!', Parens this if @second
-    return @first if op is '!' and @first.op of <[ ! in instanceof < > <= >= ]>
-    Op '!', this
-
-  unfoldSoak: (o) ->
-    @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, 'first'
-
-  compileNode: (o) ->
-    return @compileUnary o if not @second
-    return @compileChain o if COMPARER.test(@op) and COMPARER.test(@first.op)
-    return @compileExistence o if @op is '?'
-    return @compileMultiIO   o if @op is 'instanceof' and @second instanceof Arr
-    @first import {@front}
-    code = @first .compile(o, LEVEL_OP) + " #{@op} " +
-           @second.compile(o, LEVEL_OP)
-    if o.level <= LEVEL_OP then code else "(#{code})"
-
-  # Mimic Python's chained comparisons when multiple comparison operators are
-  # used sequentially. For example:
-  #
-  #     $ coco -e 'console.log 50 < 65 === 9r72 > 10'
-  #     true
-  #
-  # See <http://docs.python.org/reference/expressions.html#notin>.
-  compileChain: (o) ->
-    [sub, ref] = @first.second.cache o, true
-    @first.second = sub
-    code  = @first.compile o, LEVEL_OP
-    code .= slice 1, -1 if code.charAt(0) is '('
-    code += " && #{ ref.compile o } #{@op} #{ @second.compile o, LEVEL_OP }"
-    if o.level < LEVEL_OP then code else "(#{code})"
-
-  compileExistence: (o) ->
-    if @first.isComplex()
-      ref = tmp = o.scope.temporary 'ref'
-      fst = Parens Assign Literal(ref), @first
-    else
-      fst = @first
-      ref = fst.compile o
-    code  = Existence(fst).compile o
-    code += ' ? ' + ref + ' : ' + @second.compile o, LEVEL_LIST
-    o.scope.free tmp if tmp
-    code
-
-  compileUnary: (o) ->
-    {op} = this
-    return @compileDelete o if op is 'delete' and o.level
-    code = @first.compile o, LEVEL_OP
-    code = if @post
-    then code + op
-    else if op of <[ new typeof delete ]> or
-            op of <[ + - ]> and @first.op is op
-    then op + ' ' + code
-    else op + code
-    if o.level <= LEVEL_OP then code else "(#{code})"
-
-  compileMultiIO: (o) ->
-    [sub, ref] = @first.cache o, false, LEVEL_OP
-    tests = for item, i of @second.items
-      (if i then ref else sub) + ' instanceof ' + item.compile o
-    o.scope.free ref if sub isnt ref
-    code = tests.join ' || '
-    if o.level < LEVEL_OP then code else "(#{code})"
-
-  compileDelete: (o) ->
-    code = ref = o.scope.temporary 'ref'
-    [get, del] = Value(@first).cacheReference o
-    code += ' = ' + get.compile(o, LEVEL_LIST) + ', delete ' +
-                    del.compile(o, LEVEL_LIST) + ', ' + ref
-    o.scope.free ref
-    if o.level < LEVEL_LIST then code else "(#{code})"
-
-#### Of
-# Handles `of` operation that tests if the left operand is included within
-# the right operand, arraywise.
-class exports.Of extends Node
-  (@item, @array) =>
-
-  children: <[ item array ]>
-
-  show   : -> @negated and '!'
-  invert : -> @negated ^= 1; this
-
-  compileNode: (o) ->
-    lvl = if arr = @array instanceof Arr then LEVEL_OP else LEVEL_LIST
-    [sub, ref] = @item.cache o, false, lvl
-    if arr
-      [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
-      tests = for item, i of @array.items
-        (if i then ref else sub) + cmp + item.compile o, lvl
-      code = tests.join cnj
-    else
-      code = utility('indexOf') + ".call(#{ @array.compile o, lvl }, #{ref}) " +
-             if @negated then '< 0' else '>= 0'
-      return code if sub is ref
-      code = sub + ', ' + code
-    o.scope.free ref if sub isnt ref
-    if o.level < lvl then code else "(#{code})"
-
-#### Try
-# Classic `try`-`catch`-`finally` block with optional `catch`.
-class exports.Try extends Node
-  (@attempt, @thrown, @recovery, @ensure) =>
-
-  children: <[ attempt recovery ensure ]>
-
-  show: -> @thrown
-
-  isStatement: YES
-
-  jumps: -> @attempt.jumps(it) or @recovery?.jumps(it)
-
-  makeReturn: ->
-    @attempt .=makeReturn it
-    @recovery.=makeReturn it if @recovery
-    this
-
-  compileNode: (o) ->
-    o.indent += TAB
-    code = @tab + "try {\n#{ @attempt.compile o, LEVEL_TOP }\n#{@tab}}"
-    if @recovery
-      reco  = @recovery.compile o, LEVEL_TOP
-      code += " catch (#{@thrown}) {\n#{reco}\n#{@tab}}"
-    else unless @ensure
-      code += ' catch (_e) {}'
-    code += " finally {\n#{ @ensure.compile o, LEVEL_TOP }\n#{@tab}}" if @ensure
-    code
-
-#### Existence
-# Checks a value for existence--not `undefined` nor `null`.
-class exports.Existence extends Node
-  (@it) =>
-
-  children: ['it']
-
-  show   : Of::show
-  invert : Of::invert
-
-  compileNode: (o) ->
-    code = @it.compile o, LEVEL_OP
-    if IDENTIFIER.test(code) and not o.scope.check code, true
-      code = 'typeof ' + code + if @negated
-      then " == 'undefined' || #{code} === null"
-      else " != 'undefined' && #{code} !== null"
-    else
-      code += " #{ if @negated then '=' else '!' }= null"
-    if o.level <= LEVEL_COND then code else "(#{code})"
+  compile: (o) ->
+    {method} = o.scope.shared or o.scope
+    throw SyntaxError 'cannot call super outside of a function' unless method
+    {name, clas} = method
+    if name
+      if clas
+        return clas + '.superclass.prototype' +
+               if IDENTIFIER.test name then '.' + name else '[' + name + ']'
+      else if IDENTIFIER.test name
+        return name + '.superclass'
+    return '_super' if o.scope.check '_super'
+    throw SyntaxError 'cannot call super on an anonymous function'
 
 #### Parens
-# An extra set of parentheses, specifying evaluation order.
+# An extra set of parentheses,
+# specifying evaluation order and/or forcing expression.
 class exports.Parens extends Node
   (@it, @keep) =>
 
@@ -1109,14 +1041,64 @@ class exports.Splat extends Parens
     base = (node.compile o, LEVEL_LIST for node of list.slice 0, index)
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
+#### While
+# The traditional `while` loop.
+# Returns an array of values collected from the last expression when requested.
+class exports.While extends Node
+  (@test, name) => @negated = name is 'until'
+
+  children: <[ test body ]>
+
+  show: Of::show
+
+  isStatement: YES
+
+  jumps: ->
+    {lines} = @body
+    return false unless lines.length
+    context = {+loop}
+    return true if node.jumps context for node of lines
+    false
+
+  addBody: (@body) ->
+    [last, i] = lastNonComment body.lines
+    if last instanceof Statement and last.name is 'continue'
+      body.lines.splice i, 1
+    this
+
+  makeReturn: ->
+    if it
+      @body.makeReturn it
+    else unless @jumps()
+      @returns = true
+    this
+
+  compileNode: (o) ->
+    test = if @negated then @test.invert() else @test
+    code = test?.compile(o, LEVEL_PAREN) or 'true'
+    code = @tab + if code is 'true' then 'for (;;' else 'while (' + code
+    o.indent += TAB
+    code + ') {' + @compileBody o
+
+  compileBody: (o) ->
+    {lines} = @body; end = '}'
+    if @returns
+      [last, i] = lastNonComment lines
+      if last and last not instanceof Throw
+        o.scope.assign res = '_results', '[]'
+        lines[i] = last.makeReturn res
+      end = "}\n#{@tab}return #{ res or '[]' };"
+    return end unless lines.length
+    "\n#{ @body.compile o, LEVEL_TOP }\n" + @tab + end
+
 #### For
-# Coco's replacement for the `for` loop are array, object or range iterators.
-# They also act as an expression, collecting values from the last expression
-# and returning them as an array.
+# Coco's replacements for the `for` loop are array, object or range iterators.
 class exports.For extends While
   =>
 
-  children: <[ source name from to step body ]>
+  children: <[ name source from to step body ]>
+
+  show: -> @index
 
   compileNode: (o) ->
     if @index instanceof Node
@@ -1195,6 +1177,35 @@ class exports.For extends While
       o.scope.assign ref, fn.compile o import {indent: ''}, LEVEL_LIST
       o.indent = @tab
       null
+
+#### Try
+# Classic `try`-`catch`-`finally` block with optional `catch`.
+class exports.Try extends Node
+  (@attempt, @thrown, @recovery, @ensure) =>
+
+  children: <[ attempt recovery ensure ]>
+
+  show: -> @thrown
+
+  isStatement: YES
+
+  jumps: -> @attempt.jumps(it) or @recovery?.jumps(it)
+
+  makeReturn: ->
+    @attempt .=makeReturn it
+    @recovery.=makeReturn it if @recovery
+    this
+
+  compileNode: (o) ->
+    o.indent += TAB
+    code = @tab + "try {\n#{ @attempt.compile o, LEVEL_TOP }\n#{@tab}}"
+    if @recovery
+      reco  = @recovery.compile o, LEVEL_TOP
+      code += " catch (#{@thrown}) {\n#{reco}\n#{@tab}}"
+    else unless @ensure
+      code += ' catch (_e) {}'
+    code += " finally {\n#{ @ensure.compile o, LEVEL_TOP }\n#{@tab}}" if @ensure
+    code
 
 #### Switch
 # Compiles to the regular JS `switch`-`case`-`default`,
@@ -1322,25 +1333,14 @@ class exports.If extends Node
       parent[name] = ifn.then; ifn.then = Value parent
     ifn
 
-#### Super
-# Reference to the parent method.
-class exports.Super extends Node
-  =>
+#### Comment
+# Block comments are compiled as JavaScript block comments at the same position.
+class exports.Comment extends Node
+  (@comment) =>
 
-  isAssignable: YES
+  terminator: ''
 
-  compile: (o) ->
-    {method} = o.scope.shared or o.scope
-    throw SyntaxError 'cannot call super outside of a function' unless method
-    {name, clas} = method
-    if name
-      if clas
-        return clas + '.superclass.prototype' +
-               if IDENTIFIER.test name then '.' + name else '[' + name + ']'
-      else if IDENTIFIER.test name
-        return name + '.superclass'
-    return '_super' if o.scope.check '_super'
-    throw SyntaxError 'cannot call super on an anonymous function'
+  compile: (o) -> "/*#{ multident @comment, o.indent }*/"
 
 # Export `import all` for use in [parser](../lib/parser.js),
 # where the operator doesn't work.
