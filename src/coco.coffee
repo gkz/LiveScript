@@ -34,7 +34,7 @@ Coco.nodes = (source, options) ->
   then new Lexer().tokenize source, options
   else source
 
-return unless (fs = require 'fs') and (path = require 'path')
+return 0 unless (fs = require 'fs') and (path = require 'path')
 
 # Compile and execute a string of Coco on __node.js__, correctly
 # setting `__filename`, `__dirname`, and relative `require`.

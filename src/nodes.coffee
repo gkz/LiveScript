@@ -395,7 +395,7 @@ class exports.Call extends Node
 
   unfoldSoak: (o) ->
     if @soak
-      return ifn if ifn = If.unfoldSoak o, this, 'callee'
+      return if If.unfoldSoak o, this, 'callee'
       [left, rite] = @callee.cacheReference o
       rite = Call rite, @args
       rite import {@new}
@@ -606,7 +606,7 @@ class exports.Arr extends Node
 
   compileNode: (o) ->
     return '[]' unless @items.length
-    return code if code = Splat.compileArray o, @items
+    return if Splat.compileArray o, @items
     o.indent += TAB
     code = (obj.compile o, LEVEL_LIST for obj of @items).join ', '
     if 0 < code.indexOf '\n'
@@ -831,7 +831,7 @@ class exports.Fun extends Node
     if @front then "(#{code})" else code
 
   paramName = (o, node) ->
-    return node.param if node.param
+    return if node.param
     prm = node
     if splat = prm instanceof Splat  then prm.=it
     else    if prm instanceof Assign then prm.=left
@@ -1200,7 +1200,6 @@ class exports.For extends While
 # but with forced `break` after each cases.
 class exports.Switch extends Node
   (@switch, @cases, @default) =>
-    tests[i].=invert() for own i in tests for {tests} of cases unless $switch
 
   children: <[ switch cases default ]>
 
@@ -1216,8 +1215,10 @@ class exports.Switch extends Node
     this
 
   compileNode: (o) ->
+    unless cond = @switch?.compile(o, LEVEL_PAREN) or false
+      tests[i].=invert() for own i in tests for {tests} of @cases
     {tab} = this
-    code  = tab + "switch (#{ @switch?.compile(o, LEVEL_PAREN) or false }) {\n"
+    code  = tab + "switch (#{cond}) {\n"
     stop  = @default or @cases.length - 1
     code += cs.compileCase o, tab, i is stop for cs, i of @cases
     if @default
@@ -1255,9 +1256,11 @@ class exports.Case extends Node
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Node
-  (@if, @then, {@soak, name} = {}) => @if.=invert() if name is 'unless'
+  (@if, @then, {@soak, @post, name} = {}) => @negated = name is 'unless'
 
   children: <[ if then else ]>
+
+  show: Of::show
 
   # Rewrite a chain of **If**s to add a default case as the final `else`.
   addElse: ->
@@ -1284,8 +1287,13 @@ class exports.If extends Node
     if @isStatement o then @compileStatement o else @compileExpression o
 
   compileStatement: (o) ->
+    if @post and @then instanceof Return and not @then.it
+      [@if, ref] = @if.cache o
+      @then  = Return ref
+      @temps = [ref.value] if @if isnt ref
     code  = if delete o.elsed then '' else @tab
-    code += "if (#{ @if.compile o, LEVEL_PAREN }) {"
+    cond  = if @negated then @if.invert() else @if
+    code += "if (#{ cond.compile o, LEVEL_PAREN }) {"
     o.indent += TAB
     code += "\n#{body}\n" + @tab if body = Lines(@then).compile o
     code += '}'
@@ -1298,7 +1306,8 @@ class exports.If extends Node
 
   # Compile me as a conditional operator.
   compileExpression: (o) ->
-    code = @if.compile o, LEVEL_COND
+    cond = if @negated then @if.invert() else @if
+    code = cond.compile o, LEVEL_COND
     pad  = if @else?.isComplex() and @then.isComplex()
     then '\n' + o.indent += TAB else ' '
     code += pad + '? ' +  @then .compile(o, LEVEL_LIST) +
@@ -1309,8 +1318,8 @@ class exports.If extends Node
 
   # Unfold a node's child if soak, then tuck the node under the created **If**.
   @unfoldSoak = (o, parent, name) ->
-    return unless ifn = parent[name].unfoldSoak o
-    parent[name] = ifn.then; ifn.then = Value parent
+    if ifn = parent[name].unfoldSoak o
+      parent[name] = ifn.then; ifn.then = Value parent
     ifn
 
 #### Super

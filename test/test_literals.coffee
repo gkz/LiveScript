@@ -10,7 +10,7 @@ eq 1.0, .25 + .75
 eq 0.5, 0.0 + -.25 - -.75 + 0.0
 
 
-eq void, do -> return if true
+eq void, do ->
 
 
 # Trailing commas.

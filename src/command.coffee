@@ -91,8 +91,8 @@ compileScript = (file, input, base) ->
       case o.compile then writeJs file, t.output, base
   catch e
     Coco.emit 'failure', e, t
-    return if Coco.listeners('failure').length
-    (if o.watch then warn else die) e?.stack or e
+    unless Coco.listeners('failure').length
+      (if o.watch then warn else die) e?.stack or e
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
@@ -107,10 +107,10 @@ compileStdio = ->
 # such as `--nodes` or `--print`.
 watch = (source, base) ->
   fs.watchFile source, {persistent: true, interval: 500}, (curr, prev) ->
-    return if curr.size is prev.size and +curr.mtime is +prev.mtime
-    fs.readFile source, (err, code) ->
-      die err.stack or err if err
-      compileScript source, code.toString(), base
+    if curr.size is prev.size and +curr.mtime is +prev.mtime
+      fs.readFile source, (err, code) ->
+        die err.stack or err if err
+        compileScript source, code.toString(), base
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output

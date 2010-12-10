@@ -9,10 +9,10 @@ Coco.eval = -> eval Coco.compile @0, @1
 # Running code does not provide access to this scope.
 Coco.run = (code, options = {}) ->
   options.bare = true
-  Function(Coco.compile code, options)()
+  do Function Coco.compile code, options
 
 # If we're not in a browser environment, we're finished with the public API.
-return unless window?
+return 0 unless window?
 
 # Load a remote script from the current domain via XHR.
 Coco.load = (url, options) ->
