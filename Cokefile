@@ -87,15 +87,16 @@ task 'build:browser', 'rebuild the merged script for inclusion of the browser', 
 
 
 task 'bench', 'quick benchmark of compilation time', ->
-  rw     = require './lib/rewriter'
+  Lexer    = require './lib/lexer'
+  Rewriter = require './lib/rewriter'
   co     = coreSources().map(-> slurp it).join '\n'
   fmt    = -> " : #{bold}#{ "   #{it}".slice -4 }#{reset}[ms]"
   total  = 0
   now    = Date.now()
   time   = -> total += ms = -(now - now := Date.now()); fmt ms
-  tokens = Coco.tokens co, {-rewrite}
+  tokens = Lexer.lex co, {-rewrite}
   say "Lex    #{time()} (#{tokens.length} tokens)"
-  rw.rewrite tokens
+  Rewriter.rewrite tokens
   say "Rewrite#{time()} (#{tokens.length} tokens)"
   nodes  = Coco.nodes tokens
   say "Parse  #{time()}"
