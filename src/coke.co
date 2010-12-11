@@ -6,18 +6,18 @@
 # Running `coke` with no arguments will print out a list of all the tasks in the
 # current directory's Cokefile.
 
-# External dependencies.
-FS             = require 'fs'
-Path           = require 'path'
-Coco           = require './coco'
 {OptionParser} = require './optparse'
 
 # Keep track of the list of defined tasks, the accepted options, and so on.
 Tasks    = {}
 Switches = []
 
-# Mixin the top-level coke functions for Cokefiles to use directly.
+# The top-level objects for Cokefiles to use directly.
 global import
+  Coco : require './coco'
+  fs   : require 'fs'
+  path : require 'path'
+
   # Define a coke task with a short name, an optional sentence description,
   # and the function to run as the action itself.
   task: (name, description, action) ->
@@ -38,11 +38,9 @@ global import
 
   # Utilities.
   say   : -> process.stdout.write it + '\n'
-  slurp : -> '' + FS.readFileSync ...
-  spit  : FS.writeFileSync
-  dir   : FS.readdirSync
-  fs    : FS
-  path  : Path
+  slurp : -> '' + fs.readFileSync ...
+  spit  : fs.writeFileSync
+  dir   : fs.readdirSync
 
 # Run `coke`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
@@ -50,11 +48,11 @@ global import
 exports.run = ->
   args = process.argv.slice 2
   fileName = args.splice(0, 2).1 if args.0 of <[ -f --cokefile ]>
-  Path.exists fileName ||= 'Cokefile', (exists) ->
+  path.exists fileName ||= 'Cokefile', (exists) ->
     unless exists
       console.error 'no "%s" in %s', fileName, process.cwd()
       process.exit 1
-    Coco.run "#{ FS.readFileSync fileName }", {fileName}
+    Coco.run slurp(fileName), {fileName}
     oparser = OptionParser Switches
     return printTasks oparser unless args.length
     options = oparser.parse args

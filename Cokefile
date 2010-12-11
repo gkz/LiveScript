@@ -1,4 +1,3 @@
-Coco          = require './lib/coco'
 {spawn, exec} = require 'child_process'
 
 # ANSI Terminal Colors.
