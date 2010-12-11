@@ -148,8 +148,8 @@ repl = ->
   repl.on 'close', stdin&.destroy
   repl.on 'line', ->
     try
-      r = Coco.eval "#{it}", bare: true, globals: true, fileName: 'repl'
-      console.dir r unless r is void
+      global._ = Coco.eval "#{it}", {+bare, +globals, fileName: 'repl'}
+      console.dir _ unless _ is void
     catch e then say e
     repl.prompt()
   process.on 'uncaughtException', -> say '\n' + (it?.stack or it)
