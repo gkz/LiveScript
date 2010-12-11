@@ -48,7 +48,7 @@ exports.run = ->
   then sources.splice(separator, 1/0).slice 1
   else []
   args.unshift ...sources.splice 1, 1/0 if o.run
-  process.ARGV = process.argv = args
+  process.argv.splice 2, 1/0, ...args
   compileScripts()
 
 # Asynchronously read in each Coco script in a list of source files and
