@@ -149,7 +149,8 @@ runTests = (Coco) ->
       say line.slice(0, col) + tint line.slice(col), bold
       say lines.slice(row+1, row+6).join '\n'
 
-task 'test', 'run the Coco language test suite', -> runTests Coco
+task 'test', 'run the Coco language test suite', ->
+  runTests require './lib/coco'
 
 task 'test:browser', 'run the test suite against the merged browser script', ->
   runTests new -> eval slurp 'extras/coco.js', 'utf8'

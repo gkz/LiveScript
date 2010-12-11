@@ -31,7 +31,7 @@ o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
   return [patterns, '$1', options] unless action
   action = if match = unwrap.exec action then match.1 else "(#{action}())"
-  action.=replace /\b(?:[A-Z]|mix\b)/g, 'yy.$&'
+  action.=replace /\b(?:[A-Z][\w.]+|mix\b)/g, 'yy.$&'
   [patterns, action, options]
 
 # Grammatical Rules
@@ -66,7 +66,7 @@ grammar =
     o 'Value CALL_START ArgList OptComma CALL_END' ,-> Value Call $1, $3  , $2
     o 'Value CALL_START ...              CALL_END' ,-> Value Call $1, null, $2
 
-    o 'Value CLONE Object' ,-> Value Clone $1.unwrap(), $3
+    o 'Value CLONE Object' ,-> Value Util.Clone $1.unwrap(), $3
   ]
 
   # Variables and properties that can be assigned to.
@@ -147,7 +147,7 @@ grammar =
     o 'CLASS SimpleAssignable OptExtends'       ,-> new Class $2, $3
     o 'CLASS SimpleAssignable OptExtends Block' ,-> new Class $2, $3, $4
 
-    o 'SimpleAssignable EXTENDS Expression' ,-> Extends $1, $3
+    o 'SimpleAssignable EXTENDS Expression' ,-> Util.Extends $1, $3
   ]
 
   # Any list of statements and expressions,

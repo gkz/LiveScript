@@ -886,7 +886,7 @@ class exports.Fun extends Node
       if arg.isComplex()
         val = ref = paramName o, prm
         val = Op prm.logic, ref, prm.right if asn
-        asns.push a = Assign arg, val
+        asns.push Assign arg, val
         arg = ref
       else if asn
         if prm.logic is '?'
@@ -959,7 +959,7 @@ class exports.Class extends Node
     args = []
     if @sup
       args.push @sup
-      proto = Extends lname, fun.params.* = Literal '_super'
+      proto = Util.Extends lname, fun.params.* = Literal '_super'
     clas = Call fun import {proto}, args
     clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
@@ -1324,22 +1324,22 @@ class exports.Comment extends Node
 
 #### Util
 # A wrapper node for utility functions.
-class Util extends Node
+class exports.Util extends Node
   (@name) =>
 
   show: Statement::show
 
   compile: -> utility @name
 
-#### Extends
-# An operator that emulates class-ical inheritance.
-exports.Extends = Extends = (sub, sup) ->
-  Call Value(Util 'extends'), [sub, sup]
+  ##### Util.Clone
+  # An operation that creates a new object with its `__proto__`
+  # set to the operand, attaching specified properties.
+  @Clone = (it, mixin) -> Parens Import Call(Value Util 'clone'; [it]), mixin
 
-#### Clone
-# A special kind of call that creates an object's prototypal child.
-exports.Clone = (it, mixin) ->
-  Parens Import Call(Value Util 'clone'; [it]), mixin
+  ##### Util.Extends
+  # An operator that sets up class-ical inheritance between two constructors,
+  # returning the left one.
+  @Extends = (sub, sup) -> Call Value(Util 'extends'), [sub, sup]
 
 # Export `import all` for use in [parser](../lib/parser.js),
 # where the operator doesn't work.
@@ -1352,8 +1352,15 @@ function NO   -> false
 function THIS -> this
 
 UTILITIES =
-  # Correctly set up a prototype chain for inheritance, including a reference
-  # to the superclass for `super()` calls.
+  # Creates an object's prototypal child, ensuring `__proto__`.
+  clone: '''
+    function(it){
+      function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
+      return fn.prototype = it, new fn;
+    }
+  '''
+  # Sets up `.prototype` between a pair of constructors
+  # as well as `.constructor` and `.superclass` references.
   extends: '''
     function(sub, sup){
       function ctor(){} ctor.prototype = (sub.superclass = sup).prototype;
@@ -1361,7 +1368,7 @@ UTILITIES =
     }
   '''
 
-  # Create a function bound to the current value of "this".
+  # Wraps a function to fixate its `this` value.
   bind: '''
     function(me, fn){ return function(){ return fn.apply(me, arguments) } }
   '''
@@ -1376,13 +1383,6 @@ UTILITIES =
   '''
   importAll: '''
     function(obj, src){ for (var key in src) obj[key] = src[key]; return obj }
-  '''
-
-  clone: '''
-    function(it){
-      function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
-      return fn.prototype = it, new fn;
-    }
   '''
 
   # Shortcuts to speed up the lookup time for native functions.
