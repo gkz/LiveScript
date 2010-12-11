@@ -151,10 +151,10 @@ exports import
   # Matches a number, including decimal, hex and exponential notation.
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
-    [num] = match
+    num = match.3 or match.0
     if num.charAt(0) is '.' and not @last.spaced and @last.0 of INDEXABLE
       @token<[ ACCESS . ]>; @token 'STRNUM', num.slice 1
-      return num.length
+      return match.0.length
     if radix = match.1
       @carp "invalid radix #{radix}" unless 2 <= radix <= 36
       num = parseInt rnum = match.2, radix
@@ -480,9 +480,9 @@ exports import
 # Constructs a string token by escaping quotes and newlines.
 string = (body, quote, newline) ->
   return quote + quote unless body
-  body.=replace /\\([\s\S])/g, (match, escaped) ->
-    if escaped of ['\n', quote] then escaped else match
-  body.=replace /// #{quote} ///g, '\\$&'
+  body.=replace /\\([\s\S])/g, ($0, $1) ->
+    if $1 of ['\n', quote] then $1 else $0
+  .replace /// #{quote} ///g, '\\$&'
   body.=replace MULTILINER, newline if newline?
   quote + body + quote
 
@@ -517,9 +517,9 @@ IDENTIFIER = /// ^
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 ///
 NUMBER = ///
-  ^ 0x[\da-f]+                                # hex
-| ^ ([1-9]\d*) r ([\da-z]+)                   # any radix
-| ^ (?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?  # decimal
+  ^ 0x[\da-f]+                                        # hex
+| ^ ([1-9]\d*) r ([\da-z]+)                           # any radix
+| ^ ((?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?) [a-z]* # decimal
 ///i
 SYMBOL = /// ^ (?:
   [-+*/%&|^:.[<>]=  | # compound assign / comparison
