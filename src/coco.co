@@ -4,7 +4,7 @@
 
 (Coco = exports).VERSION = '0.1.3+'
 
-{Lexer} = require './lexer'
+Lexer = require './lexer'
 
 # The real Lexer produces a generic stream of tokens. This object provides a
 # thin wrapper around it, compatible with the Jison API. We can then pass it
@@ -20,18 +20,18 @@ parser import
 # Compile a string of Coco code to JavaScript, using the Coco/Jison compiler.
 Coco.compile = (code, options) ->
   try
-    (parser.parse new Lexer().tokenize code).compileRoot options
+    (parser.parse Lexer.lex code).compileRoot options
   catch err
     err.message = "In #{options.fileName}, #{err.message}" if options?.fileName
     throw err
 
 # Tokenize a string of Coco code, and return the array of tokens.
-Coco.tokens = (code, options) -> new Lexer().tokenize code, options
+Coco.tokens = (code, options) -> Lexer.lex code, options
 
 # Parse a string or tokens of Coco code, and return the AST.
 Coco.nodes = (source, options) ->
   parser.parse if typeof source is 'string'
-  then new Lexer().tokenize source, options
+  then Lexer.lex source, options
   else source
 
 return unless (fs = require 'fs') and (path = require 'path')
