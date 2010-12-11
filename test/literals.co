@@ -256,3 +256,8 @@ ok 2r101010 == 8r52 == 36r16 == 42
 
 #19
 throws 'duplicated property name: a', -> Coco.compile 'a: 1, b: 2, a: 3'
+
+
+#1
+λ = -> 七 = 7
+eq λ(), 7

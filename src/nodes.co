@@ -1468,7 +1468,7 @@ LEVEL_ACCESS = 5  # ...[0]
 # Tabs are two spaces for pretty printing.
 TAB = '  '
 
-IDENTIFIER = /^[$A-Za-z_][$\w]*$/
+IDENTIFIER = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
 METHOD_DEF = /// ^
   (?: (\S+)\.prototype(?=\.) | \S*? )
   (?: (?:\.|^)([$A-Za-z_][$\w]*) | \[( ([\"\']).+?\4 | \d+ )])
