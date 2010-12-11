@@ -98,7 +98,7 @@ grammar =
     o 'Expression SHIFT      Expression' ,-> Op $2, $1, $3
     o 'Expression COMPARE    Expression' ,-> Op $2, $1, $3
     o 'Expression LOGIC      Expression' ,-> Op $2, $1, $3
-    o 'Expression IMPORT     Expression' ,-> Import $1, $3, !$2
+    o 'Expression IMPORT     Expression' ,-> Import $1, $3, $2 is '<<<<'
     o 'Expression RELATION   Expression' ,->
       return if $2.charAt(0) is '!'
       then Op($2.slice 1; $1; $3).invert()
@@ -329,8 +329,8 @@ operators = [
   <[ right     UNARY                        ]>
   <[ left      MATH                         ]>
   <[ left      PLUS_MINUS                   ]>
-  <[ left      SHIFT                        ]>
-  <[ left      RELATION IMPORT              ]>
+  <[ left      SHIFT IMPORT                 ]>
+  <[ left      RELATION                     ]>
   <[ left      COMPARE                      ]>
   <[ left      LOGIC                        ]>
   <[ right     : ASSIGN COMPOUND_ASSIGN

@@ -21,13 +21,12 @@ exports import
     #  - `.rewrite` <br> Suppresses [rewriting](#rewriter) if `false`.
     #  - `.line`    <br> Specifies the starting line. Defaults to `0`.
     options
-    #
-  ) -> @{}.tokenize code, options or {}
   # `tokenize` is Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
   # remaining code, or a custom recursive token-matching method
   # (for interpolations). When the next token has been recorded,
   # we move forward within the code past the token, and begin again.
+  ) -> @{}.tokenize code, options or {}
   tokenize: (code, o) ->
     # Stream of parsed tokens,
     # initialized with a DUMMY token to ensure `@last` always exists.
@@ -102,8 +101,8 @@ exports import
       @seenRange = false
       return @token('BY', id).length
     case 'all'
-      break unless @last.0 is 'IMPORT' and @last.1
-      @last.1 = ''
+      break unless @last.0 is 'IMPORT' and @last.1 is '<<<'
+      @last.1 += '<'
       return id.length
     tag = if at = id.charAt(0) is '@'
     then id.=slice 1; 'THISPROP'
@@ -117,9 +116,10 @@ exports import
       (id = new String id).reserved = true if id of JS_FORBIDDEN
     else if id of COCO_KEYWORDS
       switch tag = id.toUpperCase()
-      case 'FOR'                         then @seenFor = true
-      case 'UNLESS'                      then tag = 'IF'
-      case 'UNTIL'                       then tag = 'WHILE'
+      case 'FOR'    then @seenFor = true
+      case 'IMPORT' then id  = '<<<'
+      case 'UNLESS' then tag = 'IF'
+      case 'UNTIL'  then tag = 'WHILE'
       case <[ NEW DO TYPEOF DELETE    ]> then tag = 'UNARY'
       case <[ TRUE FALSE NULL VOID    ]> then tag = 'LITERAL'
       case <[ BREAK CONTINUE DEBUGGER ]> then tag = 'STATEMENT'
@@ -330,6 +330,7 @@ exports import
     case '?'                           then tag = 'LOGIC' if @last.spaced
     case <[ / % ]>                     then tag = 'MATH'
     case <[ ++ -- ]>                   then tag = 'CREMENT'
+    case <[ <<<  <<<< ]>               then tag = 'IMPORT'
     case <[ << >> >>> ]>               then tag = 'SHIFT'
     case <[ ?[ &[ [= ]>                then tag = 'INDEX_START'
     case '@'                           then tag = 'THIS'
@@ -530,6 +531,7 @@ SYMBOL = /// ^ (?:
   [?&][.[]          | # soak/bind access
   @\d+              | # argument shorthand
   \\\n              | # continued line
+  <<<<?             | # import
   <<=?              | # left shift
   >>>?=?            | # rite shift
   \S

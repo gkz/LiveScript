@@ -249,7 +249,7 @@ class exports.Throw extends Statement
 
 #### Return
 class exports.Return extends Throw
-  => this import {it} if it and it.value isnt 'void'
+  => @<<<{it} if it and it.value isnt 'void'
 
   jumps: YES
 
@@ -263,7 +263,7 @@ class exports.Return extends Throw
 class exports.Value extends Node
   (head, tails, at) =>
     return head if not tails and head instanceof Value
-    this import {head, tails: tails || [], at}
+    @<<<{head, tails: tails || [], at}
 
   children: <[ head tails ]>
 
@@ -552,7 +552,7 @@ class exports.Op extends Node
         first.digCalls().0.new = 'new '
         return first
       p.keep = true if (p = first.head or first) instanceof Parens
-    this import {op, first, second, post}
+    @<<<{op, first, second, post}
 
   children: <[ first second ]>
 
@@ -798,7 +798,7 @@ class exports.Of extends Node
 
   children: <[ item array ]>
 
-  @:: import all Negatable
+  @::<<<< Negatable
 
   compileNode: (o) ->
     lvl = if arr = @array instanceof Arr then LEVEL_OP else LEVEL_LIST
@@ -823,7 +823,7 @@ class exports.Existence extends Node
 
   children: ['it']
 
-  @:: import all Negatable
+  @::<<<< Negatable
 
   compileNode: (o) ->
     code = @it.compile o, LEVEL_OP
@@ -852,7 +852,7 @@ class exports.Fun extends Node
 
   jumps: NO
 
-  makeReturn: -> if @statement then this import {+returns} else super ...
+  makeReturn: -> if @statement then @<<<{+returns} else super ...
 
   compileNode: (o) ->
     pscope = o.scope
@@ -1355,7 +1355,7 @@ exports import all mix: __importAll
   @variables = [{name: 'arguments', type: 'args'}]
   @positions = arguments: 0
   this
-):: import
+)::<<<
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
     if name of <[ arguments eval ]>
