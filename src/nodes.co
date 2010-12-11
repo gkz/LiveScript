@@ -116,6 +116,10 @@ class Node
     @eachChild -> tree += it.toString idt + TAB; void
     tree
 
+Negatable =
+  show   : -> @negated and '!'
+  invert : -> @negated ^= 1; this
+
 #### Lines
 # A list of expressions that forms the body of an
 # indented block of code--the implementation of a function, a clause in an
@@ -794,8 +798,7 @@ class exports.Of extends Node
 
   children: <[ item array ]>
 
-  show   : -> @negated and '!'
-  invert : -> @negated ^= 1; this
+  @:: import all Negatable
 
   compileNode: (o) ->
     lvl = if arr = @array instanceof Arr then LEVEL_OP else LEVEL_LIST
@@ -820,8 +823,7 @@ class exports.Existence extends Node
 
   children: ['it']
 
-  show   : Of::show
-  invert : Of::invert
+  @:: import all Negatable
 
   compileNode: (o) ->
     code = @it.compile o, LEVEL_OP
@@ -1037,7 +1039,7 @@ class exports.While extends Node
 
   children: <[ test body ]>
 
-  show: Of::show
+  show: Negatable.show
 
   isStatement: YES
 
@@ -1254,7 +1256,7 @@ class exports.If extends Node
 
   children: <[ if then else ]>
 
-  show: Of::show
+  show: Negatable.show
 
   # Rewrite a chain of **If**s to add a default case as the final `else`.
   addElse: ->
