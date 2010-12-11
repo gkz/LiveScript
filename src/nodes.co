@@ -362,7 +362,7 @@ class exports.Value extends Node
       p.bind = false
       args   = Value(@head, ps.slice 0, i).cache o, true
       args.1 = Value args.1, [p]
-      return Value Call(Literal utility 'bind'; args), ps.slice i+1
+      return Value Call(Util 'bind'; args), ps.slice i+1
     void
 
 #### Call
@@ -374,7 +374,7 @@ class exports.Call extends Node
 
   children: <[ callee args ]>
 
-  show: -> @soak and '?'
+  show: -> (@new or '') + if @soak then '?' else ''
 
   # Lists up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
   digCalls: ->
@@ -749,7 +749,7 @@ class exports.Import extends Node
 
   compileNode: (o) ->
     unless @util is 'import' and @right instanceof Obj
-      return Call(Value Literal utility @util; [@left, @right]).compile o
+      return Call(Value Util @util; [@left, @right]).compile o
     {items} = @right
     return @left.compile o unless items.length
     top = not o.level
@@ -965,15 +965,6 @@ class exports.Class extends Node
     clas = Assign @title, clas if @title
     clas.compile o
 
-#### Extends
-# An operator that emulates class-ical inheritance.
-class exports.Extends extends Node
-  (@sub, @sup) =>
-
-  children: <[ sub sup ]>
-
-  compile: (o) -> Call(Value Literal utility 'extends'; [@sub, @sup]).compile o
-
 #### Super
 # Reference to the parent method.
 class exports.Super extends Node
@@ -1005,7 +996,7 @@ class exports.Parens extends Node
   compileNode: (o) ->
     {it} = this
     return (it import {@front}).compile o if not @keep and
-      (it instanceof [Value, Call, Fun, Parens] or
+      (it instanceof [Value, Call, Fun, Parens, Import] or
        o.level < LEVEL_OP and it instanceof Op)
     o.level = LEVEL_PAREN
     if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
@@ -1331,6 +1322,25 @@ class exports.Comment extends Node
 
   compile: (o) -> "/*#{ multident @comment, o.indent }*/"
 
+#### Util
+# A wrapper node for utility functions.
+class Util extends Node
+  (@name) =>
+
+  show: Statement::show
+
+  compile: -> utility @name
+
+#### Extends
+# An operator that emulates class-ical inheritance.
+exports.Extends = Extends = (sub, sup) ->
+  Call Value(Util 'extends'), [sub, sup]
+
+#### Clone
+# A special kind of call that creates an object's prototypal child.
+exports.Clone = (it, mixin) ->
+  Parens Import Call(Value Util 'clone'; [it]), mixin
+
 # Export `import all` for use in [parser](../lib/parser.js),
 # where the operator doesn't work.
 exports import all mix: __importAll
@@ -1366,6 +1376,13 @@ UTILITIES =
   '''
   importAll: '''
     function(obj, src){ for (var key in src) obj[key] = src[key]; return obj }
+  '''
+
+  clone: '''
+    function(it){
+      function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
+      return fn.prototype = it, new fn;
+    }
   '''
 
   # Shortcuts to speed up the lookup time for native functions.

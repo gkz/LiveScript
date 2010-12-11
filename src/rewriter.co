@@ -97,11 +97,11 @@ addImplicitParentheses = (tokens) ->
   while token = tokens[++i]
     [tag] = token
     unless (prev = tokens[i-1]).spaced
-      token.call = true if tag is '?'
+      if      tag is '?' then token.call = true
+      else if tag is '{' and callable prev.0
+        tokens.splice i++, 0, ['CLONE', '', prev[2]]
       continue
-    continue unless prev.call or
-      prev.0 of <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]> or
-      prev.0 is 'STRNUM' and tokens[i-2]?.0 is 'ACCESS'
+    continue unless prev.call or callable prev.0
     continue unless token.argument or
       tag of <[ ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS
                 UNARY CREMENT IF TRY CLASS FUNCTION SUPER ]> or
@@ -111,6 +111,9 @@ addImplicitParentheses = (tokens) ->
     tokens.splice --i, 1 if soak = prev.0 is '?'
     tokens.splice i++, 0, ['CALL_START', (if soak then '?(' else '('), token.2]
     detectEnd tokens, i, ok, go
+  function callable ->
+    it of <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]> or
+    it is 'STRNUM' and tokens[i-2]?.0 is 'ACCESS'
   function ok (token, i) ->
     return false if token.argument
     return true  if not seenSingle and token.fromThen

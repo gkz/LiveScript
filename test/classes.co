@@ -246,3 +246,19 @@ class Sup
     eq super, Sup
 
 ok new Sup.Sub instanceof Sup
+
+
+#### Clone
+bird     = {+wing, fly: -> @wing}
+wingless = {-wing}
+
+duck    = bird{}
+dodo    = bird{...wingless, +extinct}
+donaldo = duck{...wingless, +domestic}
+
+ok bird.fly()
+ok duck.fly()
+ok not donaldo.fly()
+
+eq dodo   .__proto__, bird
+eq donaldo.__proto__, duck
