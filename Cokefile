@@ -19,7 +19,7 @@ sources = ->
   'src/' + file if ext.test file for file of dir 'src'
 
 coreSources = ->
-  "src/#{src}.co" for src of <[coco grammar lexer nodes rewriter scope]>
+  "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
 
 option '-p', '--prefix [DIR]', 'set the installation prefix for `coke install`'
 
@@ -64,7 +64,7 @@ task 'build:browser', 'rebuild the merged script for inclusion of the browser', 
       var exports = this;
       #{ slurp "lib/#{name}.js" }
     };
-  """ for name of <[ rewriter lexer parser scope nodes coco browser ]>
+  """ for name of <[ rewriter lexer parser nodes coco browser ]>
   {parser, uglify} = require 'uglify-js'
   ast = parser.parse """
     this.Coco = function(){
