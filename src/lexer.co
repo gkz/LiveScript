@@ -291,11 +291,9 @@
 
   # Consumes non-newline whitespaces and a line comment after them if any.
   spaceToken: ->
-    return 0 unless match = SPACE.exec @chunk
     # Tag the previous token as being `.spaced`,
     # because there are cases where it makes a difference.
-    @last.spaced = true
-    match.0.length
+    (match = SPACE.exec @chunk) and (@last.spaced = true; match.0.length)
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
@@ -377,7 +375,7 @@
   # definitions versus argument lists in function calls. Walk backwards, tagging
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
-    return this if @last.0 isnt ')'
+    return if @last.0 isnt ')'
     {tokens} = this; level = 0; i = tokens.length
     tokens[--i].0 = 'PARAM_END'
     while tok = tokens[--i]
@@ -387,7 +385,7 @@
         break if level--
         tok.0 = 'PARAM_START'
         return this
-    this
+    void
 
   # Matches a balanced group such as a double-quoted string. Pass in
   # a series of delimiters, all of which must be nested correctly within the

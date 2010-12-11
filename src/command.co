@@ -62,7 +62,7 @@ compileScripts = ->
         if stats.isDirectory()
           fs.readdir source, (err, files) ->
             compile path.join source, file for file of files
-            null
+            void
         else if topLevel or path.extname(source).toLowerCase() is '.co'
           base = path.join source
           fs.readFile source, (err, buf) ->

@@ -392,3 +392,6 @@ eq obj.method(), obj
 eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
 throws 'return; // cannot be an expression', -> Coco.compile 'r = (return)'
+
+
+eq '(function(){})(function(){});', Coco.compile '(->return)(->void)', {+bare}

@@ -32,7 +32,7 @@ runScripts = ->
     if script.src
     then Coco.load script.src
     else Coco.run  script.innerHTML
-  null
+  void
 if window.addEventListener
 then addEventListener 'DOMContentLoaded', runScripts, false
 else attachEvent 'onload', runScripts

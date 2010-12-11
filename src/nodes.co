@@ -40,7 +40,7 @@ class Node
     mentionsArgs = false
     @traverseChildren ->
       mentionsArgs := it.value = '_args' if it.value is 'arguments'
-      null
+      void
     if mentionsArgs
       args.push Literal 'arguments'
       fun.params.push Literal '_args'
@@ -70,7 +70,7 @@ class Node
       if 'length' in child
       then return v if (v = fn node )? for node of child
       else return v if (v = fn child)?
-    null
+    void
 
   # Performs `eachChild` on every descendant.
   # Overridden by `Fun` not to cross scope by default.
@@ -115,7 +115,7 @@ class Node
   toString: (idt = '') ->
     tree = '\n' + idt + @constructor.name
     tree += ' ' + info if info = @show()
-    @eachChild -> tree += it.toString idt + TAB; null
+    @eachChild -> tree += it.toString idt + TAB; void
     tree
 
 #### Lines
@@ -147,13 +147,15 @@ class exports.Lines extends Node
   # ensures that the final line is returned.
   makeReturn: ->
     [node, i] = lastNonComment @lines
-    @lines[i] = node.makeReturn it if node
+    if node
+      @lines[i] = node.=makeReturn it
+      @lines.splice i, 1 if node instanceof Return and not node.it
     this
 
   compileNode: (o) ->
     o.lines = this
-    top   = not o.level
-    codes = []
+    top     = not o.level
+    codes   = []
     for node of @lines
       node = node.unfoldSoak(o) or node
       if top
@@ -239,21 +241,19 @@ class exports.Throw extends Statement
 
   children: ['it']
 
-  verb: 'throw'
-
   jumps: NO
 
-  compile: (o) ->
-    exp = @it?.compile o, LEVEL_PAREN
-    o.indent + @verb + (if exp then ' ' + exp else '') + ';'
+  compile: (o) -> o.indent + "throw #{ @it.compile o, LEVEL_PAREN };"
 
 #### Return
 class exports.Return extends Throw
-  (@it) =>
-
-  verb: 'return'
+  => this import {it} if it and it.value isnt 'void'
 
   jumps: YES
+
+  compile: (o) ->
+    it = if @it then ' ' + @it.compile o, LEVEL_PAREN else ''
+    o.indent + "return#{it};"
 
 #### Value
 # Acts as a container for property access chains, by holding
@@ -345,7 +345,7 @@ class exports.Value extends Node
       ifn = If Existence(fst), snd, {+soak}
       ifn.temps = [ref.value] if ref
       return ifn
-    null
+    void
 
   unfoldAssign: (o) ->
     if asn = @head.unfoldAssign o
@@ -355,7 +355,7 @@ class exports.Value extends Node
       tail.assign = false
       [lhs, rhs] = Value(@head, @tails.slice 0, i).cacheReference o
       return Assign(lhs; Value rhs, @tails.slice i) import {+access}
-    null
+    void
 
   unfoldBind: (o) ->
     for p, i of ps = @tails then if p.bind
@@ -363,7 +363,7 @@ class exports.Value extends Node
       args   = Value(@head, ps.slice 0, i).cache o, true
       args.1 = Value args.1, [p]
       return Value Call(Literal utility 'bind'; args), ps.slice i+1
-    null
+    void
 
 #### Call
 # `x(y)`
@@ -945,7 +945,7 @@ class exports.Class extends Node
     name  = decl or @name
     name  = '_Class' unless name and IDENTIFIER.test name
     lname = Literal fun.bound = name
-    fun.body.traverseChildren -> it.clas = name if it instanceof Fun; null
+    fun.body.traverseChildren -> it.clas = name if it instanceof Fun; void
     for node, i of lines
       if node instanceof Obj
         lines[i] = Import Literal('_proto'), node
@@ -1168,7 +1168,7 @@ class exports.For extends While
       it.callee = Value Literal ref = o.scope.temporary 'fn'
       o.scope.assign ref, fn.compile o import {indent: ''}, LEVEL_LIST
       o.indent = @tab
-      null
+      void
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
