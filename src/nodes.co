@@ -667,6 +667,7 @@ class exports.Assign extends Node
       throw SyntaxError 'invalid property name: ' + name if left.isComplex()
       return name + ': ' + val
     unless left.isAssignable()
+      o import indent: '', level: LEVEL_LIST
       throw SyntaxError "\"#{ @left.compile o }\" cannot be assigned"
     if IDENTIFIER.test name
       if @op is '='
@@ -879,7 +880,7 @@ class exports.Fun extends Node
       break
     for prm of params
       arg = prm
-      if asn = arg instanceof Assign then arg.=left
+      if asn = arg instanceof Assign then arg.=left; prm.logic ||= '?'
       else  if arg instanceof Splat  then arg.=it
       if arg.isComplex()
         val = ref = paramName o, prm

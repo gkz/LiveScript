@@ -15,11 +15,14 @@
 # pushing some extra smarts into Lexer.
 exports import
   # `lex` is Lexer's one and only public method.
-  #  Parses `code` and returns an array of tokens.
-  #
-  #  - `options.rewrite` <br> Suppresses [rewriting](#rewriter) if `false`.
-  #  - `options.line`    <br> Specifies the starting line. Defaults to `0`.
-  lex: (code, options) -> @{}.tokenize code, options or {}
+  lex: (
+    # Coco source to be parsed into an array of tokens.
+    code
+    #  - `.rewrite` <br> Suppresses [rewriting](#rewriter) if `false`.
+    #  - `.line`    <br> Specifies the starting line. Defaults to `0`.
+    options
+    #
+  ) -> @{}.tokenize code, options or {}
   # `tokenize` is Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
   # remaining code, or a custom recursive token-matching method
