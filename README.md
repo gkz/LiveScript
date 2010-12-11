@@ -48,6 +48,16 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
+### 0.1.4
+- `.` and its families can now be used with numbers and strings, instead of `[]`.
+  `a.0.'0'` compiles to `a[0]['0']`.
+- Added syntax for cloning objects;
+  `obj{key:val}` acts like a simple version of ES5 `Object.create`,
+  creating a prototypal child of `obj` and assigning to `.key` with `val`.
+- default arguments can now choose to use `||`/`&&`.
+- `super` under a class block now refers to the superclass.
+- _.coffee_ extension is no longer supported.
+
 ### 0.1.3
 - Compilation now prefers single quotes.
 - AST now compiles faster, roughly 1.4 times than 0.1.2.
