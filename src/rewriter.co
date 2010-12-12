@@ -98,7 +98,7 @@ addImplicitParentheses = (tokens) ->
     [tag] = token
     unless (prev = tokens[i-1]).spaced
       if      tag is '?' then token.call = true
-      else if tag is '{' and callable prev.0
+      else if tag is '{' and (prev.0 is '}' or callable prev.0)
         tokens.splice i++, 0, ['CLONE', '', prev[2]]
       continue
     continue unless prev.call or callable prev.0
