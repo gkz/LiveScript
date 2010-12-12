@@ -199,6 +199,7 @@ new -> do =>
     1
 
 
-while ok
-  eq that, ok
+while 1
+  break for ever
+  eq that, 1
   break

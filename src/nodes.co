@@ -88,7 +88,7 @@ class Node
     delete @children; void
   function hasThat ->
     it.value is 'that' or if it.aSource
-    then hasThat it[that]
+    then hasThat that if it[that]
     else it.eachChild hasThat
 
   # Default implementations of the common node properties and methods. Nodes
