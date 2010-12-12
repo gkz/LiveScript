@@ -120,16 +120,18 @@ if (1) {
     if (3) {
       4;
     }
-    that;
+    if (that) {
+      5;
+    }
   }
 }
-if (!(that = 5)) {
+if (!(that = 6)) {
   that;
 }
 ''', Coco.compile '''
 if 1
   if 2
     4 if 3
-    that
-that unless 5
+    5 if that
+that unless 6
 ''', {+bare}

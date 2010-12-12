@@ -429,11 +429,11 @@ exports import
   # token stream.
   interpolateString: (str, newline) ->
     {line} = this; ts = []; pi = 0; i = -1
-    while chr = str.charAt ++i
-      if chr is '\\'
+    while str.charAt ++i
+      if that is '\\'
         ++i
         continue
-      continue unless chr is '#' and str.charAt(i+1) is '{'
+      continue unless that is '#' and str.charAt(i+1) is '{'
       if pi < i
         ts.push ['S'; s = str.slice pi, i; @line]
         @countLines s

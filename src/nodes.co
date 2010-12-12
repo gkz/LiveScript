@@ -81,13 +81,15 @@ class Node
   # Does not cross scope boundaries.
   contains: (pred) -> !!@traverseChildren -> pred(it) or null
 
-  anaphorize: (o, key) ->
-    @children = @childrenA
-    @[key] = Assign Literal('that'), @[key] if @eachChild HAS_THAT
-    delete @children
-    void
-  function HAS_THAT ->
-    it.value is 'that' or unless it.childrenA then it.eachChild HAS_THAT
+  # Performs anaphoric conversion if a `that` is found within `@[@aTarget]`.
+  anaphorize: ->
+    @children = [@aTarget]
+    @[@aSource] = Assign Literal('that'), @[@aSource] if @eachChild hasThat
+    delete @children; void
+  function hasThat ->
+    it.value is 'that' or if it.aSource
+    then hasThat it[that]
+    else it.eachChild hasThat
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -1045,8 +1047,9 @@ class exports.Splat extends Parens
 class exports.While extends Node
   (@test, name) -> @negated = name is 'until'
 
-  children  : <[ test body ]>
-  childrenA : <[      body ]>
+  children: <[ test body ]>
+
+  aSource: 'test', aTarget: 'body'
 
   show: Negatable.show
 
@@ -1073,9 +1076,9 @@ class exports.While extends Node
     this
 
   compileNode: (o) ->
-    @anaphorize o, 'test'
-    test = if @negated then @test.invert() else @test
-    code = test?.compile(o, LEVEL_PAREN) or 'true'
+    code = unless @test then 'true' else
+      @anaphorize()
+      (if @negated then @test.invert() else @test).compile o, LEVEL_PAREN
     code = @tab + if code is 'true' then 'for (;;' else 'while (' + code
     o.indent += TAB
     code + ') {' + @compileBody o
@@ -1094,8 +1097,9 @@ class exports.While extends Node
 #### For
 # Coco's replacements for the `for` loop are array, object or range iterators.
 class exports.For extends While
-  children  : <[ name source from to step body ]>
-  childrenA : 0
+  children: <[ name source from to step body ]>
+
+  aSource: null
 
   show: -> @index
 
@@ -1209,7 +1213,8 @@ class exports.Switch extends Node
   (@switch, @cases, @default) ->
 
   children  : <[ switch cases default ]>
-  childrenA : <[        cases default ]>
+
+  aSource: 'switch', aTarget: 'cases'
 
   isStatement: YES
 
@@ -1224,7 +1229,7 @@ class exports.Switch extends Node
 
   compileNode: (o) ->
     cond = if @switch
-      @anaphorize o, 'switch'
+      @anaphorize()
       @switch.compile o, LEVEL_PAREN
     else
       tests[i].=invert() for own i in tests for {tests} of @cases
@@ -1271,10 +1276,10 @@ class exports.If extends Node
   (@if, @then, {@soak, name} = {}) => @negated = name is 'unless'
 
   children  : <[ if then else ]>
-  childrenA : <[    then      ]>
+
+  aSource: 'if', aTarget: 'then'
 
   show: Negatable.show
-
 
   # Rewrite a chain of **If**s to add a default case as the final `else`.
   addElse: ->
@@ -1298,7 +1303,7 @@ class exports.If extends Node
     this
 
   compileNode: (o) ->
-    @anaphorize o, 'if'
+    @anaphorize()
     if @isStatement o then @compileStatement o else @compileExpression o
 
   compileStatement: (o) ->
