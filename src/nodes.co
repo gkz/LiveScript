@@ -86,7 +86,7 @@ class Node
     @[key] = Assign Literal('that'), @[key] if @traverseChildren HAS_THAT
     delete @children
     void
-  HAS_THAT = ->
+  function HAS_THAT ->
     if it.childrenA then false
     else it.value is 'that' or it.traverseChildren HAS_THAT
 
@@ -960,7 +960,7 @@ class exports.Class extends Node
       if node instanceof Obj
         lines[i] = Import Literal('_proto'), node
         proto = lname
-      else if node instanceof Fun
+      else if node instanceof Fun and not node.statement
         throw SyntaxError 'more than one constructor in a class' if ctor
         proto = lname if (ctor = node).bound
     lines.unshift ctor = Fun() unless ctor
