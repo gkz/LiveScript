@@ -197,3 +197,8 @@ new -> do =>
     eq me, do => this
     break
     1
+
+
+while ok
+  eq that, ok
+  break
