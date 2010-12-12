@@ -30,7 +30,7 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
   return [patterns, '$1', options] unless action
-  action = if match = unwrap.exec action then match.1 else "(#{action}())"
+  action = if unwrap.exec action then that.1 else "(#{action}())"
   action.=replace /\b(?:[A-Z][\w.]+|mix\b)/g, 'yy.$&'
   [patterns, action, options]
 

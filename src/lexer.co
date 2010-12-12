@@ -256,7 +256,7 @@ exports import
     if call = not @last.spaced and @last.0 of CALLABLE
     then @token<[ CALL_START ( ]> else @token<[ [ [ ]>
     for line of @chunk.slice(2, end).split '\n'
-      if words = line.match re ||= /\S+/g then for word of words
+      if line.match re ||= /\S+/g then for word of that
         @tokens.push ['STRNUM'; string word, "'"; @line], [',', ',', @line]
       ++@line
     --@line

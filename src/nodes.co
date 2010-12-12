@@ -120,7 +120,7 @@ class Node
   # This is what `coco --nodes` prints out.
   toString: (idt = '') ->
     tree = '\n' + idt + @constructor.name
-    tree += ' ' + info if info = @show()
+    tree += ' ' + that if @show()
     @eachChild -> tree += it.toString idt + TAB; void
     tree
 
@@ -320,7 +320,7 @@ class exports.Value extends Node
     case it instanceof Index then false
 
   compileNode: (o) ->
-    return val.compile o if val = @unfoldAssign(o) or @unfoldBind(o)
+    return that.compile o if @unfoldAssign(o) or @unfoldBind(o)
     @head import {@front}
     return @head.compile o unless @tails.length
     val  = @poleStar o
@@ -341,9 +341,9 @@ class exports.Value extends Node
 
   # Unfold a soak into an __If__: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
-    if ifn = @head.unfoldSoak o
-      ifn.then.tails.push ...@tails
-      return ifn
+    if @head.unfoldSoak o
+      that.then.tails.push ...@tails
+      return that
     for tail, i of @tails then if tail.soak
       tail.soak = false
       fst = Value @head, @tails.slice 0, i
@@ -358,9 +358,9 @@ class exports.Value extends Node
     void
 
   unfoldAssign: (o) ->
-    if asn = @head.unfoldAssign o
-      asn.right.tails.push ...@tails
-      return asn
+    if @head.unfoldAssign o
+      that.right.tails.push ...@tails
+      return that
     for tail, i of @tails then if tail.assign
       tail.assign = false
       [lhs, rhs] = Value(@head, @tails.slice 0, i).cacheReference o
@@ -394,7 +394,7 @@ class exports.Call extends Node
 
   unfoldSoak: (o) ->
     if @soak
-      return ifn if ifn = If.unfoldSoak o, this, 'callee'
+      return that if If.unfoldSoak o, this, 'callee'
       [left, rite] = @callee.cacheReference o
       rite = Call rite, @args
       rite import {@new}
@@ -413,14 +413,14 @@ class exports.Call extends Node
     asn
 
   compileNode: (o) ->
-    return asn.compile o if asn = @unfoldAssign o
+    return that.compile o if @unfoldAssign o
     unless fun = (@callee.head or @callee) instanceof Fun
       @callee import {@front}
     if @splat
       return @compileSplat o, @args.1.value if @new
       return @callee.compile(o, LEVEL_ACCESS) +
              ".apply(#{ @args.0.compile o }, #{@args.1.value})"
-    return @compileSplat o, args if args = Splat.compileArray o, @args, true
+    return @compileSplat o, that if Splat.compileArray o, @args, true
     code = (@new or '') + @callee.compile(o, LEVEL_ACCESS) +
            "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
     if fun then "(#{code})" else code
@@ -1260,7 +1260,7 @@ class exports.Case extends Node
     [last, i] = lastNonComment exps = @body.lines
     exps[i] = Comment ' fallthrough ' if ft = last?.value is 'fallthrough'
     o.indent = tab + TAB
-    code += body + '\n' if body = @body.compile o, LEVEL_TOP
+    code += that + '\n' if @body.compile o, LEVEL_TOP
     code += o.indent + 'break;\n' unless nobr or ft or
       last instanceof Statement and last.name isnt 'debugger'
     code
@@ -1306,13 +1306,13 @@ class exports.If extends Node
     cond  = if @negated then @if.invert() else @if
     code += "if (#{ cond.compile o, LEVEL_PAREN }) {"
     o.indent += TAB
-    code += "\n#{body}\n" + @tab if body = Lines(@then).compile o
+    code += "\n#{that}\n" + @tab if Lines(@then).compile o
     code += '}'
     return code unless @else
     code + ' else ' + if @chain
     then @else.compile o import {indent: @tab, +elsed}, LEVEL_TOP
-    else if body = @else.compile o, LEVEL_TOP
-    then "{\n#{body}\n#{@tab}}"
+    else if @else.compile o, LEVEL_TOP
+    then "{\n#{that}\n#{@tab}}"
     else '{}'
 
   # Compile me as a conditional operator.
@@ -1379,8 +1379,8 @@ exports import all mix: __importAll
   add: (name, type) ->
     if name of <[ arguments eval ]>
       throw SyntaxError "redefining \"#{name}\" is deprecated"
-    if v = @variables[@positions[name]]
-    then v import {type}
+    if @variables[@positions[name]]
+    then that import {type}
     else @positions[name] = -1 + @variables.push {name, type}
     this
 

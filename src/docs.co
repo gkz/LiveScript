@@ -37,11 +37,11 @@ build = (source) ->
       br = true
       code &&+= '\n'
       continue
-    if m = re.exec line
+    if re.exec line
       if code or comment and br
         htm += block comment, code, i++
         comment = code = ''
-      comment += m.1 + '\n'
+      comment += that.1 + '\n'
     else
       code += line + '\n'
     br = false
