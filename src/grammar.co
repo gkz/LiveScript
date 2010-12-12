@@ -44,9 +44,9 @@ o = (patterns, action, options) ->
 #
 #     "Expression MATH Expression"
 #
-# `$1` would be the value of the first `Expression`, `$2` would be the token
-# for the `MATH` terminal, and `$3` would be the value of the second
-# `Expression`.
+# `$1` would be the value of the first _Expression_, `$2` would be the token
+# value for the _MATH_ terminal, and `$3` would be the value of the second
+# _Expression_.
 grammar =
   # Everything that can be assigned to.
   Assignable: [
@@ -63,21 +63,21 @@ grammar =
     o 'THIS'          ,-> Value Literal 'this', true
     o 'LITERAL'       ,-> Value Literal $1    , true
 
-    o 'Value CALL_START ArgList OptComma CALL_END' ,-> Value Call $1, $3  , $2
-    o 'Value CALL_START ...              CALL_END' ,-> Value Call $1, null, $2
+    o 'Value CALL( ArgList OptComma )CALL' ,-> Value Call $1, $3  , $2
+    o 'Value CALL(        ...       )CALL' ,-> Value Call $1, null, $2
 
     o 'Value CLONE Object' ,-> Value Util.Clone $1.unwrap(), $3
   ]
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o 'IDENTIFIER'                             ,-> Literal $1
-    o 'Value ACCESS IDENTIFIER'                ,-> $1.add Access Literal($3), $2
-    o 'Value ACCESS STRNUM'                    ,-> $1.add Index  Literal($3), $2
-    o 'Value ACCESS Parenthetical'             ,-> $1.add Index  $3.it,       $2
-    o 'Value INDEX_START Expression INDEX_END' ,-> $1.add Index  $3,          $2
+    o 'IDENTIFIER'                     ,-> Literal $1
+    o 'Value DOT IDENTIFIER'           ,-> $1.add Access Literal($3), $2
+    o 'Value DOT STRNUM'               ,-> $1.add Index  Literal($3), $2
+    o 'Value DOT Parenthetical'        ,-> $1.add Index  $3.it,       $2
+    o 'Value INDEX[ Expression ]INDEX' ,-> $1.add Index  $3,          $2
     o 'ThisProperty'
-    o 'SUPER'                                  ,-> new Super
+    o 'SUPER'                          ,-> new Super
   ]
 
   # All the different types of expressions in our language.
@@ -93,7 +93,7 @@ grammar =
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
-    o 'Expression PLUS_MINUS Expression' ,-> Op $2, $1, $3
+    o 'Expression +-         Expression' ,-> Op $2, $1, $3
     o 'Expression MATH       Expression' ,-> Op $2, $1, $3
     o 'Expression SHIFT      Expression' ,-> Op $2, $1, $3
     o 'Expression COMPARE    Expression' ,-> Op $2, $1, $3
@@ -104,8 +104,8 @@ grammar =
       then Op($2.slice 1; $1; $3).invert()
       else Op $2, $1, $3
 
-    o 'UNARY      Expression' , -> Op $1, $2
-    o 'PLUS_MINUS Expression' ,(-> Op $1, $2), prec: 'UNARY'
+    o 'UNARY Expression' , -> Op $1, $2
+    o '+-    Expression' ,(-> Op $1, $2), prec: 'UNARY'
 
     o 'Expression ?' ,-> Existence $1
 
@@ -218,9 +218,8 @@ grammar =
   # **Fun** node is the function literal, defined by an indented **Block**
   # preceded by a function arrow, with an optional parameter list.
   Fun: [
-    o 'PARAM_START ArgList OptComma PARAM_END
-       FUNC_ARROW Block' ,-> Fun $2, $6, $5
-    o 'FUNC_ARROW Block' ,-> Fun [], $2, $1
+    o 'PARAM( ArgList OptComma )PARAM FUNC_ARROW Block' ,-> Fun $2, $6, $5
+    o 'FUNC_ARROW Block'                                ,-> Fun [], $2, $1
   ]
 
   # Things that can be keys within an object literal.
@@ -234,9 +233,9 @@ grammar =
     o 'ObjAssignable :        Expression'        ,-> Assign $1, $3, ':'
     o 'ObjAssignable : INDENT Expression DEDENT' ,-> Assign $1, $4, ':'
 
-    o            'ObjAssignable' ,-> $1
-    o '...        ObjAssignable' ,-> Splat  $2
-    o 'PLUS_MINUS ObjAssignable' ,-> Assign $2, Literal($1 is '+'), ':'
+    o     'ObjAssignable' ,-> $1
+    o '... ObjAssignable' ,-> Splat  $2
+    o '+-  ObjAssignable' ,-> Assign $2, Literal($1 is '+'), ':'
 
     o 'COMMENT' ,-> Comment $1
   ]
@@ -324,20 +323,18 @@ grammar =
 #
 #     (2 + 3) * 4
 operators = [
-  <[ nonassoc  CREMENT                      ]>
-  <[ left      ?                            ]>
-  <[ right     UNARY                        ]>
-  <[ left      MATH                         ]>
-  <[ left      PLUS_MINUS                   ]>
-  <[ left      SHIFT IMPORT                 ]>
-  <[ left      RELATION                     ]>
-  <[ left      COMPARE                      ]>
-  <[ left      LOGIC                        ]>
-  <[ right     : ASSIGN COMPOUND_ASSIGN
-               RETURN THROW EXTENDS INDENT  ]>
-  <[ right     IF ELSE SWITCH CASE DEFAULT
-               CLASS FORIN FOROF FROM TO BY ]>
-  <[ left      POST_IF FOR WHILE            ]>
+  <[ nonassoc  CREMENT      ]>
+  <[ left      ?            ]>
+  <[ right     UNARY        ]>
+  <[ left      MATH         ]>
+  <[ left      +-           ]>
+  <[ left      SHIFT IMPORT ]>
+  <[ left      RELATION     ]>
+  <[ left      COMPARE      ]>
+  <[ left      LOGIC        ]>
+  <[ right     : ASSIGN COMPOUND_ASSIGN RETURN THROW EXTENDS INDENT     ]>
+  <[ right     IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
+  <[ left      POST_IF FOR WHILE ]>
 ]
 
 # Wrapping Up

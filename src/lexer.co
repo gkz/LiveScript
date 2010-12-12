@@ -110,8 +110,8 @@ exports import
     [input, [], colon] = match
     forcedIdentifier = at or colon or
       if not (prev = @last).spaced and prev.1.colon2
-      then @token<[ ACCESS . ]>
-      else prev.0 is 'ACCESS'
+      then @token<[ DOT . ]>
+      else prev.0 is 'DOT'
     if forcedIdentifier
       (id = new String id).reserved = true if id of JS_FORBIDDEN
     else if id of COCO_KEYWORDS
@@ -153,7 +153,7 @@ exports import
     return 0 unless match = NUMBER.exec @chunk
     num = match.3 or match.0
     if num.charAt(0) is '.' and not @last.spaced and @last.0 of INDEXABLE
-      @token<[ ACCESS . ]>; @token 'STRNUM', num.slice 1
+      @token<[ DOT . ]>; @token 'STRNUM', num.slice 1
       return match.0.length
     if radix = match.1
       @carp "invalid radix #{radix}" unless 2 <= radix <= 36
@@ -233,8 +233,7 @@ exports import
       body.=replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
       @token 'LITERAL', "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex).length
-    @token<[ IDENTIFIER RegExp ]>
-    @token<[ CALL_START (      ]>
+    @token<[ IDENTIFIER RegExp ]>; @token<[ CALL( ( ]>
     {tokens} = this
     for token, i of @interpolateString body
       if token.0 is 'TOKENS'
@@ -244,7 +243,7 @@ exports import
         continue if i and not val
         val.=replace bs ||= /\\/g, '\\\\'
         tokens.push ['STRNUM'; string val, "'", '\\n'; token.2]
-      tokens.push ['PLUS_MINUS', '+', tokens[*-1].2]
+      tokens.push ['+-', '+', tokens[*-1].2]
     tokens.pop()
     if flags then @token<[ , , ]>; @token 'STRNUM', "'#{flags}'"
     @token<[ ) ) ]>
@@ -254,7 +253,7 @@ exports import
   wordsToken: ->
     @carp 'unterminated words' unless ~end = @chunk.indexOf ']>', 2
     if call = not @last.spaced and @last.0 of CALLABLE
-    then @token<[ CALL_START ( ]> else @token<[ [ [ ]>
+    then @token<[ CALL( ( ]> else @token<[ [ [ ]>
     for line of @chunk.slice(2, end).split '\n'
       if line.match re ||= /\S+/g then for word of that
         @tokens.push ['STRNUM'; string word, "'"; @line], [',', ',', @line]
@@ -281,8 +280,8 @@ exports import
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewline = LINE_CONTINUER.test(@chunk) or @last.0 of
-      <[ ACCESS INDEX_START ASSIGN COMPOUND_ASSIGN IMPORT
-         LOGIC PLUS_MINUS MATH COMPARE RELATION SHIFT     ]>
+      <[ +- DOT INDEX[ ASSIGN COMPOUND_ASSIGN
+         LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
     if size - @indebt is @indent
       @newline() unless noNewline
       return indent.length
@@ -313,7 +312,7 @@ exports import
     [value] = SYMBOL.exec @chunk
     switch tag = value
     case ')'
-      @last.0 = 'CALL_START' if @last.0 is '('
+      @last.0 = 'CALL(' if @last.0 is '('
     case <[ -> => ]>
       @tagParameters()
       tag = 'FUNC_ARROW'
@@ -322,8 +321,8 @@ exports import
       if @last.0 is 'LOGIC'
         @tokens.pop()
         (value = new String value).logic = @last.1
-    case <[ . ?. &. .= ]>              then tag = 'ACCESS'
-    case <[ + - ]>                     then tag = 'PLUS_MINUS'
+    case <[ . ?. &. .= ]>              then tag = 'DOT'
+    case <[ + - ]>                     then tag = '+-'
     case <[ ! ~ ]>                     then tag = 'UNARY'
     case <[ === !== <= < > >= == != ]> then tag = 'COMPARE'
     case <[ && || & | ^ ]>             then tag = 'LOGIC'
@@ -332,33 +331,31 @@ exports import
     case <[ ++ -- ]>                   then tag = 'CREMENT'
     case <[ <<<  <<<< ]>               then tag = 'IMPORT'
     case <[ << >> >>> ]>               then tag = 'SHIFT'
-    case <[ ?[ &[ [= ]>                then tag = 'INDEX_START'
+    case <[ ?[ &[ [= ]>                then tag = 'INDEX['
     case '@'                           then tag = 'THIS'
     case ';'                           then tag = 'TERMINATOR'
     case '*'
-      tag = if @last.0 of <[ INDEX_START ( ACCESS ]> then 'STRNUM' else 'MATH'
+      tag = if @last.0 of <[ INDEX[ ( DOT ]> then 'STRNUM' else 'MATH'
     case '\\\n'
       return value.length
     case '::'
       (id = new String 'prototype').colon2 = true
-      @token<[ ACCESS . ]>; @token 'IDENTIFIER', id
+      @token<[ DOT . ]>; @token 'IDENTIFIER', id
       return value.length
     default
       if value.charAt(0) is '@'
-        @token<[ IDENTIFIER arguments ]>
-        @token<[ INDEX_START [ ]>
+        @token<[ IDENTIFIER arguments ]>; @token<[ DOT . ]>
         @token 'STRNUM', value.slice 1
-        @token<[ INDEX_END   ] ]>
         return value.length
       unless (prev = @last).spaced
         if value is '(' and prev.0 of CALLABLE
           if prev.0 is '?'
-            prev.0  = 'CALL_START'
+            prev.0  = 'CALL('
             prev.1 += '('
             return value.length
-          tag = 'CALL_START'
+          tag = 'CALL('
         else if value is '[' and prev.0 of INDEXABLE
-          tag = 'INDEX_START'
+          tag = 'INDEX['
     @token(tag, value).length
 
   #### Token Manipulators
@@ -387,13 +384,13 @@ exports import
   tagParameters: ->
     return if @last.0 isnt ')'
     {tokens} = this; level = 0; i = tokens.length
-    tokens[--i].0 = 'PARAM_END'
+    tokens[--i].0 = ')PARAM'
     while tok = tokens[--i]
       switch tok.0
       case ')' then ++level
-      case <[ ( CALL_START ]>
+      case <[ ( CALL( ]>
         break if level--
-        tok.0 = 'PARAM_START'
+        tok.0 = 'PARAM('
         return
     void
 
@@ -456,7 +453,7 @@ exports import
     {tokens} = this
     tokens.push ['(', '(', line]
     for t, i of ts
-      tokens.push ['PLUS_MINUS', '+', tokens[*-1].2] if i
+      tokens.push ['+-', '+', tokens[*-1].2] if i
       if t.0 is 'TOKENS'
       then tokens.push ...t.1
       else tokens.push ['STRNUM'; string t.1, '"', newline; t.2]

@@ -16,7 +16,7 @@ eq 'passed', Coco.eval '"passed"', bare: true, fileName: 'test'
 
 
 #750
-throws 'unclosed CALL_START on line 1', -> Coco.nodes 'f(->'
+throws 'unclosed CALL( on line 1', -> Coco.nodes 'f(->'
 
 throws 'unterminated JS literal on line 3', -> Coco.nodes '\n\n```\n'
 throws 'unterminated string on line 3'    , -> Coco.nodes "\n\n'\n"
@@ -79,7 +79,7 @@ tokens = Coco.tokens '''
 eq tokens.join('\n'), '''
 (,(,1
 STRNUM,"1 ",1
-PLUS_MINUS,+,1
++-,+,1
 (,(,2
 INDENT,2,2
 STRNUM,2,2
@@ -88,7 +88,7 @@ TERMINATOR,
 STRNUM,3,3
 DEDENT,2,3
 ),),3
-PLUS_MINUS,+,3
++-,+,3
 STRNUM," 4",4
 ),),4
 TERMINATOR,

@@ -24,8 +24,8 @@ detectEnd = (tokens, i, ok, go) ->
   while token = tokens[i]
     if      not levels then return go token, i if ok token, i
     else if 0 > levels then return go token, i-1
-    if      token.0 of EXPRESSION_START then ++levels
-    else if token.0 of EXPRESSION_END   then --levels
+    if      token.0 of EXPR_START then ++levels
+    else if token.0 of EXPR_END   then --levels
     ++i
   i - 1
 
@@ -40,7 +40,7 @@ removeLeadingTerminators = (tokens) ->
 removeMidExpressionTerminators = (tokens) ->
   i = 0
   while token = tokens[++i]
-    if tokens[i-1].0 is 'TERMINATOR' and token.0 of EXPRESSION_CLOSE
+    if tokens[i-1].0 is 'TERMINATOR' and token.0 of EXPR_CLOSE
       tokens.splice i-1, 1
   tokens
 
@@ -50,12 +50,12 @@ closeOpenings = (tokens) ->
   stack = []
   for token of tokens
     switch token.0
-    case <[ ( CALL_START [ INDEX_START ]>
+    case <[ ( CALL( [ INDEX[ ]>
       stack.push token.0
-    case <[ )  CALL_END ]>
-      token.0 =  'CALL_END' if stack.pop() is  'CALL_START'
-    case <[ ] INDEX_END ]>
-      token.0 = 'INDEX_END' if stack.pop() is 'INDEX_START'
+    case <[ ) )CALL ]>
+      token.0 = ')CALL'  if stack.pop() is  'CALL('
+    case <[ ] INDEX] ]>
+      token.0 = ']INDEX' if stack.pop() is 'INDEX['
   tokens
 
 # Object literals may be written without braces for simple cases.
@@ -73,10 +73,10 @@ addImplicitBraces = (tokens) ->
   while token = tokens[++i]
     unless ':' is tag = token.0
       switch
-      case tag of EXPRESSION_START
+      case tag of EXPR_START
         tag = '{' if tag is 'INDENT' and tokens[i-1]?.0 is '{'
         stack.push [tag, i]
-      case tag of EXPRESSION_END
+      case tag of EXPR_END
         start = stack.pop()
       continue
     paren = tokens[i-1]?.0 is ')'
@@ -105,15 +105,15 @@ addImplicitParentheses = (tokens) ->
     continue unless token.argument or
       tag of <[ ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS
                 UNARY CREMENT IF TRY CLASS FUNCTION SUPER ]> or
-      tag is 'PLUS_MINUS' and not (token.spaced or token.eol) or
-      tag of <[ PARAM_START FUNC_ARROW ]> and tokens[i-2]?.0 isnt 'FUNCTION'
+      tag is '+-' and not (token.spaced or token.eol) or
+      tag of <[ PARAM( FUNC_ARROW ]> and tokens[i-2]?.0 isnt 'FUNCTION'
     seenSingle = seenClass = false
     tokens.splice --i, 1 if soak = prev.0 is '?'
-    tokens.splice i++, 0, ['CALL_START', (if soak then '?(' else '('), token.2]
+    tokens.splice i++, 0, ['CALL(', (if soak then '?(' else '('), token.2]
     detectEnd tokens, i, ok, go
   function callable ->
-    it of <[ IDENTIFIER THISPROP SUPER THIS ) CALL_END ] INDEX_END ]> or
-    it is 'STRNUM' and tokens[i-2]?.0 is 'ACCESS'
+    it of <[ IDENTIFIER THISPROP SUPER THIS ) )CALL ] ]INDEX ]> or
+    it is 'STRNUM' and tokens[i-2]?.0 is 'DOT'
   function ok (token, i) ->
     return false if token.argument
     return true  if not seenSingle and token.fromThen
@@ -122,7 +122,7 @@ addImplicitParentheses = (tokens) ->
     switch tag
     case 'CLASS'        then seenClass  := true
     case <[ IF CATCH ]> then seenSingle := true
-    return true  if tag is 'ACCESS' and (eol or pre is 'DEDENT')
+    return true  if tag is 'DOT' and (eol or pre is 'DEDENT')
     return false if token.generated or pre is ','
     if tag is 'INDENT'
       return seenClass := false if seenClass
@@ -131,7 +131,7 @@ addImplicitParentheses = (tokens) ->
     tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]>
   function go (token, i) ->
     ++i if token.0 is 'DEDENT'
-    tokens.splice i, 0, ['CALL_END', ')', token.2]
+    tokens.splice i, 0, [')CALL', ')', token.2]
   tokens
 
 # Because our grammar is LALR(1), it can't handle some single-line
@@ -200,8 +200,8 @@ ensureBalance = (tokens) ->
 # inwards, safely. The steps to accomplish this are:
 #
 # 1. Check that all paired tokens are balanced and in order.
-# 2. Rewrite the stream with a stack: if you see an `EXPRESSION_START`, add it
-#    to the stack. If you see an `EXPRESSION_END`, pop the stack and replace
+# 2. Rewrite the stream with a stack: if you see an `EXPR_START`, add it
+#    to the stack. If you see an `EXPR_END`, pop the stack and replace
 #    it with the inverse of what we've just popped.
 # 3. Keep track of "debt" for tokens that we manufacture, to make sure we end
 #    up balanced in the end.
@@ -213,8 +213,8 @@ rewriteClosingParens = (tokens) ->
   i     = -1
   while token = tokens[++i]
     [tag] = token
-    unless tag of EXPRESSION_END
-      stack.push token if tag of EXPRESSION_START
+    unless tag of EXPR_END
+      stack.push token if tag of EXPR_START
       continue
     if debt[inv = INVERSES[tag]] > 0
       --debt[inv]
@@ -240,25 +240,24 @@ indexOfPair = (tokens, i) ->
 
 # List of the token pairs that must be balanced.
 BALANCED_PAIRS = [
-  <[ ( ) ]>
-  <[ [ ] ]>
-  <[ { } ]>
+       <[ ( ) ]>
+       <[ [ ] ]>
+       <[ { } ]>
+  <[  CALL( )CALL  ]>
+  <[ INDEX[ ]INDEX ]>
+  <[ PARAM( )PARAM ]>
   <[ INDENT DEDENT ]>
-  <[  CALL_START  CALL_END ]>
-  <[ PARAM_START PARAM_END ]>
-  <[ INDEX_START INDEX_END ]>
 ]
 
 # The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
 # look things up from either end.
 INVERSES = {}
 # Tokens that signal the start/end of a balanced pair.
-EXPRESSION_START = []
-EXPRESSION_END   = []
+EXPR_START = []
+EXPR_END   = []
 for [left, rite] of BALANCED_PAIRS
-  EXPRESSION_START.push INVERSES[rite] = left
-  EXPRESSION_END  .push INVERSES[left] = rite
+  EXPR_START.push INVERSES[rite] = left
+  EXPR_END  .push INVERSES[left] = rite
 
 # Tokens that indicate the close of a clause of an expression.
-EXPRESSION_CLOSE =
-  EXPRESSION_END.concat<[ ELSE BY TO CATCH FINALLY CASE DEFAULT ]>
+EXPR_CLOSE = EXPR_END.concat<[ ELSE BY TO CATCH FINALLY CASE DEFAULT ]>
