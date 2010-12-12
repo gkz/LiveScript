@@ -201,8 +201,8 @@ class exports.Lines extends Node
       @lines = rest
     post = if @lines.length then @compileNode o else ''
     code &&+= '\n' if post
-    if not o.globals and vars = @scope?.vars().join ', '
-      code += o.indent + "var #{ multident vars, o.indent };\n"
+    if @scope?.vars o.globals
+      code += o.indent + that + ';\n'
     code + post
 
 #### Literal
@@ -1419,14 +1419,15 @@ exports import all mix: __importAll
   type: -> @variables[@positions[it]]?.type
 
   # Returns the list of variables declared in this scope.
-  vars: ->
+  vars: (global) ->
     usr = []; tmp = []; asn = []
     for {name, type} of @variables
       if type of <[ var reuse ]>
         (if name.charAt(0) is '_' then tmp else usr).push name
       else if type.value
         asn.push name + ' = ' + type.value
-    usr.concat tmp, asn
+    return asn.join ', '    if global
+    'var ' + that if usr.concat(tmp, asn).join ', '
 
 ##### Constants
 

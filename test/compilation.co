@@ -3,7 +3,13 @@ eq 'one;\ntwo;', Coco.compile 'one\r\ntwo', bare: true
 
 
 # `globals: true` removes `var`s
-eq 'x = y;', Coco.compile 'x = y', bare: true, globals: true
+eq '''
+(function(){
+  __slice = Array.prototype.slice;
+  f.apply(null, __slice.call(a).concat([b]));
+}).call(this);
+
+''', Coco.compile 'f ...a, b', {+globals}
 
 
 eq 'passed', Coco.eval '"passed"', bare: true, fileName: 'test'
