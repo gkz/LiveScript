@@ -291,35 +291,31 @@ class exports.Value extends Node
   unwrap: -> if @tails.length then this else @head
 
   # A reference has base part (`this` value) and name part.
-  # We cache them separately for compiling complex expressions. So that
+  # We cache them separately for compiling complex expressions, so that e.g.
   #
-  #     a()[b()] ?= c
-  # compiles to:
+  #     a()[b()] ||= c
   #
-  #     (_base = a())[_name = b()] ? _base[_name] = c
+  # compiles to
+  #
+  #     (_base = a())[_name = b()] || (_base[_name] = c);
+  #
   cacheReference: (o) ->
     name = @tails[*-1]
     if @tails.length < 2 and not @head.isComplex() and not name?.isComplex()
       return [this, this]  # `a` `a.b`
     base = Value @head, @tails.slice 0, -1
     if base.isComplex()  # `a().b`
-      ref  = Literal o.scope.temporary 'base'
-      base = Value Parens Assign ref, base
-      bref = Value ref
-      bref.temps = [ref.value]
+      ref  = o.scope.temporary 'base'
+      base = Value Parens Assign Literal(ref), base
+      bref = Literal(ref) <<< {+temp}
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
-      ref  = Literal o.scope.temporary 'name'
-      name = Index Assign ref, name.index
-      nref = Index ref
-      nref.temps = [ref.value]
+      ref  = o.scope.temporary 'name'
+      name = Index Assign Literal(ref), name.index
+      nref = Index Literal(ref) <<< {+temp}
     [base.add name; Value bref or base.head, [nref or name]]
 
   SIMPLENUM = /^\d+$/
-  STARSEEK  = ->
-    switch
-    case it.value is '*'     then it
-    case it instanceof Index then false
 
   compileNode: (o) ->
     return that.compile o if @unfoldAssign(o) or @unfoldBind(o)
@@ -333,13 +329,17 @@ class exports.Value extends Node
 
   poleStar: (o) ->
     for t, i of @tails
-      continue unless t instanceof Index and star = t.traverseChildren STARSEEK
+      continue unless t instanceof Index and star = t.traverseChildren seekStar
       [sub, ref] = Value(@head, @tails.slice 0, i).cache o
       @temps = [ref.value] if sub isnt ref
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + '.length'
       return Value sub, @tails.slice i
     this
+  function seekStar ->
+    switch
+    case it.value is '*'     then it
+    case it instanceof Index then false
 
   # Unfold a soak into an __If__: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
@@ -351,12 +351,10 @@ class exports.Value extends Node
       fst = Value @head, @tails.slice 0, i
       snd = Value @head, @tails.slice i
       if fst.isComplex()
-        ref = Literal o.scope.temporary 'ref'
-        fst = Parens Assign ref, fst
-        snd.head = ref
-      ifn = If Existence(fst), snd, {+soak}
-      ifn.temps = [ref.value] if ref
-      return ifn
+        ref = o.scope.temporary 'ref'
+        fst = Parens Assign Literal(ref), fst
+        snd.head = Literal(ref) <<< {+temp}
+      return If Existence(fst), snd, {+soak}
     void
 
   unfoldAssign: (o) ->
@@ -936,8 +934,7 @@ class exports.Fun extends Node
       prm = Literal '$' + prm.value if prm.value.reserved
     else if prm.isComplex()
       prm = Literal o.scope.temporary 'arg'
-    prm = Splat prm if splat
-    node.param = prm
+    node.param = if splat then Splat prm else prm
 
 #### Class
 class exports.Class extends Node
