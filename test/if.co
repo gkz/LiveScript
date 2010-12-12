@@ -117,7 +117,19 @@ eq '''
 var that;
 if (1) {
   if (that = 2) {
+    if (3) {
+      4;
+    }
     that;
   }
 }
-''', Coco.compile 'that if 2 if 1', {+bare}
+if (!(that = 5)) {
+  that;
+}
+''', Coco.compile '''
+if 1
+  if 2
+    4 if 3
+    that
+that unless 5
+''', {+bare}

@@ -83,12 +83,11 @@ class Node
 
   anaphorize: (o, key) ->
     @children = @childrenA
-    @[key] = Assign Literal('that'), @[key] if @traverseChildren HAS_THAT
+    @[key] = Assign Literal('that'), @[key] if @eachChild HAS_THAT
     delete @children
     void
   function HAS_THAT ->
-    if it.childrenA then false
-    else it.value is 'that' or it.traverseChildren HAS_THAT
+    it.value is 'that' or unless it.childrenA then it.eachChild HAS_THAT
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
