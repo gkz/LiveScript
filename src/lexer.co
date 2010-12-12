@@ -34,7 +34,7 @@ exports import
     # The current line.
     @line = o.line or 0
     # The current indentation level, over-indentation and under-outdentation.
-    @indent = @indebt = @outdebt = 0
+    @indent = @indebt = @dedebt = 0
     # The stack of all current indentation levels.
     @indents = []
     # Flags for distinguishing FORIN/FOROF/FROM/TO/BY.
@@ -60,7 +60,7 @@ exports import
       default i += do @identifierToken or do @numberToken or
                    do @literalToken    or do @spaceToken
     # Close up all remaining open blocks.
-    @outdent @indent
+    @dedent @indent
     # Dispose dummy.
     @tokens.shift()
     # [Rewrite](#rewriter) the token stream unless explicitly asked not to.
@@ -187,7 +187,7 @@ exports import
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
       dent = 0/0
       dent = len unless dent <= len = m.0.length - 1 while m = tabs.exec doc
-      doc  = dedent doc, dent
+      doc  = untabify doc, dent
       if doc.charAt(0) is '\n'
         doc.=slice 1
         ++@line
@@ -202,7 +202,7 @@ exports import
   # Matches block comments.
   commentToken: ->
     text = @chunk.slice 3, if ~end = @chunk.indexOf '###', 3 then end else 1/0
-    @token 'COMMENT', dedent text, @indent
+    @token 'COMMENT', untabify text, @indent
     @token<[ TERMINATOR \n ]>
     @countLines(text).length + 6
 
@@ -272,7 +272,7 @@ exports import
   #       .each( ... )
   #       .map( ... )
   #
-  # Keeps track of the level of indentation, because a single outdent token
+  # Keeps track of the level of indentation, because a single dedent
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
     return 0 unless indent = MULTIDENT.exec @chunk
@@ -290,11 +290,11 @@ exports import
       if noNewline
         @indebt = size - @indent
         return indent.length
-      @indents.push @token 'INDENT', size - @indent + @outdebt
-      @outdebt = @indebt = 0
+      @indents.push @token 'INDENT', size - @indent + @dedebt
+      @dedebt = @indebt = 0
     else
       @indebt = 0
-      @outdent @indent - size, noNewline
+      @dedent @indent - size, noNewline
     @indent = size
     indent.length
 
@@ -363,19 +363,19 @@ exports import
 
   #### Token Manipulators
 
-  # Record an outdent token, or multiple tokens if we happen to be moving back
+  # Records a dedent token, or multiple tokens if we happen to be moving back
   # inwards past several recorded indents.
-  outdent: (moveOut, noNewline) ->
+  dedent: (moveOut, noNewline) ->
     while moveOut > 0
       unless idt = @indents[*-1]
         moveOut = 0
-      else if idt <= @outdebt
-        moveOut  -= idt
-        @outdebt -= idt
+      else if idt <= @dedebt
+        moveOut -= idt
+        @dedebt -= idt
       else
-        moveOut -= @token 'OUTDENT', @indents.pop() - @outdebt
-        @outdebt = 0
-    @outdebt -= moveOut
+        moveOut -= @token 'DEDENT', @indents.pop() - @dedebt
+        @dedebt  = 0
+    @dedebt -= moveOut
     @newline() unless noNewline
 
   # Generates a newline token. Consecutive newlines get merged together.
@@ -394,7 +394,7 @@ exports import
       case <[ ( CALL_START ]>
         break if level--
         tok.0 = 'PARAM_START'
-        return this
+        return
     void
 
   # Matches a balanced group such as a double-quoted string. Pass in
@@ -488,7 +488,7 @@ string = (body, quote, newline) ->
   quote + body + quote
 
 # Erases all external indentation on the left-hand side.
-dedent = (str, num) ->
+untabify = (str, num) ->
   if num then str.replace /// \n [^\n\S]{#{num}} ///g, '\n' else str
 
 #### Constants

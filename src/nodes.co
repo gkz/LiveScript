@@ -1345,7 +1345,7 @@ class exports.Comment extends Node
 
   terminator: ''
 
-  compile: (o) -> "/*#{ multident @comment, o.indent }*/"
+  compile: (o) -> "/*#{ @comment.replace /\n/g, '\n' + o.indent }*/"
 
 #### Util
 # A wrapper node for utility functions.
@@ -1505,8 +1505,6 @@ $ ///
 utility = (name) ->
   Scope.root.assign ref = '__' + name, UTILITIES[name]
   ref
-
-multident = (code, tab) -> code.replace /\n/g, '$&' + tab
 
 lastNonComment = (nodes) ->
   break if node not instanceof Comment for node, i of nodes by -1

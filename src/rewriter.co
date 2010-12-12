@@ -63,7 +63,7 @@ closeOpenings = (tokens) ->
 addImplicitBraces = (tokens) ->
   go = (token, i) -> tokens.splice i, 0, ['}', '}', token.2]
   ok = (token, i) ->
-    return true  if token.1 is ';' or 'OUTDENT' is tag = token.0
+    return true  if token.1 is ';' or 'DEDENT' is tag = token.0
     return false if tag not of <[ , TERMINATOR ]>
     one = tokens[i+1]?.0
     if tag is ',' then one not of <[ IDENTIFIER STRNUM TERMINATOR ( ]>
@@ -122,7 +122,7 @@ addImplicitParentheses = (tokens) ->
     switch tag
     case 'CLASS'        then seenClass  := true
     case <[ IF CATCH ]> then seenSingle := true
-    return true  if tag is 'ACCESS' and (eol or pre is 'OUTDENT')
+    return true  if tag is 'ACCESS' and (eol or pre is 'DEDENT')
     return false if token.generated or pre is ','
     if tag is 'INDENT'
       return seenClass := false if seenClass
@@ -130,7 +130,7 @@ addImplicitParentheses = (tokens) ->
              tokens[i-2]?.0 isnt 'CATCH'
     tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]>
   function go (token, i) ->
-    ++i if token.0 is 'OUTDENT'
+    ++i if token.0 is 'DEDENT'
     tokens.splice i, 0, ['CALL_END', ')', token.2]
   tokens
 
@@ -141,11 +141,11 @@ addImplicitParentheses = (tokens) ->
 addImplicitIndentation = (tokens) ->
   ok = (token, i) ->
     switch token.0
-    case <[ CATCH FINALLY OUTDENT CASE DEFAULT ]> then true
+    case <[ CATCH FINALLY DEDENT CASE DEFAULT ]> then true
     case 'TERMINATOR' then token.1 isnt ';'
     case 'ELSE'       then tag of <[ IF THEN ]>
   go = (token, i) ->
-    tokens.splice (if tokens[i-1].0 is ',' then i-1 else i), 0, outdent
+    tokens.splice (if tokens[i-1].0 is ',' then i-1 else i), 0, dedent
   i = -1
   while token = tokens[++i]
     [tag] = token
@@ -156,9 +156,9 @@ addImplicitIndentation = (tokens) ->
       continue
     continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY FINALLY ]> or
                     tag is 'ELSE' and next isnt 'IF'
-    indent  = ['INDENT' , 2, token.2]
-    outdent = ['OUTDENT', 2, token.2]
-    indent.generated = outdent.generated = true
+    indent = ['INDENT', 2, token.2]
+    dedent = ['DEDENT', 2, token.2]
+    indent.generated = dedent.generated = true
     if tag is 'THEN'
       tokens.splice --i, 1 if tokens[i-1]?.0 is 'TERMINATOR'
       tokens[i] = indent import {+fromThen}
@@ -243,7 +243,7 @@ BALANCED_PAIRS = [
   <[ ( ) ]>
   <[ [ ] ]>
   <[ { } ]>
-  <[ INDENT OUTDENT ]>
+  <[ INDENT DEDENT ]>
   <[  CALL_START  CALL_END ]>
   <[ PARAM_START PARAM_END ]>
   <[ INDEX_START INDEX_END ]>
