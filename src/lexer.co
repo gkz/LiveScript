@@ -274,8 +274,7 @@ exports import
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf '\n'
     noNewline = LINE_CONTINUER.test(@chunk) or @last.0 of
-      <[ +- DOT INDEX[ ASSIGN COMPOUND_ASSIGN
-         LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
+      <[ +- DOT INDEX[ ASSIGN LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
     if size - @indebt is @indent
       @newline() unless noNewline
       return indent.length
@@ -311,7 +310,7 @@ exports import
       @tagParameters()
       tag = 'FUNC_ARROW'
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
-      tag = if value of <[ = := ]> then 'ASSIGN' else 'COMPOUND_ASSIGN'
+      tag = 'ASSIGN'
       if @last.0 is 'LOGIC'
         @tokens.pop()
         (value = new String value).logic = @last.1
