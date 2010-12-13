@@ -48,6 +48,14 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
+### 0.1.5
+- Conditional control structures can now be anaphoric;
+  `that` within `if`, `while` or `case` block now refers to the condition value.
+- Decimal numbers can now have arbitrary trailing alphabets as comments.
+  e.g. `9times`, `1.5s`
+- Added `<<<`/`<<<<` as aliases to `import`/`import all`
+- non-ASCII identifiers are now allowed.
+
 ### 0.1.4
 - `.` and its families can now be used with numbers and strings, instead of `[]`.
   `a.0.'0'` compiles to `a[0]['0']`.
