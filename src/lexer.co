@@ -335,9 +335,13 @@ exports import
       fallthrough
     case '\\\n' then return value.length
     default
-      if value.charAt(0) is '@'
+      switch value.charAt 0
+      case '@'
         @token<[ IDENTIFIER arguments ]>; @token<[ DOT . ]>
         @token 'STRNUM', value.slice 1
+        return value.length
+      case '\\'
+        @token 'STRNUM', string value.slice(1), "'"
         return value.length
       unless (prev = @last).spaced
         if value is '(' and prev.0 of CALLABLE
@@ -521,6 +525,7 @@ SYMBOL = /// ^ (?
 | >>>?=?            # rite shift
 | @\d+              # argument shorthand
 | \\\n              # continued line
+| \\\S[^\s,;)}\]]*  # word
 | \S
 ) ///
 SPACE     = /^(?=.)[^\n\S]*(?:#(?!##[^#]).*)?/

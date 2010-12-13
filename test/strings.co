@@ -212,3 +212,10 @@ eq 'multiline nested "interpolations" work', """multiline #{
     "\"interpolations\""
   }"
 } work"""
+
+
+eq 'word', \word
+eq \c, 'c'
+eq('+', \+)
+eq '\\', [\\\].0
+eq '$', {\$}.\$
