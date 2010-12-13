@@ -148,9 +148,9 @@ runTests = (Coco) ->
         return say stk
       say msg
       {(row): line} = lines = code.split '\n'
-      say lines.slice(row-5, row+0).join '\n'
+      say lines.slice(row-8, row+0).join '\n'
       say line.slice(0, col) + tint line.slice(col), bold
-      say lines.slice(row+1, row+6).join '\n'
+      say lines.slice(row+1, row+9).join '\n'
 
 task 'test', 'run the Coco language test suite', ->
   runTests require './lib/coco'

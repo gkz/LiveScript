@@ -395,3 +395,10 @@ throws 'return; // cannot be an expression', -> Coco.compile 'r = (return)'
 
 
 eq '(function(){})(function(){});', Coco.compile '(->return)(->void)', {+bare}
+
+
+eq '''
+(function(){
+  return this.it;
+});
+''', Coco.compile '-> @it', {+bare}

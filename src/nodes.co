@@ -34,7 +34,7 @@ class Node
     args = []
     if @contains(-> it.value is 'this')
       args.push Literal 'this'
-      val = Value fun, [Access Literal 'call']
+      val = Value fun, [Index Key 'call']
     mentionsArgs = false
     @traverseChildren ->
       mentionsArgs := it.value = '_args' if it.value is 'arguments'
@@ -108,6 +108,7 @@ class Node
   unfoldSoak   : NO
   unfoldAssign : NO
   unwrap       : THIS
+  asKey        : THIS
 
   invert: -> Op '!', this
 
@@ -213,10 +214,14 @@ class exports.Lines extends Node
 class exports.Literal extends Node
   (@value, reserved) => @isAssignable = NO if reserved
 
+  show: -> '"' + @value + '"'
+
   isComplex: NO
 
   isAssignable : -> IDENTIFIER.test @value
   assigns      : -> it is @value
+
+  asKey: -> if IDENTIFIER.test @value then Key @value else this
 
   compile: (o, level) ->
     switch val = @value
@@ -226,50 +231,44 @@ class exports.Literal extends Node
       if (level ? o.level) is LEVEL_ACCESS
         throw SyntaxError 'invalid use of ' + @value
       return val
-    return "'#{val}'" if val.reserved
     if      val.js then @terminator = ''
     else if @temp  then o.scope.free val
     val
 
-  toString: -> ' "' + @value + '"'
-
-#### Statement
-# `continue`, `break` or `debugger`
-class exports.Statement extends Node
-  (@name) ->
+#### Key
+# The name of a property, in the form of `{key: _}` or `_.key`.
+class exports.Key extends Node
+  (@name) =>
 
   show: -> @name
 
-  isStatement : YES
-  makeReturn  : THIS
+  isComplex: NO
 
-  jumps: -> not (it and (it.loop or it.block and @name isnt 'continue'))
+  compile: -> if @name.reserved then "'#{@name}'" else @name
 
-  compile: -> it.indent + @name + ';'
+#### Index
+# `x.y` `x[y]`
+class exports.Index extends Node
+  (@key, @symbol) =>
+    switch symbol
+    case <[ ?[ ?. ]> then @soak   = true
+    case <[ &[ &. ]> then @bind   = true
+    case <[ [= .= ]> then @assign = true
 
-#### Throw
-class exports.Throw extends Statement
-  (@it) ->
+  children: ['key']
 
-  children: ['it']
-
-  jumps: NO
-
-  compile: (o) -> o.indent + "throw #{ @it.compile o, LEVEL_PAREN };"
-
-#### Return
-class exports.Return extends Throw
-  => @<<<{it} if it and it.value isnt 'void'
-
-  jumps: YES
+  show: -> @symbol
 
   compile: (o) ->
-    it = if @it then ' ' + @it.compile o, LEVEL_PAREN else ''
-    o.indent + "return#{it};"
+    code = @key.compile o, LEVEL_PAREN
+    if @key instanceof Key and code.charAt(0) isnt "'"
+    then ".#{code}" else "[#{code}]"
+
+  isComplex: -> @key.isComplex()
 
 #### Value
 # Acts as a container for property access chains, by holding
-# __Access__/__Index__ instances within `@tails`.
+# __Index__ instances within `@tails`.
 class exports.Value extends Node
   (head, tails, at) =>
     return head if not tails and head instanceof Value
@@ -311,7 +310,7 @@ class exports.Value extends Node
     return [base, bref] unless name  # `a()`
     if name.isComplex()  # `a[b()]`
       ref  = o.scope.temporary 'name'
-      name = Index Assign Literal(ref), name.index
+      name = Index Assign Literal(ref), name.key
       nref = Index Literal(ref) <<< {+temp}
     [base.add name; Value bref or base.head, [nref or name]]
 
@@ -378,9 +377,9 @@ class exports.Value extends Node
 #### Call
 # `x(y)`
 class exports.Call extends Node
-  (@callee, @args, open) =>
-    @args or= (@splat = true; [Literal 'this'; Literal 'arguments'])
-    @soak   = true if open is '?('
+  (@callee, @args, sym) =>
+    @args ||= (@splat = true; [Literal 'this'; Literal 'arguments'])
+    @soak   = true if sym is '?('
 
   children: <[ callee args ]>
 
@@ -446,46 +445,9 @@ class exports.Call extends Node
     else
       fun = base.compile o, LEVEL_ACCESS
       if name
-        ref  = fun
-        fun += name.compile o
-      else
-        ref  = 'null'
+      then ref = fun; fun += name.compile o
+      else ref = null
     "#{fun}.apply(#{ref}, #{args})"
-
-#### Access
-# `x.y`
-class exports.Access extends Node
-  (@key, @symbol) =>
-    switch symbol
-    case '?.' then @soak   = true
-    case '&.' then @bind   = true
-    case '.=' then @assign = true
-
-  children: ['key']
-
-  show: -> @symbol
-
-  isComplex: NO
-
-  compile: (o) ->
-    if (key = @key.compile o).charAt(0) is "'" then "[#{key}]" else ".#{key}"
-
-#### Index
-# `x[y]`
-class exports.Index extends Node
-  (@index, @symbol) =>
-    switch symbol
-    case <[ ?[ ?. ]> then @soak   = true
-    case <[ &[ &. ]> then @bind   = true
-    case <[ [= .= ]> then @assign = true
-
-  children: ['index']
-
-  show: Access::show
-
-  compile: (o) -> "[#{ @index.compile o, LEVEL_PAREN }]"
-
-  isComplex: -> @index.isComplex()
 
 #### Obj
 # `{x: y}`
@@ -738,15 +700,15 @@ class exports.Assign extends Node
   destructObj: (o, nodes, rite) ->
     for node of nodes
       node.=it if splat = node instanceof Splat
-      if dyna = node instanceof Parens
+      if node instanceof Parens
         [node, key] = Value(node.it).cacheReference o
       else if node instanceof Assign
         key = node.left; node.=right
       else
         key = if node.at then node.tails.0.key else node
-      acc = not dyna and key instanceof Literal and IDENTIFIER.test key.value
-      val = Value lr ||= Literal(rite), [(if acc then Access else Index) key]
-      val = Import Obj(), val if splat
+      val = Value lr ||= Literal(rite), [Index key.asKey()]
+      val = Import Obj(), val  if splat
+      node = Literal node.name if node instanceof Key
       Assign(node, val, @op).compile o, LEVEL_TOP
 
 #### Import
@@ -785,8 +747,8 @@ class exports.Import extends Node
         {left: key, right: val} = node
       else if (key = val = node).at
         [{key}] = val.tails
-      acc = not dyna and key instanceof Literal and IDENTIFIER.test key.value
-      asn = Assign Value(lref, [(if acc then Access else Index) key]), val
+      key.=asKey() unless dyna
+      asn = Assign Value(lref, [Index key]), val
       code += asn.compile o, LEVEL_PAREN
     if sub is lref
       code.=slice delim.length
@@ -930,8 +892,8 @@ class exports.Fun extends Node
     if splat = prm instanceof Splat  then prm.=it
     else    if prm instanceof Assign then prm.=left
     if prm.at
-      prm.=tails.0.key
-      prm = Literal '$' + prm.value if prm.value.reserved
+      {name} = prm.tails.0.key
+      prm = Literal if name.reserved then '$' + name else name
     else if prm.isComplex()
       prm = Literal o.scope.temporary 'arg'
     node.param = if splat then Splat prm else prm
@@ -946,9 +908,9 @@ class exports.Class extends Node
     {fun} = this; {lines} = fun.body
     if @title
       decl = if @title instanceof Value
-      then @title.tails[*-1].key?.value
+      then @title.tails[*-1].key?.name
       else @title.value
-      if decl and decl.reserved
+      if decl?.reserved
         throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
     name  = decl or @name
     name  = '_Class' unless name and IDENTIFIER.test name
@@ -1037,6 +999,40 @@ class exports.Splat extends Parens
     return args.0 + ".concat(#{ args.slice(1).join ', ' })" unless index
     base = (node.compile o, LEVEL_LIST for node of list.slice 0, index)
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
+
+#### Statement
+# `continue`, `break` or `debugger`
+class exports.Statement extends Node
+  (@name) ->
+
+  show: -> @name
+
+  isStatement : YES
+  makeReturn  : THIS
+
+  jumps: -> not (it and (it.loop or it.block and @name isnt 'continue'))
+
+  compile: -> it.indent + @name + ';'
+
+#### Throw
+class exports.Throw extends Statement
+  (@it) ->
+
+  children: ['it']
+
+  jumps: NO
+
+  compile: (o) -> o.indent + "throw #{ @it.compile o, LEVEL_PAREN };"
+
+#### Return
+class exports.Return extends Throw
+  => @<<<{it} if it and it.value isnt 'void'
+
+  jumps: YES
+
+  compile: (o) ->
+    it = if @it then ' ' + @it.compile o, LEVEL_PAREN else ''
+    o.indent + "return#{it};"
 
 #### While
 # The traditional `while` loop.
