@@ -45,10 +45,10 @@ exports.run = ->
   return compileScript '', sources.0 if o.eval
   return (version(); help(); repl())  unless sources.length
   args = if ~separator = sources.indexOf '--'
-  then sources.splice(separator, 1/0).slice 1
+  then sources.splice(separator, 9e9).slice 1
   else []
-  args.unshift ...sources.splice 1, 1/0 if o.run
-  process.argv.splice 2, 1/0, ...args
+  args.unshift ...sources.splice 1, 9e9 if o.run
+  process.argv.splice 2, 9e9, ...args
   compileScripts()
 
 # Asynchronously read in each Coco script in a list of source files and

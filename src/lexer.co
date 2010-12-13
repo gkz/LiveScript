@@ -201,7 +201,7 @@ exports import
 
   # Matches block comments.
   commentToken: ->
-    text = @chunk.slice 3, if ~end = @chunk.indexOf '###', 3 then end else 1/0
+    text = @chunk.slice 3, if ~end = @chunk.indexOf '###', 3 then end else 9e9
     @token 'COMMENT', untabify text, @indent
     @token<[ TERMINATOR \n ]>
     @countLines(text).length + 6

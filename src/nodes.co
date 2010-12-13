@@ -197,7 +197,7 @@ class exports.Lines extends Node
     code = post = ''
     break unless node instanceof [Comment, Literal] for node, i of @lines
     if i
-      rest   = @lines.splice i, 1/0
+      rest   = @lines.splice i, 9e9
       code   = @compileNode o
       @lines = rest
     post = if @lines.length then @compileNode o else ''
@@ -503,7 +503,7 @@ class exports.Obj extends Node
     return (if @front then '({})' else '{}') unless items.length
     for node, i of items
       if node instanceof Splat or (node.left or node) instanceof Parens
-        rest = items.splice i, 1/0
+        rest = items.splice i, 9e9
         break
     [last] = lastNonComment items
     idt    = o.indent += TAB
