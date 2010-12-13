@@ -164,7 +164,16 @@ addImplicitIndentation = (tokens) ->
       tokens[i] = indent import {+fromThen}
     else
       tokens.splice ++i, 0, indent
-    detectEnd tokens, i+1, ok, go
+    switch
+    case \, is next = tokens[i+1].0
+      go 0, ++i
+    case \, is tokens[i+2]?.0 and next of
+         <[ IDENTIFIER THISPROP STRNUM LITERAL THIS SUPER FUNC_ARROW ]>
+      go 0, i += 2
+    case next of <[ ( [ { ]> and
+         tokens[idx = 1 + indexOfPair tokens, i+1]?.0 is ','
+      go 0, idx; ++i
+    default detectEnd tokens, i+1, ok, go
   tokens
 
 # Tag postfix conditionals as such, so that we can parse them with a
