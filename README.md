@@ -3,10 +3,10 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 ## Principles
 - Respect JavaScript/ECMAScript semantics, but supply ways to amend them.
+- Reserve less keywords.
+- Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 - Performance over readability.
 - Readability over compressability.
-- Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
-- Reserve less keywords.
 
 ## Features
 - [Additions](https://github.com/satyr/coco/wiki/additions)

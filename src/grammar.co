@@ -29,10 +29,8 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # previous nonterminal.
 o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
-  return [patterns, '$1', options] unless action
-  action = if unwrap.exec action then that.1 else "(#{action}())"
-  action.=replace /\b(?:[A-Z][\w.]+|mix\b)/g, 'yy.$&'
-  [patterns, action, options]
+  action &&= unwrap.exec(action).1.replace /\b(?:[A-Z][\w.]+|mix\b)/g, 'yy.$&'
+  [patterns, action or '$1', options]
 
 # Grammatical Rules
 # -----------------
@@ -47,7 +45,7 @@ o = (patterns, action, options) ->
 # `$1` would be the value of the first _Expression_, `$2` would be the token
 # value for the _MATH_ terminal, and `$3` would be the value of the second
 # _Expression_.
-grammar =
+bnf =
   # Everything that can be assigned to.
   Assignable: [
     o 'SimpleAssignable'
@@ -74,7 +72,7 @@ grammar =
     o 'IDENTIFIER'                     ,-> Literal $1
     o 'Value DOT IDENTIFIER'           ,-> $1.add Access Literal($3), $2
     o 'Value DOT STRNUM'               ,-> $1.add Index  Literal($3), $2
-    o 'Value DOT Parenthetical'        ,-> $1.add Index  $3.it,       $2
+    o 'Value DOT Parenthetical'        ,-> $1.add Index  $3.'it',     $2
     o 'Value INDEX[ Expression ]INDEX' ,-> $1.add Index  $3,          $2
     o 'ThisProperty'
     o 'SUPER'                          ,-> new Super
@@ -170,8 +168,8 @@ grammar =
     o     'Expression'
     o '... Expression' ,-> Splat $2
   ]
-  # **ArgList** is both the list of objects passed into a function call,
-  # as well as the contents of an array literal
+  # **ArgList** is either the list of objects passed into a function call,
+  # the parameter list of a function, or the contents of an array literal
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
     o ''                                                ,-> []
@@ -179,9 +177,6 @@ grammar =
     o 'ArgList , Arg'                                   ,-> $1.concat $3
     o 'ArgList OptComma TERMINATOR Arg'                 ,-> $1.concat $4
     o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ,-> $1.concat $4
-  ]
-  Array: [
-    o '[ ArgList OptComma ]' ,-> Arr $2
   ]
 
   # A reference to a property on `this`.
@@ -220,6 +215,10 @@ grammar =
   Fun: [
     o 'PARAM( ArgList OptComma )PARAM FUNC_ARROW Block' ,-> Fun $2, $6, $5
     o 'FUNC_ARROW Block'                                ,-> Fun [], $2, $1
+  ]
+
+  Array: [
+    o '[ ArgList OptComma ]' ,-> Arr $2
   ]
 
   # Things that can be keys within an object literal.
@@ -313,9 +312,9 @@ grammar =
 
 # Precedence
 # ----------
-
 # Operators at the top of this list have higher precedence than the ones lower
-# down. Following these rules is what makes `2 + 3 * 4` parse as:
+# down as in [Yacc](http://dinosaur.compilertools.net/yacc/index.html).
+# Following these rules is what makes `2 + 3 * 4` parse as:
 #
 #     2 + (3 * 4)
 #
@@ -335,26 +334,23 @@ operators = [
   <[ right     : ASSIGN COMPOUND_ASSIGN RETURN THROW EXTENDS INDENT     ]>
   <[ right     IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
   <[ left      POST_IF FOR WHILE ]>
-]
+# Reverse them because Jison orders precedence from low to high
+].reverse()
 
 # Wrapping Up
 # -----------
 
-# Finally, now what we have our **grammar** and our **operators**, we can create
+# Finally, now what we have our **bnf** and our **operators**, we can create
 # our **Jison.Parser**. We do this by processing all of our rules, recording all
 # terminals (every symbol which does not appear as the name of a rule above)
-# as "tokens".
-tokens = for name, alternatives in grammar
+# as **tokens**.
+tokens = for name, alternatives in bnf
   for alt of alternatives
     alt.1 = "#{ if name is 'Root' then 'return' else '$$ =' } #{alt.1};"
-    token if token not in grammar for token of alt.0
+    token if token not in bnf for token of alt.0
+tokens.=join ' '
 
-# Initialize the **Parser** with our list of terminal **tokens**, our **grammar**
-# rules, and the name of the root. Reverse the operators because Jison orders
-# precedence from low to high, and we have it high to low
-# (as in [Yacc](http://dinosaur.compilertools.net/yacc/index.html)).
-exports.parser = new (require 'jison').Parser then
-  tokens      : tokens.join ' '
-  bnf         : grammar
-  operators   : operators.reverse()
-  startSymbol : 'Root'
+# Initialize the **Parser** with our **bnf**, **operators**,
+# our list of terminal **tokens**, and the name of the root.
+exports.parser =
+  new (require 'jison').Parser {bnf, operators, tokens, startSymbol: 'Root'}
