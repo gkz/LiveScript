@@ -2,16 +2,16 @@
 # [tokenizing](#lexer), [parsing](#grammar), and [compiling](#nodes)
 # Coco source into JavaScript.
 
-(Coco = exports).VERSION = '0.1.5'
+(Coco = exports).VERSION = \0.1.5
 
-Lexer = require './lexer'
+Lexer = require \./lexer
 
 # The real Lexer produces a generic stream of tokens. This object provides a
 # thin wrapper around it, compatible with the Jison API. We can then pass it
 # directly as a "Jison lexer".
-{parser} = require './parser'
+{parser} = require \./parser
 parser import
-  yy    : require './nodes'
+  yy    : require \./nodes
   lexer :
     lex           : -> [tag, @yytext, @yylineno] = @tokens[@pos++] or ['']; tag
     setInput      : -> @pos = 0; @tokens = it
@@ -30,21 +30,21 @@ Coco.tokens = (code, options) -> Lexer.lex code, options
 
 # Parse a string or tokens of Coco code, and return the AST.
 Coco.nodes = (source, options) ->
-  parser.parse if typeof source is 'string'
+  parser.parse if typeof source is \string
   then Lexer.lex source, options
   else source
 
-return unless (fs = require 'fs') and (path = require 'path')
+return unless (fs = require \fs) and (path = require \path)
 
 # Compile and execute a string of Coco on __node.js__, correctly
 # setting `__filename`, `__dirname`, and relative `require`.
 Coco.run = (code, options) ->
   root = module
   root.=parent while root.parent
-  root.filename = fs.realpathSync options?.fileName or '.'
+  root.filename = fs.realpathSync options?.fileName or \.
   root.moduleCache &&= {}
   if require.extensions or
-     path.extname(root.filename).toLowerCase() isnt '.co'
+     path.extname(root.filename).toLowerCase() isnt \.co
     code = Coco.compile code, options
   root._compile code, root.filename
 
@@ -55,9 +55,9 @@ Coco.eval = (code, options) ->
   eval Coco.compile code, options
 
 if require.extensions
-  require.extensions['.co'] = (module, filename) ->
-    code = Coco.compile fs.readFileSync filename, 'utf8'
+  require.extensions[\.co] = (module, filename) ->
+    code = Coco.compile fs.readFileSync filename, \utf8
     module._compile code, filename
 # __TODO__: Remove `registerExtension` when fully deprecated.
 else if require.registerExtension
-  require.registerExtension '.co', Coco.compile
+  require.registerExtension \.co, Coco.compile

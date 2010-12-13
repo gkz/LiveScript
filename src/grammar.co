@@ -30,7 +30,7 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
   action &&= unwrap.exec(action).1.replace /\b(?:[A-Z][\w.]+|mix\b)/g, 'yy.$&'
-  [patterns, action or '$1', options]
+  [patterns, action or \$1, options]
 
 # Grammatical Rules
 # -----------------
@@ -345,11 +345,11 @@ operators = [
 # as **tokens**.
 tokens = for name, alternatives in bnf
   for alt of alternatives
-    alt.1 = "#{ if name is 'Root' then 'return' else '$$ =' } #{alt.1};"
+    alt.1 = "#{ if name is \Root then \return else '$$ =' } #{alt.1};"
     token if token not in bnf for token of alt.0
 tokens.=join ' '
 
 # Initialize the **Parser** with our **bnf**, **operators**,
 # our list of terminal **tokens**, and the name of the root.
 exports.parser =
-  new (require 'jison').Parser {bnf, operators, tokens, startSymbol: 'Root'}
+  new (require \jison).Parser {bnf, operators, tokens, startSymbol: \Root}

@@ -6,7 +6,7 @@
 # Running `coke` with no arguments will print out a list of all the tasks in the
 # current directory's Cokefile.
 
-{OptionParser} = require './optparse'
+{OptionParser} = require \./optparse
 
 # Keep track of the list of defined tasks, the accepted options, and so on.
 Tasks    = {}
@@ -14,9 +14,9 @@ Switches = []
 
 # The top-level objects for Cokefiles to use directly.
 global import
-  Coco : require './coco'
-  fs   : require 'fs'
-  path : require 'path'
+  Coco : require \./coco
+  fs   : require \fs
+  path : require \path
 
   # Define a coke task with a short name, an optional sentence description,
   # and the function to run as the action itself.
@@ -37,7 +37,7 @@ global import
     Tasks[name].action this
 
   # Utilities.
-  say   : -> process.stdout.write it + '\n'
+  say   : -> process.stdout.write it + \\n
   slurp : -> '' + fs.readFileSync ...
   spit  : fs.writeFileSync
   dir   : fs.readdirSync
@@ -48,7 +48,7 @@ global import
 exports.run = ->
   args = process.argv.slice 2
   fileName = args.splice(0, 2).1 if args.0 of <[ -f --cokefile ]>
-  path.exists fileName ||= 'Cokefile', (exists) ->
+  path.exists fileName ||= \Cokefile, (exists) ->
     unless exists
       console.error 'no "%s" in %s', fileName, process.cwd()
       process.exit 1
@@ -66,7 +66,7 @@ printTasks = (oparser) ->
   for name, task in Tasks
     desc = if task.description then '# ' + task.description else ''
     say "coke #{ (name + pad).slice 0, width } #{desc}"
-  say '\n' + oparser.help() if Switches.length
+  say \\n + oparser.help() if Switches.length
   say '''
 
     Coke options:

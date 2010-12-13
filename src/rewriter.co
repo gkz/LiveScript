@@ -31,7 +31,7 @@ detectEnd = (tokens, i, ok, go) ->
 
 # Dispatch leading terminators that would introduce ambiguity in the grammar.
 removeLeadingTerminators = (tokens) ->
-  break unless tag is 'TERMINATOR' for [tag], i of tokens
+  break unless tag is \TERMINATOR for [tag], i of tokens
   tokens.splice 0, i if i
   tokens
 
@@ -40,7 +40,7 @@ removeLeadingTerminators = (tokens) ->
 removeMidExpressionTerminators = (tokens) ->
   i = 0
   while token = tokens[++i]
-    if tokens[i-1].0 is 'TERMINATOR' and token.0 of EXPR_CLOSE
+    if tokens[i-1].0 is \TERMINATOR and token.0 of EXPR_CLOSE
       tokens.splice i-1, 1
   tokens
 
@@ -53,40 +53,40 @@ closeOpenings = (tokens) ->
     case <[ ( CALL( [ INDEX[ ]>
       stack.push token.0
     case <[ ) )CALL ]>
-      token.0 = ')CALL'  if stack.pop() is  'CALL('
+      token.0 = \)CALL  if stack.pop() is  \CALL(
     case <[ ] INDEX] ]>
-      token.0 = ']INDEX' if stack.pop() is 'INDEX['
+      token.0 = \]INDEX if stack.pop() is \INDEX[
   tokens
 
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
 addImplicitBraces = (tokens) ->
-  go = (token, i) -> tokens.splice i, 0, ['}', '}', token.2]
+  go = (token, i) -> tokens.splice i, 0, [\}, \}, token.2]
   ok = (token, i) ->
-    return true  if token.1 is ';' or 'DEDENT' is tag = token.0
+    return true  if token.1 is \; or \DEDENT is tag = token.0
     return false if tag not of <[ , TERMINATOR ]>
     one = tokens[i+1]?.0
-    if tag is ',' then one not of <[ IDENTIFIER STRNUM TERMINATOR ( ]>
-    else one isnt 'COMMENT' and ':' isnt
-      tokens[if one is '(' then 1 + indexOfPair tokens, i+1 else i+2]?.0
+    if tag is \, then one not of <[ IDENTIFIER STRNUM TERMINATOR ( ]>
+    else one isnt \COMMENT and \: isnt
+      tokens[if one is \( then 1 + indexOfPair tokens, i+1 else i+2]?.0
   stack = []; i = -1
   while token = tokens[++i]
-    unless ':' is tag = token.0
+    unless \: is tag = token.0
       switch
       case tag of EXPR_START
-        tag = '{' if tag is 'INDENT' and tokens[i-1]?.0 is '{'
+        tag = \{ if tag is \INDENT and tokens[i-1]?.0 is \{
         stack.push [tag, i]
       case tag of EXPR_END
         start = stack.pop()
       continue
-    paren = tokens[i-1]?.0 is ')'
-    continue unless paren and tokens[start.1 - 1]?.0 is ':' or # a: (..):
-                    tokens[i-2]?.0 is   ':'                 or # a: b:
-                    stack[ *-1]?.0 isnt '{'
-    stack.push ['{']
+    paren = tokens[i-1]?.0 is \)
+    continue unless paren and tokens[start.1 - 1]?.0 is \: or # a: (..):
+                    tokens[i-2]?.0 is   \:                 or # a: b:
+                    stack[ *-1]?.0 isnt \{
+    stack.push [\{]
     idx  = if paren then start.1 else i-1
-    idx -= 2 while tokens[idx-2]?.0 is 'COMMENT'
-    tokens.splice idx, 0, ['{', '{', token.2]
+    idx -= 2 while tokens[idx-2]?.0 is \COMMENT
+    tokens.splice idx, 0, [\{, \{, token.2]
     detectEnd tokens, ++i+1, ok, go
   tokens
 
@@ -97,41 +97,41 @@ addImplicitParentheses = (tokens) ->
   while token = tokens[++i]
     [tag] = token
     unless (prev = tokens[i-1]).spaced
-      if      tag is '?' then token.call = true
-      else if tag is '{' and (prev.0 is '}' or callable prev.0)
-        tokens.splice i++, 0, ['CLONE', '', prev[2]]
+      if      tag is \? then token.call = true
+      else if tag is \{ and (prev.0 is \} or callable prev.0)
+        tokens.splice i++, 0, [\CLONE, '', prev[2]]
       continue
     continue unless prev.call or callable prev.0
     continue unless token.argument or
       tag of <[ ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS
                 UNARY CREMENT IF TRY CLASS FUNCTION SUPER ]> or
-      tag is '+-' and not (token.spaced or token.eol) or
-      tag of <[ PARAM( FUNC_ARROW ]> and tokens[i-2]?.0 isnt 'FUNCTION'
+      tag is \+- and not (token.spaced or token.eol) or
+      tag of <[ PARAM( FUNC_ARROW ]> and tokens[i-2]?.0 isnt \FUNCTION
     seenSingle = seenClass = false
-    tokens.splice --i, 1 if soak = prev.0 is '?'
-    tokens.splice i++, 0, ['CALL(', (if soak then '?(' else '('), token.2]
+    tokens.splice --i, 1 if soak = prev.0 is \?
+    tokens.splice i++, 0, [\CALL(, (if soak then \?( else \(), token.2]
     detectEnd tokens, i, ok, go
   function callable ->
     it of <[ IDENTIFIER THISPROP SUPER THIS ) )CALL ] ]INDEX ]> or
-    it is 'STRNUM' and tokens[i-2]?.0 is 'DOT'
+    it is \STRNUM and tokens[i-2]?.0 is \DOT
   function ok (token, i) ->
     return false if token.argument
     return true  if not seenSingle and token.fromThen
     [tag] = token
     {0: pre, eol} = tokens[i-1]
     switch tag
-    case 'CLASS'        then seenClass  := true
+    case \CLASS        then seenClass  := true
     case <[ IF CATCH ]> then seenSingle := true
-    return true  if tag is 'DOT' and (eol or pre is 'DEDENT')
-    return false if token.generated or pre is ','
-    if tag is 'INDENT'
+    return true  if tag is \DOT and (eol or pre is \DEDENT)
+    return false if token.generated or pre is \,
+    if tag is \INDENT
       return seenClass := false if seenClass
       return pre not of <[ { [ , FUNC_ARROW TRY FINALLY ]> and
-             tokens[i-2]?.0 isnt 'CATCH'
+             tokens[i-2]?.0 isnt \CATCH
     tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]>
   function go (token, i) ->
-    ++i if token.0 is 'DEDENT'
-    tokens.splice i, 0, [')CALL', ')', token.2]
+    ++i if token.0 is \DEDENT
+    tokens.splice i, 0, [\)CALL, \), token.2]
   tokens
 
 # Because our grammar is LALR(1), it can't handle some single-line
@@ -142,25 +142,25 @@ addImplicitIndentation = (tokens) ->
   ok = (token, i) ->
     switch token.0
     case <[ CATCH FINALLY DEDENT CASE DEFAULT ]> then true
-    case 'TERMINATOR' then token.1 isnt ';'
-    case 'ELSE'       then tag of <[ IF THEN ]>
+    case \TERMINATOR then token.1 isnt \;
+    case \ELSE       then tag of <[ IF THEN ]>
   go = (token, i) ->
-    tokens.splice (if tokens[i-1].0 is ',' then i-1 else i), 0, dedent
+    tokens.splice (if tokens[i-1].0 is \, then i-1 else i), 0, dedent
   i = -1
   while token = tokens[++i]
     [tag] = token
-    if 'INDENT' is next = tokens[i+1]?.0
-      if tag is 'THEN'
+    if \INDENT is next = tokens[i+1]?.0
+      if tag is \THEN
         tokens.splice i, 1
         tokens[i] import {+fromThen, +argument}
       continue
     continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY FINALLY ]> or
-                    tag is 'ELSE' and next isnt 'IF'
-    indent = ['INDENT', 2, token.2]
-    dedent = ['DEDENT', 2, token.2]
+                    tag is \ELSE and next isnt \IF
+    indent = [\INDENT, 2, token.2]
+    dedent = [\DEDENT, 2, token.2]
     indent.generated = dedent.generated = true
-    if tag is 'THEN'
-      tokens.splice --i, 1 if tokens[i-1]?.0 is 'TERMINATOR'
+    if tag is \THEN
+      tokens.splice --i, 1 if tokens[i-1]?.0 is \TERMINATOR
       tokens[i] = indent import {+fromThen}
     else
       tokens.splice ++i, 0, indent
@@ -171,8 +171,8 @@ addImplicitIndentation = (tokens) ->
 # different precedence.
 tagPostfixConditionals = (tokens) ->
   ok = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
-  go = ([tag]) -> token.0 = 'POST_IF' if tag isnt 'INDENT'
-  detectEnd tokens, i+1, ok, go if token.0 is 'IF' for token, i of tokens
+  go = ([tag]) -> token.0 = \POST_IF if tag isnt \INDENT
+  detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
   tokens
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
@@ -223,7 +223,7 @@ rewriteClosingParens = (tokens) ->
     stoken = stack.pop()
     continue if tag is end = INVERSES[start = stoken.0]
     ++debt[start]
-    tok = [end, if start is 'INDENT' then stoken.1 else end]
+    tok = [end, if start is \INDENT then stoken.1 else end]
     pos = if tokens[i+2]?.0 is start then stack.push stoken; i+3 else i
     tokens.splice pos, 0, tok
   tokens

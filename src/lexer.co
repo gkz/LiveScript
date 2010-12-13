@@ -30,7 +30,7 @@ exports import
   tokenize: (code, o) ->
     # Stream of parsed tokens,
     # initialized with a DUMMY token to ensure `@last` always exists.
-    @tokens = [@last = ['DUMMY', '', 0]]
+    @tokens = [@last = [\DUMMY, '', 0]]
     # The current line.
     @line = o.line or 0
     # The current indentation level, over-indentation and under-outdentation.
@@ -46,17 +46,17 @@ exports import
     while @chunk = code.slice i
       switch code.charAt i
       case ' ' then i += do @spaceToken
-      case '\n'then i += do @lineToken
-      case "'" then i += @heredocToken("'") or @singleStringToken()
-      case '"' then i += @heredocToken('"') or @doubleStringToken()
-      case '<'
-        i += if '[' is code.charAt i+1 then @wordsToken() else @literalToken()
-      case '/'
-        i += if '//' is code.substr i+1, 2
+      case \\n then i += do @lineToken
+      case \'  then i += @heredocToken(\') or @singleStringToken()
+      case \"  then i += @heredocToken(\") or @doubleStringToken()
+      case \<
+        i += if \[ is code.charAt i+1 then @wordsToken() else @literalToken()
+      case \/
+        i += if \// is code.substr i+1, 2
         then do @heregexToken
         else do @regexToken or do @literalToken
-      case '#' then i += do @spaceToken or do @commentToken
-      case '`' then i += do @jsToken
+      case \# then i += do @spaceToken or do @commentToken
+      case \` then i += do @jsToken
       default i += do @identifierToken or do @numberToken or
                    do @literalToken    or do @spaceToken
     # Close up all remaining open blocks.
@@ -64,7 +64,7 @@ exports import
     # Dispose dummy.
     @tokens.shift()
     # [Rewrite](#rewriter) the token stream unless explicitly asked not to.
-    require('./rewriter').rewrite @tokens if o.rewrite != 0
+    require(\./rewriter).rewrite @tokens if o.rewrite != 0
     @tokens
 
   #### Tokenizers
@@ -78,64 +78,64 @@ exports import
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec @chunk
     switch id = match.1
-    case 'own'
-      break unless @last.0 is 'FOR' and @last.1
+    case \own
+      break unless @last.0 is \FOR and @last.1
       @last.1 = ''
       return id.length
-    case 'from'
-      break unless @tokens[*-2]?.0 is 'FOR'
+    case \from
+      break unless @tokens[*-2]?.0 is \FOR
       @seenFor  = false
       @seenFrom = true
-      return @token('FROM', id).length
-    case 'ever'
-      break unless @last.0 is 'FOR'
+      return @token(\FROM, id).length
+    case \ever
+      break unless @last.0 is \FOR
       @seenFor = false
-      return @token('EVER', id).length
+      return @token(\EVER, id).length
     case <[ to til ]>
       break unless @seenFrom
       @seenFrom  = false
       @seenRange = true
-      return @token('TO', id).length
-    case 'by'
+      return @token(\TO, id).length
+    case \by
       break unless @seenRange
       @seenRange = false
-      return @token('BY', id).length
-    case 'all'
-      break unless @last.0 is 'IMPORT' and @last.1 is '<<<'
-      @last.1 += '<'
+      return @token(\BY, id).length
+    case \all
+      break unless @last.0 is \IMPORT and @last.1 is \<<<
+      @last.1 += \<
       return id.length
-    tag = if at = id.charAt(0) is '@'
-    then id.=slice 1; 'THISPROP'
-    else              'IDENTIFIER'
+    tag = if at = id.charAt(0) is \@
+    then id.=slice 1; \THISPROP
+    else              \IDENTIFIER
     [input, [], colon] = match
     forcedIdentifier = at or colon or
       if not (prev = @last).spaced and prev.1.colon2
       then @token<[ DOT . ]>
-      else prev.0 is 'DOT'
+      else prev.0 is \DOT
     if forcedIdentifier
       (id = new String id).reserved = true if id of FORBIDDEN
     else if id of COCO_KEYWORDS
       switch tag = id.toUpperCase()
-      case 'FOR'    then @seenFor = true
-      case 'IMPORT' then id  = '<<<'
-      case 'UNLESS' then tag = 'IF'
-      case 'UNTIL'  then tag = 'WHILE'
-      case <[ NEW DO TYPEOF DELETE    ]> then tag = 'UNARY'
-      case <[ TRUE FALSE NULL VOID    ]> then tag = 'LITERAL'
-      case <[ BREAK CONTINUE DEBUGGER ]> then tag = 'STATEMENT'
+      case \FOR    then @seenFor = true
+      case \IMPORT then id  = \<<<
+      case \UNLESS then tag = \IF
+      case \UNTIL  then tag = \WHILE
+      case <[ NEW DO TYPEOF DELETE    ]> then tag = \UNARY
+      case <[ TRUE FALSE NULL VOID    ]> then tag = \LITERAL
+      case <[ BREAK CONTINUE DEBUGGER ]> then tag = \STATEMENT
       case <[ IN OF INSTANCEOF ]>
-        if tag isnt 'INSTANCEOF' and @seenFor
-          if tag is 'OF'
+        if tag isnt \INSTANCEOF and @seenFor
+          if tag is \OF
             @seenRange = true
-            id = prev.0 is 'IDENTIFIER' and @tokens[*-2].0 is ',' and
+            id = prev.0 is \IDENTIFIER and @tokens[*-2].0 is \, and
                  (@tokens.splice -2, 2; prev.1)
           @seenFor = false
-          tag = 'FOR' + tag
+          tag = \FOR + tag
           break
-        if @last.1 is '!'
+        if @last.1 is \!
           @tokens.pop()
-          id = '!' + id
-        tag = 'RELATION'
+          id = \! + id
+        tag = \RELATION
       @seenRange = false if @seenRange and tag of <[ FOR THEN ]>
     else if COCO_ALIASES.hasOwnProperty id then [tag, id] = COCO_ALIASES[id]
     else if id of RESERVED                 then @carp "reserved word \"#{id}\""
@@ -147,29 +147,29 @@ exports import
   numberToken: ->
     return 0 unless match = NUMBER.exec @chunk
     num = match.3 or match.0
-    if num.charAt(0) is '.' and not @last.spaced and @last.0 of INDEXABLE
-      @token<[ DOT . ]>; @token 'STRNUM', num.slice 1
+    if num.charAt(0) is \. and not @last.spaced and @last.0 of INDEXABLE
+      @token<[ DOT . ]>; @token \STRNUM, num.slice 1
       return match.0.length
     if radix = match.1
       @carp "invalid radix #{radix}" unless 2 <= radix <= 36
       num = parseInt rnum = match.2, radix
       if isNaN(num) or num is parseInt rnum.slice(0, -1), radix
         @carp "invalid number #{rnum} in base #{radix}"
-    @token 'STRNUM', num
+    @token \STRNUM, num
     match.0.length
 
   # Matches a normal string. Ensures that quotation marks are balanced within
   # the string's contents, and within nested interpolations.
   singleStringToken: ->
     @carp 'unterminated string' unless str = SIMPLESTR.exec @chunk
-    @token 'STRNUM', (str.=0).replace MULTILINER, '\\\n'
+    @token \STRNUM, (str.=0).replace MULTILINER, \\\\n
     @countLines(str).length
 
   doubleStringToken: ->
     str = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
-    if 0 < str.indexOf '#{', 1
+    if 0 < str.indexOf \#{, 1
     then @interpolateString str.slice(1, -1), ''
-    else @token 'STRNUM', str.replace MULTILINER, ''
+    else @token \STRNUM, str.replace MULTILINER, ''
     @countLines(str).length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -178,26 +178,26 @@ exports import
     return 0 unless @chunk.slice(1, 3) is q+q and ~end = @chunk.indexOf q+q+q, 3
     txt = @chunk.slice 3, end
     lnl = txt isnt doc = txt.replace /\n[^\n\S]*$/, ''
-    if ~doc.indexOf '\n'
+    if ~doc.indexOf \\n
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
       dent = 0/0
       dent = len unless dent <= len = m.0.length - 1 while m = tabs.exec doc
       doc  = untabify doc, dent
-      if doc.charAt(0) is '\n'
+      if doc.charAt(0) is \\n
         doc.=slice 1
         ++@line
-    if q is '"' and ~doc.indexOf '#{'
-      @interpolateString doc, '\\n'
+    if q is \" and ~doc.indexOf \#{
+      @interpolateString doc, \\\n
     else
-      @token 'STRNUM', string doc, q, '\\n'
+      @token \STRNUM, string doc, q, \\\n
       @countLines doc
     ++@line if lnl
     txt.length + 6
 
   # Matches block comments.
   commentToken: ->
-    text = @chunk.slice 3, if ~end = @chunk.indexOf '###', 3 then end else 9e9
-    @token 'COMMENT', untabify text, @indent
+    text = @chunk.slice 3, if ~end = @chunk.indexOf \###, 3 then end else 9e9
+    @token \COMMENT, untabify text, @indent
     @token<[ TERMINATOR \n ]>
     @countLines(text).length + 6
 
@@ -205,7 +205,7 @@ exports import
   jsToken: ->
     @carp 'unterminated JS literal' unless js = JSTOKEN.exec @chunk
     (js = new String js.0.slice 1, -1).js = true
-    @countLines(@token 'LITERAL', js).length + 2
+    @countLines(@token \LITERAL, js).length + 2
 
   # Matches a regular expression literal, aka regex.
   # Lexing regexes is difficult to distinguish from division,
@@ -217,41 +217,41 @@ exports import
     return 0 if (prev = @last).0 of <[ STRNUM LITERAL CREMENT ]> or
                 not prev.spaced and prev.0 of CALLABLE or
                 not regex = REGEX.exec @chunk
-    @token 'LITERAL', if regex.=0 is '//' then '/(?:)/' else regex
+    @token \LITERAL, if regex.=0 is \// then '/(?:)/' else regex
     @countLines(regex).length
 
   # Matches a multiline and extended regex literal.
   heregexToken: ->
     @carp 'unterminated heregex' unless match = HEREGEX.exec @chunk
     [heregex, body, flags] = match
-    if 0 > body.indexOf '#{'
-      body.=replace(HEREGEX_OMIT, '').replace(/\//g, '\\/')
-      @token 'LITERAL', "/#{ body or '(?:)' }/#{flags}"
+    if 0 > body.indexOf \#{
+      body.=replace(HEREGEX_OMIT, '').replace(/\//g, \\\/)
+      @token \LITERAL, "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex).length
     @token<[ IDENTIFIER RegExp ]>; @token<[ CALL( ( ]>
     {tokens} = this
     for token, i of @interpolateString body
-      if token.0 is 'TOKENS'
+      if token.0 is \TOKENS
         tokens.push ...token.1
       else
         val = token.1.replace HEREGEX_OMIT, ''
         continue if i and not val
-        val.=replace bs ||= /\\/g, '\\\\'
-        tokens.push ['STRNUM'; string val, "'", '\\n'; token.2]
-      tokens.push ['+-', '+', tokens[*-1].2]
+        val.=replace bs ||= /\\/g, \\\\\
+        tokens.push [\STRNUM; string val, \', \\\n; token.2]
+      tokens.push [\+-, \+, tokens[*-1].2]
     tokens.pop()
-    if flags then @token<[ , , ]>; @token 'STRNUM', "'#{flags}'"
+    if flags then @token<[ , , ]>; @token \STRNUM, "'#{flags}'"
     @token<[ ) ) ]>
     heregex.length
 
   # Matches a words literal, a syntax sugar for a list of strings.
   wordsToken: ->
-    @carp 'unterminated words' unless ~end = @chunk.indexOf ']>', 2
+    @carp 'unterminated words' unless ~end = @chunk.indexOf \]>, 2
     if call = not @last.spaced and @last.0 of CALLABLE
     then @token<[ CALL( ( ]> else @token<[ [ [ ]>
-    for line of @chunk.slice(2, end).split '\n'
+    for line of @chunk.slice(2, end).split \\n
       if line.match re ||= /\S+/g then for word of that
-        @tokens.push ['STRNUM'; string word, "'"; @line], [',', ',', @line]
+        @tokens.push [\STRNUM; string word, \'; @line], [\,, \,, @line]
       ++@line
     --@line
     if word then @tokens.pop()   else @token<[ STRNUM '' ]>
@@ -272,7 +272,7 @@ exports import
     @countLines indent = MULTIDENT.exec(@chunk).0
     @last.eol  = true
     @seenRange = false
-    size = indent.length - 1 - indent.lastIndexOf '\n'
+    size = indent.length - 1 - indent.lastIndexOf \\n
     noNewline = LINE_CONTINUER.test(@chunk) or @last.0 of
       <[ +- DOT INDEX[ ASSIGN LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
     if size - @indebt is @indent
@@ -282,7 +282,7 @@ exports import
       if noNewline
         @indebt = size - @indent
         return indent.length
-      @indents.push @token 'INDENT', size - @indent + @dedebt
+      @indents.push @token \INDENT, size - @indent + @dedebt
       @dedebt = @indebt = 0
     else
       @indebt = 0
@@ -304,54 +304,54 @@ exports import
   literalToken: ->
     [value] = SYMBOL.exec @chunk
     switch tag = value
-    case ')'
-      @last.0 = 'CALL(' if @last.0 is '('
+    case \)
+      @last.0 = \CALL( if @last.0 is \(
     case <[ -> => ]>
       @tagParameters()
-      tag = 'FUNC_ARROW'
+      tag = \FUNC_ARROW
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
-      tag = 'ASSIGN'
-      if @last.0 is 'LOGIC'
+      tag = \ASSIGN
+      if @last.0 is \LOGIC
         @tokens.pop()
         (value = new String value).logic = @last.1
-    case <[ . ?. &. .= ]>              then tag = 'DOT'
-    case <[ + - ]>                     then tag = '+-'
-    case <[ ! ~ ]>                     then tag = 'UNARY'
-    case <[ === !== <= < > >= == != ]> then tag = 'COMPARE'
-    case <[ && || & | ^ ]>             then tag = 'LOGIC'
-    case '?'                           then tag = 'LOGIC' if @last.spaced
-    case <[ / % ]>                     then tag = 'MATH'
-    case <[ ++ -- ]>                   then tag = 'CREMENT'
-    case <[ <<<  <<<< ]>               then tag = 'IMPORT'
-    case <[ << >> >>> ]>               then tag = 'SHIFT'
-    case <[ ?[ &[ [= ]>                then tag = 'INDEX['
-    case '@'                           then tag = 'THIS'
-    case ';'                           then tag = 'TERMINATOR'
-    case '*'
-      tag = if @last.0 of <[ INDEX[ ( DOT ]> then 'STRNUM' else 'MATH'
-    case '::'
-      (id = new String 'prototype').colon2 = true
-      @token<[ DOT . ]>; @token 'IDENTIFIER', id
+    case <[ . ?. &. .= ]>              then tag = \DOT
+    case <[ + - ]>                     then tag = \+-
+    case <[ ! ~ ]>                     then tag = \UNARY
+    case <[ === !== <= < > >= == != ]> then tag = \COMPARE
+    case <[ && || & | ^ ]>             then tag = \LOGIC
+    case \?                            then tag = \LOGIC if @last.spaced
+    case <[ / % ]>                     then tag = \MATH
+    case <[ ++ -- ]>                   then tag = \CREMENT
+    case <[ <<<  <<<< ]>               then tag = \IMPORT
+    case <[ << >> >>> ]>               then tag = \SHIFT
+    case <[ ?[ &[ [= ]>                then tag = \INDEX[
+    case \@                            then tag = \THIS
+    case \;                            then tag = \TERMINATOR
+    case \*
+      tag = if @last.0 of <[ INDEX[ ( DOT ]> then \STRNUM else \MATH
+    case \::
+      (id = new String \prototype).colon2 = true
+      @token<[ DOT . ]>; @token \IDENTIFIER, id
       fallthrough
-    case '\\\n' then return value.length
+    case \\\\n then return value.length
     default
       switch value.charAt 0
-      case '@'
+      case \@
         @token<[ IDENTIFIER arguments ]>; @token<[ DOT . ]>
-        @token 'STRNUM', value.slice 1
+        @token \STRNUM, value.slice 1
         return value.length
-      case '\\'
-        @token 'STRNUM', string value.slice(1), "'"
+      case \\\
+        @token \STRNUM, string value.slice(1), \'
         return value.length
       unless (prev = @last).spaced
-        if value is '(' and prev.0 of CALLABLE
-          if prev.0 is '?'
-            prev.0  = 'CALL('
-            prev.1 += '('
+        if value is \( and prev.0 of CALLABLE
+          if prev.0 is \?
+            prev.0  = \CALL(
+            prev.1 += \(
             return value.length
-          tag = 'CALL('
-        else if value is '[' and prev.0 of INDEXABLE
-          tag = 'INDEX['
+          tag = \CALL(
+        else if value is \[ and prev.0 of INDEXABLE
+          tag = \INDEX[
     @token(tag, value).length
 
   #### Token Manipulators
@@ -366,25 +366,25 @@ exports import
         moveOut -= idt
         @dedebt -= idt
       else
-        moveOut -= @token 'DEDENT', @indents.pop() - @dedebt
+        moveOut -= @token \DEDENT, @indents.pop() - @dedebt
         @dedebt  = 0
     @dedebt -= moveOut
     @newline() unless noNewline
 
   # Generates a newline token. Consecutive newlines get merged together.
-  newline: -> @token<[ TERMINATOR \n ]> unless @last.0 is 'TERMINATOR'
+  newline: -> @token<[ TERMINATOR \n ]> unless @last.0 is \TERMINATOR
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
-    return if @last.0 isnt ')'
+    return if @last.0 isnt \)
     {tokens} = this; level = 1
-    tokens[i = (*) - 1].0 = ')PARAM'
+    tokens[i = (*) - 1].0 = \)PARAM
     while tok = tokens[--i]
       switch tok.0
-      case ')'           then ++level
-      case <[ ( CALL( ]> then return tok.0 = 'PARAM(' unless --level
+      case \)            then ++level
+      case <[ ( CALL( ]> then return tok.0 = \PARAM( unless --level
     void
 
   # Matches a balanced group such as a double-quoted string. Pass in
@@ -395,7 +395,7 @@ exports import
     stack = [delimited.0]
     for i from 1 til str.length
       switch str.charAt i
-      case '\\'
+      case \\\
         ++i
         continue
       case stack[*-1].1
@@ -420,36 +420,36 @@ exports import
   interpolateString: (str, newline) ->
     {line} = this; ts = []; pi = 0; i = -1
     while str.charAt ++i
-      if that is '\\'
+      if that is \\\
         ++i
         continue
-      continue unless that is '#' and str.charAt(i+1) is '{'
+      continue unless that is \# and str.charAt(i+1) is \{
       if pi < i
-        ts.push ['S'; s = str.slice pi, i; @line]
+        ts.push [\S; s = str.slice pi, i; @line]
         @countLines s
       code = @balancedString str.slice(i+1), [<[ { } ]>]
       pi   = 1 + i += code.length
       continue unless code.=slice 1, -1
       nested = @lex code, {@line, -rewrite}
       nested.pop()
-      nested.shift() if nested.0?.0 is 'TERMINATOR'
+      nested.shift() if nested.0?.0 is \TERMINATOR
       if nested.length > 1
-        nested.unshift ['(', '(', nested[ 0 ].2]
-        nested.push    [')', ')', nested[*-1].2]
-      ts.push ['TOKENS', nested]
+        nested.unshift [\(, \(, nested[ 0 ].2]
+        nested.push    [\), \), nested[*-1].2]
+      ts.push [\TOKENS, nested]
       @countLines code
     if pi < str.length
-      ts.push ['S'; s = str.slice pi; @line]
+      ts.push [\S; s = str.slice pi; @line]
       @countLines s
-    ts.unshift ['S', '', line] if ts.0?.0 isnt 'S'
+    ts.unshift [\S, '', line] if ts.0?.0 isnt \S
     return ts unless newline?
     {tokens} = this
-    tokens.push ['(', '(', line]
+    tokens.push [\(, \(, line]
     for t, i of ts
-      tokens.push ['+-', '+', tokens[*-1].2] if i
-      if t.0 is 'TOKENS'
+      tokens.push [\+-, \+, tokens[*-1].2] if i
+      if t.0 is \TOKENS
       then tokens.push ...t.1
-      else tokens.push ['STRNUM'; string t.1, '"', newline; t.2]
+      else tokens.push [\STRNUM; string t.1, \", newline; t.2]
     @token<[ ) ) ]>
     ts
 
@@ -462,7 +462,7 @@ exports import
   # Increments `@line` by the number of newlines in a string.
   countLines: (str) ->
     pos = 0
-    ++@line while pos = 1 + str.indexOf '\n', pos
+    ++@line while pos = 1 + str.indexOf \\n, pos
     str
 
   # Throws a syntax error with the current line number.
@@ -472,14 +472,14 @@ exports import
 string = (body, quote, newline) ->
   return quote + quote unless body
   body.=replace /\\([\s\S])/g, ($0, $1) ->
-    if $1 of ['\n', quote] then $1 else $0
-  .replace /// #{quote} ///g, '\\$&'
+    if $1 of [\\n, quote] then $1 else $0
+  .replace /// #{quote} ///g, \\\$&
   body.=replace MULTILINER, newline if newline?
   quote + body + quote
 
 # Erases all external indentation on the left-hand side.
 untabify = (str, num) ->
-  if num then str.replace /// \n [^\n\S]{#{num}} ///g, '\n' else str
+  if num then str.replace /// \n [^\n\S]{#{num}} ///g, \\n else str
 
 #### Constants
 
@@ -558,4 +558,4 @@ LINE_CONTINUER  = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
 # the start of a function invocation or property indexing operation.
 CALLABLE  = <[ IDENTIFIER THISPROP ) ] STRNUM SUPER THIS ]>
 INDEXABLE = CALLABLE.concat<[ } LITERAL ]>
-CALLABLE.push '?'
+CALLABLE.push \?

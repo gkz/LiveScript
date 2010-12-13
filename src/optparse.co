@@ -25,7 +25,7 @@ exports.OptionParser = class
   parse: (args, options = {}) ->
     # Expand merged flags. e.g.: `-wp` -> `-w -p`
     args = Array::concat.apply [], args.map ->
-      if /^-\w{2,}/.test it then it.slice(1).split('').map(-> '-' + it) else it
+      if /^-\w{2,}/.test it then it.slice(1).split('').map(-> \- + it) else it
     `ARGS:`
     for arg, i of args
       for rule of @rules
@@ -49,10 +49,10 @@ exports.OptionParser = class
     width = Math.max ...@rules.map -> it.longFlag.length
     pad   = Array(width >> 1).join '  '
     for rule of @rules
-      sf = (rule.shortFlag &&+= ',') or '   '
+      sf = (rule.shortFlag &&+= \,) or '   '
       lf = (rule.longFlag + pad).slice 0, width
       lines.push "  #{sf} #{lf}  #{rule.description}"
-    lines.join '\n'
+    lines.join \\n
 
 #### Regexes
 
