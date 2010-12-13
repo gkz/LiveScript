@@ -113,7 +113,7 @@ exports import
       then @token<[ DOT . ]>
       else prev.0 is 'DOT'
     if forcedIdentifier
-      (id = new String id).reserved = true if id of JS_FORBIDDEN
+      (id = new String id).reserved = true if id of FORBIDDEN
     else if id of COCO_KEYWORDS
       switch tag = id.toUpperCase()
       case 'FOR'    then @seenFor = true
@@ -127,8 +127,8 @@ exports import
         if tag isnt 'INSTANCEOF' and @seenFor
           if tag is 'OF'
             @seenRange = true
-            id = @last.0 is 'IDENTIFIER' and @tokens[*-2].0 is ',' and
-                 (@tokens.splice -2, 2; @last.1)
+            id = prev.0 is 'IDENTIFIER' and @tokens[*-2].0 is ',' and
+                 (@tokens.splice -2, 2; prev.1)
           @seenFor = false
           tag = 'FOR' + tag
           break
@@ -137,13 +137,8 @@ exports import
           id = '!' + id
         tag = 'RELATION'
       @seenRange = false if @seenRange and tag of <[ FOR THEN ]>
-    else if COCO_ALIASES.hasOwnProperty id
-      switch id = COCO_ALIASES[id]
-      case '!'         then tag = 'UNARY'
-      case <[ && || ]> then tag = 'LOGIC'
-      default               tag = 'COMPARE'
-    else if id of RESERVED
-      @carp "reserved word \"#{id}\""
+    else if COCO_ALIASES.hasOwnProperty id then [tag, id] = COCO_ALIASES[id]
+    else if id of RESERVED                 then @carp "reserved word \"#{id}\""
     @token tag, id
     @token<[ : : ]> if colon
     input.length
@@ -274,8 +269,7 @@ exports import
   # Keeps track of the level of indentation, because a single dedent
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
-    return 0 unless indent = MULTIDENT.exec @chunk
-    @countLines indent.=0
+    @countLines indent = MULTIDENT.exec(@chunk).0
     @last.eol  = true
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf '\n'
@@ -336,12 +330,11 @@ exports import
     case ';'                           then tag = 'TERMINATOR'
     case '*'
       tag = if @last.0 of <[ INDEX[ ( DOT ]> then 'STRNUM' else 'MATH'
-    case '\\\n'
-      return value.length
     case '::'
       (id = new String 'prototype').colon2 = true
       @token<[ DOT . ]>; @token 'IDENTIFIER', id
-      return value.length
+      fallthrough
+    case '\\\n' then return value.length
     default
       if value.charAt(0) is '@'
         @token<[ IDENTIFIER arguments ]>; @token<[ DOT . ]>
@@ -383,15 +376,12 @@ exports import
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
     return if @last.0 isnt ')'
-    {tokens} = this; level = 0; i = tokens.length
-    tokens[--i].0 = ')PARAM'
+    {tokens} = this; level = 1
+    tokens[i = (*) - 1].0 = ')PARAM'
     while tok = tokens[--i]
       switch tok.0
-      case ')' then ++level
-      case <[ ( CALL( ]>
-        break if level--
-        tok.0 = 'PARAM('
-        return
+      case ')'           then ++level
+      case <[ ( CALL( ]> then return tok.0 = 'PARAM(' unless --level
     void
 
   # Matches a balanced group such as a double-quoted string. Pass in
@@ -466,7 +456,7 @@ exports import
   # taking note of the line number and returning `value`.
   token: (tag, value) -> @tokens.push @last = [tag, value, @line]; value
 
-  # Counts the number of lines in a string and add it to `@line`.
+  # Increments `@line` by the number of newlines in a string.
   countLines: (str) ->
     pos = 0
     ++@line while pos = 1 + str.indexOf '\n', pos
@@ -499,15 +489,16 @@ JS_KEYWORDS = <[
 
 # Coco-only keywords.
 COCO_KEYWORDS = JS_KEYWORDS.concat<[ then of unless until ]>
-COCO_ALIASES  = not: '!', and: '&&', or: '||',  is: '===', isnt: '!=='
+COCO_ALIASES  = not: <[ UNARY ! ]>, and: <[ LOGIC && ]>, or: <[ LOGIC || ]>
+              , is: <[ COMPARE === ]>, isnt: <[ COMPARE !== ]>
 
 # The list of keywords that are reserved by JavaScript, but not used.
-# We throw a syntax error for these to avoid a JavaScript error at runtime.
+# We throw a syntax error for these to avoid runtime errors.
 RESERVED = <[ var with const let enum export native ]>
 
 # The superset of both JavaScript keywords and reserved words, none of which may
 # be used as identifiers or properties.
-JS_FORBIDDEN = JS_KEYWORDS.concat RESERVED
+FORBIDDEN = JS_KEYWORDS.concat RESERVED
 
 # Token matching regexes.
 IDENTIFIER = /// ^
@@ -519,19 +510,19 @@ NUMBER = ///
 | ^ ([1-9]\d*) r ([\da-z]+)                           # any radix
 | ^ ((?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?) [a-z]* # decimal
 ///i
-SYMBOL = /// ^ (?:
-  [-+*/%&|^:.[<>]=  | # compound assign / comparison
-  ([-+&|:])\1       | # {in,de}crement / logic / prototype access
-  [!=]==?           | # strict equality
-  [-=]>             | # function
-  \.{3}             | # splat
-  [?&][.[]          | # soak/bind access
-  @\d+              | # argument shorthand
-  \\\n              | # continued line
-  <<<<?             | # import
-  <<=?              | # left shift
-  >>>?=?            | # rite shift
-  \S
+SYMBOL = /// ^ (?
+: [-+*/%&|^:.[<>]=  # compound assign / comparison
+| ([-+&|:])\1       # {in,de}crement / logic / prototype access
+| [!=]==?           # equality
+| [-=]>             # function
+| \.{3}             # splat
+| [?&][.[]          # soak/bind access
+| <<<<?             # import
+| <<=?              # left shift
+| >>>?=?            # rite shift
+| @\d+              # argument shorthand
+| \\\n              # continued line
+| \S
 ) ///
 SPACE     = /^(?=.)[^\n\S]*(?:#(?!##[^#]).*)?/
 MULTIDENT = /^(?:\s*#(?!##[^#]).*)*(?:\n[^\n\S]*)+/
