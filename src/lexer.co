@@ -39,26 +39,26 @@ exports import
     @indents = []
     # Flags for distinguishing FORIN/FOROF/FROM/TO/BY.
     @seenFor = @seenFrom = @seenRange = false
-    # Check the first character of current `@chunk`, then call appropriate
+    # Check the first character of current `code`, then call appropriate
     # tokenizers based on it. Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
-    code.=replace(/\r/g, '').replace(/\s+$/, ''); i = 0
-    while @chunk = code.slice i
-      switch code.charAt i
-      case ' ' then i += do @spaceToken
-      case \\n then i += do @lineToken
-      case \'  then i += @heredocToken(\') or @singleStringToken()
-      case \"  then i += @heredocToken(\") or @doubleStringToken()
+    code.=replace(/\r/g, '').replace(/\s+$/, '')
+    while code.=slice i
+      switch code.charAt 0
+      case ' ' then i = @spaceToken code
+      case \\n then i = @lineToken  code
+      case \'  then i = @heredocToken(code, \') or @singleStringToken code
+      case \"  then i = @heredocToken(code, \") or @doubleStringToken code
       case \<
-        i += if \[ is code.charAt i+1 then @wordsToken() else @literalToken()
+        i = if \[ is code.charAt 1
+        then @wordsToken code else @literalToken code
       case \/
-        i += if \// is code.substr i+1, 2
-        then do @heregexToken
-        else do @regexToken or do @literalToken
-      case \# then i += do @spaceToken or do @commentToken
-      case \` then i += do @jsToken
-      default i += do @identifierToken or do @numberToken or
-                   do @literalToken    or do @spaceToken
+        i = if \// is code.substr 1, 2
+        then @heregexToken code else @regexToken(code) or @literalToken(code)
+      case \# then i = @spaceToken(code) or @commentToken(code)
+      case \` then i = @jsToken code
+      default i = @identifierToken(code) or @numberToken(code) or
+                  @literalToken(code)    or @spaceToken(code)
     # Close up all remaining open blocks.
     @dedent @indent
     # Dispose dummy.
@@ -76,7 +76,7 @@ exports import
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
   identifierToken: ->
-    return 0 unless match = IDENTIFIER.exec @chunk
+    return 0 unless match = IDENTIFIER.exec it
     switch id = match.1
     case \own
       break unless @last.0 is \FOR and @last.1
@@ -145,7 +145,7 @@ exports import
 
   # Matches a number, including decimal, hex and exponential notation.
   numberToken: ->
-    return 0 unless match = NUMBER.exec @chunk
+    return 0 unless match = NUMBER.exec it
     num = match.3 or match.0
     if num.charAt(0) is \. and not @last.spaced and @last.0 of INDEXABLE
       @token<[ DOT . ]>; @token \STRNUM, num.slice 1
@@ -161,12 +161,12 @@ exports import
   # Matches a normal string. Ensures that quotation marks are balanced within
   # the string's contents, and within nested interpolations.
   singleStringToken: ->
-    @carp 'unterminated string' unless str = SIMPLESTR.exec @chunk
+    @carp 'unterminated string' unless str = SIMPLESTR.exec it
     @token \STRNUM, (str.=0).replace MULTILINER, \\\\n
     @countLines(str).length
 
   doubleStringToken: ->
-    str = @balancedString @chunk, [<[ " " ]>, <[ #{ } ]>]
+    str = @balancedString it, [<[ " " ]>, <[ #{ } ]>]
     if 0 < str.indexOf \#{, 1
     then @interpolateString str.slice(1, -1), ''
     else @token \STRNUM, str.replace MULTILINER, ''
@@ -174,9 +174,9 @@ exports import
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
-  heredocToken: (q) ->
-    return 0 unless @chunk.slice(1, 3) is q+q and ~end = @chunk.indexOf q+q+q, 3
-    txt = @chunk.slice 3, end
+  heredocToken: (code, q) ->
+    return 0 unless code.slice(1, 3) is q+q and ~end = code.indexOf q+q+q, 3
+    txt = code.slice 3, end
     lnl = txt isnt doc = txt.replace /\n[^\n\S]*$/, ''
     if ~doc.indexOf \\n
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
@@ -196,14 +196,14 @@ exports import
 
   # Matches block comments.
   commentToken: ->
-    text = @chunk.slice 3, if ~end = @chunk.indexOf \###, 3 then end else 9e9
+    text = it.slice 3, if ~end = it.indexOf \###, 3 then end else 9e9
     @token \COMMENT, untabify text, @indent
     @token<[ TERMINATOR \n ]>
     @countLines(text).length + 6
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
-    @carp 'unterminated JS literal' unless js = JSTOKEN.exec @chunk
+    @carp 'unterminated JS literal' unless js = JSTOKEN.exec it
     (js = new String js.0.slice 1, -1).js = true
     @countLines(@token \LITERAL, js).length + 2
 
@@ -216,13 +216,13 @@ exports import
     # Our list becomes shorter when spaced, due to sans-parentheses calls.
     return 0 if (prev = @last).0 of <[ STRNUM LITERAL CREMENT ]> or
                 not prev.spaced and prev.0 of CALLABLE or
-                not regex = REGEX.exec @chunk
+                not regex = REGEX.exec it
     @token \LITERAL, if regex.=0 is \// then '/(?:)/' else regex
     @countLines(regex).length
 
   # Matches a multiline and extended regex literal.
   heregexToken: ->
-    @carp 'unterminated heregex' unless match = HEREGEX.exec @chunk
+    @carp 'unterminated heregex' unless match = HEREGEX.exec it
     [heregex, body, flags] = match
     if 0 > body.indexOf \#{
       body.=replace(HEREGEX_OMIT, '').replace(/\//g, \\\/)
@@ -246,10 +246,10 @@ exports import
 
   # Matches a words literal, a syntax sugar for a list of strings.
   wordsToken: ->
-    @carp 'unterminated words' unless ~end = @chunk.indexOf \]>, 2
+    @carp 'unterminated words' unless ~end = it.indexOf \]>, 2
     if call = not @last.spaced and @last.0 of CALLABLE
     then @token<[ CALL( ( ]> else @token<[ [ [ ]>
-    for line of @chunk.slice(2, end).split \\n
+    for line of it.slice(2, end).split \\n
       if line.match re ||= /\S+/g then for word of that
         @tokens.push [\STRNUM; string word, \'; @line], [\,, \,, @line]
       ++@line
@@ -269,11 +269,11 @@ exports import
   # Keeps track of the level of indentation, because a single dedent
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
-    @countLines indent = MULTIDENT.exec(@chunk).0
+    @countLines indent = MULTIDENT.exec(it).0
     @last.eol  = true
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf \\n
-    noNewline = LINE_CONTINUER.test(@chunk) or @last.0 of
+    noNewline = LINE_CONTINUER.test(it) or @last.0 of
       <[ +- DOT INDEX[ ASSIGN LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
     if size - @indebt is @indent
       @newline() unless noNewline
@@ -294,7 +294,7 @@ exports import
   spaceToken: ->
     # Tag the previous token as being `.spaced`,
     # because there are cases where it makes a difference.
-    (match = SPACE.exec @chunk) and (@last.spaced = true; match.0.length)
+    (match = SPACE.exec it) and (@last.spaced = true; match.0.length)
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
@@ -302,7 +302,7 @@ exports import
   # here. `;` and newlines are both treated as a TERMINATOR, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   literalToken: ->
-    [value] = SYMBOL.exec @chunk
+    [value] = SYMBOL.exec it
     switch tag = value
     case \)
       @last.0 = \CALL( if @last.0 is \(
