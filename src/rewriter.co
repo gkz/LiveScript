@@ -165,12 +165,9 @@ function addImplicitIndentation (tokens) ->
     else
       tokens.splice ++i, 0, indent
     switch
-    case \, is next = tokens[i+1].0
-      go 0, ++i
-    case \, is tokens[i+2]?.0 and next of
-         <[ IDENTIFIER THISPROP STRNUM LITERAL THIS SUPER FUNC_ARROW ]>
-      go 0, i += 2
-    case next of <[ ( [ { ]> and
+    case \, is next = tokens[i+1].0 then --i; fallthrough   # ->,
+    case \, is tokens[i+2]?.0       then go 0, i += 2; ++i  # -> 0,
+    case next of <[ ( [ { ]> and                            # -> [0],
          tokens[idx = 1 + indexOfPair tokens, i+1]?.0 is ','
       go 0, idx; ++i
     default detectEnd tokens, i+1, ok, go
