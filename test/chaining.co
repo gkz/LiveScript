@@ -105,3 +105,8 @@ eq 1, [-> it].'0' 1
 eq '0 .go;'  , Coco.compile '0.go', {+bare}
 # Brackets don't.
 eq "0['do'];", Coco.compile '0.do', {+bare}
+
+
+eq '2,3', '' + [3,2][1,0]
+eq '2,3', '' + [0,1,2,3][*-2,*-1]
+eq '-Infinity,Infinity', '' + Number[\NEGATIVE_INFINITY, \POSITIVE_INFINITY]

@@ -328,7 +328,7 @@ exports import
     case \@                            then tag = \THIS
     case \;                            then tag = \TERMINATOR
     case \*
-      tag = if @last.0 of <[ INDEX[ ( DOT ]> then \STRNUM else \MATH
+      tag = if @last.0 of <[ INDEX[ ( DOT , ; ]> then \STRNUM else \MATH
     case \::
       (id = new String \prototype).colon2 = true
       @token<[ DOT . ]>; @token \IDENTIFIER, id

@@ -250,6 +250,9 @@ class exports.Key extends Node
 # The dots and brackets to access an object's property.
 class exports.Index extends Node
   (@key, @symbol) =>
+    switch key.length
+    case 0 then @key = Key \__proto__
+    case 1 then @key = key.0
     switch symbol
     case <[ ?. ?[ ]> then @soak   = true
     case <[ &. &[ ]> then @bind   = true
@@ -317,30 +320,14 @@ class exports.Value extends Node
   SIMPLENUM = /^\d+$/
 
   compileNode: (o) ->
-    return that.compile o if @unfoldAssign(o) or @unfoldBind(o)
     @head import {@front}
-    return @head.compile o unless @tails.length
-    val  = @poleStar o
-    base = val.head.compile o, LEVEL_ACCESS
-    rest = ''; rest += t.compile o for t of val.tails
+    return @head.compile o if not @tails.length
+    return that.compile  o if @unfoldAssign(o) or @unfoldBind(o) or
+                              @poleStar(o) or @multiPick(o)
+    base = @head.compile o, LEVEL_ACCESS
+    rest = ''; rest += t.compile o for t of @tails
     base += ' ' if rest.charAt(0) is \. and SIMPLENUM.test base
     base + rest
-
-  poleStar: (o) ->
-    function seek ->
-      if it.value is \*               then stars.push it
-      else unless it instanceof Index then it.eachChild seek
-      void
-    stars = []
-    for t, i of @tails then unless t.key instanceof Key
-      t.eachChild seek
-      continue unless stars.length
-      [sub, ref] = Value(@head, @tails.slice 0, i).cache o
-      @temps = [ref.value] if sub isnt ref
-      ref += ' ' if SIMPLENUM.test ref.=compile o
-      star.value = ref + \.length for star of stars
-      return Value sub, @tails.slice i
-    this
 
   # Unfold a soak into an __If__: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
@@ -374,6 +361,30 @@ class exports.Value extends Node
       args   = Value(@head, ps.slice 0, i).cache o, true
       args.1 = Value args.1, [p]
       return Value Call(Util \bind; args), ps.slice i+1
+    void
+
+  poleStar: (o) ->
+    function seek ->
+      if it.value is \*               then stars.push it
+      else unless it instanceof Index then it.eachChild seek
+      void
+    stars = []
+    for index, i of @tails then unless index.key instanceof Key
+      index.eachChild seek
+      continue unless stars.length
+      [sub, ref] = Value(@head, @tails.slice 0, i).cache o
+      @temps = [ref.value] if sub isnt ref
+      ref += ' ' if SIMPLENUM.test ref.=compile o
+      star.value = ref + \.length for star of stars
+      return Value sub, @tails.slice i
+    void
+
+  multiPick: (o) ->
+    for {key}, i of @tails then if key.length
+      [sub, ref] = Value(@head, @tails.slice 0, i).cache o
+      @temps = [ref.value] if sub isnt ref
+      arr = (Value if j then ref else sub, [Index node] for node, j of key)
+      return Value Arr(arr), @tails.slice i+1
     void
 
 #### Call
