@@ -39,8 +39,8 @@ function removeLeadingTerminators (tokens) ->
 # this, remove their trailing terminators.
 function removeMidExpressionTerminators (tokens) ->
   i = 0
-  while token = tokens[++i]
-    if tokens[i-1].0 is \TERMINATOR and token.0 of EXPR_CLOSE
+  while tokens[++i]
+    if tokens[i-1].0 is \TERMINATOR and that.0 of EXPR_CLOSE
       tokens.splice i-1, 1
   tokens
 
@@ -50,9 +50,8 @@ function closeOpenings (tokens) ->
   stack = []
   for token of tokens
     switch token.0
-    case <[ ( CALL( [ INDEX[ ]>
-      stack.push token.0
-    case <[ ) )CALL ]>
+    case <[ ( CALL( [ INDEX[ ]> then stack.push that
+    case <[ ) )CALL  ]>
       token.0 = \)CALL  if stack.pop() is  \CALL(
     case <[ ] INDEX] ]>
       token.0 = \]INDEX if stack.pop() is \INDEX[
@@ -168,7 +167,7 @@ function addImplicitIndentation (tokens) ->
     case \, is next = tokens[i+1].0 then --i; fallthrough   # ->,
     case \, is tokens[i+2]?.0       then go 0, i += 2; ++i  # -> 0,
     case next of <[ ( [ { ]> and                            # -> [0],
-         tokens[idx = 1 + indexOfPair tokens, i+1]?.0 is ','
+         \, is tokens[idx = 1 + indexOfPair tokens, i+1]?.0
       go 0, idx; ++i
     default detectEnd tokens, i+1, ok, go
   tokens
@@ -214,9 +213,8 @@ function ensureBalance (tokens) ->
 # 4. Be careful not to alter array or parentheses delimiters with overzealous
 #    rewriting.
 function rewriteClosingParens (tokens) ->
-  stack = []
   debt  = {}; debt[key] = 0 for key in INVERSES
-  i     = -1
+  stack = []; i = -1
   while token = tokens[++i]
     [tag] = token
     unless tag of EXPR_END
@@ -236,8 +234,8 @@ function rewriteClosingParens (tokens) ->
 
 function indexOfPair(tokens, i) ->
   level = 1; end = INVERSES[start = tokens[i].0]
-  while token = tokens[++i]
-    switch token.0
+  while tokens[++i]
+    switch that.0
     case start then ++level
     case end   then return i unless --level
   -1
