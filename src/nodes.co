@@ -49,7 +49,7 @@ class Node
   # by assigning it to a temporary variable. Pass a level to precompile.
   cache: (o, once, level) ->
     unless @isComplex()
-      return [ref = (if level? then @compile o, level else this), ref]
+      return [ref = if level? then @compile o, level else this, ref]
     sub = Assign ref = Literal(o.scope.temporary \ref), this
     return [sub.compile o, level; ref.value] if level?
     ref.temp = once
