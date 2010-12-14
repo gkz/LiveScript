@@ -42,7 +42,7 @@ task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
     say if err then stderr.trim() else tint 'done'
 
 task 'build', 'build the Coco language from source', ->
-  run <[ -bco lib ]>.concat sources()
+  run <[ -bco lib src ]>
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   exec 'bin/coke build && bin/coke build && bin/coke test', (err, stdout, stderr) ->

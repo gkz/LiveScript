@@ -30,7 +30,7 @@ o.print = !!(o.print or o.eval or o.stdio and o.compile)
 o.compile ||= !!o.output
 
 global import
-  say  : -> process.stdout.write                it + \\n
+  say  : -> process.stdout.write               it + \\n
   warn : -> process.binding(\stdio).writeError it + \\n
   die  : -> warn it; process.exit 1
 

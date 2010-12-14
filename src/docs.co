@@ -1,6 +1,10 @@
 # Quick and dirty implementation of
 # [code-illuminated](http://code.google.com/p/code-illuminated/)-esque
-# documentation system. Imported from [src/index.html](#).
+# annotated source viewer, powered by
+# [showdown](http://attacklab.net/showdown/) and
+# [google-code-prettify](http://code.google.com/p/google-code-prettify/).
+#
+# Imported from [src/index.html](#).
 
 navi = document.getElementById \navi
 docs = document.getElementById \docs

@@ -19,7 +19,7 @@ exports.rewrite = ->
   tagPostfixConditionals addImplicitIndentation closeOpenings \
   removeMidExpressionTerminators removeLeadingTerminators it
 
-detectEnd = (tokens, i, ok, go) ->
+function detectEnd (tokens, i, ok, go) ->
   levels = 0
   while token = tokens[i]
     if      not levels then return go token, i if ok token, i
@@ -30,14 +30,14 @@ detectEnd = (tokens, i, ok, go) ->
   i - 1
 
 # Dispatch leading terminators that would introduce ambiguity in the grammar.
-removeLeadingTerminators = (tokens) ->
+function removeLeadingTerminators (tokens) ->
   break unless tag is \TERMINATOR for [tag], i of tokens
   tokens.splice 0, i if i
   tokens
 
 # Some blocks occur in the middle of expressions -- when we're expecting
 # this, remove their trailing terminators.
-removeMidExpressionTerminators = (tokens) ->
+function removeMidExpressionTerminators (tokens) ->
   i = 0
   while token = tokens[++i]
     if tokens[i-1].0 is \TERMINATOR and token.0 of EXPR_CLOSE
@@ -46,7 +46,7 @@ removeMidExpressionTerminators = (tokens) ->
 
 # The lexer has tagged each of the opening parenthesis/bracket of
 # a call/indexing. Match it with its closing pair.
-closeOpenings = (tokens) ->
+function closeOpenings (tokens) ->
   stack = []
   for token of tokens
     switch token.0
@@ -60,7 +60,7 @@ closeOpenings = (tokens) ->
 
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
-addImplicitBraces = (tokens) ->
+function addImplicitBraces (tokens) ->
   go = (token, i) -> tokens.splice i, 0, [\}, \}, token.2]
   ok = (token, i) ->
     return true  if token.1 is \; or \DEDENT is tag = token.0
@@ -92,7 +92,7 @@ addImplicitBraces = (tokens) ->
 
 # Methods may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
-addImplicitParentheses = (tokens) ->
+function addImplicitParentheses (tokens) ->
   i = 0
   while token = tokens[++i]
     [tag] = token
@@ -120,7 +120,7 @@ addImplicitParentheses = (tokens) ->
     [tag] = token
     {0: pre, eol} = tokens[i-1]
     switch tag
-    case \CLASS        then seenClass  := true
+    case \CLASS         then seenClass  := true
     case <[ IF CATCH ]> then seenSingle := true
     return true  if tag is \DOT and (eol or pre is \DEDENT)
     return false if token.generated or pre is \,
@@ -138,7 +138,7 @@ addImplicitParentheses = (tokens) ->
 # expressions that lack ending delimiters. **Rewriter** adds the implicit
 # blocks, so it doesn't need to. `)` can close a single-line block,
 # but we need to make sure it's balanced.
-addImplicitIndentation = (tokens) ->
+function addImplicitIndentation (tokens) ->
   ok = (token, i) ->
     switch token.0
     case <[ CATCH FINALLY DEDENT CASE DEFAULT ]> then true
@@ -178,7 +178,7 @@ addImplicitIndentation = (tokens) ->
 
 # Tag postfix conditionals as such, so that we can parse them with a
 # different precedence.
-tagPostfixConditionals = (tokens) ->
+function tagPostfixConditionals (tokens) ->
   ok = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
   go = ([tag]) -> token.0 = \POST_IF if tag isnt \INDENT
   detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
@@ -186,7 +186,7 @@ tagPostfixConditionals = (tokens) ->
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
 # the course of the token stream.
-ensureBalance = (tokens) ->
+function ensureBalance (tokens) ->
   levels = {}; olines = {}
   for token of tokens
     [tag] = token
@@ -216,7 +216,7 @@ ensureBalance = (tokens) ->
 #    up balanced in the end.
 # 4. Be careful not to alter array or parentheses delimiters with overzealous
 #    rewriting.
-rewriteClosingParens = (tokens) ->
+function rewriteClosingParens (tokens) ->
   stack = []
   debt  = {}; debt[key] = 0 for key in INVERSES
   i     = -1
@@ -237,7 +237,7 @@ rewriteClosingParens = (tokens) ->
     tokens.splice pos, 0, tok
   tokens
 
-indexOfPair = (tokens, i) ->
+function indexOfPair(tokens, i) ->
   level = 1; end = INVERSES[start = tokens[i].0]
   while token = tokens[++i]
     switch token.0

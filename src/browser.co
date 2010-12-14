@@ -1,22 +1,20 @@
-# Override exported methods for non-Node.js engines.
+# Override exported methods for non-[node](http://nodejs.org) environments.
 
-Coco = require \./coco
-Coco.require = require
+(Coco = require \./coco) <<< {require}
 
 # Use standard JavaScript `eval` to eval code.
 Coco.eval = -> eval Coco.compile @0, @1
 
 # Running code does not provide access to this scope.
 Coco.run = (code, options = {}) ->
-  options.bare = true
-  do Function Coco.compile code, options
+  do Function Coco.compile code, options import {+bare}
 
 # If we're not in a browser environment, we're finished with the public API.
 return unless window?
 
 # Load a remote script from the current domain via XHR.
 Coco.load = (url, options) ->
-  xhr = new (window.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
+  xhr = new (self.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
   xhr.open \GET, url, true
   xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
   xhr.onreadystatechange = ->
@@ -26,13 +24,13 @@ Coco.load = (url, options) ->
 # Activate Coco in the browser by having it compile and evaluate
 # all script tags with a content-type of `text/Coco`.
 # This happens on page load.
-runScripts = ->
+function runScripts ->
   for script of document.getElementsByTagName \script
     continue unless script.type is \text/coco
     if script.src
     then Coco.load script.src
     else Coco.run  script.innerHTML
   void
-if window.addEventListener
+if self.addEventListener
 then addEventListener \DOMContentLoaded, runScripts, false
-else attachEvent \onload, runScripts
+else attachEvent      \onload,           runScripts
