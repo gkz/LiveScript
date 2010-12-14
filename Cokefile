@@ -41,9 +41,8 @@ task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
   ].join(' && '), (err, stdout, stderr) ->
     say if err then stderr.trim() else tint 'done'
 
-
 task 'build', 'build the Coco language from source', ->
-  run <[ -c -o lib ]>.concat sources()
+  run <[ -bco lib ]>.concat sources()
 
 task 'build:full', 'rebuild the source twice, and run the tests', ->
   exec 'bin/coke build && bin/coke build && bin/coke test', (err, stdout, stderr) ->
@@ -58,21 +57,14 @@ task 'build:parser', 'rebuild the Jison parser (run build first)', ->
   spit 'lib/parser.js', src
 
 task 'build:browser', 'rebuild the merged script for inclusion of the browser', ->
-  code  = ''
-  code += """
-    require['./#{name}'] = new function(){
-      var exports = this;
-      #{ slurp "lib/#{name}.js" }
-    };
-  """ for name of <[ rewriter lexer parser nodes coco browser ]>
+  co = ''
+  for name of <[ rewriter lexer parser nodes coco browser ]>
+    src = slurp "lib/#{name}.js"
+    co += "!function(require, exports){#{src}}(r, r['./#{name}'] = {});"
   {parser, uglify} = require 'uglify-js'
-  ast = parser.parse """
-    this.Coco = function(){
-      function require(path){ return require[path] }
-      #{code}
-      return require['./coco']
-    }()
-  """
+  ast = parser.parse "this.Coco = function(){
+    function r(path){ return r[path] } #{co} return r['./coco']
+  }()"
   ast = uglify.ast_mangle  ast
   ast = uglify.ast_squeeze ast, {+extra}
   spit 'extras/coco.js', """
