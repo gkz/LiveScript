@@ -247,13 +247,13 @@ class exports.Key extends Node
   compile: -> if @name.reserved then "'#{@name}'" else @name
 
 #### Index
-# `x.y` `x[y]`
+# The dots and brackets to access an object's property.
 class exports.Index extends Node
   (@key, @symbol) =>
     switch symbol
-    case <[ ?[ ?. ]> then @soak   = true
-    case <[ &[ &. ]> then @bind   = true
-    case <[ [= .= ]> then @assign = true
+    case <[ ?. ?[ ]> then @soak   = true
+    case <[ &. &[ ]> then @bind   = true
+    case <[ .= [= ]> then @assign = true
 
   children: [\key]
 
@@ -261,7 +261,7 @@ class exports.Index extends Node
 
   compile: (o) ->
     code = @key.compile o, LEVEL_PAREN
-    if @key instanceof Key and code.charAt(0) isnt "'"
+    if @key instanceof Key and code.charAt(0) isnt \'
     then ".#{code}" else "[#{code}]"
 
   isComplex: -> @key.isComplex()
@@ -337,7 +337,7 @@ class exports.Value extends Node
     this
   function seekStar ->
     switch
-    case it.value is \*     then it
+    case it.value is \*      then it
     case it instanceof Index then false
 
   # Unfold a soak into an __If__: `a?.b` -> `a.b if a?`
@@ -439,15 +439,16 @@ class exports.Call extends Node
       """
     base = @callee
     if (name = base.tails.pop()) and base.isComplex()
+      base.front = false
       ref = o.scope.temporary \ref
       fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
       o.scope.free ref
     else
-      fun = base.compile o, LEVEL_ACCESS
       if name
-      then ref = fun; fun += name.compile o
-      else ref = null
-    "#{fun}.apply(#{ref}, #{args})"
+        ref = base.compile o
+        base.add name
+      fun = base.compile o
+    "#{fun}.apply(#{ ref or null }, #{args})"
 
 #### Obj
 # `{x: y}`
