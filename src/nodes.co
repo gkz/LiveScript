@@ -327,18 +327,20 @@ class exports.Value extends Node
     base + rest
 
   poleStar: (o) ->
-    for t, i of @tails
-      continue unless t instanceof Index and star = t.traverseChildren seekStar
+    function seek ->
+      if it.value is \*               then stars.push it
+      else unless it instanceof Index then it.eachChild seek
+      void
+    stars = []
+    for t, i of @tails then unless t.key instanceof Key
+      t.eachChild seek
+      continue unless stars.length
       [sub, ref] = Value(@head, @tails.slice 0, i).cache o
       @temps = [ref.value] if sub isnt ref
       ref += ' ' if SIMPLENUM.test ref.=compile o
-      star.value = ref + \.length
+      star.value = ref + \.length for star of stars
       return Value sub, @tails.slice i
     this
-  function seekStar ->
-    switch
-    case it.value is \*      then it
-    case it instanceof Index then false
 
   # Unfold a soak into an __If__: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
