@@ -340,8 +340,9 @@ exports import
         @token<[ IDENTIFIER arguments ]>; @token<[ DOT . ]>
         @token \STRNUM, value.slice 1
         return value.length
-      case \\\
-        @token \STRNUM, string value.slice(1), \'
+      case \\
+        word = value.slice 1
+        @token \STRNUM, if word is '\\' then "'\\\\'" else string word, \'
         return value.length
       unless (prev = @last).spaced
         if value is \( and prev.0 of CALLABLE
@@ -395,7 +396,7 @@ exports import
     stack = [delimited.0]
     for i from 1 til str.length
       switch str.charAt i
-      case \\\
+      case \\
         ++i
         continue
       case stack[*-1].1
@@ -420,7 +421,7 @@ exports import
   interpolateString: (str, newline) ->
     {line} = this; ts = []; pi = 0; i = -1
     while str.charAt ++i
-      if that is \\\
+      if that is \\
         ++i
         continue
       continue unless that is \# and str.charAt(i+1) is \{
@@ -515,9 +516,10 @@ NUMBER = ///
 ///i
 SYMBOL = /// ^ (?
 : [-+*/%&|^:.[<>]=  # compound assign / comparison
+| \\\S[^\s,;)}\]]*  # word
 | ([-+&|:])\1       # {in,de}crement / logic / prototype access
-| [!=]==?           # equality
 | [-=]>             # function
+| [!=]==?           # equality
 | \.{3}             # splat
 | [?&][.[]          # soak/bind access
 | <<<<?             # import
@@ -525,7 +527,6 @@ SYMBOL = /// ^ (?
 | >>>?=?            # rite shift
 | @\d+              # argument shorthand
 | \\\n              # continued line
-| \\\S[^\s,;)}\]]*  # word
 | \S
 ) ///
 SPACE     = /^(?=.)[^\n\S]*(?:#(?!##[^#]).*)?/
