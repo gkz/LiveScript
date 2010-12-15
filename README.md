@@ -17,20 +17,21 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 ### behavior
 - Assigning to a variable with `=` declares it on the _current_ scope. Use `:=` to modify variables declared on upper scopes.
 - The roles of `in` and `of` have been swapped to keep the JS semantics.
+- The range syntax (_x..y_) is removed.
 - `===`/`!==`/`==`/`!=` each compiles as is.
 - `...` is prefix.
 - `super` represents the direct reference to the parent function rather than being a call. Use `super ...` (just `super` in Coffee) for a simple delegation.
 - Nested comprehensions returns flattened results.
 
 ### keyword
-- `yes`/`no`/`on`/`off` are not reserved. Define your own or just use `true`/`false`.
-- `undefined` is not reserved.
+- _yes_/_no_/_on_/_off_ are not reserved. Define your own or just use `true`/`false`.
+- _undefined_ is not reserved.
 - `switch`-`case`-`default` replaces `switch`-_when_-`else`.
 - `for ever` replaces _loop_.
-- `when` is removed. Write `a if b while c` instead of `a while c when b`.
+- _when_ is removed. Write `a if b while c` instead of `a while c when b`.
 
 ### other
-- The binaries are named __coco__ and __coke__ to coexist with __coffee__ and __cake__.
+- The binaries are named __coco__ and __coke__ (to coexist with _coffee_ and _cake_).
 
 ## Installation
 Install [node.js](http://nodejs.org), then
