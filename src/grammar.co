@@ -77,7 +77,7 @@ bnf =
 
     o 'Value INDEX[ ArgList OptComma ]INDEX' ,-> $1.add Index $3 ,$2
 
-    o 'Value CLONE Object' ,-> Util.Clone $1.unwrap(), $3
+    o 'Value CLONE Object' ,-> new Clone $1.unwrap(), $3
 
     o 'SUPER' ,-> new Super
   ]

@@ -465,6 +465,21 @@ class exports.Call extends Node
       fun = base.compile o
     "#{fun}.apply(#{ ref or null }, #{args})"
 
+#### Clone
+# An operation that creates a new object with its `__proto__`
+# set to the operand, attaching specified properties.
+class exports.Clone extends Node
+  (@base, @mixin) ->
+
+  children: <[ base mixin ]>
+
+  unfoldSoak: -> If.unfoldSoak it, this, \base
+
+  compileNode: (o) ->
+    call = Call Value(Util \clone), [@base]
+    call = Parens call, true if @newed
+    Import(call, @mixin).compileNode o
+
 #### Obj
 # `{x: y}`
 class exports.Obj extends Node
@@ -1388,12 +1403,6 @@ class exports.Util extends Node
   @::{show} = Statement::
 
   compile: -> utility @name
-
-  ##### Util.Clone
-  # An operation that creates a new object with its `__proto__`
-  # set to the operand, attaching specified properties.
-  @Clone = (base, mixin) ->
-    Parens(Import Call(Value Util \clone; [base]), mixin) import {base, mixin}
 
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
