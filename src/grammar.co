@@ -63,19 +63,23 @@ bnf =
 
     o 'Value CALL( ArgList OptComma )CALL' ,-> Value Call $1, $3  , $2
     o 'Value CALL(        ...       )CALL' ,-> Value Call $1, null, $2
-
-    o 'Value CLONE Object' ,-> Value Util.Clone $1.unwrap(), $3
   ]
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o 'IDENTIFIER'                           ,-> Literal $1
-    o 'Value DOT IDENTIFIER'                 ,-> $1.add Index Key($3)     ,$2
-    o 'Value DOT STRNUM'                     ,-> $1.add Index Literal($3) ,$2
-    o 'Value DOT Parenthetical'              ,-> $1.add Index $3.it       ,$2
-    o 'Value INDEX[ ArgList OptComma ]INDEX' ,-> $1.add Index $3          ,$2
+    o 'IDENTIFIER' ,-> Literal $1
+
+    o 'Value DOT IDENTIFIER'    ,-> $1.add Index Key($3)     ,$2
+    o 'Value DOT STRNUM'        ,-> $1.add Index Literal($3) ,$2
+    o 'Value DOT Parenthetical' ,-> $1.add Index $3.it       ,$2
+
     o 'ThisProperty'
-    o 'SUPER'                                ,-> new Super
+
+    o 'Value INDEX[ ArgList OptComma ]INDEX' ,-> $1.add Index $3 ,$2
+
+    o 'Value CLONE Object' ,-> Util.Clone $1.unwrap(), $3
+
+    o 'SUPER' ,-> new Super
   ]
 
   # All the different types of expressions in our language.

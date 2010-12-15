@@ -633,12 +633,7 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
-    {left} = this
-    if left instanceof Value and left.tails[*-1]?.key.length
-      {key} = left.tails.pop()
-      [sub, ref] = left.cache o
-      @temps = [ref.value] if sub isnt ref
-      left = Arr(Value if i then ref else sub, [Index k] for k, i of key)
+    left = @transleft o
     if left.items
       return @compileDestructuring o, left unless @logic
       throw SyntaxError 'conditional assignment cannot be destructuring'
@@ -724,6 +719,30 @@ class exports.Assign extends Node
       val = Import Obj(), val  if splat
       node = Literal node.name if node instanceof Key
       Assign(node, val, @op).compile o, LEVEL_TOP
+
+  # Resolve property destructuring.
+  transleft: (o) ->
+    {left} = this
+    # `x{k} = o` -> `{k: x.k} = o`
+    if left.mixin
+      {base, mixin: {items}} = left
+      if items.length > 1
+        [sub, ref] = base.cache o
+        @temps = [ref.value] if sub isnt ref
+      else sub = ref = base
+      for node, i of items then unless node instanceof Comment
+        base = if i then sub else ref
+        if node instanceof Assign
+        then node.right = Value base, [Index node.right.asKey()]
+        else items[i]   = Assign node.=asKey(), Value base, [Index node]
+      left.=mixin
+    # `x[k] = a` -> `[x[k]] = a`
+    else if left instanceof Value and left.tails[*-1]?.key.length
+      {key} = left.tails.pop()
+      [sub, ref] = left.cache o
+      @temps = [ref.value] if sub isnt ref
+      left = Arr(Value if i then ref else sub, [Index k] for k, i of key)
+    left
 
 #### Import
 # Operators that copy properties from right to left.
@@ -1367,7 +1386,8 @@ class exports.Util extends Node
   ##### Util.Clone
   # An operation that creates a new object with its `__proto__`
   # set to the operand, attaching specified properties.
-  @Clone = (it, mixin) -> Parens Import Call(Value Util \clone; [it]), mixin
+  @Clone = (base, mixin) ->
+    Parens(Import Call(Value Util \clone; [base]), mixin) import {base, mixin}
 
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
