@@ -317,10 +317,10 @@ class exports.Value extends Node
   SIMPLENUM = /^\d+$/
 
   compileNode: (o) ->
-    @head import {@front}
-    return @head.compile o if not @tails.length
-    return that.compile  o if @unfoldAssign(o) or @unfoldBind(o) or
-                              @poleStar(o) or @multiPick(o)
+    @head import {@front, @newed}
+    return @head.compile o unless @tails.length
+    if @unfoldAssign(o) or @unfoldBind(o) or @poleStar(o) or @multiPick(o)
+      return that.compile o
     base = @head.compile o, LEVEL_ACCESS
     rest = ''; rest += t.compile o for t of @tails
     base += ' ' if rest.charAt(0) is \. and SIMPLENUM.test base
@@ -353,11 +353,13 @@ class exports.Value extends Node
     void
 
   unfoldBind: (o) ->
-    for p, i of ps = @tails then if p.bind
-      p.bind = false
-      args   = Value(@head, ps.slice 0, i).cache o, true
-      args.1 = Value args.1, [p]
-      return Value Call(Util \bind; args), ps.slice i+1
+    for index, i of @tails then if index.bind
+      index.bind = false
+      args   = Value(@head, @tails.slice 0, i).cache o, true
+      args.1 = Value args.1, [index]
+      call   = Call Util(\bind), args
+      call   = Parens call, true if @newed
+      return Value call, @tails.slice i+1
     void
 
   poleStar: (o) ->
@@ -424,16 +426,18 @@ class exports.Call extends Node
 
   compileNode: (o) ->
     return that.compile o if @unfoldAssign o
-    unless fun = (@callee.head or @callee) instanceof Fun
-      @callee import {@front}
+    {callee} = this
+    unless fun = (callee.head or callee) instanceof Fun
+      callee import {@front}
     if @splat
       return @compileSplat o, @args.1.value if @new
-      return @callee.compile(o, LEVEL_ACCESS) +
+      return callee.compile(o, LEVEL_ACCESS) +
              ".apply(#{ @args.0.compile o }, #{@args.1.value})"
-    return @compileSplat o, that if Splat.compileArray o, @args, true
-    code = (@new or '') + @callee.compile(o, LEVEL_ACCESS) +
+    return @compileSplat o, that if Splat.compileArray o, @args
+    callee.newed = true if @new
+    code = (@new or '') + callee.compile(o, LEVEL_ACCESS) +
            "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
-    if fun then "(#{code})" else code
+    if fun and not @new then "(#{code})" else code
 
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
@@ -513,10 +517,12 @@ class exports.Arr extends Obj
   (@items = []) =>
 
   compileNode: (o) ->
-    return '[]' unless @items.length
-    return that if Splat.compileArray o, @items
+    {items} = this
+    return '[]' unless items.length
+    if code = Splat.compileArray o, @items
+      return if @newed then "(#{code})" else code
     o.indent += TAB
-    code = (obj.compile o, LEVEL_LIST for obj of @items).join ', '
+    code = (obj.compile o, LEVEL_LIST for obj of items).join ', '
     if 0 < code.indexOf \\n
     then "[\n#{o.indent}#{code}\n#{@tab}]"
     else "[#{code}]"
@@ -528,10 +534,10 @@ class exports.Op extends Node
     return new Of first, second if op is \of
     return Call first, []       if op is \do
     if op is \new
-      if first instanceof Call
-        first.digCalls().0.new = 'new '
+      if (call = first.head or first) instanceof Call
+        call.digCalls().0.new = 'new '
         return first
-      p.keep = true if (p = first.head or first) instanceof Parens
+      first.newed = true
     @<<<{op, first, second, post}
 
   children: <[ first second ]>
@@ -998,9 +1004,9 @@ class exports.Parens extends Node
 
   compileNode: (o) ->
     {it} = this
-    return (it import {@front}).compile o if not @keep and
+    return (it import {@front}).compile o if not @keep and not @newed and
       (it instanceof [Value, Call, Fun, Parens, Import] or
-       o.level < LEVEL_OP and it instanceof Op)
+       it instanceof Op and o.level < LEVEL_OP)
     o.level = LEVEL_PAREN
     if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
 

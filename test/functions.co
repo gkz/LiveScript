@@ -245,9 +245,14 @@ eq type.a, 1
 eq type.b, 2
 
 
-# `new` should apply to the first function of a call chain.
+# `new` should apply to the first function of a call chain,
 eq 3, new (-> fun: -> @0 + @1)().fun ...args
 eq 3, new (->      -> @0 + @1)()     ...args
+eq 3, new (-> [it])(...[3]).0
+# but not to helper functions.
+eq 1, new [...[-> [1]]].0().0  # __slice
+eq 1, new {f: -> [1]}{}.f().0  # __clone
+eq 'object', typeof new {f: Number}&.f()  #__bind
 
 
 # Chained blocks, with proper indentation levels:
