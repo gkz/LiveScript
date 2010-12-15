@@ -1,5 +1,9 @@
-# Ensure that carriage returns don't break compilation true Windows.
-eq 'one;\ntwo;', Coco.compile 'one\r\ntwo', bare: true
+# Ensure that carriage returns don't break compilation on Windows.
+eq 'one;\ntwo;', Coco.compile 'one\r\ntwo', {+bare}
+
+
+# Tab characters should work.
+eq '_(_);', Coco.compile '\n\t_\t_\t\n', {+bare}
 
 
 # `globals: true` removes `var`s
@@ -12,7 +16,7 @@ eq '''
 ''', Coco.compile 'f ...a, b', {+globals}
 
 
-eq 'passed', Coco.eval '"passed"', bare: true, fileName: 'test'
+eq 'passed', Coco.eval '"passed"', {+bare, fileName: 'test'}
 
 
 #750
@@ -26,7 +30,7 @@ throws 'unterminated heregex on line 3'   , -> Coco.nodes '\n\n///\n'
 
 
 eq 'for (k in o) {}'
-, Coco.compile 'for k in o then', bare: true, globals: true,
+, Coco.compile 'for k in o then', {+bare, +globals}
 
 
 eq '''
@@ -40,10 +44,10 @@ I = function(it){
 ### (c) 2010 me ###
 "use strict"
 I = -> it
-''', bare: true
+''', {+bare}
 
 
-eq "a['in'] = this['in'];", Coco.compile 'a import {@in}', bare: true
+eq "a['in'] = this['in'];", Coco.compile 'a import {@in}', {+bare}
 
 
 eq '''
@@ -52,7 +56,7 @@ while (0) {
     (1, 2);
   }
 }
-''', Coco.compile '(1; 2) while 0 while 0', bare: true
+''', Coco.compile '(1; 2) while 0 while 0', {+bare}
 
 
 throws 'invalid use of void', -> Coco.compile 'do void'
@@ -61,7 +65,7 @@ throws 'invalid use of null', -> Coco.compile 'null.po'
 throws 'invalid property name: this.p', -> Coco.compile '{@p:@}'
 
 
-eq '(function(){}());', Coco.compile 'do->', bare: true
+eq '(function(){}());', Coco.compile 'do->', {+bare}
 
 
 tokens = Coco.tokens '''

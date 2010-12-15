@@ -1077,7 +1077,7 @@ class exports.While extends Node
 
   aSource: \test, aTarget: \body
 
-  show: Negatable.show
+  @::{show} = Negatable
 
   isStatement: YES
 
@@ -1306,7 +1306,7 @@ class exports.If extends Node
 
   aSource: \if, aTarget: \then
 
-  show: Negatable.show
+  @::{show} = Negatable
 
   # Rewrite a chain of **If**s to add a default case as the final `else`.
   addElse: ->
@@ -1379,7 +1379,7 @@ class exports.Comment extends Node
 class exports.Util extends Node
   (@name) =>
 
-  show: Statement::show
+  @::{show} = Statement::
 
   compile: -> utility @name
 

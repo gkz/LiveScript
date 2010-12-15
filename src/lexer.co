@@ -9,7 +9,7 @@
 # [Jison](http://github.com/zaach/jison) generated [parser](../lib/parser.js).
 
 # The Lexer Object
-# ---------------
+# ----------------
 # Reads a stream of Coco code and divvies it up into tagged tokens.
 # Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into Lexer.
@@ -302,8 +302,8 @@ exports import
   # here. `;` and newlines are both treated as a TERMINATOR, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   literalToken: ->
-    [value] = SYMBOL.exec it
-    switch tag = value
+    return 0 unless val = SYMBOL.exec it
+    switch tag = val.=0
     case \)
       @last.0 = \CALL( if @last.0 is \(
     case <[ -> => ]>
@@ -313,7 +313,7 @@ exports import
       tag = \ASSIGN
       if @last.0 is \LOGIC
         @tokens.pop()
-        (value = new String value).logic = @last.1
+        (val = new String val).logic = @last.1
     case <[ . ?. &. .= ]>              then tag = \DOT
     case <[ + - ]>                     then tag = \+-
     case <[ ! ~ ]>                     then tag = \UNARY
@@ -330,30 +330,30 @@ exports import
     case \*
       tag = if @last.0 of <[ INDEX[ ( DOT , ; ]> then \STRNUM else \MATH
     case \::
-      (id = new String \prototype).colon2 = true
-      @token<[ DOT . ]>; @token \IDENTIFIER, id
+      @token<[ DOT . ]>
+      @token \IDENTIFIER, new String(\prototype) <<< {+colon2}
       fallthrough
-    case \\\\n then return value.length
+    case \\\\n then return val.length
     default
-      switch value.charAt 0
+      switch val.charAt 0
       case \@
         @token<[ IDENTIFIER arguments ]>; @token<[ DOT . ]>
-        @token \STRNUM, value.slice 1
-        return value.length
+        @token \STRNUM, val.slice 1
+        return val.length
       case \\
-        word = value.slice 1
-        @token \STRNUM, if word is '\\' then "'\\\\'" else string word, \'
-        return value.length
+        word = val.slice 1
+        @token \STRNUM, if word is \\ then "'\\\\'" else string word, \'
+        return val.length
       unless (prev = @last).spaced
-        if value is \( and prev.0 of CALLABLE
+        if val is \( and prev.0 of CALLABLE
           if prev.0 is \?
             prev.0  = \CALL(
             prev.1 += \(
-            return value.length
+            return val.length
           tag = \CALL(
-        else if value is \[ and prev.0 of INDEXABLE
+        else if val is \[ and prev.0 of INDEXABLE
           tag = \INDEX[
-    @token(tag, value).length
+    @token(tag, val).length
 
   #### Token Manipulators
 
