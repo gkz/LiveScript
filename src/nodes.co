@@ -150,11 +150,8 @@ class exports.Lines extends Node
   isStatement: (o) ->
     return true if o and not o.level
     return true if node.isStatement o for node of @lines
-    false
 
-  jumps: ->
-    return true if node.jumps it for node of @lines
-    false
+  jumps: -> return true if node.jumps it for node of @lines
 
   # **Lines** does not return its entire body, rather it
   # ensures that the final line is returned.
@@ -368,8 +365,9 @@ class exports.Value extends Node
       if it.value is \*               then stars.push it
       else unless it instanceof Index then it.eachChild seek
       void
-    stars = []
-    for index, i of @tails then unless index.key instanceof Key
+    for index, i of @tails
+      continue if index.stars or index.key instanceof Key
+      stars = index.stars = []
       index.eachChild seek
       continue unless stars.length
       [sub, ref] = Value(@head, @tails.slice 0, i).cache o
@@ -470,9 +468,7 @@ class exports.Obj extends Node
 
   children: [\items]
 
-  assigns: ->
-    return true if node.assigns it for node of @items
-    false
+  assigns: -> return true if node.assigns it for node of @items
 
   compileNode: (o) ->
     {items} = this
@@ -618,7 +614,6 @@ class exports.Op extends Node
     [get, del] = Value(@first).cacheReference o
     code += ' = ' + get.compile(o, LEVEL_LIST) + ', delete ' +
                     del.compile(o, LEVEL_LIST) + ', ' + ref
-    o.scope.free ref
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Assign
@@ -647,9 +642,9 @@ class exports.Assign extends Node
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
     {right} = this
-    if right instanceof [Fun, Class] and match = METHOD_DEF.exec name
-      right.clas   = match.1 if match.1
-      right.name ||= match.2 or match.3
+    if right instanceof [Fun, Class] and METHOD_DEF.exec name
+      right.name ||= that.2 or that.3
+      right.clas   = that if that.1
     val = right.compile o, LEVEL_LIST
     if @op is \:
       throw SyntaxError 'invalid property name: ' + name if left.isComplex()
@@ -1067,7 +1062,6 @@ class exports.While extends Node
     return false unless lines.length
     context = {+loop}
     return true if node.jumps context for node of lines
-    false
 
   addBody: (@body) ->
     [last, i] = lastNonComment body.lines
