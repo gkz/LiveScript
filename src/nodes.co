@@ -634,10 +634,15 @@ class exports.Assign extends Node
 
   compileNode: (o) ->
     {left} = this
+    if left instanceof Value and left.tails[*-1]?.key.length
+      {key} = left.tails.pop()
+      [sub, ref] = left.cache o
+      @temps = [ref.value] if sub isnt ref
+      left = Arr(Value if i then ref else sub, [Index k] for k, i of key)
     if left.items
-      return @compileDestructuring o unless @logic
+      return @compileDestructuring o, left unless @logic
       throw SyntaxError 'conditional assignment cannot be destructuring'
-    return @compileConditional o if @logic
+    return @compileConditional o, left if @logic
     name = left.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
@@ -660,22 +665,22 @@ class exports.Assign extends Node
     code = name + " #{ if @op is \:= then \= else @op } " + val
     if o.level < LEVEL_COND then code else "(#{code})"
 
-  compileConditional: (o) ->
-    [lef, ref] = Value(@left).cacheReference o
+  compileConditional: (o, left) ->
+    [lef, ref] = Value(left).cacheReference o
     Op(@logic; lef; Assign ref, @right, @op).compile o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
-  compileDestructuring: (o) ->
-    {items} = @left
+  compileDestructuring: (o, left) ->
+    {items} = left
     return @right.compile o, LEVEL_ACCESS unless len = items.length
     rite = @right.compile o, if len is 1 then LEVEL_ACCESS else LEVEL_LIST
     if (len > 1 or o.level) and
-       (not IDENTIFIER.test(rite) or @left.assigns(rite))
+       (not IDENTIFIER.test(rite) or left.assigns(rite))
       cache = "#{ rref = o.scope.temporary \ref } = #{rite}"
       rite  = rref
-    list = if @left instanceof Arr
+    list = if left instanceof Arr
     then @destructArr o, items, rite
     else @destructObj o, items, rite
     o.scope.free rref  if rref
