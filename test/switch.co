@@ -58,6 +58,7 @@ eq result, ok
 
 
 eq '''
+var that;
 switch (false) {
 case !1:
   return;
@@ -69,7 +70,10 @@ case !4:
   break;
 case !5:
   /* fallthrough */
-case !6:
+case !(that = 6):
+  that;
+  break;
+case !7:
   break;
 default:
 }
@@ -80,10 +84,14 @@ case 2 then throw me
 case 3 then continue
 case 4 then break
 case 5 then fallthrough
-case 6 then
+case 6 then that
+case 7 then
 default
 ''', bare: true
 
 
 eq 1, (switch 1 case 1 then that)
+
 while 1 then eq 3, (switch 3 case 3 then that); break
+
+switch case [0], 2, [4, 8] then eq 2, that

@@ -433,7 +433,7 @@ class exports.Call extends Node
       return @compileSplat o, @args.1.value if @new
       return callee.compile(o, LEVEL_ACCESS) +
              ".apply(#{ @args.0.compile o }, #{@args.1.value})"
-    return @compileSplat o, that if Splat.compileArray o, @args
+    return @compileSplat o, that if Splat.compileArray o, @args, true
     callee.newed = true if @new
     code = (@new or '') + callee.compile(o, LEVEL_ACCESS) +
            "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
@@ -1276,16 +1276,11 @@ class exports.Switch extends Node
     this
 
   compileNode: (o) ->
-    cond = if @switch
-      @anaphorize()
-      @switch.compile o, LEVEL_PAREN
-    else
-      tests[i].=invert() for own i in tests for {tests} of @cases
-      false
+    cond = !!@switch and (@anaphorize(); @switch.compile o, LEVEL_PAREN)
     {tab} = this
     code  = tab + "switch (#{cond}) {\n"
     stop  = @default or @cases.length - 1
-    code += cs.compileCase o, tab, i is stop for cs, i of @cases
+    code += cs.compileCase o, tab, i is stop, !cond for cs, i of @cases
     if @default
       o.indent = tab + TAB
       def   = @default.compile o, LEVEL_TOP
@@ -1303,13 +1298,18 @@ class exports.Case extends Node
     [last] = lastNonComment @body.lines
     @body.makeReturn it unless last?.value is \fallthrough
 
-  compileCase: (o, tab, nobr) ->
+  compileCase: (o, tab, nobr, bool) ->
+    {tests} = this; i = -1
+    while test = tests[++i] then if test instanceof Arr
+      tests.splice.apply tests, [i, 1].concat test.items
+      i += test.items.length - 1
+    if bool
+      [test] = tests
+      test = Op '||', test, tests[i] for i from 1 til tests.length
+      (@<<<{test, aSource: 'test', aTarget: 'body'}).anaphorize()
+      tests = [@test.invert()]
     code = br = ''
-    add  = -> code += tab + "case #{ it.compile o, LEVEL_PAREN }:\n"
-    for test of @tests
-      if test instanceof Arr
-      then add t for t of test.items
-      else add test
+    code += tab + "case #{ test.compile o, LEVEL_PAREN }:\n" for test of tests
     [last, i] = lastNonComment exps = @body.lines
     exps[i] = Comment ' fallthrough ' if ft = last?.value is \fallthrough
     o.indent = tab + TAB
