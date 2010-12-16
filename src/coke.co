@@ -9,7 +9,8 @@
 {OptionParser} = require \./optparse
 
 # Keep track of the list of defined tasks, the accepted options, and so on.
-Tasks    = {}
+Tasks    = __proto__: null
+Aliases  = __proto__: null
 Switches = []
 
 # The top-level objects for Cokefiles to use directly.
@@ -22,7 +23,11 @@ global import
   # and the function to run as the action itself.
   task: (name, description, action) ->
     [action, description] = [description] unless action
-    Tasks[name] = {name, description, action}
+    # `name` can be an array of names,
+    # in which case the rest are defined as aliases.
+    [name, ...aliases] = [].concat name
+    aliases.forEach -> Aliases[it] = name
+    Tasks[name] = {name, description, action, aliases}
 
   # Define an option that the Cokefile accepts. The parsed options hash,
   # containing all of the command-line options passed, will be made available
@@ -31,10 +36,10 @@ global import
 
   # Invoke another task in the current Cokefile.
   invoke: (name) ->
-    unless name in Tasks
+    unless task = Tasks[name] or Tasks[Aliases[name]]
       console.error 'no such task: "%s"', name
       process.exit 1
-    Tasks[name].action this
+    task.action this
 
   # Utilities.
   say   : -> process.stdout.write it + \\n

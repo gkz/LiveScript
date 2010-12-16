@@ -41,22 +41,24 @@ task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
   ].join(' && '), (err, stdout, stderr) ->
     say if err then stderr.trim() else tint 'done'
 
-task 'build', 'build the Coco language from source', ->
+task <[ build b ]>, 'build the Coco language from source', ->
   run <[ -bco lib src ]>
 
-task 'build:full', 'rebuild the source twice, and run the tests', ->
-  exec 'bin/coke build && bin/coke build && bin/coke test', (err, stdout, stderr) ->
+task <[ build:full bf ]>, 'rebuild the source twice, and run the tests', ->
+  exec 'bin/coke build && bin/coke build && bin/coke test'
+  , (err, stdout, stderr) ->
     say stdout.trim() if stdout
     say stderr.trim() if stderr
     throw err         if err
 
-task 'build:parser', 'rebuild the Jison parser (run build first)', ->
+task <[ build:parser bp ]>, 'rebuild the Jison parser (run build first)', ->
   src = require('./lib/grammar').parser.generate()
         .replace /^[^]+?var (?=parser = {)/, 'exports.'
         .replace /return parser;[^]+/, ''
   spit 'lib/parser.js', src
 
-task 'build:browser', 'rebuild the merged script for inclusion of the browser', ->
+task <[ build:browser bb ]>
+, 'rebuild the merged script for inclusion of the browser', ->
   co = ''
   for name of <[ rewriter lexer parser nodes coco browser ]>
     src = slurp "lib/#{name}.js"
@@ -144,8 +146,9 @@ runTests = (Coco) ->
       say line.slice(0, col) + tint line.slice(col), bold
       say lines.slice(row+1, row+9).join '\n'
 
-task 'test', 'run the Coco language test suite', ->
+task <[ test t ]>, 'run the Coco language test suite', ->
   runTests require './lib/coco'
 
-task 'test:browser', 'run the test suite against the merged browser script', ->
+task <[ test:browser tb ]>
+, 'run the test suite against the merged browser script', ->
   runTests new -> eval slurp 'extras/coco.js', 'utf8'
