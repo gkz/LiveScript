@@ -69,13 +69,12 @@ bnf =
   SimpleAssignable: [
     o 'IDENTIFIER' ,-> Literal $1
 
-    o 'Value DOT IDENTIFIER'    ,-> $1.add Index Key($3)     ,$2
-    o 'Value DOT STRNUM'        ,-> $1.add Index Literal($3) ,$2
-    o 'Value DOT Parenthetical' ,-> $1.add Index $3.it       ,$2
-
     o 'ThisProperty'
 
-    o 'Value INDEX[ ArgList OptComma ]INDEX' ,-> $1.add Index $3 ,$2
+    o 'Value DOT IDENTIFIER'           ,-> $1.add Index Key($3)     ,$2
+    o 'Value DOT STRNUM'               ,-> $1.add Index Literal($3) ,$2
+    o 'Value DOT Parenthetical'        ,-> $1.add Index $3.it       ,$2
+    o 'Value DOT [ ArgList OptComma ]' ,-> $1.add Index $4          ,$2
 
     o 'Value CLONE Object' ,-> new Clone $1.unwrap(), $3
 

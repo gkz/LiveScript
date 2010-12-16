@@ -44,17 +44,14 @@ function removeMidExpressionTerminators (tokens) ->
       tokens.splice i-1, 1
   tokens
 
-# The lexer has tagged each of the opening parenthesis/bracket of
-# a call/indexing. Match it with its closing pair.
+# The lexer has tagged each of the opening parenthesis of
+# a call. Match it with its closing pair.
 function closeOpenings (tokens) ->
   stack = []
   for token of tokens
     switch token.0
-    case <[ ( CALL( [ INDEX[ ]> then stack.push that
-    case <[ ) )CALL  ]>
-      token.0 = \)CALL  if stack.pop() is  \CALL(
-    case <[ ] INDEX] ]>
-      token.0 = \]INDEX if stack.pop() is \INDEX[
+    case <[ ( CALL( ]> then stack.push that
+    case <[ ) )CALL ]> then stack.pop() is \CALL( and token.0 = \)CALL
   tokens
 
 # Object literals may be written without braces for simple cases.
@@ -96,11 +93,12 @@ function addImplicitParentheses (tokens) ->
   while token = tokens[++i]
     [tag] = token
     unless (prev = tokens[i-1]).spaced
-      if      tag is \? then token.call = true
-      else if tag is \{ and (prev.0 is \} or callable prev.0)
-        tokens.splice i++, 0, [\CLONE, '', prev[2]]
+      switch tag
+      case \?        then token.call = true
+      case <[ [ { ]> then if able prev.0
+        tokens.splice i++, 0, [if tag is \[ then \DOT else \CLONE, '', prev[2]]
       continue
-    continue unless prev.call or callable prev.0
+    continue unless prev.call or able prev.0, true
     continue unless token.argument or
       tag of <[ ( [ { ... IDENTIFIER THISPROP STRNUM LITERAL THIS
                 UNARY CREMENT IF TRY CLASS FUNCTION SUPER ]> or
@@ -110,9 +108,10 @@ function addImplicitParentheses (tokens) ->
     tokens.splice --i, 1 if soak = prev.0 is \?
     tokens.splice i++, 0, [\CALL(, if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
-  function callable ->
-    it of <[ IDENTIFIER THISPROP SUPER THIS ) )CALL ] ]INDEX ]> or
-    it is \STRNUM and tokens[i-2]?.0 is \DOT
+  function able (tag, call) ->
+    tag of <[ IDENTIFIER THISPROP SUPER THIS ) )CALL ] ]> or
+    if call then tag is \STRNUM and tokens[i-2]?.0 is \DOT \
+            else tag of <[ } STRNUM LITERAL ]>
   function ok (token, i) ->
     return false if token.argument
     return true  if not seenSingle and token.fromThen
@@ -248,7 +247,6 @@ BALANCED_PAIRS = [
        <[ [ ] ]>
        <[ { } ]>
   <[  CALL( )CALL  ]>
-  <[ INDEX[ ]INDEX ]>
   <[ PARAM( )PARAM ]>
   <[ INDENT DEDENT ]>
 ]

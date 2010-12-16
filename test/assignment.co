@@ -60,7 +60,7 @@ eq val, 'value'
 parent = child: str: 'test'
 parent.child.str.=replace /./, 'b'
 eq 'best', parent.child.str
-parent.child.str[='replace'] /./, 'r'
+parent.child.str.='replace' /./, 'r'
 parent.=child.valueOf().str
 eq 'rest', parent
 

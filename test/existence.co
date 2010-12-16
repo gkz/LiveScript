@@ -35,9 +35,9 @@ obj =
   prop: "hello"
 
 eq obj?.prop, "hello"
-eq obj?['prop'], "hello"
+eq obj?.'prop', "hello"
 eq obj.prop?.length, 5
-eq obj?.prop?['length'], 5
+eq obj?.prop?.'length', 5
 eq obj?.prop?.non?.existent?.property, void
 
 
@@ -133,7 +133,7 @@ eq new Bumper?(42) | 0, 0
 
 
 #726
-eq calendar?[Date()], void
+eq calendar?.(Date()), void
 
 
 #733

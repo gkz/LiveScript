@@ -147,7 +147,7 @@ exports import
   numberToken: ->
     return 0 unless match = NUMBER.exec it
     num = match.3 or match.0
-    if num.charAt(0) is \. and not @last.spaced and @last.0 of INDEXABLE
+    if num.charAt(0) is \. and (@callable() or @last.0 of <[ } LITERAL ]>)
       @token<[ DOT . ]>; @token \STRNUM, num.slice 1
       return match.0.length
     if radix = match.1
@@ -214,9 +214,8 @@ exports import
     # We distinguish it from the division operator using a list of tokens that
     # a regex never immediately follows.
     # Our list becomes shorter when spaced, due to sans-parentheses calls.
-    return 0 if (prev = @last).0 of <[ STRNUM LITERAL CREMENT ]> or
-                not prev.spaced and prev.0 of CALLABLE or
-                not regex = REGEX.exec it
+    return 0 if (prev = @last).0 of <[ LITERAL CREMENT ]> or
+                @callable() or not regex = REGEX.exec it
     @token \LITERAL, if regex.=0 is \// then '/(?:)/' else regex
     @countLines(regex).length
 
@@ -247,8 +246,7 @@ exports import
   # Matches a words literal, a syntax sugar for a list of strings.
   wordsToken: ->
     @carp 'unterminated words' unless ~end = it.indexOf \]>, 2
-    if call = not @last.spaced and @last.0 of CALLABLE
-    then @token<[ CALL( ( ]> else @token<[ [ [ ]>
+    if call = @callable() then @token<[ CALL( ( ]> else @token<[ [ [ ]>
     for line of it.slice(2, end).split \\n
       if line.match re ||= /\S+/g then for word of that
         @tokens.push [\STRNUM; string word, \'; @line], [\,, \,, @line]
@@ -274,7 +272,7 @@ exports import
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf \\n
     noNewline = LINE_CONTINUER.test(it) or @last.0 of
-      <[ +- DOT INDEX[ ASSIGN LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
+      <[ +- DOT ASSIGN LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
     if size - @indebt is @indent
       @newline() unless noNewline
       return indent.length
@@ -324,11 +322,10 @@ exports import
     case <[ ++ -- ]>                   then tag = \CREMENT
     case <[ <<<  <<<< ]>               then tag = \IMPORT
     case <[ << >> >>> ]>               then tag = \SHIFT
-    case <[ ?[ &[ [= ]>                then tag = \INDEX[
     case \@                            then tag = \THIS
     case \;                            then tag = \TERMINATOR
     case \*
-      tag = if @last.0 of <[ INDEX[ ( DOT , ; ]> then \STRNUM else \MATH
+      tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
     case \::
       @token<[ DOT . ]>
       @token \IDENTIFIER, new String(\prototype) <<< {+colon2}
@@ -344,15 +341,11 @@ exports import
         word = val.slice 1
         @token \STRNUM, if word is \\ then "'\\\\'" else string word, \'
         return val.length
-      unless (prev = @last).spaced
-        if val is \( and prev.0 of CALLABLE
-          if prev.0 is \?
-            prev.0  = \CALL(
-            prev.1 += \(
-            return val.length
-          tag = \CALL(
-        else if val is \[ and prev.0 of INDEXABLE
-          tag = \INDEX[
+      if val is \( and @callable()
+        if @last.0 is \?
+          @last[0, 1] = [\CALL(, \?(]
+          return val.length
+        tag = \CALL(
     @token(tag, val).length
 
   #### Token Manipulators
@@ -466,6 +459,13 @@ exports import
     ++@line while pos = 1 + str.indexOf \\n, pos
     str
 
+  # Checks if the last token is callable via explicit parentheses.
+  callable: ->
+    return false if @last.spaced
+    switch @last.0
+    case <[ IDENTIFIER THISPROP THIS SUPER ] ) ? ]> then true
+    case \STRNUM then @tokens[*-2]?.0 is \DOT
+
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
 
@@ -515,13 +515,13 @@ NUMBER = ///
 | ^ ((?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?) [a-z]* # decimal
 ///i
 SYMBOL = /// ^ (?
-: [-+*/%&|^:.[<>]=  # compound assign / comparison
+: [-+*/%&|^:.<>]=   # compound assign / comparison
 | \\\S[^\s,;)}\]]*  # word
 | ([-+&|:])\1       # {in,de}crement / logic / prototype access
 | [-=]>             # function
 | [!=]==?           # equality
 | \.{3}             # splat
-| [?&][.[]          # soak/bind access
+| [?&]\.            # soak/bind access
 | <<<<?             # import
 | <<=?              # left shift
 | >>>?=?            # rite shift
@@ -553,10 +553,3 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 MULTILINER      = /\n/g
 LINE_CONTINUER  = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
-
-# Tokens which could legitimately be invoked or indexed.
-# An opening parenthesis or bracket following these tokens will be recorded as
-# the start of a function invocation or property indexing operation.
-CALLABLE  = <[ IDENTIFIER THISPROP ) ] STRNUM SUPER THIS ]>
-INDEXABLE = CALLABLE.concat<[ } LITERAL ]>
-CALLABLE.push \?
