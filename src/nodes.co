@@ -46,14 +46,15 @@ class Node
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
-  # by assigning it to a temporary variable. Pass a level to precompile.
+  # by assigning it to a temporary variable.
   cache: (o, once, level) ->
     unless @isComplex()
       return [ref = if level? then @compile o, level else this, ref]
     sub = Assign ref = Literal(o.scope.temporary \ref), this
+    # Pass a `level` to precompile.
     return [sub.compile o, level; ref.value] if level?
-    ref.temp = once
-    [sub, ref]
+    # If flagged as `once`, the tempvar will be auto-freed.
+    if once then [sub, ref import {+temp}] else [sub, ref, [ref.value]]
 
   # Compiles to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
@@ -372,8 +373,7 @@ class exports.Value extends Node
       stars = index.stars = []
       index.eachChild seek
       continue unless stars.length
-      [sub, ref] = Value(@head, @tails.slice 0, i).cache o
-      @temps = [ref.value] if sub isnt ref
+      [sub, ref, @temps] = Value(@head, @tails.slice 0, i).cache o
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + \.length for star of stars
       return Value sub, @tails.slice i
@@ -381,8 +381,7 @@ class exports.Value extends Node
 
   multiPick: (o) ->
     for {key}, i of @tails then if key.length
-      [sub, ref] = Value(@head, @tails.slice 0, i).cache o
-      @temps = [ref.value] if sub isnt ref
+      [sub, ref, @temps] = Value(@head, @tails.slice 0, i).cache o
       arr = (Value if j then ref else sub, [Index node] for node, j of key)
       return Value Arr(arr), @tails.slice i+1
     void
@@ -496,10 +495,7 @@ class exports.Obj extends Node
       if node instanceof Splat or (node.left or node) instanceof Parens
         rest = items.splice i, 9e9
         break
-    [last] = lastNonComment items
-    idt    = o.indent += TAB
-    dic    = {}
-    code   = ''
+    code = ''; idt = o.indent += TAB; [last] = lastNonComment items; dic = {}
     for node of items
       if node instanceof Comment
         code += idt + node.compile(o, LEVEL_TOP) + \\n
@@ -733,9 +729,8 @@ class exports.Assign extends Node
       if node instanceof Parens
         [node, key] = Value(node.it).cacheReference o
       else if node instanceof Assign
-        key = node.left; node.=right
-      else
-        key = if node.at then node.tails.0.key else node
+      then key = node.left; node.=right
+      else key = if node.at then node.tails.0.key else node
       val = Value lr ||= Literal(rite), [Index key.asKey()]
       val = Import Obj(), val  if splat
       node = Literal node.name if node instanceof Key
@@ -748,8 +743,7 @@ class exports.Assign extends Node
     if left.mixin
       {base, mixin: {items}} = left
       if items.length > 1
-        [sub, ref] = base.cache o
-        @temps = [ref.value] if sub isnt ref
+      then [sub, ref, @temps] = base.cache o
       else sub = ref = base
       for node, i of items then unless node instanceof Comment
         base = if i then sub else ref
@@ -760,8 +754,7 @@ class exports.Assign extends Node
     # `x[k] = a` -> `[x[k]] = a`
     else if left instanceof Value and left.tails[*-1]?.key.length
       {key} = left.tails.pop()
-      [sub, ref] = left.cache o
-      @temps = [ref.value] if sub isnt ref
+      [sub, ref, @temps] = left.cache o
       left = Arr(Value if i then ref else sub, [Index k] for k, i of key)
     left
 
@@ -781,12 +774,11 @@ class exports.Import extends Node
     return @left.compile o unless items.length
     top = not o.level
     if top and items.length < 2
-    then  sub = lref  = @left
-    else [sub , lref] = @left.cache o
+    then sub = lref = @left
+    else [sub, lref, @temps] = @left.cache o
     [delim, space] = if top then [\;, \\n + @tab] else [\,, ' ']
     delim += space
-    @temps = []
-    code   = ''
+    code = ''
     for node of items
       code += if com then space else delim
       if com = node instanceof Comment
@@ -805,10 +797,8 @@ class exports.Import extends Node
       asn = Assign Value(lref, [Index key]), val
       code += asn.compile o, LEVEL_PAREN
     if sub is lref
-      code.=slice delim.length
-    else
-      code = sub.compile(o, LEVEL_PAREN) + code
-      o.scope.free lref.value
+    then code.=slice delim.length
+    else code = sub.compile(o, LEVEL_PAREN) + code
     return code if top
     unless node instanceof Splat
       code += (if com then ' ' else ', ') + lref.compile o, LEVEL_LIST
