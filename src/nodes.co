@@ -251,9 +251,9 @@ class exports.Index extends Node
     case 0 then @key = Key \__proto__
     case 1 then @key = key.0
     switch symbol
-    case <[ ?. ?[ ]> then @soak   = true
-    case <[ &. &[ ]> then @bind   = true
-    case <[ .= [= ]> then @assign = true
+    case \?. then @soak   = true
+    case \&. then @bind   = true
+    case \.= then @assign = true
 
   children: [\key]
 
