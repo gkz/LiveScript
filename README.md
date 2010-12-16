@@ -49,6 +49,17 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
+### 0.1.6
+- Added character/word literal:
+  `\C + \++` -> `'C' + '++';`
+- Retrieving multiple properties at once is now possible:
+  `a[b, c]` -> `[a[b], a[c]];`
+- Destructuring into an object's properties is now possible:
+  - `a[b, c] = d` -> `a[b] = d[0], a[c] = d[1];`
+  - `a{b, c} = d` -> `a.b = d.b, a.c = d.c;`
+- Compound assigments can now destructure:
+  `[@a, @b] /= c` -> `this.a /= c[0], this.b /= c[1];`
+
 ### 0.1.5
 - Conditional control structures can now be anaphoric;
   `that` within `if`, `while` or `case` block now refers to the condition value.
