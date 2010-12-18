@@ -169,7 +169,7 @@ exports import
     @countLines(str).length
 
   doubleStringToken: ->
-    str = @balancedString it, [<[ " " ]>, <[ #{ } ]>]
+    str = @balancedString it, \"
     if 0 < str.indexOf \#{, 1
     then @interpolateString str.slice(1, -1), ''
     else @token \STRNUM, str.replace MULTILINER, ''
@@ -388,23 +388,22 @@ exports import
   # a series of delimiters, all of which must be nested correctly within the
   # contents of the string. This method allows us to have strings within
   # interpolations within strings, ad infinitum.
-  balancedString: (str, delimited) ->
-    stack = [delimited.0]
-    for i from 1 til str.length
-      switch str.charAt i
-      case \\
-        ++i
-        continue
-      case stack[*-1].1
+  balancedString: (str, end) ->
+    stack = [end]; i = 0
+    while chr = str.charAt ++i
+      if chr is \\ then ++i; continue
+      switch end
+      case chr
         stack.pop()
         return str.slice 0, i+1 unless stack.length
+        end = stack[*-1]
         continue
-      for pair of delimited
-        continue unless (open = pair.0) is str.substr i, open.length
-        stack.push pair
-        i += open.length - 1
-        break
-    @carp "unterminated #{ stack.pop().0 }"
+      case \" then stack.push end = '}' if \{ is chr and \# is str.charAt i-1
+      case \}
+        switch chr
+        case \", \' then stack.push end = chr
+        case \{     then stack.push end = '}'
+    @carp 'missing ' + stack.pop()
 
   # Expand variables and expressions inside double-quoted strings using
   # Ruby-like notation for substitution of arbitrary expressions.
@@ -424,7 +423,7 @@ exports import
       if pi < i
         ts.push [\S; s = str.slice pi, i; @line]
         @countLines s
-      code = @balancedString str.slice(i+1), [<[ { } ]>]
+      code = @balancedString str.slice(i+1), '}'
       pi   = 1 + i += code.length
       continue unless code.=slice 1, -1
       nested = @lex code, {@line, -rewrite}
