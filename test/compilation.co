@@ -111,3 +111,7 @@ STRNUM,'8',8
 TERMINATOR,
 ,9
 '''
+
+
+# Indentation on line 1 should be valid.
+eq '1;\n2;', Coco.compile '  1\n  2', {+bare}
