@@ -9,16 +9,17 @@ path = require \path
 oparser = require(\./optparse).OptionParser [
   [\-c, \--compile,         'compile to JavaScript and save as .js files']
   [\-i, \--interactive,     'run an interactive Coco REPL']
-  [\-o,'--output DIR',      'set the directory for compiled JavaScript']
+  [\-o, '--output DIR',     'set the directory for compiled JavaScript']
   [\-w, \--watch,           'watch scripts for changes, and recompile']
   [\-p, \--print,           'print the compiled JavaScript to stdout']
   [\-s, \--stdio,           'listen for and compile scripts over stdio']
   [\-e, \--eval,            'compile a string from the command line']
-  [\-r,'--require FILE*',   'require a library before executing your script']
+  [\-r, '--require FILE*',  'require a library before executing your script']
   [\-b, \--bare,            'compile without the top-level function wrapper']
   [\-l, \--lex,             'print the tokens the lexer produces']
   [\-t, \--tokens,          'print the tokens the rewriter produces']
   [\-n, \--nodes,           'print the parse tree the parser produces']
+  ['' , '--nodejs ARGS',    'pass options through to the "node" binary']
   [\-v, \--version,         'display Coco version']
   [\-h, \--help,            'display this help message']
 ]
@@ -38,17 +39,15 @@ global import
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`.
 exports.run = ->
+  return forkNode()                   if o.nodejs
   return version()                    if o.version
   return help()                       if o.help
   return repl()                       if o.interactive
   return compileStdio()               if o.stdio
   return compileScript '', sources.0  if o.eval
   return (version(); help(); repl())  unless sources.length
-  args = if ~separator = sources.indexOf \--
-  then sources.splice(separator, 9e9).slice 1
-  else []
-  args.unshift ...sources.splice 1, 9e9 if o.run
-  process.argv.splice 2, 9e9, ...args
+  process.argv.splice 2, 9e9,
+    ...if o.run then sources.splice(1).concat o.literals else o.literals
   compileScripts()
 
 # Asynchronously read in each Coco script in a list of source files and
@@ -155,6 +154,16 @@ repl = ->
   process.on \uncaughtException, -> say \\n + (it?.stack or it)
   repl.setPrompt 'coco> '
   repl.prompt()
+
+# Start up a new __node.js__ instance with the arguments in `--nodejs` passed
+# to it, preserving the other options.
+forkNode = ->
+  args = process.argv.slice 1
+  args.splice args.indexOf('--nodejs'), 2
+  require(\child_process).spawn then
+    process.execPath
+    o.nodejs.trim().split(/\s+/).concat args
+    cwd: process.cwd(), env: process.env, customFds: [0, 1, 2]
 
 # Print the `--help` message.
 help    = -> say 'Usage: coco [options] [files]\n\n' + oparser.help()
