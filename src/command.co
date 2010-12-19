@@ -19,7 +19,7 @@ oparser = require(\./optparse).OptionParser [
   [\-l, \--lex,             'print the tokens the lexer produces']
   [\-t, \--tokens,          'print the tokens the rewriter produces']
   [\-n, \--nodes,           'print the parse tree the parser produces']
-  ['' , '--nodejs ARGS',    'pass options through to the "node" binary']
+  [\-j, '--nodejs ARGS*',   'pass options through to the "node" binary']
   [\-v, \--version,         'display Coco version']
   [\-h, \--help,            'display this help message']
 ]
@@ -158,11 +158,11 @@ repl = ->
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
 # to it, preserving the other options.
 forkNode = ->
-  args = process.argv.slice 1
-  args.splice args.indexOf('--nodejs'), 2
+  args = process.argv.slice 1; i = 0
+  args.splice i--, 2 if arg of <[ -j --nodejs ]> while arg = args[++i]
   require(\child_process).spawn do
     process.execPath
-    o.nodejs.trim().split(/\s+/).concat args
+    o.nodejs.join(' ').trim().split(/\s+/).concat args
     cwd: process.cwd(), env: process.env, customFds: [0, 1, 2]
 
 # Print the `--help` message.
