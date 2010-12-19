@@ -14,8 +14,8 @@ exports.OptionParser = class
   => @rules = it.map ([shortFlag, longFlag, description]) ->
     # Build a rule from a `-o` short flag, a `--output [DIR]` long flag,
     # and the description of what the option does.
-    [longFlag, hasArg, isList] = LONG_FLAG.exec longFlag
-    {name: longFlag.slice(2), shortFlag, longFlag, description, hasArg, isList}
+    [flag, hasArg, isList] = LONG_FLAG.exec longFlag
+    {name: flag.slice(2), flag, shortFlag, longFlag, description, hasArg, isList}
 
   # Parse the list of arguments, populating an `options` object with all of the
   # specified options, and returning it. `options.arguments` will be an array
@@ -30,7 +30,7 @@ exports.OptionParser = class
     for arg, i of args
       if arg is \-- then literals = args.slice i+1; break
       for rule of @rules
-        continue unless arg of [rule.shortFlag, rule.longFlag]
+        continue unless arg of [rule.shortFlag, rule.flag]
         value = if rule.hasArg then args[++i] else true
         if rule.isList
         then (options[rule.name] ||= []).push value
