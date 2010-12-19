@@ -199,12 +199,12 @@ eq '13 apple orange', meth 'apple', b: 1, a: 13, ->
   'orange'
 
 
-# Implicit call against a block via explicit `then`.
-o = Object then
+# Implicit call against a block using `do`.
+o = Object do
   a: 1
 eq o.a, 1
 
-a = Array then
+a = Array do
   2
   3
 eq a[1], 3

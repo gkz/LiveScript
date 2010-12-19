@@ -160,7 +160,7 @@ repl = ->
 forkNode = ->
   args = process.argv.slice 1
   args.splice args.indexOf('--nodejs'), 2
-  require(\child_process).spawn then
+  require(\child_process).spawn do
     process.execPath
     o.nodejs.trim().split(/\s+/).concat args
     cwd: process.cwd(), env: process.env, customFds: [0, 1, 2]

@@ -148,9 +148,11 @@ function addImplicitIndentation (tokens) ->
   while token = tokens[++i]
     [tag] = token
     if \INDENT is next = tokens[i+1]?.0
-      if tag is \THEN
-        tokens.splice i, 1
-        tokens[i] import {+fromThen, +argument}
+      switch
+      case tag is \THEN   then tokens[i+1] import {+fromThen}; fallthrough
+      case token.1 is \do then tokens[i+1] import {+argument}
+      default continue
+      tokens.splice i, 1
       continue
     continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY FINALLY ]> or
                     tag is \ELSE and next isnt \IF
