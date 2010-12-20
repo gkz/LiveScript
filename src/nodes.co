@@ -595,16 +595,10 @@ class exports.Op extends Node
     if o.level < LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
-    if @first.isComplex()
-      ref = tmp = o.scope.temporary \ref
-      fst = Parens Assign Literal(ref), @first
-    else
-      fst = @first
-      ref = fst.compile o
-    code  = Existence(fst).compile o
-    code += ' ? ' + ref + ' : ' + @second.compile o, LEVEL_LIST
-    o.scope.free tmp if tmp
-    code
+    firsts = @first.cache o, true
+    Existence(firsts.0) .compile(o, LEVEL_COND) +
+    ' ? ' + firsts.1    .compile(o, LEVEL_LIST) +
+    ' : ' + @second     .compile(o, LEVEL_LIST)
 
   compileUnary: (o) ->
     {op} = this
