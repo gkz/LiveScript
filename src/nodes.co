@@ -1267,12 +1267,10 @@ class exports.Switch extends Node
     code += cs.compileCase o, tab, i is stop, !cond for cs, i of @cases
     if @default
       o.indent = tab + TAB
-      def   = @default.compile o, LEVEL_TOP
-      code += tab + "default:#{ def and \\n + def  }\n"
+      code += tab + "default:\n#{that}\n" if @default.compile o, LEVEL_TOP
     code + tab + \}
 
 #### Case
-# Convinient container node for `case` blocks.
 class exports.Case extends Node
   (@tests, @body) =>
 

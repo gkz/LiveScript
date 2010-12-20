@@ -76,6 +76,7 @@ case !(that = 6):
 case !7:
   break;
 default:
+  8;
 }
 ''', Coco.compile '''
 switch
@@ -86,7 +87,7 @@ case 4 then break
 case 5 then fallthrough
 case 6 then that
 case 7 then
-default
+default 8
 ''', bare: true
 
 
