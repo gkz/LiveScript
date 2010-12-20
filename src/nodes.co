@@ -498,7 +498,7 @@ class exports.Obj extends Node
     code = ''; idt = o.indent += TAB; [last] = lastNonComment items; dic = {}
     for node of items
       if node instanceof Comment
-        code += idt + node.compile(o, LEVEL_TOP) + \\n
+        code += idt + node.compile(o) + \\n
         continue
       code += idt + if node.at
         key = node.tails.0.key.compile o
@@ -730,7 +730,7 @@ class exports.Assign extends Node
       node = Literal node.name if node instanceof Key
       Assign(node, val, @op).compile o, LEVEL_TOP
 
-  # Resolve property destructuring.
+  # Resolves property destructuring.
   transleft: (o) ->
     {left} = this
     # `x{k} = o` -> `{k: x.k} = o`
@@ -776,7 +776,7 @@ class exports.Import extends Node
     for node of items
       code += if com then space else delim
       if com = node instanceof Comment
-        code += node.compile o, LEVEL_LIST
+        code += node.compile o
         continue
       if node instanceof Splat
         code += Import(lref, node.it).compile o, LEVEL_TOP
@@ -787,8 +787,7 @@ class exports.Import extends Node
         {left: key, right: val} = node
       else if (key = val = node).at
         [{key}] = val.tails
-      key.=asKey() unless dyna
-      asn = Assign Value(lref, [Index key]), val
+      asn = Assign Value(lref, [Index if dyna then key else key.asKey()]), val
       code += asn.compile o, LEVEL_PAREN
     if sub is lref
     then code.=slice delim.length
@@ -924,7 +923,7 @@ class exports.Fun extends Node
     return tab + code if @statement
     if @front then "(#{code})" else code
 
-  paramName = (o, node) ->
+  function paramName (o, node) ->
     return that if node.param
     prm = node
     if splat = prm instanceof Splat  then prm.=it
@@ -974,7 +973,7 @@ class exports.Class extends Node
     clas.compile o
 
 #### Super
-# Reference to the parent method.
+# Reference to the parent method or constructor.
 class exports.Super extends Node
   isAssignable: YES
 
@@ -1004,13 +1003,13 @@ class exports.Parens extends Node
   compileNode: (o) ->
     {it} = this
     return (it import {@front}).compile o if not @keep and not @newed and
-      (it instanceof [Value, Call, Fun, Parens, Import] or
+      (it instanceof [Value, Call, Fun, Parens] or
        it instanceof Op and o.level < LEVEL_OP)
     o.level = LEVEL_PAREN
     if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
 
 #### Splat
-# A splat, either as a parameter to a function, an argument to a call,
+# A splat, either as an argument to a call
 # or as part of a destructuring assignment.
 class exports.Splat extends Parens
   (@it) =>
@@ -1244,7 +1243,7 @@ class exports.Try extends Node
 class exports.Switch extends Node
   (@switch, @cases, @default) ->
 
-  children  : <[ switch cases default ]>
+  children: <[ switch cases default ]>
 
   aSource: \switch, aTarget: \cases
 
@@ -1305,19 +1304,17 @@ class exports.Case extends Node
 class exports.If extends Node
   (@if, @then, {@soak, name} = {}) => @negated = name is \unless
 
-  children  : <[ if then else ]>
+  children: <[ if then else ]>
 
   aSource: \if, aTarget: \then
 
   @::{show} = Negatable
 
-  # Rewrite a chain of **If**s to add a default case as the final `else`.
+  # Rewrites a chain of **If**s to add a default case as the final `else`.
   addElse: ->
     if @chain
-      @else.addElse it
-    else
-      @chain = it instanceof If
-      @else  = it
+    then @else.addElse it
+    else @chain = (@else = it) instanceof If
     this
 
   # An **If** only compiles into a statement if either of its bodies needs
@@ -1346,11 +1343,8 @@ class exports.If extends Node
     return code unless @else
     code + ' else ' + if @chain
     then @else.compile o import {indent: @tab, +elsed}, LEVEL_TOP
-    else if @else.compile o, LEVEL_TOP
-    then "{\n#{that}\n#{@tab}}"
-    else '{}'
+    else if @else.compile o, LEVEL_TOP then "{\n#{that}\n#{@tab}}" else '{}'
 
-  # Compile me as a conditional operator.
   compileExpression: (o) ->
     cond = if @negated then @if.invert() else @if
     code = cond.compile o, LEVEL_COND
@@ -1362,7 +1356,7 @@ class exports.If extends Node
 
   unfoldSoak: -> @soak and this
 
-  # Unfold a node's child if soak, then tuck the node under the created **If**.
+  # Unfolds a node's child if soak, then tuck the node under the created **If**.
   @unfoldSoak = (o, parent, name) ->
     if ifn = parent[name].unfoldSoak o
       parent[name] = ifn.then; ifn.then = Value parent
@@ -1455,7 +1449,7 @@ exports import all mix: __importAll
         (if name.charAt(0) is \_ then tmp else usr).push name
       else if type.value
         asn.push name + ' = ' + type.value
-    return asn.join ', '    if global
+    return asn.join ', ' if global
     'var ' + that if usr.concat(tmp, asn).join ', '
 
 ##### Constants
