@@ -1,30 +1,30 @@
-{spawn, exec} = require 'child_process'
+{spawn, exec} = require \child_process
 
 # ANSI Terminal Colors.
-bold  = '\033[0;1m'
-red   = '\033[0;31m'
-green = '\033[0;32m'
-reset = '\033[0m'
+bold  = '\33[0;1m'
+red   = '\33[0;31m'
+green = '\33[0;32m'
+reset = '\33[0m'
 
 tint = (text, color = green) -> color + text + reset
 
-# Run a Coco through our node/coco interpreter.
+# Run our node/coco interpreter.
 run = (args) ->
-  proc = spawn 'bin/coco', args
-  proc.stderr.on 'data', say
-  proc       .on 'exit', -> process.exit it if it
+  proc = spawn \bin/coco, args
+  proc.stderr.on \data, say
+  proc       .on \exit, -> process.exit it if it
 
 sources = ->
   ext = /\.co$/i
-  'src/' + file if ext.test file for file of dir 'src'
+  \src/ + file if ext.test file for file of dir \src
 
 coreSources = ->
   "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
 
-option '-p', '--prefix [DIR]', 'set the installation prefix for `coke install`'
+option \-p, '--prefix DIR', 'set the installation prefix for `coke install`'
 
-task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
-  base = options.prefix or '/usr/local'
+task \install, 'install Coco into /usr/local (or --prefix)', (options) ->
+  base = options.prefix or \/usr/local
   lib  = "#{base}/lib/coco"
   bin  = "#{base}/bin"
   node = "~/.node_libraries/coco"
@@ -39,7 +39,7 @@ task 'install', 'install Coco into /usr/local (or --prefix)', (options) ->
     "mkdir -p ~/.node_libraries"
     "ln -sf #{lib}/lib #{node}"
   ].join(' && '), (err, stdout, stderr) ->
-    say if err then stderr.trim() else tint 'done'
+    say if err then stderr.trim() else tint \done
 
 task <[ build b ]>, 'build the Coco language from source', ->
   run <[ -bco lib src ]>
@@ -51,11 +51,11 @@ task <[ build:full bf ]>, 'rebuild the source twice, and run the tests', ->
     say stderr.trim() if stderr
     throw err         if err
 
-task <[ build:parser bp ]>, 'rebuild the Jison parser (run build first)', ->
-  src = require('./lib/grammar').parser.generate()
-        .replace /^[^]+?var (?=parser = {)/, 'exports.'
+task <[ build:parser bp ]>, 'rebuild the Jison parser (run "build" first)', ->
+  src = require(\./lib/grammar).parser.generate()
+        .replace /^[^]+?var (?=parser = {)/, \exports.
         .replace /return parser;[^]+/, ''
-  spit 'lib/parser.js', src
+  spit \lib/parser.js, src
 
 task <[ build:browser bb ]>
 , 'rebuild the merged script for inclusion of the browser', ->
@@ -63,13 +63,13 @@ task <[ build:browser bb ]>
   for name of <[ rewriter lexer parser nodes coco browser ]>
     src = slurp "lib/#{name}.js"
     co += "!function(require, exports){#{src}}(r, r['./#{name}'] = {});"
-  {parser, uglify} = require 'uglify-js'
+  {parser, uglify} = require \uglify-js
   ast = parser.parse "this.Coco = function(){
     function r(path){ return r[path] } #{co} return r['./coco']
   }()"
   ast = uglify.ast_mangle  ast
   ast = uglify.ast_squeeze ast, {+extra}
-  spit 'extras/coco.js', """
+  spit \extras/coco.js, """
     // Coco #{Coco.VERSION}
     // Copyright 2010, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
@@ -77,13 +77,13 @@ task <[ build:browser bb ]>
     #{ uglify.gen_code ast }
 
   """
-  invoke 'test:browser'
+  invoke \test:browser
 
 
-task 'bench', 'quick benchmark of compilation time', ->
-  Lexer    = require './lib/lexer'
-  Rewriter = require './lib/rewriter'
-  co     = coreSources().map(-> slurp it).join '\n'
+task \bench, 'quick benchmark of compilation time', ->
+  Lexer    = require \./lib/lexer
+  Rewriter = require \./lib/rewriter
+  co     = coreSources().map(-> slurp it).join \\n
   fmt    = -> "#{bold}#{ "   #{it}".slice -4 }#{reset} ms"
   total  = nc = 0
   now    = Date.now()
@@ -100,7 +100,7 @@ task 'bench', 'quick benchmark of compilation time', ->
   nodes.traverseChildren (-> ++nc; void), true
   console.log msg, nc
 
-task 'loc', 'count the lines of source code in the Coco compiler', ->
+task \loc, 'count the lines of source code in the Coco compiler', ->
   exec """
     cat #{ coreSources().join ' ' } | \\
     grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '
@@ -110,22 +110,22 @@ task 'loc', 'count the lines of source code in the Coco compiler', ->
 runTests = (Coco) ->
   startTime = Date.now()
   passedTests = failedTests = 0
-  for name, func in require 'assert' then do ->
+  for name, func in require \assert then do ->
     global[name] = -> func ...; ++passedTests
   global import {
     Coco, eq: strictEqual, throws: (msg, fun) ->
       try do fun catch e then return eq e.message, msg
       ok false, 'should throw: ' + msg
   }
-  process.on 'exit', ->
+  process.on \exit, ->
     time = ((Date.now() - startTime) / 1e3).toFixed 2
     message = "passed #{passedTests} tests in #{time} seconds"
     say if failedTests
     then tint "failed #{failedTests} and #{message}", red
     else tint message
-  dir('test').forEach (file) ->
+  dir(\test).forEach (file) ->
     return unless /\.co$/i.test file
-    code = slurp fileName = path.join 'test', file
+    code = slurp fileName = path.join \test, file
     try Coco.run code, {fileName}
     catch e
       ++failedTests
@@ -141,14 +141,14 @@ runTests = (Coco) ->
       else
         return say stk
       say msg
-      {(row): line} = lines = code.split '\n'
-      say lines.slice(row-8, row+0).join '\n'
+      {(row): line} = lines = code.split \\n
+      say lines.slice(row-8, row+0).join \\n
       say line.slice(0, col) + tint line.slice(col), bold
-      say lines.slice(row+1, row+9).join '\n'
+      say lines.slice(row+1, row+9).join \\n
 
 task <[ test t ]>, 'run the Coco language test suite', ->
-  runTests require './lib/coco'
+  runTests require \./lib/coco
 
 task <[ test:browser tb ]>
 , 'run the test suite against the merged browser script', ->
-  runTests new -> eval slurp 'extras/coco.js', 'utf8'
+  runTests new -> eval slurp \extras/coco.js, \utf8

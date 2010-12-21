@@ -75,5 +75,5 @@ printTasks = (oparser) ->
   say '''
 
     Coke options:
-      -f, --cokefile [FILE]   use FILE as the Cokefile
+      -f, --cokefile FILE  use FILE as the Cokefile
   '''
