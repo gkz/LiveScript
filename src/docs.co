@@ -18,13 +18,12 @@ do @onhashchange = ->
   navi.className = \menu
   docs.innerHTML = \...
   [name] = page
-  return load page, htms[name] if name in htms
+  return load page, that if htms[name]
   xhr = new XMLHttpRequest
   xhr.open \GET, name + \.co, true
   xhr.overrideMimeType? \text/plain
   xhr.onreadystatechange = ->
-    if xhr.readyState is 4
-      load page, htms[name] = "<h1>#{name}</h1>" + build xhr.responseText
+    load page, htms[name] = build name, xhr.responseText if xhr.readyState is 4
   xhr.send null
 
 load = ([name, sect], html) ->
@@ -33,7 +32,7 @@ load = ([name, sect], html) ->
   document.getElementById(sect).scrollIntoView() if sect
   prettyPrint()
 
-build = (source) ->
+build = (name, source) ->
   htm = comment = code = i = ''
   re  = /^[^\n\S]*#(?!##[^#]|{) ?(.*)/
   for line of source.split \\n
@@ -43,16 +42,16 @@ build = (source) ->
       continue
     if re.exec line
       if code or comment and br
-        htm += block comment, code, i++
+        htm += block name, comment, code, i++
         comment = code = ''
       comment += that.1 + \\n
     else
       code += line + \\n
     br = false
-  htm += block comment, code, i if comment
-  htm
+  htm += block name, comment, code, i if comment
+  "<h1>#{name}</h1>" + htm
 
-block = (comment, code, i) ->
+block = (name, comment, code, i) ->
   code &&= """
    <pre class="code prettyprint lang-coffee"
     >#{ code.replace(/&/g, '&amp;').replace(/</g, '&lt;') }</pre>
