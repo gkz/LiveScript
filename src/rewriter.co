@@ -264,4 +264,4 @@ for [left, rite] of BALANCED_PAIRS
   EXPR_END  .push INVERSES[left] = rite
 
 # Tokens that indicate the close of a clause of an expression.
-EXPR_CLOSE = EXPR_END.concat<[ ELSE BY TO CATCH FINALLY CASE DEFAULT ]>
+EXPR_CLOSE = EXPR_END.concat <[ ELSE BY TO CATCH FINALLY CASE DEFAULT ]>

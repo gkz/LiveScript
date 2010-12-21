@@ -112,7 +112,7 @@ exports import
     [input, [], colon] = match
     forcedIdentifier = at or colon or
       if not (prev = @last).spaced and prev.1.colon2
-      then @token<[ DOT . ]>
+      then @token \DOT, \.
       else prev.0 is \DOT
     if forcedIdentifier
       (id = new String id).reserved = true if id of FORBIDDEN
@@ -142,7 +142,7 @@ exports import
     else if COCO_ALIASES.hasOwnProperty id then [tag, id] = COCO_ALIASES[id]
     else if id of RESERVED                 then @carp "reserved word \"#{id}\""
     @token tag, id
-    @token<[ : : ]> if colon
+    @token \:, \: if colon
     input.length
 
   # Matches a number, including decimal, hex and exponential notation.
@@ -151,7 +151,7 @@ exports import
     num = match.3 or match.0
     switch num.charAt 0
     case \. then if @callable() or @last.0 of <[ } LITERAL ]>
-      @token<[ DOT . ]>; @token \STRNUM, num.slice 1
+      @token \DOT, \.; @token \STRNUM, num.slice 1
       return match.0.length
     case \0 then if num.charAt(1) not of ['', \x, \.]
       @carp "octal literal #{num} is deprecated"
@@ -203,7 +203,7 @@ exports import
   commentToken: ->
     text = it.slice 3, if ~end = it.indexOf \###, 3 then end else 9e9
     @token \COMMENT, untabify text, @indent
-    @token<[ TERMINATOR \n ]>
+    @token \TERMINATOR, \\n
     @countLines(text).length + 6
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -232,7 +232,7 @@ exports import
       body.=replace(HEREGEX_OMIT, '').replace(/\//g, \\\/)
       @token \LITERAL, "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex).length
-    @token<[ IDENTIFIER RegExp ]>; @token<[ CALL( ( ]>
+    @token \IDENTIFIER, \RegExp; @token \CALL(, \(
     {tokens} = this
     for token, i of @interpolateString body
       if token.0 is \TOKENS
@@ -244,21 +244,21 @@ exports import
         tokens.push [\STRNUM; string val, \', \\\n; token.2]
       tokens.push [\+-, \+, tokens[*-1].2]
     tokens.pop()
-    if flags then @token<[ , , ]>; @token \STRNUM, "'#{flags}'"
-    @token<[ ) ) ]>
+    if flags then @token \,, \,; @token \STRNUM, "'#{flags}'"
+    @token \), \)
     heregex.length
 
   # Matches a words literal, a syntax sugar for a list of strings.
   wordsToken: ->
     @carp 'unterminated words' unless ~end = it.indexOf \]>, 2
-    if call = @callable() then @token<[ CALL( ( ]> else @token<[ [ [ ]>
+    @token \[, \[
     for line of it.slice(2, end).split \\n
       if line.match re ||= /\S+/g then for word of that
         @tokens.push [\STRNUM; string word, \'; @line], [\,, \,, @line]
       ++@line
     --@line
-    if word then @tokens.pop()   else @token<[ STRNUM '' ]>
-    if call then @token<[ ) ) ]> else @token<[ ] ] ]>
+    if word then @tokens.pop() else @token \STRNUM, "''"
+    @token \], \]
     end + 2
 
   # Matches newlines, indents, and outdents, and determines which is which.
@@ -332,14 +332,14 @@ exports import
     case \*
       tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
     case \::
-      @token<[ DOT . ]>
+      @token \DOT, \.
       @token \IDENTIFIER, new String(\prototype) <<< {+colon2}
       fallthrough
     case \\\\n then return val.length
     default
       switch val.charAt 0
       case \@
-        @token<[ IDENTIFIER arguments ]>; @token<[ DOT . ]>
+        @token \IDENTIFIER, \arguments; @token \DOT, \.
         @token \STRNUM, val.slice 1
         return val.length
       case \\
@@ -371,7 +371,7 @@ exports import
     @newline() unless noNewline
 
   # Generates a newline token. Consecutive newlines get merged together.
-  newline: -> @token<[ TERMINATOR \n ]> unless @last.0 is \TERMINATOR
+  newline: -> @token \TERMINATOR, \\n unless @last.0 is \TERMINATOR
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
@@ -448,7 +448,7 @@ exports import
       if t.0 is \TOKENS
       then tokens.push ...t.1
       else tokens.push [\STRNUM; string t.1, \", newline; t.2]
-    @token<[ ) ) ]>
+    @token \), \)
     ts
 
   #### Helpers
@@ -496,7 +496,7 @@ JS_KEYWORDS = <[
 ]>
 
 # Coco-only keywords.
-COCO_KEYWORDS = JS_KEYWORDS.concat<[ then of unless until ]>
+COCO_KEYWORDS = JS_KEYWORDS.concat <[ then of unless until ]>
 COCO_ALIASES  = not: <[ UNARY ! ]>, and: <[ LOGIC && ]>, or: <[ LOGIC || ]>
               , is: <[ COMPARE === ]>, isnt: <[ COMPARE !== ]>
 

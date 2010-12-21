@@ -1,10 +1,6 @@
 # Basic chained function calls.
-identityWrap = (x) ->
-  -> x
-
-result = identityWrap(identityWrap(true))()()
-
-ok result
+identityWrap = (x) -> -> x
+eq true, identityWrap(identityWrap(true))()()
 
 
 # Should be able to look at prototypes true keywords.
@@ -109,4 +105,5 @@ eq "0['do'];", Coco.compile '0.do', {+bare}
 
 eq '2,3', '' + [3,2][1,0]
 eq '2,3', '' + [0,1,2,3][*-2,*-1]
+eq '2,3', '' + {2,3}<[2 3]>
 eq '-Infinity,Infinity', '' + Number[\NEGATIVE_INFINITY, \POSITIVE_INFINITY]

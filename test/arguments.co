@@ -76,9 +76,6 @@ eq 2, f 0, 0
 ) 0, 1, 2
 
 
-eq<[ Q Q words-as-arguments ]>
-
-
 eq arguments,
   switch case 1
     eq arguments, (arguments for i from 1 to 1)[0]
