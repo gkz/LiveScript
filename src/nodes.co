@@ -1204,8 +1204,8 @@ class exports.For extends While
         else name.value
         fn.params.push name
       it.callee = Value Literal ref = o.scope.temporary \fn
-      o.scope.assign ref, fn.compile o import {indent: ''}, LEVEL_LIST
-      o.indent = @tab
+      fn.=compile (o import indent: ''), LEVEL_LIST
+      o.scope.assign ref, tabify fn, o.indent = @tab
       void
 
 #### Try
@@ -1369,7 +1369,7 @@ class exports.Comment extends Node
 
   terminator: ''
 
-  compile: (o) -> "/*#{ @comment.replace /\n/g, \\n + o.indent }*/"
+  compile: (o) -> "/*#{ tabify @comment, o.indent }*/"
 
 #### Util
 # A wrapper node for utility functions.
@@ -1527,3 +1527,5 @@ utility = (name) ->
 lastNonComment = (nodes) ->
   break if node not instanceof Comment for node, i of nodes by -1
   [i >= 0 and node, i]
+
+tabify = (code, tab) -> code.replace /\n/g, \\n + tab
