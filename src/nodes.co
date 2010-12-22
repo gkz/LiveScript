@@ -201,7 +201,7 @@ class exports.Lines extends Node
       @lines = rest
     post = if @lines.length then @compileNode o else ''
     code &&+= \\n if post
-    if @scope?.vars o.globals
+    if @scope?.vars o
       code += o.indent + that + \;\n
     code + post
 
@@ -1204,8 +1204,8 @@ class exports.For extends While
         else name.value
         fn.params.push name
       it.callee = Value Literal ref = o.scope.temporary \fn
-      fn.=compile (o import indent: ''), LEVEL_LIST
-      o.scope.assign ref, tabify fn, o.indent = @tab
+      o.scope.assign ref, fn.compile (o import indent: ''), LEVEL_LIST
+      o.indent = @tab
       void
 
 #### Try
@@ -1442,14 +1442,14 @@ exports import all mix: __importAll
   type: -> @variables[@positions[it]]?.type
 
   # Returns the list of variables declared in this scope.
-  vars: (global) ->
+  vars: (o) ->
     usr = []; tmp = []; asn = []
     for {name, type} of @variables
       if type of <[ var reuse ]>
         (if name.charAt(0) is \_ then tmp else usr).push name
       else if type.value
-        asn.push name + ' = ' + type.value
-    return asn.join ', ' if global
+        asn.push tabify name + ' = ' + type.value, o.indent
+    return asn.join ', ' if o.globals
     'var ' + that if usr.concat(tmp, asn).join ', '
 
 ##### Constants

@@ -120,11 +120,16 @@ eq '1;\n2;', Coco.compile '  1\n  2', {+bare}
 eq '''
 (function(){
   var k, _fn = function(k){
-    return _this;
-  }, _this = this, _results = [];
-  for (k in o) {
-    _results.push(_fn(k));
-  }
-  return _results;
-}());
-''', Coco.compile 'do -> for k in o then do => this', {+bare}
+    return __clone(_this);
+  }, _this = this, __clone = function(it){
+    function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
+    return fn.prototype = it, new fn;
+  };
+  try {
+    for (k in o) {
+      _fn(k);
+    }
+  } catch (_e) {}
+}).call(this);
+
+''', Coco.compile '''try for k in o then do => this{}'''
