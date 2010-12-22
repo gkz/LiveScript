@@ -403,8 +403,8 @@ exports import
       case \" then stack.push end = '}' if \{ is chr and \# is str.charAt i-1
       case \}
         switch chr
-        case \", \' then stack.push end = chr
-        case \{     then stack.push end = '}'
+        case [\", \'] then stack.push end = chr
+        case \{       then stack.push end = '}'
     @carp 'missing ' + stack.pop()
 
   # Expand variables and expressions inside double-quoted strings using

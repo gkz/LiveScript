@@ -79,9 +79,9 @@ compileScript = (file, input, base) ->
   try
     Coco.emit \compile, t = {file, input, options}
     switch
-    case o.lex, o.tokens then printTokens Coco.tokens input, rewrite: !o.lex
-    case o.nodes         then say Coco.nodes(input).toString().trim()
-    case o.run           then Coco.run input, options
+    case o.lex or o.tokens then printTokens Coco.tokens input, rewrite: !o.lex
+    case o.nodes           then say Coco.nodes(input).toString().trim()
+    case o.run             then Coco.run input, options
     default
       t.output = Coco.compile input, options
       Coco.emit \success, t
