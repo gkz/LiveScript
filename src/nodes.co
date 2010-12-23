@@ -1271,7 +1271,7 @@ class exports.Switch extends Node
 
 #### Case
 class exports.Case extends Node
-  (@test, @body) =>
+  (@test, @body) ->
 
   children: <[ test body ]>
 
