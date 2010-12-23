@@ -513,11 +513,11 @@ IDENTIFIER = /// ^
   ( @? [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 ///
-NUMBER = ///
-  ^ 0x[\da-f]+                                        # hex
-| ^ ([1-9]\d?) r ([\da-z]+)                           # any radix
-| ^ ((?: \d+(\.\d+)? | \.\d+ ) (?:e[+-]?\d+)?) [a-z]* # decimal
-///i
+NUMBER = /// ^ (?
+: 0x[\da-f]+                                        # hex
+| ([1-9]\d?) r ([\da-z]+)                           # any radix
+| ( (?:\d+(?:\.\d+)?|\.\d+) (?:e[+-]?\d+)? ) [a-z]* # decimal
+) ///i
 SYMBOL = /// ^ (?
 : [-+*/%&|^:.<>]=   # compound assign / comparison
 | \\\S[^\s,;)}\]]*  # word
