@@ -32,7 +32,7 @@ o.compile ||= !!o.output
 
 global import
   say  : -> process.stdout.write               it + \\n
-  warn : -> process.binding(\stdin).writeError it + \\n
+  warn : -> process.binding(\stdio).writeError it + \\n
   die  : -> warn it; process.exit 1
 
 # Run `coco` by parsing passed options and determining what action to take.
