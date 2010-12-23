@@ -6,6 +6,11 @@ h1   {margin:1ex}
 pre  {font-size:small; overflow-x:auto}
 .comment, .code {display:inline-block}
 .comment {width:37%; margin:0 2% 0 1%}
+.comment code {
+ background-color: rgba(0,0,0,.1); padding:0 .5ex;
+ border-radius:1ex; -moz-border-radius:1ex; -webkit-border-radius:1ex;
+}
+.comment pre > code {background-color:transparent; padding-left:1em}
 .code    {width:60%; float:right}
 .block   {clear:both; position:relative}
 .anchor  {position:absolute; font:bold small mono-space}
