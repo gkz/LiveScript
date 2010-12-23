@@ -54,20 +54,19 @@ exports.run = ->
 # compile them. If a directory is passed, recursively compile all
 # _.co_ files in it and all subdirectories.
 compileScripts = ->
-  compile = (source, topLevel) ->
+  compile = (source, base, top) ->
     path.exists source, (exists) ->
       die "File not found: #{source}" unless exists
       fs.stat source, (err, stats) ->
         if stats.isDirectory()
           fs.readdir source, (err, files) ->
-            compile path.join source, file for file of files
+            compile path.join(source, file), base for file of files
             void
-        else if topLevel or path.extname(source).toLowerCase() is \.co
-          base = path.join source
+        else if top or path.extname(source).toLowerCase() is \.co
           fs.readFile source, (err, buf) ->
             compileScript source, buf.toString(), base
           watch source, base if o.watch
-  compile source, true for source of sources
+  compile source, path.normalize(source), true for source of sources
 
 # Compile a single source script, containing the given code, according to the
 # requested options.
@@ -117,8 +116,9 @@ watch = (source, base) ->
 writeJs = (source, js, base) ->
   filename = path.basename(source, path.extname source) + \.js
   srcDir   = path.dirname source
-  baseDir  = srcDir.slice base.length
-  dir      = if o.output then path.join o.output, baseDir else srcDir
+  dir      = if o.output
+  then path.join that, srcDir.slice (if base is \. then 0 else base.length)
+  else srcDir
   jsPath   = path.join dir, filename
   compile  = ->
     fs.writeFile jsPath, js or ' ', (err) ->
