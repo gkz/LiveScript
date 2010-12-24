@@ -16,7 +16,7 @@
 exports.rewrite = ->
   rewriteClosingParens ensureBalance \
   addImplicitParentheses addImplicitBraces \
-  tagPostfixConditionals addImplicitIndentation closeOpenings \
+  tagPostfixConditionals addImplicitIndentation closeCalls \
   removeMidExpressionTerminators removeLeadingTerminators it
 
 function detectEnd (tokens, i, ok, go) ->
@@ -49,7 +49,7 @@ function removeMidExpressionTerminators (tokens) ->
 
 # The lexer has tagged each of the opening parenthesis of
 # a call. Match it with its closing pair.
-function closeOpenings (tokens) ->
+function closeCalls (tokens) ->
   stack = []
   for token of tokens
     switch token.0
@@ -117,7 +117,7 @@ function addImplicitParentheses (tokens) ->
             else tag of <[ } STRNUM LITERAL ]>
   function ok (token, i) ->
     return false if token.argument
-    return true  if not seenSingle and token.fromThen
+    return true  if token.decall or not seenSingle and token.fromThen
     [tag] = token
     {0: pre, eol} = tokens[i-1]
     switch tag

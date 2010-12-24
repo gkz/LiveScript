@@ -30,6 +30,11 @@ ok a !==  b
 ok a isnt b
 
 
+# `and`/`or` closes implicit calls
+eq('1', String 0 and String 1)
+eq('0', String 0 or  String 1)
+
+
 ok 'a' in obj = a: true
 ok 'b' not in obj, 'allow `x not in y`'
 
@@ -139,7 +144,7 @@ num = 10; ok (num |=   3) is 11
 
 
 #coffee-737: `in` should have higher precedence than logical operators.
-eq 1, 1 of [1] and 1
+eq 1, 1 of [1] && 1
 
 #coffee-768: `in` should preserve evaluation order.
 share = 0

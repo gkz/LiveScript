@@ -16,7 +16,7 @@ class Node
   compile: (options, level) ->
     o = {}; continue for key, o[key] in options
     o import {level} if level?
-    node = @unfoldSoak(o) or this
+    node = @unfoldSoak o or this
     # If a statement appears within an expression, wrap it in a closure.
     return node.compileClosure o if o.level and node.isStatement o
     code = (node import tab: o.indent).compileNode o
@@ -59,7 +59,7 @@ class Node
   # Compiles to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
-    unless -1/0 < +src < 1/0 or IDENTIFIER.test(src) and o.scope.check(src)
+    unless -1/0 < +src < 1/0 or IDENTIFIER.test src and o.scope.check src
       src = "#{ tmp = o.scope.temporary name } = #{src}"
     [src, tmp]
 
@@ -80,7 +80,7 @@ class Node
   # Recursively traverses down the nodes' descendants and passess them to
   # `pred`, returning `true` when it finds a match.
   # Does not cross scope boundaries.
-  contains: (pred) -> !!@traverseChildren -> pred(it) or null
+  contains: (pred) -> !!@traverseChildren -> pred it or null
 
   # Performs anaphoric conversion if a `that` is found within `@[@aTarget]`.
   anaphorize: ->
@@ -176,7 +176,7 @@ class exports.Lines extends Node
         code = node.compile o, LEVEL_LIST
       codes.push code
     return codes.join \\n if top
-    code = codes.join(', ') or 'void 8'
+    code = codes.join ', ' or 'void 8'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
   # **Lines** is the only node that can serve as the root.
@@ -313,14 +313,14 @@ class exports.Value extends Node
       ref  = o.scope.temporary \name
       name = Index Assign Literal(ref), name.key
       nref = Index Literal(ref) <<< {+temp}
-    [base.add name; Value bref or base.head, [nref or name]]
+    [base.add name; Value bref || base.head, [nref or name]]
 
   SIMPLENUM = /^\d+$/
 
   compileNode: (o) ->
     @head import {@front, @newed}
     return @head.compile o unless @tails.length
-    if @unfoldAssign(o) or @unfoldBind(o) or @poleStar(o) or @multiPick(o)
+    if @unfoldAssign o or @unfoldBind o or @poleStar o or @multiPick o
       return that.compile o
     base = @head.compile o, LEVEL_ACCESS
     rest = ''; rest += t.compile o for t of @tails
@@ -571,7 +571,7 @@ class exports.Op extends Node
 
   compileNode: (o) ->
     return @compileUnary o if not @second
-    return @compileChain o if COMPARER.test(@op) and COMPARER.test(@first.op)
+    return @compileChain o if COMPARER.test @op and COMPARER.test @first.op
     return @compileExistence o if @op is \?
     return @compileMultiIO   o if @op is \instanceof and @second instanceof Arr
     @first import {@front}
@@ -714,7 +714,7 @@ class exports.Assign extends Node
         val = Literal val
       else
         if (inc = ivar) and start < i then inc += " + #{ i - start }"
-        val = Value lr ||= Literal(rite), [Index Literal inc or i]
+        val = Value lr ||= Literal(rite), [Index Literal inc || i]
       Assign(node, val, @op).compile o, LEVEL_TOP
 
   destructObj: (o, nodes, rite) ->
@@ -834,7 +834,7 @@ class exports.Existence extends Node
 
   compileNode: (o) ->
     code = @it.compile o, LEVEL_OP
-    if IDENTIFIER.test(code) and not o.scope.check code, true
+    if IDENTIFIER.test code and not o.scope.check code, true
       code = 'typeof ' + code + if @negated
       then " == 'undefined' || #{code} === null"
       else " != 'undefined' && #{code} !== null"
@@ -865,7 +865,7 @@ class exports.Fun extends Node
     pscope = o.scope
     sscope = pscope.shared or pscope
     scope  = o.scope = @body.scope =
-      new Scope (if @wrapper then pscope else sscope), @wrapper and sscope
+      new Scope (if @wrapper then pscope else sscope), @wrapper && sscope
     scope.method = this
     delete o.globals
     scope.assign \_proto, @proto.compile(o) + \.prototype if @proto
@@ -1220,7 +1220,7 @@ class exports.Try extends Node
 
   isStatement: YES
 
-  jumps: -> @attempt.jumps(it) or @recovery?.jumps(it)
+  jumps: -> @attempt.jumps it or @recovery?.jumps it
 
   makeReturn: ->
     @attempt .=makeReturn it

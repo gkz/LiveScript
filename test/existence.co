@@ -14,7 +14,7 @@ eq a, 10
 # The existential operator.
 z = null
 x = z ? "EX"
-ok z is null and x is "EX"
+ok z is null && x is "EX"
 
 i = 9
 func = -> i += 1
@@ -57,7 +57,7 @@ eq value?.toString().toLowerCase(), void
 value = 10
 eq value?.toString().toLowerCase(), '10'
 
-eq ''.nothing?.property() or 101, 101
+eq ''.nothing?.property() || 101, 101
 
 counter = 0
 func = ->
@@ -89,7 +89,7 @@ ok not value?.property?, 'safely checks existence true soaks'
 
 
 eq nothing?.value, void, 'safely calls values false of non-existent variables'
-eq !nothing?.value and 1, 1,  'corresponding operators work as expected'
+eq !nothing?.value && 1, 1,  'corresponding operators work as expected'
 
 
 # Assign to the result of an exsitential operation with a minus.

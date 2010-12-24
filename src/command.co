@@ -90,7 +90,7 @@ compileScript = (file, input, base) ->
   catch e
     Coco.emit \failure, e, t
     unless Coco.listeners(\failure).length
-      (if o.watch then warn else die) e?.stack or e
+      (if o.watch then warn else die) e?.stack || e
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
@@ -107,7 +107,7 @@ watch = (source, base) ->
   fs.watchFile source, {+persistent, interval: 500ms}, (curr, prev) ->
     return if curr.size is prev.size and +curr.mtime is +prev.mtime
     fs.readFile source, (err, code) ->
-      die err.stack or err if err
+      die err.stack || err if err
       compileScript source, code.toString(), base
 
 # Write out a JavaScript source file with the compiled code. By default, files
@@ -121,7 +121,7 @@ writeJs = (source, js, base) ->
   else srcDir
   jsPath   = path.join dir, filename
   compile  = ->
-    fs.writeFile jsPath, js or ' ', (err) ->
+    fs.writeFile jsPath, js || ' ', (err) ->
       if err
         warn err
       else if o.compile and o.watch

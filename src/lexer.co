@@ -26,7 +26,7 @@ exports import
   # remaining code, or a custom recursive token-matching method
   # (for interpolations). When the next token has been recorded,
   # we move forward within the code past the token, and begin again.
-  ) -> @{}.tokenize code or '', options or {}
+  ) -> @{}.tokenize code || '', options || {}
   tokenize: (code, o) ->
     code.=replace(/\r/g, '').replace(/\s+$/, '')
     # Stream of parsed tokens,
@@ -49,18 +49,18 @@ exports import
       switch code.charAt 0
       case ' ' then i = @spaceToken code
       case \\n then i = @lineToken  code
-      case \'  then i = @heredocToken(code, \') or @singleStringToken code
-      case \"  then i = @heredocToken(code, \") or @doubleStringToken code
+      case \'  then i = @heredocToken code, \' or @singleStringToken code
+      case \"  then i = @heredocToken code, \" or @doubleStringToken code
       case \<
         i = if \[ is code.charAt 1
         then @wordsToken code else @literalToken code
       case \/
         i = if \// is code.substr 1, 2
-        then @heregexToken code else @regexToken(code) or @literalToken(code)
-      case \# then i = @spaceToken(code) or @commentToken(code)
+        then @heregexToken code else @regexToken code or @literalToken code
+      case \# then i = @spaceToken code or @commentToken code
       case \` then i = @jsToken code
-      default i = @identifierToken(code) or @numberToken(code) or
-                  @literalToken(code)    or @spaceToken(code)
+      default i = @identifierToken code or @numberToken code or
+                  @literalToken    code or @spaceToken  code
     # Close up all remaining open blocks.
     @dedent @indent
     # Dispose dummy.
@@ -139,10 +139,14 @@ exports import
           id = \! + id
         tag = \RELATION
       @seenRange = false if @seenRange and tag of <[ FOR THEN ]>
-    else if COCO_ALIASES.hasOwnProperty id then [tag, id] = COCO_ALIASES[id]
-    else if id of RESERVED                 then @carp "reserved word \"#{id}\""
+    else if COCO_ALIASES.hasOwnProperty id
+      [tag, id] = COCO_ALIASES[id]
+      attr = \decall if id of <[ && || ]>
+    else if id of RESERVED
+      @carp "reserved word \"#{id}\""
     @token tag, id
-    @token \:, \: if colon
+    @last[attr] = true if attr
+    @token \:, \:      if colon
     input.length
 
   # Matches a number, including decimal, hex and exponential notation.
@@ -158,7 +162,7 @@ exports import
     if radix = match.1
       @carp "invalid radix #{radix}" unless 2 <= radix <= 36
       num = parseInt rnum = match.2, radix
-      if isNaN(num) or num is parseInt rnum.slice(0, -1), radix
+      if isNaN num or num is parseInt rnum.slice(0, -1), radix
         @carp "invalid number #{rnum} in base #{radix}"
     @token \STRNUM, num
     match.0.length
@@ -276,7 +280,7 @@ exports import
     @last.eol  = true
     @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf \\n
-    noNewline = LINE_CONTINUER.test(it) or @last.0 of
+    noNewline = LINE_CONTINUER.test it or @last.0 of
       <[ +- DOT ASSIGN LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
     if size - @indebt is @indent
       @newline() unless noNewline
