@@ -49,6 +49,26 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
+### 0.2.0
+- Version bump for Xmas, in concert with Coffee 1.0.0.
+- `@@` is now a shorthand for `arguments`.
+- `do` can now indicate a call against indented arguments, so that you can write
+      f do
+        x
+        y
+  instead of
+      f(
+        x
+        y
+      )
+- `and` and `or` now close implicit calls, making you write even less parens:
+  `f x and g y or z` -> `f(x) && g(y) || z;`
+- `catch`'s variable declaration is no longer required.
+- `a<[ b c ]>` is now equivalent to `a[\b, \c]` (was `a(\b, \c)`).
+- `case` now requires brackets to have multiple conditions.
+- Added `--nodejs` option. See [coffee#910](https://github.com/jashkenas/coffee-script/issues/910).
+- Renamed `--stdio` to `--stdin`.
+
 ### 0.1.6
 - Added character/word literal:
   `\C + \++` -> `'C' + '++';`

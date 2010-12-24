@@ -2,7 +2,7 @@
 # [tokenizing](#lexer), [parsing](#grammar), and [compiling](#nodes)
 # Coco source into JavaScript.
 
-(Coco = exports).VERSION = \0.1.7b
+(Coco = exports).VERSION = \0.2.0
 
 Lexer = require \./lexer
 
