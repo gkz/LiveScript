@@ -173,6 +173,9 @@ fs = for i, [a, b] in [[], [1, 2], [3, 4]] then if a
 eq one[0] * two[0], 21
 eq one[1] , two[1]
 
+fs = for x, y in {2, 3, 5} then ((z) -> -> x * y * z) 7
+eq fs.1(), 63
+
 
 copy = {}
 continue for k, copy[k] in [4, 2]

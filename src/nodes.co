@@ -1193,7 +1193,8 @@ class exports.For extends While
   pluckDirectCalls: (o) ->
     @body.eachChild dig = =>
       unless it instanceof Call and
-             (fn = it.callee.unwrap()) instanceof Fun and
+             ((fn = it.callee.unwrap()) instanceof Fun or
+              fn instanceof Parens and fn.=it instanceof Fun) and
              fn.params.length is it.args.length
         return if it instanceof [Fun, For] then null else it.eachChild dig
       if @index
