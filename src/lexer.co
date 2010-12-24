@@ -339,8 +339,9 @@ exports import
     default
       switch val.charAt 0
       case \@
-        @token \IDENTIFIER, \arguments; @token \DOT, \.
-        @token \STRNUM, val.slice 1
+        @token \IDENTIFIER, \arguments
+        unless \@ is val.charAt 1
+          @token \DOT, \.; @token \STRNUM, val.slice 1
         return val.length
       case \\
         word = val.slice 1
@@ -529,7 +530,7 @@ SYMBOL = /// ^ (?
 | <<<<?             # import
 | <<=?              # left shift
 | >>>?=?            # rite shift
-| @\d+              # argument shorthand
+| @(?:@|\d+)        # argument(s) shorthand
 | \\\n              # continued line
 | \S
 ) ///
