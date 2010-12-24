@@ -44,6 +44,11 @@ class Node
       fun.params.push Literal \_args
     Call(val or fun, args).compileNode o
 
+  # Compiles a child node as a block statement.
+  compileBlock: (o, name) ->
+    code = \\n + that + \\n + @tab if @[name]?.compile o, LEVEL_TOP
+    "{#{ code or '' }}"
+
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable.
@@ -1229,13 +1234,11 @@ class exports.Try extends Node
 
   compileNode: (o) ->
     o.indent += TAB
-    code = @tab + "try {\n#{ @attempt.compile o, LEVEL_TOP }\n#{@tab}}"
-    if @recovery
-      reco  = @recovery.compile o, LEVEL_TOP
-      code += " catch (#{@thrown}) {\n#{reco}\n#{@tab}}"
-    else unless @ensure
-      code += ' catch (_e) {}'
-    code += " finally {\n#{ @ensure.compile o, LEVEL_TOP }\n#{@tab}}" if @ensure
+    code = @tab + 'try ' + @compileBlock o, \attempt
+    if @recovery or not @ensure
+      code += " catch (#{ @thrown or \_e }) " + @compileBlock o, \recovery
+    if @ensure
+      code += " finally " + @compileBlock o, \ensure
     code
 
 #### Switch
@@ -1332,16 +1335,15 @@ class exports.If extends Node
     if @isStatement o then @compileStatement o else @compileExpression o
 
   compileStatement: (o) ->
-    code  = if delete o.elsed then '' else @tab
-    cond  = if @negated then @if.invert() else @if
-    code += "if (#{ cond.compile o, LEVEL_PAREN }) {"
+    code = (if delete o.elsed then '' else @tab) + 'if (' +
+           (if @negated then @if.invert() else @if).compile o, LEVEL_PAREN
     o.indent += TAB
-    code += "\n#{that}\n" + @tab if Lines(@then).compile o
-    code += \}
+    @then = Lines @then
+    code += ') ' + @compileBlock o, \then
     return code unless @else
     code + ' else ' + if @chain
     then @else.compile o import {indent: @tab, +elsed}, LEVEL_TOP
-    else if @else.compile o, LEVEL_TOP then "{\n#{that}\n#{@tab}}" else '{}'
+    else @compileBlock o, \else
 
   compileExpression: (o) ->
     cond = if @negated then @if.invert() else @if
@@ -1381,7 +1383,7 @@ class exports.Util extends Node
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
   # returning the left one.
-  @Extends = (sub, sup) -> Call Value(Util \extends), [sub, sup]
+  @Extends = -> Call Value(Util \extends), @@[0, 1]
 
 # Export `import all` for use in [parser](../lib/parser.js),
 # where the operator doesn't work.
@@ -1393,7 +1395,7 @@ exports import all mix: __importAll
 # functions. Each scope knows about the function parameters and the variables
 # declared within it, and has references to its parent/shared enclosing scopes.
 (Scope = (@parent, @shared) ->
-  @variables = [{name: \arguments, type: \args}]
+  @variables = [name: \arguments, type: \args]
   @positions = arguments: 0
   this
 )::<<<

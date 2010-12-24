@@ -22,10 +22,15 @@ eq o.i, 2
 # try/catch with empty clauses still compiles.
 try
 
-try
-finally
+try catch
+
+try finally
+
+try catch finally
 
 try
+  # nothing
+catch
   # nothing
 finally
   # nothing

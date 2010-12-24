@@ -119,6 +119,7 @@ exports import
     else if id of COCO_KEYWORDS
       switch tag = id.toUpperCase()
       case \FOR    then @seenFor = true
+      case \CATCH  then id  = ''
       case \IMPORT then id  = \<<<
       case \UNLESS then tag = \IF
       case \UNTIL  then tag = \WHILE
@@ -144,6 +145,8 @@ exports import
       attr = \decall if id of <[ && || ]>
     else if id of RESERVED
       @carp "reserved word \"#{id}\""
+    else if @last.0 is \CATCH and not @last.1
+      return (@last.1 = id).length
     @token tag, id
     @last[attr] = true if attr
     @token \:, \:      if colon

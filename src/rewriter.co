@@ -127,8 +127,7 @@ function addImplicitParentheses (tokens) ->
     return false if token.generated or pre is \,
     if tag is \INDENT
       return seenClass := false if seenClass
-      return pre not of <[ { [ , FUNC_ARROW TRY FINALLY ]> and
-             tokens[i-2]?.0 isnt \CATCH
+      return pre not of <[ { [ , FUNC_ARROW TRY CATCH FINALLY ]>
     tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]>
   function go (token, i) ->
     ++i if token.0 is \DEDENT
@@ -142,7 +141,7 @@ function addImplicitParentheses (tokens) ->
 function addImplicitIndentation (tokens) ->
   ok = (token, i) ->
     switch token.0
-    case <[ CATCH FINALLY DEDENT CASE DEFAULT ]> then true
+    case <[ DEDENT CASE DEFAULT CATCH FINALLY ]> then true
     case \TERMINATOR then token.1 isnt \;
     case \ELSE       then tag of <[ IF THEN ]>
   go = (token, i) ->
@@ -152,12 +151,13 @@ function addImplicitIndentation (tokens) ->
     [tag] = token
     if \INDENT is next = tokens[i+1]?.0
       switch
-      case tag is \THEN   then tokens[i+1] import {+fromThen}; fallthrough
-      case token.1 is \do then tokens[i+1] import {+argument}
+      case tag is \THEN   then tokens[i+1] <<< {+fromThen}; fallthrough
+      case token.1 is \do then tokens[i+1] <<< {+argument}
       default continue
       tokens.splice i, 1
       continue
-    continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY FINALLY ]> or
+    continue if next is \THEN
+    continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY CATCH FINALLY ]> or
                     tag is \ELSE and next isnt \IF
     indent = [\INDENT, 2, token.2]
     dedent = [\DEDENT, 2, token.2]

@@ -133,12 +133,10 @@ bnf =
     o 'SWITCH Cases'                          ,-> new Switch null, $2
     o 'SWITCH Cases DEFAULT Block'            ,-> new Switch null, $2, $4
 
-    o 'TRY Block'                        ,-> new Try $2
-    o 'TRY Block CATCH IDENTIFIER Block' ,-> new Try $2, $4, $5
-    o 'TRY Block
-       FINALLY Block'                    ,-> new Try $2, null, null, $4
-    o 'TRY Block CATCH IDENTIFIER Block
-       FINALLY Block'                    ,-> new Try $2, $4, $5, $7
+    o 'TRY Block'                           ,-> new Try $2
+    o 'TRY Block CATCH Block'               ,-> new Try $2, $3, $4
+    o 'TRY Block CATCH Block FINALLY Block' ,-> new Try $2, $3, $4, $6
+    o 'TRY Block             FINALLY Block' ,-> new Try $2, null, null, $4
 
     # Class definitions have optional bodies of prototype property assignments,
     # and optional references to the superclass.
