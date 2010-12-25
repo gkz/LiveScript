@@ -984,7 +984,7 @@ class exports.Super extends Node
 
   compile: (o) ->
     {method} = o.scope.shared or o.scope
-    throw SyntaxError 'cannot call super outside of a function' unless method
+    throw SyntaxError 'super outside of a function' unless method
     {name, clas} = method
     if name
       if clas
@@ -993,7 +993,7 @@ class exports.Super extends Node
       else if IDENTIFIER.test name
         return name + \.superclass
     return \_super if o.scope.check \_super
-    throw SyntaxError 'cannot call super on an anonymous function'
+    throw SyntaxError 'super in an anonymous function'
 
 #### Parens
 # An extra set of parentheses,
