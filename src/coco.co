@@ -17,13 +17,13 @@ parser import
     setInput      : -> @pos = 0; @tokens = it
     upcomingInput : -> ''
 
-# Compile a string of Coco code to JavaScript, using the Coco/Jison compiler.
+# Compile a string of Coco code to JavaScript.
 Coco.compile = (code, options) ->
   try
     (parser.parse Lexer.lex code).compileRoot options
-  catch err
-    err.message = "In #{options.fileName}, #{err.message}" if options?.fileName
-    throw err
+  catch e
+    e.message = "in #{that}, #{e.message}" if options?.fileName
+    throw e
 
 # Tokenize a string of Coco code, and return the array of tokens.
 Coco.tokens = (code, options) -> Lexer.lex code, options
@@ -43,8 +43,7 @@ Coco.run = (code, options) ->
   root.=parent while root.parent
   root.filename = fs.realpathSync options?.fileName || \.
   root.moduleCache &&= {}
-  if require.extensions or
-     path.extname(root.filename).toLowerCase() isnt \.co
+  if require.extensions or path.extname(root.filename).toLowerCase() isnt \.co
     code = Coco.compile code, options
   root._compile code, root.filename
 
@@ -56,8 +55,7 @@ Coco.eval = (code, options) ->
 
 if require.extensions
   require.extensions.\.co = (module, filename) ->
-    code = Coco.compile fs.readFileSync filename, \utf8
-    module._compile code, filename
+    module._compile (Coco.compile fs.readFileSync filename, \utf8), filename
 # __TODO__: Remove `registerExtension` when fully deprecated.
 else if require.registerExtension
   require.registerExtension \.co, Coco.compile

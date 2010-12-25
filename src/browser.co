@@ -1,12 +1,8 @@
-# Override exported methods for non-[node](http://nodejs.org) environments.
-
 (Coco = require \./coco) <<< {require}
 
-# Use standard JavaScript `eval` to eval code.
-Coco.eval = -> eval Coco.compile @0, @1
-
-# Running code does not provide access to this scope.
-Coco.run = (code, options = {}) ->
+# Override exported methods for non-[node.js](http://nodejs.org) environments.
+Coco.eval = (code, options) -> (0; eval) Coco.compile code, options
+Coco.run  = (code, options = {}) ->
   do Function Coco.compile code, options import {+bare}
 
 # If we're not in a browser environment, we're finished with the public API.
@@ -22,8 +18,11 @@ Coco.load = (url, options) ->
   xhr.send null
 
 # Activate Coco in the browser by having it compile and evaluate
-# all script tags with a content-type of `text/Coco`.
+# all script tags with a content-type of `text/coco`.
 # This happens on page load.
+if self.addEventListener
+then addEventListener \DOMContentLoaded, runScripts, false
+else attachEvent      \onload,           runScripts
 function runScripts ->
   for script of document.getElementsByTagName \script
     continue unless script.type is \text/coco
@@ -31,6 +30,3 @@ function runScripts ->
     then Coco.load script.src
     else Coco.run  script.innerHTML
   void
-if self.addEventListener
-then addEventListener \DOMContentLoaded, runScripts, false
-else attachEvent      \onload,           runScripts
