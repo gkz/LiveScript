@@ -506,16 +506,15 @@ class exports.Obj extends Node
         code += idt + node.compile(o) + \\n
         continue
       code += idt + if node.at
-        key = node.tails.0.key.compile o
-        key + ': ' + node.compile o, LEVEL_LIST
+        (key = node.tails.0.key.compile o) + ': ' + node.compile o, LEVEL_LIST
       else if node instanceof Assign
-        key = node.left.compile o
+        key = node.assertObj().left.compile o
         node.compile o
-      else (key = node.compile o, LEVEL_LIST) + ': ' + key
+      else
+        (key = node.compile o, LEVEL_LIST) + ': ' + key
       throw SyntaxError 'duplicated property name: ' + key if dic[key + 0]
       dic[key + 0] = 1
-      code += \, unless node is last
-      code += \\n
+      code += if node is last then \\n else \,\n
     code = "{#{ code and \\n + code + @tab }}"
     return @compileDynamic o, code, rest if rest
     if @front then "(#{code})" else code
@@ -648,16 +647,24 @@ class exports.Assign extends Node
 
   unfoldAssign: -> @access and this
 
+  assertObj: ->
+    unless @op is \:
+      throw SyntaxError 'invalid assignment in an object: ' + @show()
+    this
+
   compileNode: (o) ->
     left = @transleft o
     if left.items
       return @compileDestructuring o, left unless @logic
       throw SyntaxError 'conditional assignment cannot be destructuring'
     return @compileConditional o, left if @logic
+    {right} = this
+    if left instanceof Assign
+      right = Op left.logic || \?, right, left.right
+      left.=left
     name = left.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
-    {right} = this
     if right instanceof [Fun, Class] and METHOD_DEF.exec name
       right.name ||= that.2 or that.3
       right.clas   = that if that.1
@@ -725,14 +732,17 @@ class exports.Assign extends Node
   destructObj: (o, nodes, rite) ->
     for node of nodes
       node.=it if splat = node instanceof Splat
+      if asn = node instanceof Assign and node.op isnt \:
+        node = (asn = node).left
       if node instanceof Parens
         [node, key] = Value(node.it).cacheReference o
       else if node instanceof Assign
       then key = node.left; node.=right
       else key = if node.at then node.tails.0.key else node
-      val = Value lr ||= Literal(rite), [Index key.asKey()]
-      val = Import Obj(), val  if splat
       node = Literal node.name if node instanceof Key
+      node = asn import {left: node} if asn
+      val  = Value lr ||= Literal(rite), [Index key.asKey()]
+      val  = Import Obj(), val if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
 
   # Resolves property destructuring.
@@ -744,11 +754,19 @@ class exports.Assign extends Node
       if items.length > 1
       then [sub, ref, @temps] = base.cache o
       else sub = ref = base
-      for node, i of items then unless node instanceof Comment
+      for node, i of items
         base = if i then sub else ref
-        if node instanceof Assign
-        then node.right = Value base, [Index node.right.asKey()]
-        else items[i]   = Assign node.=asKey(), Value base, [Index node]
+        if (asn = node instanceof Assign) and node.op is \:
+          node.right = Value base, [Index node.right.asKey()]
+        else
+          # `o{k = v} = ..` -> `{k: a.k = v} = ..`
+          node = (asn = node).left if asn
+          if node instanceof Parens
+          # `a{(++i)} = b` -> `{(_ref): a[_ref = ++i]} = b`
+          then [node, key] = node.cache o, true; key = Parens key
+          else key = node
+          val = Value base, [Index node.asKey()]
+          items[i] = Assign key, (if asn then asn import left: val else val), \:
       left.=mixin
     # `x[k] = a` -> `[x[k]] = a`
     else if left instanceof Value and left.tails[*-1]?.key.length
@@ -789,7 +807,7 @@ class exports.Import extends Node
       if dyna = node instanceof Parens
         [key, val] = node.it.cache o, true
       else if node instanceof Assign
-        {left: key, right: val} = node
+        {left: key, right: val} = node.assertObj()
       else if (key = val = node).at
         [{key}] = val.tails
       asn = Assign Value(lref, [Index if dyna then key else key.asKey()]), val

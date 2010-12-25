@@ -236,6 +236,8 @@ bnf =
     o '... ObjAssignable' ,-> Splat  $2
     o '+-  ObjAssignable' ,-> Assign $2, Literal($1 is \+), \:
 
+    o 'ObjAssignable ASSIGN Expression' ,-> Assign $1, $3, $2
+
     o 'COMMENT' ,-> Comment $1
   ]
   # Assignment of properties within an object literal can be separated by
