@@ -58,8 +58,8 @@ bnf =
     o 'Assignable'    ,-> Value $1
     o 'STRNUM'        ,-> Value Literal $1
     o 'Parenthetical' ,-> Value $1
-    o 'THIS'          ,-> Value Literal 'this', true
-    o 'LITERAL'       ,-> Value Literal $1    , true
+    o 'THIS'          ,-> Value Literal \this, true
+    o 'LITERAL'       ,-> Value Literal $1   , true
 
     o 'Value CALL( ArgList OptComma )CALL' ,-> Value Call $1, $3  , $2
     o 'Value CALL(        ...       )CALL' ,-> Value Call $1, null, $2
@@ -98,14 +98,14 @@ bnf =
     o 'Expression SHIFT      Expression' ,-> Op $2, $1, $3
     o 'Expression COMPARE    Expression' ,-> Op $2, $1, $3
     o 'Expression LOGIC      Expression' ,-> Op $2, $1, $3
-    o 'Expression IMPORT     Expression' ,-> Import $1, $3, $2 is '<<<<'
+    o 'Expression IMPORT     Expression' ,-> Import $1, $3, $2 is \<<<<
     o 'Expression RELATION   Expression' ,->
-      return if $2.charAt(0) is '!'
+      return if $2.charAt(0) is \!
       then Op($2.slice 1; $1; $3).invert()
       else Op $2, $1, $3
 
     o 'UNARY Expression' , -> Op $1, $2
-    o '+-    Expression' ,(-> Op $1, $2), prec: 'UNARY'
+    o '+-    Expression' ,(-> Op $1, $2), prec: \UNARY
 
     o 'Expression ?' ,-> Existence $1
 
@@ -181,7 +181,7 @@ bnf =
 
   # A reference to a property on `this`.
   ThisProperty: [
-    o 'THISPROP' ,-> Value Literal('this'), [Index Key $1], true
+    o 'THISPROP' ,-> Value Literal(\this), [Index Key $1], true
   ]
 
   # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
@@ -214,7 +214,7 @@ bnf =
   # preceded by a function arrow, with an optional parameter list.
   Fun: [
     o 'PARAM( ArgList OptComma )PARAM FUNC_ARROW Block' ,-> Fun $2, $6, $5
-    o 'FUNC_ARROW Block'                                ,-> Fun [], $2, $1
+    o                                'FUNC_ARROW Block' ,-> Fun [], $2, $1
   ]
 
   Array: [
@@ -229,12 +229,12 @@ bnf =
     o 'ThisProperty'
   ]
   AssignObj: [
-    o 'ObjAssignable :        Expression'        ,-> Assign $1.asKey(), $3, ':'
-    o 'ObjAssignable : INDENT Expression DEDENT' ,-> Assign $1.asKey(), $4, ':'
+    o 'ObjAssignable :        Expression'        ,-> Assign $1.asKey(), $3, \:
+    o 'ObjAssignable : INDENT Expression DEDENT' ,-> Assign $1.asKey(), $4, \:
 
     o     'ObjAssignable' ,-> $1
     o '... ObjAssignable' ,-> Splat  $2
-    o '+-  ObjAssignable' ,-> Assign $2, Literal($1 is '+'), ':'
+    o '+-  ObjAssignable' ,-> Assign $2, Literal($1 is \+), \:
 
     o 'COMMENT' ,-> Comment $1
   ]
