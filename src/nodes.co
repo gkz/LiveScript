@@ -547,8 +547,8 @@ class exports.Arr extends Obj
 # Simple Arithmetic and logical operations, with some special conversions.
 class exports.Op extends Node
   (op, first, second, post) =>
-    return new Of first, second if op is \of
-    return Call first, []       if op is \do
+    return new Of first, second  if op is \of
+    return Parens Call first, [] if op is \do
     if op is \new
       if (call = first.head or first) instanceof Call
         call.digCalls().0.new = 'new '

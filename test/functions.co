@@ -20,40 +20,31 @@ ok y.x() is 3
 
 
 obj = {
-  name: 'Fred'
-
-  bound: ->
-    (=> eq this, obj)()
-
-  unbound: ->
-    (-> ok this isnt obj)()
-
-  nested: -> do => do => do => eq this, obj
+  bound   : -> do => this
+  unbound : -> do -> this
+  nested  : -> do => do => do => this
 }
-
-obj.unbound()
-obj.bound()
-obj.nested()
+eq obj, obj.bound()
+ok obj isnt obj.unbound()
+eq obj, obj.nested()
 
 
 # Python decorator style wrapper that memoizes any function
 memoize = (fn) ->
   cache = {}
-  self  = this
   (...args) ->
-    key = args.toString()
-    return cache[key] if cache[key]
-    cache[key] = fn.apply(self, args)
+    key = '' + args
+    if key in cache
+    then cache[key]
+    else cache[key] = fn.apply this, args
 
 Math = {
   Add: (a, b) -> a + b
-  AnonymousAdd: (a, b) -> a + b
   FastAdd: memoize (a, b) -> a + b
 }
-
-ok Math.Add(5, 5) is 10
-ok Math.AnonymousAdd(10, 10) is 20
-ok Math.FastAdd(20, 20) is 40
+eq 10, Math.Add(5, 5)
+eq 10, Math.FastAdd(5, 5)
+eq 10, Math.FastAdd(5, 5)
 
 
 okFunc = (f) -> ok(f())
@@ -95,23 +86,13 @@ result = ("hello".slice) 3
 ok result is 'lo'
 
 
-# And with multiple single-line functions true the same line.
+# And with multiple single-line functions on the same line.
 func = (x) -> (x) -> (x) -> x
 ok func(1)(2)(3) is 3
 
 
-# Ensure that functions with the same name don't clash with helper functions.
-del = -> 5
-ok del() is 5
-
-# Ensure that functions can have a trailing comma in their argument list
-mult = (x, ...mids, y) ->
-  x *= n for n of mids
-  x * y
-
-eq 2, mult 1, 2
-eq 6, mult 1, 2, 3
-eq 7200, mult 10, ...(i for i from 1 to 6)
+# Trailing comma is allowed in a function parameter.
+eq 1, ((x,) -> x) 1
 
 
 # Test for inline functions with parentheses and implicit calls.
@@ -355,21 +336,6 @@ throws 'cannot declare a function under a statement', ->
   Coco.compile 'if 1 then function F ->'
 
 
-# Expression conversion under explicit returns.
-first = ->
-  return ('do' for x of [1,2,3])
-
-second = ->
-  return ['re' for x of [1,2,3]]
-
-third = ->
-  return ('mi' for x in {1,2,3})
-
-ok first().join(' ')     is 'do do do'
-ok second()[0].join(' ') is 're re re'
-ok third().join(' ')     is 'mi mi mi'
-
-
 # Returns with multiple branches.
 func = ->
   if it
@@ -388,9 +354,7 @@ eq void   , findIt []
 
 # When a closure wrapper is generated for expression conversion, make sure
 # that references to "this" within the wrapper are safely converted as well.
-obj =
-  method: ->
-    [] = switch case 1 then this
+obj = method: -> (switch case 1 then this)
 eq obj.method(), obj
 
 
@@ -402,6 +366,7 @@ throws 'return; // cannot be an expression', -> Coco.compile 'r = (return)'
 eq '(function(){})(function(){});', Coco.compile '(->return)(->void)', {+bare}
 
 
+# `@it` isn't `it`
 eq '''
 (function(){
   return this.it;
@@ -417,3 +382,6 @@ fn 2, -> value, -> value
 eq 2, [-> value, -> value].length
 numbers = one: -> 1, two: -> 2
 funcs = one: -> [-> 1, three: 3], two: -> 2
+
+
+eq 0, (new do -> Array).length
