@@ -23,22 +23,23 @@ coreSources = ->
 
 option \-p, '--prefix DIR', 'set the installation prefix for `coke install`'
 
-task \install, 'install Coco into /usr/local (or --prefix)', (options) ->
+task <[ install i ]>, 'install Coco into /usr/local (or --prefix)', (options) ->
   base = options.prefix or \/usr/local
   lib  = "#{base}/lib/coco"
   bin  = "#{base}/bin"
   node = "~/.node_libraries/coco"
-  say "Installing Coco to #{lib}"
-  say "Linking to #{node}"
-  say "Linking 'coco' to #{bin}/coco"
   exec [
+    "echo Installing Coco to #{lib}"
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README.md package.json src #{lib}"
+    "echo Linking \\\"coco\\\" to #{bin}/coco"
     "ln -sf #{lib}/bin/coco #{bin}/coco"
     "ln -sf #{lib}/bin/coke #{bin}/coke"
+    "echo Linking to #{node}"
     "mkdir -p ~/.node_libraries"
-    "ln -sf #{lib}/lib #{node}"
+    "ln -sfn #{lib}/lib #{node}"
   ].join(' && '), (err, stdout, stderr) ->
+    say stdout.trim() if stdout
     say if err then stderr.trim() else tint \done
 
 task <[ build b ]>, 'build the Coco language from source', ->
