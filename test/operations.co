@@ -175,6 +175,14 @@ eq '', do do do -> -> -> do String
 eq 1, do -> 1
 eq @, do => @
 
+x = y = 1
+do (x = 2, y) ->
+  eq x, 2
+  eq y, 1
+  x = y = 3
+eq x, 1
+eq y, 1
+
 
 x = 'xx'
 o = (-> {} import {42, '', x, @X, (x), ...([0])}).call {X: 'XX'}

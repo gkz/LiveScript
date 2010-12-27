@@ -547,7 +547,14 @@ class exports.Arr extends Obj
 class exports.Op extends Node
   (op, first, second, post) =>
     return new Of first, second  if op is \of
-    return Parens Call first, [] if op is \do
+    if op is \do
+      args = []
+      if first instanceof Fun
+        {params} = first
+        for p, i of params
+          args.push if p instanceof Assign
+          then params[i] = p.left; p.right else p
+      return Parens Call first, args
     if op is \new
       if (call = first.head or first) instanceof Call
         call.digCalls().0.new = 'new '
