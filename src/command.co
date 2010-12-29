@@ -1,9 +1,12 @@
 # The `coco` utility.
 
-Coco = require(\./coco) import all require(\events).EventEmitter::
-
-fs   = require \fs
-path = require \path
+global import
+  Coco : require(\./coco) import all require(\events).EventEmitter::
+  fs   : require \fs
+  path : require \path
+  say  : -> process.stdout.write               it + \\n
+  warn : -> process.binding(\stdio).writeError it + \\n
+  die  : -> warn it; process.exit 1
 
 # Use the [OptionParser](#optparse) to extract all options from `process.argv`.
 oparser = require(\./optparse).OptionParser [
@@ -24,16 +27,11 @@ oparser = require(\./optparse).OptionParser [
   [\-h, \--help,            'display this help message']
 ]
 
-o       = oparser.parse process.argv.slice 2
+o     = oparser.parse process.argv.slice 2
+o.run = not (o.compile or o.print)
+o.print   ||= o.eval or o.stdin and o.compile
+o.compile ||= o.output
 sources = o.arguments
-o.run   = ! (o.compile or o.print)
-o.print = !!(o.print or o.eval or o.stdin and o.compile)
-o.compile ||= !!o.output
-
-global import
-  say  : -> process.stdout.write               it + \\n
-  warn : -> process.binding(\stdio).writeError it + \\n
-  die  : -> warn it; process.exit 1
 
 # Run `coco` by parsing passed options and determining what action to take.
 # Many flags cause us to divert before compiling anything. Flags passed after
