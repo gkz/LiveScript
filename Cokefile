@@ -32,12 +32,10 @@ task <[ install i ]>, 'install Coco into /usr/local (or --prefix)', (options) ->
     "echo Installing Coco to #{lib}"
     "mkdir -p #{lib} #{bin}"
     "cp -rf bin lib LICENSE README.md package.json src #{lib}"
-    "echo Linking \\\"coco\\\" to #{bin}/coco"
-    "ln -sf #{lib}/bin/coco #{bin}/coco"
-    "ln -sf #{lib}/bin/coke #{bin}/coke"
-    "echo Linking to #{node}"
+    "ln -sfv #{lib}/bin/coco #{bin}/coco"
+    "ln -sfv #{lib}/bin/coke #{bin}/coke"
     "mkdir -p ~/.node_libraries"
-    "ln -sfn #{lib}/lib #{node}"
+    "ln -sfnv #{lib}/lib #{node}"
   ].join(' && '), (err, stdout, stderr) ->
     say stdout.trim() if stdout
     say if err then stderr.trim() else tint \done
