@@ -135,8 +135,9 @@ writeJs = (source, js, base) ->
 printTokens = (tokens) ->
   lines = []
   for [tag, val, lno] of tokens
-    (lines[lno] ||= []).push tag + ",#{val}".replace /\n/g, \\\n
-  say(if l then l.join ' ' else '') for l of lines
+    tag += \: + val unless tag is val += ''
+    (lines[lno] ||= []).push tag
+  say(if l then l.join(' ').replace /\n/g, \\\n else '') for l of lines
 
 # A simple Read-Eval-Print-Loop. Compiles one line at a time to JavaScript
 # and evaluates it. Good for simple tests or poking around the **node.js** API.
