@@ -4,39 +4,35 @@
 
 (Coco = exports).VERSION = \0.2.1b
 
-Lexer = require \./lexer
+{lex} = require \./lexer
 
-# The real Lexer produces a generic stream of tokens. This object provides a
-# thin wrapper around it, compatible with the Jison API. We can then pass it
-# directly as a "Jison lexer".
+# Override Jison's default lexer, so that it can accept
+# the generic stream of tokens our lexer produces.
 {parser} = require \./parser
 parser import
   yy    : require \./nodes
   lexer :
-    lex           : -> [tag, @yytext, @yylineno] = @tokens[@pos++] or ['']; tag
-    setInput      : -> @pos = 0; @tokens = it
+    lex           : -> [tag, @yytext, @yylineno] = @tokens[++@pos] or ['']; tag
+    setInput      : -> @pos = -1; @tokens = it
     upcomingInput : -> ''
 
-# Compile a string of Coco code to JavaScript.
+# Compiles a string of Coco code to JavaScript.
 Coco.compile = (code, options) ->
-  try
-    (parser.parse Lexer.lex code).compileRoot options
+  try (parser.parse lex code).compileRoot options
   catch e
     e.message = "in #{that}, #{e.message}" if options?.fileName
     throw e
 
-# Tokenize a string of Coco code, and return the array of tokens.
-Coco.tokens = (code, options) -> Lexer.lex code, options
+# Parses a string or tokens of Coco code, returning the AST.
+Coco.nodes = -> parser.parse if typeof it == \string then lex it else it
 
-# Parse a string or tokens of Coco code, and return the AST.
-Coco.nodes = (source, options) ->
-  parser.parse if typeof source is \string
-  then Lexer.lex source, options
-  else source
+# Tokenizes a string of Coco code, returning the array of tokens.
+Coco.tokens = lex
 
+#### [node.js](http://nodejs.org) hacks
 return unless (fs = require \fs) and (path = require \path)
 
-# Compile and execute a string of Coco on __node.js__, correctly
+# Executes a string of Coco, correctly
 # setting `__filename`, `__dirname`, and relative `require`.
 Coco.run = (code, options) ->
   root = module
@@ -47,8 +43,7 @@ Coco.run = (code, options) ->
     code = Coco.compile code, options
   root._compile code, root.filename
 
-# Compile and evaluate a string of Coco on __node.js__.
-# The Coco REPL uses this to run the input.
+# Evaluates a string of Coco. The Coco REPL uses this to run the input.
 Coco.eval = (code, options) ->
   __dirname = path.dirname __filename = options?.fileName
   eval Coco.compile code, options
