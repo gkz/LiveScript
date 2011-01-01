@@ -54,7 +54,7 @@ parent.=child.valueOf().str
 eq 'rest', parent
 
 for nonref of <[ "" 0 f() this true ]>
-  throws "\"#{nonref}\" cannot be assigned", -> Coco.compile "{k: #{nonref}} = v"
+  throws nonref + ' // cannot be assigned', -> Coco.compile "{k: #{nonref}} = v"
 
 
 throws 'assignment to undeclared variable "Math"', -> Coco.compile 'Math ||:= 0'
@@ -180,8 +180,7 @@ x = 'y'
 eq x, 49344
 
 
-throws 'conditional assignment cannot be destructuring'
-, -> Coco.compile '[_] ?= [_]'
+throws '"?=" cannot destructure', -> Coco.compile '[_] ?= [_]'
 
 
 {(*>>1): mid, (*-1): last} = [1, 2, 3, 4, 5]
