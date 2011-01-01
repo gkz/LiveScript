@@ -1070,16 +1070,16 @@ class exports.Splat extends Parens
 #### Statement
 # `continue`, `break` or `debugger`
 class exports.Statement extends Node
-  (@name) ->
+  (@verb) ->
 
-  show: -> @name
+  show: -> @verb
 
   isStatement : YES
   makeReturn  : THIS
 
-  jumps: -> not (it and (it.loop or it.block and @name isnt \continue))
+  jumps: -> not (it and (it.loop or it.block and @verb isnt \continue))
 
-  compile: -> it.indent + @name + \;
+  compile: -> it.indent + @verb + \;
 
 #### Throw
 class exports.Throw extends Statement
@@ -1123,8 +1123,7 @@ class exports.While extends Node
 
   addBody: (@body) ->
     [last, i] = lastNonComment body.lines
-    if last instanceof Statement and last.name is \continue
-      body.lines.splice i, 1
+    body.lines.splice i, 1 if last.verb is \continue
     this
 
   makeReturn: ->
@@ -1322,7 +1321,7 @@ class exports.Case extends Node
     o.indent = tab + TAB
     code += that + \\n if @body.compile o, LEVEL_TOP
     code += o.indent + 'break;\n' unless nobr or ft or
-      last instanceof Statement and last.name isnt \debugger
+      last instanceof Statement and last.verb isnt \debugger
     code
 
 #### If
@@ -1399,11 +1398,11 @@ class exports.Comment extends Node
 #### Util
 # A wrapper node for utility functions.
 class exports.Util extends Node
-  (@name) =>
+  (@verb) =>
 
   @::{show} = Statement::
 
-  compile: -> utility @name
+  compile: -> utility @verb
 
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
