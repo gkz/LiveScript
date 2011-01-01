@@ -119,14 +119,17 @@ bnf =
     # The full complement of `if` expressions,
     # including postfix one-liner `if` and `unless`.
     o 'IfBlock'
-    o 'Statement  POST_IF Expression' ,-> If $3, $1, name: $2
     o 'Expression POST_IF Expression' ,-> If $3, $1, name: $2
 
     # Comprehensions can either be normal, with a block of expressions
     # to execute, or postfix, with a single expression.
     o 'LoopHead   Block'    ,-> $1.addBody $2
-    o 'Statement  LoopHead' ,-> $2.addBody Lines $1
     o 'Expression LoopHead' ,-> $2.addBody Lines $1
+
+    o 'RETURN Expression' ,-> Return $2
+    o 'RETURN'            ,-> Return()
+    o 'THROW  Expression' ,-> new Throw $2
+    o 'STATEMENT'         ,-> new Statement $1
 
     o 'SWITCH Expression Cases'               ,-> new Switch $2, $3
     o 'SWITCH Expression Cases DEFAULT Block' ,-> new Switch $2, $3, $5
@@ -152,9 +155,9 @@ bnf =
   # separated by line breaks or semicolons.
   Body: [
     o 'Expression'                 ,-> Lines $1
-    o 'Statement'                  ,-> Lines $1
+    o 'COMMENT'                    ,-> Lines Comment $1
     o 'Body TERMINATOR Expression' ,-> $1.add $3
-    o 'Body TERMINATOR Statement'  ,-> $1.add $3
+    o 'Body TERMINATOR COMMENT'    ,-> $1.add Comment $3
     o 'Body TERMINATOR'
   ]
 
@@ -191,15 +194,6 @@ bnf =
   Parenthetical: [
     o '(        Body        )' ,-> Parens $2.unwrap()
     o '( INDENT Body DEDENT )' ,-> Parens $3.unwrap()
-  ]
-
-  # Pure statements which cannot be expressions.
-  Statement: [
-    o 'RETURN Expression' ,-> Return $2
-    o 'RETURN'            ,-> Return()
-    o 'STATEMENT'         ,-> new Statement $1
-    o 'THROW Expression'  ,-> new Throw $2
-    o 'COMMENT'           ,-> Comment $1
   ]
 
   # An indented block of expressions. Note that the [Rewriter](#rewriter)

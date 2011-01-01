@@ -1079,7 +1079,7 @@ class exports.Statement extends Node
 
   jumps: -> not (it and (it.loop or it.block and @verb isnt \continue))
 
-  compile: -> it.indent + @verb + \;
+  compileNode: -> it.indent + @verb + \;
 
 #### Throw
 class exports.Throw extends Statement
@@ -1089,7 +1089,7 @@ class exports.Throw extends Statement
 
   jumps: NO
 
-  compile: (o) -> o.indent + "throw #{ @it.compile o, LEVEL_PAREN };"
+  compileNode: (o) -> o.indent + "throw #{ @it.compile o, LEVEL_PAREN };"
 
 #### Return
 class exports.Return extends Throw
