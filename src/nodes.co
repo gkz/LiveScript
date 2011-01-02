@@ -199,7 +199,9 @@ class exports.Lines extends Node
   compileWithDeclarations: (o) ->
     o.level = LEVEL_TOP
     code = post = ''
-    break unless node instanceof [Comment, Literal] for node, i of @lines
+    for node, i of @lines
+      break unless node instanceof Comment or
+                   node instanceof Literal and not node.value.js
     if i
       rest   = @lines.splice i, 9e9
       code   = @compileNode o

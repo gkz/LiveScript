@@ -38,12 +38,14 @@ eq '''
 /* (c) 2010 me */
 "use strict";
 var I;
+LABEL:
 I = function(it){
   return it;
 };
 ''', Coco.compile '''
 ### (c) 2010 me ###
 "use strict"
+`LABEL:`
 I = -> it
 ''', {+bare}
 
