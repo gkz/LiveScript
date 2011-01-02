@@ -30,7 +30,7 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
   action &&= unwrap.exec(action).1.replace /\b(?:[A-Z][\w.]+|mix\b)/g, 'yy.$&'
-  [patterns, action or \$1, options]
+  [patterns, action ? \$1, options]
 
 # Grammatical Rules
 # -----------------
@@ -163,8 +163,8 @@ bnf =
 
   # An optional, trailing comma.
   OptComma: [
-    o ''
-    o ','
+    o '', 0
+    o \,, 0
   ]
 
   Arg: [
