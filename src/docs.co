@@ -53,7 +53,7 @@ build = (name, source) ->
 
 block = (name, comment, code, i) ->
   code &&= """
-   <pre class="code prettyprint lang-coffee"
+   <pre class="code prettyprint lang-co"
     >#{ code.replace(/&/g, '&amp;').replace(/</g, '&lt;') }</pre>
   """
   """
@@ -62,3 +62,48 @@ block = (name, comment, code, i) ->
     >#{ sdcv.makeHtml comment }</div
     >#{code}</div>
   """
+
+PR.registerLangHandler do
+  PR.createSimpleLexer do
+    [
+      [\str, /^\\\S[^\s,;)}\]]*/, 0, \\]
+      [\str, /// ^ ' (?: ''[\s\S]*?'' | [^\\']*(?:\\.[^\\']*)* ) ' ///, 0, \']
+      [\str, /// ^ " (?: ""[\s\S]*?"" | [^\\"]*(?:\\.[^\\"]*)* ) " ///, 0, \"]
+      [\lit, /^`[^\\`]*(?:\\.[^\\`]*)*`/, 0, \`]
+      [\lit, /^<\[[\s\S]*?]>/, 0, \<]
+      [\lit, /// ^ (?
+      : /{3} [\s\S]+? /{3}
+      | / (?! \s )
+        [^ [ / \n \\ ]*
+        (?:
+          (?
+          : \\[\s\S]
+          | \[
+              [^ \] \n \\ ]*
+              (?: \\[\s\S] [^ \] \n \\ ]* )*
+             ]
+          ) [^ [ / \n \\ ]*
+        )* /
+      ) [imgy]{0,4} (?!\w) ///, 0, \/]
+      [\com, /// ^ \# (?: \##[^#][\s\S]*?### | .*) ///, 0, \#]
+      [\typ, /// ^ (?
+      : 0x[\da-f]+
+      | [1-9]\d? r [\da-z]+
+      | (?:\d+(?:\.\d+)?|\.\d+) (?:e[+-]?\d+)? [a-z]*
+      ) ///i, 0, \0123456789.]
+    ]
+    [
+      [\kwd, /// ^ (?
+      : t(?:ry|h(?:row|en)|ypeof)
+      | f(?:or(?: own)?|inally|unction)
+      | n(?:ew|ot)
+      | c(?:ontinue|a(?:se|tch)|lass)
+      | i(?:f|n(?:stanceof)?|mport(?: all)?|s(?:nt)?)
+      | e(?:lse|xtends)
+      | d(?:e(?:fault|lete|bugger)|o)
+      | un(?:less|til)
+      | o[fr] | return | break | while | switch | and
+      ) \b ///]
+      [\typ, /// ^ (?: true | false | null | void | this | super ) \b ///]
+    ]
+  [\co]
