@@ -110,6 +110,8 @@ class Node
   jumps: NO
   # Do I assign a certain variable?
   assigns: NO
+  # Do I hold a default value in an assignment context?
+  hasDefault: NO
 
   unfoldSoak   : NO
   unfoldAssign : NO
@@ -127,7 +129,7 @@ class Node
 
   # String representation of the node for inspecting the parse tree.
   # This is what `coco --nodes` prints out.
-  toString: (idt = '') ->
+  toString: (idt or '') ->
     tree = \\n + idt + @constructor.name
     tree += ' ' + that if @show()
     @eachChild -> tree += it.toString idt + TAB; void
@@ -185,7 +187,7 @@ class exports.Lines extends Node
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
   # **Lines** is the only node that can serve as the root.
-  compileRoot: (o = {}) ->
+  compileRoot: (o or {}) ->
     o.indent = @tab = if bare = delete o.bare then '' else TAB
     o.scope  = @scope = Scope.root = new Scope
     o.level  = LEVEL_TOP
@@ -288,8 +290,8 @@ class exports.Value extends Node
   jumps        : -> not @tails.length and @head.jumps it
   assigns      : -> not @tails.length and @head.assigns it
   isStatement  : -> not @tails.length and @head.isStatement it
-  isComplex    : -> !!@tails.length or @head.isComplex()
-  isAssignable : -> !!@tails.length or @head.isAssignable()
+  isComplex    : -> !!@tails.length or do @head.isComplex
+  isAssignable : -> !!@tails.length or do @head.isAssignable
 
   makeReturn: -> if @tails.length then super ... else @head.makeReturn it
 
@@ -488,7 +490,7 @@ class exports.Clone extends Node
 #### Obj
 # `{x: y}`
 class exports.Obj extends Node
-  (@items = []) =>
+  (@items or []) =>
 
   children: [\items]
 
@@ -509,7 +511,7 @@ class exports.Obj extends Node
       code += idt + if node.at
         (key = node.tails.0.key.compile o) + ': ' + node.compile o, LEVEL_LIST
       else if node instanceof Assign
-        key = node.assertObj().left.compile o
+        key = node.left.compile o
         node.compile o
       else
         (key = node.compile o, LEVEL_LIST) + ': ' + key
@@ -530,7 +532,7 @@ class exports.Obj extends Node
 #### Arr
 # `[x, y]`
 class exports.Arr extends Obj
-  (@items = []) =>
+  (@items or []) =>
 
   compileNode: (o) ->
     {items} = this
@@ -553,7 +555,7 @@ class exports.Op extends Node
       if first instanceof Fun
         {params} = first
         for p, i of params
-          args.push if p instanceof Assign
+          args.push if p.op is \= && not p.logic
           then params[i] = p.left; p.right else p
       return Parens Call first, args
     if op is \new
@@ -580,6 +582,8 @@ class exports.Op extends Node
 
   unfoldSoak: (o) ->
     @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, \first
+
+  hasDefault: -> @op of <[ ? || && ]>
 
   compileNode: (o) ->
     return @compileUnary o if not @second
@@ -643,7 +647,7 @@ class exports.Op extends Node
 # Assignment to a local variable or the property of an object,
 # including `:` within object literals.
 class exports.Assign extends Node
-  (@left, @right, @op = \=, @logic = @op.logic) => @op += ''
+  (@left, @right, @op or \=, @logic or @op.logic) => @op += ''
 
   children: <[ left right ]>
 
@@ -654,10 +658,6 @@ class exports.Assign extends Node
   unfoldSoak: (o) -> If.unfoldSoak o, this, \left
 
   unfoldAssign: -> @access and this
-
-  assertObj: ->
-    throw SE 'invalid assignment in an object: ' + @show() unless @op is \:
-    this
 
   METHOD_DEF = /// ^
     (?: ([\s\S]+)\.prototype(?=\.) | [\s\S]*? )
@@ -672,9 +672,9 @@ class exports.Assign extends Node
       throw SE "\"#{@show()}\" cannot destructure"
     return @compileConditional o, left if @logic
     {right} = this
-    if left instanceof Assign
-      right = Op left.logic || \?, right, left.right
-      left.=left
+    if left.hasDefault()
+      right = Op left.op, right, left.second
+      left.=first
     name = left.compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
@@ -692,13 +692,13 @@ class exports.Assign extends Node
       if @op is \=
         o.scope.declare name
       else unless o.scope.check name, true
-        throw SE "assignment to undeclared variable \"#{name}\""
+        throw SE 'assignment to undeclared variable: ' + name
     code = name + " #{ if @op is \:= then \= else @op } " + val
     if o.level < LEVEL_COND then code else "(#{code})"
 
   compileConditional: (o, left) ->
-    [lef, ref] = Value(left).cacheReference o
-    Op(@logic; lef; Assign ref, @right, @op).compile o
+    refs = Value(left).cacheReference o
+    Op(@logic; refs.0; Assign refs.1, @right, @op).compile o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
@@ -744,15 +744,15 @@ class exports.Assign extends Node
   destructObj: (o, nodes, rite) ->
     for node of nodes
       node.=it if splat = node instanceof Splat
-      if asn = node instanceof Assign and node.op isnt \:
-        node = (asn = node).left
+      # `{a or b} = c` to `a = c.a or b`
+      if dfv = node.hasDefault() then dfv = node; node.=first
       if node instanceof Parens
         [node, key] = Value(node.it).cacheReference o
       else if node instanceof Assign
       then key = node.left; node.=right
       else key = if node.at then node.tails.0.key else node
       node = Literal node.name if node instanceof Key
-      node = asn import {left: node} if asn
+      node = dfv import {first: node} if dfv
       val  = Value lr ||= Literal(rite), [Index key.asKey()]
       val  = Import Obj(), val if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
@@ -760,7 +760,7 @@ class exports.Assign extends Node
   # Resolves property destructuring.
   transleft: (o) ->
     {left} = this
-    # `x{k} = o` -> `{k: x.k} = o`
+    # `x{k} = o` to `{k: x.k} = o`
     if left.mixin
       {base, mixin: {items}} = left
       if items.length > 1
@@ -768,19 +768,20 @@ class exports.Assign extends Node
       else sub = ref = base
       for node, i of items
         base = if i then sub else ref
-        if (asn = node instanceof Assign) and node.op is \:
+        if node instanceof Assign
           node.right = Value base, [Index node.right.asKey()]
         else
-          # `o{k = v} = ..` -> `{k: a.k = v} = ..`
-          node = (asn = node).left if asn
+          # `o{k or v} = ..` to `{k: a.k or v} = ..`
+          if dfv = node.hasDefault() then dfv = node; node.=first
           if node instanceof Parens
-          # `a{(++i)} = b` -> `{(_ref): a[_ref = ++i]} = b`
+          # `a{(++i)} = b` to `{(_ref): a[_ref = ++i]} = b`
           then [node, key] = node.cache o, true; key = Parens key
           else key = node
           val = Value base, [Index node.asKey()]
-          items[i] = Assign key, (if asn then asn import left: val else val), \:
+          val = dfv import {first: val} if dfv
+          items[i] = Assign key, val, \:
       left.=mixin
-    # `x[k] = a` -> `[x[k]] = a`
+    # `x[k] = a` to `[x[k]] = a`
     else if left instanceof Value and left.tails[*-1]?.key.length
       {key} = left.tails.pop()
       [sub, ref, @temps] = left.cache o
@@ -819,7 +820,7 @@ class exports.Import extends Node
       if dyna = node instanceof Parens
         [key, val] = node.it.cache o, true
       else if node instanceof Assign
-        {left: key, right: val} = node.assertObj()
+        {left: key, right: val} = node
       else if (key = val = node).at
         [{key}] = val.tails
       asn = Assign Value(lref, [Index if dyna then key else key.asKey()]), val
@@ -880,7 +881,7 @@ class exports.Existence extends Node
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params = [], @body = Lines(), @arrow) => @bound = '_this' if arrow is \=>
+  (@params or [], @body or Lines(), arrow) => @bound = '_this' if arrow is \=>
 
   children: <[ params body ]>
 
@@ -891,8 +892,6 @@ class exports.Fun extends Node
   traverseChildren: (_, xscope) -> super ... if xscope
 
   isStatement: -> !!@statement
-
-  jumps: NO
 
   makeReturn: -> if @statement then @<<<{+returns} else super ...
 
@@ -919,23 +918,27 @@ class exports.Fun extends Node
       then @bound = that
       else sscope.assign \_this, \this
     args = []; asns = []
+    # `(a = x) ->` to `(a ? x) ->`
+    for prm, i of params then if prm.op is \= and not prm.logic
+      params[i] = Op '?', prm.left, prm.right
+    # `(a, ...b) ->` to `-> [a, ...b] = @@`
     for prm of params then if prm instanceof Splat
       splatted = Assign Arr(paramName o, p for p of params), Literal \arguments
       break
     for prm of params
       arg = prm
-      if asn = arg instanceof Assign then arg.=left; prm.logic ||= \?
-      else  if arg instanceof Splat  then arg.=it
+      if dfv = arg.hasDefault()    then arg.=first
+      else if arg instanceof Splat then arg.=it
       if arg.isComplex()
         val = ref = paramName o, prm
-        val = Op prm.logic, ref, prm.right if asn
+        val = Op prm.op, ref, prm.second if dfv
         asns.push Assign arg, val
         arg = ref
-      else if asn
-        if prm.logic is \?
-          prm = Op \&&, Literal(arg.value + ' == null'), prm import {-logic}
-        asns.push prm
-      args.push arg unless splatted
+      else if dfv
+        asns.push if prm.op is \?
+        then Op \&&, Literal(arg.value + ' == null'), Assign arg, prm.second
+        else Assign arg, prm.second, \=, prm.op
+      splatted or args.push arg
     wasEmpty = not (exps = body.lines).length
     if splatted then asns.unshift splatted else
       dic = {}
@@ -964,8 +967,8 @@ class exports.Fun extends Node
   function paramName (o, node) ->
     return that if node.param
     prm = node
-    if splat = prm instanceof Splat  then prm.=it
-    else    if prm instanceof Assign then prm.=left
+    if splat = prm instanceof Splat then prm.=it
+    else    if prm.hasDefault()     then prm.=first
     if prm.at
       {name} = prm.tails.0.key
       prm = Literal if name.reserved then \$ + name else name
@@ -1335,7 +1338,7 @@ class exports.Case extends Node
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Node
-  (@if, @then, {@soak, name} = {}) => @negated = name is \unless
+  (@if, @then, {@soak, name} or {}) => @negated = name is \unless
 
   children: <[ if then else ]>
 

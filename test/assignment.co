@@ -57,7 +57,7 @@ for nonref of <[ "" 0 f() this true ]>
   throws nonref + ' // cannot be assigned', -> Coco.compile "{k: #{nonref}} = v"
 
 
-throws 'assignment to undeclared variable "Math"', -> Coco.compile 'Math ||:= 0'
+throws 'assignment to undeclared variable: Math', -> Coco.compile 'Math ||:= 0'
 
 
 # Simple variable swapping.
@@ -225,11 +225,11 @@ eq o.0, ok
 
 # Destructuring with default values.
 new ->
-  [x = 2, @k = 3] = []
-  eq x * @k, 6
+  [x ? 2, y || 3, @k && 5] = [null, false, true]
+  eq x * y * @k, 30
 
-  {y = 2, _: z = 3, @k = 5} = {}
-  eq y * z * @k, 30
+  {a or 2, _: b or 3, @p or 5} = {}
+  eq a * b * @p, 30
 
-  @{a = 2, \b = 3, ([\c]) = 5} = {}
+  @{a ? 2, \b ? 3, ([\c]) ? 5} = {}
   eq @a * @b * @c, 30
