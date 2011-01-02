@@ -271,6 +271,8 @@ bnf =
     o 'FOR IDENTIFIER , Assignable FORIN Expression'
     , -> mix new For, object: true, own: !$1, index: $2, name: $4, source: $6
 
+    o 'FOR IDENTIFIER FROM Expression'
+    , -> mix new For, index: $2, from: Literal(0), op: \til, to: $4
     o 'FOR IDENTIFIER FROM Expression TO Expression'
     , -> mix new For, index: $2, from: $4, op: $5, to: $6
     o 'FOR IDENTIFIER FROM Expression TO Expression BY Expression'

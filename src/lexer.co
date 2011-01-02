@@ -118,7 +118,8 @@ exports import
       (id = new String id).reserved = true if id of FORBIDDEN
     else if id of COCO_KEYWORDS
       switch tag = id.toUpperCase()
-      case \FOR    then @seenFor = true
+      case \FOR    then @seenFor = true; fallthrough
+      case \THEN   then @seenFrom = @seenRange = false
       case \CATCH  then id  = ''
       case \IMPORT then id  = \<<<
       case \UNLESS then tag = \IF
@@ -139,7 +140,6 @@ exports import
           @tokens.pop()
           id = \! + id
         tag = \RELATION
-      @seenRange = false if @seenRange and tag of <[ FOR THEN ]>
     else if COCO_ALIASES.hasOwnProperty id
       [tag, id] = COCO_ALIASES[id]
       attr = \decall if id of <[ && || ]>
@@ -280,8 +280,8 @@ exports import
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
     @countLines indent = MULTIDENT.exec(it).0
-    @last.eol  = true
-    @seenRange = false
+    @last.eol = true
+    @seenFrom = @seenRange = false
     size = indent.length - 1 - indent.lastIndexOf \\n
     noNewline = LINE_CONTINUER.test it or @last.0 of
       <[ +- DOT ASSIGN LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>

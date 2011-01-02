@@ -61,7 +61,8 @@ eq odds .join(' '), 'one! three!'
 # Basic range comprehensions.
 nums = (i * 3 for i from 1 to 3)
 negs = (x for x from -20 to -5*2)
-eq nums.concat(negs.slice 0, 3).join(' '), '3 6 9 -20 -19 -18'
+four = (4 for x from 4)
+eq '3,6,9,-20,-19,-18,4,4,4,4', '' + nums.concat negs.slice(0, 3), four
 
 eq '123', (i for i from 1 til 4     ).join ''
 eq '036', (i for i from 0 til 9 by 3).join ''
