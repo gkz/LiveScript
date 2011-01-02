@@ -561,5 +561,5 @@ REGEX = /// ^
 HEREGEX      = /// ^ /{3} ([\s\S]+?) /{3} ([imgy]{0,4}) (?!\w) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
-MULTILINER      = /\n/g
-LINE_CONTINUER  = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
+MULTILINER     = /\n/g
+LINE_CONTINUER = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///

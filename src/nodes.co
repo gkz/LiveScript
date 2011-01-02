@@ -514,7 +514,7 @@ class exports.Obj extends Node
         node.compile o
       else
         (key = node.compile o, LEVEL_LIST) + ': ' + key
-      throw SyntaxError 'duplicated property name: ' + key if dic[key + 0]
+      throw SyntaxError 'duplicate property name: ' + key if dic[key + 0]
       dic[key + 0] = 1
       code += if node is last then \\n else \,\n
     code = "{#{ code and \\n + code + @tab }}"
@@ -918,12 +918,12 @@ class exports.Fun extends Node
           #{tab}function
         """
         body.add Return Literal \_this
-      else if b = sscope.method?.bound
-      then @bound = b
+      else if sscope.method?.bound
+      then @bound = that
       else sscope.assign \_this, \this
     args = []; asns = []
     for prm of params then if prm instanceof Splat
-      splats = Assign Arr(paramName o, p for p of params), Literal \arguments
+      splatted = Assign Arr(paramName o, p for p of params), Literal \arguments
       break
     for prm of params
       arg = prm
@@ -938,11 +938,15 @@ class exports.Fun extends Node
         if prm.logic is \?
           prm = Op \&&, Literal(arg.value + ' == null'), prm import {-logic}
         asns.push prm
-      args.push arg unless splats
+      args.push arg unless splatted
     wasEmpty = not (exps = body.lines).length
-    asns.unshift splats  if splats
+    if splatted then asns.unshift splatted else
+      dic = {}
+      for a, i of args
+        if dic[0 + a.=compile o]
+          throw SyntaxError 'duplicate formal argument: ' + a
+        scope.add args[i] = dic[0 + a] = a, \arg
     exps.unshift ...asns if asns.length
-    scope.add (args[i] = a.compile o), \arg for a, i of args unless splats
     args.0 = \it if not args.length and body.contains(-> it.value is \it)
     body.makeReturn() unless wasEmpty or @ctor
     if @statement

@@ -81,3 +81,6 @@ eq arguments,
   switch case 1
     eq arguments, (arguments for i from 1 to 1)[0]
     arguments
+
+
+throws 'duplicate formal argument: a', -> Coco.compile '(a, a) ->'
