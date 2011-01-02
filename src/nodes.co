@@ -547,7 +547,7 @@ class exports.Arr extends Obj
 # Simple Arithmetic and logical operations, with some special conversions.
 class exports.Op extends Node
   (op, first, second, post) =>
-    return new Of first, second  if op is \of
+    return new Of first, second if op is \of
     if op is \do
       args = []
       if first instanceof Fun
@@ -1426,11 +1426,12 @@ exports import all mix: __importAll
 # generate code, you create a tree of scopes in the same shape as the nested
 # functions. Each scope knows about the function parameters and the variables
 # declared within it, and has references to its parent/shared enclosing scopes.
-(Scope = (@parent, @shared) ->
+function Scope (@parent, @shared) ->
   @variables = [name: \arguments, type: \args]
   @positions = arguments: 0
-  this
-)::<<<
+  void
+Scope::<<<
+
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
     switch name case <[ arguments eval ]>
@@ -1438,13 +1439,13 @@ exports import all mix: __importAll
     if @variables[@positions[name]]
     then that import {type}
     else @positions[name] = -1 + @variables.push {name, type}
-    this
+    name
 
   # Declares a variable unless declared already.
   declare: (name) ->
     scope = @shared or this
     scope.add name, \var unless scope.type(name) of <[ var arg ]>
-    this
+    void
 
   # Ensures that an assignment is made at the top of this scope.
   assign: (name, value) -> @add name, {value}
@@ -1534,7 +1535,7 @@ UTILITIES =
     }
   '''
 
-# Levels indicates a node's position in the AST.
+# Each level indicates a node's position in the AST.
 LEVEL_TOP    = 0  # ...;
 LEVEL_PAREN  = 1  # (...)
 LEVEL_LIST   = 2  # [...]
@@ -1550,9 +1551,7 @@ IDENTIFIER = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
 ##### Helpers
 
 # Declares a utility function at the top level.
-utility = (name) ->
-  Scope.root.assign ref = \__ + name, UTILITIES[name]
-  ref
+utility = -> Scope.root.assign \__ + it, UTILITIES[it]
 
 lastNonComment = (nodes) ->
   break if node not instanceof Comment for node, i of nodes by -1
