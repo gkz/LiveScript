@@ -40,6 +40,7 @@ exports.run = ->
   return forkNode()                   if o.nodejs
   return version()                    if o.version
   return help()                       if o.help
+  require.paths.push process.cwd()
   return repl()                       if o.interactive
   return compileStdin()               if o.stdin
   return compileScript '', sources.0  if o.eval
