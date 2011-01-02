@@ -33,13 +33,11 @@ exports import
     # initialized with a DUMMY token to ensure `@last` always exists.
     @tokens = [@last = [\DUMMY, '', 0]]
     # The current line.
-    @line = o.line or 0
+    @line = o.line | 0
     # The current indentation level, over-indentation and under-outdentation.
     @indent = @indebt = @dedebt = 0
     # The stack of all current indentation levels.
     @indents = []
-    # Flags for distinguishing FORIN/FOROF/FROM/TO/BY.
-    @seenFor = @seenFrom = @seenRange = false
     # Prepend a newline if the input starts with an indented line.
     if /^[^\n\S]+(?!#(?!##[^#]))\S/.test code then code = \\n + code; --@line
     # Check the first character of current `code`, then call appropriate
@@ -136,7 +134,7 @@ exports import
           @seenFor = false
           tag = \FOR + tag
           break
-        if @last.1 is \!
+        if prev.1 is \!
           @tokens.pop()
           id = \! + id
         tag = \RELATION
@@ -145,8 +143,8 @@ exports import
       attr = \decall if id of <[ && || ]>
     else if id of RESERVED
       @carp "reserved word \"#{id}\""
-    else if @last.0 is \CATCH and not @last.1
-      return (@last.1 = id).length
+    else if prev.0 is \CATCH and not prev.1
+      return (prev.1 = id).length
     @token tag, id
     @last[attr] = true if attr
     @token \:, \:      if colon
