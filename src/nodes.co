@@ -26,7 +26,7 @@ class Node
   compileClosure: (o) ->
     # Statements that _jump_ out of current context (like `return`) can't be
     # an expression via closure-wrapping, as their meaning will change.
-    if @jumps() then throw SyntaxError \
+    if @jumps() then throw SE \
       @compile(o import indent: ''; LEVEL_TOP) + ' // cannot be an expression'
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
@@ -233,8 +233,7 @@ class exports.Literal extends Node
     case \this then return o.scope.method?.bound or val
     case \void then val += ' 8'; fallthrough
     case \null
-      if (level ? o.level) is LEVEL_ACCESS
-        throw SyntaxError 'invalid use of ' + @value
+      throw SE 'invalid use of ' + @value if (level ? o.level) is LEVEL_ACCESS
       return val
     if      val.js then @terminator = ''
     else if @temp  then o.scope.free val
@@ -514,7 +513,7 @@ class exports.Obj extends Node
         node.compile o
       else
         (key = node.compile o, LEVEL_LIST) + ': ' + key
-      throw SyntaxError 'duplicate property name: ' + key if dic[key + 0]
+      throw SE 'duplicate property name: ' + key if dic[key + 0]
       dic[key + 0] = 1
       code += if node is last then \\n else \,\n
     code = "{#{ code and \\n + code + @tab }}"
@@ -657,8 +656,7 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   assertObj: ->
-    unless @op is \:
-      throw SyntaxError 'invalid assignment in an object: ' + @show()
+    throw SE 'invalid assignment in an object: ' + @show() unless @op is \:
     this
 
   METHOD_DEF = /// ^
@@ -671,7 +669,7 @@ class exports.Assign extends Node
     left = @transleft o
     if left.items
       return @compileDestructuring o, left unless @logic
-      throw SyntaxError "\"#{@show()}\" cannot destructure"
+      throw SE "\"#{@show()}\" cannot destructure"
     return @compileConditional o, left if @logic
     {right} = this
     if left instanceof Assign
@@ -685,16 +683,16 @@ class exports.Assign extends Node
       right.clas   = that if that.1
     val = right.compile o, LEVEL_LIST
     if @op is \:
-      throw SyntaxError 'invalid property name: ' + name if left.isComplex()
+      throw SE 'invalid property name: ' + name if left.isComplex()
       return name + ': ' + val
     unless left.isAssignable()
       o import indent: '', level: LEVEL_LIST
-      throw SyntaxError @left.compile(o) + ' // cannot be assigned'
+      throw SE @left.compile(o) + ' // cannot be assigned'
     if IDENTIFIER.test name
       if @op is \=
         o.scope.declare name
       else unless o.scope.check name, true
-        throw SyntaxError "assignment to undeclared variable \"#{name}\""
+        throw SE "assignment to undeclared variable \"#{name}\""
     code = name + " #{ if @op is \:= then \= else @op } " + val
     if o.level < LEVEL_COND then code else "(#{code})"
 
@@ -726,8 +724,7 @@ class exports.Assign extends Node
     for node, i of nodes
       continue if node.items and not node.items.length
       if node instanceof Splat
-        if ivar then throw SyntaxError \
-          "multiple splats in an assignment: " + node.compile o
+        throw SE 'multiple splats in an assignment' if ivar
         len = nodes.length
         val = utility(\slice) + \.call( + rite
         val = if i is len - 1
@@ -943,17 +940,16 @@ class exports.Fun extends Node
     if splatted then asns.unshift splatted else
       dic = {}
       for a, i of args
-        if dic[0 + a.=compile o]
-          throw SyntaxError 'duplicate formal argument: ' + a
+        throw SE 'duplicate formal argument: ' + a if dic[0 + a.=compile o]
         scope.add args[i] = dic[0 + a] = a, \arg
     exps.unshift ...asns if asns.length
     args.0 = \it if not args.length and body.contains(-> it.value is \it)
     body.makeReturn() unless wasEmpty or @ctor
     if @statement
       unless name
-        throw SyntaxError 'cannot declare a nameless function'
+        throw SE 'cannot declare a nameless function'
       unless o.lines.scope is pscope
-        throw SyntaxError 'cannot declare a function under a statement'
+        throw SE 'cannot declare a function under a statement'
       scope .add name, \function
       pscope.add name, \function unless @returns
       code += ' ' + name
@@ -990,7 +986,7 @@ class exports.Class extends Node
       then @title.tails[*-1].key?.name
       else @title.value
       if decl?.reserved
-        throw SyntaxError "reserved word \"#{decl}\" cannot be a class name"
+        throw SE "reserved word \"#{decl}\" cannot be a class name"
     name  = decl or @name
     name  = \_Class unless name and IDENTIFIER.test name
     lname = Literal fun.bound = name
@@ -1000,7 +996,7 @@ class exports.Class extends Node
         lines[i] = Import Literal(\_proto), node
         proto = lname
       else if node instanceof Fun and not node.statement
-        throw SyntaxError 'more than one constructor in a class' if ctor
+        throw SE 'more than one constructor in a class' if ctor
         proto = lname if (ctor = node).bound
     lines.unshift ctor = Fun() unless ctor
     lines.push lname
@@ -1021,7 +1017,7 @@ class exports.Super extends Node
 
   compile: (o) ->
     {method} = o.scope.shared or o.scope
-    throw SyntaxError 'super outside of a function' unless method
+    throw SE 'super outside of a function' unless method
     {name, clas} = method
     if name
       if clas
@@ -1030,7 +1026,7 @@ class exports.Super extends Node
       else if IDENTIFIER.test name
         return name + \.superclass
     return \_super if o.scope.check \_super
-    throw SyntaxError 'super in an anonymous function'
+    throw SE 'super in an anonymous function'
 
 #### Parens
 # An extra set of parentheses,
@@ -1437,8 +1433,8 @@ exports import all mix: __importAll
 )::<<<
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
-    if name of <[ arguments eval ]>
-      throw SyntaxError "redefining \"#{name}\" is deprecated"
+    switch name case <[ arguments eval ]>
+      throw SE "redefining \"#{name}\" is deprecated"
     if @variables[@positions[name]]
     then that import {type}
     else @positions[name] = -1 + @variables.push {name, type}
@@ -1493,6 +1489,8 @@ exports import all mix: __importAll
 function YES  -> true
 function NO   -> false
 function THIS -> this
+
+SE = SyntaxError
 
 UTILITIES =
   # Creates an object's prototypal child, ensuring `__proto__`.
