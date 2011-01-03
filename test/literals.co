@@ -66,6 +66,11 @@ obj: 1
 ### doesn't break things. ###
 
 
+# Implicit objects with number arguments.
+k1: eq 1, 1
+k2: eq 2, 2,
+
+
 # Funky indentation within non-comma-seperated arrays.
 result = [['a']
  {b: 'c'}]
