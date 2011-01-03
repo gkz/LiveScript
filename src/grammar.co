@@ -29,7 +29,7 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # previous nonterminal.
 o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
-  action &&= unwrap.exec(action).1.replace /\b(?:[A-Z][\w.]+|mix\b)/g, 'yy.$&'
+  action &&= unwrap.exec(action).1.replace /\b(?:[A-Z][\w.]+|mix\b)/g \yy.$&
   [patterns, action ? \$1, options]
 
 # Grammatical Rules
@@ -68,16 +68,10 @@ bnf =
     o \STRNUM  ,-> Literal $1
     o \LITERAL ,-> Literal $1, true
   ]
-  # Sequence of primitive values without explicit separators.
-  Seq: [
-    o 'Primitive Primitive'  ,-> [$1, $2]
-    o 'Seq       Primitive'  ,-> $1.concat $2
-  ]
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
     o \IDENTIFIER ,-> Literal $1
-
     o \ThisProperty
 
     o 'Value DOT IDENTIFIER'           ,-> $1.add Index Key($3)     ,$2
@@ -190,8 +184,13 @@ bnf =
     o 'ArgList OptComma TERMINATOR Arg'                 ,-> $1.concat $4
     o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ,-> $1.concat $4
 
-    o \Seq
-    o 'ArgList , Seq'                                   ,-> $1.concat $3
+    o \ArgSeq
+    o 'ArgList , ArgSeq' ,-> $1.concat $3
+  ]
+  # Sequence of primitive values without explicit separators.
+  ArgSeq: [
+    o 'Primitive Primitive' ,-> [$1, $2]
+    o 'ArgSeq    Primitive' ,-> $1.concat $2
   ]
 
   # A reference to a property on `this`.
@@ -238,7 +237,7 @@ bnf =
     o 'Key :        Expression'        ,-> Assign $1.asKey(), $3, \:
     o 'Key : INDENT Expression DEDENT' ,-> Assign $1.asKey(), $4, \:
 
-    o     \Key  ,-> $1
+    o \Key
     o '... Key' ,-> Splat  $2
     o '+-  Key' ,-> Assign $2.asKey(), Literal($1 is \+), \:
 
@@ -255,12 +254,12 @@ bnf =
     o 'Properties OptComma TERMINATOR Property'               ,-> $1.concat $4
     o 'Properties OptComma INDENT Properties OptComma DEDENT' ,-> $1.concat $4
 
-    o \PSeq
-    o 'Properties , PSeq'                                     ,-> $1.concat $3
+    o \KeySeq
+    o 'Properties , KeySeq' ,-> $1.concat $3
   ]
-  PSeq: [
+  KeySeq: [
     o 'STRNUM STRNUM' ,-> [Literal $1; Literal $2]
-    o 'PSeq   STRNUM' ,-> $1.concat
+    o 'KeySeq STRNUM' ,-> $1.concat
   ]
   Object: [
     o '{ Properties OptComma }' ,-> Obj $2
@@ -314,9 +313,9 @@ bnf =
   # The **Root** is the top-level node in the syntax tree.
   # Since we parse bottom-up, all parsing must end here.
   Root: [
-    o '' ,-> Lines()
     o \Body
     o 'Block TERMINATOR'
+    o '' ,-> Lines()
   ]
 
 # Precedence

@@ -138,7 +138,7 @@ printTokens = (tokens) ->
   for [tag, val, lno] of tokens
     tag += \: + val unless tag is val += ''
     (lines[lno] ||= []).push tag
-  say(if l then l.join(' ').replace /\n/g, \\\n else '') for l of lines
+  say(if l then l.join(' ').replace /\n/g \\\n else '') for l of lines
 
 # A simple Read-Eval-Print-Loop. Compiles one line at a time to JavaScript
 # and evaluates it. Good for simple tests or poking around the **node.js** API.
