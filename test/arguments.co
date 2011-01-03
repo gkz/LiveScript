@@ -84,3 +84,6 @@ eq arguments,
 
 
 throws 'duplicate formal argument: a', -> Coco.compile '(a, a) ->'
+
+
+ok (@arguments, @eval) ->

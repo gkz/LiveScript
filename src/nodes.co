@@ -971,7 +971,8 @@ class exports.Fun extends Node
     else    if prm.hasDefault()     then prm.=first
     if prm.at
       {name} = prm.tails.0.key
-      prm = Literal if name.reserved then \$ + name else name
+      name = \$ + name if name.reserved or name of <[ arguments eval ]>
+      prm  = Literal name
     else if prm.isComplex()
       prm = Literal o.scope.temporary \arg
     node.param = if splat then Splat prm else prm
