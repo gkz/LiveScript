@@ -5,7 +5,9 @@ Coco.eval = (code, options) -> (0; eval) Coco.compile code, options
 Coco.run  = (code, options = {}) ->
   do Function Coco.compile code, options import {+bare}
 
-# If we're not in a browser environment, we're finished with the public API.
+# Support Gecko JS Module.
+@EXPORTED_SYMBOLS = [\Coco] if toString() is '[object BackstagePass]'
+
 return unless window?
 
 # Load a remote script from the current domain via XHR.
