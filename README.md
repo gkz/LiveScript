@@ -16,7 +16,7 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 ## Installation
 Install [node.js](http://nodejs.org), then
 
-    git clone git:github.com/satyr/coco.git && cd coco && bin/coke install
+    git clone git:github.com/satyr/coco.git && cd coco && bin/coke i
 
 Or install [npm](https://github.com/isaacs/npm#readme), then
 
@@ -29,8 +29,23 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
+### 0.2.1
+- Added numeric ranges:
+      $ bin/coco -bpe 'f -1 to 1, [2 to 8 by 3]'
+      f(-1, 0, 1, [2, 5, 8]);
+- Destructuring assignments can now specify default values using logical operators:
+      $ coco -bpe '[@a || b] = c'
+      this.a = c[0] || b;
+  Default arguments syntax has been changed accordingly (`(a || b) ->` instead of `(a ||= b) ->`).
+- `do` now performs special conversions against function literals with parameters, making it work as pseudo-`let` and Coffee 1.0.0 compliant:
+      $ coco -bpe 'do (x = y, z) ->'
+      (function(x, z){}(y, z));
+- Allowed `for i from x then` as a sugar for `for i from 0 til x then`.
+- Disallowed duplicate formal arguments.
+- Improved syntax-highlight in _src/index.html_.
+
 ### 0.2.0
-- Version bump for Xmas, in concert with Coffee 1.0.0.
+- Version bump for Xmas, in concert with [Coffee 1.0.0](http://news.ycombinator.com/item?id=2037801).
 - `@@` is now a shorthand for `arguments`.
 - `do` can now indicate a call against indented arguments, so that you can write
       f do
@@ -57,7 +72,7 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 - Destructuring into an object's properties is now possible:
   - `a[b, c] = d` -> `a[b] = d[0], a[c] = d[1];`
   - `a{b, c} = d` -> `a.b = d.b, a.c = d.c;`
-- Compound assigments can now destructure:
+- Compound assignments can now destructure:
   `[@a, @b] /= c` -> `this.a /= c[0], this.b /= c[1];`
 
 ### 0.1.5
