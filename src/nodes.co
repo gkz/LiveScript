@@ -514,10 +514,9 @@ class exports.Obj extends Node
         key = node.left.compile o
         node.compile o
       else
-        (key = node.compile o, LEVEL_LIST) + ': ' + key
-      throw SE 'duplicate property name: ' + key if dic[key + 0]
-      dic[key + 0] = 1
-      code += if node is last then \\n else \,\n
+        (key = node.compile o) + ': ' + key
+      throw SE 'duplicate property name: ' + key if dic[0 + key]
+      code += dic[0 + key] = if node is last then \\n else \,\n
     code = "{#{ code and \\n + code + @tab }}"
     return @compileDynamic o, code, rest if rest
     if @front then "(#{code})" else code
@@ -916,7 +915,7 @@ class exports.Fun extends Node
         body.add Return Literal \_this
       else if sscope.method?.bound
       then @bound = that
-      else sscope.assign \_this, \this
+      else sscope.assign \_this \this
     args = []; asns = []
     # `(a = x) ->` to `(a ? x) ->`
     for prm, i of params then if prm.op is \= and not prm.logic
@@ -1419,7 +1418,7 @@ class exports.Util extends Node
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
   # returning the left one.
-  @Extends = -> Call Value(Util \extends), @@[0, 1]
+  @Extends = -> Call Value(Util \extends), @@[0 1]
 
 # Export `import all` for use in [parser](../lib/parser.js),
 # where the operator doesn't work.

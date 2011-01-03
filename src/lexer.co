@@ -28,10 +28,10 @@ exports import
   # we move forward within the code past the token, and begin again.
   ) -> exports{}.tokenize code || '', options || {}
   tokenize: (code, o) ->
-    code.=replace(/\r/g, '').replace(/\s+$/, '')
+    code.=replace(/\r/g '').replace(/\s+$/ '')
     # Stream of parsed tokens,
     # initialized with a DUMMY token to ensure `@last` always exists.
-    @tokens = [@last = [\DUMMY, '', 0]]
+    @tokens = [@last = [\DUMMY '' 0]]
     # The current line.
     @line = o.line | 0
     # The current indentation level, over-indentation and under-outdentation.
@@ -53,7 +53,7 @@ exports import
         i = if \[ is code.charAt 1
         then @wordsToken code else @literalToken code
       case \/
-        i = if \// is code.substr 1, 2
+        i = if \// is code.substr 1 2
         then @heregexToken code else @regexToken code or @literalToken code
       case \# then i = @spaceToken code or @commentToken code
       case \` then i = @jsToken code
@@ -84,8 +84,7 @@ exports import
       return id.length
     case \from
       break unless @tokens[*-2]?.0 is \FOR
-      @seenFor  = false
-      @seenFrom = true
+      @<<<{-seenFor, +seenFrom}
       return @token(\FROM, id).length
     case \ever
       break unless @last.0 is \FOR
@@ -115,7 +114,7 @@ exports import
     [input, [], colon] = match
     forcedIdentifier = at or colon or
       if not (prev = @last).spaced and prev.1.colon2
-      then @token \DOT, \.
+      then @token \DOT \.
       else prev.0 is \DOT
     if forcedIdentifier
       (id = new String id).reserved = true if id of FORBIDDEN
@@ -152,7 +151,7 @@ exports import
       return (prev.1 = id).length
     @token tag, id
     @last[attr] = true if attr
-    @token \:, \:      if colon
+    @token \: \:       if colon
     input.length
 
   # Matches a number, including decimal, hex and exponential notation.
@@ -161,9 +160,9 @@ exports import
     num = match.3 or match.0; {last} = this
     switch num.charAt 0
     case \. then if @callable() or last.0 of <[ } LITERAL ]>
-      @token \DOT, \.; @token \STRNUM, num.slice 1
+      @token \DOT \.; @token \STRNUM, num.slice 1
       return match.0.length
-    case \0 then if num.charAt(1) not of ['', \x, \.]
+    case \0 then if num.charAt(1) not of ['' \x \.]
       @carp "octal literal #{num} is deprecated"
     if radix = match.1
       @carp "invalid radix #{radix}" unless 2 <= radix <= 36
@@ -196,7 +195,7 @@ exports import
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
   heredocToken: (code, q) ->
-    return 0 unless code.slice(1, 3) is q+q and ~end = code.indexOf q+q+q, 3
+    return 0 unless code.slice(1 3) is q+q and ~end = code.indexOf q+q+q, 3
     txt = code.slice 3, end
     lnl = txt isnt doc = txt.replace /\n[^\n\S]*$/, ''
     if ~doc.indexOf \\n
@@ -219,7 +218,7 @@ exports import
   commentToken: ->
     text = it.slice 3, if ~end = it.indexOf \###, 3 then end else 9e9
     @token \COMMENT, untabify text, @indent
-    @token \TERMINATOR, \\n
+    @token \TERMINATOR \\n
     @countLines(text).length + 6
 
   # Matches JavaScript interpolated directly into the source via backticks.
@@ -245,10 +244,10 @@ exports import
     @carp 'unterminated heregex' unless match = HEREGEX.exec it
     [heregex, body, flags] = match
     if 0 > body.indexOf \#{
-      body.=replace(HEREGEX_OMIT, '').replace(/\//g, \\\/)
+      body.=replace(HEREGEX_OMIT, '').replace(/\//g \\\/)
       @token \LITERAL, "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex).length
-    @token \IDENTIFIER, \RegExp; @token \CALL(, \(
+    @token \IDENTIFIER \RegExp; @token \CALL( \(
     {tokens} = this
     for token, i of @interpolateString body
       if token.0 is \TOKENS
@@ -258,23 +257,23 @@ exports import
         continue if i and not val
         val.=replace bs ||= /\\/g, \\\\\
         tokens.push [\STRNUM; string val, \', \\\n; token.2]
-      tokens.push [\+-, \+, tokens[*-1].2]
+      tokens.push [\+- \+, tokens[*-1].2]
     tokens.pop()
-    if flags then @token \,, \,; @token \STRNUM, "'#{flags}'"
-    @token \), \)
+    if flags then @token \, \,; @token \STRNUM, "'#{flags}'"
+    @token \) \)
     heregex.length
 
   # Matches a words literal, a syntax sugar for a list of strings.
   wordsToken: ->
-    @carp 'unterminated words' unless ~end = it.indexOf \]>, 2
-    @token \[, \[
+    @carp 'unterminated words' unless ~end = it.indexOf \]> 2
+    @token \[ \[
     for line of it.slice(2, end).split \\n
-      if line.match re ||= /\S+/g then for word of that
-        @tokens.push [\STRNUM; string word, \'; @line], [\,, \,, @line]
+      if line.match re ||= /\S+/g
+        @tokens.push [\STRNUM; string word, \'; @line] for word of that
       ++@line
     --@line
-    if word then @tokens.pop() else @token \STRNUM, "''"
-    @token \], \]
+    @token \STRNUM "''" unless word
+    @token \] \]
     end + 2
 
   # Matches newlines, indents, and outdents, and determines which is which.
@@ -348,16 +347,16 @@ exports import
     case \*
       tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
     case \::
-      @token \DOT, \.
+      @token \DOT \.
       @token \IDENTIFIER, new String(\prototype) <<< {+colon2}
       fallthrough
     case \\\\n then return val.length
     default
       switch val.charAt 0
       case \@
-        @token \IDENTIFIER, \arguments
+        @token \IDENTIFIER \arguments
         unless \@ is val.charAt 1
-          @token \DOT, \.; @token \STRNUM, val.slice 1
+          @token \DOT \.; @token \STRNUM, val.slice 1
         return val.length
       case \\
         word = val.slice 1
@@ -365,7 +364,7 @@ exports import
         return val.length
       if val is \( and @callable()
         if @last.0 is \?
-          @last[0, 1] = [\CALL(, \?(]
+          @last[0 1] = [\CALL( \?(]
           return val.length
         tag = \CALL(
     @token(tag, val).length
@@ -388,7 +387,7 @@ exports import
     @newline() unless noNewline
 
   # Generates a newline token. Consecutive newlines get merged together.
-  newline: -> @token \TERMINATOR, \\n unless @last.0 is \TERMINATOR
+  newline: -> @token \TERMINATOR \\n unless @last.0 is \TERMINATOR
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
@@ -420,7 +419,7 @@ exports import
       case \" then stack.push end = '}' if \{ is chr and \# is str.charAt i-1
       case \}
         switch chr
-        case [\", \'] then stack.push end = chr
+        case [\" \'] then stack.push end = chr
         case \{       then stack.push end = '}'
     @carp 'missing ' + stack.pop()
 
@@ -449,8 +448,8 @@ exports import
       nested.pop()
       nested.shift() if nested.0?.0 is \TERMINATOR
       if nested.length > 1
-        nested.unshift [\(, \(, nested[ 0 ].2]
-        nested.push    [\), \), nested[*-1].2]
+        nested.unshift [\( \(, nested[ 0 ].2]
+        nested.push    [\) \), nested[*-1].2]
       ts.push [\TOKENS, nested]
       @countLines code
     if pi < str.length
@@ -459,13 +458,13 @@ exports import
     ts.unshift [\S, '', line] if ts.0?.0 isnt \S
     return ts unless newline?
     {tokens} = this
-    tokens.push [\(, \(, line]
+    tokens.push [\( \(, line]
     for t, i of ts
-      tokens.push [\+-, \+, tokens[*-1].2] if i
+      tokens.push [\+- \+, tokens[*-1].2] if i
       if t.0 is \TOKENS
       then tokens.push ...t.1
       else tokens.push [\STRNUM; string t.1, \", newline; t.2]
-    @token \), \)
+    @token \) \)
     ts
 
   #### Helpers

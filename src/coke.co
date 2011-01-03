@@ -52,7 +52,7 @@ global import
 # If no tasks are passed, print the help screen.
 exports.run = ->
   args = process.argv.slice 2
-  fileName = args.splice(0, 2).1 if args.0 of <[ -f --cokefile ]>
+  fileName = args.splice(0 2).1 if args.0 of <[ -f --cokefile ]>
   path.exists fileName ||= \Cokefile, (exists) ->
     unless exists
       console.error 'no "%s" in %s', fileName, process.cwd()

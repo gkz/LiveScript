@@ -60,7 +60,7 @@ function closeCalls (tokens) ->
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
 function addImplicitBraces (tokens) ->
-  go = (token, i) -> tokens.splice i, 0, [\}, \}, token.2]
+  go = (token, i) -> tokens.splice i, 0, [\} \}, token.2]
   ok = (token, i) ->
     return true  if token.1 is \; or \DEDENT is tag = token.0
     return false if tag not of <[ , TERMINATOR ]>
@@ -85,7 +85,7 @@ function addImplicitBraces (tokens) ->
     stack.push [\{]
     idx  = if paren then start.1 else i-1
     idx -= 2 while tokens[idx-2]?.0 is \COMMENT
-    tokens.splice idx, 0, [\{, \{, token.2]
+    tokens.splice idx, 0, [\{ \{, token.2]
     detectEnd tokens, ++i+1, ok, go
   tokens
 
@@ -131,7 +131,7 @@ function addImplicitParentheses (tokens) ->
     tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]>
   function go (token, i) ->
     ++i if token.0 is \DEDENT
-    tokens.splice i, 0, [\)CALL, \), token.2]
+    tokens.splice i, 0, [\)CALL \), token.2]
   tokens
 
 # Because our grammar is LALR(1), it can't handle some single-line
@@ -249,9 +249,9 @@ function expandNumbers (tokens) ->
       ts = []; lno = token.2
       to = token.to - if token.op is \to then 0 else 1e-15
       for n from +token.1 to to by +token.by or 1
-        if 0x800 < ts.push [\STRNUM, n, lno], [\,, \,, lno]
+        if 32r100 < ts.push [\STRNUM, n, lno]
           carp 'range limit exceeded', lno
-      ts.pop() or carp 'empty range', lno
+      ts.length or carp 'empty range', lno
       tokens.splice i, 1, ...ts
       i += ts.length - 1
   tokens
