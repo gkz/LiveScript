@@ -289,8 +289,8 @@ bnf =
 
   # Optional `extends` clause for class definition.
   OptExtends: [
-    o ''              ,-> null
-    o 'EXTENDS Value' ,-> $2
+    o ''                   ,-> null
+    o 'EXTENDS Expression' ,-> $2
   ]
 
   # The **Root** is the top-level node in the syntax tree.
