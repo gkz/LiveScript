@@ -67,10 +67,9 @@ catch e
   ok false
 
 
-# If-to-ternary as part of a larger operation requires parens.
+# If-to-ternary as part of a larger operation.
 x = 1
-result = x + if false then 10 else 1
-ok result is 2
+eq 2, x + if false then 10 else 1
 
 
 # If/else indented within an assignment.
@@ -82,8 +81,7 @@ func = ->
       5
   101
   a
-
-ok func() is 5
+eq func(), 5
 
 
 # Unmatched 'then' should catch implicit calls.

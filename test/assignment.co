@@ -10,12 +10,12 @@ x = if getX() then 100
 eq x, 100
 
 
-# This-assignment.
+# _thisprop_ assignment.
 tester = ->
-  @example = -> 'example function'
+  @example = ok
   this
 
-ok tester().example() is 'example function'
+eq ok, new tester().example
 
 
 num = 10

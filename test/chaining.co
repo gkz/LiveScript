@@ -17,36 +17,33 @@ eq obj.withThis(), 100
 # Chained accesses split true period/newline, backwards and forwards.
 str = 'god'
 
-result = str.
+eq \dog, str.
   split('').
   reverse().
-  reverse().
-  reverse()
+   reverse().
+     reverse().
+  join('')
 
-ok result.join('') is 'dog'
-
-result = str
+result = '' + str
   .split('')
   .reverse()
-  .reverse()
-  .reverse()
+   .reverse()
+    .reverse()
+  .join ''
+eq \dog, result
 
-ok result.join('') is 'dog'
 
-
-# Newline suppression for operators.
-six =
-  1 +
+# Newline suppression for binary operators.
+eq 32,
+  1 *
   2 +
-  3
-
-ok six is 6
+  3 -
+  4 <<
+  5
 
 
 # Ensure that indented array literals don't trigger whitespace rewriting.
-func = () ->
-  ok arguments.length is 1
-
+func = -> eq arguments.length, 1
 func(
   [[[[[],
                 []],
@@ -59,7 +56,7 @@ greeting = id(
               """
               Hello
               """)
-ok greeting is "Hello"
+eq greeting, "Hello"
 
 eq '[object Object]', (
   {}

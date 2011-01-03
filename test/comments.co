@@ -60,7 +60,7 @@ test =
   'test ' + # comment
   'test'
 
-ok test is 'test test test'
+eq test, 'test test test'
 
 ###
   This is a here-comment.
@@ -110,13 +110,13 @@ else if false
 else
   3
 
-ok result is 3
+eq result, 3
 
 
 result = switch 'z'
 case 'z' then 7
 # comment
-ok result is 7
+eq result, 7
 
 
 # Trailing-line comment before an outdent.
@@ -125,7 +125,7 @@ func = ->
     true # comment
   7
 
-ok func() is 7
+eq func(), 7
 
 
 # Trailing herecomment in a function.

@@ -104,43 +104,42 @@ eq count, 5
 # Ensure that RHS is treated as a group.
 a = b = false
 a &&= b or true
-ok a is false
+eq a, false
 
 # Conditional assignments with implicit objects.
 obj = void
 obj ?= one: 1
-
-ok obj.one is 1
+eq obj.one, 1
 
 obj &&=
   two: 2
 
 ok not obj.one
-ok obj.two is 2
+eq obj.two, 2
 
 
 # Compound assignment as a sub expression.
 [a, b, c] = [1, 2, 3]
-ok (a + b += c) is 6
-ok a is 1
-ok b is 5
-ok c is 3
+eq (a + b += c), 6
+eq a, 1
+eq b, 5
+eq c, 3
 
 
 # Bitwise operators:
-ok (10 &   3) is 2
-ok (10 |   3) is 11
-ok (10 ^   3) is 9
-ok (10 <<  3) is 80
-ok (10 >>  3) is 1
-ok (10 >>> 3) is 1
+eq (10 &   3), 2
+eq (10 |   3), 11
+eq (10 ^   3), 9
+eq (10 <<  3), 80
+eq (10 >>  3), 1
+eq (10 >>> 3), 1
 
-num = 10; ok (num <<=  3) is 80
-num = 10; ok (num >>=  3) is 1
-num = 10; ok (num >>>= 3) is 1
-num = 10; ok (num &=   3) is 2
-num = 10; ok (num ^=   3) is 9
-num = 10; ok (num |=   3) is 11
+num = 10; eq (num <<=  3), 80
+num = 10; eq (num >>=  3), 1
+num = 10; eq (num >>>= 3), 1
+num = 10; eq (num &=   3), 2
+num = 10; eq (num ^=   3), 9
+num = 10; eq (num |=   3), 11
 
 
 #coffee-737: `in` should have higher precedence than logical operators.
@@ -160,11 +159,11 @@ eq [Object() of Array()].length, 1
 # Operators should respect new lines as spaced.
 a = (123) +
 456
-ok a is 579
+eq a, 579
 
 a = "1#{2}3" +
 "456"
-ok a is '123456'
+eq a, '123456'
 
 
 # Multiple operators should space themselves.

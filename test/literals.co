@@ -43,13 +43,12 @@ moe = {
   10: 'number'
 }
 
-ok moe.hello() is "Hello Moe"
-ok moe[10] is 'number'
+eq moe.hello() ,"Hello Moe"
+eq moe[10]     ,'number'
 
-moe.hello = ->
-  this['greet'] "Hello"
+moe.hello = -> this['greet'] "Hello"
 
-ok moe.hello() is 'Hello Moe'
+eq moe.hello(), 'Hello Moe'
 
 
 obj = {
@@ -75,8 +74,8 @@ k2: eq 2, 2,
 result = [['a']
  {b: 'c'}]
 
-ok result[0][0] is 'a'
-ok result[1]['b'] is 'c'
+eq 'a', result[0][0]
+eq 'c', result[1]['b']
 
 
 # Object literals should be able to include keywords.
@@ -85,14 +84,7 @@ obj.function = 'dog'
 eq obj.class + obj.function, 'hotdog'
 
 
-# But keyword assignment should be smart enough not to stringify variables.
-func = ->
-  this == 'this'
-
-ok func() is false
-
-
-# New fancy implicit objects:
+# New fancy implicit objects.
 config =
   development:
     server: 'localhost'
@@ -102,24 +94,22 @@ config =
     server: 'dreamboat'
     timeout: 1000
 
-ok config.development.server  is 'localhost'
-ok config.production.server   is 'dreamboat'
-ok config.development.timeout is 10
-ok config.production.timeout  is 1000
+eq config.development.server  ,'localhost'
+eq config.production.server   ,'dreamboat'
+eq config.development.timeout ,10
+eq config.production.timeout  ,1000
 
 obj =
-  a: 1
-  b: 2
+  a: 2
+  b: 3
 
-ok obj.a is 1
-ok obj.b is 2
+eq 6, obj.a * obj.b
 
 obj =
-  a: 1,
-  b: 2,
+  a: 2,
+  b: 3,
 
-ok obj.a is 1
-ok obj.b is 2
+eq 6, obj.a * obj.b
 
 
 # Implicit objects nesting.
@@ -131,8 +121,8 @@ obj =
     {}
     null
 
-ok obj.options.value is true
-ok obj.fn() is null
+eq true, obj.options.value
+eq null,  obj.fn()
 
 
 third = (a, b, c) -> c
@@ -140,8 +130,8 @@ obj =
   one: 'one'
   two: third 'one', 'two', 'three'
 
-ok obj.one is 'one'
-ok obj.two is 'three'
+eq obj.one, 'one'
+eq obj.two, 'three'
 
 
 # Implicit objects with wacky indentation:
@@ -165,14 +155,14 @@ obj =
                   [],
       []]
 
-ok obj.abc().join(' ') is 'a b c'
-ok obj.one.length is 5
-ok obj.one[4] is 4
-ok obj.one[2].a is 'b'
-ok (key for key in obj.red).length is 2
-ok obj.red.orange.yellow.green is 'blue'
-ok obj.red.indigo is 'violet'
-ok obj.misdent.toString() is ',,,'
+eq obj.abc() + ''   ,'a,b,c'
+eq obj.one.length   ,5
+eq obj.one[4]       ,4
+eq obj.one[2].a     ,'b'
+eq obj.red.indigo   ,'violet'
+eq obj.misdent + '' ,',,,'
+eq obj.red.orange.yellow.green, 'blue'
+eq 2, (key for key in obj.red).length
 
 
 # Implicit objects as part of chained calls.
