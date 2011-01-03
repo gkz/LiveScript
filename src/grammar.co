@@ -185,7 +185,8 @@ bnf =
     o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ,-> $1.concat $4
 
     o \ArgSeq
-    o 'ArgList , ArgSeq' ,-> $1.concat $3
+    o 'ArgList , ArgSeq'                   ,-> $1.concat $3
+    o 'ArgList OptComma TERMINATOR ArgSeq' ,-> $1.concat $4
   ]
   # Sequence of primitive values without explicit separators.
   ArgSeq: [
@@ -255,7 +256,8 @@ bnf =
     o 'Properties OptComma INDENT Properties OptComma DEDENT' ,-> $1.concat $4
 
     o \KeySeq
-    o 'Properties , KeySeq' ,-> $1.concat $3
+    o 'Properties , KeySeq'                   ,-> $1.concat $3
+    o 'Properties OptComma TERMINATOR KeySeq' ,-> $1.concat $4
   ]
   KeySeq: [
     o 'STRNUM STRNUM' ,-> [Literal $1; Literal $2]
