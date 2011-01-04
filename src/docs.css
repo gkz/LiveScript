@@ -1,4 +1,4 @@
-body {margin:0}
+body {margin:0 0 3ex}
 h1   {margin:1ex}
 pre  {font-size:small; overflow-x:auto}
 .comment, .code {display:inline-block}
@@ -28,9 +28,11 @@ pre  {font-size:small; overflow-x:auto}
 {display:none}
 
 /* prettify */
+.pln {color:#000}
+.com {color:#666}
 .str {color:#080}
 .kwd {color:#008}
-.com {color:#800}
-.typ {color:#606}
+.typ {color:#800}
 .lit {color:#066}
-.pln {color:#000}
+.pun {color:#660}
+.tag {color:#606}

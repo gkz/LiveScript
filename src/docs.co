@@ -59,7 +59,7 @@ function build (name, source) ->
       code += line + \\n
     br = false
   htm += block name, comment, code, i if comment
-  "<h1>#{name}</h1>" + htm
+  "<h1>#{name}</h1>" + htm + '<br clear=both>'
 
 function block (name, comment, code, i) ->
   code &&= """
@@ -80,7 +80,6 @@ PR.registerLangHandler do
       [\str /^\\\S[^\s,;)}\]]*/ 0 \\]
       [\str /// ^ ' (?: ''[\s\S]*?'' | [^\\']*(?:\\.[^\\']*)* ) ' /// 0 \']
       [\str /// ^ " (?: ""[\s\S]*?"" | [^\\"]*(?:\\.[^\\"]*)* ) " /// 0 \"]
-      [\lit /^`[^\\`]*(?:\\.[^\\`]*)*`/, 0, \`]
       [\lit /^<\[[\s\S]*?]>/, 0, \<]
       [\lit /// ^ (?
       : /{3} [\s\S]+? /{3}
@@ -97,11 +96,13 @@ PR.registerLangHandler do
         )* /
       ) [imgy]{0,4} (?!\w) /// 0 \/]
       [\com /// ^ \# (?: \##[^#][\s\S]*?### | .*) ///, 0, \#]
+      [\pln /^[\.@][$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/ 0 \.@]
       [\typ /// ^ (?
       : 0x[\da-f]+
       | [1-9]\d? r [\da-z]+
-      | (?:\d+(?:\.\d+)?|\.\d+) (?:e[+-]?\d+)? [a-z]*
-      ) ///i 0 \0123456789.]
+      | (?:\d+(?:\.\d+)?) (?:e[+-]?\d+)? [a-z]*
+      ) ///i 0 \0123456789]
+      [\lang-js /^`([^\\`]*(?:\\.[^\\`]*)*)`/, 0, \`]
     ]
     # ref. [retrie](https://github.com/satyr/retrie)
     [
@@ -115,7 +116,15 @@ PR.registerLangHandler do
       | d(?:e(?:fault|lete|bugger)|o)
       | un(?:less|til)
       | o[fr] | return | break | while | switch | and
-      ) \b ///]
-      [\typ /// ^ (?: t(?:rue|his) | false | null | void | super ) \b ///]
+      ) \b(?![^\n\S]*:(?!:)) ///]
+      [\typ /// ^ (?: true | false | null | void ) \b(?![^\n\S]*:(?!:)) ///]
+      [\pun /// ^ (?
+      : (?: th(?:is|at) | it | super | arguments | eval ) \b(?![^\n\S]*:(?!:))
+      | @[@\d]?
+      ) ///]
+      [\tag /// ^ (?
+      : Array | Boolean | Date | Error | Function | JSON | Math | Number
+      | Object | RegExp | S(?:tring|yntaxError) | TypeError
+      ) \b(?![^\n\S]*:(?!:)) ///]
     ]
   [\co]
