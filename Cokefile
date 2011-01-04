@@ -41,7 +41,9 @@ task <[ install i ]>, 'install Coco into /usr/local (or --prefix)', (options) ->
     say if err then stderr.trim() else tint \done
 
 task <[ build b ]>, 'build the Coco language from source', ->
-  run <[ -bco lib src ]>
+  ss = sources()
+  run [\-co  \lib; ss.splice ss.indexOf(\src/docs.co), 1]
+  run [\-bco \lib].concat ss
 
 task <[ build:full bf ]>, 'rebuild the source twice, and run the tests', ->
   exec 'bin/coke build && bin/coke build && bin/coke test'

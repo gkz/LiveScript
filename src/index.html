@@ -1,62 +1,12 @@
 <!DOCTYPE html>
 <title>Coco Docs</title>
-<style>
-body {margin:0}
-h1   {margin:1ex}
-pre  {font-size:small; overflow-x:auto}
-.comment, .code {display:inline-block}
-.comment {width:37%; margin:0 2% 0 1%}
-.comment code {
- background-color: rgba(0,0,0,.1); padding:0 .5ex;
- border-radius:1ex; -moz-border-radius:1ex; -webkit-border-radius:1ex;
-}
-.comment pre > code {background-color:transparent; padding-left:1em}
-.code    {width:60%; float:right}
-.block   {clear:both; position:relative}
-.anchor  {position:absolute; font:bold small mono-space}
-.pointee {font-weight:bold}
-#navi.menu {
- position:fixed; top:0; right:0; z-index:5;
- margin:0; padding:3px 0.5em; list-style:none;
- border-width:0 0 3px 3px; border-style:solid;
- border-radius     :0 0 0 1.5ex;
- -moz-border-radius:0 0 0 1.5ex;
- -webkit-border-bottom-left-radius:1.5ex;
-}
-.comment:not(:hover) > .anchor
-, #navi.menu > h1
-, #navi.menu:not(:hover) > :not(.pointee)
-, #navi.menu:hover > .pointee
-, #navi:not(.menu) > .pointee {display:none}
-/* prettify */
-.pun, .opn, .clo {color:#660}
-.str {color:#080}
-.kwd {color:#008}
-.com {color:#800}
-.typ {color:#606}
-.lit {color:#066}
-.pln {color:#000}
-.tag {color:#008}
-.atn {color:#606}
-.atv {color:#080}
-.dec {color:#606}
-</style>
-<link rel=icon href=../coco.png>
-<ul id=navi>
-<div class=pointee>&#x2935;</div>
-<h1>Coco Source Documentation</h1>
-<li><a href=#coco>coco</a>
-<li><a href=#lexer>lexer</a>
-<li><a href=#rewriter>rewriter</a>
-<li><a href=#nodes>nodes</a>
-<li><a href=#grammar>grammar</a>
-<li><a href=#browser>browser</a>
-<li><a href=#command>command</a>
-<li><a href=#coke>coke</a>
-<li><a href=#optparse>optparse</a>
-<li><a href=#docs>docs</a>
-</ul>
-<div id=docs></div>
+<link rel=stylesheet href=docs.css>
+<link rel=icon       href=../coco.png>
+<body></body>
 <script src=../lib/etc/showdown.js></script>
 <script src=../lib/etc/prettify.js></script>
+<script> sources = [
+'coco', 'lexer', 'rewriter', 'nodes', 'grammar', 'browser',
+'command', 'coke', 'optparse', 'docs',
+] </script>
 <script src=../lib/docs.js></script>

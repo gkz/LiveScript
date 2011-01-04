@@ -1,0 +1,36 @@
+body {margin:0}
+h1   {margin:1ex}
+pre  {font-size:small; overflow-x:auto}
+.comment, .code {display:inline-block}
+.comment {width:37%; margin:0 2% 0 1%}
+.comment code {
+ background-color: rgba(0,0,0,.1); padding:0 .5ex;
+ border-radius:1ex; -moz-border-radius:1ex; -webkit-border-radius:1ex;
+}
+.comment pre > code {background-color:transparent; padding-left:1em}
+.code    {width:60%; float:right}
+.block   {clear:both; position:relative}
+.anchor  {position:absolute; font:bold small mono-space}
+.pointee {font-weight:bold}
+#navi.menu {
+ position:fixed; top:0; right:0; z-index:5;
+ margin:0; padding:3px 0.5em; list-style:none;
+ border-width:0 0 3px 3px; border-style:solid;
+ border-radius     :0 0 0 1.5ex;
+ -moz-border-radius:0 0 0 1.5ex;
+ -webkit-border-bottom-left-radius:1.5ex;
+}
+.comment:not(:hover) > .anchor
+, #navi.menu > h1
+, #navi.menu:not(:hover) > :not(.pointee)
+, #navi.menu:hover > .pointee
+, #navi:not(.menu) > .pointee
+{display:none}
+
+/* prettify */
+.str {color:#080}
+.kwd {color:#008}
+.com {color:#800}
+.typ {color:#606}
+.lit {color:#066}
+.pln {color:#000}

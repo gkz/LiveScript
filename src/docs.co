@@ -4,15 +4,22 @@
 # [showdown](http://attacklab.net/showdown/) and
 # [google-code-prettify](http://code.google.com/p/google-code-prettify/).
 #
-# Imported from [src/index.html](#).
+# View [source](#) for usage.
 
-navi = document.getElementById \navi
-docs = document.getElementById \docs
+{title} = document
+
+docs = document.getElementById \docs or lmn \div, id: \docs
+navi = document.getElementById \navi or do ->
+  h  = '<div class=pointee>&#x2935;</div>'
+  h += "<h1>#{title}</h1>" if title
+  h += "<li><a href=##{co}>#{co}</a>" for co of sources
+  lmn \ul, id: \navi, innerHTML: h
 sdcv = new Showdown.converter
 htms = __proto__: null
 
 do @onhashchange = ->
   unless page = /^\D+(?=(\d*)$)/.exec location.hash.slice 1
+    document <<< {title}
     navi.className = docs.innerHTML = ''
     return
   navi.className = \menu
@@ -20,19 +27,22 @@ do @onhashchange = ->
   [name] = page
   return load page, that if htms[name]
   xhr = new XMLHttpRequest
-  xhr.open \GET, name + \.co, true
+  xhr.open \GET, if name isnt \Cokefile then name + \.co else name, true
   xhr.overrideMimeType? \text/plain
   xhr.onreadystatechange = ->
     load page, htms[name] = build name, xhr.responseText if xhr.readyState is 4
   xhr.send null
 
-load = ([name, sect], html) ->
-  document.title = name + ' - Coco Docs'
+function lmn (name, attrs) ->
+  document.body.appendChild document.createElement(name) <<<< attrs
+
+function load ([name, sect], html) ->
+  document.title = name + (title and ' - ' + title)
   docs.innerHTML = html
   document.getElementById(sect).scrollIntoView() if sect
   prettyPrint()
 
-build = (name, source) ->
+function build (name, source) ->
   htm = comment = code = i = ''
   re  = /^[^\n\S]*#(?!##[^#]|{) ?(.*)/
   for line of source.split \\n
@@ -51,7 +61,7 @@ build = (name, source) ->
   htm += block name, comment, code, i if comment
   "<h1>#{name}</h1>" + htm
 
-block = (name, comment, code, i) ->
+function block (name, comment, code, i) ->
   code &&= """
    <pre class="code prettyprint lang-co"
     >#{ code.replace(/&/g, '&amp;').replace(/</g, '&lt;') }</pre>
@@ -63,6 +73,7 @@ block = (name, comment, code, i) ->
     >#{code}</div>
   """
 
+# ref. [google-code-prettify](http://code.google.com/p/google-code-prettify/source/browse/trunk/src/prettify.js)
 PR.registerLangHandler do
   PR.createSimpleLexer do
     [
@@ -92,6 +103,7 @@ PR.registerLangHandler do
       | (?:\d+(?:\.\d+)?|\.\d+) (?:e[+-]?\d+)? [a-z]*
       ) ///i 0 \0123456789.]
     ]
+    # ref. [retrie](https://github.com/satyr/retrie)
     [
       [\kwd /// ^ (?
       : t(?:ry|h(?:row|en)|ypeof)
@@ -104,6 +116,6 @@ PR.registerLangHandler do
       | un(?:less|til)
       | o[fr] | return | break | while | switch | and
       ) \b ///]
-      [\typ /// ^ (?: true | false | null | void | this | super ) \b ///]
+      [\typ /// ^ (?: t(?:rue|his) | false | null | void | super ) \b ///]
     ]
   [\co]
