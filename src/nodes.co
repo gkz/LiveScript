@@ -970,8 +970,7 @@ class exports.Fun extends Node
     else    if prm.hasDefault()     then prm.=first
     if prm.at
       {name} = prm.tails.0.key
-      name = \$ + name if name.reserved or name of <[ arguments eval ]>
-      prm  = Literal name
+      prm = Literal dollarize name
     else if prm.isComplex()
       prm = Literal o.scope.temporary \arg
     node.param = if splat then Splat prm else prm
@@ -985,11 +984,9 @@ class exports.Class extends Node
   compileNode: (o) ->
     {fun} = this; {lines} = fun.body
     if @title
-      decl = if @title instanceof Value
+      decl = dollarize if @title instanceof Value
       then @title.tails[*-1].key?.name
       else @title.value
-      if decl?.reserved
-        throw SE "reserved word \"#{decl}\" cannot be a class name"
     name  = decl or @name
     name  = \_Class unless name and IDENTIFIER.test name
     lname = Literal fun.bound = name
@@ -1554,10 +1551,13 @@ IDENTIFIER = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
 ##### Helpers
 
 # Declares a utility function at the top level.
-utility = -> Scope.root.assign \__ + it, UTILITIES[it]
+function utility -> Scope.root.assign \__ + it, UTILITIES[it]
 
-lastNonComment = (nodes) ->
+function lastNonComment (nodes) ->
   break if node not instanceof Comment for node, i of nodes by -1
   [i >= 0 and node, i]
 
-tabify = (code, tab) -> code.replace /\n/g, \\n + tab
+function tabify (code, tab) -> code.replace /\n/g, \\n + tab
+
+function dollarize ->
+  if it and (it.reserved or it of <[ arguments eval ]>) then \$ + it else it
