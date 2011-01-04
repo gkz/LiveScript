@@ -275,3 +275,6 @@ eq '0,true,2', '' + [0 true \2]
 o = {0 \1}
 eq o.0,  0
 eq o.1, \1
+
+
+throws 'stub code executed', -> ...

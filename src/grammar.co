@@ -22,6 +22,9 @@
 # wrapper and just returning the value directly.
 unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 
+# Regex to prepend `yy.` omitted in `bnf`.
+yy = /\b(?:(?!Er)[A-Z][\w.]+|mix\b)/g
+
 # Our handy DSL for Jison grammar generation, thanks to
 # [Tim Caswell](http://github.com/creationix). For every rule in the grammar,
 # we pass the pattern-defining string, the action to run, and extra options,
@@ -29,7 +32,7 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # previous nonterminal.
 o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
-  action &&= unwrap.exec(action).1.replace /\b(?:[A-Z][\w.]+|mix\b)/g \yy.$&
+  action &&= unwrap.exec(action).1.replace yy, \yy.$&
   [patterns, action ? \$1, options]
 
 # Grammatical Rules
@@ -154,13 +157,15 @@ bnf =
     o 'SimpleAssignable EXTENDS Expression' ,-> Util.Extends $1, $3
   ]
 
-  # Any list of statements and expressions,
-  # separated by line breaks or semicolons.
+  Line: [
+    o \Expression
+    o \COMMENT ,-> Comment $1
+    o \...     ,-> new Throw Literal "Error('stub code executed')"
+  ]
+  # A list of expressions/comments/yadas, separated by newlines or semicolons.
   Body: [
-    o \Expression                  ,-> Lines $1
-    o \COMMENT                     ,-> Lines Comment $1
-    o 'Body TERMINATOR Expression' ,-> $1.add $3
-    o 'Body TERMINATOR COMMENT'    ,-> $1.add Comment $3
+    o \Line                  ,-> Lines $1
+    o 'Body TERMINATOR Line' ,-> $1.add $3
     o 'Body TERMINATOR'
   ]
 
