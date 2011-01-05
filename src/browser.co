@@ -26,8 +26,9 @@ if self.addEventListener
 then addEventListener \DOMContentLoaded, runScripts, false
 else attachEvent      \onload,           runScripts
 function runScripts ->
+  type = ///^ (?: text/ | application/ )? coco $///i
   for script of document.getElementsByTagName \script
-    continue unless script.type is \text/coco
+    continue unless type.test script.type
     if script.src
     then Coco.load script.src
     else Coco.run  script.innerHTML
