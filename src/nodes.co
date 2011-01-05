@@ -945,7 +945,8 @@ class exports.Fun extends Node
         throw SE 'duplicate formal argument: ' + a if dic[0 + a.=compile o]
         scope.add args[i] = dic[0 + a] = a, \arg
     exps.unshift ...asns if asns.length
-    args.0 = \it if not args.length and body.contains(-> it.value is \it)
+    args.0 = \it if not args.length and not @wrapper and
+                    body.contains(-> it.value is \it)
     body.makeReturn() unless wasEmpty or @ctor
     if @statement
       unless name
