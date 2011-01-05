@@ -536,7 +536,7 @@ class exports.Arr extends Obj
   compileNode: (o) ->
     {items} = this
     return '[]' unless items.length
-    if code = Splat.compileArray o, @items
+    if code = Splat.compileArray o, items
       return if @newed then "(#{code})" else code
     o.indent += TAB
     code = (obj.compile o, LEVEL_LIST for obj of items).join ', '
@@ -631,7 +631,7 @@ class exports.Op extends Node
     [sub, ref] = @first.cache o, false, LEVEL_OP
     tests = for item, i of @second.items
       (if i then ref else sub) + ' instanceof ' + item.compile o
-    o.scope.free ref if sub is not ref
+    o.scope.free ref unless sub is ref
     code = tests.join ' || '
     if o.level < LEVEL_OP then code else "(#{code})"
 
@@ -855,7 +855,7 @@ class exports.Of extends Node
              if @negated then '< 0' else '>= 0'
       return code if sub is ref
       code = sub + ', ' + code
-    o.scope.free ref if sub is not ref
+    o.scope.free ref unless sub is ref
     if o.level < lvl then code else "(#{code})"
 
 #### Existence
@@ -917,26 +917,26 @@ class exports.Fun extends Node
       then @bound = that
       else sscope.assign \_this \this
     args = []; asns = []
-    # `(a = x) ->` to `(a ? x) ->`
-    for prm, i of params then if prm.op is \= and not prm.logic
-      params[i] = Op '?', prm.left, prm.right
-    # `(a, ...b) ->` to `-> [a, ...b] = @@`
-    for prm of params then if prm instanceof Splat
-      splatted = Assign Arr(paramName o, p for p of params), Literal \arguments
-      break
-    for prm of params
-      arg = prm
+    for p, i of params
+      # `(a, ...b) ->` to `-> [a, ...b] = @@`
+      if p instanceof Splat then splatted = true
+      # `(a = x) ->` to `(a ? x) ->`
+      else if p.op is \= and not p.logic
+        params[i] = Op '?', p.left, p.right
+    splatted &&= Assign Arr(paramName o, p for p of params), Literal \arguments
+    for p of params
+      arg = p
       if dfv = arg.hasDefault()    then arg.=first
       else if arg instanceof Splat then arg.=it
       if arg.isComplex()
-        val = ref = paramName o, prm
-        val = Op prm.op, ref, prm.second if dfv
+        val = ref = paramName o, p
+        val = Op p.op, ref, p.second if dfv
         asns.push Assign arg, val
         arg = ref
       else if dfv
-        asns.push if prm.op is \?
-        then Op \&&, Literal(arg.value + ' == null'), Assign arg, prm.second
-        else Assign arg, prm.second, \=, prm.op
+        asns.push if p.op is \?
+        then Op \&&, Literal(arg.value + ' == null'), Assign arg, p.second
+        else Assign arg, p.second, \=, p.op
       splatted or args.push arg
     wasEmpty = not (exps = body.lines).length
     if splatted then asns.unshift splatted else
@@ -1176,12 +1176,12 @@ class exports.For extends While
     else temps.push idx = o.scope.temporary \i
     unless @object
       [step, pvar] = (@step || Literal 1).compileLoopReference o, \step
-      temps.push pvar if step is not pvar
+      temps.push pvar unless step is pvar
     if @from
       eq = if @op is \til then '' else \=
       [tail, tvar] = @to.compileLoopReference o, \to
       vars = idx + ' = ' + @from.compile o
-      if tail is not tvar
+      unless tail is tvar
         vars += ', ' + tail
         temps.push tvar
       cond = if +pvar
@@ -1190,11 +1190,11 @@ class exports.For extends While
     else
       if @name or @object and @own
         [srcPart, svar] = @source.compileLoopReference o, \ref
-        temps.push svar if srcPart is not svar
+        temps.push svar unless srcPart is svar
       else
         srcPart = svar = @source.compile o, LEVEL_PAREN
       unless @object
-        srcPart = "(#{srcPart})" if srcPart is not svar
+        srcPart = "(#{srcPart})" unless srcPart is svar
         if 0 > pvar and (pvar | 0) is +pvar  # negative int
           vars = "#{idx} = #{srcPart}.length - 1"
           cond = "#{idx} >= 0"
@@ -1208,7 +1208,7 @@ class exports.For extends While
         o.scope.assign \_own, '{}.hasOwnProperty'
         ownPart = "if (_own.call(#{svar}, #{idx})) "
     else
-      vars += ', ' + step if step is not pvar
+      vars += ', ' + step unless step is pvar
       forPart = vars + "; #{cond}; " + switch +pvar
       case  1 then \++ + idx
       case -1 then \-- + idx
