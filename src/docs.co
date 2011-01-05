@@ -75,76 +75,71 @@ function block (name, comment, code, i) ->
 
 #### Syntax Highlight
 # ref. [google-code-prettify](http://code.google.com/p/google-code-prettify/source/browse/trunk/src/prettify.js)
+tinge = (ext, shortcuts, fallthroughs) ->
+  rule.splice 2 0 0 if rule.length < 4 for rule of shortcuts
+  PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
 
 ##### Main
+tinge \co, [
+  [\str /^\\\S[^\s,;)}\]]*/ \\]
+  [\str /// ^ ' (?: ''[^]*?'' | [^\\']*(?:\\.[^\\']*)* ) ' /// \']
+  [\lang-qq /^("""[^]*?""")/ \"]
+  [\lang-qq /// ^ ( " [^\\"]*(?:\\.[^\\"]*)* " ) /// \"]
+  [\lang-qr /// ^ ( /{3} [^]+? /{3} [imgy]{0,4} ) (?!\w) /// \/]
+  [\lang-at /^(@+[$\w\x7f-\uffff]*)/ \@]
+  [\com /// ^ \# (?: \##[^#][^]*?### | .*) /// \#]
+  [\typ /// ^ (?
+  : 0x[\da-f]+
+  | [1-9]\d? r [\da-z]+
+  | (?:\d+(?:\.\d+)?) (?:e[+-]?\d+)? [a-z]*
+  ) ///i \0123456789]
+  [\lang-js /^`([^\\`]*(?:\\.[^\\`]*)*)`/ \`]
+], [
+  # ref. [retrie](https://github.com/satyr/retrie)
+  [\pln /// ^ (?
+  : (?: \@ | (?:\.|::) \s* ) [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*
+  | [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* [^\n\S]* : (?!:)
+  | \.{3}
+  ) ///]
+  [\kwd /// ^ (?
+  : t(?:ry|h(?:row|en)|ypeof)
+  | f(?:or(?: own)?|inally|unction)
+  | n(?:ew|ot)
+  | c(?:ontinue|a(?:se|tch)|lass)
+  | i(?:[fs]|n(?:stanceof)?|mport(?: all)?)
+  | e(?:lse|xtends)
+  | d(?:e(?:fault|lete|bugger)|o)
+  | un(?:less|til)
+  | o[fr] | return | break | while | switch | and
+  ) \b ///]
+  [\typ /// ^ (?: true | false | null | void ) \b ///]
+  [\ctx /// ^ (?: th(?:is|at) | it | super | arguments | eval ) \b ///]
+  [\glb /// ^ (?
+  : Array | Boolean | Date | Error | Function | JSON | Math | Number
+  | Object | RegExp | S(?:tring|yntaxError) | TypeError
+  ) \b(?![^\n\S]*:(?!:)) ///]
+  [\var /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/]
+  [\str /^<(?!<)\[[^]*?]>/]
+  [\lang-r /// ^ [^/] ( / (?![\s/])
+    [^ [ / \n \\ ]*
+    (?:
+      (?
+      : \\[^]
+      | \[
+          [^ \] \n \\ ]*
+          (?: \\[^] [^ \] \n \\ ]* )*
+         ]
+      ) [^ [ / \n \\ ]*
+    )* / [imgy]{0,4} ) (?!\w)
+  ///]
+]
 
-PR.registerLangHandler do
-  PR.createSimpleLexer do
-    [[\str /^\\\S[^\s,;)}\]]*/ 0 \\]
-     [\str /// ^ ' (?: ''[^]*?'' | [^\\']*(?:\\.[^\\']*)* ) ' /// 0 \']
-     [\lang-qq /^("""[^]*?""")/ 0 \"]
-     [\lang-qq /// ^ ( " [^\\"]*(?:\\.[^\\"]*)* " ) /// 0 \"]
-     [\lang-qr /// ^ ( /{3} [^]+? /{3} [imgy]{0,4} ) (?!\w) /// 0 \/]
-     [\com /// ^ \# (?: \##[^#][^]*?### | .*) /// 0 \#]
-     [\typ /// ^ (?
-     : 0x[\da-f]+
-     | [1-9]\d? r [\da-z]+
-     | (?:\d+(?:\.\d+)?) (?:e[+-]?\d+)? [a-z]*
-     ) ///i 0 \0123456789]
-     [\lang-js /^`([^\\`]*(?:\\.[^\\`]*)*)`/ 0 \`]]
-    # ref. [retrie](https://github.com/satyr/retrie)
-    [[\pln /// ^ (?
-     : (?: \@ | (?:\.|::) \s* ) [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*
-     | [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* [^\n\S]* : (?!:)
-     | \.{3}
-     ) ///]
-     [\kwd /// ^ (?
-     : t(?:ry|h(?:row|en)|ypeof)
-     | f(?:or(?: own)?|inally|unction)
-     | n(?:ew|ot)
-     | c(?:ontinue|a(?:se|tch)|lass)
-     | i(?:[fs]|n(?:stanceof)?|mport(?: all)?)
-     | e(?:lse|xtends)
-     | d(?:e(?:fault|lete|bugger)|o)
-     | un(?:less|til)
-     | o[fr] | return | break | while | switch | and
-     ) \b ///]
-     [\typ /// ^ (?: true | false | null | void ) \b ///]
-     [\ctx /// ^ (?
-     : (?: th(?:is|at) | it | super | arguments | eval ) \b
-     | @[@\d]?
-     ) ///]
-     [\glb /// ^ (?
-     : Array | Boolean | Date | Error | Function | JSON | Math | Number
-     | Object | RegExp | S(?:tring|yntaxError) | TypeError
-     ) \b(?![^\n\S]*:(?!:)) ///]
-     [\var /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/]
-     [\str /^<(?!<)\[[^]*?]>/]
-     [\lang-r /// ^ [^/] ( / (?![\s/])
-       [^ [ / \n \\ ]*
-       (?:
-         (?
-         : \\[^]
-         | \[
-             [^ \] \n \\ ]*
-             (?: \\[^] [^ \] \n \\ ]* )*
-            ]
-         ) [^ [ / \n \\ ]*
-       )* / [imgy]{0,4} ) (?!\w)
-     ///]]
-  [\co]
+##### Subrules
+hashbraces = [\lang-co /^#({[^]+?})/ \#]
+regexes    = [\lit /^[^]+?/]
 
-##### Interpolations
-PR.registerLangHandler do
-  PR.createSimpleLexer do
-    [[\lang-co /^#({[^]+?})/ 0 \#]]
-    [[\str /^[^]+?/]]
-  [\qq]
+tinge \qq, [hashbraces], [[\str /^[^]+?/]]
+tinge \qr, [hashbraces, [\com /^\s#(?!{).*/ ' \t\n']], [regexes]
+tinge \r , [], [regexes]
 
-PR.registerLangHandler PR.createSimpleLexer([], [[\lit /^[^]+/]]), [\r]
-PR.registerLangHandler do
-  PR.createSimpleLexer do
-    [[\lang-co /^#({[^]+?})/ 0 \#]
-     [\com /^\s#(?!{).*/ 0 ' \t\n']]
-    [[\lit /^[^]+?/]]
-  [\qr]
+tinge \at, [[\ctx /^@+/ \@]], [[\typ /^\d+/]]
