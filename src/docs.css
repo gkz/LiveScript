@@ -29,10 +29,11 @@ pre  {font-size:small; overflow-x:auto}
 
 /* prettify */
 .pln {color:#000}
-.com {color:#666}
+.var {color:#444}
+.com {color:#777}
 .str {color:#080}
 .kwd {color:#008}
 .typ {color:#800}
 .lit {color:#066}
-.pun {color:#660}
-.tag {color:#606}
+.ctx {color:#660}
+.glb {color:#606}
