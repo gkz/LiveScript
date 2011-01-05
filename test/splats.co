@@ -72,8 +72,8 @@ o = x: {0}, (y = 1): {2}
 {...x, ...(y)} = o
 eq x[0], 0
 eq y[2], 2
-ok x isnt o.x , 'should copy o.x'
-ok y isnt o[y], 'should copy o[y]'
+ok x is not o.x , 'should copy o.x'
+ok y is not o[y], 'should copy o[y]'
 
 
 class Thisplat
@@ -82,7 +82,7 @@ class Thisplat
     eq me, this
     eq a0 * a2, 21
     [me, [a0, a1, a2]] = new @f ...
-    ok this isnt me
+    ok this is not me
     eq a0 * a2, 21
   f: -> [this, arguments]
 

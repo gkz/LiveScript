@@ -22,7 +22,7 @@ obj = {
   nested  : -> do => do => do => this
 }
 eq obj, obj.bound()
-ok obj isnt obj.unbound()
+ok obj is not obj.unbound()
 eq obj, obj.nested()
 
 
@@ -107,7 +107,7 @@ eq \
 # Assignment to an inner variable that shares a name with
 # an `Object.prototype` member should not leak.
 (-> constructor = 'word')()
-ok constructor isnt 'word'
+ok constructor is not 'word'
 
 
 # Implicit call including an implicit object and a trailing function.

@@ -270,7 +270,7 @@ class exports.Index extends Node
 
   compile: (o) ->
     code = @key.compile o, LEVEL_PAREN
-    if @key instanceof Key and code.charAt(0) isnt \'
+    if @key instanceof Key and code.charAt(0) is not \'
     then ".#{code}" else "[#{code}]"
 
   isComplex: -> @key.isComplex()
@@ -631,7 +631,7 @@ class exports.Op extends Node
     [sub, ref] = @first.cache o, false, LEVEL_OP
     tests = for item, i of @second.items
       (if i then ref else sub) + ' instanceof ' + item.compile o
-    o.scope.free ref if sub isnt ref
+    o.scope.free ref if sub is not ref
     code = tests.join ' || '
     if o.level < LEVEL_OP then code else "(#{code})"
 
@@ -855,7 +855,7 @@ class exports.Of extends Node
              if @negated then '< 0' else '>= 0'
       return code if sub is ref
       code = sub + ', ' + code
-    o.scope.free ref if sub isnt ref
+    o.scope.free ref if sub is not ref
     if o.level < lvl then code else "(#{code})"
 
 #### Existence
@@ -958,7 +958,7 @@ class exports.Fun extends Node
     code += "(#{ args.join ', ' }){"
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if exps.length
     code += \}
-    code += " #{name}.name = '#{name}';" if @ctor and name.charAt(0) isnt \_
+    code += " #{name}.name = '#{name}';" if @ctor and name.charAt(0) is not \_
     code += "\n#{tab}return #{name};" if @returns
     return tab + code if @statement
     if @front then "(#{code})" else code
@@ -1085,7 +1085,7 @@ class exports.Statement extends Node
   isStatement : YES
   makeReturn  : THIS
 
-  jumps: -> not (it and (it.loop or it.block and @verb isnt \continue))
+  jumps: -> not (it and (it.loop or it.block and @verb is not \continue))
 
   compileNode: -> it.indent + @verb + \;
 
@@ -1101,7 +1101,7 @@ class exports.Throw extends Statement
 
 #### Return
 class exports.Return extends Throw
-  => @<<<{it} if it and it.value isnt \void
+  => @<<<{it} if it and it.value is not \void
 
   jumps: YES
 
@@ -1176,12 +1176,12 @@ class exports.For extends While
     else temps.push idx = o.scope.temporary \i
     unless @object
       [step, pvar] = (@step || Literal 1).compileLoopReference o, \step
-      temps.push pvar if step isnt pvar
+      temps.push pvar if step is not pvar
     if @from
       eq = if @op is \til then '' else \=
       [tail, tvar] = @to.compileLoopReference o, \to
       vars = idx + ' = ' + @from.compile o
-      if tail isnt tvar
+      if tail is not tvar
         vars += ', ' + tail
         temps.push tvar
       cond = if +pvar
@@ -1190,11 +1190,11 @@ class exports.For extends While
     else
       if @name or @object and @own
         [srcPart, svar] = @source.compileLoopReference o, \ref
-        temps.push svar if srcPart isnt svar
+        temps.push svar if srcPart is not svar
       else
         srcPart = svar = @source.compile o, LEVEL_PAREN
       unless @object
-        srcPart = "(#{srcPart})" if srcPart isnt svar
+        srcPart = "(#{srcPart})" if srcPart is not svar
         if 0 > pvar and (pvar | 0) is +pvar  # negative int
           vars = "#{idx} = #{srcPart}.length - 1"
           cond = "#{idx} >= 0"
@@ -1208,7 +1208,7 @@ class exports.For extends While
         o.scope.assign \_own, '{}.hasOwnProperty'
         ownPart = "if (_own.call(#{svar}, #{idx})) "
     else
-      vars += ', ' + step if step isnt pvar
+      vars += ', ' + step if step is not pvar
       forPart = vars + "; #{cond}; " + switch +pvar
       case  1 then \++ + idx
       case -1 then \-- + idx
@@ -1329,7 +1329,7 @@ class exports.Case extends Node
     o.indent = tab + TAB
     code += that + \\n if @body.compile o, LEVEL_TOP
     code += o.indent + 'break;\n' unless nobr or ft or
-      last instanceof Statement and last.verb isnt \debugger
+      last instanceof Statement and last.verb is not \debugger
     code
 
 #### If

@@ -3,7 +3,7 @@ ok 500 > 50 > 5 > -5
 ok true is     true
 ok true is not false
 
-ok 0 is 0 isnt 50 is 50
+ok 0 is 0 is not 50 is 50
 
 ok 10 < 20 > 10
 
@@ -28,7 +28,7 @@ ok not a != b
 ok not (a === b)
 ok not (a is  b)
 ok a !==  b
-ok a isnt b
+ok a is not b
 
 
 # `and`/`or` closes implicit calls

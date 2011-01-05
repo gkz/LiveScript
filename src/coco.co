@@ -39,7 +39,7 @@ Coco.run = (code, options) ->
   root.=parent while root.parent
   root.filename = fs.realpathSync options?.fileName || \.
   root.moduleCache &&= {}
-  if require.extensions or path.extname(root.filename).toLowerCase() isnt \.co
+  if require.extensions or path.extname(root.filename).toLowerCase() is not \.co
     code = Coco.compile code, options
   root._compile code, root.filename
 
