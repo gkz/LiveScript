@@ -44,7 +44,7 @@ function load ([name, sect], html) ->
 
 function build (name, source) ->
   htm = comment = code = i = ''
-  re  = /^[^\n\S]*#(?!##[^#]|{) ?(.*)/
+  re  = /^[^\n\S]*#(?!##(?!#)|{) ?(.*)/
   for line of source.split \\n
     unless line
       br = true
@@ -58,7 +58,7 @@ function build (name, source) ->
     else
       code += line + \\n
     br = false
-  htm += block name, comment, code, i if comment
+  htm += block name, comment, code, i if comment or code
   "<h1>#{name}</h1>" + htm + '<br clear=both>'
 
 function block (name, comment, code, i) ->
@@ -135,11 +135,11 @@ tinge \co, [
 ]
 
 ##### Subrules
-hashbraces = [\lang-co /^#({[^]+?})/ \#]
+hashbraces = [\lang-co /^#{([^]*?)}/ \#]
 regexes    = [\lit /^[^]+?/]
 
 tinge \qq, [hashbraces], [[\str /^[^]+?/]]
-tinge \qr, [hashbraces, [\com /^\s#(?!{).*/ ' \t\n']], [regexes]
+tinge \qr, [hashbraces], [[\com /^\s#(?!{).*/], regexes]
 tinge \r , [], [regexes]
 
 tinge \at, [[\ctx /^@+/ \@]], [[\typ /^\d+/]]
