@@ -142,15 +142,17 @@ exports import
           @tokens.pop()
           id = \! + id
         tag = \RELATION
-    else if COCO_ALIASES.hasOwnProperty id
+    else if alias = COCO_ALIASES.hasOwnProperty id
+      if id is \not and prev.alias and prev.1 is \===
+        prev.1 = \!==
+        return id.length
       [tag, id] = COCO_ALIASES[id]
-      attr = \decall if id of <[ && || ]>
     else if id of RESERVED
       @carp "reserved word \"#{id}\""
     else if prev.0 is \CATCH and not prev.1
       return (prev.1 = id).length
     @token tag, id
-    @last[attr] = true if attr
+    @last.alias = true if alias
     @token \: \:       if colon
     input.length
 

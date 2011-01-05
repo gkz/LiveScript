@@ -117,7 +117,8 @@ function addImplicitParentheses (tokens) ->
             else tag of <[ } STRNUM LITERAL ]>
   function ok (token, i) ->
     return false if token.argument
-    return true  if token.decall or not seenSingle and token.fromThen
+    return true  if not seenSingle and token.fromThen or
+                    token.alias and token.1 of <[ && || ]>
     [tag] = token
     {0: pre, eol} = tokens[i-1]
     switch tag

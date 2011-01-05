@@ -1,6 +1,7 @@
 ok 500 > 50 > 5 > -5
 
-ok true is not false is true is not false
+ok true is     true
+ok true is not false
 
 ok 0 is 0 isnt 50 is 50
 
