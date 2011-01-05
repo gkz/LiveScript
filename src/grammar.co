@@ -266,7 +266,7 @@ bnf =
   ]
   KeySeq: [
     o 'STRNUM STRNUM' ,-> [Literal $1; Literal $2]
-    o 'KeySeq STRNUM' ,-> $1.concat
+    o 'KeySeq STRNUM' ,-> $1.concat Literal $2
   ]
   Object: [
     o '{ Properties OptComma }' ,-> Obj $2

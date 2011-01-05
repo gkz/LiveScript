@@ -272,9 +272,8 @@ eq \1 \1
 eq 2 2
 eq '0,true,2', '' + [0 true \2]
 
-o = {0 \1}
-eq o.0,  0
+o = {0 \1 \2 3 4}
 eq o.1, \1
-
+eq o.3, 3
 
 throws 'stub code executed', -> ...
