@@ -1,9 +1,30 @@
 <!DOCTYPE html>
 <meta charset=utf-8 />
-<link rel=icon href=../coco.png>
+<link rel=stylesheet href=../src/docs.css>
+<link rel=icon       href=../coco.png>
+<style>
+#stdout {font:bold medium monospace; margin:2ex 1em 0}
+</style>
 <title>Coco Tests</title>
-<h1>Coco Online Test Suite</h1>
 <pre id=stdout></pre>
+<script> sources = [
+'assignment',
+'chaining',
+'comments',
+'compilation',
+'existence',
+'functions',
+'if',
+'literals',
+'loop',
+'oo',
+'operations',
+'regexps',
+'splats',
+'strings',
+'switch',
+'try',
+] </script>
 <script type=text/coco>
 start   = new Date
 stdout  = document.getElementById 'stdout'
@@ -35,7 +56,7 @@ run = (name) ->
   Coco.load name + '.co', (yay) ->
     say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
     ++failed unless yay
-    fin() if ++done is names.length
+    fin() if ++done is sources.length
 
 fin = ->
   yay = success is total and not failed
@@ -44,23 +65,9 @@ fin = ->
   msg = "failed #{ total - success } tests and #{msg}" unless yay
   say msg, yay
 
-run name for name of names = <[
-  assignment
-  chaining
-  comments
-  compilation
-  existence
-  functions
-  if
-  literals
-  loop
-  oo
-  operations
-  regexps
-  splats
-  strings
-  switch
-  try
-]>
+run name for name of sources
 </script>
 <script src=../extras/coco.js></script>
+<script src=../lib/etc/showdown.js></script>
+<script src=../lib/etc/prettify.js></script>
+<script src=../lib/docs.js></script>
