@@ -7,7 +7,6 @@ eq I, I I I
 
 # The empty function should not cause a syntax error.
 ->
-() ->
 (0 while 0).pop()
 
 

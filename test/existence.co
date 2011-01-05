@@ -120,7 +120,7 @@ eq obj.returnSelf?().flag = true, void
 eq obj.counter().counter().returnThis?(), obj
 eq count, 2
 
-maybe_close = (f, arg) -> if typeof f is 'function' then () -> f(arg) else -1
+maybe_close = (f, arg) -> if typeof f is 'function' then -> f(arg) else -1
 
 eq maybe_close(plus1, 41)?(), 42
 eq (maybe_close plus1, 41)?(), 42

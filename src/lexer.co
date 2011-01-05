@@ -324,8 +324,6 @@ exports import
   literalToken: ->
     return 0 unless val = SYMBOL.exec it
     switch tag = val.=0
-    case \)
-      @last.0 = \CALL( if @last.0 is \(
     case <[ -> => ]>
       @tagParameters()
       tag = \FUNC_ARROW
@@ -346,6 +344,10 @@ exports import
     case <[ << >> >>> ]>               then tag = \SHIFT
     case \@                            then tag = \THIS
     case \;                            then tag = \TERMINATOR
+    case \?(                           then tag = \CALL(
+    case '()'
+      @token \CALL( \(; @token \) \)
+      return val.length
     case \*
       tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
     case \::
@@ -364,11 +366,8 @@ exports import
         word = val.slice 1
         @token \STRNUM, if word is \\ then "'\\\\'" else string word, \'
         return val.length
-      if val is \( and @callable()
-        if @last.0 is \?
-          @last[0 1] = [\CALL( \?(]
-          return val.length
-        tag = \CALL(
+      case \(
+        tag = \CALL( if @callable()
     @token(tag, val).length
 
   #### Token Manipulators
@@ -541,9 +540,11 @@ SYMBOL = /// ^ (?
 | \\\S[^\s,;)}\]]*  # word
 | ([-+&|:])\1       # {in,de}crement / logic / prototype access
 | [-=]>             # function
+| \(\)              # call
 | [!=]==?           # equality
-| \.{3}             # splat
+| \.{3}             # splat/yadayadayada
 | [?&]\.            # soak/bind access
+| \?\(              # soak call
 | <<<<?             # import
 | <<=?              # left shift
 | >>>?=?            # rite shift
