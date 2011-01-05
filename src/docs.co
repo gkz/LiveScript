@@ -103,7 +103,7 @@ PR.registerLangHandler do
      | f(?:or(?: own)?|inally|unction)
      | n(?:ew|ot)
      | c(?:ontinue|a(?:se|tch)|lass)
-     | i(?:f|n(?:stanceof)?|mport(?: all)?|s(?:nt)?)
+     | i(?:[fs]|n(?:stanceof)?|mport(?: all)?)
      | e(?:lse|xtends)
      | d(?:e(?:fault|lete|bugger)|o)
      | un(?:less|til)
