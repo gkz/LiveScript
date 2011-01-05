@@ -104,3 +104,6 @@ eq '2,3', '' + [3,2][1,0]
 eq '2,3', '' + [0,1,2,3][*-2,*-1]
 eq '2,3', '' + {2,3}<[2 3]>
 eq '-Infinity,Infinity', '' + Number[\NEGATIVE_INFINITY, \POSITIVE_INFINITY]
+
+
+eq @\toString, @toString
