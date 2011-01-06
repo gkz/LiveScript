@@ -43,9 +43,11 @@ function load ([name, sect], html) ->
   prettyPrint()
 
 function build (name, source) ->
-  htm = comment = code = i = ''
-  re  = /^[^\n\S]*#(?!##(?!#)|{) ?(.*)/
-  for line of source.split \\n
+  lines = source.split \\n
+  htm   = comment = i = ''
+  code  = if /^#!/.test lines.0 then lines.shift() else ''
+  re    = /^[^\n\S]*#(?!##(?!#)|{) ?(.*)/
+  for line of lines
     unless line
       br = true
       code &&+= \\n
@@ -74,7 +76,6 @@ function block (name, comment, code, i) ->
   """
 
 #### Syntax Highlight
-# ref. [google-code-prettify](http://code.google.com/p/google-code-prettify/source/browse/trunk/src/prettify.js)
 tinge = (ext, shortcuts, fallthroughs) ->
   rule.splice 2 0 0 if rule.length < 4 for rule of shortcuts
   PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
