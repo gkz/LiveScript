@@ -161,7 +161,7 @@ exports import
     return 0 unless match = NUMBER.exec it
     num = match.3 or match.0; {last} = this
     switch num.charAt 0
-    case \. then if @callable() or last.0 of <[ } LITERAL ]>
+    case \. then if @callable() or last.0 of <[ } LITERAL STRNUM ]>
       @token \DOT \.; @token \STRNUM, num.slice 1
       return match.0.length
     case \0 then if num.charAt(1) not of ['' \x \.]
