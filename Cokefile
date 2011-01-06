@@ -23,7 +23,7 @@ coreSources = ->
 
 option \prefix, 'set the installation prefix for `coke install`', \DIR
 
-task <[ install i ]>, 'install Coco into /usr/local (or --prefix)', (options) ->
+task \install, 'install Coco into /usr/local (or --prefix)', (options) ->
   base = options.prefix or \/usr/local
   lib  = "#{base}/lib/coco"
   bin  = "#{base}/bin"
@@ -40,26 +40,26 @@ task <[ install i ]>, 'install Coco into /usr/local (or --prefix)', (options) ->
     say stdout.trim() if stdout
     say if err then stderr.trim() else tint \done
 
-task <[ build b ]>, 'build the Coco language from source', ->
+task \build, 'build the Coco language from source', ->
   ss = sources()
   run [\-co  \lib; ss.splice ss.indexOf(\src/docs.co), 1]
   run [\-bco \lib].concat ss
 
-task <[ build:full bf ]>, 'rebuild the source twice, and run the tests', ->
+task \build:full, 'rebuild the source twice, and run the tests', ->
   exec 'bin/coke build && bin/coke build && bin/coke test'
   , (err, stdout, stderr) ->
     say stdout.trim() if stdout
     say stderr.trim() if stderr
     throw err         if err
 
-task <[ build:parser bp ]>, 'rebuild the Jison parser (run "build" first)', ->
+task \build:parser, 'rebuild the Jison parser (run "build" first)', ->
   src = require(\./lib/grammar).parser.generate()
         .replace /^[^]+?var (?=parser = {)/, \exports.
         .replace /return parser;[^]+/, ''
         .replace /\ncase \d+:this\.\$ = 0;\nbreak;/g, ''
   spit \lib/parser.js, src
 
-task <[ build:browser bb ]>
+task \build:browser
 , 'rebuild the merged script for inclusion of the browser', ->
   co = ''
   for name of <[ rewriter lexer parser nodes coco browser ]>
@@ -148,9 +148,9 @@ runTests = (Coco) ->
       say line.slice(0, col) + tint line.slice(col), bold
       say lines.slice(row+1, row+9).join \\n
 
-task <[ test t ]>, 'run the Coco language test suite', ->
+task \test, 'run the Coco language test suite', ->
   runTests require \./lib/coco
 
-task <[ test:browser tb ]>
+task \test:browser
 , 'run the test suite against the merged browser script', ->
   runTests new -> eval slurp \extras/coco.js, \utf8

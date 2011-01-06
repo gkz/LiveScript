@@ -21,11 +21,9 @@ global import
   # and the function to run as the action itself.
   task: (name, description, action) ->
     [action, description] = [description] unless action
-    # `name` can be an array of names,
-    # in which case the rest are defined as aliases.
-    [name, ...aliases] = [].concat name
-    aliases.forEach -> Aliases[it] = name
-    Tasks[name] = {name, description, action, aliases}
+    abbr = name.split(/\W+/).filter(String).map(-> it.0).join ''
+    Aliases[abbr] ||= name
+    Tasks[name] = {name, description, action}
 
   # Define an option that the Cokefile accepts. The parsed options hash,
   # containing all of the command-line options passed, will be made available
