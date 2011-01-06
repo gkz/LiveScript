@@ -11,6 +11,7 @@ nav = document.getElementById \nav or do ->
   h  = '<div class=pointee>&#x2935;</div>'
   h += "<h1>#{title}</h1>" if title
   h += "<li><a href=##{co}>#{co}</a>" for co of sources
+  h += '<li class=index><a href=#>#</a>'
   lmn \ul, id: \nav, innerHTML: h
 
 htms = __proto__: null

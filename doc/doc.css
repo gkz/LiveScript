@@ -12,7 +12,7 @@ pre  {font-size:small; overflow-x:auto}
 .block   {clear:both; position:relative}
 .anchor  {position:absolute; font:bold small mono-space}
 .pointee {font-weight:bold}
-#navi.menu {
+#nav.menu {
  position:fixed; top:0; right:0; z-index:5;
  margin:0; padding:3px 0.5em; list-style:none;
  border-width:0 0 3px 3px; border-style:solid;
@@ -21,10 +21,11 @@ pre  {font-size:small; overflow-x:auto}
  -webkit-border-bottom-left-radius:1.5ex;
 }
 .comment:not(:hover) > .anchor
-, #navi.menu > h1
-, #navi.menu:not(:hover) > :not(.pointee)
-, #navi.menu:hover > .pointee
-, #navi:not(.menu) > .pointee
+, #nav.menu > h1
+, #nav.menu:not(:hover) > :not(.pointee)
+, #nav.menu:hover > .pointee
+, #nav:not(.menu) > .pointee
+, #nav:not(.menu) > .index
 {display:none}
 
 /* prettify */

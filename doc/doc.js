@@ -14,6 +14,7 @@
       co = _ref[_i];
       h += "<li><a href=#" + co + ">" + co + "</a>";
     }
+    h += '<li class=index><a href=#>#</a>';
     return lmn('ul', {
       id: 'nav',
       innerHTML: h
