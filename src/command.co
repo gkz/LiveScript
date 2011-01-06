@@ -10,21 +10,21 @@ global import
 
 # Use the [OptionParser](#optparse) to extract all options from `process.argv`.
 o = require(\./optparse) do
-  compile     :[ 'compile to JavaScript and save as .js files'                ]
-  interactive :[ 'run an interactive Coco REPL'                               ]
-  output      :[ 'set the directory for compiled JavaScript'      \DIR        ]
-  watch       :[ 'watch scripts for changes, and recompile'                   ]
-  print       :[ 'print the compiled JavaScript to stdout'                    ]
-  stdin       :[ 'listen for and compile scripts over stdin'                  ]
-  eval        :[ 'compile a string from the command line'                     ]
-  require     :[ 'require a library before executing your script' \FILE+      ]
-  bare        :[ 'compile without the top-level function wrapper'             ]
-  lex         :[ 'print the tokens the lexer produces'                        ]
-  tokens      :[ 'print the tokens the rewriter produces'                     ]
-  nodes       :[ 'print the parse tree the parser produces'                   ]
-  nodejs      :[ 'pass options through to the "node" binary'      \ARGS+  \-N ]
-  version     :[ 'display Coco version'                                       ]
-  help        :[ 'display this help message'                                  ]
+  compile     : 'compile to JavaScript and save as .js files'
+  interactive : 'run an interactive Coco REPL'
+  output      :['set the directory for compiled JavaScript' \DIR]
+  watch       : 'watch scripts for changes, and recompile'
+  print       : 'print the compiled JavaScript to stdout'
+  stdin       : 'listen for and compile scripts over stdin'
+  eval        : 'compile a string from the command line'
+  require     :['require a library before executing your script' \FILE+]
+  bare        : 'compile without the top-level function wrapper'
+  lex         : 'print the tokens the lexer produces'
+  tokens      : 'print the tokens the rewriter produces'
+  nodes       : 'print the parse tree the parser produces'
+  nodejs      :['pass options through to the "node" binary' \ARGS+ \-N]
+  version     : 'display Coco version'
+  help        : 'display this help message'
 
 o.run = not (o.compile or o.print)
 o.print   ||= o.eval or o.stdin and o.compile
