@@ -262,7 +262,7 @@ exports import
       tokens.push [\+- \+, tokens[*-1].2]
     tokens.pop()
     if flags then @token \, \,; @token \STRNUM, "'#{flags}'"
-    @token \) \)
+    @token \)CALL \)
     heregex.length
 
   # Matches a words literal, a syntax sugar for a list of strings.
@@ -459,7 +459,8 @@ exports import
     ts.unshift [\S, '', line] if ts.0?.0 is not \S
     return ts unless newline?
     {tokens} = this
-    tokens.push [\( \(, line]
+    tokens.push [\DOT \., line] if @last.1 is \@ and not @last.spaced
+    tokens.push [\(   \(, line]
     for t, i of ts
       tokens.push [\+- \+, tokens[*-1].2] if i
       if t.0 is \TOKENS
