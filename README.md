@@ -29,6 +29,17 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
+### 0.2.2
+- `is not` is the new `isnt`.
+- `@'++'` is now valid as a shorhand for `@['++']`.
+- Commas between primitive values are now optional.
+      $ coco -bpe '[null true 1 "2"]'
+      [null, true, 1, "2"];
+- _coke_ now automatically aliases tasks.
+- _extras/coco.js_ now works as a Gecko JS Module.
+- Grouped documentation suite into doc/ for portability.
+- Rewrote _src/optparse.co_.
+
 ### 0.2.1
 - Added numeric ranges:
       $ bin/coco -bpe 'f -1 to 1, [2 to 8 by 3]'
