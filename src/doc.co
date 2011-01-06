@@ -1,0 +1,79 @@
+# Quick and dirty implementation of
+# [code-illuminated](http://code.google.com/p/code-illuminated/)-esque
+# annotated source viewer.
+#
+# View [source](#) for usage.
+
+{title} = document
+
+docs = document.getElementById \docs or lmn \div, id: \docs
+navi = document.getElementById \navi or do ->
+  h  = '<div class=pointee>&#x2935;</div>'
+  h += "<h1>#{title}</h1>" if title
+  h += "<li><a href=##{co}>#{co}</a>" for co of sources
+  lmn \ul, id: \navi, innerHTML: h
+
+htms = __proto__: null
+
+# [showdown](http://attacklab.net/showdown/) converts the Markdown comments.
+sdcv = new Showdown.converter
+
+do @onhashchange = ->
+  unless page = /^\D+(?=(\d*)$)/.exec location.hash.slice 1
+    document <<< {title}
+    navi.className = docs.innerHTML = ''
+    return
+  navi.className = \menu
+  docs.innerHTML = \...
+  [name] = page
+  return load page, that if htms[name]
+  xhr = new XMLHttpRequest
+  xhr.open \GET, if name is not \Cokefile then name + \.co else name, true
+  xhr.overrideMimeType? \text/plain
+  xhr.onreadystatechange = ->
+    load page, htms[name] = build name, xhr.responseText if xhr.readyState is 4
+  xhr.send null
+
+function lmn (name, attrs) ->
+  document.body.appendChild document.createElement(name) <<<< attrs
+
+function load ([name, sect], html) ->
+  document.title = name + (title and ' - ' + title)
+  docs.innerHTML = html
+  document.getElementById(sect).scrollIntoView() if sect
+  # [google-code-prettify](http://code.google.com/p/google-code-prettify/)
+  # highlights the code, with the help of our [lang-co](#lang-co) plugin.
+  prettyPrint()
+
+function build (name, source) ->
+  lines = source.split \\n
+  htm   = comment = i = ''
+  code  = if /^#!/.test lines.0 then lines.shift() else ''
+  re    = /^[^\n\S]*#(?!##(?!#)|{) ?(.*)/
+  for line of lines
+    unless line
+      br = true
+      code &&+= \\n
+      continue
+    if re.exec line
+      if code or comment and br
+        htm += block name, comment, code, i++
+        comment = code = ''
+      comment += that.1 + \\n
+    else
+      code += line + \\n
+    br = false
+  htm += block name, comment, code, i if comment or code
+  "<h1>#{name}</h1>" + htm + '<br clear=both>'
+
+function block (name, comment, code, i) ->
+  code &&= """
+   <pre class="code prettyprint lang-co"
+    >#{ code.replace(/&/g, '&amp;').replace(/</g, '&lt;') }</pre>
+  """
+  """
+   <div id=#{i} class=block><div class=comment
+    ><a class=anchor href=##{name}#{i}>##{i}</a
+    >#{ sdcv.makeHtml comment }</div
+    >#{code}</div>
+  """

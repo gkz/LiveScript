@@ -14,13 +14,6 @@ run = (args) ->
   proc.stderr.on \data, say
   proc       .on \exit, -> process.exit it if it
 
-sources = ->
-  ext = /\.co$/i
-  \src/ + file if ext.test file for file of dir \src
-
-coreSources = ->
-  "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
-
 option \prefix, 'set the installation prefix for `coke install`', \DIR
 
 task \install, 'install Coco into /usr/local (or --prefix)', (options) ->
@@ -40,10 +33,20 @@ task \install, 'install Coco into /usr/local (or --prefix)', (options) ->
     say stdout.trim() if stdout
     say if err then stderr.trim() else tint \done
 
+
+sources = ->
+  ext = /\.co$/i
+  \src/ + file if ext.test file for file of dir \src
+
+coreSources = ->
+  "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
+
+docs = <[ src/doc.co src/lang-co.co ]>
+
 task \build, 'build the Coco language from source', ->
-  ss = sources()
-  run [\-co  \lib; ss.splice ss.indexOf(\src/docs.co), 1]
-  run [\-bco \lib].concat ss
+  run [\-bco \lib; ...sources().filter -> it not of docs]
+
+task \build:doc, 'build doc tools', -> run <[ -co doc ]>.concat docs
 
 task \build:full, 'rebuild the source twice, and run the tests', ->
   exec 'bin/coke build && bin/coke build && bin/coke test'

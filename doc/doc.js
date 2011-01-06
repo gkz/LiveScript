@@ -1,5 +1,5 @@
 (function(){
-  var title, docs, navi, sdcv, htms, tinge, hashbraces, regexes, __importAll = function(obj, src){ for (var key in src) obj[key] = src[key]; return obj };
+  var title, docs, navi, htms, sdcv, __importAll = function(obj, src){ for (var key in src) obj[key] = src[key]; return obj };
   title = document.title;
   docs = document.getElementById('docs') || lmn('div', {
     id: 'docs'
@@ -19,10 +19,10 @@
       innerHTML: h
     });
   }());
-  sdcv = new Showdown.converter;
   htms = {
     __proto__: null
   };
+  sdcv = new Showdown.converter;
   (this.onhashchange = function(){
     var page, name, that, xhr;
     if (!(page = /^\D+(?=(\d*)$)/.exec(location.hash.slice(1)))) {
@@ -94,21 +94,4 @@
     code && (code = "<pre class=\"code prettyprint lang-co\"\n >" + code.replace(/&/g, '&amp;').replace(/</g, '&lt;') + "</pre>");
     return "<div id=" + i + " class=block><div class=comment\n ><a class=anchor href=#" + name + i + ">#" + i + "</a\n >" + sdcv.makeHtml(comment) + "</div\n >" + code + "</div>";
   }
-  tinge = function(ext, shortcuts, fallthroughs){
-    var rule, _i, _len;
-    for (_i = 0, _len = shortcuts.length; _i < _len; ++_i) {
-      rule = shortcuts[_i];
-      if (rule.length < 4) {
-        rule.splice(2, 0, 0);
-      }
-    }
-    return PR.registerLangHandler(PR.createSimpleLexer(shortcuts, fallthroughs), [ext]);
-  };
-  tinge('co', [['str', /^\\\S[^\s,;)}\]]*/, '\\'], ['str', /^'(?:''[^]*?''|[^\\']*(?:\\.[^\\']*)*)'/, '\''], ['lang-qq', /^("""[^]*?""")/, '"'], ['lang-qq', /^("[^\\"]*(?:\\.[^\\"]*)*")/, '"'], ['lang-qr', /^(\/{3}[^]+?\/{3}[imgy]{0,4})(?!\w)/, '/'], ['lang-at', /^(@+[$\w\x7f-\uffff]*)/, '@'], ['com', /^\#(?:\##[^#][^]*?###|.*)/, '#'], ['typ', /^(?:0x[\da-f]+|[1-9]\d?r[\da-z]+|(?:\d+(?:\.\d+)?)(?:e[+-]?\d+)?[a-z]*)/i, '0123456789'], ['lang-js', /^`([^\\`]*(?:\\.[^\\`]*)*)`/, '`']], [['pln', /^(?:(?:\@|(?:\.|::)\s*)[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*|[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*[^\n\S]*:(?!:)|\.{3})/], ['kwd', /^(?:t(?:ry|h(?:row|en)|ypeof)|f(?:or(?:own)?|inally|unction)|n(?:ew|ot)|c(?:ontinue|a(?:se|tch)|lass)|i(?:[fs]|n(?:stanceof)?|mport(?:all)?)|e(?:lse|xtends)|d(?:e(?:fault|lete|bugger)|o)|un(?:less|til)|o[fr]|return|break|while|switch|and)\b/], ['typ', /^(?:true|false|null|void)\b/], ['ctx', /^(?:th(?:is|at)|it|super|arguments|eval)\b/], ['glb', /^(?:Array|Boolean|Date|Error|Function|JSON|Math|Number|Object|RegExp|S(?:tring|yntaxError)|TypeError)\b(?![^\n\S]*:(?!:))/], ['var', /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/], ['str', /^<(?!<)\[[^]*?]>/], ['lang-r', /^[^\/](\/(?![\s\/])[^[\/\n\\]*(?:(?:\\[^]|\[[^\]\n\\]*(?:\\[^][^\]\n\\]*)*])[^[\/\n\\]*)*\/[imgy]{0,4})(?!\w)/]]);
-  hashbraces = ['lang-co', /^#{([^]*?)}/, '#'];
-  regexes = ['lit', /^[^]+?/];
-  tinge('qq', [hashbraces], [['str', /^[^]+?/]]);
-  tinge('qr', [hashbraces], [['com', /^\s#(?!{).*/], regexes]);
-  tinge('r', [], [regexes]);
-  tinge('at', [['ctx', /^@+/, '@']], [['typ', /^\d+/]]);
 }).call(this);
