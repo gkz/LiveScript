@@ -1,26 +1,32 @@
 return unless require?
 
-{OptionParser} = require './../lib/optparse'
+optparse = require './../lib/optparse'
 
-opt = OptionParser [
-  ['-r', '--required DIR',  'desc required']
-  ['-o', '--optional',      'desc optional']
-  ['-l', '--list FILES*',   'desc list']
-]
+flags =
+  help   : ['display help']
+  output : ['set output directory'   \DIR     ]
+  nodejs : ['pass options to "node"' \ARGS+ \N]
 
-result = opt.parse <[ one two three -or dir ]>
+result = optparse flags, <[ one two three -ho dir ]>
 
-eq result.arguments.length, 6
-eq result.arguments[4], '-r'
+eq result.$args.length, 6
+eq result.$args.4, \-o
 
-result = opt.parse <[ --optional -r folder one two ]>
+result = optparse result.$flags, <[ --help -o folder one two ]>
 
-eq result.optional, true
-eq result.required, 'folder'
-eq result.arguments + '', 'one,two'
+eq result.help, true
+eq result.output, 'folder'
+eq result.$args + '', 'one,two'
 
-result = opt.parse <[ -l one.txt -l two.txt three ]>
+result = optparse result.$flags, <[ -N h --nodejs debug three ]>
 
-ok result.list instanceof Array
-eq result.list + '', 'one.txt,two.txt'
-eq result.arguments + '', 'three'
+ok result.nodejs instanceof Array
+eq result.nodejs + '', 'h,debug'
+eq result.$args + '', 'three'
+
+eq result + '', '''
+Available options:
+  -h, --help          display help
+  -o, --output DIR    set output directory
+  -N, --nodejs ARGS+  pass options to "node"
+'''

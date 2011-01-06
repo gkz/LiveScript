@@ -21,7 +21,7 @@ sources = ->
 coreSources = ->
   "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
 
-option \-p, '--prefix DIR', 'set the installation prefix for `coke install`'
+option \prefix, 'set the installation prefix for `coke install`', \DIR
 
 task <[ install i ]>, 'install Coco into /usr/local (or --prefix)', (options) ->
   base = options.prefix or \/usr/local

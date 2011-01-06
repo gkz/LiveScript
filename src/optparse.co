@@ -1,61 +1,70 @@
-# A simple **OptionParser** class to parse option flags from the command-line.
+# A simple function to parse option flags from the command-line.
 # Use it like so:
 #
-#     oparser = OptionParser switches
-#     options = oparser.parse process.argv
+#     options = require(\optparse) help: ['!']
+#     options.help  # will be true if "--help" or "-h" is passed
 #
 # The first non-option is considered to be the start of the file (and file
 # option) list, and all subsequent arguments are left unparsed.
-exports.OptionParser = class
-  # Initialize with a list of valid options, in the form:
+module.exports = (
+  # An object describing valid flags, in the form:
   #
-  #     [['-h', '--help', 'display this help message'], ...]
-  #
-  => @rules = it.map ([shortFlag, longFlag, description]) ->
-    # Build a rule from a `-o` short flag, a `--output [DIR]` long flag,
-    # and the description of what the option does.
-    [flag, hasArg, isList] = LONG_FLAG.exec longFlag
-    {name: flag.slice(2), flag, shortFlag, longFlag, description, hasArg, isList}
+  #     help   : ['display help']
+  #     output : ['set output directory'   \DIR     ]
+  #     nodejs : ['pass options to "node"' \ARGS+ \N]
+  flags
+  # The target arguments, default to the ones with current `process`.
+  args or process.argv.slice(2)
+  # The base of `options` can optionally be passed.
+  options or {}
+) ->
+  unless '[object Array]' is {}.toString.call flags
+    MULTI = /[*+]/
+    flags = for name, [desc, arg, abbr] in flags
+      long : \-- + name, name, desc, arg, abbr
+      short: abbr != 0 and "-#{ abbr or name }".slice 0 2
+      multi: arg and MULTI.test arg
+
+  # Expand merged flags within arguments. e.g.: `-wp` -> `-w -p`
+  args = Array::concat.apply [], args.map ->
+    if /^-\w{2,}/.test it then it.slice(1).split('').map(-> \- + it) else it
 
   # Parse the list of arguments, populating an `options` object with all of the
-  # specified options, and returning it. `options.arguments` will be an array
-  # containing the remaining non-option arguments. This is a simpler API than
-  # many option parsers that allow you to attach callback actions for every
-  # flag. Instead, you're responsible for interpreting the options object.
-  parse: (args, options = {}) ->
-    # Expand merged flags. e.g.: `-wp` -> `-w -p`
-    args = Array::concat.apply [], args.map ->
-      if /^-\w{2,}/.test it then it.slice(1).split('').map(-> \- + it) else it
-    `ARGS:`
-    for arg, i of args
-      if arg is \-- then literals = args.slice i+1; break
-      for rule of @rules
-        continue unless arg of [rule.shortFlag, rule.flag]
-        value = if rule.hasArg then args[++i] else true
-        if rule.isList
-        then (options[rule.name] ||= []).push value
-        else options[rule.name] = value
-        `continue ARGS;`
-      if FLAG.test arg
-        console.error 'unrecognized option: %s', arg
-        process.exit 1
-      break
-    literals ||= []
-    options import {literals, arguments: args.slice i}
+  # specified options, and returning it. `options.$args` will be an array
+  # containing the remaining non-option arguments, and `options.$literals`
+  # all the arguments after __--__.
+  FLAG = /^-[-\w]+$/
+  `ARGS:`
+  for arg, i of args
+    if arg is \-- then literals = args.slice i+1; break
+    for flag of flags
+      continue unless arg of [flag.short, flag.long]
+      value = if flag.arg then args[++i] else true
+      if flag.multi
+      then (options[flag.name] ||= []).push value
+      else  options[flag.name] = value
+      `continue ARGS;`
+    if FLAG.test arg
+      console.error 'unrecognized option: %s', arg
+      process.exit 1
+    break
+  options import
+    $flags    : flags
+    $args     : args.slice i
+    $literals : literals or []
+    # Given `flags` above , the resulting `options` will stringify as:
+    #
+    #     -h, --help          display help
+    #     -o, --output DIR    set output directory
+    #     -N, --nodejs ARGS+  pass options to "node"
+    toString: help
 
-  # Return the help text for this **OptionParser**, listing and describing all
-  # of the valid options, for `--help` and such.
-  help: ->
-    lines = ['Available options:']
-    width = Math.max ...@rules.map -> it.longFlag.length
-    pad   = Array(width >> 1).join '  '
-    for rule of @rules
-      sf = (rule.shortFlag &&+= \,) or '   '
-      lf = (rule.longFlag + pad).slice 0, width
-      lines.push "  #{sf} #{lf}  #{rule.description}"
-    lines.join \\n
-
-#### Regexes
-
-FLAG      = /^-[-\w]+$/
-LONG_FLAG = /// ^ --\w[-\w]+ (?= ( \s+ [^\s*]+ (\*)? )? ) ///
+function help ->
+  longs = @$flags.map -> it.long + if it.arg then ' ' + that else ''
+  width = Math.max ...longs.map -> it.length
+  pad   = Array(width >> 1).join '  '
+  lines = @$flags.map (flag, i) ->
+    sf = (flag.short &&+= \,) or '   '
+    lf = (longs[i] + pad).slice 0, width
+    "  #{sf} #{lf}  #{flag.desc}"
+  'Available options:\n' + lines.join \\n
