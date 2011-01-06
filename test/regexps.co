@@ -17,6 +17,7 @@ eq [g][0]/h/i, (2)/2/2
 eq /^I'm\s+Heregex?\/\/\//gim + '', ///
   ^ I'm \s+ Heregex? / // # or not
 ///gim + ''
+
 eq '\\\\#{}\\\\\\\"', ///
  #{
    "#{ '\\' }" # normal comment
@@ -25,7 +26,10 @@ eq '\\\\#{}\\\\\\\"', ///
  \#{}
  \\ \"
 ///.source
+
 eq ///  /// + '', '/(?:)/'
+
+eq /// _ #{?if 1 then \g else \m}/// + '', '/_/g'
 
 
 #584: Unescaped slashes in character classes.

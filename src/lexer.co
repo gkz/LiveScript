@@ -253,7 +253,9 @@ exports import
     {tokens} = this
     for token, i of @interpolateString body
       if token.0 is \TOKENS
-        tokens.push ...token.1
+        if token.1.1?.1 is \?
+        then tokens.pop(); flags = token.1
+        else tokens.push ...token.1
       else
         val = token.1.replace HEREGEX_OMIT, ''
         continue if i and not val
@@ -261,7 +263,11 @@ exports import
         tokens.push [\STRNUM; string val, \', \\\n; token.2]
       tokens.push [\+- \+, tokens[*-1].2]
     tokens.pop()
-    if flags then @token \, \,; @token \STRNUM, "'#{flags}'"
+    if flags
+      @token \, \,
+      if typeof flags is \string
+      then @token \STRNUM, "'#{flags}'"
+      else tokens.push ...flags.slice 2, -1
     @token \)CALL \)
     heregex.length
 
