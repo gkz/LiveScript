@@ -6,12 +6,12 @@
 
 {title} = document
 
-docs = document.getElementById \docs or lmn \div, id: \docs
-navi = document.getElementById \navi or do ->
+doc = document.getElementById \doc or lmn \div, id: \doc
+nav = document.getElementById \nav or do ->
   h  = '<div class=pointee>&#x2935;</div>'
   h += "<h1>#{title}</h1>" if title
   h += "<li><a href=##{co}>#{co}</a>" for co of sources
-  lmn \ul, id: \navi, innerHTML: h
+  lmn \ul, id: \nav, innerHTML: h
 
 htms = __proto__: null
 
@@ -21,10 +21,10 @@ sdcv = new Showdown.converter
 do @onhashchange = ->
   unless page = /^\D+(?=(\d*)$)/.exec location.hash.slice 1
     document <<< {title}
-    navi.className = docs.innerHTML = ''
+    nav.className = doc.innerHTML = ''
     return
-  navi.className = \menu
-  docs.innerHTML = \...
+  nav.className = \menu
+  doc.innerHTML = \...
   [name] = page
   return load page, that if htms[name]
   xhr = new XMLHttpRequest
@@ -37,9 +37,8 @@ do @onhashchange = ->
 function lmn (name, attrs) ->
   document.body.appendChild document.createElement(name) <<<< attrs
 
-function load ([name, sect], html) ->
+function load ([name, sect], doc.innerHTML) ->
   document.title = name + (title and ' - ' + title)
-  docs.innerHTML = html
   document.getElementById(sect).scrollIntoView() if sect
   # [google-code-prettify](http://code.google.com/p/google-code-prettify/)
   # highlights the code, with the help of our [lang-co](#lang-co) plugin.
@@ -64,7 +63,7 @@ function build (name, source) ->
       code += line + \\n
     br = false
   htm += block name, comment, code, i if comment or code
-  "<h1>#{name}</h1>" + htm + '<br clear=both>'
+  "<h1>#{name}</h1>#{htm}<br clear=both>"
 
 function block (name, comment, code, i) ->
   code &&= """

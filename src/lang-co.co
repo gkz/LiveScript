@@ -7,12 +7,12 @@ tint = (ext, shortcuts, fallthroughs) ->
 ##### Main
 tint \co, [
   [\str /^\\\S[^\s,;)}\]]*/ \\]
-  [\str /// ^ ' (?: ''[^]*?'' | [^\\']*(?:\\.[^\\']*)* ) ' /// \']
-  [\lang-qq /^("""[^]*?""")/ \"]
+  [\str /// ^ ' (?: ''[\S\s]*?'' | [^\\']*(?:\\.[^\\']*)* ) ' /// \']
+  [\lang-qq /^("""[\S\s]*?""")/ \"]
   [\lang-qq /// ^ ( " [^\\"]*(?:\\.[^\\"]*)* " ) /// \"]
-  [\lang-qr /// ^ ( /{3} [^]+? /{3} [imgy]{0,4} ) (?!\w) /// \/]
+  [\lang-qr /// ^ ( /{3} [\S\s]+? /{3} [imgy]{0,4} ) (?!\w) /// \/]
   [\lang-at /^(@+[$\w\x7f-\uffff]*)/ \@]
-  [\com /// ^ \# (?: \##[^#][^]*?### | .*) /// \#]
+  [\com /// ^ \# (?: \##[^#][\S\s]*?### | .*) /// \#]
   [\typ /// ^ (?
   : 0x[\da-f]+
   | [1-9]\d? r [\da-z]+
@@ -44,15 +44,15 @@ tint \co, [
   | Object | RegExp | S(?:tring|yntaxError) | TypeError
   ) \b(?![^\n\S]*:(?!:)) ///]
   [\var /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/]
-  [\str /^<(?!<)\[[^]*?]>/]
+  [\str /^<(?!<)\[[\S\s]*?]>/]
   [\lang-r /// ^ [^/] ( / (?![\s/])
     [^ [ / \n \\ ]*
     (?:
       (?
-      : \\[^]
+      : \\[\S\s]
       | \[
           [^ \] \n \\ ]*
-          (?: \\[^] [^ \] \n \\ ]* )*
+          (?: \\[\S\s] [^ \] \n \\ ]* )*
          ]
       ) [^ [ / \n \\ ]*
     )* / [imgy]{0,4} ) (?!\w)
@@ -60,10 +60,10 @@ tint \co, [
 ]
 
 ##### Subrules
-hashbraces = [\lang-co /^#{([^]*?)}/ \#]
-regexes    = [\lit /^[^]+?/]
+hashbraces = [\lang-co /^#{([\S\s]*?)}/ \#]
+regexes    = [\lit /^[\S\s]+?/]
 
-tint \qq, [hashbraces], [[\str /^[^]+?/]]
+tint \qq, [hashbraces], [[\str /^[\S\s]+?/]]
 tint \qr, [hashbraces], [[\com /^\s#(?!{).*/], regexes]
 tint \r , [], [regexes]
 

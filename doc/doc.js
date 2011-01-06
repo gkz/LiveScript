@@ -1,10 +1,10 @@
 (function(){
-  var title, docs, navi, htms, sdcv, __importAll = function(obj, src){ for (var key in src) obj[key] = src[key]; return obj };
+  var title, doc, nav, htms, sdcv, __importAll = function(obj, src){ for (var key in src) obj[key] = src[key]; return obj };
   title = document.title;
-  docs = document.getElementById('docs') || lmn('div', {
-    id: 'docs'
+  doc = document.getElementById('doc') || lmn('div', {
+    id: 'doc'
   });
-  navi = document.getElementById('navi') || (function(){
+  nav = document.getElementById('nav') || (function(){
     var h, co, _i, _ref, _len;
     h = '<div class=pointee>&#x2935;</div>';
     if (title) {
@@ -15,7 +15,7 @@
       h += "<li><a href=#" + co + ">" + co + "</a>";
     }
     return lmn('ul', {
-      id: 'navi',
+      id: 'nav',
       innerHTML: h
     });
   }());
@@ -27,11 +27,11 @@
     var page, name, that, xhr;
     if (!(page = /^\D+(?=(\d*)$)/.exec(location.hash.slice(1)))) {
       document.title = title;
-      navi.className = docs.innerHTML = '';
+      nav.className = doc.innerHTML = '';
       return;
     }
-    navi.className = 'menu';
-    docs.innerHTML = '...';
+    nav.className = 'menu';
+    doc.innerHTML = '...';
     name = page[0];
     if (that = htms[name]) {
       return load(page, that);
@@ -51,11 +51,11 @@
   function lmn(name, attrs){
     return document.body.appendChild(__importAll(document.createElement(name), attrs));
   }
-  function load(_arg, html){
+  function load(_arg, _arg2){
     var name, sect;
     name = _arg[0], sect = _arg[1];
+    doc.innerHTML = _arg2;
     document.title = name + (title && ' - ' + title);
-    docs.innerHTML = html;
     if (sect) {
       document.getElementById(sect).scrollIntoView();
     }
@@ -88,7 +88,7 @@
     if (comment || code) {
       htm += block(name, comment, code, i);
     }
-    return ("<h1>" + name + "</h1>") + htm + '<br clear=both>';
+    return "<h1>" + name + "</h1>" + htm + "<br clear=both>";
   }
   function block(name, comment, code, i){
     code && (code = "<pre class=\"code prettyprint lang-co\"\n >" + code.replace(/&/g, '&amp;').replace(/</g, '&lt;') + "</pre>");
