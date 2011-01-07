@@ -2,12 +2,11 @@
 # [tokenizing](#lexer), [parsing](#grammar), and [compiling](#nodes)
 # Coco source into JavaScript.
 
-(Coco = exports).VERSION = \0.2.3b
-
-{lex} = require \./lexer
+Coco = exports
 
 # Override Jison's default lexer, so that it can accept
 # the generic stream of tokens our lexer produces.
+{lex}    = require \./lexer
 {parser} = require \./parser
 parser import
   yy    : require \./nodes
@@ -16,41 +15,56 @@ parser import
     setInput      : -> @pos = -1; @tokens = it
     upcomingInput : -> ''
 
-# Compiles a string of Coco code to JavaScript.
-Coco.compile = (code, options) ->
-  try (parser.parse lex code).compileRoot options
-  catch e
-    e.message = "in #{that}, #{e.message}" if options?.fileName
-    throw e
+Coco import
+  VERSION: \0.2.3b
 
-# Parses a string or tokens of Coco code, returning the AST.
-Coco.nodes = -> parser.parse if typeof it == \string then lex it else it
+  # Compiles a string of Coco code to JavaScript.
+  compile: (code, options) ->
+    try (parser.parse lex code).compileRoot options
+    catch e
+      e.message = "in #{that}, #{e.message}" if options?.fileName
+      throw e
 
-# Tokenizes a string of Coco code, returning the array of tokens.
-Coco.tokens = lex
+  # Parses a string or tokens of Coco code, returning the AST.
+  nodes: -> parser.parse if typeof it == \string then lex it else it
 
-#### [node.js](http://nodejs.org) hacks
-return unless (fs = require \fs) and (path = require \path)
+  # Tokenizes a string of Coco code, returning the array of tokens.
+  tokens: lex
 
-# Executes a string of Coco, correctly
-# setting `__filename`, `__dirname`, and relative `require`.
-Coco.run = (code, options) ->
-  root = module
-  root.=parent while root.parent
-  root.filename = fs.realpathSync options?.fileName || \.
-  root.moduleCache &&= {}
-  if require.extensions or path.extname(root.filename).toLowerCase() is not \.co
-    code = Coco.compile code, options
-  root._compile code, root.filename
+#### [node.js](http://nodejs.org)
+if (fs = require \fs) and (path = require \path)
+  Coco import
+    # Executes a string of Coco, correctly
+    # setting `__filename`, `__dirname`, and relative `require`.
+    run: (code, options) ->
+      root = module
+      root.=parent while root.parent
+      root.filename = fs.realpathSync options?.fileName || \.
+      root.moduleCache &&= {}
+      if require.extensions or
+         path.extname(root.filename).toLowerCase() is not \.co
+        code = Coco.compile code, options
+      root._compile code, root.filename
+    # Evaluates a string of Coco. The Coco REPL uses this to run the input.
+    eval: (code, options) ->
+      __dirname = path.dirname __filename = options?.fileName
+      eval Coco.compile code, options
 
-# Evaluates a string of Coco. The Coco REPL uses this to run the input.
-Coco.eval = (code, options) ->
-  __dirname = path.dirname __filename = options?.fileName
-  eval Coco.compile code, options
+  if require.extensions
+    require.extensions.\.co = (module, filename) ->
+      module._compile (Coco.compile fs.readFileSync filename, \utf8), filename
+  # __TODO__: Remove `registerExtension` when fully deprecated.
+  else if require.registerExtension
+    require.registerExtension \.co, Coco.compile
 
-if require.extensions
-  require.extensions.\.co = (module, filename) ->
-    module._compile (Coco.compile fs.readFileSync filename, \utf8), filename
-# __TODO__: Remove `registerExtension` when fully deprecated.
-else if require.registerExtension
-  require.registerExtension \.co, Coco.compile
+#### other platforms
+else
+  Coco import {
+    eval : (code, options) -> (0; eval) Coco.compile code, options
+    run  : (code, options or {}) ->
+      do Function Coco.compile code, options <<< {+bare}; void
+    # Attatch `require` for debugging.
+    require
+  }
+  # Support Gecko JS Module.
+  @EXPORTED_SYMBOLS = [\Coco] if toString() is '[object BackstagePass]'

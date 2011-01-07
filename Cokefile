@@ -65,13 +65,18 @@ task \build:parser, 'rebuild the Jison parser (run "build" first)', ->
 task \build:browser
 , 'rebuild the merged script for inclusion of the browser', ->
   co = ''
-  for name of <[ rewriter lexer parser nodes coco browser ]>
+  for name of <[ rewriter lexer parser nodes coco ]>
     src = slurp "lib/#{name}.js"
     co += "!function(require, exports){#{src}}(r, r['./#{name}'] = {});"
   {parser, uglify} = require \uglify-js
-  ast = parser.parse "this.Coco = function(){
-    function r(path){ return r[path] } #{co} return r['./coco']
-  }()"
+  ast = parser.parse """
+    (function(){
+      function r(path){ return r[path] } #{co}
+      var Coco = this.Coco = r['./coco'];
+      #{ slurp \lib/browser.js }
+      return Coco
+    }.call(this))
+  """
   ast = uglify.ast_mangle  ast
   ast = uglify.ast_squeeze ast, {+extra}
   spit \extras/coco.js, """
@@ -79,7 +84,7 @@ task \build:browser
     // Copyright 2010, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
     http://satyr.github.com/coco
-    #{ uglify.gen_code ast }
+    #{ uglify.gen_code ast };
 
   """
   invoke \test:browser

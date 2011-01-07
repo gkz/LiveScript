@@ -1,35 +1,26 @@
-(Coco = require \./coco) <<< {require}
+Coco import
+  # Load a remote script from the current domain via XHR.
+  load: (url, options) ->
+    xhr = new (self.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
+    xhr.open \GET, url, true
+    xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
+    xhr.onreadystatechange = ->
+      Coco.run xhr.responseText, options if xhr.readyState is 4
+    xhr.send null
+    xhr
 
-# Override exported methods for non-[node.js](http://nodejs.org) environments.
-Coco.eval = (code, options) -> (0; eval) Coco.compile code, options
-Coco.run  = (code, options = {}) ->
-  do Function Coco.compile code, options import {+bare}
+  # Activate Coco in the browser by having it compile and evaluate
+  # all script tags with `coco` type. Co
+  invoke: ->
+    type = ///^ (?: text/ | application/ )? coco $///i
+    for script of document.getElementsByTagName \script
+      continue unless type.test script.type
+      if script.src
+      then Coco.load script.src
+      else Coco.run  script.innerHTML
+    void
 
-# Support Gecko JS Module.
-@EXPORTED_SYMBOLS = [\Coco] if toString() is '[object BackstagePass]'
-
-return unless window?
-
-# Load a remote script from the current domain via XHR.
-Coco.load = (url, options) ->
-  xhr = new (self.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
-  xhr.open \GET, url, true
-  xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
-  xhr.onreadystatechange = ->
-    Coco.run xhr.responseText, options if xhr.readyState is 4
-  xhr.send null
-
-# Activate Coco in the browser by having it compile and evaluate
-# all script tags with a content-type of `text/coco`.
-# This happens on page load.
-if self.addEventListener
-then addEventListener \DOMContentLoaded, runScripts, false
-else attachEvent      \onload,           runScripts
-function runScripts ->
-  type = ///^ (?: text/ | application/ )? coco $///i
-  for script of document.getElementsByTagName \script
-    continue unless type.test script.type
-    if script.src
-    then Coco.load script.src
-    else Coco.run  script.innerHTML
-  void
+# Run scripts on page load.
+if document?
+  addEventListener? \DOMContentLoaded, Coco.invoke, false or
+  attachEvent       \onload,           Coco.invoke
