@@ -401,9 +401,8 @@ class exports.Value extends Node
 #### Call
 # `x(y)`
 class exports.Call extends Node
-  (@callee, args, sym) =>
-    if not args or
-       args.length is 1 and args.0 instanceof Splat and args.0.it.isEmpty()
+  (@callee, args or [], sym) =>
+    if args.length is 1 and args.0 instanceof Splat and args.0.it.isEmpty()
       @splat = true; args = [Literal \this; Literal \arguments]
     @<<<{args, soak: sym is \?(}
 
@@ -560,12 +559,9 @@ class exports.Op extends Node
   (op, first, second, post) =>
     return new Of first, second if op is \of
     if op is \do
-      args = []
       if first instanceof Fun
-        {params} = first
-        for p, i of params
-          args.push if p.op is \= && not p.logic
-          then params[i] = p.left; p.right else p
+        args = (ps = first.params).length and for p, i of ps
+          if p.op is \= && not p.logic then ps[i] = p.left; p.right else p
       return Parens Call first, args
     if op is \new
       if (call = first.head or first) instanceof Call
@@ -1014,9 +1010,8 @@ class exports.Class extends Node
     lines.unshift ctor = Fun() unless ctor
     lines.push lname
     ctor import {name, +ctor, +statement, -clas}
-    args = []
     if @sup
-      args.push @sup
+      args  = [@sup]
       proto = Util.Extends lname, fun.params.* = Literal \_super
     clas = Call fun import {proto}, args
     clas = Assign lname , clas if decl and @title?.isComplex()
