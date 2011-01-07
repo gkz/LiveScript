@@ -334,14 +334,6 @@ exports import
   literalToken: ->
     return 0 unless val = SYMBOL.exec it
     switch tag = val.=0
-    case <[ -> => ]>
-      @tagParameters()
-      tag = \FUNC_ARROW
-    case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
-      tag = \ASSIGN
-      if @last.0 is \LOGIC
-        @tokens.pop()
-        (val = new String val).logic = @last.1
     case <[ . ?. &. .= ]>              then tag = \DOT
     case <[ + - ]>                     then tag = \+-
     case <[ ! ~ ]>                     then tag = \UNARY
@@ -355,9 +347,14 @@ exports import
     case \@                            then tag = \THIS
     case \;                            then tag = \TERMINATOR
     case \?(                           then tag = \CALL(
-    case '()'
-      @token \CALL( \(; @token \)CALL \)
-      return val.length
+    case <[ -> => ]>
+      @tagParameters()
+      tag = \FUNC_ARROW
+    case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
+      tag = \ASSIGN
+      if @last.0 is \LOGIC
+        @tokens.pop()
+        (val = new String val).logic = @last.1
     case \*
       tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
     case \::
@@ -376,6 +373,9 @@ exports import
         @strnum if \\ is word = val.slice 1 then "'\\\\'" else string word, \'
         return val.length
       case \(
+        if val.length > 1
+          @token \CALL( \(; @token \)CALL \)
+          return val.length
         tag = \CALL( if @able true
     @token(tag, val).length
 
@@ -557,7 +557,7 @@ SYMBOL = /// ^ (?
 | \\\S[^\s,;)}\]]*  # word
 | ([-+&|:])\1       # {in,de}crement / logic / prototype access
 | [-=]>             # function
-| \(\)              # call
+| \([^\n\S]*\)      # call
 | [!=]==?           # equality
 | \.{3}             # splat/yadayadayada
 | [?&]\.            # soak/bind access

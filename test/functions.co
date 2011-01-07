@@ -1,3 +1,4 @@
+# `it`
 I = (x) -> x
 eq I, I I
 
@@ -5,6 +6,10 @@ I = -> it
 eq I, I I I
 
 eq \0, (-> (key for key in it).0) {0}
+
+
+# Bare calls.
+eq I (), I( )
 
 
 # The empty function should not cause a syntax error.
