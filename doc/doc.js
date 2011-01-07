@@ -63,13 +63,11 @@
     return prettyPrint();
   }
   function build(name, source){
-    var lines, i, comment, htm, code, re, line, br, that, _i, _len;
-    lines = source.split('\n');
-    htm = comment = i = '';
-    code = /^#!/.test(lines[0]) ? lines.shift() : '';
-    re = /^[^\n\S]*#(?!##(?!#)|{) ?(.*)/;
-    for (_i = 0, _len = lines.length; _i < _len; ++_i) {
-      line = lines[_i];
+    var i, code, comment, htm, re, line, br, that, _i, _ref, _len;
+    htm = comment = code = i = '';
+    re = /^[^\n\S]*#(?!##(?!#)|[!{]) ?(.*)/;
+    for (_i = 0, _len = (_ref = source.split('\n')).length; _i < _len; ++_i) {
+      line = _ref[_i];
       if (!line) {
         br = true;
         code && (code += '\n');

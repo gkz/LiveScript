@@ -46,11 +46,9 @@ function load ([name, sect], doc.innerHTML) ->
   prettyPrint()
 
 function build (name, source) ->
-  lines = source.split \\n
-  htm   = comment = i = ''
-  code  = if /^#!/.test lines.0 then lines.shift() else ''
-  re    = /^[^\n\S]*#(?!##(?!#)|{) ?(.*)/
-  for line of lines
+  htm = comment = code = i = ''
+  re  = /^[^\n\S]*#(?!##(?!#)|[!{]) ?(.*)/
+  for line of source.split \\n
     unless line
       br = true
       code &&+= \\n
