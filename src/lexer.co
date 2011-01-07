@@ -400,13 +400,15 @@ exports import
   # definitions versus argument lists in function calls. Walk backwards, tagging
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
-    return if @last.0 is not \)
+    return unless @last.0 is \)
     {tokens} = this; level = 1; i = tokens.length - 1
-    while level and tok = tokens[--i]
+    while tok = tokens[--i]
       switch tok.0
-      case \)     then ++level
-      case \(     then --level or (tok.0 = \PARAM(; @last.0 = \)PARAM)
-      case \CALL( then --level
+      case <[ ) )CALL ]> then ++level
+      case <[ ( CALL( ]>
+        break if --level
+        if that is \( then tok.0 = \PARAM(; @last.0 = \)PARAM
+        return
     void
 
   # Matches a balanced group such as a double-quoted string. Pass in
