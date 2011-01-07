@@ -388,3 +388,7 @@ throws 'duplicate formal argument: a', -> Coco.compile '(a, a) ->'
 
 
 ok (@arguments, @eval) ->
+
+
+# Call takes precedence over function parameter.
+eq 0, I(-> it()) -> 0

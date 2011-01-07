@@ -352,7 +352,7 @@ exports import
     case \;                            then tag = \TERMINATOR
     case \?(                           then tag = \CALL(
     case '()'
-      @token \CALL( \(; @token \) \)
+      @token \CALL( \(; @token \)CALL \)
       return val.length
     case \*
       tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
@@ -401,12 +401,12 @@ exports import
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
     return if @last.0 is not \)
-    {tokens} = this; level = 1
-    tokens[i = (*) - 1].0 = \)PARAM
-    while tok = tokens[--i]
+    {tokens} = this; level = 1; i = tokens.length - 1
+    while level and tok = tokens[--i]
       switch tok.0
-      case \)            then ++level
-      case <[ ( CALL( ]> then return tok.0 = \PARAM( unless --level
+      case \)     then ++level
+      case \(     then --level or (tok.0 = \PARAM(; @last.0 = \)PARAM)
+      case \CALL( then --level
     void
 
   # Matches a balanced group such as a double-quoted string. Pass in
@@ -491,7 +491,7 @@ exports import
   callable: ->
     return false if @last.spaced
     switch @last.0
-    case <[ IDENTIFIER THISPROP THIS SUPER ] ) ? ]> then true
+    case <[ IDENTIFIER THISPROP THIS SUPER ] ) )CALL ? ]> then true
     case \STRNUM then @tokens[*-2]?.0 is \DOT
 
   # Throws a syntax error with the current line number.
