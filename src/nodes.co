@@ -401,9 +401,11 @@ class exports.Value extends Node
 #### Call
 # `x(y)`
 class exports.Call extends Node
-  (@callee, @args, sym) =>
-    @args ||= (@splat = true; [Literal \this; Literal \arguments])
-    @soak   = true if sym is \?(
+  (@callee, args, sym) =>
+    if not args or
+       args.length is 1 and args.0 instanceof Splat and args.0.it.isEmpty()
+      @splat = true; args = [Literal \this; Literal \arguments]
+    @<<<{args, soak: sym is \?(}
 
   children: <[ callee args ]>
 

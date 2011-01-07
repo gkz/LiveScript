@@ -22,7 +22,7 @@ obj =
   0: {method: -> this is obj[0]}
 
 eq obj.getNames(), 'moe,jane,ted'
-ok obj[obj.index++].method(...[]), 'should cache base value'
+ok obj[obj.index++].method(...[0]), 'should cache base value'
 
 
 quartet = [0 to 3]
@@ -102,3 +102,20 @@ eq five, 5
 
 
 eq '0.0', 0.toFixed ...[1]
+
+
+# [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
+[...[], a] = [1]
+eq a, 1
+
+# `...` is same as `...[]`
+[..., a] = [1 to 3]
+eq a, 3
+
+[a, ..., b] = [1 2]
+eq a, 1
+eq b, 2
+
+[a, ..., b] = [1 to 5]
+eq a, 1
+eq b, 5
