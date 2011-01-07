@@ -71,11 +71,11 @@ eq new ThirdChild().func('four'), 'zero/one/two/three/four'
 eq new ThirdChild()['func-func']('thing'), 'dynamic-thing'
 
 
-# '@' referring to the current instance, and not being coerced into a call.
+# `@` referring to the current instance, and not being coerced into a call.
 ok (new class I then amI: -> @ instanceof I).amI()
 
 
-# super() calls in constructors of classes that are defined as object properties.
+# `super` calls in constructors of classes that are defined as object properties.
 class Hive
   (@name) ->
 
@@ -213,8 +213,8 @@ eq ns.method1({1})[1], 1
 eq ns.method2(2).length, 2
 
 
+# [coffee#1009](https://github.com/jashkenas/coffee-script/issues/1009)
 # Class names are "$"-prefixed when reserved.
-# https://github.com/jashkenas/coffee-script/issues/1009
 new ->
   class @in
   class @eval

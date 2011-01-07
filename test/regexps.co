@@ -31,10 +31,10 @@ eq ///  /// + '', '/(?:)/'
 
 eq /// _ #{?if 1 then \g else \m}/// + '', '/_/g'
 
-
-#584: Unescaped slashes in character classes.
+# [coffee#584](https://github.com/jashkenas/coffee-script/issues/584)
+# Unescaped slashes in character classes.
 ok /:\/[/]goog/.test 'http://google.com'
 
-
-#764: Should be indexable.
+# [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
+# Should be indexable.
 eq /0/['source'], ///#{0}///['source']

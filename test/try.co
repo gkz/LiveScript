@@ -29,10 +29,10 @@ try finally
 try catch finally
 
 try
-  # nothing
+  #!nothing
 catch
-  # nothing
+  #!nothing
 finally
-  # nothing
+  #!nothing
 
 eq 99, do -> try 99

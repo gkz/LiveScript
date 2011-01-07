@@ -6,7 +6,7 @@ eq "four five", 'four
 
  five'
 
-#647
+# [coffee#647](https://github.com/jashkenas/coffee-script/issues/647)
 eq "''Hello, World\\''", '''
 '\'Hello, World\\\''
 '''
@@ -221,7 +221,6 @@ eq '\\', [\\\].0
 eq '$', {\$}.\$
 eq \\\, \\
 
-
-#coffee-923
+# [coffee#923](https://github.com/jashkenas/coffee-script/issues/923)
 eq "#{ "{" }", "{"
 eq "#{ '#{}}' } }", '#{}} }'

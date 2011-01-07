@@ -237,11 +237,12 @@ eq  1, <[]>.length
 eq '', <[]>[0]
 
 
-#coffee-542: Objects leading expression statement should be parenthesized.
+# [coffee#542](https://github.com/jashkenas/coffee-script/issues/542)
+# Objects leading expression statement should be parenthesized.
 {f: -> ok true }.f() + 1
 
-
-#coffee-764: Boolean/Number should be indexable.
+# [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
+# Boolean/Number should be indexable.
 ok 42['toString']
 ok true['toString']
 
@@ -249,16 +250,16 @@ ok true['toString']
 ok 2r101010 == 8r52 == 36r16 == 42
 
 
-#19
+# [#19](https://github.com/satyr/coco/issues/19)
 throws 'duplicate property name: a', -> Coco.compile 'a: 1, b: 2, a: 3'
 
 
-#1
+# [#1](https://github.com/satyr/coco/issues/1)
 λ = -> 七 = 7
 eq λ(), 7
 
 
-#31
+# [#31](https://github.com/satyr/coco/issues/31)
 eq '1,2,3'  ,''+ [1 to +3]
 eq '1,0,-1' ,''+ Array 1 to -1 by -1
 

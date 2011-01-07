@@ -1,45 +1,45 @@
-# line comment
+#! line comment
 
 ###
 block comment
 ###
 
 
-  # comment
+  #!comment
 func = ->
-# comment
+#!comment
   false
-  false   # comment
+  false   #!comment
   false
 
-# comment
+#!comment
   true
 
 switch 'string'
-# comment
+#!comment
 case false then something()
-# comment
+#!comment
 case null
   somethingElse()
 
 ->
   code()
-  # comment
+  #!comment
 
 ok func()
 
 func
 func
-# Line3
+#!Line3
 
 obj = {
-# comment
-  # comment
-    # comment
+#!comment
+  #!comment
+    #!comment
   one: 1
-# comment
+#!comment
   two: 2
-    # comment
+    #!comment
 }
 
 result = if true # comment
@@ -102,11 +102,11 @@ obj = {
 result = if false
   1
 
-# comment
+#!comment
 else if false
   2
 
-# comment
+#!comment
 else
   3
 
@@ -115,7 +115,7 @@ eq result, 3
 
 result = switch 'z'
 case 'z' then 7
-# comment
+#!comment
 eq result, 7
 
 

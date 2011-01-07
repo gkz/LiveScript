@@ -16,7 +16,7 @@ ok 1 == 1 <= 1, '`x == y <= z` should become `x == y && y <= z`'
 i = 0
 ok 1 > i++ < 1, 'chained operations should evaluate each value only once'
 
-# https://github.com/jashkenas/coffee-script/issues/891
+# [coffee#891](https://github.com/jashkenas/coffee-script/issues/891)
 eq 1, (1 unless 1 < 0 == 0)
 
 
