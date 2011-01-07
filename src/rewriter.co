@@ -14,7 +14,7 @@
 # like this. The order of these passes matters--indentation must be
 # corrected before implicit parentheses can be wrapped around blocks of code.
 exports.rewrite = ->
-  expandNumbers rewriteClosingParens ensureBalance \
+  expandPrimitives rewriteClosingParens ensureBalance \
   addImplicitParentheses addImplicitBraces \
   tagPostfixConditionals addImplicitIndentation closeCalls \
   removeMidExpressionTerminators removeLeadingTerminators it
@@ -98,10 +98,10 @@ function addImplicitParentheses (tokens) ->
     unless (prev = tokens[i-1]).spaced
       switch tag
       case \?        then token.call = true
-      case <[ [ { ]> then if able prev.0
+      case <[ [ { ]> then if able tokens, i
         tokens.splice i++, 0, [if tag is \[ then \DOT else \CLONE, '', prev[2]]
       continue
-    continue unless prev.call or able prev.0, true
+    continue unless prev.call or able tokens, i, true
     continue unless token.argument or
       tag of <[ ( [ { ... IDENTIFIER THISPROP THIS STRNUM LITERAL RANGE
                 UNARY CREMENT IF TRY CLASS FUNCTION SUPER ]> or
@@ -111,10 +111,6 @@ function addImplicitParentheses (tokens) ->
     tokens.splice --i, 1 if soak = prev.0 is \?
     tokens.splice i++, 0, [\CALL(, if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
-  function able (tag, call) ->
-    tag of <[ IDENTIFIER THISPROP SUPER THIS ) )CALL ] ]> or
-    if call then tag is \STRNUM and tokens[i-2]?.0 is \DOT \
-            else tag of <[ } STRNUM LITERAL ]>
   function ok (token, i) ->
     return false if token.argument
     return true  if not seenSingle and token.fromThen or
@@ -237,17 +233,20 @@ function rewriteClosingParens (tokens) ->
     tokens.splice pos, 0, tok
   tokens
 
-function expandNumbers (tokens) ->
+# Tweaks against numbers and strings.
+function expandPrimitives (tokens) ->
   i = -1; last = tokens.0
   while token = tokens[++i]
     switch token.0
     case \STRNUM
-      num = '' + token.1
-      if ~'+-'.indexOf sign = num.charAt 0
-        tokens.splice i++, 0, [\+-, sign, token.2]
+      # Slip unary pluses/minuses off signed numbers.
+      if ~'-+'.indexOf sig = (num = '' + token.1).charAt 0
         token.1 = num.slice 1
-      else if last.1 is \@ and not last.spaced
-        tokens.splice i++, 0, [\DOT, \., token.2]
+        tokens.splice i++, 0, [\+-, sig, token.2]
+      # Insert DOT to support implicit indexing: `@'?'` -> `@.'?'`
+      else if not last.spaced and last.0 is not \STRNUM and able tokens, i
+        tokens.splice i++, 0, [\DOT  \., token.2]
+    # Expand number ranges.
     case \RANGE
       ts = []; lno = token.2
       to = token.to - if token.op is \to then 0 else 1e-15
@@ -259,6 +258,13 @@ function expandNumbers (tokens) ->
       i += ts.length - 1
     last = token
   tokens
+
+# Checks whether or not the previous token is indexable/callable.
+function able (tokens, i, call) ->
+  tag = tokens[i-1].0
+  tag of <[ IDENTIFIER THISPROP SUPER THIS ) )CALL ] ]> or
+  if call then tag is \STRNUM and tokens[i-2]?.0 is \DOT \
+          else tag of <[ } STRNUM LITERAL ]>
 
 function indexOfPair (tokens, i) ->
   level = 1; end = INVERSES[start = tokens[i].0]
