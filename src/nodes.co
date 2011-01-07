@@ -730,16 +730,18 @@ class exports.Assign extends Node
       continue if node.isEmpty()
       if node instanceof Splat
         throw SE 'multiple splats in an assignment' if ivar
-        len = nodes.length
-        val = utility(\slice) + \.call( + rite
-        val = if i is len - 1
-          val + if i then ", #{i})" else \)
+        len = nodes.length; empty = node.it.isEmpty()
+        if i is len - 1
+          break if empty
+          val = utility(\slice) + \.call( + rite + if i then ", #{i})" else \)
         else
-          @temps = [ivar = o.scope.temporary \i]
-          start  = i + 1
-          "#{len} <= #{rite}.length" +
-          " ? #{val}, #{i}, #{ivar} = #{rite}.length - #{len - i - 1})" +
-          " : (#{ivar} = #{i}, [])"
+          start = i + 1; @temps = [ivar = o.scope.temporary \i]
+          val   = "#{rite}.length - #{len - i - 1}"
+          if empty then node = Literal ivar
+          else val =
+            "#{len} <= #{rite}.length" +
+            " ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar} = #{val})" +
+            " : (#{ivar} = #{i}, [])"
         val = Literal val
       else
         if (inc = ivar) and start < i then inc += " + #{ i - start }"
