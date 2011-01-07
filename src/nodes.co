@@ -880,7 +880,7 @@ class exports.Existence extends Node
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Lines(), arrow) => @bound = '_this' if arrow is \=>
+  (@params or [], @body or Lines(), arrow) => @bound = \_this if arrow is \=>
 
   children: <[ params body ]>
 

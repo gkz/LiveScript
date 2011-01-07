@@ -8,13 +8,16 @@
 # **Rewriter** is used by [Lexer](#lexer),
 # directly against its internal array of tokens.
 
+exports import {rewrite, able}
+
 # Rewrite the token stream in multiple passes, one logical filter at
 # a time. This could certainly be changed into a single pass through the
 # stream, with a big ol' efficient switch, but it's much nicer to work with
 # like this. The order of these passes matters--indentation must be
 # corrected before implicit parentheses can be wrapped around blocks of code.
-exports.rewrite = ->
-  expandPrimitives rewriteClosingParens ensureBalance \
+
+function rewrite ->
+  expandNumbers rewriteClosingParens ensureBalance \
   addImplicitParentheses addImplicitBraces \
   tagPostfixConditionals addImplicitIndentation closeCalls \
   removeMidExpressionTerminators removeLeadingTerminators it
@@ -233,19 +236,15 @@ function rewriteClosingParens (tokens) ->
     tokens.splice pos, 0, tok
   tokens
 
-# Tweaks against numbers and strings.
-function expandPrimitives (tokens) ->
+function expandNumbers (tokens) ->
   i = -1; last = tokens.0
   while token = tokens[++i]
     switch token.0
+    # Slip unary pluses/minuses off signed numbers.
     case \STRNUM
-      # Slip unary pluses/minuses off signed numbers.
       if ~'-+'.indexOf sig = (num = '' + token.1).charAt 0
         token.1 = num.slice 1
         tokens.splice i++, 0, [\+-, sig, token.2]
-      # Insert DOT to support implicit indexing: `@'?'` -> `@.'?'`
-      else if not last.spaced and last.0 is not \STRNUM and able tokens, i
-        tokens.splice i++, 0, [\DOT  \., token.2]
     # Expand number ranges.
     case \RANGE
       ts = []; lno = token.2
@@ -259,12 +258,12 @@ function expandPrimitives (tokens) ->
     last = token
   tokens
 
-# Checks whether or not the previous token is indexable/callable.
-function able (tokens, i, call) ->
+# Checks whether or not the previous token is {index,`call`}able.
+function able (tokens, i = tokens.length, call) ->
   tag = tokens[i-1].0
-  tag of <[ IDENTIFIER THISPROP SUPER THIS ) )CALL ] ]> or
+  tag of <[ IDENTIFIER THISPROP THIS SUPER ] ) )CALL ]> or
   if call then tag is \STRNUM and tokens[i-2]?.0 is \DOT \
-          else tag of <[ } STRNUM LITERAL ]>
+          else tag of <[ STRNUM LITERAL } ]>
 
 function indexOfPair (tokens, i) ->
   level = 1; end = INVERSES[start = tokens[i].0]

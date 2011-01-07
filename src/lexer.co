@@ -13,6 +13,10 @@
 # Reads a stream of Coco code and divvies it up into tagged tokens.
 # Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into Lexer.
+
+# Depends on [Rewriter](#rewriter).
+{rewrite, able} = require \./rewriter
+
 exports import
   # `lex` is Lexer's one and only public method.
   lex: (
@@ -63,8 +67,8 @@ exports import
     @dedent @indent
     # Dispose dummy.
     @tokens.shift()
-    # [Rewrite](#rewriter) the token stream unless explicitly asked not to.
-    require(\./rewriter).rewrite @tokens if o.rewrite != 0
+    # Rewrite the token stream unless explicitly asked not to.
+    rewrite @tokens if o.rewrite != 0
     @tokens
 
   #### Tokenizers
@@ -161,7 +165,7 @@ exports import
     return 0 unless match = NUMBER.exec it
     num = match.3 or match.0; {last} = this
     switch num.charAt 0
-    case \. then if @callable() or last.0 of <[ } LITERAL STRNUM ]>
+    case \. then if @able()
       @token \DOT \.; @token \STRNUM, num.slice 1
       return match.0.length
     case \0 then if num.charAt(1) not of ['' \x \.]
@@ -171,27 +175,27 @@ exports import
       num = parseInt rnum = match.2, radix
       if isNaN num or num is parseInt rnum.slice(0, -1), radix
         @carp "invalid number #{rnum} in base #{radix}"
-    if last.0 is \+- and not last.spaced
+    if sign = last.0 is \+- and not last.spaced
       num = last.1 + num
       @tokens.pop()
       @last = last = @tokens[*-1]
     if last.0 is \RANGE and (not last.to or last.by is true)
     then last[if last.to then \by else \to] = num
-    else @token \STRNUM, num
+    else if sign then @token \STRNUM, num else @strnum num
     match.0.length
 
   # Matches a normal string. Ensures that quotation marks are balanced within
   # the string's contents, and within nested interpolations.
   singleStringToken: ->
     @carp 'unterminated string' unless str = SIMPLESTR.exec it
-    @token \STRNUM, (str.=0).replace MULTILINER, \\\\n
+    @strnum (str.=0).replace MULTILINER, \\\\n
     @countLines(str).length
 
   doubleStringToken: ->
     str = @balancedString it, \"
     if 0 < str.indexOf \#{, 1
     then @interpolateString str.slice(1, -1), ''
-    else @token \STRNUM, str.replace MULTILINER, ''
+    else @strnum str.replace MULTILINER, ''
     @countLines(str).length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -211,7 +215,7 @@ exports import
     if q is \" and ~doc.indexOf \#{
       @interpolateString doc, \\\n
     else
-      @token \STRNUM, string doc, q, \\\n
+      @strnum string doc, q, \\\n
       @countLines doc
     ++@line if lnl
     txt.length + 6
@@ -237,7 +241,7 @@ exports import
     # a regex never immediately follows.
     # Our list becomes shorter when spaced, due to sans-parentheses calls.
     return 0 if (prev = @last).0 of <[ LITERAL CREMENT ]> or
-                @callable() or not regex = REGEX.exec it
+                @able true or not regex = REGEX.exec it
     @token \LITERAL, if regex.=0 is \// then '/(?:)/' else regex
     @countLines(regex).length
 
@@ -369,11 +373,10 @@ exports import
           @token \DOT \.; @token \STRNUM, val.slice 1
         return val.length
       case \\
-        word = val.slice 1
-        @token \STRNUM, if word is \\ then "'\\\\'" else string word, \'
+        @strnum if \\ is word = val.slice 1 then "'\\\\'" else string word, \'
         return val.length
       case \(
-        tag = \CALL( if @callable()
+        tag = \CALL( if @able true
     @token(tag, val).length
 
   #### Token Manipulators
@@ -467,7 +470,7 @@ exports import
     ts.unshift [\S, '', line] if ts.0?.0 is not \S
     return ts unless newline?
     {tokens} = this
-    tokens.push [\DOT \., line] if @last.1 is \@ and not @last.spaced
+    tokens.push [\DOT \., line] if @able()
     tokens.push [\(   \(, line]
     for t, i of ts
       tokens.push [\+- \+, tokens[*-1].2] if i
@@ -479,9 +482,15 @@ exports import
 
   #### Helpers
 
-  # Add a token to the results,
+  # Adds a token to the results,
   # taking note of the line number and returning `value`.
   token: (tag, value) -> @tokens.push @last = [tag, value, @line]; value
+
+  # Records a string/number token, supplying implicit dot if applicable.
+  strnum: ->
+    @token \DOT \. if @last.0 is not \STRNUM and @able()
+    @token \STRNUM, it
+    void
 
   # Increments `@line` by the number of newlines in a string.
   countLines: (str) ->
@@ -489,12 +498,11 @@ exports import
     ++@line while pos = 1 + str.indexOf \\n, pos
     str
 
-  # Checks if the last token is callable via explicit parentheses.
-  callable: ->
-    return false if @last.spaced
-    switch @last.0
-    case <[ IDENTIFIER THISPROP THIS SUPER ] ) )CALL ? ]> then true
-    case \STRNUM then @tokens[*-2]?.0 is \DOT
+  # Checks if the last token is
+  #
+  # - callable  via explicit parentheses : `f()`
+  # - indexable via implicit brackets    : `x''`
+  able: -> not @last.spaced and able @tokens, null, it
 
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"

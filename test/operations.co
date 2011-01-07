@@ -56,6 +56,8 @@ ok array[0]++ of [99, 100], 'should cache testee'
 # Non-spaced values still work.
 x = 10
 y = -5
+eq x-9, 1
+eq y+9, 4
 eq x*-y, 50
 eq x*+y, -50
 

@@ -107,5 +107,9 @@ eq '2,3', '' + {2,3}<[2 3]>
 eq '-Infinity,Infinity', '' + Number[\NEGATIVE_INFINITY, \POSITIVE_INFINITY]
 
 
+# Implicit indexing.
 eq @toString, @\toString
 eq @toString, @"to#{\S}tring"
+
+{ok}\ok 1
+[ok]0 1
