@@ -165,8 +165,8 @@ eq type.b, 2
 
 
 # `new` should apply to the first function of a call chain,
-eq 3, new (-> fun: -> @0 + @1)().fun ...args
-eq 3, new (->      -> @0 + @1)()     ...args
+eq 3, new (-> fun: (x, y) -> x + y)().fun ...args
+eq 3, new (->      (x, y) -> x + y)()     ...args
 eq 3, new (-> [it])(...[3]).0
 # but not to helper functions.
 eq 1, new [...[-> [1]]].0().0  # __slice
@@ -378,11 +378,10 @@ do (a = I(1)) -> eq a, 1
 
 
 (->
-  eq @0, 0
-  eq @1, 1
-  eq @2, @@[2]
-  eq @999, void
-) 0, 1, 2
+  eq @@  , arguments
+  eq @@0 , 0
+  eq @@1 , void
+) 0
 
 
 eq arguments,

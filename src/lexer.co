@@ -334,6 +334,16 @@ exports import
   literalToken: ->
     return 0 unless val = SYMBOL.exec it
     switch tag = val.=0
+    case <[ -> => ]>
+      @tagParameters()
+      tag = \FUNC_ARROW
+    case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
+      tag = \ASSIGN
+      if @last.0 is \LOGIC
+        @tokens.pop()
+        (val = new String val).logic = @last.1
+    case \*
+      tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
     case <[ . ?. &. .= ]>              then tag = \DOT
     case <[ + - ]>                     then tag = \+-
     case <[ ! ~ ]>                     then tag = \UNARY
@@ -347,34 +357,23 @@ exports import
     case \@                            then tag = \THIS
     case \;                            then tag = \TERMINATOR
     case \?(                           then tag = \CALL(
-    case <[ -> => ]>
-      @tagParameters()
-      tag = \FUNC_ARROW
-    case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
-      tag = \ASSIGN
-      if @last.0 is \LOGIC
-        @tokens.pop()
-        (val = new String val).logic = @last.1
-    case \*
-      tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
-    case \::
-      @token \DOT \.
-      @token \IDENTIFIER, new String(\prototype) <<< {+colon2}
-      fallthrough
-    case \\\\n then return val.length
     default
+      switch val
+      case \\\\n then break
+      case \@@   then @token \IDENTIFIER \arguments
+      case \::
+        @token \DOT \.
+        @token \IDENTIFIER, new String(\prototype) <<< {+colon2}
+      default next = true
+      return val.length unless next
       switch val.charAt 0
-      case \@
-        @token \IDENTIFIER \arguments
-        unless \@ is val.charAt 1
-          @token \DOT \.; @token \STRNUM, val.slice 1
-        return val.length
       case \\
         @strnum if \\ is word = val.slice 1 then "'\\\\'" else string word, \'
         return val.length
       case \(
         if val.length > 1
-          @token \CALL( \(; @token \)CALL \)
+          @token \CALL( \(
+          @token \)CALL \)
           return val.length
         tag = \CALL( if @able true
     @token(tag, val).length

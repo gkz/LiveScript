@@ -1057,7 +1057,7 @@ class exports.Splat extends Parens
 
   assigns: -> @it.assigns it
 
-  compile: -> @it.compile @0, @1
+  compile: -> @it.compile @@0, @@1
 
   # Compiles a list of nodes mixed with splats to a proper array.
   @compileArray = (o, list, apply) ->
