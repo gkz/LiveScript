@@ -106,6 +106,7 @@ class Node
   isComplex    : YES
   isStatement  : NO
   isAssignable : NO
+  isEmpty      : NO
   # Do I contain a statement that jumps out of me?
   jumps: NO
   # Do I assign a certain variable?
@@ -224,6 +225,9 @@ class exports.Literal extends Node
   show: -> \" + @value + \"
 
   isComplex: NO
+
+  isEmpty: ->
+    switch @value case <[ void null ]> then return true
 
   isAssignable : -> IDENTIFIER.test @value
   assigns      : -> it is @value
@@ -487,12 +491,16 @@ class exports.Clone extends Node
     call = Parens call, true if @newed
     Import(call, @mixin).compileNode o
 
+#### List
+# An abstract node for a list of items.
+class List extends Node
+  children : [\items]
+  isEmpty  : -> not @items.length
+
 #### Obj
 # `{x: y}`
-class exports.Obj extends Node
+class exports.Obj extends List
   (@items or []) =>
-
-  children: [\items]
 
   assigns: -> return true if node.assigns it for node of @items
 
@@ -530,7 +538,7 @@ class exports.Obj extends Node
 
 #### Arr
 # `[x, y]`
-class exports.Arr extends Obj
+class exports.Arr extends List
   (@items or []) =>
 
   compileNode: (o) ->
@@ -665,12 +673,13 @@ class exports.Assign extends Node
   $ ///
 
   compileNode: (o) ->
+    {right} = this
+    return right.compile o, LEVEL_ACCESS if @left.isEmpty()
     left = @transleft o
     if left.items
       return @compileDestructuring o, left unless @logic
       throw SE "\"#{@show()}\" cannot destructure"
     return @compileConditional o, left if @logic
-    {right} = this
     if left.hasDefault()
       right = Op left.op, right, left.second
       left.=first
@@ -703,8 +712,7 @@ class exports.Assign extends Node
   # when assigning to an array or object literal.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o, left) ->
-    {items} = left
-    return @right.compile o, LEVEL_ACCESS unless len = items.length
+    {items} = left; len = items.length
     rite = @right.compile o, if len is 1 then LEVEL_ACCESS else LEVEL_LIST
     if (len > 1 or o.level) and
        (not IDENTIFIER.test(rite) or left.assigns(rite))
@@ -721,7 +729,7 @@ class exports.Assign extends Node
 
   destructArr: (o, nodes, rite) ->
     for node, i of nodes
-      continue if node.items and not node.items.length
+      continue if node.isEmpty()
       if node instanceof Splat
         throw SE 'multiple splats in an assignment' if ivar
         len = nodes.length
@@ -928,7 +936,9 @@ class exports.Fun extends Node
       arg = p
       if dfv = arg.hasDefault()    then arg.=first
       else if arg instanceof Splat then arg.=it
-      if arg.isComplex()
+      if arg.isEmpty()
+        arg = Literal scope.temporary \arg
+      else if arg.isComplex()
         val = ref = paramName o, p
         val = Op p.op, ref, p.second if dfv
         asns.push Assign arg, val
