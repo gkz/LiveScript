@@ -131,7 +131,7 @@ class Node
   # String representation of the node for inspecting the parse tree.
   # This is what `coco --nodes` prints out.
   toString: (idt or '') ->
-    tree = \\n + idt + @constructor.name
+    tree = \\n + idt + @constructor.displayName
     tree += ' ' + that if @show()
     @eachChild -> tree += it.toString idt + TAB; void
     tree
@@ -718,9 +718,8 @@ class exports.Assign extends Node
        (not IDENTIFIER.test(rite) or left.assigns(rite))
       cache = "#{ rref = o.scope.temporary \ref } = #{rite}"
       rite  = rref
-    list = if left instanceof Arr
-    then @destructArr o, items, rite
-    else @destructObj o, items, rite
+    list = @[if left instanceof Arr then \destructArr else \destructObj] \
+      o, items, rite
     o.scope.free rref  if rref
     list.unshift cache if cache
     list.push rite     if o.level or not list.length
@@ -969,7 +968,7 @@ class exports.Fun extends Node
     code += "(#{ args.join ', ' }){"
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if exps.length
     code += \}
-    code += " #{name}.name = '#{name}';" if @ctor and name.charAt(0) is not \_
+    code += " #{name}.displayName = '#{name}';" if @ctor and name.charAt(0) is not \_
     code += "\n#{tab}return #{name};" if @returns
     return tab + code if @statement
     if @front then "(#{code})" else code

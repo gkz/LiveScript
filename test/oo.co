@@ -179,7 +179,7 @@ Class     = null
 
 # Namespaced but undeclared.
 Namespace.Class = class
-eq Namespace.Class.name, 'Class'
+eq Namespace.Class.displayName, 'Class'
 eq Class, null
 
 # Namespaced and declared.
@@ -239,10 +239,10 @@ eq oss.$uper(), OddSuper
 eq oss[1234](), OddSuper
 
 
-eq 'declared', (class declared).name
+eq 'declared', (class declared).displayName
 ok declared?
 
-eq 'named', (new -> @named = class).name
+eq 'named', (new -> @named = class).displayName
 ok !named?, 'should not leak to global when undeclared'
 
 
