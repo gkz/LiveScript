@@ -718,15 +718,14 @@ class exports.Assign extends Node
        (not IDENTIFIER.test(rite) or left.assigns(rite))
       cache = "#{ rref = o.scope.temporary \ref } = #{rite}"
       rite  = rref
-    list = @[if left instanceof Arr then \destructArr else \destructObj] \
-      o, items, rite
+    list = @"rend#{ left.constructor.displayName }" o, items, rite
     o.scope.free rref  if rref
     list.unshift cache if cache
     list.push rite     if o.level or not list.length
     code = list.join ', '
     if list.length < 2 or o.level < LEVEL_LIST then code else "(#{code})"
 
-  destructArr: (o, nodes, rite) ->
+  rendArr: (o, nodes, rite) ->
     for node, i of nodes
       continue if node.isEmpty()
       if node instanceof Splat
@@ -747,7 +746,7 @@ class exports.Assign extends Node
         val = Value lr ||= Literal(rite), [Index Literal inc || i]
       Assign(node, val, @op).compile o, LEVEL_TOP
 
-  destructObj: (o, nodes, rite) ->
+  rendObj: (o, nodes, rite) ->
     for node of nodes
       node.=it if splat = node instanceof Splat
       # `{a or b} = c` to `a = c.a or b`
