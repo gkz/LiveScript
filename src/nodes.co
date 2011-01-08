@@ -532,8 +532,8 @@ class exports.Obj extends List
 
   compileDynamic: (o, code, props) ->
     o.indent = @tab
-    code = (oref = o.scope.temporary \obj) + ' = ' + code + ', ' +
-           Import(Literal oref; Obj props).compile o, LEVEL_PAREN
+    code = "#{ oref = o.scope.temporary \obj } = #{code}
+          , #{ Import(Literal oref; Obj props).compile o, LEVEL_PAREN }"
     o.scope.free oref
     if o.level < LEVEL_LIST then code else "(#{code})"
 
@@ -596,8 +596,8 @@ class exports.Op extends Node
     return @compileExistence o if @op is \?
     return @compileMultiIO   o if @op is \instanceof and @second instanceof Arr
     @first import {@front}
-    code = @first .compile(o, LEVEL_OP) + " #{@op} " +
-           @second.compile(o, LEVEL_OP)
+    code = "#{ @first .compile o, LEVEL_OP } #{@op} \
+            #{ @second.compile o, LEVEL_OP }"
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
@@ -644,8 +644,8 @@ class exports.Op extends Node
   compileDelete: (o) ->
     code = ref = o.scope.temporary \ref
     [get, del] = Value(@first).cacheReference o
-    code += ' = ' + get.compile(o, LEVEL_LIST) + ', delete ' +
-                    del.compile(o, LEVEL_LIST) + ', ' + ref
+    code += " = #{ get.compile o, LEVEL_LIST }
+       , delete #{ del.compile o, LEVEL_LIST }, #{ref}"
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Assign
@@ -736,10 +736,10 @@ class exports.Assign extends Node
           start = i + 1; @temps = [ivar = o.scope.temporary \i]
           val   = "#{rite}.length - #{len - i - 1}"
           if empty then node = Literal ivar
-          else val =
-            "#{len} <= #{rite}.length" +
-            " ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar} = #{val})" +
-            " : (#{ivar} = #{i}, [])"
+          else val = "
+            #{len} <= #{rite}.length \
+            ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar} = #{val}) \
+            : (#{ivar} = #{i}, [])"
         val = Literal val
       else
         if (inc = ivar) and start < i then inc += " + #{ i - start }"
@@ -857,8 +857,8 @@ class exports.Of extends Node
         (if i then ref else sub) + cmp + item.compile o, lvl
       code = tests.join cnj
     else
-      code = utility(\indexOf) + ".call(#{ @array.compile o, lvl }, #{ref}) " +
-             if @negated then '< 0' else '>= 0'
+      code = "#{ utility \indexOf }.call(#{ @array.compile o, lvl }, #{ref}
+            ) #{ if @negated then \< else \>= } 0"
       return code if sub is ref
       code = sub + ', ' + code
     o.scope.free ref unless sub is ref
