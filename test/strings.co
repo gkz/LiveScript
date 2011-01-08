@@ -1,10 +1,10 @@
 eq '(((dollars)))', '\(\(\(dollars\)\)\)'
-eq 'one two three', "one
- two
- three"
-eq "four five", 'four
+eq 'one two three', "on
+e tw
+o three"
+eq "four five", 'fou
 
- five'
+r five'
 
 # [coffee#647](https://github.com/jashkenas/coffee-script/issues/647)
 eq "''Hello, World\\''", '''
@@ -193,13 +193,11 @@ a = """
 ok a is "one\ntwo\n"
 
 eq ''' line 0
-  should not be relevant
-    to the indent level
-''', '
- line 0\n
-should not be relevant\n
-  to the indent level
-'
+    should not be relevant
+      to the indent level
+''', ' line 0
+  \nshould not be relevant
+  \n  to the indent level'
 
 eq ''' '\\\' ''', " '\\' "
 eq """ "\\\" """, ' "\\" '

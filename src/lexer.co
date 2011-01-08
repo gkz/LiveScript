@@ -42,8 +42,9 @@ exports import
     @indent = @indebt = @dedebt = 0
     # The stack of all current indentation levels.
     @indents = []
-    # Prepend a newline if the input starts with an indented line.
-    if /^[^\n\S]+(?!#(?!##[^#]))\S/.test code then code = \\n + code; --@line
+    # Prepend a newline if the input starts with an indented line,
+    # so that INDENT is recorded properly.
+    if /^[^\n\S]+(?!#(?!##(?!#)))\S/.test code then code = \\n + code; --@line
     # Check the first character of current `code`, then call appropriate
     # tokenizers based on it. Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
@@ -184,18 +185,19 @@ exports import
     else if sign then @token \STRNUM, num else @strnum num
     match.0.length
 
-  # Matches a normal string. Ensures that quotation marks are balanced within
-  # the string's contents, and within nested interpolations.
+  # Matches a normal string without interpolations.
   singleStringToken: ->
     @carp 'unterminated string' unless str = SIMPLESTR.exec it
-    @strnum (str.=0).replace MULTILINER, \\\\n
+    @strnum unlines str.=0
     @countLines(str).length
 
+  # Ensures that quotation marks are balanced within
+  # the string's contents, and within nested interpolations.
   doubleStringToken: ->
     str = @balancedString it, \"
     if 0 < str.indexOf \#{, 1
-    then @interpolateString str.slice(1, -1), ''
-    else @strnum str.replace MULTILINER, ''
+    then @interpolate str.slice(1, -1), unlines
+    else @strnum unlines str
     @countLines(str).length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -213,9 +215,9 @@ exports import
         doc.=slice 1
         ++@line
     if q is \" and ~doc.indexOf \#{
-      @interpolateString doc, \\\n
+      @interpolate doc, enlines
     else
-      @strnum string doc, q, \\\n
+      @strnum enlines string doc, q
       @countLines doc
     ++@line if lnl
     txt.length + 6
@@ -255,7 +257,7 @@ exports import
       return @countLines(heregex).length
     @token \IDENTIFIER \RegExp; @token \CALL( \(
     {tokens} = this
-    for token, i of @interpolateString body
+    for token, i of @interpolate body
       if token.0 is \TOKENS
         if token.1.1?.1 is \?
         then tokens.pop(); flags = token.1
@@ -264,7 +266,7 @@ exports import
         val = token.1.replace HEREGEX_OMIT, ''
         continue if i and not val
         val.=replace bs ||= /\\/g, \\\\\
-        tokens.push [\STRNUM; string val, \', \\\n; token.2]
+        tokens.push [\STRNUM; string val, \'; token.2]
       tokens.push [\+- \+, tokens[*-1].2]
     tokens.pop()
     if flags
@@ -434,15 +436,14 @@ exports import
         case \{      then stack.push end = \}
     @carp 'missing ' + stack.pop()
 
-  # Expand variables and expressions inside double-quoted strings using
-  # Ruby-like notation for substitution of arbitrary expressions.
+  # Expands variables and expressions inside double-quoted strings or heregexes
+  # using Ruby-like notation for substitution of arbitrary expressions.
   #
   #     "Hello #{name.capitalize()}."
   #
-  # If it encounters an interpolation, this method will recursively create a
-  # new Lexer, tokenize the interpolated contents, and merge them into the
-  # token stream.
-  interpolateString: (str, newline) ->
+  # Will recursively create a new lexer for each interpolation,
+  # tokenizing the contents and merging them into the token stream.
+  interpolate: (str, nlines) ->
     {line} = this; ts = []; pi = 0; i = -1
     while str.charAt ++i
       if that is \\
@@ -467,7 +468,7 @@ exports import
       ts.push [\S; s = str.slice pi; @line]
       @countLines s
     ts.unshift [\S, '', line] if ts.0?.0 is not \S
-    return ts unless newline?
+    return ts unless nlines?
     {tokens} = this
     tokens.push [\DOT \., line] if @able()
     tokens.push [\(   \(, line]
@@ -475,7 +476,7 @@ exports import
       tokens.push [\+- \+, tokens[*-1].2] if i
       if t.0 is \TOKENS
       then tokens.push ...t.1
-      else tokens.push [\STRNUM; string t.1, \", newline; t.2]
+      else tokens.push [\STRNUM; nlines string t.1, \"; t.2]
     @token \) \)
     ts
 
@@ -506,20 +507,29 @@ exports import
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
 
+#### String Helpers
+
 # Constructs a string token by escaping quotes and newlines.
-string = (body, quote, newline) ->
+string = (body, quote) ->
   return quote + quote unless body
   body.=replace /\\([\s\S])/g, ($0, $1) ->
     if $1 of [\\n, quote] then $1 else $0
   .replace /// #{quote} ///g, \\\$&
-  body.=replace MULTILINER, newline if newline?
   quote + body + quote
 
-# Erases all external indentation on the left-hand side.
-untabify = (str, num) ->
-  if num then str.replace /// \n [^\n\S]{#{num}} ///g, \\n else str
+# Erases all external indentations of specific length.
+untabify = (str, len) ->
+  if len then str.replace /// \n [^\n\S]{#{len}} ///g, \\n else str
+
+# Erases all newlines and indentations.
+unlines = -> it.replace /\n[^\n\S]*/g, ''
+
+# Keeps newlines by escaping them.
+enlines = -> it.replace /\n/g, \\\n
 
 #### Constants
+
+##### Keywords
 
 # Keywords that Coco shares in common with JavaScript.
 JS_KEYWORDS = <[
@@ -541,7 +551,8 @@ RESERVED = <[ var with const let enum export native ]>
 # be used as identifiers or properties.
 FORBIDDEN = JS_KEYWORDS.concat RESERVED
 
-# Token matching regexes.
+##### Regexes
+
 IDENTIFIER = /// ^
   ( @? [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
@@ -568,14 +579,13 @@ SYMBOL = /// ^ (?
 | \\\n              # continued line
 | \S
 ) ///
-SPACE     = /^(?=.)[^\n\S]*(?:#(?!##[^#]).*)?/
-MULTIDENT = /^(?:\s*#(?!##[^#]).*)*(?:\n[^\n\S]*)+/
+SPACE     = /^(?=.)[^\n\S]*(?:#(?!##(?!#)).*)?/
+MULTIDENT = /^(?:\s*#(?!##(?!#)).*)*(?:\n[^\n\S]*)+/
 SIMPLESTR = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN   = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 
-# Regex-matching-regexes.
 REGEX = /// ^
-  / (?! \s )       # disallow leading whitespace
+  / (?!\s)         # disallow leading whitespace
   [^ [ / \n \\ ]*  # every other thing
   (?:
     (?: \\[\s\S]   # anything escaped
@@ -590,5 +600,4 @@ REGEX = /// ^
 HEREGEX      = /// ^ /{3} ([\s\S]+?) /{3} ([imgy]{0,4}) (?!\w) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
-MULTILINER     = /\n/g
 LINE_CONTINUER = /// ^ \s* (?: , | [?&]?\.(?!\.) | :: ) ///
