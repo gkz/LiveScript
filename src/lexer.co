@@ -575,7 +575,7 @@ SYMBOL = /// ^ (?
 | <<<<?             # import
 | <<=?              # left shift
 | >>>?=?            # rite shift
-| @(?:@|\d+)        # argument(s) shorthand
+| @@                # arguments shorthand
 | \\\n              # continued line
 | \S
 ) ///

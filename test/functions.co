@@ -381,7 +381,8 @@ do (a = I(1)) -> eq a, 1
   eq @@  , arguments
   eq @@0 , 0
   eq @@1 , void
-) 0
+  eq @2  , 2
+).call {2}, 0
 
 
 eq arguments,
