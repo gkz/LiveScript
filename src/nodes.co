@@ -1353,9 +1353,10 @@ class exports.If extends Node
 
   # Rewrites a chain of **If**s to add a default case as the final `else`.
   addElse: ->
+    throw SE \else-else if @end
     if @chain
     then @else.addElse it
-    else @chain = (@else = it) instanceof If
+    else @[if (@else = it) instanceof If then \chain else \end] = true
     this
 
   # An **If** only compiles into a statement if either of its bodies needs
