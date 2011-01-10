@@ -1120,7 +1120,7 @@ class exports.Return extends Throw
 
   jumps: THIS
 
-  compile: (o) ->
+  compileNode: (o) ->
     it = if @it then ' ' + @it.compile o, LEVEL_PAREN else ''
     o.indent + "return#{it};"
 
