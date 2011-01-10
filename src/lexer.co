@@ -361,7 +361,7 @@ exports import
     case \?(                           then tag = \CALL(
     default
       switch val
-      case \\\\n then break
+      case \\\\n then ++@line
       case \@@   then @token \IDENTIFIER \arguments
       case \::
         @token \DOT \.

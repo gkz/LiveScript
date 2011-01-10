@@ -134,3 +134,9 @@ eq '''
 }).call(this);
 
 ''', Coco.compile '''try for k in o then do => this{}'''
+
+
+eq 'STRNUM,0,0 STRNUM,1,1', '' + Coco.tokens('''
+0 \\
+  1
+''').slice(0 2).join ' '
