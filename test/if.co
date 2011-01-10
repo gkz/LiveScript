@@ -139,7 +139,7 @@ eq 2, [if 1 then 2       , 3].0
 eq 2, [if 0 then 1 else 2, 3].0
 
 
-throws \else-else, -> Coco.compile '''
+throws 'extra "else" on line 3', -> Coco.compile '''
   if a then b
   else then c
   else then d

@@ -62,10 +62,10 @@ while (0) {
 ''', Coco.compile '(1; 2) while 0 while 0', {+bare}
 
 
-throws 'invalid use of void', -> Coco.compile 'do void'
-throws 'invalid use of null', -> Coco.compile 'null.po'
+throws 'invalid use of void on line 1', -> Coco.compile 'do void'
+throws 'invalid use of null on line 1', -> Coco.compile 'null.po'
 
-throws 'invalid property name: this.p', -> Coco.compile '{@p:@}'
+throws 'invalid property name "this.p" on line 1', -> Coco.compile '{@p:@}'
 
 throws 'octal literal 0666 is deprecated on line 1' ,-> Coco.tokens '0666'
 throws 'invalid radix 1 on line 1'                  ,-> Coco.tokens '1r0'

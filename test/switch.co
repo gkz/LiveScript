@@ -28,12 +28,12 @@ eq func(8), void
 eq (switch case 1 then break), void
 eq (switch case 0 then break default 1), 1
 eq (switch case 1 then continue while 0; 1), 1
-throws '''
-switch (false) {
-case !1:
-  continue;
-} // cannot be an expression
-''', -> Coco.compile 'f(switch case 1 then continue)'
+throws 'inconvertible statement on line 3'
+, -> Coco.compile '''
+  1 + switch
+  case 2
+    continue
+'''
 
 
 ok (switch 'words'

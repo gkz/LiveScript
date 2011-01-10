@@ -261,7 +261,7 @@ eq ok, new ->
   ### even with trailing comments. ###
 
 
-throws 'cannot declare a function under a statement', ->
+throws 'function declaration under a statement on line 1', ->
   Coco.compile 'if 1 then function F ->'
 
 
@@ -289,7 +289,9 @@ eq obj.method(), obj
 
 eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
-throws 'return; // cannot be an expression', -> Coco.compile 'r = (return)'
+
+
+throws 'inconvertible statement on line 1', -> Coco.compile 'r = (return)'
 
 
 eq '(function(){})(function(){});', Coco.compile '(->return)(->void)', {+bare}
@@ -391,7 +393,7 @@ eq arguments,
     arguments
 
 
-throws 'duplicate formal argument: a', -> Coco.compile '(a, a) ->'
+throws 'duplicate formal argument "a" on line 1', -> Coco.compile '(a, a) ->'
 
 
 ok (@arguments, @eval) ->

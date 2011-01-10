@@ -26,8 +26,7 @@ class Node
   compileClosure: (o) ->
     # Statements that _jump_ out of current context (like `return`) can't be
     # an expression via closure-wrapping, as their meaning will change.
-    if @jumps() then throw SE \
-      @compile(o import indent: ''; LEVEL_TOP) + ' // cannot be an expression'
+    if @jumps() then throw SE that.L 'inconvertible statement'
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
     (fun = Fun [], Lines this).wrapper = true
@@ -97,6 +96,9 @@ class Node
     then hasThat that if it[that]
     else it.eachChild hasThat
 
+  # Appends `@line` number to an error message.
+  L: -> it + ' on line ' + (@line or @traverseChildren -> it.line)
+
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
   children: []
@@ -160,7 +162,7 @@ class exports.Lines extends Node
     return true if o and not o.level
     return true if node.isStatement o for node of @lines
 
-  jumps: -> return true if node.jumps it for node of @lines
+  jumps: -> return that if node.jumps it for node of @lines
 
   # **Lines** does not return its entire body, rather it
   # ensures that the final line is returned.
@@ -232,14 +234,15 @@ class exports.Literal extends Node
   isAssignable : -> IDENTIFIER.test @value
   assigns      : -> it is @value
 
-  asKey: -> if IDENTIFIER.test @value then Key @value else this
+  asKey: -> if IDENTIFIER.test @value then Key(@value) <<< {@line} else this
 
   compile: (o, level) ->
     switch val = @value
     case \this then return o.scope.method?.bound or val
     case \void then val += ' 8'; fallthrough
     case \null
-      throw SE 'invalid use of ' + @value if (level ? o.level) is LEVEL_ACCESS
+      if (level ? o.level) is LEVEL_ACCESS
+        throw SE @L 'invalid use of ' + @value
       return val
     if      val.js then @terminator = ''
     else if @temp  then o.scope.free val
@@ -524,7 +527,7 @@ class exports.Obj extends List
         node.compile o
       else
         (key = node.compile o) + ': ' + key
-      throw SE 'duplicate property name: ' + key if dic[0 + key]
+      throw SE node.L "duplicate property name \"#{key}\"" if dic[0 + key]
       code += dic[0 + key] = if node is last then \\n else \,\n
     code = "{#{ code and \\n + code + @tab }}"
     return @compileDynamic o, code, rest if rest
@@ -676,7 +679,7 @@ class exports.Assign extends Node
     left = @transleft o
     if left.items
       return @compileDestructuring o, left unless @logic
-      throw SE "\"#{@show()}\" cannot destructure"
+      throw SE @L "\"#{@show()}\" cannot destructure"
     return @compileConditional o, left if @logic
     if left.hasDefault()
       right = Op left.op, right, left.second
@@ -689,16 +692,16 @@ class exports.Assign extends Node
       right.clas   = that if that.1
     val = right.compile o, LEVEL_LIST
     if @op is \:
-      throw SE 'invalid property name: ' + name if left.isComplex()
+      throw SE left.L "invalid property name \"#{name}\"" if left.isComplex()
       return name + ': ' + val
     unless left.isAssignable()
       o import indent: '', level: LEVEL_LIST
-      throw SE @left.compile(o) + ' // cannot be assigned'
+      throw SE left.L 'invalid assignment'
     if IDENTIFIER.test name
       if @op is \=
         o.scope.declare name
       else unless o.scope.check name, true
-        throw SE 'assignment to undeclared variable: ' + name
+        throw SE left.L "assignment to undeclared variable \"#{name}\""
     code = name + " #{ if @op is \:= then \= else @op } " + val
     if o.level < LEVEL_COND then code else "(#{code})"
 
@@ -727,7 +730,7 @@ class exports.Assign extends Node
     for node, i of nodes
       continue if node.isEmpty()
       if node instanceof Splat
-        throw SE 'multiple splats in an assignment' if ivar
+        throw SE node.L 'multiple splats in an assignment' if ivar
         len = nodes.length; empty = node.it.isEmpty()
         if i is len - 1
           break if empty
@@ -892,6 +895,8 @@ class exports.Fun extends Node
 
   show: -> @bound
 
+  named: -> @<<<{name: it, +statement}
+
   # Short-circuit `traverseChildren` method to prevent it
   # from crossing scope boundaries by default.
   traverseChildren: (_, xscope) -> super ... if xscope
@@ -950,7 +955,8 @@ class exports.Fun extends Node
     if splatted then asns.unshift splatted else
       dic = {}
       for a, i of args
-        throw SE 'duplicate formal argument: ' + a if dic[0 + a.=compile o]
+        if dic[0 + a.=compile o]
+          throw SE args[i].L "duplicate formal argument \"#{a}\""
         scope.add args[i] = dic[0 + a] = a, \arg
     exps.unshift ...asns if asns.length
     args.0 = \it if not args.length and not @wrapper and
@@ -958,9 +964,9 @@ class exports.Fun extends Node
     body.makeReturn() unless wasEmpty or @ctor
     if @statement
       unless name
-        throw SE 'cannot declare a nameless function'
+        throw SE @L 'nameless function'
       unless o.lines.scope is pscope
-        throw SE 'cannot declare a function under a statement'
+        throw SE @L 'function declaration under a statement'
       scope .add name, \function
       pscope.add name, \function unless @returns
       code += ' ' + name
@@ -1005,7 +1011,7 @@ class exports.Class extends Node
         lines[i] = Import Literal(\_proto), node
         proto = lname
       else if node instanceof Fun and not node.statement
-        throw SE 'more than one constructor in a class' if ctor
+        throw SE node.L 'more than one constructor in a class' if ctor
         proto = lname if (ctor = node).bound
     lines.unshift ctor = Fun() unless ctor
     lines.push lname
@@ -1025,7 +1031,7 @@ class exports.Super extends Node
 
   compile: (o) ->
     {method} = o.scope.shared or o.scope
-    throw SE 'super outside of a function' unless method
+    throw SE @L 'super outside of a function' unless method
     {name, clas} = method
     if name
       if clas
@@ -1034,7 +1040,7 @@ class exports.Super extends Node
       else if IDENTIFIER.test name
         return name + \.superclass
     return \_super if o.scope.check \_super
-    throw SE 'super in an anonymous function'
+    throw SE @L 'super in an anonymous function'
 
 #### Parens
 # An extra set of parentheses,
@@ -1093,7 +1099,8 @@ class exports.Statement extends Node
   isStatement : YES
   makeReturn  : THIS
 
-  jumps: -> not (it and (it.loop or it.block and @verb is not \continue))
+  jumps: ->
+    not (it and (it.loop or it.block and @verb is not \continue)) and this
 
   compileNode: -> it.indent + @verb + \;
 
@@ -1111,7 +1118,7 @@ class exports.Throw extends Statement
 class exports.Return extends Throw
   => @<<<{it} if it and it.value is not \void
 
-  jumps: YES
+  jumps: THIS
 
   compile: (o) ->
     it = if @it then ' ' + @it.compile o, LEVEL_PAREN else ''
@@ -1133,9 +1140,9 @@ class exports.While extends Node
 
   jumps: ->
     {lines} = @body
-    return false unless lines.length
+    return unless lines.length
     context = {+loop}
-    return true if node.jumps context for node of lines
+    return node if node.jumps context for node of lines
 
   addBody: (@body) ->
     [last, i] = lastNonComment body.lines
@@ -1171,6 +1178,8 @@ class exports.While extends Node
 #### For
 # Coco's replacements for the `for` loop are array, object or range iterators.
 class exports.For extends While
+  -> this import all it
+
   children: <[ name source from to step body ]>
 
   aSource: null
@@ -1294,7 +1303,7 @@ class exports.Switch extends Node
   isStatement: YES
 
   jumps: (x = {+block}) ->
-    return true if cs.body.jumps x for cs of @cases
+    return that if cs.body.jumps x for cs of @cases
     @default?.jumps x
 
   makeReturn: ->
@@ -1352,8 +1361,8 @@ class exports.If extends Node
   @::{show} = Negatable
 
   # Rewrites a chain of **If**s to add a default case as the final `else`.
-  addElse: ->
-    throw SE \else-else if @end
+  addElse: (it, line) ->
+    throw SE 'extra "else" on line ' + line if @end
     if @chain
     then @else.addElse it
     else @[if (@else = it) instanceof If then \chain else \end] = true
@@ -1364,7 +1373,7 @@ class exports.If extends Node
   isStatement: (o) ->
     o and not o.level or @then.isStatement(o) or @else?.isStatement(o)
 
-  jumps: -> @then.jumps(it) or @else?.jumps(it)
+  jumps: -> @then.jumps it or @else?.jumps it
 
   makeReturn: ->
     @then.=makeReturn it
@@ -1426,9 +1435,10 @@ class exports.Util extends Node
   # returning the left one.
   @Extends = -> Call Value(Util \extends), @@[0 1]
 
-# Export `import all` for use in [parser](../lib/parser.js),
-# where the operator doesn't work.
-exports import all mix: __importAll
+#### Parser Utils
+# Helpers for modifying nodes in [parser](../lib/parser.js).
+
+exports.L = (yylineno, node) -> node import line: yylineno + 1
 
 ##### Scope
 # Regulates lexical scoping within Coco. As you

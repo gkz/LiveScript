@@ -53,11 +53,14 @@ parent.child.str.='replace' /./, 'r'
 parent.=child.valueOf().str
 eq 'rest', parent
 
-for nonref of <[ "" 0 f() this true ]>
-  throws nonref + ' // cannot be assigned', -> Coco.compile "{k: #{nonref}} = v"
+
+for nonref, i of <[ "" 0 f() this true ]>
+  throws 'invalid assignment on line ' + (i+1)
+  , -> Coco.compile Array(i+1).join(\\n) + "[#{nonref}] = v"
 
 
-throws 'assignment to undeclared variable: Math', -> Coco.compile 'Math ||:= 0'
+throws 'assignment to undeclared variable "Math" on line 1'
+, -> Coco.compile 'Math ||:= 0'
 
 
 # Simple variable swapping.
@@ -180,7 +183,7 @@ x = 'y'
 eq x, 49344
 
 
-throws '"?=" cannot destructure', -> Coco.compile '[_] ?= [_]'
+throws '"?=" cannot destructure on line 1', -> Coco.compile '[_] ?= [_]'
 
 
 {(*>>1): mid, (*-1): last} = [1, 2, 3, 4, 5]

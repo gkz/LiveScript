@@ -251,7 +251,8 @@ ok 2r101010 == 8r52 == 36r16 == 42
 
 
 # [#19](https://github.com/satyr/coco/issues/19)
-throws 'duplicate property name: a', -> Coco.compile 'a: 1, b: 2, a: 3'
+throws 'duplicate property name "a" on line 1'
+, -> Coco.compile 'a: 1, b: 2, a: 3'
 
 
 # [#1](https://github.com/satyr/coco/issues/1)
