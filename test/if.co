@@ -139,7 +139,8 @@ eq 2, [if 1 then 2       , 3].0
 eq 2, [if 0 then 1 else 2, 3].0
 
 
-throws 'extra "else" on line 3', -> Coco.compile '''
+# [coffee#1026](https://github.com/jashkenas/coffee-script/issues/1026)
+throws "Parse error on line 2: Unexpected 'ELSE'", -> Coco.nodes '''
   if a then b
   else then c
   else then d

@@ -123,6 +123,7 @@ bnf =
     # The full complement of `if` expressions,
     # including postfix one-liner `if` and `unless`.
     o \IfBlock
+    o 'IfBlock ELSE Block'            ,-> $1.addElse $3
     o 'Expression POST_IF Expression' ,-> L If $3, $1, name: $2
 
     # Comprehensions can either be normal, with a block of expressions
@@ -277,7 +278,6 @@ bnf =
   IfBlock: [
     o 'IF Expression Block'              ,-> L If $2, $3, name: $1
     o 'IfBlock ELSE IF Expression Block' ,-> $1.addElse L If $4, $5, name: $3
-    o 'IfBlock ELSE Block'               ,-> $1.addElse $3, yylineno+1
   ]
 
   LoopHead: [
