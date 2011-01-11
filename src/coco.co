@@ -31,6 +31,9 @@ Coco import
   # Tokenizes a string of Coco code, returning the array of tokens.
   tokens: lex
 
+  # Same as `tokens`, except that this skips [rewriting](#rewriter).
+  lex: -> lex it, {-rewrite}
+
 #### [node.js](http://nodejs.org)
 if (fs = require \fs) and (path = require \path)
   Coco import

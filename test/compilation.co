@@ -76,7 +76,7 @@ throws 'invalid number 8 in base 8 on line 1'       ,-> Coco.tokens '8r8'
 eq '(function(){}());', Coco.compile 'do->', {+bare}
 
 
-tokens = Coco.tokens '''
+tokens = Coco.lex '''
 """
   1 #{
     2
@@ -87,7 +87,7 @@ tokens = Coco.tokens '''
   7
   8
 ]>
-''', {-rewrite}
+'''
 eq tokens.join('\n'), '''
 (,(,1
 STRNUM,"1 ",1
@@ -136,7 +136,7 @@ eq '''
 ''', Coco.compile '''try for k in o then do => this{}'''
 
 
-eq 'STRNUM,0,0 STRNUM,1,1', '' + Coco.tokens('''
+eq 'STRNUM,0,0 STRNUM,1,1', '' + Coco.lex('''
 0 \\
   1
 ''').slice(0 2).join ' '
