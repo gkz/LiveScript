@@ -1,5 +1,5 @@
 Coco import
-  # Load a remote script from the current domain via XHR.
+  # Loads a remote script from the current domain via `XMLHttpRequest`.
   load: (url, options) ->
     xhr = new (self.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
     xhr.open \GET, url, true
@@ -9,8 +9,8 @@ Coco import
     xhr.send null
     xhr
 
-  # Activate Coco in the browser by having it compile and evaluate
-  # all script tags with `coco` type. Co
+  # Activates Coco in the browser by having it compile and evaluate
+  # all script tags with `coco` type.
   invoke: ->
     type = ///^ (?: text/ | application/ )? coco $///i
     for script of document.getElementsByTagName \script
