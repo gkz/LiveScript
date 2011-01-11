@@ -25,7 +25,7 @@
 'switch',
 'try'
 ]</script
-><script type=coco>
+><script type=application/coco>
 start   = new Date
 stdout  = document.getElementById 'stdout'
 success = total = done = failed = 0
@@ -52,12 +52,6 @@ Coco.run = (code, cb) ->
   catch e then cb(); throw e
   cb true
 
-run = (name) ->
-  Coco.load name + '.co', (yay) ->
-    say "#{ if yay then '\u2714' else '\u3000' } #{name}", yay
-    ++failed unless yay
-    fin() if ++done is sources.length
-
 fin = ->
   yay = success is total and not failed
   sec = (new Date - start) / 1e3
@@ -65,7 +59,11 @@ fin = ->
   msg = "failed #{ total - success } tests and #{msg}" unless yay
   say msg, yay
 
-run name for name of sources
+for name of sources then do ->
+  Coco.load name + \.co, (yay) ->
+    say "#{ if yay then \\u2714 else \\u3000 } #{name}", yay
+    ++failed unless yay
+    fin() if ++done is sources.length
 </script
 ><script src=../extras/coco.js></script
 ><script src=../doc/showdown.js></script
