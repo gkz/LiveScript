@@ -65,7 +65,7 @@ function help ->
   width = Math.max ...longs.map -> it.length
   pad   = Array(width >> 1).join '  '
   @$flags.map((flag, i) ->
-    sf = (flag.short &&+= \,) or '   '
+    sf = if flag.short then that + \, else '   '
     lf = (longs[i] + pad).slice 0, width
     "  #{sf} #{lf}  #{flag.desc}"
   ).join \\n
