@@ -166,6 +166,12 @@ forkNode = ->
     cwd: process.cwd(), env: process.env, customFds: [0 to 2]
 
 # Print the `--help` message.
-help    = -> say 'Usage: coco [options] [files]\n\n' + o
+help = -> say """
+  Usage: coco [options] [files]
+
+  Available options:
+  #{o}
+"""
+
 # Print the `--version` message.
 version = -> say "Coco #{Coco.VERSION}"

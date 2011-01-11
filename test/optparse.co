@@ -24,8 +24,8 @@ ok result.nodejs instanceof Array
 eq result.nodejs + '', 'h,debug'
 eq result.$args + '', 'three'
 
-eq result + '', '''
-Available options:
+eq \Options:\n + result, '''
+Options:
   -h, --help          display help
   -o, --output DIR    set output directory
   -N, --nodejs ARGS+  pass options to "node"

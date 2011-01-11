@@ -72,7 +72,7 @@ printTasks = ->
   pad   = Array(width >> 1).join '  '
   for name, task in Tasks
     say "  #{ (name + pad).slice 0, width }  #{task.description}"
-  say \\n + Options if Options.$flags.length
+  say '\nTask options:\n' + that if Options.toString()
   say '''
 
     Coke options:
