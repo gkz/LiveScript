@@ -10,6 +10,7 @@
 Tasks    = __proto__: null
 Aliases  = __proto__: null
 Flags    = {}
+Options  = {}
 
 # The top-level objects for Cokefiles to use directly.
 global import
@@ -20,9 +21,8 @@ global import
   # Define a coke task with a short name, an optional sentence description,
   # and the function to run as the action itself.
   task: (name, description, action) ->
-    [action, description] = [description] unless action
-    abbr = name.split(/\W+/).filter(String).map(-> it.0).join ''
-    Aliases[abbr] ||= name
+    [action, description] = [description, ''] unless action
+    Aliases[name.split(/\W+/).filter(String).map(-> it.0).join ''] ||= name
     Tasks[name] = {name, description, action}
 
   # Define an option that the Cokefile accepts. The parsed options hash,
@@ -35,7 +35,7 @@ global import
     unless task = Tasks[name] or Tasks[Aliases[name]]
       console.error 'no such task: "%s"', name
       process.exit 1
-    task.action this
+    task.action Options
 
   # Utilities.
   say   : -> process.stdout.write it + \\n
@@ -54,20 +54,22 @@ exports.run = ->
       console.error 'no "%s" in %s', fileName, process.cwd()
       process.exit 1
     Coco.run slurp(fileName), {fileName}
-    optparse = require \./optparse
-    return printTasks optparse unless args.length
-    options = optparse Flags, args
-    options.$args.forEach invoke, options
+    Options := require(\./optparse) Flags, args
+    if args.length
+    then Options.$args.forEach invoke
+    else printTasks()
+    void
 
 # Display the list of tasks in a format similar to `rake -T`.
-printTasks = (optparse) ->
+printTasks = ->
   say ''
   width = Math.max ...Object.keys(Tasks).map -> it.length
   pad   = Array(width >> 1).join '  '
   for name, task in Tasks
-    desc = if task.description then task.description else ''
-    say "coke #{ (name + pad).slice 0, width }  #{desc}"
-  say \\n + optparse Flags, [] if Flags.length
+    say "coke #{ (name + pad).slice 0, width }  #{task.description}"
+  for _ in Flags
+    say \\n + Options
+    break
   say '''
 
     Coke options:
