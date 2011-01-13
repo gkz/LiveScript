@@ -22,7 +22,7 @@ eq 'passed', Coco.eval '"passed"', {+bare, fileName: 'test'}
 #750
 throws 'unclosed CALL( on line 1', -> Coco.nodes 'f(->'
 
-throws 'missing " on line 3', -> Coco.nodes '\n\n"\n'
+throws 'missing " in a string on line 3', -> Coco.nodes '\n\n"\n'
 
 throws 'unterminated JS literal on line 3', -> Coco.nodes '\n\n```\n'
 throws 'unterminated string on line 3'    , -> Coco.nodes "\n\n'\n"

@@ -426,15 +426,14 @@ exports import
       switch end
       case chr
         stack.pop()
-        return str.slice 0, i+1 unless stack.length
-        end = stack[*-1]
-        continue
-      case \" then stack.push end = '}' if \{ is chr and \# is str.charAt i-1
+        return str.slice 0, i+1 unless end = stack[*-1]
+      case \"
+        stack.push end = \} if \{ is chr and \# is str.charAt i-1
       case \}
         switch chr
         case [\" \'] then stack.push end = chr
         case \{      then stack.push end = \}
-    @carp 'missing ' + stack.pop()
+    @carp "missing #{stack.pop()} in a string"
 
   # Expands variables and expressions inside double-quoted strings or heregexes
   # using Ruby-like notation for substitution of arbitrary expressions.
