@@ -278,4 +278,21 @@ o = {0 \1 \2 3 4}
 eq o.1, \1
 eq o.3, 3
 
+
 throws 'stub code executed', -> ...
+
+
+# [#5](https://github.com/satyr/coco/issues/5): Accessor Properties
+if {}.__defineGetter__
+  v = 'foo'
+  o =
+    key: ~      -> @x
+    key: ~ (@x) ->
+    (v): ~      -> @y
+    (v): ~ (@y) ->
+  ok 'key' in o
+  eq 1, o.key = 1
+  eq 1, o.key
+  ok 'foo' in o
+  eq 2, o.foo = 2
+  eq 2, o.foo

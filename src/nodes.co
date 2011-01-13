@@ -109,6 +109,7 @@ class Node
   isStatement  : NO
   isAssignable : NO
   isEmpty      : NO
+  isAccessor   : NO
   # Do I contain a statement that jumps out of me?
   jumps: NO
   # Do I assign a certain variable?
@@ -524,7 +525,12 @@ class exports.Obj extends List
         (key = node.tails.0.key.compile o) + ': ' + node.compile o, LEVEL_LIST
       else if node instanceof Assign
         key = node.left.compile o
-        node.compile o
+        if node.isAccessor()
+          fun = node.right.first
+          (key = (if fun.params.length then \set else \get) + ' ' + key) +
+          fun.compile(o, LEVEL_LIST).slice 8
+        else
+          node.compile o
       else
         (key = node.compile o) + ': ' + key
       throw SE node.L "duplicate property name \"#{key}\"" if dic[0 + key]
@@ -662,6 +668,10 @@ class exports.Assign extends Node
   show: -> (@logic or '') + @op
 
   assigns: -> @[if @op is \: then \right else \left].assigns it
+
+  isAccessor: ->
+    @right.op is \~ and
+    (fun = @right.first) instanceof Fun and fun.params.length < 2
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, \left
 
@@ -828,6 +838,13 @@ class exports.Import extends Node
       if dyna = node instanceof Parens
         [key, val] = node.it.cache o, true
       else if node instanceof Assign
+        if node.isAccessor()
+          fun = node.right.first
+          code += "#{ lref.compile o }
+            .__define#{ if fun.params.length then \S else \G }etter__
+            (#{ node.left.compile o, LEVEL_LIST }
+            , #{      fun.compile o, LEVEL_LIST })"
+          continue
         {left: key, right: val} = node
       else if (key = val = node).at
         [{key}] = val.tails
