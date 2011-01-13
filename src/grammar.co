@@ -30,7 +30,7 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
   action &&= unwrap.exec(action).1
-    .replace /\b(?:(?!Er)[A-Z][\w.]*|mix\b)/g, \yy.$&
+    .replace /\b(?!Er)[A-Z][\w.]*/g, \yy.$&
     .replace /\.L\(/g, '$&yylineno, '
   [patterns, action ? \$1, options]
 
@@ -80,7 +80,7 @@ bnf =
     o 'Value DOT Parenthetical'        ,-> $1.add L Index $3.it         ,$2
     o 'Value DOT [ ArgList OptComma ]' ,-> $1.add L Index $4            ,$2
 
-    o 'Value CLONE Object' ,-> L new Clone $1.unwrap(), $3
+    o 'Value CLONE Object' ,-> new Clone $1.unwrap(), $3
 
     o \SUPER ,-> L new Super
   ]
@@ -111,7 +111,7 @@ bnf =
     o 'UNARY Expression' , -> L Op $1, $2
     o '+-    Expression' ,(-> L Op $1, $2), prec: \UNARY
 
-    o 'Expression ?' ,-> L Existence $1
+    o 'Expression ?' ,-> Existence $1
 
     o 'CREMENT SimpleAssignable' ,-> L Op $1, $2
     o 'SimpleAssignable CREMENT' ,-> L Op $2, $1, null, true
@@ -120,13 +120,13 @@ bnf =
     o 'FUNCTION Fun'            ,-> $2.named()
     o 'FUNCTION IDENTIFIER Fun' ,-> $3.named $2
 
-    # The full complement of `if` expressions,
-    # including postfix one-liner `if` and `unless`.
+    # The full complement of `if` and `unless` expressions,
+    # including postfix one-liners.
     o \IfBlock
     o 'IfBlock ELSE Block'            ,-> $1.addElse $3
     o 'Expression POST_IF Expression' ,-> L If $3, $1, name: $2
 
-    # Comprehensions can either be normal, with a block of expressions
+    # Loops can either be normal, with a block of expressions
     # to execute, or postfix, with a single expression.
     o 'LoopHead   Block'    ,-> $1.addBody $2
     o 'Expression LoopHead' ,-> $2.addBody Lines $1
@@ -146,8 +146,8 @@ bnf =
     o 'TRY Block CATCH Block FINALLY Block' ,-> L new Try $2, $3, $4, $6
     o 'TRY Block             FINALLY Block' ,-> L new Try $2, null, null, $4
 
-    # Class definitions have optional bodies of prototype property assignments,
-    # and optional references to the superclass.
+    # A class definition have a title, superreference, or body,
+    # each of which is optional.
     o 'CLASS OptExtends'                        ,-> L new Class null, $2
     o 'CLASS OptExtends Block'                  ,-> L new Class null, $2, $3
     o 'CLASS SimpleAssignable OptExtends'       ,-> L new Class $2, $3
@@ -156,12 +156,14 @@ bnf =
     o 'SimpleAssignable EXTENDS Expression' ,-> Util.Extends $1, $3
   ]
 
+  # A line of Coco can be either of an expression, comment, or
+  # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm).
   Line: [
     o \Expression
     o \COMMENT ,-> L Comment $1
     o \...     ,-> L new Throw Literal "Error('stub code executed')"
   ]
-  # A list of expressions/comments/yadas, separated by newlines or semicolons.
+  # A list of lines, separated by newlines or semicolons.
   Body: [
     o \Line                  ,-> Lines $1
     o 'Body TERMINATOR Line' ,-> $1.add $3
@@ -204,25 +206,20 @@ bnf =
     o \THISPROP ,-> Value L(Literal \this), [Index L Key $1], true
   ]
 
-  # Parenthetical expressions. Note that the **Parenthetical** is a **Value**,
-  # not an **Expression**, so if you need to use an expression in a place
-  # where only values are accepted, wrapping it in parentheses will always do
-  # the trick.
   Parenthetical: [
     o '(        Body        )' ,-> L Parens $2.unwrap()
     o '( INDENT Body DEDENT )' ,-> L Parens $3.unwrap()
   ]
 
-  # An indented block of expressions. Note that the [Rewriter](#rewriter)
-  # will convert some postfix forms into blocks for us, by adjusting the
-  # token stream.
+  # An indented block of expressions. Note that [Rewriter](#rewriter)
+  # converts some single-line forms into blocks for us.
   Block: [
     o 'INDENT Body DEDENT' ,-> $2
     o 'INDENT      DEDENT' ,-> Lines()
   ]
 
-  # **Fun** node is the function literal, defined by an indented **Block**
-  # preceded by a function arrow, with an optional parameter list.
+  # **Fun** is the function literal, defined by an indented **Block**
+  # preceded by an optional parameter list and a function arrow.
   Fun: [
     o 'PARAM( ArgList OptComma )PARAM FUNC_ARROW Block' ,-> L Fun $2, $6, $5
     o                                'FUNC_ARROW Block' ,-> L Fun [], $2, $1
@@ -252,7 +249,7 @@ bnf =
     o \COMMENT ,-> L Comment $1
   ]
   # Properties within an object literal can be separated by
-  # comma, as in JavaScript, or simply by newline.
+  # commas, as in JavaScript, or simply by newlines.
   Properties: [
     o ''                                                      ,-> []
     o \Property                                               ,-> [$1]
@@ -272,16 +269,15 @@ bnf =
     o '{ Properties OptComma }' ,-> L Obj $2
   ]
 
-  # The most basic form of *if* is a condition and an action. The following
-  # if-related rules are broken up along these lines in order to avoid
-  # ambiguity.
+  # The most basic form of `if` is a condition and an action. The following
+  # `if`-related rules are broken up along these lines to avoid ambiguity.
   IfBlock: [
     o 'IF Expression Block'              ,-> L If $2, $3, name: $1
     o 'IfBlock ELSE IF Expression Block' ,-> $1.addElse L If $4, $5, name: $3
   ]
 
   LoopHead: [
-    # The source of a `for`-loop is an array, object or range.
+    # The source of a `for`-loop is an array, object, or range.
     # Unless it's iterating over an object, you can choose to step through
     # in fixed-size increments.
     o 'FOR Assignable FOROF Expression'
@@ -316,7 +312,7 @@ bnf =
     o 'EXTENDS Expression' ,-> $2
   ]
 
-  # The **Root** is the top-level node in the syntax tree.
+  # **Root** is the top-level node in the syntax tree.
   # Since we parse bottom-up, all parsing must end here.
   Root: [
     o \Body
@@ -348,23 +344,23 @@ operators = [
   <[ right     : ASSIGN RETURN THROW EXTENDS INDENT ]>
   <[ right     IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
   <[ left      POST_IF FOR WHILE ]>
-# Reverse them because Jison orders precedence from low to high
+# Reverse them because Jison orders precedence from low to high.
 ].reverse()
 
 # Wrapping Up
 # -----------
 
-# Finally, now what we have our **bnf** and our **operators**, we can create
-# our **Jison.Parser**. We do this by processing all of our rules, recording all
+# Process all of our rules and prepend resolutions, while recording all
 # terminals (every symbol which does not appear as the name of a rule above)
-# as **tokens**.
-tokens = for name, alternatives in bnf
-  for alt of alternatives
-    alt.1 = "#{ if name is \Root then \return else '$$ =' } #{alt.1};"
-    token if token not in bnf for token of alt.0
-tokens.=join ' '
+# as `tokens`.
+tokens = (
+  for name, alternatives in bnf
+    for alt of alternatives
+      alt.1 = "#{ if name is \Root then \return else '$$ =' } #{alt.1};"
+      token if token not in bnf for token of alt.0
+).join ' '
 
-# Initialize the **Parser** with our **bnf**, **operators**,
-# our list of terminal **tokens**, and the name of the root.
+# Finally, initialize the `parser` with `bnf`, `operators`, `tokens`,
+# and the name of the root.
 exports.parser =
   new (require \jison).Parser {bnf, operators, tokens, startSymbol: \Root}
