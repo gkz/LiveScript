@@ -35,17 +35,21 @@ sources = o.$args
 # Many flags cause us to divert before compiling anything. Flags passed after
 # `--` will be passed verbatim to your script as arguments in `process.argv`.
 exports.run = ->
-  return forkNode()                   if o.nodejs
-  return version()                    if o.version
-  return help()                       if o.help
+  return do forkNode if o.nodejs
+  return do version  if o.version
+  return do help     if o.help
   require.paths.push process.cwd()
-  return repl()                       if o.interactive
-  return compileStdin()               if o.stdin
-  return compileScript '', sources.0  if o.eval
-  return (version(); help(); repl())  unless sources.length
-  process.argv.splice 2 9e9,
-    ...(if o.run then sources.splice 1 else []).concat o.$literals
-  compileScripts()
+  (o.require or []).forEach ->
+    require if it.0 is \. then fs.realpathSync it else it
+  switch
+  case o.interactive then repl()
+  case o.stdin       then compileStdin()
+  case o.eval        then compileScript '', sources.join \\n
+  case sources.length
+    process.argv.splice 2 9e9,
+      ...if o.run then sources.splice 1 else [], ...o.$literals
+    compileScripts()
+  default version(); help(); repl()
 
 # Asynchronously read in each Coco script in a list of source files and
 # compile them. If a directory is passed, recursively compile all
@@ -71,9 +75,6 @@ compileScripts = ->
 # requested options.
 compileScript = (file, input, base) ->
   options = fileName: file, bare: o.bare
-  if o.require
-    for req of o.require
-      require if req.0 is \. then fs.realpathSync req else req
   try
     Coco.emit \compile, t = {file, input, options}
     switch
