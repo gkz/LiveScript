@@ -453,21 +453,22 @@ exports import
       if pi < i
         ts.push [\S; s = str.slice pi, i; @line]
         @countLines s
-      code = @balancedString str.slice(i+1), '}'
+      code = @balancedString str.slice(i+1), \}
       pi   = 1 + i += code.length
       continue unless code.=slice 1, -1
       nested = @lex code, {@line, -rewrite}
       nested.pop()
       nested.shift() if nested.0?.0 is \TERMINATOR
-      if nested.length > 1
-        nested.unshift [\( \(, nested[ 0 ].2]
-        nested.push    [\) \), nested[*-1].2]
-      ts.push [\TOKENS, nested]
+      if len = nested.length
+        if len > 1
+          nested.unshift [\( \(, nested[ 0 ].2]
+          nested.push    [\) \), nested[len].2]
+        ts.push [\TOKENS, nested]
       @countLines code
     if pi < str.length
       ts.push [\S; s = str.slice pi; @line]
       @countLines s
-    ts.unshift [\S, '', line] if ts.0?.0 is not \S
+    ts.unshift [\S '', line] if ts.0?.0 is not \S
     return ts unless nlines?
     {tokens} = this
     tokens.push [\DOT \., line] if @able()

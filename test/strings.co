@@ -21,42 +21,45 @@ Hello, World\
 
 hello = 'Hello'
 world = 'World'
-ok '#{hello} #{world}!' is '#{hello} #{world}!'
-ok "#{hello} #{world}!" is 'Hello World!'
-ok "[#{hello}#{world}]" is '[HelloWorld]'
-ok "#{hello}##{world}" is 'Hello#World'
-ok "Hello #{ 1 + 2 } World" is 'Hello 3 World'
-ok "#{hello} #{ 1 + 2 } #{world}" is "Hello 3 World"
+eq '#{hello} #{world}!', '#{hello} #{world}!'
+eq "#{hello} #{world}!", 'Hello World!'
+eq "[#{hello}#{world}]", '[HelloWorld]'
+eq "#{hello}##{world}", 'Hello#World'
+eq "Hello #{ 1 + 2 } World", 'Hello 3 World'
+eq "#{hello} #{ 1 + 2 } #{world}", "Hello 3 World"
 
 
 [s, t, r, i, n, g] = ['s', 't', 'r', 'i', 'n', 'g']
-ok "#{s}#{t}#{r}#{i}#{n}#{g}" is 'string'
-ok "\#{s}\#{t}\#{r}\#{i}\#{n}\#{g}" is '#{s}#{t}#{r}#{i}#{n}#{g}'
-ok "\#{string}" is '#{string}'
+eq "#{s}#{t}#{r}#{i}#{n}#{g}", 'string'
+eq "\#{s}\#{t}\#{r}\#{i}\#{n}\#{g}", '#{s}#{t}#{r}#{i}#{n}#{g}'
+eq "\#{string}", '#{string}'
 
 
-ok "\#{Escaping} first" is '#{Escaping} first'
-ok "Escaping \#{in} middle" is 'Escaping #{in} middle'
-ok "Escaping \#{last}" is 'Escaping #{last}'
+eq "\#{Escaping} first", '#{Escaping} first'
+eq "Escaping \#{in} middle", 'Escaping #{in} middle'
+eq "Escaping \#{last}", 'Escaping #{last}'
 
 
-ok "##" is '##'
-ok "#{}" is ''
-ok "#{}A#{} #{} #{}B#{}" is 'A  B'
-ok "\\\#{}" is '\\#{}'
+eq "##", '##'
+eq "#{}", ''
+eq "#{}A#{} #{} #{}B#{}", 'A  B'
+eq "\\\#{}", '\\#{}'
+eq "#{
+
+}", ''
 
 
-ok "I won ##{20} last night." is 'I won #20 last night.'
-ok "I won ##{'#20'} last night." is 'I won ##20 last night.'
+eq "I won ##{20} last night.", 'I won #20 last night.'
+eq "I won ##{'#20'} last night.", 'I won ##20 last night.'
 
 
-ok "#{hello + world}" is 'HelloWorld'
-ok "#{hello + ' ' + world + '!'}" is 'Hello World!'
+eq "#{hello + world}", 'HelloWorld'
+eq "#{hello + ' ' + world + '!'}", 'Hello World!'
 
 
 list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-ok "values: #{list.join(', ')}, length: #{list.length}." is 'values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, length: 10.'
-ok "values: #{list.join ' '}" is 'values: 0 1 2 3 4 5 6 7 8 9'
+eq "values: #{list.join(', ')}, length: #{list.length}.", 'values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, length: 10.'
+eq "values: #{list.join ' '}", 'values: 0 1 2 3 4 5 6 7 8 9'
 
 
 obj = {
@@ -64,41 +67,41 @@ obj = {
   hi: -> "Hello #{@name}."
   cya: -> "Hello #{@name}.".replace('Hello','Goodbye')
 }
-ok obj.hi() is "Hello Joe."
-ok obj.cya() is "Goodbye Joe."
+eq obj.hi(), "Hello Joe."
+eq obj.cya(), "Goodbye Joe."
 
 
-ok "With #{"quotes"}" is 'With quotes'
-ok 'With #{"quotes"}' is 'With #{"quotes"}'
+eq "With #{"quotes"}", 'With quotes'
+eq 'With #{"quotes"}', 'With #{"quotes"}'
 
-ok "Where is #{obj["name"] + '?'}" is 'Where is Joe?'
+eq "Where is #{obj["name"] + '?'}", 'Where is Joe?'
 
-ok "Where is #{"the nested #{obj["name"]}"}?" is 'Where is the nested Joe?'
-ok "Hello #{world ? "#{hello}"}" is 'Hello World'
+eq "Where is #{"the nested #{obj["name"]}"}?", 'Where is the nested Joe?'
+eq "Hello #{world ? "#{hello}"}", 'Hello World'
 
-ok "Hello #{"#{"#{obj["name"]}" + '!'}"}" is 'Hello Joe!'
+eq "Hello #{"#{"#{obj["name"]}" + '!'}"}", 'Hello Joe!'
 
 
 a = """
     Hello #{ "Joe" }
     """
-ok a is "Hello Joe"
+eq a, "Hello Joe"
 
 
 a = 1
 b = 2
 c = 3
-ok "#{a}#{b}#{c}" is '123'
+eq "#{a}#{b}#{c}", '123'
 
 
 result = null
 stash = -> result := it
 stash "a #{ ('aa').replace /a/g, 'b' } c"
-ok result is 'a bb c'
+eq result, 'a bb c'
 
 
 foo = "hello"
-ok "#{foo.replace("\"", "")}" is 'hello'
+eq "#{foo.replace("\"", "")}", 'hello'
 
 
 a = """
@@ -106,7 +109,7 @@ a = """
     on two lines
     """
 
-ok a is "basic heredoc\non two lines"
+eq a, "basic heredoc\non two lines"
 
 
 a = '''
@@ -115,7 +118,7 @@ a = '''
     c
     '''
 
-ok a is "a\n  \"b\nc"
+eq a, "a\n  \"b\nc"
 
 
 a = """
@@ -124,12 +127,12 @@ a
   c
 """
 
-ok a is "a\n b\n  c"
+eq a, "a\n b\n  c"
 
 
 a = '''one-liner'''
 
-ok a is 'one-liner'
+eq a, 'one-liner'
 
 
 a = """
@@ -137,7 +140,7 @@ a = """
       here
 """
 
-ok a is "out\nhere"
+eq a, "out\nhere"
 
 
 a = '''
@@ -146,7 +149,7 @@ a = '''
    c
     '''
 
-ok a is "    a\n  b\nc"
+eq a, "    a\n  b\nc"
 
 
 a = '''
@@ -156,12 +159,12 @@ a
 b c
 '''
 
-ok a is "a\n\n\nb c"
+eq a, "a\n\n\nb c"
 
 
 a = '''more"than"one"quote'''
 
-ok a is 'more"than"one"quote'
+eq a, 'more"than"one"quote'
 
 
 val = 10
@@ -176,12 +179,12 @@ b = '''
     on two lines
     '''
 
-ok a is "basic heredoc 10\non two lines"
-ok b is "basic heredoc \#{val}\non two lines"
+eq a, "basic heredoc 10\non two lines"
+eq b, "basic heredoc \#{val}\non two lines"
 
 
 a = '''here's an apostrophe'''
-ok a is "here's an apostrophe"
+eq a, "here's an apostrophe"
 
 
 # The indentation detector ignores blank lines without trailing whitespace
@@ -190,7 +193,8 @@ a = """
     two
 
     """
-ok a is "one\ntwo\n"
+ok a, "one\ntwo\n"
+
 
 eq ''' line 0
     should not be relevant
@@ -199,10 +203,13 @@ eq ''' line 0
   \nshould not be relevant
   \n  to the indent level'
 
+
 eq ''' '\\\' ''', " '\\' "
 eq """ "\\\" """, ' "\\" '
 
+
 eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
+
 
 eq 'multiline nested "interpolations" work', """multiline #{
   "nested #{
