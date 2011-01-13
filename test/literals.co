@@ -283,7 +283,7 @@ throws 'stub code executed', -> ...
 
 
 # [#5](https://github.com/satyr/coco/issues/5): Accessor Properties
-if {}.__defineGetter__
+{}.__defineGetter__ and Coco.run '''
   v = 'foo'
   o =
     key: ~      -> @x
@@ -296,3 +296,4 @@ if {}.__defineGetter__
   ok 'foo' in o
   eq 2, o.foo = 2
   eq 2, o.foo
+'''
