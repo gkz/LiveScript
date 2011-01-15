@@ -29,7 +29,7 @@ class Node
     if @jumps() then throw SE that.L 'inconvertible statement'
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
-    (fun = Fun [], Lines this).wrapper = true
+    (fun = Fun [], Block this).wrapper = true
     args = []
     if @contains(-> it.value is \this)
       args.push Literal \this
@@ -143,13 +143,13 @@ Negatable =
   show   : -> @negated and \!
   invert : -> @negated ^= 1; this
 
-#### Lines
+#### Block
 # A list of expressions that forms the body of an
 # indented block of code--the implementation of a function, a clause in an
 # `if`, `switch`, `try`, and so on.
-class exports.Lines extends Node
+class exports.Block extends Node
   (node) =>
-    return node if node instanceof Lines
+    return node if node instanceof Block
     @lines = if node then [node] else []
 
   children: [\lines]
@@ -165,7 +165,7 @@ class exports.Lines extends Node
 
   jumps: -> return that if node.jumps it for node of @lines
 
-  # **Lines** does not return its entire body, rather it
+  # **Block** does not return its entire body, rather it
   # ensures that the final line is returned.
   makeReturn: ->
     [node, i] = lastNonComment @lines
@@ -190,13 +190,13 @@ class exports.Lines extends Node
     code = codes.join ', ' or 'void 8'
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
-  # **Lines** is the only node that can serve as the root.
+  # **Block** is the only node that can serve as the root.
   compileRoot: (o or {}) ->
     o.indent = @tab = if bare = delete o.bare then '' else TAB
     o.scope  = @scope = Scope.root = new Scope
     o.level  = LEVEL_TOP
     code = @compileWithDeclarations(o).replace /[^\n\S]+$/gm, ''
-    # If we happen to be the top-level **Lines**, wrap everything in
+    # If we happen to be the top-level **Block**, wrap everything in
     # a safety closure, unless requested not to.
     if bare then code else "(function(){\n#{code}\n}).call(this);\n"
 
@@ -906,7 +906,7 @@ class exports.Existence extends Node
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Lines(), arrow) => @bound = \_this if arrow is \=>
+  (@params or [], @body or Block(), arrow) => @bound = \_this if arrow is \=>
 
   children: <[ params body ]>
 
@@ -1404,7 +1404,7 @@ class exports.If extends Node
     code = (if delete o.elsed then '' else @tab) + 'if (' +
            (if @negated then @if.invert() else @if).compile o, LEVEL_PAREN
     o.indent += TAB
-    @then = Lines @then
+    @then = Block @then
     code += ') ' + @compileBlock o, \then
     return code unless @else
     code + ' else ' + if @chain

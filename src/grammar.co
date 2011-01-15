@@ -116,9 +116,9 @@ bnf =
     o 'CREMENT SimpleAssignable' ,-> L Op $1, $2
     o 'SimpleAssignable CREMENT' ,-> L Op $2, $1, null, true
 
-    o \Fun
-    o 'FUNCTION Fun'            ,-> $2.named()
-    o 'FUNCTION IDENTIFIER Fun' ,-> $3.named $2
+    o \Function
+    o 'FUNCTION Function'            ,-> $2.named()
+    o 'FUNCTION IDENTIFIER Function' ,-> $3.named $2
 
     # The full complement of `if` and `unless` expressions,
     # including postfix one-liners.
@@ -129,7 +129,7 @@ bnf =
     # Loops can either be normal, with a block of expressions
     # to execute, or postfix, with a single expression.
     o 'LoopHead   Block'    ,-> $1.addBody $2
-    o 'Expression LoopHead' ,-> $2.addBody Lines $1
+    o 'Expression LoopHead' ,-> $2.addBody Block $1
 
     o 'RETURN Expression' ,-> L Return $2
     o \RETURN             ,-> L Return()
@@ -165,7 +165,7 @@ bnf =
   ]
   # A list of lines, separated by newlines or semicolons.
   Body: [
-    o \Line                  ,-> Lines $1
+    o \Line                  ,-> Block $1
     o 'Body TERMINATOR Line' ,-> $1.add $3
     o 'Body TERMINATOR'
   ]
@@ -215,12 +215,12 @@ bnf =
   # converts some single-line forms into blocks for us.
   Block: [
     o 'INDENT Body DEDENT' ,-> $2
-    o 'INDENT      DEDENT' ,-> Lines()
+    o 'INDENT      DEDENT' ,-> Block()
   ]
 
-  # **Fun** is the function literal, defined by an indented **Block**
+  # **Function** is the function literal, defined by an indented **Block**
   # preceded by an optional parameter list and a function arrow.
-  Fun: [
+  Function: [
     o 'PARAM( ArgList OptComma )PARAM FUNC_ARROW Block' ,-> L Fun $2, $6, $5
     o                                'FUNC_ARROW Block' ,-> L Fun [], $2, $1
   ]
@@ -317,7 +317,7 @@ bnf =
   Root: [
     o \Body
     o 'Block TERMINATOR'
-    o '' ,-> Lines()
+    o '' ,-> Block()
   ]
 
 # Precedence
