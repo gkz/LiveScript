@@ -142,19 +142,25 @@ printTokens = (tokens) ->
     (lines[lno] ||= []).push tag
   say(if l then l.join(' ').replace /\n/g \\\n else '') for l of lines
 
-# A simple Read-Eval-Print-Loop. Compiles one line at a time to JavaScript
-# and evaluates it. Good for simple tests or poking around the **node.js** API.
+# A simple Read-Eval-Print-Loop. Compiles one line
+# (or a block of lines if continued using backslash) at a time to JavaScript
+# and evaluates it. Good for simple tests or poking around the
+# [**Node.js** API](http://nodejs.org/api/).
 repl = ->
   global.__defineGetter__ \quit, -> process.exit 0
   repl = require(\readline).createInterface stdin = process.openStdin()
-  stdin.on \data, repl&.write
-  repl.on \close, stdin&.destroy
+  buf  = ''
   repl.on \line, ->
+    code = buf + \\n + it
+    if \\ is code.slice -1 then buf := code.slice 0, -1; return
+    buf := ''
     try
-      global._ = Coco.eval "#{it}", {+bare, +globals, filename: \repl}
-      console.dir _ unless _ is void
-    catch e then say e
+      global._ = Coco.eval code.slice(1), {+bare, +globals, filename: \repl}
+      _ is void or console.dir _
+    catch e say e
     repl.prompt()
+  repl.on \close, stdin&.destroy
+  stdin.on \data, repl&.write
   process.on \uncaughtException, -> say \\n + (it?.stack or it)
   repl.setPrompt 'coco> '
   repl.prompt()
