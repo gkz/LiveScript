@@ -63,20 +63,22 @@ task \build:parser, 'rebuild the Jison parser (run "build" first)', ->
   spit \lib/parser.js, src
 
 task \build:browser
-, 'rebuild the merged script for inclusion of the browser', ->
+, 'rebuild the merged script for browser or other environments', ->
   co = ''
   for name of <[ rewriter lexer parser nodes coco ]>
     src = slurp "lib/#{name}.js"
-    co += "!function(require, exports){#{src}}(r, r['./#{name}'] = {});"
-  {parser, uglify} = require \uglify-js
-  ast = parser.parse """
+    co += "!function(require, exports){\n#{src}\n}(r, r['./#{name}'] = {});"
+  spit \extras/coco.raw.js, co = """
     (function(){
-      function r(path){ return r[path] } #{co}
-      var Coco = this.Coco = r['./coco'];
-      #{ slurp \lib/browser.js }
-      return Coco
+    function r(path){ return r[path] }
+    #{co}
+    var Coco = this.Coco = r['./coco']
+    #{ slurp \lib/browser.js }
+    return Coco
     }.call(this))
   """
+  {parser, uglify} = require \uglify-js
+  ast = parser.parse co
   ast = uglify.ast_mangle  ast
   ast = uglify.ast_squeeze ast, {+extra}
   spit \extras/coco.js, """
