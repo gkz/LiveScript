@@ -19,10 +19,11 @@ Coco import
   VERSION: \0.2.3b
 
   # Compiles a string of Coco code to JavaScript.
-  compile: (code, options) ->
+  compile: (code, options or {}) ->
+    fname = delete options.filename
     try (parser.parse lex code).compileRoot options
     catch e
-      e.message = "in #{that}, #{e.message}" if options?.fileName
+      e.message = "in #{fname}, #{e.message}" if fname
       throw e
 
   # Parses a string or tokens of Coco code, returning the AST.
@@ -42,7 +43,7 @@ if (fs = require \fs) and (path = require \path)
     run: (code, options) ->
       root = module
       root.=parent while root.parent
-      root.filename = fs.realpathSync options?.fileName || \.
+      root.filename = if options?.filename then fs.realpathSync that else \.
       root.moduleCache &&= {}
       if require.extensions or
          path.extname(root.filename).toLowerCase() is not \.co
@@ -50,11 +51,11 @@ if (fs = require \fs) and (path = require \path)
       root._compile code, root.filename
     # Evaluates a string of Coco. The Coco REPL uses this to run the input.
     eval: (code, options) ->
-      __dirname = path.dirname __filename = options?.fileName
+      __dirname = path.dirname __filename = module.filename = options?.filename
       eval Coco.compile code, options
 
   if require.extensions
-    require.extensions.\.co = (module, filename) ->
+    require.extensions\.co = (module, filename) ->
       module._compile (Coco.compile fs.readFileSync filename, \utf8), filename
   # __TODO__: Remove `registerExtension` when fully deprecated.
   else if require.registerExtension

@@ -16,7 +16,7 @@ eq '''
 ''', Coco.compile 'f ...a, b', {+globals}
 
 
-eq 'passed', Coco.eval '"passed"', {+bare, fileName: 'test'}
+eq 'passed', Coco.eval '"passed"', {+bare, filename: 'test'}
 
 
 #750

@@ -135,14 +135,14 @@ runTests = (Coco) ->
     else tint message
   dir(\test).forEach (file) ->
     return unless /\.co$/i.test file
-    code = slurp fileName = path.join \test, file
-    try Coco.run code, {fileName}
+    code = slurp filename = path.join \test, file
+    try Coco.run code, {filename}
     catch e
       ++failedTests
       return say e unless stk = e?.stack
       msg = '' + /^.+/.exec stk
-      {1: row, 2: col} = ///#{fileName}:(\d+):(\d+)\)?$///m.exec(stk) or ''
-      say tint "failed #{fileName}:#{row--}:#{col--}", red
+      {1: row, 2: col} = ///#{filename}:(\d+):(\d+)\)?$///m.exec(stk) or ''
+      say tint "failed #{filename}:#{row--}:#{col--}", red
       if row >= 0
         code = Coco.compile code
       else if /\bon line (\d+)\b/.test msg

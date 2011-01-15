@@ -39,8 +39,11 @@ exports.run = ->
   return do version  if o.version
   return do help     if o.help
   require.paths.push process.cwd()
-  (o.require or []).forEach ->
-    require if it.0 is \. then fs.realpathSync it else it
+  if o.require
+    {filename} = module
+    module.filename = \.
+    that.forEach require
+    module <<< {filename}
   switch
   case o.interactive then repl()
   case o.stdin       then compileStdin()
@@ -74,7 +77,7 @@ compileScripts = ->
 # Compile a single source script, containing the given code, according to the
 # requested options.
 compileScript = (file, input, base) ->
-  options = fileName: file, bare: o.bare
+  options = filename: file, bare: o.bare
   try
     Coco.emit \compile, t = {file, input, options}
     switch
@@ -148,7 +151,7 @@ repl = ->
   repl.on \close, stdin&.destroy
   repl.on \line, ->
     try
-      global._ = Coco.eval "#{it}", {+bare, +globals, fileName: \repl}
+      global._ = Coco.eval "#{it}", {+bare, +globals, filename: \repl}
       console.dir _ unless _ is void
     catch e then say e
     repl.prompt()
@@ -168,9 +171,9 @@ forkNode = ->
 
 # Print the `--help` message.
 help = -> say """
-  Usage: coco [options] [files]
+  Usage: coco [options] [files] [arguments]
 
-  Available options:
+  Options:
   #{o}
 """
 
