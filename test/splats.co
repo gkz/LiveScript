@@ -119,3 +119,10 @@ eq b, 2
 [a, ..., b] = [1 to 5]
 eq a, 1
 eq b, 5
+
+eq '''
+(function(){
+  var a;
+  a = arguments[arguments.length - 1];
+});
+''', Coco.compile '(..., a) ->', {+bare}
