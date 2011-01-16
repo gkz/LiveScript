@@ -47,7 +47,7 @@ result = if false
 else # comment
   45
 
-ok result is 45
+eq result, 45
 
 
 test =
@@ -87,13 +87,6 @@ fn1 = ->
 
 ok ok
 
-obj = {
-  a: 'b'
-  /*
-  comment
-  */
-  c: 'd'
-}
 
 # Spaced comments in if / elses.
 result = if false
@@ -155,3 +148,17 @@ obj = {
 }
 if 1 then /* no semicolon at end -> */
 ''', {+bare}
+
+
+# Block comments within non-statement `if`s.
+eq void, if true then /* 1 */
+eq true, (
+  if true
+    /* 2 */
+    true
+)
+eq true, (
+  if true
+    true
+    /* 3 */
+)

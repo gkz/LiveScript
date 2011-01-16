@@ -175,15 +175,15 @@ class exports.Block extends Node
     this
 
   compileNode: (o) ->
-    o.lines = this
-    top     = not o.level
-    codes   = []
+    o.block = this
+    codes = []; top = not o.level
     for node of @lines
-      node = node.unfoldSoak(o) or node
+      node = node.unfoldSoak o or node
       if top
         code = (node import {+front}).compile o
         code = o.indent + code + node.terminator unless node.isStatement o
       else
+        continue if node instanceof Comment
         code = node.compile o, LEVEL_LIST
       codes.push code
     return codes.join \\n if top
@@ -982,7 +982,7 @@ class exports.Fun extends Node
     if @statement
       unless name
         throw SE @L 'nameless function'
-      unless o.lines.scope is pscope
+      unless o.block.scope is pscope
         throw SE @L 'function declaration under a statement'
       scope .add name, \function
       pscope.add name, \function unless @returns
