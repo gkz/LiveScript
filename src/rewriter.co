@@ -105,7 +105,11 @@ function addImplicitParentheses (tokens) ->
         tokens.splice i++, 0, [if tag is \[ then \DOT else \CLONE, '', prev[2]]
       continue
     continue unless prev.call or able tokens, i, true
-    continue unless token.argument or
+    if token.fromDo
+      token.     0 = \CALL(
+      token.pair.0 = \)CALL
+      continue
+    continue unless \
       tag of <[ ( [ { ... IDENTIFIER THISPROP THIS STRNUM LITERAL RANGE
                 UNARY CREMENT IF TRY CLASS FUNCTION SUPER ]> or
       tag is \+- and not (token.spaced or token.eol) or
@@ -115,7 +119,6 @@ function addImplicitParentheses (tokens) ->
     tokens.splice i++, 0, [\CALL(, if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
   function ok (token, i) ->
-    return false if token.argument
     return true  if not seenSingle and token.fromThen or
                     token.alias and token.1 of <[ && || ]>
     [tag] = token
@@ -151,8 +154,10 @@ function addImplicitIndentation (tokens) ->
     [tag] = token
     if \INDENT is next = tokens[i+1]?.0
       switch
-      case tag is \THEN   then tokens[i+1] <<< {+fromThen}; fallthrough
-      case token.1 is \do then tokens[i+1] <<< {+argument}
+      case tag is \THEN then tokens[i+1].fromThen = true
+      case token.1 is \do
+        (pair = tokens[indexOfPair tokens, i+1]).0 = \)
+        tokens[i+1] <<< {+fromDo, pair, 0: \(}
       default continue
       tokens.splice i, 1
       continue

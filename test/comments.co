@@ -152,13 +152,11 @@ if 1 then /* no semicolon at end -> */
 
 # Block comments within non-statement `if`s.
 eq void, if true then /* 1 */
-eq true, (
+eq true, do
   if true
     /* 2 */
     true
-)
-eq true, (
+eq true, do
   if true
     true
     /* 3 */
-)
