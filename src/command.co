@@ -59,19 +59,18 @@ exports.run = ->
 # _.co_ files in it and all subdirectories.
 compileScripts = ->
   sources.forEach (source) ->
-    path.exists source, (yes) ->
-      yes or die "No such file or directory: #{source}"
-      walk source, path.normalize(source), true
+    yes <- path.exists source
+    yes or die "No such file or directory: #{source}"
+    walk source, path.normalize(source), true
   function walk (source, base, top) ->
-    fs.stat source, (e, stats) ->
-      if stats.isDirectory()
-        fs.readdir source, (e, files) ->
-          files.forEach -> walk path.join(source, it), base
-      else if top or path.extname(source).toLowerCase() is \.co
-        fs.readFile source, (e, buf) ->
-          compileScript source, buf.toString(), base
-        watch source, base if o.watch
-      void
+    (e, stats) <- fs.stat source
+    if stats.isDirectory()
+      (e, files) <- fs.readdir source
+      files.forEach -> walk path.join(source, it), base
+    else if top or path.extname(source).toLowerCase() is \.co
+      watch source, base if o.watch
+      (e, buf) <- fs.readFile source
+      compileScript source, buf.toString(), base
   void
 
 # Compile a single source script, containing the given code, according to the
@@ -109,9 +108,9 @@ compileStdin = ->
 watch = (source, base) ->
   fs.watchFile source, {+persistent, interval: 500ms}, (curr, prev) ->
     return if curr.size is prev.size and +curr.mtime is +prev.mtime
-    fs.readFile source, (err, code) ->
-      die err.stack || err if err
-      compileScript source, code.toString(), base
+    (e, code) <- fs.readFile source
+    e and die e.stack || e
+    compileScript source, code.toString(), base
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
@@ -122,17 +121,16 @@ writeJs = (source, js, base) ->
   dir      = if o.output
   then path.join that, srcDir.slice (if base is \. then 0 else base.length)
   else srcDir
-  jsPath   = path.join dir, filename
-  compile  = ->
-    fs.writeFile jsPath, js || ' ', (err) ->
-      if err
-        warn err
-      else if o.compile and o.watch
-        (try require(\util).log catch then say) "Compiled #{source}"
-  path.exists dir, (exists) ->
-    if exists
-    then compile()
-    else require(\child_process).exec "mkdir -p #{dir}", compile
+  jsPath = path.join dir, filename
+  function compile ->
+    e <- fs.writeFile jsPath, js || \\n
+    return warn e if e
+    if o.compile and o.watch
+      (try require(\util).log catch then say) "Compiled #{source}"
+  yes <- path.exists dir
+  if yes
+  then do compile
+  else require(\child_process).exec "mkdir -p #{dir}", compile
 
 # Pretty-print a stream of tokens.
 printTokens = (tokens) ->
