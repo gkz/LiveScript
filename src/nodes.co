@@ -1087,9 +1087,10 @@ class exports.Parens extends Node
 
   compileNode: (o) ->
     {it} = this
-    return (it import {@front}).compile o if not @keep and not @newed and
-      (it instanceof [Literal, Value, Call, Fun, Parens] or
-       it instanceof Op and o.level < LEVEL_OP)
+    unless @keep or @newed
+      if it instanceof [Literal, Value, Call, Fun, Parens] or
+         it instanceof Op and o.level < LEVEL_OP
+        return (it <<< {@front}).compile o, Math.max o.level, LEVEL_LIST
     o.level = LEVEL_PAREN
     if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
 
