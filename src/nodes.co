@@ -150,12 +150,20 @@ Negatable =
 class exports.Block extends Node
   (node) =>
     return node if node instanceof Block
-    @lines = if node then [node] else []
+    @lines = []
+    @add node if node
 
   children: [\lines]
 
-  add    : -> @lines.push it; this
-  unwrap : -> if @lines.length is 1 then @lines.0 else this
+  add: ->
+    if @back
+      that.add it
+    else
+      @lines.push it
+      @back = that if it.back
+    this
+
+  unwrap: -> if @lines.length is 1 then @lines.0 else this
 
   isComplex: -> @lines.length > 1 or !!@lines.0?.isComplex()
 
@@ -476,6 +484,12 @@ class exports.Call extends Node
         base.add name
       fun = base.compile o
     "#{fun}.apply(#{ ref or null }, #{args})"
+
+  @back = (params, arrow, call) ->
+    call = Call call unless call instanceof Call
+    {args} = call
+    break if a instanceof Splat and a.it.isEmpty() for a, i of args
+    call import back: (args[i] = Fun params, null, arrow.charAt(1) + \>).body
 
 #### Clone
 # An operation that creates a new object with its `__proto__`
@@ -906,7 +920,8 @@ class exports.Existence extends Node
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Block(), arrow) => @bound = \_this if arrow is \=>
+  (@params or [], @body or Block(), arrow) =>
+    @bound = \_this if arrow of <[ ~> => ]>
 
   children: <[ params body ]>
 

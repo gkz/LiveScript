@@ -410,3 +410,21 @@ ok (@arguments, @eval) ->
 
 # Call takes precedence over function parameter.
 eq 0, I(-> it()) -> 0
+
+
+### Backcalls
+g = (...a, f) -> f ...a
+h = (f, ...a) -> f a
+
+eq ok, do
+  (a, b) <- g \a, \b
+  eq b, \b
+  (...d) <- h ..., a
+  eq d.0.0, \a
+  ok
+
+ok \function is typeof new ->
+  me = this
+  f <~ I
+  eq me, this
+  f
