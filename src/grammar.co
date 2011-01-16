@@ -160,10 +160,12 @@ bnf =
   # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm).
   Line: [
     o \Expression
+
     o 'PARAM( ArgList OptComma )PARAM BACK_CALL Expression'
     , -> Call.back $2, $5, $6
-    o 'IDENTIFIER                     BACK_CALL Expression'
-    , -> Call.back [L Literal $1], $2, $3
+    o 'IDENTIFIER BACK_CALL Expression' ,-> Call.back [L Literal $1], $2, $3
+    o            'BACK_CALL Expression' ,-> Call.back [            ], $1, $2
+
     o \COMMENT ,-> L new Comment $1
     o \...     ,-> L new Throw JS "Error('stub code executed')"
   ]

@@ -427,4 +427,5 @@ ok \function is typeof new ->
   me = this
   f <~ I
   eq me, this
+  <- ->
   f
