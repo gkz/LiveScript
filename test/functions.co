@@ -92,7 +92,7 @@ eq 6, sum(->
 eq 20, sum ->
   7 + 9
 , ->
-  ### spacer ###
+  /* spacer */
   1 + 3
 
 
@@ -257,8 +257,8 @@ eq --n, 0
 
 eq ok, new ->
   ok
-  ### Should `return` implicitly   ###
-  ### even with trailing comments. ###
+  /* Should `return` implicitly   */
+  /* even with trailing comments. */
 
 
 throws 'function declaration under a statement on line 1', ->

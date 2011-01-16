@@ -160,8 +160,8 @@ bnf =
   # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm).
   Line: [
     o \Expression
-    o \COMMENT ,-> L Comment $1
-    o \...     ,-> L new Throw Literal "Error('stub code executed')"
+    o \COMMENT ,-> L new Comment $1
+    o \...     ,-> L new Throw JS "Error('stub code executed')"
   ]
   # A list of lines, separated by newlines or semicolons.
   Body: [
@@ -246,7 +246,7 @@ bnf =
 
     o 'Key LOGIC Expression' ,-> L Op $2, $1, $3
 
-    o \COMMENT ,-> L Comment $1
+    o \COMMENT ,-> L new Comment $1
   ]
   # Properties within an object literal can be separated by
   # commas, as in JavaScript, or simply by newlines.

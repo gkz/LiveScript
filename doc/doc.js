@@ -65,7 +65,7 @@
   function build(name, source){
     var i, code, comment, htm, re, line, br, that, _i, _ref, _len;
     htm = comment = code = i = '';
-    re = /^[^\n\S]*#(?!##(?!#)|[!{]) ?(.*)/;
+    re = /^[^\n\S]*#(?![!{]) ?(.*)/;
     for (_i = 0, _len = (_ref = source.split('\n')).length; _i < _len; ++_i) {
       line = _ref[_i];
       if (!line) {

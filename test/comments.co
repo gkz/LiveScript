@@ -1,10 +1,5 @@
 #! line comment
 
-###
-block comment
-###
-
-
   #!comment
 func = ->
 #!comment
@@ -62,39 +57,41 @@ test =
 
 eq test, 'test test test'
 
-###
-  This is a here-comment.
-  Kind of like a heredoc.
-###
+/*
+  This is a block comment.
+  Just like JS.
+*/
 
 func = ->
-  ###
+  /*
   Another block comment.
-  ###
+  */
   code
+  /*
+  debug code commented
+  */
+
 
 func = ->
   one = ->
     two = ->
       three = ->
-  ###
+  /*
   block.
-  ###
+  */
   four = ->
 
 fn1 = ->
   oneLevel = null
-###
-This isn't fine.
-###
+/* This is fine. */
 
 ok ok
 
 obj = {
   a: 'b'
-  ###
+  /*
   comment
-  ###
+  */
   c: 'd'
 }
 
@@ -128,59 +125,33 @@ func = ->
 eq func(), 7
 
 
-# Trailing herecomment in a function.
-fn = ->
-  code
-  ###
-  debug code commented
-  ###
-
-fn2 = ->
-
-
-class A
-  b: ->
-
-  ###
-  Comment
-  ###
-  c: ->
-
-ok A.prototype.c instanceof Function
-
-class A
-  ###
-  Comment
-  ###
-  b: ->
-  c: ->
-
-ok A.prototype.b instanceof Function
-
-
 eq '''
-/* leading comments */
+/* leading block comments */
 /* are placed before declarations */
 var obj;
 obj = {
-  /* v
-  */
+  /*
+   *  v
+   */
   key: val
-  /* ^
-  */
+  /*
+   *  ^
+   */
 };
 if (1) {
   /* no semicolon at end -> */
 }
 ''', Coco.compile '''
-### leading comments ###
-### are placed before declarations ###
+/* leading block comments */
+/* are placed before declarations */
 obj = {
-   ### v
-   ###
+   /*
+    *  v
+    */
    key : val
-   ### ^
-   ###
+   /*
+    *  ^
+    */
 }
-if 1 then ### no semicolon at end -> ###
+if 1 then /* no semicolon at end -> */
 ''', {+bare}

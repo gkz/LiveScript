@@ -50,17 +50,19 @@ exports import
     # returning the number of characters it has consumed.
     while code.=slice i
       switch code.charAt 0
-      case ' ' then i = @spaceToken code
+      case [' ', \#]
+        i = @spaceToken code
       case \\n then i = @lineToken  code
       case \'  then i = @heredocToken code, \' or @singleStringToken code
       case \"  then i = @heredocToken code, \" or @doubleStringToken code
       case \<
-        i = if \[ is code.charAt 1
-        then @wordsToken code else @literalToken code
+        i = @[if \[ is code.charAt 1 then \wordsToken else \literalToken] code
       case \/
-        i = if \// is code.substr 1 2
-        then @heregexToken code else @regexToken code or @literalToken code
-      case \# then i = @spaceToken code or @commentToken code
+        i = if \* is code.charAt 1
+        then @commentToken code
+        else if \// is code.substr 1 2
+        then @heregexToken code
+        else @regexToken code or @literalToken code
       case \` then i = @jsToken code
       default i = @identifierToken code or @numberToken code or
                   @literalToken    code or @spaceToken  code
@@ -224,16 +226,17 @@ exports import
 
   # Matches block comments.
   commentToken: ->
-    text = it.slice 3, if ~end = it.indexOf \###, 3 then end else 9e9
+    text = it.slice 0, if ~end = it.indexOf \*/, 2 then end + 2 else 9e9
     @token \COMMENT, untabify text, @indent
     @token \TERMINATOR \\n
-    @countLines(text).length + 6
+    @countLines(text).length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     @carp 'unterminated JS literal' unless js = JSTOKEN.exec it
-    (js = new String js.0.slice 1, -1).js = true
-    @countLines(@token \LITERAL, js).length + 2
+    @token \LITERAL, new String untabify (js.=0).slice(1, -1), @indent
+    @last.1.js = true
+    @countLines(js).length
 
   # Matches a regular expression literal, aka regex.
   # Lexing regexes is difficult to distinguish from division,
@@ -579,8 +582,8 @@ SYMBOL = /// ^ (?
 | \\\n              # continued line
 | \S
 ) ///
-SPACE     = /^(?=.)[^\n\S]*(?:#(?!##(?!#)).*)?/
-MULTIDENT = /^(?:\s*#(?!##(?!#)).*)*(?:\n[^\n\S]*)+/
+SPACE     = /^(?=.)[^\n\S]*(?:#.*)?/
+MULTIDENT = /^(?:\s*#.*)*(?:\n[^\n\S]*)+/
 SIMPLESTR = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN   = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 

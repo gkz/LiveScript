@@ -60,9 +60,9 @@ ok obj.is()
 ok not obj.not()
 
 
-### Top-level braceless object ###
+/* Top-level braceless object */
 obj: 1
-### doesn't break things. ###
+/* doesn't break things. */
 
 
 # Implicit objects with number arguments.
@@ -183,8 +183,8 @@ eq i, 1
 
 # Braceless objects.
 obj =
-  ### comment one ###
-  ### comment two ###
+  /* comment one */
+  /* comment two */
   one: 1, two: 2
   fun: -> [zero: 0; three: @one + @two][1]
 
@@ -195,21 +195,21 @@ eq obj.fun().three, 3
 i = 0
 o = splat: 'me'
 obj = {
-  ### leading comment  ###
+  /* leading comment  */
   (4 * 2): 8
-  ### cached shorthand ###
+  /* cached shorthand */
   (++i)
-  ###      splat       ###
+  /*      splat       */
   ...o
   ...({splatMe: 'too'})
-  ###   normal keys    ###
+  /*   normal keys    */
   key: ok
   's': ok
   0.0: ok
 
   "#{'interpolated'}":
     """#{"nested"}""": 123: 456
-  ### traling comment  ###
+  /* traling comment  */
 }
 eq obj.interpolated.nested[123], 456
 eq obj[8], 8

@@ -43,7 +43,7 @@ I = function(it){
   return it;
 };
 ''', Coco.compile '''
-### (c) 2010 me ###
+/* (c) 2010 me */
 "use strict"
 `LABEL:`
 I = -> it

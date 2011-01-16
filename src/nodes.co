@@ -206,16 +206,13 @@ class exports.Block extends Node
     o.level = LEVEL_TOP
     code = post = ''
     for node, i of @lines
-      break unless node instanceof Comment or
-                   node instanceof Literal and not node.value.js
+      break unless node instanceof [Comment, Literal]
     if i
       rest   = @lines.splice i, 9e9
       code   = @compileNode o
       @lines = rest
-    post = if @lines.length then @compileNode o else ''
-    code &&+= \\n if post
-    if @scope?.vars o
-      code += o.indent + that + \;\n
+    code &&+= \\n if post = (if @lines.length then @compileNode o else '')
+    code += o.indent + that + \;\n if @scope?.vars o
     code + post
 
 #### Literal
@@ -223,7 +220,7 @@ class exports.Block extends Node
 # JavaScript without translation, such as identifiers, numbers, `this`,
 # and pretty much everything that doesn't fit in other nodes.
 class exports.Literal extends Node
-  (@value, reserved) => @isAssignable = NO if reserved
+  (@value, @reserved) => return JS '' + value if value.js
 
   show: -> \" + @value + \"
 
@@ -232,7 +229,7 @@ class exports.Literal extends Node
   isEmpty: ->
     switch @value case <[ void null ]> then return true
 
-  isAssignable : -> IDENTIFIER.test @value
+  isAssignable : -> not @reserved and IDENTIFIER.test @value
   assigns      : -> it is @value
 
   asKey: -> if IDENTIFIER.test @value then Key(@value) <<< {@line} else this
@@ -245,8 +242,7 @@ class exports.Literal extends Node
       if (level ? o.level) is LEVEL_ACCESS
         throw SE @L 'invalid use of ' + @value
       return val
-    if      val.js then @terminator = ''
-    else if @temp  then o.scope.free val
+    if @temp then o.scope.free val
     val
 
 #### Key
@@ -994,7 +990,8 @@ class exports.Fun extends Node
     code += "(#{ args.join ', ' }){"
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if exps.length
     code += \}
-    code += " #{name}.displayName = '#{name}';" if @ctor and name.charAt(0) is not \_
+    if @ctor and name.charAt(0) is not \_
+      code += " #{name}.displayName = '#{name}';"
     code += "\n#{tab}return #{name};" if @returns
     return tab + code if @statement
     if @front then "(#{code})" else code
@@ -1363,7 +1360,7 @@ class exports.Case extends Node
     code = ''
     code += tab + "case #{ t.compile o, LEVEL_PAREN }:\n" for t of tests
     [last, i] = lastNonComment exps = @body.lines
-    exps[i] = Comment ' fallthrough ' if ft = last?.value is \fallthrough
+    exps[i] = JS '/* fallthrough */' if ft = last?.value is \fallthrough
     o.indent = tab + TAB
     code += that + \\n if @body.compile o, LEVEL_TOP
     code += o.indent + 'break;\n' unless nobr or ft or
@@ -1432,14 +1429,19 @@ class exports.If extends Node
       parent[name] = ifn.then; ifn.then = Value parent
     ifn
 
-#### Comment
-# Block comments are compiled as JavaScript block comments at the same position.
-class exports.Comment extends Node
-  (@comment) =>
+#### JS
+# Embedded JavaScript snippets.
+class exports.JS extends Node
+  (@code) =>
 
   terminator: ''
 
-  compile: (o) -> "/*#{ tabify @comment, o.indent }*/"
+  compile: -> tabify @code, it.indent
+
+#### Comment
+# Block comments are compiled as JavaScript block comments at the same position.
+class exports.Comment extends JS
+  (@code) ->
 
 #### Util
 # A wrapper node for utility functions.
