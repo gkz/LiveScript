@@ -76,23 +76,32 @@ compileScripts = ->
 # Compile a single source script, containing the given code, according to the
 # requested options.
 compileScript = (file, input, base) ->
-  options = filename: file, bare: o.bare
+  t = {file, input, options: filename: file, bare: !!o.bare}
   try
-    Coco.emit \compile, t = {file, input, options}
+    Coco.emit \lex, t
+    t.tokens = Coco.tokens t.input, rewrite: !o.lex
+    if o.lex or o.tokens
+      printTokens t.tokens
+      throw \ok
+    Coco.emit \parse, t
+    t.nodes = Coco.nodes t.tokens
+    if o.nodes
+      say t.nodes.toString().trim()
+      throw \ok
+    Coco.emit \compile, t
+    t.output = t.nodes.compileRoot t.options
     switch
-    case o.lex or o.tokens then printTokens Coco.tokens input, rewrite: !o.lex
-    case o.nodes           then say Coco.nodes(input).toString().trim()
-    case o.run             then Coco.run input, options
-    default
-      t.output = Coco.compile input, options
-      Coco.emit \success, t
-      switch
-      case o.print   then say t.output.trim()
-      case o.compile then writeJs file, t.output, base
+    case o.run     then Coco.run t.output, t.options <<< {+js}
+    case o.print   then say t.output.trim()
+    case o.compile then writeJs t.file, t.output, base
   catch e
-    Coco.emit \failure, e, t
-    unless Coco.listeners(\failure).length
-      (if o.watch then warn else die) e?.stack || e
+    unless e is \ok
+      if Coco.listeners(\failure).length
+        Coco.emit \failure, e, t
+      else
+        (if o.watch then warn else die) e?.stack || e
+      return
+  Coco.emit \success, t
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.

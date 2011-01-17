@@ -40,14 +40,15 @@ if (fs = require \fs) and (path = require \path)
   Coco import
     # Executes a string of Coco, correctly
     # setting `__filename`, `__dirname`, and relative `require`.
-    run: (code, options) ->
+    run: (code, options or {}) ->
       root = module
       root.=parent while root.parent
-      root.filename = if options?.filename then fs.realpathSync that else \.
+      root.filename = if options.filename then fs.realpathSync that else \.
       root.moduleCache &&= {}
-      if require.extensions or
-         path.extname(root.filename).toLowerCase() is not \.co
-        code = Coco.compile code, options
+      unless options.js
+        if require.extensions or
+           path.extname(root.filename).toLowerCase() is not \.co
+          code = Coco.compile code, options
       root._compile code, root.filename
     # Evaluates a string of Coco. The Coco REPL uses this to run the input.
     eval: (code, options) ->
