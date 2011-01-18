@@ -172,7 +172,7 @@ exports import
       @token \DOT \.; @token \STRNUM, num.slice 1
       return match.0.length
     case \0 then if num.charAt(1) not of ['' \x \.]
-      @carp "octal literal #{num} is deprecated"
+      @carp "deprecated octal literal #{num}"
     if radix = match.1
       @carp "invalid radix #{radix}" unless 2 <= radix <= 36
       num = parseInt rnum = match.2, radix
