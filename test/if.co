@@ -1,67 +1,52 @@
-if a = b = d = true
-  c = false
-
-result = if a
-  if b
-    if c then false else
-      if d
-        true
-ok result
-
-
-ok if false then false else v = if false then false else true
-ok v
-
-
-result = if false
-  false
-else if NaN
-  false
+if yes = on = t = true
+  no = false
 else
-  true
+  ok 0
 
-ok result
+
+# As implicit argument, nested, and/or one-liner.
+eq 1, if yes
+  if on
+    if no then false else
+      if t
+        1
+
+ok if 0
+  0
+else if 0/0
+  0/0
+else if void
+  void
+else if null
+  null
+else true
+
+ok if false then false else if false then false else true
+eq 100, Number if false then 300 else 100
 
 
 # `unless`
-result = unless true
-  10
+eq 1, unless true
+  0
 else
-  11
-
-eq 11, result
-
-
-# Nested inline if statements.
-eq 'ya', if true then String (if false then 'xxx' else 'y') + 'a'
+  1
 
 
 # Returning if-else.
 eq -1, do -> if 1 < 0.5 then 1 else -1
 
 
-# `else`-less `if` Returns `undefined` with falsy condition.
+# `else`-less `if` returns `undefined` with falsy condition.
+eq void, if 0 then
 eq void, do -> if 0 then
-eq void, do -> return if 0 then
 
 
-# As an implicit argument.
-eq 100, Number if false then 300 else 100
-
-
-# If-to-ternary with instanceof requires parentheses (false comment).
-if {} instanceof Object
-  ok true
-else
-  ok false
-
-
-# If-to-ternary as part of a larger operation.
+# As part of a larger operation.
 eq 2, 1 + if false then 10 else 1
 
 
-# If/else indented within an assignment.
-func = ->
+# Indented within an assignment.
+eq 5, do ->
   a =
     if false
       3
@@ -69,7 +54,6 @@ func = ->
       5
   101
   a
-eq func(), 5
 
 
 # Unmatched `then` should close implicit calls.
@@ -83,7 +67,7 @@ eq 2, do -> if 0 then -> 1 else 2
 
 
 # With a suppressed indentation via assignment.
-result =
+eq 70,
   if      false then 10
   else if false    then 20
   else if 0     then 30
@@ -91,8 +75,6 @@ result =
   else               50 +
        if false then 10
        else          20
-
-eq result, 70
 
 
 if 'tight formatting with leading `then` is allowed'

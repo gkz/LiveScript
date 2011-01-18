@@ -85,7 +85,6 @@ function addImplicitIndentation (tokens) ->
     [tag] = token
     if \INDENT is next = tokens[i+1]?.0
       switch
-      case tag is \THEN then tokens[i+1].fromThen = true
       case token.1 is \do
         (pair = tokens[indexOfPair tokens, i+1]).0 = \)
         tokens[i+1] <<< {+fromDo, pair, 0: \(}
@@ -95,11 +94,10 @@ function addImplicitIndentation (tokens) ->
     continue if next is \THEN
     continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY CATCH FINALLY ]> or
                     tag is \ELSE and next is not \IF
-    indent = [\INDENT 2, token.2]; dedent = [\DEDENT 2]
-    indent.generated = dedent.generated = true
+    indent = [\INDENT 0, token.2]; dedent = [\DEDENT 0]
     if tag is \THEN
       tokens.splice --i, 1 if tokens[i-1]?.0 is \TERMINATOR
-      tokens[i] = indent import {+fromThen}
+      tokens[i] = indent
     else
       tokens.splice ++i, 0, indent
     switch
@@ -179,27 +177,23 @@ function addImplicitParentheses (tokens) ->
                 PARAM( FUNC_ARROW FUNCTION RANGE SUPER
                 UNARY CREMENT IF TRY CLASS SWITCH ]> or
       tag is \+- and not (token.spaced or token.eol) or
-    seenSingle = seenClass = seenSwitch = seenCase = false
+    skipBlock = seenSwitch = false
     tokens.splice --i, 1 if soak = prev.0 is \?
     tokens.splice i++, 0, [\CALL(, if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
   function ok (token, i) ->
-    return true if not seenSingle and token.fromThen or
-                   token.alias and token.1 of <[ && || ]>
+    return true if token.alias and token.1 of <[ && || ]>
     pre = tokens[i-1]
     switch token.0
-    case \CLASS         then seenClass  := true
     case \SWITCH        then seenSwitch := true; fallthrough
-    case <[ IF CATCH ]> then seenSingle := true
+    case <[ IF CLASS ]> then skipBlock  := true
     case \CASE
-      if seenSwitch then seenCase := true else return true
+      if seenSwitch then skipBlock := true else return true
     case \DOT
       return true if pre.eol or pre.0 is \DEDENT
     case \INDENT
-      return seenClass := false if seenClass
-      return seenCase  := false if seenCase
-      return false if token.generated
-      return pre.0 not of <[ { [ , FUNC_ARROW TRY CATCH FINALLY DEFAULT ]>
+      return skipBlock := false if skipBlock
+      return pre.0 not of <[ { [ , FUNC_ARROW ELSE TRY CATCH FINALLY DEFAULT ]>
     case <[ TERMINATOR POST_IF FOR WHILE BY TO ]>
       return pre.0 is not \,
     false
