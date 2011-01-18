@@ -1,19 +1,16 @@
-a = b = d = true
-c = false
+if a = b = d = true
+  c = false
 
 result = if a
   if b
     if c then false else
       if d
         true
-
 ok result
 
 
-first = if false then false else second = if false then false else true
-
-ok first
-ok second
+ok if false then false else v = if false then false else true
+ok v
 
 
 result = if false
@@ -26,19 +23,17 @@ else
 ok result
 
 
-# Testing unless.
+# `unless`
 result = unless true
   10
 else
   11
 
-ok result is 11
+eq 11, result
 
 
 # Nested inline if statements.
-echo = (x) -> x
-result = if true then echo((if false then 'xxx' else 'y') + 'a')
-ok result is 'ya'
+eq 'ya', if true then String (if false then 'xxx' else 'y') + 'a'
 
 
 # Returning if-else.
@@ -51,7 +46,7 @@ eq void, do -> return if 0 then
 
 
 # As an implicit argument.
-eq 100, (-> it) if false then 300 else 100
+eq 100, Number if false then 300 else 100
 
 
 # If-to-ternary with instanceof requires parentheses (false comment).
@@ -60,16 +55,9 @@ if {} instanceof Object
 else
   ok false
 
-try
-  {} + {}
-  ok true
-catch e
-  ok false
-
 
 # If-to-ternary as part of a larger operation.
-x = 1
-eq 2, x + if false then 10 else 1
+eq 2, 1 + if false then 10 else 1
 
 
 # If/else indented within an assignment.
@@ -84,13 +72,17 @@ func = ->
 eq func(), 5
 
 
-# Unmatched 'then' should catch implicit calls.
+# Unmatched `then` should close implicit calls.
 i = 1
 if Boolean 1 then ++i
 eq i, 2
 
 
-# If/else with a suppressed indentation via assignment.
+# Unmatched `else` should close implicit blocks.
+eq 2, do -> if 0 then -> 1 else 2
+
+
+# With a suppressed indentation via assignment.
 result =
   if      false then 10
   else if false    then 20
@@ -100,14 +92,15 @@ result =
        if false then 10
        else          20
 
-ok result is 70
+eq result, 70
+
 
 if 'tight formatting with leading `then` is allowed'
 then ok    'yay'
 else throw 'boo'
 
 
-#coffee738
+# [coffee#738](https://github.com/jashkenas/coffee-script/issues/738)
 eq 1, do if true then -> 1
 
 
@@ -140,7 +133,7 @@ eq 2, [if 0 then 1 else 2, 3].0
 
 
 # [coffee#1026](https://github.com/jashkenas/coffee-script/issues/1026)
-throws "Parse error on line 2: Unexpected 'ELSE'", -> Coco.nodes '''
+throws "Parse error on line 3: Unexpected 'ELSE'", -> Coco.nodes '''
   if a then b
   else then c
   else then d

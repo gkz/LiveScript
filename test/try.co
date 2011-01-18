@@ -35,4 +35,6 @@ catch
 finally
   #!nothing
 
-eq 99, do -> try 99
+
+eq 1, do -> try 1
+eq 2, do -> try do -> throw 1 catch do -> 2 finally

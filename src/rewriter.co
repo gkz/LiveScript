@@ -60,6 +60,56 @@ function closeCalls (tokens) ->
     case <[ ) )CALL ]> then stack.pop() is \CALL( and token.0 = \)CALL
   tokens
 
+# Because our grammar is LALR(1), it can't handle some single-line
+# expressions that lack ending delimiters. **Rewriter** adds the implicit
+# blocks, so it doesn't need to. `)` can close a single-line block,
+# but we need to make sure it's balanced.
+function addImplicitIndentation (tokens) ->
+  i = -1
+  while token = tokens[++i]
+    [tag] = token
+    if \INDENT is next = tokens[i+1]?.0
+      switch
+      case tag is \THEN then tokens[i+1].fromThen = true
+      case token.1 is \do
+        (pair = tokens[indexOfPair tokens, i+1]).0 = \)
+        tokens[i+1] <<< {+fromDo, pair, 0: \(}
+      default continue
+      tokens.splice i, 1
+      continue
+    continue if next is \THEN
+    continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY CATCH FINALLY ]> or
+                    tag is \ELSE and next is not \IF
+    indent = [\INDENT 2, token.2]; dedent = [\DEDENT 2]
+    indent.generated = dedent.generated = true
+    if tag is \THEN
+      tokens.splice --i, 1 if tokens[i-1]?.0 is \TERMINATOR
+      tokens[i] = indent import {+fromThen}
+    else
+      tokens.splice ++i, 0, indent
+    switch
+    case \, is next = tokens[i+1].0 then --i; fallthrough   # ->,
+    case \, is tokens[i+2]?.0       then go 0, i += 2; ++i  # -> 0,
+    case next of <[ ( [ { ]> and                            # -> [0],
+         \, is tokens[idx = 1 + indexOfPair tokens, i+1]?.0
+      go 0, idx; ++i
+    default
+      seenSwitch = false
+      detectEnd tokens, i+1, ok, go
+  function ok (token, i) ->
+    switch token.0
+    case \DEDENT            then true
+    case \TERMINATOR        then token.1 is not \;
+    case \ELSE              then tag is \THEN
+    case \CATCH             then tag is \TRY
+    case \FINALLY           then tag of <[ TRY CATCH THEN ]>
+    case \SWITCH            then not seenSwitch := true
+    case <[ CASE DEFAULT ]> then not seenSwitch
+  function go (token, i) ->
+    dedent{2} = token
+    tokens.splice if tokens[i-1].0 is \, then i-1 else i, 0, dedent
+  tokens
+
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
 function addImplicitBraces (tokens) ->
@@ -141,50 +191,6 @@ function addImplicitParentheses (tokens) ->
   function go (token, i) ->
     ++i if token.0 is \DEDENT
     tokens.splice i, 0, [\)CALL \), token.2]
-  tokens
-
-# Because our grammar is LALR(1), it can't handle some single-line
-# expressions that lack ending delimiters. **Rewriter** adds the implicit
-# blocks, so it doesn't need to. `)` can close a single-line block,
-# but we need to make sure it's balanced.
-function addImplicitIndentation (tokens) ->
-  ok = (token, i) ->
-    switch token.0
-    case <[ DEDENT CASE DEFAULT CATCH FINALLY ]> then true
-    case \TERMINATOR then token.1 is not \;
-    case \ELSE       then tag of <[ IF THEN ]>
-  go = (token, i) ->
-    tokens.splice if tokens[i-1].0 is \, then i-1 else i, 0, dedent
-  i = -1
-  while token = tokens[++i]
-    [tag] = token
-    if \INDENT is next = tokens[i+1]?.0
-      switch
-      case tag is \THEN then tokens[i+1].fromThen = true
-      case token.1 is \do
-        (pair = tokens[indexOfPair tokens, i+1]).0 = \)
-        tokens[i+1] <<< {+fromDo, pair, 0: \(}
-      default continue
-      tokens.splice i, 1
-      continue
-    continue if next is \THEN
-    continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY CATCH FINALLY ]> or
-                    tag is \ELSE and next is not \IF
-    indent = [\INDENT, 2, token.2]
-    dedent = [\DEDENT, 2, token.2]
-    indent.generated = dedent.generated = true
-    if tag is \THEN
-      tokens.splice --i, 1 if tokens[i-1]?.0 is \TERMINATOR
-      tokens[i] = indent import {+fromThen}
-    else
-      tokens.splice ++i, 0, indent
-    switch
-    case \, is next = tokens[i+1].0 then --i; fallthrough   # ->,
-    case \, is tokens[i+2]?.0       then go 0, i += 2; ++i  # -> 0,
-    case next of <[ ( [ { ]> and                            # -> [0],
-         \, is tokens[idx = 1 + indexOfPair tokens, i+1]?.0
-      go 0, idx; ++i
-    default detectEnd tokens, i+1, ok, go
   tokens
 
 # Tag postfix conditionals as such, so that we can parse them with a
