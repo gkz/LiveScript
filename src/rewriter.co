@@ -17,10 +17,17 @@ exports import {rewrite, able}
 # corrected before implicit parentheses can be wrapped around blocks of code.
 
 function rewrite ->
-  expandNumbers rewriteClosingParens ensureBalance \
-  addImplicitParentheses addImplicitBraces \
-  tagPostfixConditionals addImplicitIndentation closeCalls \
-  removeMidExpressionTerminators removeLeadingTerminators it
+  removeLeadingTerminators       it
+  removeMidExpressionTerminators it
+  closeCalls                     it
+  addImplicitIndentation         it
+  tagPostfixConditionals         it
+  addImplicitBraces              it
+  addImplicitParentheses         it
+  ensureBalance                  it
+  rewriteClosingParens           it
+  expandNumbers                  it
+  it
 
 function detectEnd (tokens, i, ok, go) ->
   levels = 0
@@ -37,7 +44,7 @@ function detectEnd (tokens, i, ok, go) ->
 function removeLeadingTerminators (tokens) ->
   break unless tag is \TERMINATOR for [tag], i of tokens
   tokens.splice 0, i if i
-  tokens
+  void
 
 # Some blocks occur in the middle of expressions--when we're expecting
 # this, remove their trailing terminators.
@@ -48,7 +55,7 @@ function removeMidExpressionTerminators (tokens) ->
     that.=0
     tokens.splice i-1, 1 if that of EXPR_END or
                             that of <[ ELSE CASE DEFAULT CATCH FINALLY ]>
-  tokens
+  void
 
 # The lexer has tagged each of the opening parenthesis of
 # a call. Match it with its closing pair.
@@ -58,7 +65,15 @@ function closeCalls (tokens) ->
     switch token.0
     case <[ ( CALL( ]> then stack.push that
     case <[ ) )CALL ]> then stack.pop() is \CALL( and token.0 = \)CALL
-  tokens
+  void
+
+# Tag postfix conditionals as such, so that we can parse them with a
+# different precedence.
+function tagPostfixConditionals (tokens) ->
+  detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
+  function ok -> it.0 of <[ TERMINATOR INDENT ]>
+  function go -> token.0 = \POST_IF if it.0 is not \INDENT
+  void
 
 # Because our grammar is LALR(1), it can't handle some single-line
 # expressions that lack ending delimiters. **Rewriter** adds the implicit
@@ -108,7 +123,7 @@ function addImplicitIndentation (tokens) ->
   function go (token, i) ->
     dedent{2} = token
     tokens.splice if tokens[i-1].0 is \, then i-1 else i, 0, dedent
-  tokens
+  void
 
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
@@ -140,7 +155,7 @@ function addImplicitBraces (tokens) ->
     idx -= 2 while tokens[idx-2]?.0 is \COMMENT
     tokens.splice idx, 0, [\{ \{, token.2]
     detectEnd tokens, ++i+1, ok, go
-  tokens
+  void
 
 # Methods may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
@@ -191,15 +206,7 @@ function addImplicitParentheses (tokens) ->
   function go (token, i) ->
     ++i if token.0 is \DEDENT
     tokens.splice i, 0, [\)CALL \), token.2]
-  tokens
-
-# Tag postfix conditionals as such, so that we can parse them with a
-# different precedence.
-function tagPostfixConditionals (tokens) ->
-  ok = ([tag]) -> tag of <[ TERMINATOR INDENT ]>
-  go = ([tag]) -> token.0 = \POST_IF if tag is not \INDENT
-  detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
-  tokens
+  void
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
 # the course of the token stream.
@@ -215,7 +222,7 @@ function ensureBalance (tokens) ->
         carp 'too many ' + token.1, token.2
   for open, level in levels then if level > 0
     carp 'unclosed ' + open, olines[open]
-  tokens
+  void
 
 # We'd like to support syntax like this:
 #
@@ -251,7 +258,7 @@ function rewriteClosingParens (tokens) ->
     tok = [end, if start is \INDENT then stoken.1 else end]
     pos = if tokens[i+2]?.0 is start then stack.push stoken; i+3 else i
     tokens.splice pos, 0, tok
-  tokens
+  void
 
 function expandNumbers (tokens) ->
   i = -1; last = tokens.0
@@ -273,7 +280,7 @@ function expandNumbers (tokens) ->
       tokens.splice i, 1, ...ts
       i += ts.length - 1
     last = token
-  tokens
+  void
 
 # Checks whether or not the previous token is {index,`call`}able.
 function able (tokens, i = tokens.length, call) ->
