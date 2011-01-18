@@ -6,28 +6,32 @@ case 'a'
   ok 0
 case 10 then ok 1
 
-  # Mid-switch comment with whitespace
+  #! Mid-switch comment with whitespace
 
-    # and multi line
+    #! and multi line
 case 11 then ok 0
 default ok 0
 
 
 func = (num) ->
-  switch num
+  switch Number num
   case [2, 4, 6]
-    true
+    Boolean true
   case [1, 3, 5]
-    false
+    Boolean false
+  default
 eq func(2), true
 eq func(6), true
 eq func(3), false
 eq func(8), void
 
 
-eq (switch case 1 then break), void
-eq (switch case 0 then break default 1), 1
-eq (switch case 1 then continue while 0; 1), 1
+# One-liner
+eq void, switch case 1 then break
+eq 1   , switch case 0 then break default 1
+eq 1   , switch case 1 then continue while 0; 1
+
+
 throws 'inconvertible statement on line 3'
 , -> Coco.compile '''
   1 + switch
@@ -36,15 +40,15 @@ throws 'inconvertible statement on line 3'
 '''
 
 
-ok (switch 'words'
+result = switch 'words'
 case (<[ nonbare words ]>) then false
 case  <[    bare words ]>  then true
 default false
-), '`case`s can take bare arrays'
+ok result, '`case`s can take bare arrays'
 
 
-# Should be able to handle switches sans-condition.
-result = switch
+# Sans-condition
+eq ok, switch
 case null                    then 0
 case !1                      then 1
 case '' not in {''}          then 2
@@ -54,7 +58,6 @@ case 'x' < 'y' > 'z'         then 5
 case 'a' of  <[ b c ]>       then 6
 case 'd' of (<[ e f ]>)      then 7
 default ok
-eq result, ok
 
 
 eq '''
@@ -95,8 +98,10 @@ default 8
 
 
 # `that`
-eq 1, (switch 1 case 1 then that)
+eq 1, switch 1 case 1 then that
 
-while 1 then eq 3, (switch 3 case 3 then that); break
+while 1
+  eq 3, switch 3 case 3 then that
+  break
 
 switch case [0, 2, 4,] then eq 2, that

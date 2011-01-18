@@ -111,27 +111,33 @@ function addImplicitParentheses (tokens) ->
       continue
     continue unless \
       tag of <[ ( [ { ... IDENTIFIER THISPROP THIS STRNUM LITERAL RANGE
-                UNARY CREMENT IF TRY CLASS FUNCTION SUPER ]> or
+                UNARY CREMENT IF TRY CLASS SWITCH FUNCTION SUPER ]> or
       tag is \+- and not (token.spaced or token.eol) or
       tag of <[ PARAM( FUNC_ARROW ]> and tokens[i-2]?.0 is not \FUNCTION
-    seenSingle = seenClass = false
+    seenSingle = seenClass = seenSwitch = seenCase = false
     tokens.splice --i, 1 if soak = prev.0 is \?
     tokens.splice i++, 0, [\CALL(, if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
   function ok (token, i) ->
-    return true  if not seenSingle and token.fromThen or
-                    token.alias and token.1 of <[ && || ]>
-    [tag] = token
-    {0: pre, eol} = tokens[i-1]
-    switch tag
+    return true if not seenSingle and token.fromThen or
+                   token.alias and token.1 of <[ && || ]>
+    pre = tokens[i-1]
+    switch token.0
     case \CLASS         then seenClass  := true
+    case \SWITCH        then seenSwitch := true; fallthrough
     case <[ IF CATCH ]> then seenSingle := true
-    return true  if tag is \DOT and (eol or pre is \DEDENT)
-    return false if token.generated or pre is \,
-    if tag is \INDENT
+    case \CASE
+      if seenSwitch then seenCase := true else return true
+    case \DOT
+      return true if pre.eol or pre.0 is \DEDENT
+    case \INDENT
       return seenClass := false if seenClass
-      return pre not of <[ { [ , FUNC_ARROW TRY CATCH FINALLY ]>
-    tag of <[ POST_IF FOR WHILE BY TO CASE DEFAULT TERMINATOR ]>
+      return seenCase  := false if seenCase
+      return false if token.generated
+      return pre.0 not of <[ { [ , FUNC_ARROW TRY CATCH FINALLY DEFAULT ]>
+    case <[ TERMINATOR POST_IF FOR WHILE BY TO ]>
+      return pre.0 is not \,
+    false
   function go (token, i) ->
     ++i if token.0 is \DEDENT
     tokens.splice i, 0, [\)CALL \), token.2]
