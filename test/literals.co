@@ -2,7 +2,7 @@ a = [((x) -> x), ((x) -> x * x)]
 eq a.length, 2
 
 
-eq (3 -4), -1
+eq 3-4, -1
 
 
 # Decimal number literals.

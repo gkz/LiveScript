@@ -58,16 +58,12 @@ bnf =
   # The types of things that can be accessed or indexed into.
   Value: [
     o \Assignable    ,-> Value $1
-    o \Primitive     ,-> Value $1
+    o \STRNUM        ,-> Value L Literal $1
+    o \LITERAL       ,-> Value L Literal $1, true
     o \Parenthetical ,-> Value $1
     o \THIS          ,-> Value L Literal \this, true
 
     o 'Value CALL( ArgList OptComma )CALL' ,-> Value L Call $1, $3, $2
-  ]
-
-  Primitive: [
-    o \STRNUM  ,-> L Literal $1
-    o \LITERAL ,-> L Literal $1, true
   ]
 
   # Variables and properties that can be assigned to.
@@ -198,15 +194,6 @@ bnf =
     o 'ArgList , Arg'                                   ,-> $1.concat $3
     o 'ArgList OptComma TERMINATOR Arg'                 ,-> $1.concat $4
     o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ,-> $1.concat $4
-
-    o \ArgSeq
-    o 'ArgList , ArgSeq'                   ,-> $1.concat $3
-    o 'ArgList OptComma TERMINATOR ArgSeq' ,-> $1.concat $4
-  ]
-  # Sequence of primitive values without explicit separators.
-  ArgSeq: [
-    o 'Primitive Primitive' ,-> [$1, $2]
-    o 'ArgSeq    Primitive' ,-> $1.concat $2
   ]
 
   # A reference to a property on `this`.
@@ -264,14 +251,6 @@ bnf =
     o 'Properties , Property'                                 ,-> $1.concat $3
     o 'Properties OptComma TERMINATOR Property'               ,-> $1.concat $4
     o 'Properties OptComma INDENT Properties OptComma DEDENT' ,-> $1.concat $4
-
-    o \KeySeq
-    o 'Properties , KeySeq'                   ,-> $1.concat $3
-    o 'Properties OptComma TERMINATOR KeySeq' ,-> $1.concat $4
-  ]
-  KeySeq: [
-    o 'STRNUM STRNUM' ,-> [L Literal $1; L Literal $2]
-    o 'KeySeq STRNUM' ,-> $1.concat L Literal $2
   ]
   Object: [
     o '{ Properties OptComma }' ,-> L Obj $2

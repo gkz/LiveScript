@@ -284,9 +284,10 @@ exports import
   wordsToken: ->
     @carp 'unterminated words' unless ~end = it.indexOf \]> 2
     @token \[ \[
+    {tokens} = this
     for line of it.slice(2, end).split \\n
-      if line.match re ||= /\S+/g
-        @tokens.push [\STRNUM; string word, \'; @line] for word of that
+      if line.match re ||= /\S+/g then for word of that
+        tokens.push [\STRNUM; string word, \'; @line] <<< {+spaced}
       ++@line
     --@line
     @token \STRNUM "''" unless word

@@ -80,7 +80,7 @@ function addImplicitIndentation (tokens) ->
     continue if next is \THEN
     continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY CATCH FINALLY ]> or
                     tag is \ELSE and next is not \IF
-    indent = [\INDENT 0, token.2]; dedent = [\DEDENT 0]
+    indent = [\INDENT 0 token.2]; dedent = [\DEDENT 0]
     if tag is \THEN
       tokens.splice --i, 1 if tokens[i-1]?.0 is \TERMINATOR
       tokens[i] = indent
@@ -137,7 +137,7 @@ function addImplicitBraces (tokens) ->
     stack.push [\{]
     idx  = if paren then start.1 else i-1
     idx -= 2 while tokens[idx-2]?.0 is \COMMENT
-    tokens.splice idx, 0, [\{ \{, token.2]
+    tokens.splice idx, 0, [\{ \{ token.2]
     detectEnd tokens, ++i+1, ok, go
   void
 
@@ -159,11 +159,10 @@ function addImplicitParentheses (tokens) ->
       token.     0 = \CALL(
       token.pair.0 = \)CALL
       continue
-    continue unless tag of ARG or tag of <[ STRNUM LITERAL ]> or
-                    tag is \+- and not (token.spaced or token.eol)
+    continue unless tag of ARG or tag is \+- and !(token.spaced or token.eol)
     skipBlock = seenSwitch = false
     tokens.splice --i, 1 if soak = prev.0 is \?
-    tokens.splice i++, 0, [\CALL(, if soak then \?( else \(, token.2]
+    tokens.splice i++, 0, [\CALL( if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
   function ok (token, i) ->
     return true if token.alias and token.1 of <[ && || ]>
@@ -183,7 +182,7 @@ function addImplicitParentheses (tokens) ->
     false
   function go (token, i) ->
     ++i if token.0 is \DEDENT
-    tokens.splice i, 0, [\)CALL \), token.2]
+    tokens.splice i, 0, [\)CALL \) token.2]
   void
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
@@ -248,19 +247,20 @@ function expandNumbers (tokens) ->
     case \STRNUM
       if ~'-+'.indexOf sig = (num = '' + token.1).charAt 0
         token.1 = num.slice 1
-        tokens.splice i++, 0, [\+-, sig, token.2]
-      fallthrough
-    case \LITERAL
-      tokens.splice ++i, 0, [\, \,; token.2] if tokens[i+1].0 of ARG
+        tokens.splice i++, 0, [\+- sig, token.2]
+    case \LITERAL then break
     case \RANGE
       ts = []; lno = token.2
       to = token.to - if token.op is \to then 0 else 1e-15
       for n from +token.1 to to by +token.by or 1
-        if 32r100 < ts.push [\STRNUM, n, lno]
+        if 32r200 < ts.push [\STRNUM n, lno], [\, \, lno]
           carp 'range limit exceeded', lno
-      ts.length or carp 'empty range', lno
+      if ts.length then ts.pop() else carp 'empty range', lno
       tokens.splice i, 1, ...ts
       i += ts.length - 1
+    default continue
+    if token.spaced and tokens[i+1].0 of ARG
+      tokens.splice ++i, 0, [\, \, token.2]
   void
 
 ### Helpers
@@ -317,6 +317,6 @@ for [left, rite] of BALANCED_PAIRS
   EXPR_START.push INVERSES[rite] = left
   EXPR_END  .push INVERSES[left] = rite
 
-# Tokens that can start an argument list, sans-primitives.
-ARG = <[ ( [ { ... IDENTIFIER THISPROP THIS RANGE SUPER
+# Tokens that can start an argument list.
+ARG = <[ ( [ { ... IDENTIFIER THISPROP THIS STRNUM LITERAL RANGE SUPER
          PARAM( FUNC_ARROW FUNCTION UNARY CREMENT IF TRY CLASS SWITCH ]>
