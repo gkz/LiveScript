@@ -4,13 +4,13 @@ tint = (ext, shortcuts, fallthroughs) ->
   rule.splice 2 0 0 if rule.length < 4 for rule of shortcuts
   PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
 
-##### Main
+### Main
 tint \co, [
   [\str /// ^ ' (?: ''[\S\s]*?'' | [^\\']*(?:\\.[^\\']*)* ) ' /// \']
-  [\lang-qq /^("""[\S\s]*?""")/ \"]
-  [\lang-qq /// ^ ( " [^\\"]*(?:\\.[^\\"]*)* " ) /// \"]
-  [\lang-qr /// ^ ( /{3} [\S\s]+? /{3} [imgy]{0,4} ) (?!\w) /// \/]
-  [\lang-at /^(@+[$\w\x7f-\uffff]*)/ \@]
+  [\lang-co-qq /^("""[\S\s]*?""")/ \"]
+  [\lang-co-qq /// ^ ( " [^\\"]*(?:\\.[^\\"]*)* " ) /// \"]
+  [\lang-co-qr /// ^ ( /{3} [\S\s]+? /{3} [imgy]{0,4} ) (?!\w) /// \/]
+  [\lang-co-at /^(@+[$\w\x7f-\uffff]*)/ \@]
   [\com /^\#.*/ \#]
   [\typ /// ^ (?
   : 0x[\da-f]+
@@ -40,7 +40,7 @@ tint \co, [
   ) \b ///]
   [\typ /// ^ (?: true | false | null | void ) \b ///]
   [\ctx /// ^ (?
-  : t(?:h(?:is|at)|o)
+  : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
   | it | arguments | eval | super | by
   ) \b ///]
@@ -49,8 +49,8 @@ tint \co, [
   | Object | RegExp | S(?:tring|yntaxError) | TypeError
   ) \b(?![^\n\S]*:(?!:)) ///]
   [\var /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/]
-  [\str /^<(?!<)\[[\S\s]*?]>/]
-  [\lang-r /// ^ [^/] ( / (?![\s/])
+  [\str /^<\[[\S\s]*?]>/]
+  [\lang-co-r /// ^ [^/] ( / (?![\s/])
     [^ [ / \n \\ ]*
     (?:
       (?
@@ -64,12 +64,12 @@ tint \co, [
   ///]
 ]
 
-##### Subrules
+### Subrules
 hashbraces = [\lang-co /^#({[\S\s]*?})/ \#]
 regexes    = [\lit /^[\S\s]+?/]
 
-tint \qq, [hashbraces], [[\str /^[\S\s]+?/]]
-tint \qr, [hashbraces], [[\com /^\s#(?!{).*/], regexes]
-tint \r , [], [regexes]
+tint \co-qq, [hashbraces], [[\str /^[\S\s]+?/]]
+tint \co-qr, [hashbraces], [[\com /^\s#(?!{).*/], regexes]
+tint \co-r , [], [regexes]
 
-tint \at, [[\ctx /^@+/ \@]], [[\typ /^\d+/]]
+tint \co-at, [[\ctx /^@+/ \@]], [[\typ /^\d+/]]
