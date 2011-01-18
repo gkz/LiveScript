@@ -129,10 +129,10 @@ exports import
       switch tag = id.toUpperCase()
       case \FOR    then @seenFor = true; fallthrough
       case \THEN   then @seenFrom = @seenRange = false
-      case \CATCH  then id  = ''
       case \IMPORT then id  = \<<<
       case \UNLESS then tag = \IF
       case \UNTIL  then tag = \WHILE
+      case <[ CATCH FUNCTION ]> then id = ''
       case <[ NEW DO TYPEOF DELETE    ]> then tag = \UNARY
       case <[ TRUE FALSE NULL VOID    ]> then tag = \LITERAL
       case <[ BREAK CONTINUE DEBUGGER ]> then tag = \STATEMENT
@@ -156,7 +156,7 @@ exports import
       [tag, id] = COCO_ALIASES[id]
     else if id of RESERVED
       @carp "reserved word \"#{id}\""
-    else if prev.0 is \CATCH and not prev.1
+    else if not prev.1 and prev.0 of <[ CATCH FUNCTION ]>
       return (prev.1 = id).length
     @token tag, id
     @last.alias = true if alias

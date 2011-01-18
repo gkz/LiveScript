@@ -117,8 +117,7 @@ bnf =
     o 'SimpleAssignable CREMENT' ,-> L Op $2, $1, null, true
 
     o \Function
-    o 'FUNCTION Function'            ,-> $2.named()
-    o 'FUNCTION IDENTIFIER Function' ,-> $3.named $2
+    o 'FUNCTION Function' ,-> $2.named $1
 
     # The full complement of `if` and `unless` expressions,
     # including postfix one-liners.

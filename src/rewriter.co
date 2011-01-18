@@ -110,10 +110,10 @@ function addImplicitParentheses (tokens) ->
       token.pair.0 = \)CALL
       continue
     continue unless \
-      tag of <[ ( [ { ... IDENTIFIER THISPROP THIS STRNUM LITERAL RANGE
-                UNARY CREMENT IF TRY CLASS SWITCH FUNCTION SUPER ]> or
+      tag of <[ ( [ { ... IDENTIFIER THISPROP THIS STRNUM LITERAL
+                PARAM( FUNC_ARROW FUNCTION RANGE SUPER
+                UNARY CREMENT IF TRY CLASS SWITCH ]> or
       tag is \+- and not (token.spaced or token.eol) or
-      tag of <[ PARAM( FUNC_ARROW ]> and tokens[i-2]?.0 is not \FUNCTION
     seenSingle = seenClass = seenSwitch = seenCase = false
     tokens.splice --i, 1 if soak = prev.0 is \?
     tokens.splice i++, 0, [\CALL(, if soak then \?( else \(, token.2]
