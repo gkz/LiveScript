@@ -39,7 +39,11 @@ tint \co, [
   | o[fr] | return | break | while | switch | and
   ) \b ///]
   [\typ /// ^ (?: true | false | null | void ) \b ///]
-  [\ctx /// ^ (?: th(?:is|at) | it | super | arguments | eval ) \b ///]
+  [\ctx /// ^ (?
+  : t(?:h(?:is|at)|o)
+  | f(?:rom|allthrough)
+  | it | arguments | eval | super | by
+  ) \b ///]
   [\glb /// ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number
   | Object | RegExp | S(?:tring|yntaxError) | TypeError
