@@ -17,38 +17,24 @@ exports import {rewrite, able}
 # corrected before implicit parentheses can be wrapped around blocks of code.
 
 function rewrite ->
-  removeLeadingTerminators       it
-  removeMidExpressionTerminators it
-  closeCalls                     it
-  addImplicitIndentation         it
-  tagPostfixConditionals         it
-  addImplicitBraces              it
-  addImplicitParentheses         it
-  ensureBalance                  it
-  rewriteClosingParens           it
-  expandNumbers                  it
+  removeTerminators      it
+  closeCalls             it
+  addImplicitIndentation it
+  tagPostfixConditionals it
+  addImplicitBraces      it
+  addImplicitParentheses it
+  ensureBalance          it
+  rewriteClosingParens   it
+  expandNumbers          it
   it
 
-function detectEnd (tokens, i, ok, go) ->
-  levels = 0
-  while token = tokens[i]
-    if      not levels then return go token, i if ok token, i
-    else if 0 > levels then return go token, i-1
-    [tag] = token
-    if      tag of EXPR_START then ++levels
-    else if tag of EXPR_END   then --levels
-    ++i
-  void
-
-# Dispatch leading terminators that would introduce ambiguity in the grammar.
-function removeLeadingTerminators (tokens) ->
-  break unless tag is \TERMINATOR for [tag], i of tokens
-  tokens.splice 0, i if i
-  void
-
-# Some blocks occur in the middle of expressions--when we're expecting
-# this, remove their trailing terminators.
-function removeMidExpressionTerminators (tokens) ->
+# - Dispatch leading terminators that would introduce ambiguity in the grammar.
+# - Some blocks occur in the middle of expressions.
+#   Remove their trailing terminators here to simplify things.
+function removeTerminators (tokens) ->
+  i = -1
+  break unless that.0 is \TERMINATOR while tokens[++i]
+  i and tokens.splice 0, i
   i = 1
   while tokens[++i]
     continue unless tokens[i-1].0 is \TERMINATOR
@@ -277,6 +263,21 @@ function expandNumbers (tokens) ->
       i += ts.length - 1
   void
 
+### Helpers
+
+# Seeks `tokens` from index `i` for a token of the same level matching `ok`,
+# then calls `go`.
+function detectEnd (tokens, i, ok, go) ->
+  levels = 0
+  while token = tokens[i]
+    if      not levels then return go token, i if ok token, i
+    else if 0 > levels then return go token, i-1
+    [tag] = token
+    if      tag of EXPR_START then ++levels
+    else if tag of EXPR_END   then --levels
+    ++i
+  void
+
 # Checks whether or not the previous token is {index,`call`}able.
 function able (tokens, i = tokens.length, call) ->
   tag = tokens[i-1].0
@@ -294,7 +295,7 @@ function indexOfPair (tokens, i) ->
 
 function carp (msg, lno) -> throw SyntaxError msg + ' on line ' + -~lno
 
-#### Constants
+### Constants
 
 # List of the token pairs that must be balanced.
 BALANCED_PAIRS = [

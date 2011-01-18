@@ -95,6 +95,7 @@ task \build:browser
 task \bench, 'quick benchmark of compilation time', ->
   Lexer    = require \./lib/lexer
   Rewriter = require \./lib/rewriter
+  Coco     = require \./lib/coco
   co     = coreSources().map(-> slurp it).join \\n
   fmt    = -> "#{bold}#{ "   #{it}".slice -4 }#{reset} ms"
   total  = nc = 0
