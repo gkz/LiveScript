@@ -343,12 +343,13 @@ exports import
     case <[ + - ]>                     then tag = \+-
     case <[ ! ~ ]>                     then tag = \UNARY
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
-    case <[ && || & | ^ ]>             then tag = \LOGIC
+    case <[ && || ]>                   then tag = \LOGIC
     case \?                            then tag = \LOGIC if @last.spaced
     case <[ / % ]>                     then tag = \MATH
     case <[ ++ -- ]>                   then tag = \CREMENT
     case <[ <<<  <<<< ]>               then tag = \IMPORT
     case <[ << >> >>> ]>               then tag = \SHIFT
+    case <[  &  |  ^  ]>               then tag = \BITWISE
     case \@                            then tag = \THIS
     case \;                            then tag = \TERMINATOR
     case \?(                           then tag = \CALL(

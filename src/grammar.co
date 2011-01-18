@@ -91,31 +91,34 @@ bnf =
 
     o 'Assignable ASSIGN Expression' ,-> L Assign $1, $3, $2
 
+    o 'CREMENT SimpleAssignable' ,-> L Op $1, $2
+    o 'SimpleAssignable CREMENT' ,-> L Op $2, $1, null, true
+
     # Arithmetic and logical operators, working on one or two operands.
     # The precedence rules are defined at the bottom of the page.
     # It would be shorter if we could combine most of these rules into
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
-    o 'Expression +-         Expression' ,-> L Op $2, $1, $3
-    o 'Expression MATH       Expression' ,-> L Op $2, $1, $3
-    o 'Expression SHIFT      Expression' ,-> L Op $2, $1, $3
-    o 'Expression COMPARE    Expression' ,-> L Op $2, $1, $3
-    o 'Expression LOGIC      Expression' ,-> L Op $2, $1, $3
-    o 'Expression IMPORT     Expression' ,-> L Import $1, $3, $2 is \<<<<
-    o 'Expression RELATION   Expression' ,->
+    o 'UNARY Expression' , -> L Op $1, $2
+    o '+-    Expression' ,(-> L Op $1, $2), prec: \UNARY
+
+    o 'Expression +-       Expression' ,-> L Op $2, $1, $3
+    o 'Expression MATH     Expression' ,-> L Op $2, $1, $3
+    o 'Expression SHIFT    Expression' ,-> L Op $2, $1, $3
+    o 'Expression COMPARE  Expression' ,-> L Op $2, $1, $3
+    o 'Expression BITWISE  Expression' ,-> L Op $2, $1, $3
+    o 'Expression LOGIC    Expression' ,-> L Op $2, $1, $3
+    o 'Expression RELATION Expression' ,->
       L if $2.charAt(0) is \!
       then Op($2.slice 1; $1; $3).invert()
       else Op $2, $1, $3
 
-    o 'UNARY Expression' , -> L Op $1, $2
-    o '+-    Expression' ,(-> L Op $1, $2), prec: \UNARY
+    o 'Expression IMPORT Expression' ,-> L Import $1, $3, $2 is \<<<<
 
     o 'Expression ?' ,-> Existence $1
 
-    o 'CREMENT SimpleAssignable' ,-> L Op $1, $2
-    o 'SimpleAssignable CREMENT' ,-> L Op $2, $1, null, true
-
+    # Functions can be either anonymous, or named using `function` keyword.
     o \Function
     o 'FUNCTION Function' ,-> $2.named $1
 
@@ -345,6 +348,7 @@ operators = [
   <[ left      SHIFT IMPORT ]>
   <[ left      RELATION     ]>
   <[ left      COMPARE      ]>
+  <[ left      BITWISE      ]>
   <[ left      LOGIC        ]>
   <[ right     : ASSIGN RETURN THROW EXTENDS INDENT ]>
   <[ right     IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
