@@ -272,11 +272,12 @@ throws 'empty range on line 3'          , -> Coco.tokens '\n\n 1 to 0'
 eq null null
 eq \1 \1
 eq 2 2
-eq '0,true,2', '' + [0 true \2]
+eq '0,true,2,3', '' + [0 true \2 (3)]
 
-o = {0 \1 \2 3 4}
+o = {0 \1 \2 3 4 (5)}
 eq o.1, \1
 eq o.3, 3
+eq o.5, 5
 
 
 throws 'stub code executed', -> ...

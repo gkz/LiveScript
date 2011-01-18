@@ -146,7 +146,7 @@ function addImplicitBraces (tokens) ->
       continue
     paren = tokens[i-1]?.0 is \)
     continue unless paren and tokens[start.1 - 1]?.0 is \: or # a: (..):
-                    tokens[i-2]?.0 is   \:                 or # a: b:
+                    tokens[i-2]?.0 is     \:               or # a: b:
                     stack[ *-1]?.0 is not \{
     stack.push [\{]
     idx  = if paren then start.1 else i-1
@@ -162,21 +162,19 @@ function addImplicitParentheses (tokens) ->
   while token = tokens[++i]
     [tag] = token
     unless (prev = tokens[i-1]).spaced
+      # Found two adjacent tokens. Mark them accordingly on this occasion.
       switch tag
       case \?        then token.call = true
       case <[ [ { ]> then if able tokens, i
-        tokens.splice i++, 0, [if tag is \[ then \DOT else \CLONE, '', prev[2]]
+        tokens.splice i++, 0, [if tag is \[ then \DOT else \CLONE, '', prev.2]
       continue
     continue unless prev.call or able tokens, i, true
     if token.fromDo
       token.     0 = \CALL(
       token.pair.0 = \)CALL
       continue
-    continue unless \
-      tag of <[ ( [ { ... IDENTIFIER THISPROP THIS STRNUM LITERAL
-                PARAM( FUNC_ARROW FUNCTION RANGE SUPER
-                UNARY CREMENT IF TRY CLASS SWITCH ]> or
-      tag is \+- and not (token.spaced or token.eol) or
+    continue unless tag of ARG or tag of <[ STRNUM LITERAL ]> or
+                    tag is \+- and not (token.spaced or token.eol)
     skipBlock = seenSwitch = false
     tokens.splice --i, 1 if soak = prev.0 is \?
     tokens.splice i++, 0, [\CALL(, if soak then \?( else \(, token.2]
@@ -254,16 +252,20 @@ function rewriteClosingParens (tokens) ->
     tokens.splice pos, 0, tok
   void
 
+# - Slip unary {pl,min}uses off signed numbers.
+# - Insert a comma between a primitive argument and a non-primitive one.
+# - Expand number ranges.
 function expandNumbers (tokens) ->
-  i = -1; last = tokens.0
+  i = -1
   while token = tokens[++i]
     switch token.0
-    # Slip unary pluses/minuses off signed numbers.
     case \STRNUM
       if ~'-+'.indexOf sig = (num = '' + token.1).charAt 0
         token.1 = num.slice 1
         tokens.splice i++, 0, [\+-, sig, token.2]
-    # Expand number ranges.
+      fallthrough
+    case \LITERAL
+      tokens.splice ++i, 0, [\, \,; token.2] if tokens[i+1].0 of ARG
     case \RANGE
       ts = []; lno = token.2
       to = token.to - if token.op is \to then 0 else 1e-15
@@ -273,7 +275,6 @@ function expandNumbers (tokens) ->
       ts.length or carp 'empty range', lno
       tokens.splice i, 1, ...ts
       i += ts.length - 1
-    last = token
   void
 
 # Checks whether or not the previous token is {index,`call`}able.
@@ -314,3 +315,7 @@ EXPR_END   = []
 for [left, rite] of BALANCED_PAIRS
   EXPR_START.push INVERSES[rite] = left
   EXPR_END  .push INVERSES[left] = rite
+
+# Tokens that can start an argument list, sans-primitives.
+ARG = <[ ( [ { ... IDENTIFIER THISPROP THIS RANGE SUPER
+         PARAM( FUNC_ARROW FUNCTION UNARY CREMENT IF TRY CLASS SWITCH ]>
