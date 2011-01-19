@@ -34,8 +34,8 @@ exports import
   tokenize: (code, o) ->
     code.=replace(/\r/g '').replace(/\s+$/ '')
     # Stream of parsed tokens,
-    # initialized with a DUMMY token to ensure `@last` always exists.
-    @tokens = [@last = [\DUMMY '' 0]]
+    # initialized with a TERMINATOR token to ensure `@last` always exists.
+    @tokens = [@last = [\TERMINATOR '' 0]]
     # The current line.
     @line = o.line | 0
     # The current indentation level, over-indentation and under-outdentation.
@@ -68,7 +68,7 @@ exports import
                   @literalToken    code or @spaceToken  code
     # Close up all remaining open blocks.
     @dedent @indent
-    # Dispose dummy.
+    # Dispose initial TERMINATOR.
     @tokens.shift()
     # Rewrite the token stream unless explicitly asked not to.
     rewrite @tokens if o.rewrite != 0
@@ -226,8 +226,11 @@ exports import
   # Matches block comments.
   commentToken: ->
     text = it.slice 0 if ~end = it.indexOf \*/ 2 then end + 2 else 9e9
-    @token \COMMENT untabify text, @indent
-    @token \TERMINATOR \\n
+    if @last.0 of <[ TERMINATOR INDENT THEN ]>
+      @token \COMMENT untabify text, @indent
+      @token \TERMINATOR \\n
+    else
+      @last.spaced = true
     @countLines(text).length
 
   # Matches JavaScript interpolated directly into the source via backticks.

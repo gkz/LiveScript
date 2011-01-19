@@ -160,3 +160,6 @@ eq true, do
   if true
     true
     /* 3 */
+
+
+ok/* mid-expression block comments work as whitespace */true

@@ -22,7 +22,6 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
     npm install coco
 
-
 ## Help
 
     coco -h; coke
@@ -37,7 +36,7 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
       [null, true, 1, "2"];
 - _coke_ now automatically aliases tasks.
 - _extras/coco.js_ now works as a Gecko JS Module.
-- Grouped documentation suite into doc/ for portability.
+- Grouped documentation suite into _doc/_ for portability.
 - Rewrote _src/optparse.co_.
 
 ### 0.2.1
