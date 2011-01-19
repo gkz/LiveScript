@@ -122,11 +122,7 @@ exports import
         return id.length
       tag = \IDENTIFIER
     colon = match.2
-    forcedIdentifier = at or colon or
-      if not last.spaced and last.1.colon2
-      then @token \DOT \.
-      else last.0 is \DOT
-    if forcedIdentifier
+    if at or colon or (if last\:: then @token \DOT \. else last.0 is \DOT)
       (id = new String id).reserved = true if id of FORBIDDEN
     else if id of COCO_KEYWORDS
       switch tag = id.toUpperCase()
@@ -144,7 +140,7 @@ exports import
           if tag is \OF
             @seenTo = true
             id = last.0 is \IDENTIFIER and @tokens[*-2].0 is \, and
-                 (@tokens.splice -2, 2; last.1)
+                 (@tokens.splice -2 2; last.1)
           @seenFor = false
           tag = \FOR + tag
           break
@@ -371,8 +367,8 @@ exports import
       case \\\\n then ++@line
       case \@@   then @token \IDENTIFIER \arguments
       case \::
-        @token \DOT \.
-        @token \IDENTIFIER, new String(\prototype) <<< {+colon2}
+        @token \DOT \.; @token \IDENTIFIER \prototype
+        @last\:: = true
       default next = true
       return val.length unless next
       switch val.charAt 0
@@ -495,7 +491,7 @@ exports import
 
   # Records a string/number token, supplying implicit dot if applicable.
   strnum: ->
-    @token \DOT \. if @last.0 is not \STRNUM and @able()
+    @token \DOT \. if @able() or @last\::
     @token \STRNUM it
     void
 

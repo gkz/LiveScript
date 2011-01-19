@@ -66,7 +66,11 @@ eq '[object Object]', (
 ), 'other accessors should also continue lines'
 
 
-eq ok, ({prototype: -> it}:: ok), 'space after :: should be significant'
+aps = Array.prototype.toString
+eq aps, Array::toString
+eq aps, Array :: toString
+eq aps, Array::\toString
+eq aps, Array:: \toString
 
 
 eq [1, 2, 3][*-1], 3
