@@ -71,14 +71,14 @@ class Node
   eachChild: (fn) ->
     for name of @children then if child = @[name]
       if \length in child
-      then return v if (v = fn node )? for node of child
-      else return v if (v = fn child)?
+      then return that if fn(node )? for node of child
+      else return that if fn(child)?
     void
 
   # Performs `eachChild` on every descendant.
   # Overridden by `Fun` not to cross scope by default.
   traverseChildren: (fn, xscope) ->
-    @eachChild -> if (v = fn it)? then v else it.traverseChildren fn, xscope
+    @eachChild -> if fn(it)? then that else it.traverseChildren fn, xscope
 
   # Do I, or any of my children, contain a node of a certain kind?
   # Recursively traverses down the nodes' descendants and passess them to
@@ -89,8 +89,12 @@ class Node
   # Performs anaphoric conversion if a `that` is found within `@[@aTarget]`.
   anaphorize: ->
     @children = [@aTarget]
-    @[@aSource] = Assign Literal(\that), @[@aSource] if @eachChild hasThat
-    delete @children; void
+    if @eachChild hasThat
+      if (base = this)[name = @aSource] instanceof Existence
+        base.=[name]; name = \it
+      base[name] = Assign Literal(\that), base[name]
+    delete @children
+    void
   function hasThat ->
     it.value is \that or if it.aSource
     then hasThat that if it[that]
