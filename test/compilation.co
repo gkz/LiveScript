@@ -140,3 +140,11 @@ eq 'STRNUM,0,0 STRNUM,1,1', '' + Coco.lex('''
 0 \\
   1
 ''').slice(0 2).join ' '
+
+
+eq '''
+(function(){
+  var _ref;
+  throw a < (_ref = +b) && _ref < c;
+}());
+''', Coco.compile '(throw a < +b < c)' {+bare}

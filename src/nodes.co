@@ -1504,7 +1504,11 @@ Scope::<<<
 
   # Declares a variable unless declared already.
   declare: (name) ->
-    scope = @shared or this
+    if @shared
+      return if @check name
+      scope = that
+    else
+      scope = this
     scope.add name, \var unless scope.type(name) of <[ var arg ]>
     void
 
