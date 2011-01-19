@@ -50,7 +50,7 @@ exports import
     # returning the number of characters it has consumed.
     while code.=slice i
       switch code.charAt 0
-      case [' ', \#]
+      case [' ' \#]
         i = @spaceToken code
       case \\n then i = @lineToken  code
       case \'  then i = @heredocToken code, \' or @singleStringToken code
@@ -84,51 +84,54 @@ exports import
   # though `is` means `===` otherwise.
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec it
-    switch id = match.1
-    case \own
-      break unless @last.0 is \FOR and @last.1
-      @last.1 = ''
-      return id.length
-    case \from
-      break unless @tokens[*-2]?.0 is \FOR
-      @<<<{-seenFor, +seenFrom}
-      return @token(\FROM, id).length
-    case \ever
-      break unless @last.0 is \FOR
-      @seenFor = false
-      return @token(\EVER, id).length
-    case <[ to til ]>
-      if @seenFrom
-        @<<<{-seenFrom, +seenRange}
-        return @token(\TO, id).length
-      else if @last.0 is \STRNUM and /^[-+\d.]/.test @last.1
-        @last import 0: \RANGE, op: id
+    if at = \@ is (id = match.1).charAt 0
+      id.=slice 1
+      tag = \THISPROP
+    else
+      {last} = this
+      switch id
+      case \own
+        break unless last.0 is \FOR and last.1
+        last.1 = ''
         return id.length
-    case \by
-      if @seenRange
-        @seenRange = false
-        return @token(\BY, id).length
-      else if @last.0 is \RANGE and @last.to
-        @last.by = true
+      case \from
+        break unless @tokens[*-2]?.0 is \FOR
+        @<<<{-seenFor, +seenFrom}
+        return @token(\FROM, id).length
+      case \ever
+        break unless last.0 is \FOR
+        @seenFor = false
+        return @token(\EVER, id).length
+      case <[ to til ]>
+        if @seenFrom
+          @<<<{-seenFrom, +seenTo}
+          return @token(\TO id).length
+        else if last.0 is \STRNUM and /^[-+\d.]/.test last.1
+          last <<< 0:\RANGE op:id
+          return id.length
+      case \by
+        if @seenTo
+          @seenTo = false
+          return @token(\BY id).length
+        else if last.0 is \RANGE and last.to
+          last.by = true
+          return id.length
+      case \all
+        break unless last.0 is \IMPORT and last.1 is \<<<
+        last.1 += \<
         return id.length
-    case \all
-      break unless @last.0 is \IMPORT and @last.1 is \<<<
-      @last.1 += \<
-      return id.length
-    tag = if at = id.charAt(0) is \@
-    then id.=slice 1; \THISPROP
-    else              \IDENTIFIER
-    [input, [], colon] = match
+      tag = \IDENTIFIER
+    colon = match.2
     forcedIdentifier = at or colon or
-      if not (prev = @last).spaced and prev.1.colon2
+      if not last.spaced and last.1.colon2
       then @token \DOT \.
-      else prev.0 is \DOT
+      else last.0 is \DOT
     if forcedIdentifier
       (id = new String id).reserved = true if id of FORBIDDEN
     else if id of COCO_KEYWORDS
       switch tag = id.toUpperCase()
       case \FOR    then @seenFor = true; fallthrough
-      case \THEN   then @seenFrom = @seenRange = false
+      case \THEN   then @seenFrom = @seenTo = false
       case \IMPORT then id  = \<<<
       case \UNLESS then tag = \IF
       case \UNTIL  then tag = \WHILE
@@ -139,29 +142,29 @@ exports import
       case <[ IN OF INSTANCEOF ]>
         if tag is not \INSTANCEOF and @seenFor
           if tag is \OF
-            @seenRange = true
-            id = prev.0 is \IDENTIFIER and @tokens[*-2].0 is \, and
-                 (@tokens.splice -2, 2; prev.1)
+            @seenTo = true
+            id = last.0 is \IDENTIFIER and @tokens[*-2].0 is \, and
+                 (@tokens.splice -2, 2; last.1)
           @seenFor = false
           tag = \FOR + tag
           break
-        if prev.1 is \!
+        if last.1 is \!
           @tokens.pop()
           id = \! + id
         tag = \RELATION
     else if alias = COCO_ALIASES.hasOwnProperty id
-      if id is \not and prev.alias and prev.1 is \===
-        prev.1 = \!==
+      if id is \not and last.alias and last.1 is \===
+        last.1 = \!==
         return id.length
       [tag, id] = COCO_ALIASES[id]
     else if id of RESERVED
       @carp "reserved word \"#{id}\""
-    else if not prev.1 and prev.0 of <[ CATCH FUNCTION ]>
-      return (prev.1 = id).length
+    else if not last.1 and last.0 of <[ CATCH FUNCTION ]>
+      return (last.1 = id).length
     @token tag, id
     @last.alias = true if alias
     @token \: \:       if colon
-    input.length
+    match.0.length
 
   # Matches a number, including decimal, hex and exponential notation.
   numberToken: ->
@@ -184,7 +187,7 @@ exports import
       @last = last = @tokens[*-1]
     if last.0 is \RANGE and (not last.to or last.by is true)
     then last[if last.to then \by else \to] = num
-    else if sign then @token \STRNUM, num else @strnum num
+    else if sign then @token \STRNUM num else @strnum num
     match.0.length
 
   # Matches a normal string without interpolations.
@@ -197,8 +200,8 @@ exports import
   # the string's contents, and within nested interpolations.
   doubleStringToken: ->
     str = @balancedString it, \"
-    if 0 < str.indexOf \#{, 1
-    then @interpolate str.slice(1, -1), unlines
+    if 0 < str.indexOf \#{ 1
+    then @interpolate str.slice(1 -1), unlines
     else @strnum unlines str
     @countLines(str).length
 
@@ -206,8 +209,8 @@ exports import
   # preserve whitespace, but ignore indentation to the left.
   heredocToken: (code, q) ->
     return 0 unless code.slice(1 3) is q+q and ~end = code.indexOf q+q+q, 3
-    txt = code.slice 3, end
-    lnl = txt is not doc = txt.replace /\n[^\n\S]*$/, ''
+    txt = code.slice 3 end
+    lnl = txt is not doc = txt.replace /\n[^\n\S]*$/ ''
     if ~doc.indexOf \\n
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
       dent = 0/0
@@ -226,15 +229,15 @@ exports import
 
   # Matches block comments.
   commentToken: ->
-    text = it.slice 0, if ~end = it.indexOf \*/, 2 then end + 2 else 9e9
-    @token \COMMENT, untabify text, @indent
+    text = it.slice 0 if ~end = it.indexOf \*/ 2 then end + 2 else 9e9
+    @token \COMMENT untabify text, @indent
     @token \TERMINATOR \\n
     @countLines(text).length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     @carp 'unterminated JS literal' unless js = JSTOKEN.exec it
-    @token \LITERAL, new String untabify (js.=0).slice(1, -1), @indent
+    @token \LITERAL new String untabify (js.=0).slice(1, -1), @indent
     @last.1.js = true
     @countLines(js).length
 
@@ -245,10 +248,10 @@ exports import
     # We distinguish it from the division operator using a list of tokens that
     # a regex never immediately follows.
     # Our list becomes shorter when spaced, due to sans-parentheses calls.
-    return 0 if (prev = @last).0 of <[ LITERAL CREMENT ]> or
-                @able true or not regex = REGEX.exec it
-    @token \LITERAL, if regex.=0 is \// then '/(?:)/' else regex
-    @countLines(regex).length
+    return 0 if @last.0 of <[ LITERAL CREMENT ]> or
+                @able true or not re = REGEX.exec it
+    @token \LITERAL if re.=0 is \// then '/(?:)/' else re
+    @countLines(re).length
 
   # Matches a multiline and extended regex literal.
   heregexToken: ->
@@ -270,13 +273,13 @@ exports import
         continue if i and not val
         val.=replace bs ||= /\\/g, \\\\\
         tokens.push [\STRNUM; string val, \'; token.2]
-      tokens.push [\+- \+, tokens[*-1].2]
+      tokens.push [\+- \+ tokens[*-1].2]
     tokens.pop()
     if flags
       @token \, \,
       if typeof flags is \string
       then @token \STRNUM, "'#{flags}'"
-      else tokens.push ...flags.slice 2, -1
+      else tokens.push ...flags.slice 2 -1
     @token \)CALL \)
     heregex.length
 
@@ -284,12 +287,12 @@ exports import
   wordsToken: ->
     @carp 'unterminated words' unless ~end = it.indexOf \]> 2
     @token \[ \[
-    {tokens} = this
-    for line of it.slice(2, end).split \\n
-      if line.match re ||= /\S+/g then for word of that
-        tokens.push [\STRNUM; string word, \'; @line] <<< {+spaced}
-      ++@line
-    --@line
+    {tokens, line} = this
+    for row of it.slice(2 end).split \\n
+      if row.match w ||= /\S+/g then for word of that
+        tokens.push [\STRNUM; string word, \'; line] <<< {+spaced}
+      ++line
+    @line = line - 1
     @token \STRNUM "''" unless word
     @token \] \]
     end + 2
@@ -306,19 +309,19 @@ exports import
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
     @countLines indent = MULTIDENT.exec(it).0
-    {last} = this; last.eol = last.spaced = true
-    @seenFrom = @seenRange = false
+    {last} = this; last <<< {+eol, +spaced}
+    @seenFrom = @seenTo = false
     size = indent.length - 1 - indent.lastIndexOf \\n
     noNewline = LINE_CONTINUER.test it or last.0 of
       <[ +- DOT ASSIGN LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
     if size - @indebt is @indent
-      @newline() unless noNewline
+      noNewline or @newline()
       return indent.length
     if size > @indent
       if noNewline
         @indebt = size - @indent
         return indent.length
-      @indents.push @token \INDENT, size - @indent + @dedebt
+      @indents.push @token \INDENT size - @indent + @dedebt
       @dedebt = @indebt = 0
     else
       @indebt = 0
@@ -396,7 +399,7 @@ exports import
         moveOut -= idt
         @dedebt -= idt
       else
-        moveOut -= @token \DEDENT, @indents.pop() - @dedebt
+        moveOut -= @token \DEDENT @indents.pop() - @dedebt
         @dedebt  = 0
     @dedebt -= moveOut
     @newline() unless noNewline
@@ -430,7 +433,7 @@ exports import
       switch end
       case chr
         stack.pop()
-        return str.slice 0, i+1 unless end = stack[*-1]
+        return str.slice 0 i+1 unless end = stack[*-1]
       case \"
         stack.push end = \} if \{ is chr and \# is str.charAt i-1
       case \}
@@ -452,9 +455,9 @@ exports import
       if that is \\
         ++i
         continue
-      continue unless that is \# and str.charAt(i+1) is \{
+      continue unless that is \# and \{ is str.charAt i+1
       if pi < i
-        ts.push [\S; s = str.slice pi, i; @line]
+        ts.push [\S s = str.slice pi, i; @line]
         @countLines s
       code = @balancedString str.slice(i+1), \}
       pi   = 1 + i += code.length
@@ -464,23 +467,23 @@ exports import
       nested.shift() if nested.0?.0 is \TERMINATOR
       if len = nested.length
         if len > 1
-          nested.unshift [\( \(, nested[ 0 ].2]
-          nested.push    [\) \), nested[len].2]
-        ts.push [\TOKENS, nested]
+          nested.unshift [\( \( nested[ 0 ].2]
+          nested.push    [\) \) nested[len].2]
+        ts.push [\TOKENS nested]
       @countLines code
     if pi < str.length
-      ts.push [\S; s = str.slice pi; @line]
+      ts.push [\S s = str.slice pi; @line]
       @countLines s
-    ts.unshift [\S '', line] if ts.0?.0 is not \S
+    ts.unshift [\S '' line] if ts.0?.0 is not \S
     return ts unless nlines?
     {tokens} = this
-    tokens.push [\DOT \., line] if @able()
-    tokens.push [\(   \(, line]
+    tokens.push [\DOT \. line] if @able()
+    tokens.push [\(   \( line]
     for t, i of ts
-      tokens.push [\+- \+, tokens[*-1].2] if i
+      tokens.push [\+- \+ tokens[*-1].2] if i
       if t.0 is \TOKENS
       then tokens.push ...t.1
-      else tokens.push [\STRNUM; nlines string t.1, \"; t.2]
+      else tokens.push [\STRNUM nlines string t.1, \"; t.2]
     @token \) \)
     ts
 
@@ -493,13 +496,13 @@ exports import
   # Records a string/number token, supplying implicit dot if applicable.
   strnum: ->
     @token \DOT \. if @last.0 is not \STRNUM and @able()
-    @token \STRNUM, it
+    @token \STRNUM it
     void
 
   # Increments `@line` by the number of newlines in a string.
   countLines: (str) ->
     pos = 0
-    ++@line while pos = 1 + str.indexOf \\n, pos
+    ++@line while pos = 1 + str.indexOf \\n pos
     str
 
   # Checks if the last token is
@@ -517,7 +520,7 @@ exports import
 string = (body, quote) ->
   return quote + quote unless body
   body.=replace /\\([\s\S])/g, ($0, $1) ->
-    if $1 of [\\n, quote] then $1 else $0
+    if $1 of [\\n quote] then $1 else $0
   .replace /// #{quote} ///g, \\\$&
   quote + body + quote
 
@@ -526,10 +529,10 @@ untabify = (str, len) ->
   if len then str.replace /// \n [^\n\S]{#{len}} ///g, \\n else str
 
 # Erases all newlines and indentations.
-unlines = -> it.replace /\n[^\n\S]*/g, ''
+unlines = -> it.replace /\n[^\n\S]*/g ''
 
 # Keeps newlines by escaping them.
-enlines = -> it.replace /\n/g, \\\n
+enlines = -> it.replace /\n/g \\\n
 
 #### Constants
 
