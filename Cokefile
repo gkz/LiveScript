@@ -120,7 +120,14 @@ task \loc, 'count the lines of source code in the Coco compiler', ->
   """, (err, out) -> say out.trim()
 
 
-runTests = (Coco) ->
+task \test 'run the Coco language test suite' ->
+  runTests require \./lib/coco
+
+task \test:browser
+, 'run the test suite against the merged browser script' ->
+  runTests new -> eval slurp \extras/coco.js \utf8
+
+function runTests (Coco) ->
   startTime = Date.now()
   passedTests = failedTests = 0
   for name, func in require \assert then do ->
@@ -128,9 +135,9 @@ runTests = (Coco) ->
   global import {
     Coco, eq: strictEqual, throws: (msg, fun) ->
       try do fun catch e then return eq e.message, msg
-      ok false, 'should throw: ' + msg
+      ok false 'should throw: ' + msg
   }
-  process.on \exit, ->
+  process.on \exit ->
     time = ((Date.now() - startTime) / 1e3).toFixed 2
     message = "passed #{passedTests} tests in #{time} seconds"
     say if failedTests
@@ -138,12 +145,15 @@ runTests = (Coco) ->
     else tint message
   dir(\test).forEach (file) ->
     return unless /\.co$/i.test file
-    code = slurp filename = path.join \test, file
+    code = slurp filename = path.join \test file
     try Coco.run code, {filename}
     catch e
       ++failedTests
       return say e unless stk = e?.stack
       msg = '' + /^.+/.exec stk
+      if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/.exec msg
+        m[i] = tint m[i].replace(/\\n/g \\n), bold for i of [2 4]
+        msg  = m.slice(1).join \\n
       {1: row, 2: col} = ///#{filename}:(\d+):(\d+)\)?$///m.exec(stk) or ''
       say tint "failed #{filename}:#{row--}:#{col--}", red
       if row >= 0
@@ -156,12 +166,5 @@ runTests = (Coco) ->
       say msg
       {(row): line} = lines = code.split \\n
       say lines.slice(row-8, row+0).join \\n
-      say line.slice(0, col) + tint line.slice(col), bold
+      say line .slice(0 col) + tint line.slice(col), bold
       say lines.slice(row+1, row+9).join \\n
-
-task \test, 'run the Coco language test suite', ->
-  runTests require \./lib/coco
-
-task \test:browser
-, 'run the test suite against the merged browser script', ->
-  runTests new -> eval slurp \extras/coco.js, \utf8
