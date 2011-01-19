@@ -6,18 +6,6 @@ eq "four five", 'fou
 
 r five'
 
-# [coffee#647](https://github.com/jashkenas/coffee-script/issues/647)
-eq "''Hello, World\\''", '''
-'\'Hello, World\\\''
-'''
-eq '""Hello, World\\""', """
-"\"Hello, World\\\""
-"""
-eq 'Hello, World\n', '''
-Hello, World\
-
-'''
-
 
 hello = 'Hello'
 world = 'World'
@@ -57,9 +45,9 @@ eq "#{hello + world}", 'HelloWorld'
 eq "#{hello + ' ' + world + '!'}", 'Hello World!'
 
 
-list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-eq "values: #{list.join(', ')}, length: #{list.length}.", 'values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, length: 10.'
-eq "values: #{list.join ' '}", 'values: 0 1 2 3 4 5 6 7 8 9'
+list = [0 to 5]
+eq "values: #{ list.join ( ) }", 'values: 0,1,2,3,4,5'
+eq "values: #{ list.join ' ' }", 'values: 0 1 2 3 4 5'
 
 
 obj = {
@@ -81,27 +69,13 @@ eq "Hello #{world ? "#{hello}"}", 'Hello World'
 
 eq "Hello #{"#{"#{obj["name"]}" + '!'}"}", 'Hello Joe!'
 
+eq "#{"hello".replace("\"", "")}", 'hello'
+
 
 a = """
     Hello #{ "Joe" }
     """
 eq a, "Hello Joe"
-
-
-a = 1
-b = 2
-c = 3
-eq "#{a}#{b}#{c}", '123'
-
-
-result = null
-stash = -> result := it
-stash "a #{ ('aa').replace /a/g, 'b' } c"
-eq result, 'a bb c'
-
-
-foo = "hello"
-eq "#{foo.replace("\"", "")}", 'hello'
 
 
 a = """
@@ -167,27 +141,35 @@ a = '''more"than"one"quote'''
 eq a, 'more"than"one"quote'
 
 
-val = 10
+# [coffee#647](https://github.com/jashkenas/coffee-script/issues/647)
+eq "''Hello, World\\''", '''
+'\'Hello, World\\\''
+'''
+eq '""Hello, World\\""', """
+"\"Hello, World\\\""
+"""
+eq 'Hello, World\n', '''
+Hello, World\
+
+'''
+
 
 a = """
-    basic heredoc #{val}
+    basic heredoc #{10}
     on two lines
     """
-
 b = '''
-    basic heredoc #{val}
+    basic heredoc #{10}
     on two lines
     '''
-
 eq a, "basic heredoc 10\non two lines"
-eq b, "basic heredoc \#{val}\non two lines"
+eq b, "basic heredoc \#{10}\non two lines"
 
 
-a = '''here's an apostrophe'''
-eq a, "here's an apostrophe"
+eq '''here's an apostrophe''', "here's an apostrophe"
 
 
-# The indentation detector ignores blank lines without trailing whitespace
+# The indentation detector ignores blank lines without trailing whitespace.
 a = """
     one
     two
@@ -226,6 +208,24 @@ eq '\\', [\\\].0
 eq '$', {\$}.\$
 eq \\\, \\
 
+
 # [coffee#923](https://github.com/jashkenas/coffee-script/issues/923)
 eq "#{ "{" }", "{"
 eq "#{ '#{}}' } }", '#{}} }'
+
+
+# Automatic Dot Insertion
+o = k: ok; k = \k
+
+eq o.k, o\k
+eq o.k, o'k'
+eq o.k, o"#{k}"
+
+o\k     true
+o'k'    true
+o"#{k}" true
+
+
+# Automatic Comma Insertion
+eq "#{0}" \0
+eq \2 '1'.replace "#{1}" -> 2

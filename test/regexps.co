@@ -31,9 +31,14 @@ eq ///  /// + '', '/(?:)/'
 
 eq /// _ #{?if 1 then \g else \m}/// + '', '/_/g'
 
+# ACI interaction.
+eq \/1/ '0'.replace ///#{0}/// /1/ \g
+
+
 # [coffee#584](https://github.com/jashkenas/coffee-script/issues/584)
 # Unescaped slashes in character classes.
 ok /:\/[/]goog/.test 'http://google.com'
+
 
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Should be indexable.

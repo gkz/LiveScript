@@ -150,11 +150,11 @@ function addImplicitParentheses (tokens) ->
     unless (prev = tokens[i-1]).spaced
       # Found two adjacent tokens. Mark them accordingly on this occasion.
       switch tag
-      case \?        then token.call = true
+      case \?        then token.callable = true
       case <[ [ { ]> then if able tokens, i
         tokens.splice i++, 0, [if tag is \[ then \DOT else \CLONE, '', prev.2]
       continue
-    continue unless prev.call or able tokens, i, true
+    continue unless able tokens, i, true
     if token.fromDo
       token.     0 = \CALL(
       token.pair.0 = \)CALL
@@ -238,8 +238,8 @@ function rewriteClosingParens (tokens) ->
   void
 
 # - Slip unary {pl,min}uses off signed numbers.
-# - Insert a comma between a primitive argument and a non-primitive one.
 # - Expand number ranges.
+# - Insert a comma between a primitive argument and a non-primitive one.
 function expandNumbers (tokens) ->
   i = -1
   while token = tokens[++i]
@@ -248,7 +248,6 @@ function expandNumbers (tokens) ->
       if ~'-+'.indexOf sig = (num = '' + token.1).charAt 0
         token.1 = num.slice 1
         tokens.splice i++, 0, [\+- sig, token.2]
-    case \LITERAL then break
     case \RANGE
       ts = []; lno = token.2
       to = token.to - if token.op is \to then 0 else 1e-15
@@ -258,6 +257,8 @@ function expandNumbers (tokens) ->
       if ts.length then ts.pop() else carp 'empty range', lno
       tokens.splice i, 1, ...ts
       i += ts.length - 1
+    case <[ ) )CALL ]> then break unless token.1
+    case \LITERAL      then break
     default continue
     if token.spaced and tokens[i+1].0 of ARG
       tokens.splice ++i, 0, [\, \, token.2]
@@ -280,10 +281,10 @@ function detectEnd (tokens, i, ok, go) ->
 
 # Checks whether or not the previous token is {index,`call`}able.
 function able (tokens, i = tokens.length, call) ->
-  tag = tokens[i-1].0
-  tag of <[ IDENTIFIER THISPROP THIS SUPER ] ) )CALL ]> or
-  if call then tag is \STRNUM and tokens[i-2]?.0 is \DOT \
-          else tag of <[ STRNUM LITERAL } ]>
+  [tag] = token = tokens[i-1]
+  tag of <[ IDENTIFIER THISPROP THIS SUPER ] ]> or
+  if call then token.callable or tag of <[ ) )CALL ]> and token.1 \
+          else tag of <[ STRNUM LITERAL } ) )CALL ]>
 
 function indexOfPair (tokens, i) ->
   level = 1; end = INVERSES[start = tokens[i].0]

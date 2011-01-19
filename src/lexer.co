@@ -168,7 +168,7 @@ exports import
     num = match.3 or match.0; {last} = this
     switch num.charAt 0
     case \. then if @able()
-      @token \DOT \.; @token \STRNUM, num.slice 1
+      @token \DOT \.; @token \STRNUM, num.slice 1; @last.callable = true
       return match.0.length
     case \0 then if num.charAt(1) not of ['' \x \.]
       @carp "deprecated octal literal #{num}"
@@ -279,7 +279,7 @@ exports import
       if typeof flags is \string
       then @token \STRNUM, "'#{flags}'"
       else tokens.push ...flags.slice 2 -1
-    @token \)CALL \)
+    @token \)CALL ''
     heregex.length
 
   # Matches a words literal, a syntax sugar for a list of strings.
@@ -410,7 +410,7 @@ exports import
   # definitions versus argument lists in function calls. Walk backwards, tagging
   # parameters specially in order to make things easier for the parser.
   tagParameters: ->
-    return unless @last.0 is \)
+    return unless @last.0 is \) and @last.1
     {tokens} = this; level = 1; i = tokens.length - 1
     while tok = tokens[--i]
       switch tok.0
@@ -476,15 +476,16 @@ exports import
     ts.unshift [\S '' line] if ts.0?.0 is not \S
     return ts unless nlines?
     {tokens} = this
-    tokens.push [\DOT \. line] if @able()
-    tokens.push [\(   \( line]
+    dot = if @able() then tokens.push [\DOT \. line] else @last.0 is \DOT
+    tokens.push [\( \( line]
     for t, i of ts
       tokens.push [\+- \+ tokens[*-1].2] if i
       if t.0 is \TOKENS
       then tokens.push ...t.1
       else tokens.push [\STRNUM nlines string t.1, \"; t.2]
-    @token \) \)
-    ts
+    @token \) ''
+    @last.callable = true if dot
+    void
 
   #### Helpers
 
@@ -494,8 +495,9 @@ exports import
 
   # Records a string/number token, supplying implicit dot if applicable.
   strnum: ->
-    @token \DOT \. if @able() or @last\::
+    dot = if @able() or @last\:: then @token \DOT \. else @last.0 is \DOT
     @token \STRNUM it
+    @last.callable = true if dot
     void
 
   # Increments `@line` by the number of newlines in a string.
