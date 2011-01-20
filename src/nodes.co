@@ -126,7 +126,7 @@ class Node
   unwrap       : THIS
   asKey        : THIS
 
-  invert: -> Op \!, this
+  invert: -> Op \! this
 
   # Constructs a node that returns the current node's result.
   makeReturn: (name) ->
@@ -207,7 +207,7 @@ class exports.Block extends Node
     o.indent = @tab = if bare = delete o.bare then '' else TAB
     o.scope  = @scope = Scope.root = new Scope
     o.level  = LEVEL_TOP
-    code = @compileWithDeclarations(o).replace /[^\n\S]+$/gm, ''
+    code = @compileWithDeclarations(o).replace /[^\n\S]+$/gm ''
     # If we happen to be the top-level **Block**, wrap everything in
     # a safety closure, unless requested not to.
     if bare then code else "(function(){\n#{code}\n}).call(this);\n"
@@ -322,15 +322,19 @@ class exports.Value extends Node
   #
   cacheReference: (o) ->
     name = @tails[*-1]
+    # `a` `a.b`
     if @tails.length < 2 and not @head.isComplex() and not name?.isComplex()
-      return [this, this]  # `a` `a.b`
+      return [this, this]
     base = Value @head, @tails.slice 0, -1
-    if base.isComplex()  # `a().b`
+    # `a().b`
+    if base.isComplex()
       ref  = o.scope.temporary \base
       base = Value Parens Assign Literal(ref), base
       bref = Literal(ref) <<< {+temp}
-    return [base, bref] unless name  # `a()`
-    if name.isComplex()  # `a[b()]`
+    # `a()`
+    return [base, bref] unless name
+    # `a[b()]`
+    if name.isComplex()
       ref  = o.scope.temporary \name
       name = Index Assign Literal(ref), name.key
       nref = Index Literal(ref) <<< {+temp}
@@ -601,9 +605,9 @@ class exports.Op extends Node
     if EQUALITY.test(op = @op) and not COMPARER.test(@first.op)
       @op = '!='.charAt(op.indexOf \=) + op.slice 1
       return this
-    return Op \!, Parens this if @second
+    return Op \! Parens this if @second
     return @first if op is \! and @first.op of <[ ! in instanceof < > <= >= ]>
-    Op \!, this
+    Op \! this
 
   unfoldSoak: (o) ->
     @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, \first
@@ -737,7 +741,7 @@ class exports.Assign extends Node
     {items} = left; len = items.length
     rite = @right.compile o, if len is 1 then LEVEL_ACCESS else LEVEL_LIST
     if (len > 1 or o.level) and
-       (not IDENTIFIER.test(rite) or left.assigns(rite))
+       (not IDENTIFIER.test rite or left.assigns rite)
       cache = "#{ rref = o.scope.temporary \ref } = #{rite}"
       rite  = rref
     list = @"rend#{ left.constructor.displayName }" o, items, rite
@@ -757,14 +761,13 @@ class exports.Assign extends Node
           break if empty
           val = utility(\slice) + \.call( + rite + if i then ", #{i})" else \)
         else
-          val = "#{rite}.length - #{len - i - 1}"
+          val = "#{rite}.length - #{ len - i - 1 }"
           # Optimize `(..., a) ->`.
           if empty and i is len - 2
             ivar = val
             continue
           start = i + 1; @temps = [ivar = o.scope.temporary \i]
-          if empty then node = Literal ivar
-          else val = "
+          if empty then node = Literal ivar else val = "
             #{len} <= #{rite}.length \
             ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar} = #{val}) \
             : (#{ivar} = #{i}, [])"
@@ -839,7 +842,7 @@ class exports.Import extends Node
     if top and items.length < 2
     then sub = lref = @left
     else [sub, lref, @temps] = @left.cache o
-    [delim, space] = if top then [\;, \\n + @tab] else [\,, ' ']
+    [delim, space] = if top then [\; \\n + @tab] else [\, ' ']
     delim += space
     code = ''
     for node of items
@@ -887,7 +890,7 @@ class exports.Of extends Node
     lvl = if arr = @array instanceof Arr then LEVEL_OP else LEVEL_LIST
     [sub, ref] = @item.cache o, false, lvl
     if arr
-      [cmp, cnj] = if @negated then [' !== ', ' && '] else [' === ', ' || ']
+      [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
       tests = for item, i of @array.items
         (if i then ref else sub) + cmp + item.compile o, lvl
       code = tests.join cnj
@@ -945,13 +948,13 @@ class exports.Fun extends Node
       new Scope (if @wrapper then pscope else sscope), @wrapper && sscope
     scope.method = this
     delete o.globals
-    scope.assign \_proto, @proto.compile(o) + \.prototype if @proto
+    scope.assign \_proto @proto.compile(o) + \.prototype if @proto
     o.indent += TAB
     {params, body, name, tab} = this
     code = \function
     if @bound is \_this
       if @ctor
-        scope.assign \_this, 'new _ctor'
+        scope.assign \_this 'new _ctor'
         code += """
            _ctor(){} _ctor.prototype = _proto;
           #{tab}function
@@ -966,7 +969,7 @@ class exports.Fun extends Node
       if p instanceof Splat then splatted = true
       # `(a = x) ->` to `(a ? x) ->`
       else if p.op is \= and not p.logic
-        params[i] = Op '?', p.left, p.right
+        params[i] = Op \? p.left, p.right
     splatted &&= Assign Arr(paramName o, p for p of params), Literal \arguments
     for p of params
       arg = p
@@ -981,7 +984,7 @@ class exports.Fun extends Node
         arg = ref
       else if dfv
         asns.push if p.op is \?
-        then Op \&&, Literal(arg.value + ' == null'), Assign arg, p.second
+        then Op \&& Literal(arg.value + ' == null'), Assign arg, p.second
         else Assign arg, p.second, \=, p.op
       splatted or args.push arg
     wasEmpty = not (exps = body.lines).length
@@ -1121,7 +1124,7 @@ class exports.Splat extends Parens
       then utility(\slice) + ".call(#{code})"
       else "[#{code}]"
     return args.0 + ".concat(#{ args.slice(1).join ', ' })" unless index
-    base = (node.compile o, LEVEL_LIST for node of list.slice 0, index)
+    base = (node.compile o, LEVEL_LIST for node of list.slice 0 index)
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
 #### Statement
@@ -1257,7 +1260,7 @@ class exports.For extends While
     if @object
       forPart = idx + ' in ' + srcPart
       if @own
-        o.scope.assign \_own, '{}.hasOwnProperty'
+        o.scope.assign \_own '{}.hasOwnProperty'
         ownPart = "if (_own.call(#{svar}, #{idx})) "
     else
       vars += ', ' + step unless step is pvar
@@ -1294,7 +1297,7 @@ class exports.For extends While
         else name.value
         fn.params.push name
       it.callee = Value Literal ref = o.scope.temporary \fn
-      o.scope.assign ref, fn.compile (o import indent: ''), LEVEL_LIST
+      o.scope.assign ref, fn.compile o <<< indent: '', LEVEL_LIST
       o.indent = @tab
       void
 
@@ -1371,7 +1374,7 @@ class exports.Case extends Node
     tests = if @test instanceof Arr then @test.items else [@test]
     tests.length or tests.push Literal 'void'
     if bool
-      [t] = tests; i = 0; t = Op '||', t, that while tests[++i]
+      [t] = tests; i = 0; t = Op \|| t, that while tests[++i]
       (@<<<{t, aSource: 't', aTarget: 'body'}).anaphorize()
       tests = [@t.invert()]
     code = ''
@@ -1520,7 +1523,7 @@ Scope::<<<
       temp = \_ + if name.length > 1
       then name + (if i++ then i else '')
       else (i++ + parseInt name, 36).toString 36
-      break if @type(temp) of [\reuse, void]
+      break if @type(temp) of [\reuse void]
     @add temp, \var
     temp
 
@@ -1619,7 +1622,7 @@ function lastNonComment (nodes) ->
   break if node not instanceof Comment for node, i of nodes by -1
   [i >= 0 and node, i]
 
-function tabify (code, tab) -> code.replace /\n/g, \\n + tab
+function tabify (code, tab) -> code.replace /\n/g \\n + tab
 
 function dollarize ->
   if it and (it.reserved or it of <[ arguments eval ]>) then \$ + it else it
