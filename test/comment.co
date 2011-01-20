@@ -163,3 +163,7 @@ eq true, do
 
 
 ok/* mid-expression block comments work as whitespace */true
+
+
+/*
+Trailing block comment works.

@@ -225,12 +225,10 @@ exports import
 
   # Matches block comments.
   commentToken: ->
-    text = it.slice 0 if ~end = it.indexOf \*/ 2 then end + 2 else 9e9
+    text = if ~end = it.indexOf \*/ 2 then it.slice 0 end+2 else it + \*/
     if @last.0 of <[ TERMINATOR INDENT THEN ]>
-      @token \COMMENT untabify text, @indent
-      @token \TERMINATOR \\n
-    else
-      @last.spaced = true
+    then @token \COMMENT untabify text, @indent; @token \TERMINATOR \\n
+    else @last.spaced = true
     @countLines(text).length
 
   # Matches JavaScript interpolated directly into the source via backticks.
