@@ -78,30 +78,30 @@ compileScripts = ->
 compileScript = (file, input, base) ->
   t = {file, input, options: filename: file, bare: !!o.bare}
   try
-    Coco.emit \lex, t
+    Coco.emit \lex t
     t.tokens = Coco.tokens t.input, rewrite: !o.lex
     if o.lex or o.tokens
       printTokens t.tokens
       throw \ok
-    Coco.emit \parse, t
+    Coco.emit \parse t
     t.nodes = Coco.nodes t.tokens
     if o.nodes
       say t.nodes.toString().trim()
       throw \ok
-    Coco.emit \compile, t
+    Coco.emit \compile t
     t.output = t.nodes.compileRoot t.options
     switch
     case o.run     then Coco.run t.output, t.options <<< {+js}
     case o.print   then say t.output.trim()
     case o.compile then writeJs t.file, t.output, base
-  catch e
-    unless e is \ok
-      if Coco.listeners(\failure).length
-        Coco.emit \failure, e, t
-      else
-        (if o.watch then warn else die) e?.stack || e
-      return
-  Coco.emit \success, t
+  catch e unless e is \ok
+    if Coco.listeners(\failure).length
+      Coco.emit \failure e, t
+    else
+      warn "Failed at: #{file}\n" if file
+      (if o.watch then warn else die) e?.stack || e
+    return
+  Coco.emit \success t
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
