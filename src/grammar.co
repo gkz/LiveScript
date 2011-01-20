@@ -57,38 +57,38 @@ bnf =
 
   # The types of things that can be accessed or indexed into.
   Value: [
-    o \Assignable    ,-> Value $1
-    o \STRNUM        ,-> Value L Literal $1
-    o \LITERAL       ,-> Value L Literal $1, true
-    o \Parenthetical ,-> Value $1
-    o \THIS          ,-> Value L Literal \this, true
+    o \Assignable    -> Value $1
+    o \STRNUM        -> Value L Literal $1
+    o \LITERAL       -> Value L Literal $1, true
+    o \Parenthetical -> Value $1
+    o \THIS          -> Value L Literal \this, true
 
-    o 'Value CALL( ArgList OptComma )CALL' ,-> Value L Call $1, $3, $2
+    o 'Value CALL( ArgList OptComma )CALL' -> Value L Call $1, $3, $2
   ]
 
   # Variables and properties that can be assigned to.
   SimpleAssignable: [
-    o \IDENTIFIER ,-> L Literal $1
+    o \IDENTIFIER -> L Literal $1
     o \ThisProperty
 
-    o 'Value DOT IDENTIFIER'           ,-> $1.add L Index L(Key     $3) ,$2
-    o 'Value DOT STRNUM'               ,-> $1.add L Index L(Literal $3) ,$2
-    o 'Value DOT Parenthetical'        ,-> $1.add L Index $3.it         ,$2
-    o 'Value DOT [ ArgList OptComma ]' ,-> $1.add L Index $4            ,$2
+    o 'Value DOT IDENTIFIER'           -> $1.add L Index L(Key     $3) ,$2
+    o 'Value DOT STRNUM'               -> $1.add L Index L(Literal $3) ,$2
+    o 'Value DOT Parenthetical'        -> $1.add L Index $3.it         ,$2
+    o 'Value DOT [ ArgList OptComma ]' -> $1.add L Index $4            ,$2
 
-    o 'Value CLONE Object' ,-> new Clone $1.unwrap(), $3
+    o 'Value CLONE Object' -> new Clone $1.unwrap(), $3
 
-    o \SUPER ,-> L new Super
+    o \SUPER -> L new Super
   ]
 
   # All the different types of expressions in our language.
   Expression: [
-    o \Value ,-> $1.unwrap()
+    o \Value -> $1.unwrap()
 
-    o 'Assignable ASSIGN Expression' ,-> L Assign $1, $3, $2
+    o 'Assignable ASSIGN Expression' -> L Assign $1, $3, $2
 
-    o 'CREMENT SimpleAssignable' ,-> L Op $1, $2
-    o 'SimpleAssignable CREMENT' ,-> L Op $2, $1, null, true
+    o 'CREMENT SimpleAssignable' -> L Op $1, $2
+    o 'SimpleAssignable CREMENT' -> L Op $2, $1, null, true
 
     # Arithmetic and logical operators, working on one or two operands.
     # The precedence rules are defined at the bottom of the page.
@@ -96,62 +96,62 @@ bnf =
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
-    o 'UNARY Expression' , -> L Op $1, $2
-    o '+-    Expression' ,(-> L Op $1, $2), prec: \UNARY
+    o 'UNARY Expression'  -> L Op $1, $2
+    o '+-    Expression' (-> L Op $1, $2), prec: \UNARY
 
-    o 'Expression +-       Expression' ,-> L Op $2, $1, $3
-    o 'Expression MATH     Expression' ,-> L Op $2, $1, $3
-    o 'Expression SHIFT    Expression' ,-> L Op $2, $1, $3
-    o 'Expression COMPARE  Expression' ,-> L Op $2, $1, $3
-    o 'Expression BITWISE  Expression' ,-> L Op $2, $1, $3
-    o 'Expression LOGIC    Expression' ,-> L Op $2, $1, $3
-    o 'Expression RELATION Expression' ,->
+    o 'Expression +-       Expression' -> L Op $2, $1, $3
+    o 'Expression MATH     Expression' -> L Op $2, $1, $3
+    o 'Expression SHIFT    Expression' -> L Op $2, $1, $3
+    o 'Expression COMPARE  Expression' -> L Op $2, $1, $3
+    o 'Expression BITWISE  Expression' -> L Op $2, $1, $3
+    o 'Expression LOGIC    Expression' -> L Op $2, $1, $3
+    o 'Expression RELATION Expression' ->
       L if $2.charAt(0) is \!
       then Op($2.slice 1; $1; $3).invert()
       else Op $2, $1, $3
 
-    o 'Expression IMPORT Expression' ,-> L Import $1, $3, $2 is \<<<<
+    o 'Expression IMPORT Expression' -> L Import $1, $3, $2 is \<<<<
 
-    o 'Expression ?' ,-> Existence $1
+    o 'Expression ?' -> Existence $1
 
     # Functions can be either anonymous, or named using `function` keyword.
     o \Function
-    o 'FUNCTION Function' ,-> $2.named $1
+    o 'FUNCTION Function' -> $2.named $1
 
     # The full complement of `if` and `unless` expressions,
     # including postfix one-liners.
     o \IfBlock
-    o 'IfBlock ELSE Block'            ,-> $1.addElse $3
-    o 'Expression POST_IF Expression' ,-> L If $3, $1, name: $2
+    o 'IfBlock ELSE Block'            -> $1.addElse $3
+    o 'Expression POST_IF Expression' -> L If $3, $1, name: $2
 
     # Loops can either be normal, with a block of expressions
     # to execute, or postfix, with a single expression.
-    o 'LoopHead   Block'    ,-> $1.addBody $2
-    o 'Expression LoopHead' ,-> $2.addBody Block $1
+    o 'LoopHead   Block'    -> $1.addBody $2
+    o 'Expression LoopHead' -> $2.addBody Block $1
 
-    o 'RETURN Expression' ,-> L Return $2
-    o \RETURN             ,-> L Return()
-    o \STATEMENT          ,-> L new Statement $1
-    o 'THROW  Expression' ,-> L new Throw $2
+    o 'RETURN Expression' -> L Return $2
+    o \RETURN             -> L Return()
+    o \STATEMENT          -> L new Statement $1
+    o 'THROW  Expression' -> L new Throw $2
 
-    o 'SWITCH Expression Cases'               ,-> L new Switch $2, $3
-    o 'SWITCH Expression Cases DEFAULT Block' ,-> L new Switch $2, $3, $5
-    o 'SWITCH Cases'                          ,-> L new Switch null, $2
-    o 'SWITCH Cases DEFAULT Block'            ,-> L new Switch null, $2, $4
+    o 'SWITCH Expression Cases'               -> L new Switch $2, $3
+    o 'SWITCH Expression Cases DEFAULT Block' -> L new Switch $2, $3, $5
+    o 'SWITCH Cases'                          -> L new Switch null, $2
+    o 'SWITCH Cases DEFAULT Block'            -> L new Switch null, $2, $4
 
-    o 'TRY Block'                           ,-> L new Try $2
-    o 'TRY Block CATCH Block'               ,-> L new Try $2, $3, $4
-    o 'TRY Block CATCH Block FINALLY Block' ,-> L new Try $2, $3, $4, $6
-    o 'TRY Block             FINALLY Block' ,-> L new Try $2, null, null, $4
+    o 'TRY Block'                           -> L new Try $2
+    o 'TRY Block CATCH Block'               -> L new Try $2, $3, $4
+    o 'TRY Block CATCH Block FINALLY Block' -> L new Try $2, $3, $4, $6
+    o 'TRY Block             FINALLY Block' -> L new Try $2, null, null, $4
 
     # A class definition have a title, superreference, or body,
     # each of which is optional.
-    o 'CLASS OptExtends'                        ,-> L new Class null, $2
-    o 'CLASS OptExtends Block'                  ,-> L new Class null, $2, $3
-    o 'CLASS SimpleAssignable OptExtends'       ,-> L new Class $2, $3
-    o 'CLASS SimpleAssignable OptExtends Block' ,-> L new Class $2, $3, $4
+    o 'CLASS OptExtends'                        -> L new Class null, $2
+    o 'CLASS OptExtends Block'                  -> L new Class null, $2, $3
+    o 'CLASS SimpleAssignable OptExtends'       -> L new Class $2, $3
+    o 'CLASS SimpleAssignable OptExtends Block' -> L new Class $2, $3, $4
 
-    o 'SimpleAssignable EXTENDS Expression' ,-> Util.Extends $1, $3
+    o 'SimpleAssignable EXTENDS Expression' -> Util.Extends $1, $3
   ]
 
   # A line of Coco can be either an expression, backcall, comment, or
@@ -161,16 +161,16 @@ bnf =
 
     o 'PARAM( ArgList OptComma )PARAM BACK_CALL Expression'
     , -> Call.back $2, $5, $6
-    o 'IDENTIFIER BACK_CALL Expression' ,-> Call.back [L Literal $1], $2, $3
-    o            'BACK_CALL Expression' ,-> Call.back [            ], $1, $2
+    o 'IDENTIFIER BACK_CALL Expression' -> Call.back [L Literal $1], $2, $3
+    o            'BACK_CALL Expression' -> Call.back [            ], $1, $2
 
-    o \COMMENT ,-> L new Comment $1
-    o \...     ,-> L new Throw JS "Error('stub code executed')"
+    o \COMMENT -> L new Comment $1
+    o \...     -> L new Throw JS "Error('stub code executed')"
   ]
   # A list of lines, separated by newlines or semicolons.
   Body: [
-    o \Line                  ,-> Block $1
-    o 'Body TERMINATOR Line' ,-> $1.add $3
+    o \Line                  -> Block $1
+    o 'Body TERMINATOR Line' -> $1.add $3
     o 'Body TERMINATOR'
   ]
 
@@ -182,85 +182,85 @@ bnf =
 
   Arg: [
     o     \Expression
-    o '... Expression' ,-> L Splat $2
-    o \...             ,-> L Splat Arr()
+    o '... Expression' -> L Splat $2
+    o \...             -> L Splat Arr()
   ]
   # **ArgList** is either the list of objects passed into a function call,
   # the parameter list of a function, or the contents of an array literal
   # (i.e. comma-separated expressions). Newlines work as well.
   ArgList: [
-    o ''                                                ,-> []
-    o \Arg                                              ,-> [$1]
-    o 'ArgList , Arg'                                   ,-> $1.concat $3
-    o 'ArgList OptComma TERMINATOR Arg'                 ,-> $1.concat $4
-    o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ,-> $1.concat $4
+    o ''                                                -> []
+    o \Arg                                              -> [$1]
+    o 'ArgList , Arg'                                   -> $1.concat $3
+    o 'ArgList OptComma TERMINATOR Arg'                 -> $1.concat $4
+    o 'ArgList OptComma INDENT ArgList OptComma DEDENT' -> $1.concat $4
   ]
 
   # A reference to a property on `this`.
   ThisProperty: [
-    o \THISPROP ,-> Value L(Literal \this), [Index L Key $1], true
+    o \THISPROP -> Value L(Literal \this), [Index L Key $1], true
   ]
 
   Parenthetical: [
-    o '(        Body        )' ,-> L Parens $2.unwrap()
-    o '( INDENT Body DEDENT )' ,-> L Parens $3.unwrap()
+    o '(        Body        )' -> L Parens $2.unwrap()
+    o '( INDENT Body DEDENT )' -> L Parens $3.unwrap()
   ]
 
   # An indented block of expressions. Note that [Rewriter](#rewriter)
   # converts some single-line forms into blocks for us.
   Block: [
-    o 'INDENT Body DEDENT' ,-> $2
-    o 'INDENT      DEDENT' ,-> Block()
+    o 'INDENT Body DEDENT' -> $2
+    o 'INDENT      DEDENT' -> Block()
   ]
 
   # **Function** is the function literal, defined by an indented **Block**
   # preceded by an optional parameter list and a function arrow.
   Function: [
-    o 'PARAM( ArgList OptComma )PARAM FUNC_ARROW Block' ,-> L Fun $2, $6, $5
-    o                                'FUNC_ARROW Block' ,-> L Fun [], $2, $1
+    o 'PARAM( ArgList OptComma )PARAM FUNC_ARROW Block' -> L Fun $2, $6, $5
+    o                                'FUNC_ARROW Block' -> L Fun [], $2, $1
   ]
 
   Array: [
-    o '[ ArgList OptComma ]' ,-> L Arr $2
+    o '[ ArgList OptComma ]' -> L Arr $2
   ]
 
   # Things that can be keys within an object literal.
   Key: [
-    o \IDENTIFIER ,-> L Literal $1
-    o \STRNUM     ,-> L Literal $1
+    o \IDENTIFIER -> L Literal $1
+    o \STRNUM     -> L Literal $1
     o \Parenthetical
     o \ThisProperty
   ]
   Property: [
-    o 'Key :        Expression'        ,-> L Assign $1.asKey(), $3, \:
-    o 'Key : INDENT Expression DEDENT' ,-> L Assign $1.asKey(), $4, \:
+    o 'Key :        Expression'        -> L Assign $1.asKey(), $3, \:
+    o 'Key : INDENT Expression DEDENT' -> L Assign $1.asKey(), $4, \:
 
     o \Key
-    o '... Key' ,-> L Splat  $2
-    o '+-  Key' ,-> L Assign $2.asKey(), Literal($1 is \+), \:
+    o '... Key' -> L Splat  $2
+    o '+-  Key' -> L Assign $2.asKey(), Literal($1 is \+), \:
 
-    o 'Key LOGIC Expression' ,-> L Op $2, $1, $3
+    o 'Key LOGIC Expression' -> L Op $2, $1, $3
 
-    o \COMMENT ,-> L new Comment $1
+    o \COMMENT -> L new Comment $1
   ]
   # Properties within an object literal can be separated by
   # commas, as in JavaScript, or simply by newlines.
   Properties: [
-    o ''                                                      ,-> []
-    o \Property                                               ,-> [$1]
-    o 'Properties , Property'                                 ,-> $1.concat $3
-    o 'Properties OptComma TERMINATOR Property'               ,-> $1.concat $4
-    o 'Properties OptComma INDENT Properties OptComma DEDENT' ,-> $1.concat $4
+    o ''                                                      -> []
+    o \Property                                               -> [$1]
+    o 'Properties , Property'                                 -> $1.concat $3
+    o 'Properties OptComma TERMINATOR Property'               -> $1.concat $4
+    o 'Properties OptComma INDENT Properties OptComma DEDENT' -> $1.concat $4
   ]
   Object: [
-    o '{ Properties OptComma }' ,-> L Obj $2
+    o '{ Properties OptComma }' -> L Obj $2
   ]
 
   # The most basic form of `if` is a condition and an action. The following
   # `if`-related rules are broken up along these lines to avoid ambiguity.
   IfBlock: [
-    o 'IF Expression Block'              ,-> L If $2, $3, name: $1
-    o 'IfBlock ELSE IF Expression Block' ,-> $1.addElse L If $4, $5, name: $3
+    o 'IF Expression Block'              -> L If $2, $3, name: $1
+    o 'IfBlock ELSE IF Expression Block' -> $1.addElse L If $4, $5, name: $3
   ]
 
   LoopHead: [
@@ -284,19 +284,19 @@ bnf =
     o 'FOR IDENTIFIER FROM Expression TO Expression BY Expression'
     , -> L new For index: $2, from: $4, op: $5, to: $6, step : $8
 
-    o 'WHILE Expression' ,-> L new While $2, $1
-    o 'FOR EVER'         ,-> L new While
+    o 'WHILE Expression' -> L new While $2, $1
+    o 'FOR EVER'         -> L new While
   ]
 
   Cases: [
-    o       'CASE Expression Block' ,-> [L new Case $2, $3]
-    o 'Cases CASE Expression Block' ,-> $1.concat L new Case $3, $4
+    o       'CASE Expression Block' -> [L new Case $2, $3]
+    o 'Cases CASE Expression Block' -> $1.concat L new Case $3, $4
   ]
 
   # Optional `extends` clause for class definition.
   OptExtends: [
-    o ''                   ,-> null
-    o 'EXTENDS Expression' ,-> $2
+    o ''                   -> null
+    o 'EXTENDS Expression' -> $2
   ]
 
   # **Root** is the top-level node in the syntax tree.
@@ -304,7 +304,7 @@ bnf =
   Root: [
     o \Body
     o 'Block TERMINATOR'
-    o '' ,-> Block()
+    o '' -> Block()
   ]
 
 # Precedence
