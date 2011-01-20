@@ -275,10 +275,7 @@ class exports.Index extends Node
     switch key.length
     case 0 then @key = Key \__proto__
     case 1 then @key = key.0
-    switch symbol
-    case \?. then @soak   = true
-    case \&. then @bind   = true
-    case \.= then @assign = true
+    @assign = symbol.slice 1 if \= is symbol?.slice -1
 
   children: [\key]
 
@@ -356,8 +353,8 @@ class exports.Value extends Node
     if @head.unfoldSoak o
       that.then.tails.push ...@tails
       return that
-    for tail, i of @tails then if tail.soak
-      tail.soak = false
+    for index, i of @tails then if index.symbol is \?.
+      index.symbol = ''
       fst = Value @head, @tails.slice 0, i
       snd = Value @head, @tails.slice i
       if fst.isComplex()
@@ -371,15 +368,15 @@ class exports.Value extends Node
     if @head.unfoldAssign o
       that.right.tails.push ...@tails
       return that
-    for tail, i of @tails then if tail.assign
-      tail.assign = false
-      [lhs, rhs] = Value(@head, @tails.slice 0, i).cacheReference o
-      return Assign(lhs; Value rhs, @tails.slice i) import {+access}
+    for index, i of @tails then if index.assign
+      index.assign = ''
+      lr = Value(@head, @tails.slice 0, i).cacheReference o
+      return Assign(lr.0; Value lr.1, @tails.slice i; that) <<< {+access}
     void
 
   unfoldBind: (o) ->
-    for index, i of @tails then if index.bind
-      index.bind = false
+    for index, i of @tails then if index.symbol is \&.
+      index.symbol = ''
       args   = Value(@head, @tails.slice 0, i).cache o, true
       args.1 = Value args.1, [index]
       call   = Call Util(\bind), args

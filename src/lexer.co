@@ -358,9 +358,12 @@ exports import
     case \?(                           then tag = \CALL(
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
       tag = \ASSIGN
-      if @last.0 is \LOGIC
-        @tokens.pop()
-        (val = new String val).logic = @last.1
+      switch @last.0
+      case \LOGIC
+        (val = new String val).logic = @tokens.pop().1
+      case \DOT then if @last.1 is \.
+        @last.1 += val
+        return val.length
     case \*
       tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
     case <[ -> ~> => ]> then tag = \FUNC_ARROW; @tagParameters()

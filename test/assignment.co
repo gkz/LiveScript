@@ -46,12 +46,18 @@ val ?= 'eulav'
 eq val, 'value'
 
 
+# Accessigns
 parent = child: str: 'test'
+
 parent.child.str.=replace /./, 'b'
 eq 'best', parent.child.str
+
 parent.child.str.='replace' /./, 'r'
 parent.=child.valueOf().str
 eq 'rest', parent
+
+parent.+=slice 1
+eq 'restest', parent
 
 
 for nonref, i of <[ "" 0 f() this true ]>
