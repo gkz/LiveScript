@@ -21,8 +21,8 @@ function rewrite ->
   closeCalls             it
   addImplicitIndentation it
   tagPostfixConditionals it
-  addImplicitBraces      it
   addImplicitParentheses it
+  addImplicitBraces      it
   ensureBalance          it
   rewriteClosingParens   it
   expandNumbers          it
@@ -112,14 +112,6 @@ function addImplicitIndentation (tokens) ->
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
 function addImplicitBraces (tokens) ->
-  go = (token, i) -> tokens.splice i, 0, [\} \}, token.2]
-  ok = (token, i) ->
-    return true  if token.1 is \; or \DEDENT is tag = token.0
-    return false if tag not of <[ , TERMINATOR ]>
-    one = tokens[i+1]?.0
-    if tag is \, then one not of <[ IDENTIFIER STRNUM TERMINATOR ( ]>
-    else one is not \COMMENT and \: is not
-      tokens[if one is \( then 1 + indexOfPair tokens, i+1 else i+2]?.0
   stack = []; i = -1
   while token = tokens[++i]
     unless \: is tag = token.0
@@ -139,6 +131,13 @@ function addImplicitBraces (tokens) ->
     idx -= 2 while tokens[idx-2]?.0 is \COMMENT
     tokens.splice idx, 0, [\{ \{ token.2]
     detectEnd tokens, ++i+1, ok, go
+  function ok (token, i) ->
+    return true  if token.1 is \; or \DEDENT is tag = token.0
+    return false if tag not of <[ , TERMINATOR ]>
+    t1 = tokens[i+1]?.0
+    t1 is not (if tag is \, then \TERMINATOR else \COMMENT) and
+    \: is not tokens[if t1 is \( then 1 + indexOfPair tokens, i+1 else i+2]?.0
+  function go (token, i) -> tokens.splice i, 0, [\} \} token.2]
   void
 
 # Methods may be optionally called without parentheses for simple cases.

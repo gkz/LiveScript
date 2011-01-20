@@ -165,9 +165,19 @@ eq obj.red.orange.yellow.green, 'blue'
 eq 2, (key for key in obj.red).length
 
 
-# Implicit objects as part of chained calls.
-pluck = (x) -> x.a
-eq 100, pluck pluck pluck a: a: a: 100
+pick = -> it.$
+
+# As part of chained calls.
+eq 9, pick pick pick $: $: $: 9
+
+
+# [coffee#618](https://github.com/satyr/coco/issues/618):
+# Should not consume shorthand properties.
+a = Array do
+  1: 2
+  3
+eq 2, a.length
+eq 2, (Array 1: 2, 3).length
 
 
 eq '\\`', `
