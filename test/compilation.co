@@ -148,3 +148,8 @@ eq '''
   throw a < (_ref = +b) && _ref < c;
 }());
 ''', Coco.compile '(throw a < +b < c)' {+bare}
+
+
+# [#1](https://github.com/satyr/coco/issues/1)
+λ = -> 七 = 7
+eq λ(), 7

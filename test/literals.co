@@ -1,23 +1,33 @@
-a = [((x) -> x), ((x) -> x * x)]
-eq a.length, 2
-
+### Numbers
 
 eq 3-4, -1
 
-
-# Decimal number literals.
+# Decimal
 eq 1.0, .25 + .75
 eq 0.5, 0.0 + -.25 - -.75 + 0.0
 
-# With comments.
+# Hex
+eq 255, 0xff
+
+# With radix
+ok 2r101010 == 8r52 == 36r16 == 42
+
+# With comment
 eq 1year * 365.25days * 24hours, 8766
 
 
-eq void, do ->
+# [#31](https://github.com/satyr/coco/issues/31): Numeric Ranges
+eq '1,2,3'  ,''+ [1 to +3]
+eq '1,0,-1' ,''+ Array 1 to -1 by -1
+
+throws 'range limit exceeded on line 1' , -> Coco.tokens '0 to 1 by 1e-4'
+throws 'empty range on line 3'          , -> Coco.tokens '\n\n 1 to 0'
 
 
-# Trailing commas.
-eq [1, 2,] + '', '1,2'
+### Arrays
+
+a = [((x) -> x), ((x) -> x * x)]
+eq a.length, 2
 
 sum  = 0
 sum += n for n of [
@@ -27,12 +37,30 @@ sum += n for n of [
 ]
 eq sum, 45
 
+
+# Trailing commas.
+eq [1, 2,] + '', '1,2'
+
+
+# Funky indentation within non-comma-seperated arrays.
+result = [['a']
+ {b: 'c'}]
+
+eq 'a', result[0][0]
+eq 'c', result[1]['b']
+
+
+eq '<[ quoted words ]>', <[ <[ quoted words ]\> ]>.join ' '
+eq  1, <[]>.length
+eq '', <[]>[0]
+
+
+### Objects
+
 o = {k1: "v1", k2: 4, k3: (-> true),}
 ok o.k3() and o.k2 is 4 and o.k1 is "v1"
 
-
 ok {a: (num) -> num is 10 }.a 10
-
 
 moe = {
   name:  'Moe'
@@ -51,40 +79,47 @@ moe.hello = -> this['greet'] "Hello"
 eq moe.hello(), 'Hello Moe'
 
 
+# Keys can include keywords.
 obj = {
-  is:     -> true,
-  'not':  -> false,
+  is  :  -> true,
+  not :  -> false,
 }
-
 ok obj.is()
 ok not obj.not()
 
-
-/* Top-level braceless object */
-obj: 1
-/* doesn't break things. */
-
-
-# Implicit objects with number arguments.
-k1: eq 1, 1
-k2: eq 2, 2,
-
-
-# Funky indentation within non-comma-seperated arrays.
-result = [['a']
- {b: 'c'}]
-
-eq 'a', result[0][0]
-eq 'c', result[1]['b']
-
-
-# Object literals should be able to include keywords.
-obj = class: 'hot'
+obj = {class: 'hot'}
 obj.function = 'dog'
 eq obj.class + obj.function, 'hotdog'
 
 
-# New fancy implicit objects.
+# [#5](https://github.com/satyr/coco/issues/5): Accessor Properties
+{}.__defineGetter__ and do Function Coco.compile '''
+  v = 'foo'
+  o =
+    key: ~      -> @x
+    key: ~ (@x) ->
+    (v): ~      -> @y
+    (v): ~ (@y) ->
+  ok 'key' in o
+  eq 1, o.key = 1
+  eq 1, o.key
+  ok 'foo' in o
+  eq 2, o.foo = 2
+  eq 2, o.foo
+'''
+
+
+# [coffee#542](https://github.com/jashkenas/coffee-script/issues/542):
+# Objects leading expression statement should be parenthesized.
+{f: -> ok true }.f() + 1
+
+# [#19](https://github.com/satyr/coco/issues/19)
+throws 'duplicate property name "a" on line 1'
+, -> Coco.compile '{a, b, a}'
+
+
+#### Implicit/Braceless
+
 config =
   development:
     server: 'localhost'
@@ -112,7 +147,12 @@ obj =
 eq 6, obj.a * obj.b
 
 
-# Implicit objects nesting.
+/* Top-level braceless object */
+obj: 1
+/* doesn't break things. */
+
+
+# Nested.
 obj =
   options:
     value: true
@@ -122,19 +162,14 @@ obj =
     null
 
 eq true, obj.options.value
-eq null,  obj.fn()
+eq null, obj.fn()
 
 
-third = (a, b, c) -> c
-obj =
-  one: 'one'
-  two: third 'one', 'two', 'three'
-
-eq obj.one, 'one'
-eq obj.two, 'three'
+# With number arguments.
+k: eq 1, 1
 
 
-# Implicit objects with wacky indentation:
+# With wacky indentations.
 obj =
   'reverse': (obj) ->
     Array.prototype.reverse.call obj
@@ -165,9 +200,8 @@ eq obj.red.orange.yellow.green, 'blue'
 eq 2, (key for key in obj.red).length
 
 
-pick = -> it.$
-
 # As part of chained calls.
+pick = -> it.$
 eq 9, pick pick pick $: $: $: 9
 
 
@@ -180,18 +214,7 @@ eq 2, a.length
 eq 2, (Array 1: 2, 3).length
 
 
-eq '\\`', `
-  // Inline JS
-  "\\\`"
-`
-
-i = 3
-`LABEL:`
-while --i then while --i then `break LABEL`
-eq i, 1
-
-
-# Braceless objects.
+# With leading comments.
 obj =
   /* comment one */
   /* comment two */
@@ -201,7 +224,7 @@ obj =
 eq obj.fun().three, 3
 
 
-# Dynamic object keys.
+#### Dynamic Keys
 i = 0
 o = splat: 'me'
 obj = {
@@ -242,43 +265,20 @@ obj.val = ok
 eq ok, obj.key
 
 
-eq '<[ quoted words ]>', <[ <[ quoted words ]\> ]>.join ' '
-eq  1, <[]>.length
-eq '', <[]>[0]
+### JS Literal
+
+eq '\\`', `
+  // Inline JS
+  "\\\`"
+`
+
+i = 3
+`LABEL:`
+while --i then while --i then `break LABEL`
+eq i, 1
 
 
-# [coffee#542](https://github.com/jashkenas/coffee-script/issues/542)
-# Objects leading expression statement should be parenthesized.
-{f: -> ok true }.f() + 1
-
-# [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
-# Boolean/Number should be indexable.
-ok 42['toString']
-ok true['toString']
-
-
-ok 2r101010 == 8r52 == 36r16 == 42
-
-
-# [#19](https://github.com/satyr/coco/issues/19)
-throws 'duplicate property name "a" on line 1'
-, -> Coco.compile 'a: 1, b: 2, a: 3'
-
-
-# [#1](https://github.com/satyr/coco/issues/1)
-λ = -> 七 = 7
-eq λ(), 7
-
-
-# [#31](https://github.com/satyr/coco/issues/31)
-eq '1,2,3'  ,''+ [1 to +3]
-eq '1,0,-1' ,''+ Array 1 to -1 by -1
-
-throws 'range limit exceeded on line 1' , -> Coco.tokens '0 to 1 by 1e-4'
-throws 'empty range on line 3'          , -> Coco.tokens '\n\n 1 to 0'
-
-
-# Primitive sequences.
+### Primitive Sequences (ACI)
 eq null null
 eq \1 \1
 eq 2 2
@@ -290,21 +290,15 @@ eq o.3, 3
 eq o.5, 5
 
 
+### Misc
+
+eq void, []0
+
+
 throws 'stub code executed', -> ...
 
 
-# [#5](https://github.com/satyr/coco/issues/5): Accessor Properties
-{}.__defineGetter__ and Coco.run '''
-  v = 'foo'
-  o =
-    key: ~      -> @x
-    key: ~ (@x) ->
-    (v): ~      -> @y
-    (v): ~ (@y) ->
-  ok 'key' in o
-  eq 1, o.key = 1
-  eq 1, o.key
-  ok 'foo' in o
-  eq 2, o.foo = 2
-  eq 2, o.foo
-'''
+# [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
+# Boolean/Number should be indexable.
+ok 42['toString']
+ok true['toString']
