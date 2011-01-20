@@ -186,6 +186,8 @@ eq x, 1
 eq y, 1
 
 
+### `import`
+
 x = 'xx'
 o = (-> {} import {42, '', x, @X, (x), ...([0])}).call {X: 'XX'}
 eq o[42], 42
@@ -209,7 +211,16 @@ eq i, 1
 
 eq ',1,2,3', '' + ([] <<< {0}{1} <<<< {2}{3})
 
+eq '''
+({
+  a: a,
+  b: b,
+  c: c
+});
+''', Coco.compile '{a}<<<{b}<<<{c}', {+bare}
 
+
+### `delete`
 i = 0
 O = ->
   switch ++i

@@ -828,6 +828,8 @@ class exports.Assign extends Node
 # Operators that copy properties from right to left.
 class exports.Import extends Node
   (@left, @right, @all and \All) =>
+    if not all and left instanceof Obj and right instanceof Obj
+      return Obj left.items.concat right.items
 
   children: <[ left right ]>
 
@@ -836,8 +838,6 @@ class exports.Import extends Node
   compileNode: (o) ->
     if @all or @right not instanceof Obj
       return Call(Util "import#{ @all or '' }"; [@left, @right]).compile o
-    if @left instanceof Obj
-      return Obj(@left.items.concat @right.items).compile o
     {items} = @right
     return @left.compile o unless items.length
     top = not o.level
