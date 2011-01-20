@@ -22,12 +22,10 @@ module.exports = (
     MULTI = /[*+]/
     flags = for name in flags
       [desc, arg, abbr] = [].concat flags[name]
-      {
-        name, desc, arg, abbr
-        long  : \-- + name
-        short : abbr != 0 and "-#{ abbr or name }".slice 0 2
-        multi : arg and MULTI.test arg
-      }
+      {name, desc, arg, abbr} <<<
+      long  : \-- + name
+      short : abbr != 0 and "-#{ abbr or name }".slice 0 2
+      multi : arg and MULTI.test arg
 
   # Expand merged flags within arguments. e.g.: `-wp` -> `-w -p`
   args = Array::concat.apply [], args.map ->

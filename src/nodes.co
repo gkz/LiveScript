@@ -827,15 +827,17 @@ class exports.Assign extends Node
 #### Import
 # Operators that copy properties from right to left.
 class exports.Import extends Node
-  (@left, @right, all) => @util = if all then \importAll else \import
+  (@left, @right, @all and \All) =>
 
   children: <[ left right ]>
 
-  show: -> @util.slice 6
+  show: -> @all
 
   compileNode: (o) ->
-    unless @util is \import and @right instanceof Obj
-      return Call(Value Util @util; [@left, @right]).compile o
+    if @all or @right not instanceof Obj
+      return Call(Util "import#{ @all or '' }"; [@left, @right]).compile o
+    if @left instanceof Obj
+      return Obj(@left.items.concat @right.items).compile o
     {items} = @right
     return @left.compile o unless items.length
     top = not o.level
