@@ -278,10 +278,11 @@ while --i then while --i then `break LABEL`
 eq i, 1
 
 
-### Primitive Sequences (ACI)
+### ACI
 eq null null
 eq \1 \1
-eq 2 2
+eq 2 [{} {}].length
+eq ''+[3] '3'
 eq '0,true,2,3', '' + [0 true \2 (3)]
 
 o = {0 \1 \2 3 4 (5)}

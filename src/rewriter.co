@@ -25,7 +25,7 @@ function rewrite ->
   addImplicitBraces      it
   ensureBalance          it
   rewriteClosingParens   it
-  expandNumbers          it
+  expandLiterals         it
   it
 
 # - Dispatch leading terminators that would introduce ambiguity in the grammar.
@@ -137,7 +137,7 @@ function addImplicitBraces (tokens) ->
     t1 = tokens[i+1]?.0
     t1 is not (if tag is \, then \TERMINATOR else \COMMENT) and
     \: is not tokens[if t1 is \( then 1 + indexOfPair tokens, i+1 else i+2]?.0
-  function go (token, i) -> tokens.splice i, 0, [\} \} token.2]
+  function go (token, i) -> tokens.splice i, 0, [\} '' token.2]
   void
 
 # Methods may be optionally called without parentheses for simple cases.
@@ -151,9 +151,11 @@ function addImplicitParentheses (tokens) ->
       switch tag
       case \?        then token.callable = true
       case <[ [ { ]> then if able tokens, i
-        tokens.splice i++, 0, [if tag is \[ then \DOT else \CLONE, '', prev.2]
+        tokens.splice i++, 0, [if tag is \[ then \DOT else \CLONE, '' prev.2]
+        tokens[indexOfPair tokens, i]?.index = true if tag is \[
       continue
-    continue unless able tokens, i, true
+    continue if prev.0 is \] and not prev.index or
+                not able tokens, i, true
     if token.fromDo
       token.     0 = \CALL(
       token.pair.0 = \)CALL
@@ -239,7 +241,7 @@ function rewriteClosingParens (tokens) ->
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand number ranges.
 # - Insert a comma between a primitive argument and a non-primitive one.
-function expandNumbers (tokens) ->
+function expandLiterals (tokens) ->
   i = -1
   while token = tokens[++i]
     switch token.0
@@ -257,6 +259,8 @@ function expandNumbers (tokens) ->
       tokens.splice i, 1, ...ts
       i += ts.length - 1
     case <[ ) )CALL ]> then break unless token.1
+    case \}            then break if     token.1
+    case \]            then break unless token.index
     case \LITERAL      then break
     default continue
     if token.spaced and tokens[i+1].0 of ARG
@@ -283,7 +287,7 @@ function able (tokens, i = tokens.length, call) ->
   [tag] = token = tokens[i-1]
   tag of <[ IDENTIFIER THISPROP THIS SUPER ] ]> or
   if call then token.callable or tag of <[ ) )CALL ]> and token.1 \
-          else tag of <[ STRNUM LITERAL } ) )CALL ]>
+          else tag of <[ STRNUM LITERAL ) )CALL } ]>
 
 function indexOfPair (tokens, i) ->
   level = 1; end = INVERSES[start = tokens[i].0]
