@@ -33,7 +33,7 @@ global import
   # Invoke another task in the current Cokefile.
   invoke: (name) ->
     unless task = Tasks[name] or Tasks[Aliases[name]]
-      console.error 'no such task: "%s"', name
+      console.error 'no such task: "%s"' name
       process.exit 1
     task.action Options
 
@@ -49,9 +49,9 @@ global import
 exports.run = ->
   args = process.argv.slice 2
   filename = args.splice(0 2).1 if args.0 of <[ -f --cokefile ]>
-  path.exists filename ||= \Cokefile, ->
+  path.exists filename ||= \Cokefile ->
     unless it
-      console.error 'no "%s" in %s', filename, process.cwd()
+      console.error 'no "%s" in %s' filename, process.cwd()
       process.exit 1
     require.paths.push process.cwd()
     Coco.run slurp(filename), {filename}

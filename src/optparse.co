@@ -49,15 +49,15 @@ module.exports = (
     throw Error "unrecognized option: #{arg}" if FLAG.test arg
     break
   options import
-    $flags    : flags
-    $args     : args.slice i
-    $literals : literals or []
-    # Given `flags` above , the resulting `options` will stringify as:
-    #
-    #     -h, --help          display help
-    #     -o, --output DIR    set output directory
-    #     -N, --nodejs ARGS+  pass options to "node"
-    toString: help
+  $flags    : flags
+  $args     : args.slice i
+  $literals : literals or []
+  # Given `flags` above , the resulting `options` will stringify as:
+  #
+  #     -h, --help          display help
+  #     -o, --output DIR    set output directory
+  #     -N, --nodejs ARGS+  pass options to "node"
+  toString: help
 
 function help ->
   longs = @$flags.map -> it.long + if it.arg then ' ' + that else ''
@@ -65,6 +65,6 @@ function help ->
   pad   = Array(width >> 1).join '  '
   @$flags.map (flag, i) ->
     sf = if flag.short then that + \, else '   '
-    lf = (longs[i] + pad).slice 0, width
+    lf = (longs[i] + pad).slice 0 width
     "  #{sf} #{lf}  #{flag.desc}"
   .join \\n

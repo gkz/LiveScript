@@ -47,7 +47,7 @@ exports.run = ->
   switch
   case o.interactive then repl()
   case o.stdin       then compileStdin()
-  case o.eval        then compileScript '', sources.join \\n
+  case o.eval        then compileScript '' sources.join \\n
   case sources.length
     process.argv.splice 2 9e9,
       ...if o.run then sources.splice 1 else [], ...o.$literals
@@ -108,14 +108,14 @@ compileScript = (file, input, base) ->
 compileStdin = ->
   code  = ''
   stdin = process.openStdin()
-  stdin.on \data, -> code += it if it
-  stdin.on \end , -> compileScript null, code
+  stdin.on \data -> code += it if it
+  stdin.on \end  -> compileScript null code
 
 # Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--nodes` or `--print`.
 watch = (source, base) ->
-  fs.watchFile source, {+persistent, interval: 500ms}, (curr, prev) ->
+  fs.watchFile source, {+persistent, interval: 500ms} (curr, prev) ->
     return if curr.size is prev.size and +curr.mtime is +prev.mtime
     (e, code) <- fs.readFile source
     e and die e.stack || e
@@ -136,8 +136,8 @@ writeJs = (source, js, base) ->
     return warn e if e
     if o.compile and o.watch
       (try require(\util).log catch then say) "Compiled #{source}"
-  yes <- path.exists dir
-  if yes
+  <- path.exists dir
+  if it
   then do compile
   else require(\child_process).exec "mkdir -p #{dir}", compile
 

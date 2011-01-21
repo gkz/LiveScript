@@ -5,7 +5,7 @@ tint = (ext, shortcuts, fallthroughs) ->
   PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
 
 ### Main
-tint \co, [
+tint \co [
   [\str /// ^ ' (?: ''[\S\s]*?'' | [^\\']*(?:\\.[^\\']*)* ) ' /// \']
   [\lang-co-qq /^("""[\S\s]*?""")/ \"]
   [\lang-co-qq /// ^ ( " [^\\"]*(?:\\.[^\\"]*)* " ) /// \"]
@@ -18,7 +18,7 @@ tint \co, [
   | (?:\d+(?:\.\d+)?) (?:e[+-]?\d+)? [a-z]*
   ) ///i \0123456789]
   [\lang-js /^`([^\\`]*(?:\\.[^\\`]*)*)`/ \`]
-], [
+] [
   [\str /// ^ \\ \S [^\s,;)}\]]* ///]
   [\com /// ^ /\* [\S\s]* \*/ ///]
   # ref. [retrie](https://github.com/satyr/retrie)
@@ -68,8 +68,8 @@ tint \co, [
 hashbraces = [\lang-co /^#({[\S\s]*?})/ \#]
 regexes    = [\lit /^[\S\s]+?/]
 
-tint \co-qq, [hashbraces], [[\str /^[\S\s]+?/]]
-tint \co-qr, [hashbraces], [[\com /^\s#(?!{).*/], regexes]
-tint \co-r , [], [regexes]
+tint \co-qq [hashbraces] [[\str /^[\S\s]+?/]]
+tint \co-qr [hashbraces] [[\com /^\s#(?!{).*/] regexes]
+tint \co-r  [] [regexes]
 
-tint \co-at, [[\ctx /^@+/ \@]], [[\typ /^\d+/]]
+tint \co-at [[\ctx /^@+/ \@]] [[\typ /^\d+/]]

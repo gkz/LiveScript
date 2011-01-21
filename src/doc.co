@@ -6,13 +6,13 @@
 
 {title} = document
 
-doc = document.getElementById \doc or lmn \div, id: \doc
+doc = document.getElementById \doc or lmn \div id: \doc
 nav = document.getElementById \nav or do ->
   h  = '<div class=pointee>&#x2935;</div>'
   h += "<h1>#{title}</h1>" if title
   h += "<li><a href=##{co}>#{co}</a>" for co of sources
   h += '<li class=index><a href=#>#</a>'
-  lmn \ul, id: \nav, innerHTML: h
+  lmn \ul id: \nav, innerHTML: h
 
 htms = __proto__: null
 
@@ -67,7 +67,7 @@ function build (name, source) ->
 function block (name, comment, code, i) ->
   code &&= """
    <pre class="code prettyprint lang-co"
-    >#{ code.replace(/&/g, '&amp;').replace(/</g, '&lt;') }</pre>
+    >#{ code.replace(/&/g '&amp;').replace(/</g '&lt;') }</pre>
   """
   """
    <div id=#{i} class=block><div class=comment
