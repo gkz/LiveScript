@@ -32,7 +32,7 @@ eq ///  /// + '', '/(?:)/'
 eq /// _ #{?if 1 then \g else \m}/// + '', '/_/g'
 
 # ACI interaction.
-eq \/1/ '0'.replace ///#{0}/// /1/ \g
+eq \/1/ '0'.replace ///#{0}/// ''+/1/ \g
 
 
 # [coffee#584](https://github.com/jashkenas/coffee-script/issues/584)
