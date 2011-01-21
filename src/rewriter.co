@@ -73,7 +73,7 @@ function addImplicitIndentation (tokens) ->
       switch
       case token.1 is \do
         (pair = tokens[indexOfPair tokens, i+1]).0 = \)
-        tokens[i+1] <<< {+fromDo, pair, 0: \(}
+        tokens[i+1] <<< {pair, 0: \(, 1: \do}
       default continue
       tokens.splice i, 1
       continue
@@ -151,7 +151,7 @@ function addImplicitParentheses (tokens) ->
     if \] is prev.0
       if brackets.pop() then token.index = true else continue
     continue unless prev.spaced and able tokens, i, true
-    if token.fromDo
+    if tag is \( and token.1 is \do
       token.     0 = \CALL(
       token.pair.0 = \)CALL
       continue
