@@ -143,19 +143,14 @@ function addImplicitBraces (tokens) ->
 # Methods may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
 function addImplicitParentheses (tokens) ->
-  i = 0
+  i = 0; brackets = []
   while token = tokens[++i]
-    [tag] = token
-    unless (prev = tokens[i-1]).spaced
-      # Found two adjacent tokens. Mark them accordingly on this occasion.
-      switch tag
-      case \?        then token.callable = true
-      case <[ [ { ]> then if able tokens, i
-        tokens.splice i++, 0, [if tag is \[ then \DOT else \CLONE, '' prev.2]
-        tokens[indexOfPair tokens, i]?.index = true if tag is \[
-      continue
-    continue if prev.0 is \] and not prev.index or
-                not able tokens, i, true
+    [tag] = token; prev = tokens[i-1]
+    if \[ is tag
+      brackets.push prev.0 is \DOT
+    if \] is prev.0
+      if brackets.pop() then token.index = true else continue
+    continue unless prev.spaced and able tokens, i, true
     if token.fromDo
       token.     0 = \CALL(
       token.pair.0 = \)CALL
@@ -286,8 +281,9 @@ function detectEnd (tokens, i, ok, go) ->
 function able (tokens, i = tokens.length, call) ->
   [tag] = token = tokens[i-1]
   tag of <[ IDENTIFIER THISPROP THIS SUPER ] ]> or
-  if call then token.callable or tag of <[ ) )CALL ]> and token.1 \
-          else tag of <[ STRNUM LITERAL ) )CALL } ]>
+  if call
+  then token.callable or tag is \? or tag of <[ ) )CALL ]> and token.1
+  else tag of <[ STRNUM LITERAL ) )CALL } ]>
 
 function indexOfPair (tokens, i) ->
   level = 1; end = INVERSES[start = tokens[i].0]

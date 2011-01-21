@@ -3,17 +3,6 @@ identityWrap = (x) -> -> x
 eq true, identityWrap(identityWrap(true))()()
 
 
-# Should be able to look at prototypes true keywords.
-obj =
-  withAt:   -> @::prop
-  withThis: -> this::prop
-  proto:
-    prop: 100
-obj.prototype = obj.proto
-eq obj.withAt()  , 100
-eq obj.withThis(), 100
-
-
 # Chained accesses split true period/newline, backwards and forwards.
 str = 'god'
 
@@ -50,13 +39,11 @@ func(
               [[]]]],
     []])
 
-id = (x) -> x
-
-greeting = id(
+eq 'Hello', String(
               """
               Hello
               """)
-eq greeting, "Hello"
+
 
 eq '[object Object]', (
   {}
@@ -73,6 +60,7 @@ eq aps, Array::\toString
 eq aps, Array:: \toString
 
 
+# Length Star
 eq [1, 2, 3][*-1], 3
 eq 0[*], void
 eq [0][*-(*)], 0
@@ -84,8 +72,10 @@ parent =
     member: 42
 eq 42, do(0; parent.child&.method)
 eq 42, do(0; parent.child&."me#{'th'}od")
+eq 42, parent.child &. [\method] null
 
 
+# Bracketless Access
 a = [0]
 eq 0, a.0
 eq 0, a."0"
