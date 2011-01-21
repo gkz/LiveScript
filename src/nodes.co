@@ -125,6 +125,7 @@ class Node
   unfoldAssign : NO
   unwrap       : THIS
   asKey        : THIS
+  asArr        : THIS
 
   invert: -> Op \! this
 
@@ -168,6 +169,8 @@ class exports.Block extends Node
     this
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this
+
+  asArr: -> Arr @lines
 
   isComplex: -> @lines.length > 1 or !!@lines.0?.isComplex()
 
@@ -500,16 +503,16 @@ class exports.Call extends Node
 # An operation that creates a new object with its `__proto__`
 # set to the operand, attaching specified properties.
 class exports.Clone extends Node
-  (@base, @mixin) ->
+  (@base, @mixins) ->
 
-  children: <[ base mixin ]>
+  children: <[ base mixins ]>
 
   unfoldSoak: -> If.unfoldSoak it, this, \base
 
   compileNode: (o) ->
-    call = Call Value(Util \clone), [@base]
+    call = Call Util(\clone), [@base]
     call = Parens call, true if @newed
-    Import(call, @mixin).compileNode o
+    Import(call, Obj @mixins).compileNode o
 
 #### List
 # An abstract node for a list of items.
@@ -797,8 +800,8 @@ class exports.Assign extends Node
   transleft: (o) ->
     {left} = this
     # `x{k} = o` to `{k: x.k} = o`
-    if left.mixin
-      {base, mixin: {items}} = left
+    if left instanceof Clone
+      {base, mixins: items} = left
       if items.length > 1
       then [sub, ref, @temps] = base.cache o
       else sub = ref = base
@@ -816,7 +819,7 @@ class exports.Assign extends Node
           val = Value base, [Index node.asKey()]
           val = dfv import {first: val} if dfv
           items[i] = Assign key, val, \:
-      left.=mixin
+      left = Obj items
     # `x[k] = a` to `[x[k]] = a`
     else if left instanceof Value and left.tails[*-1]?.key.length
       {key} = left.tails.pop()

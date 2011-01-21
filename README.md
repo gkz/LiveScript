@@ -6,7 +6,7 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 - Reserve less keywords.
 - Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 - Performance over readability.
-- Readability over compressability.
+- Perl over Ruby.
 
 ## Differences
 - [Additions](https://github.com/satyr/coco/wiki/additions)
@@ -28,9 +28,19 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
+### 0.2.3b
+- Added _backcall_, a sugar to flatten nested callbacks:
+      $ coco -bpe 'a <- f; b'
+      f(function(a){
+        return b;
+      });
+- Improved _ACI_ (automatic comma insertion): `f {} [] x` -> `f({}, [], x);`
+- Enabled compound _accessign_s: `a.+=b` -> `a += a.b;`
+- `do` block can now work as a pair of normal parentheses.
+
 ### 0.2.2
 - `is not` is the new `isnt`.
-- `@'++'` is now valid as a shorhand for `@['++']`.
+- `@'++'` is now valid as a shorthand for `@['++']`.
 - Commas between primitive values are now optional.
       $ coco -bpe '[null true 1 "2"]'
       [null, true, 1, "2"];
