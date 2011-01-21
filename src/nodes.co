@@ -379,7 +379,7 @@ class exports.Value extends Node
     void
 
   unfoldBind: (o) ->
-    for index, i of @tails then if index.symbol is \&.
+    for index, i of @tails then if index.symbol of <[ ~. &. ]>
       index.symbol = ''
       args   = Value(@head, @tails.slice 0, i).cache o, true
       args.1 = Value args.1, [index]

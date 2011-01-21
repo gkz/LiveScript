@@ -340,7 +340,7 @@ exports import
   literalToken: ->
     return 0 unless val = SYMBOL.exec it
     switch tag = val.=0
-    case <[ . ?. &. .= ]>              then tag = \DOT
+    case <[ . ?. .= ~. &. ]>           then tag = \DOT
     case <[ + - ]>                     then tag = \+-
     case <[ ! ~ ]>                     then tag = \UNARY
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
@@ -579,7 +579,7 @@ SYMBOL = /// ^ (?
 | \([^\n\S]*\)      # call
 | [!=]==?           # equality
 | \.{3}             # splat/yadayadayada
-| [?&]\.            # soak/bind access
+| [?&~]\.           # soak/bind access
 | <<(?:=|<<?)?      # left shift / import
 | >>>?=?            # rite shift
 | @@                # arguments shorthand

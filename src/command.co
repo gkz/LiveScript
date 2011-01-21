@@ -154,10 +154,10 @@ printTokens = (tokens) ->
 # and evaluates it. Good for simple tests or poking around the
 # [**Node.js** API](http://nodejs.org/api/).
 repl = ->
-  global.__defineGetter__ \quit, -> process.exit 0
   repl = require(\readline).createInterface stdin = process.openStdin()
   buf  = ''
-  repl.on \line, ->
+  repl.on \close stdin~.destroy
+  repl.on \line ->
     code = buf + \\n + it
     if \\ is code.slice -1 then buf := code.slice 0, -1; return
     buf := ''
@@ -166,9 +166,9 @@ repl = ->
       _ is void or console.dir _
     catch e say e
     repl.prompt()
-  repl.on \close, stdin&.destroy
-  stdin.on \data, repl&.write
-  process.on \uncaughtException, -> say \\n + (it?.stack or it)
+  stdin.on \data repl~.write
+  process.on \uncaughtException -> say \\n + (it?.stack or it)
+  __defineGetter__ \quit -> process.exit 0
   repl.setPrompt 'coco> '
   repl.prompt()
 
