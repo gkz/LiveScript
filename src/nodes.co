@@ -153,7 +153,7 @@ Negatable =
 # indented block of code--the implementation of a function, a clause in an
 # `if`, `switch`, `try`, and so on.
 class exports.Block extends Node
-  (node) =>
+  (node) ~>
     return node if node instanceof Block
     @lines = []
     @add node if node
@@ -235,7 +235,7 @@ class exports.Block extends Node
 # JavaScript without translation, such as identifiers, numbers, `this`,
 # and pretty much everything that doesn't fit in other nodes.
 class exports.Literal extends Node
-  (@value, @reserved) => return JS '' + value if value.js
+  (@value, @reserved) ~> return JS '' + value if value.js
 
   show: -> \" + @value + \"
 
@@ -263,7 +263,7 @@ class exports.Literal extends Node
 #### Key
 # The name of a property, in the form of `{key: _}` or `_.key`.
 class exports.Key extends Node
-  (@name) =>
+  (@name) ~>
 
   show: -> @name
 
@@ -274,7 +274,7 @@ class exports.Key extends Node
 #### Index
 # The dots and brackets to access an object's property.
 class exports.Index extends Node
-  (@key, @symbol) =>
+  (@key, @symbol) ~>
     switch key.length
     case 0 then @key = Key \__proto__
     case 1 then @key = key.0
@@ -295,7 +295,7 @@ class exports.Index extends Node
 # Acts as a container for property access chains, by holding
 # __Index__ instances within `@tails`.
 class exports.Value extends Node
-  (head, tails, at) =>
+  (head, tails, at) ~>
     return head if not tails and head instanceof Value
     @<<<{head, tails: tails || [], at}
 
@@ -382,7 +382,7 @@ class exports.Value extends Node
     void
 
   unfoldBind: (o) ->
-    for index, i of @tails then if index.symbol of <[ ~. &. ]>
+    for index, i of @tails then if index.symbol is \~.
       index.symbol = ''
       args   = Value(@head, @tails.slice 0, i).cache o, true
       args.1 = Value args.1, [index]
@@ -417,7 +417,7 @@ class exports.Value extends Node
 #### Call
 # `x(y)`
 class exports.Call extends Node
-  (@callee, args or [], sym) =>
+  (@callee, args or [], sym) ~>
     if args.length is 1 and args.0 instanceof Splat and args.0.it.isEmpty()
       @splat = true; args = [Literal \this; Literal \arguments]
     @<<<{args, soak: sym is \?(}
@@ -523,7 +523,7 @@ class List extends Node
 #### Obj
 # `{x: y}`
 class exports.Obj extends List
-  (@items or []) =>
+  (@items or []) ~>
 
   assigns: -> return true if node.assigns it for node of @items
 
@@ -567,7 +567,7 @@ class exports.Obj extends List
 #### Arr
 # `[x, y]`
 class exports.Arr extends List
-  (@items or []) =>
+  (@items or []) ~>
 
   compileNode: (o) ->
     {items} = this
@@ -583,7 +583,7 @@ class exports.Arr extends List
 #### Op
 # Simple Arithmetic and logical operations, with some special conversions.
 class exports.Op extends Node
-  (op, first, second, post) =>
+  (op, first, second, post) ~>
     return new Of first, second if op is \of
     if op is \do
       if first instanceof Fun
@@ -679,7 +679,7 @@ class exports.Op extends Node
 # Assignment to a local variable or the property of an object,
 # including `:` within object literals.
 class exports.Assign extends Node
-  (@left, @right, @op or \=, @logic or @op.logic) => @op += ''
+  (@left, @right, @op or \=, @logic or @op.logic) ~> @op += ''
 
   children: <[ left right ]>
 
@@ -830,7 +830,7 @@ class exports.Assign extends Node
 #### Import
 # Operators that copy properties from right to left.
 class exports.Import extends Node
-  (@left, @right, @all and \All) =>
+  (@left, @right, @all and \All) ~>
     if not all and left instanceof Obj and right instanceof Obj
       return Obj left.items.concat right.items
 
@@ -910,7 +910,7 @@ class exports.Of extends Node
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
 class exports.Existence extends Node
-  (@it) =>
+  (@it) ~>
 
   children: [\it]
 
@@ -929,8 +929,7 @@ class exports.Existence extends Node
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Block(), arrow) =>
-    @bound = \_this if arrow of <[ ~> => ]>
+  (@params or [], @body or Block(), arrow) ~> @bound = \_this if arrow is \~>
 
   children: <[ params body ]>
 
@@ -1088,7 +1087,7 @@ class exports.Super extends Node
 # An extra set of parentheses,
 # specifying evaluation order and/or forcing expression.
 class exports.Parens extends Node
-  (@it, @keep) =>
+  (@it, @keep) ~>
 
   children: [\it]
 
@@ -1107,7 +1106,7 @@ class exports.Parens extends Node
 # A splat, either as an argument to a call
 # or as part of a destructuring assignment.
 class exports.Splat extends Parens
-  (@it) =>
+  (@it) ~>
 
   isAssignable: YES
 
@@ -1159,7 +1158,7 @@ class exports.Throw extends Statement
 
 #### Return
 class exports.Return extends Throw
-  => @<<<{it} if it and it.value is not \void
+  ~> @<<<{it} if it and it.value is not \void
 
   jumps: THIS
 
@@ -1288,7 +1287,7 @@ class exports.For extends While
     head + body
 
   pluckDirectCalls: (o) ->
-    @body.eachChild dig = =>
+    @body.eachChild dig = ~>
       unless it instanceof Call and
              ((fn = it.callee.unwrap()) instanceof Fun or
               fn instanceof Parens and fn.=it instanceof Fun) and
@@ -1395,7 +1394,7 @@ class exports.Case extends Node
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Node
-  (@if, @then, {@soak, name} or {}) => @negated = name is \unless
+  (@if, @then, {@soak, name} or {}) ~> @negated = name is \unless
 
   children: <[ if then else ]>
 
@@ -1457,7 +1456,7 @@ class exports.If extends Node
 #### JS
 # Embedded JavaScript snippets.
 class exports.JS extends Node
-  (@code) =>
+  (@code) ~>
 
   terminator: ''
 
@@ -1471,7 +1470,7 @@ class exports.Comment extends JS
 #### Util
 # A wrapper node for utility functions.
 class exports.Util extends Node
-  (@verb) =>
+  (@verb) ~>
 
   @::{show} = Statement::
 
@@ -1480,7 +1479,7 @@ class exports.Util extends Node
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
   # returning the left one.
-  @Extends = -> Call Value(Util \extends), @@[0 1]
+  @Extends = -> Call Util(\extends), @@[0 1]
 
 #### Parser Utils
 # Helpers for modifying nodes in [parser](../lib/parser.js).

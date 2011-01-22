@@ -165,7 +165,7 @@ eq (while 1 then break; 1).length, 0
 # define it outside and pass loop variables to it.
 fs = for i, [a, b] in [[], [1, 2], [3, 4]] then if a
   me = this
-  do =>
+  do ~>
     return if i < 2
     eq me, this
     eq a * b, 12
@@ -194,11 +194,11 @@ eq "#{
 }", '40,30,48,36'
 
 
-new -> do =>
+new -> do ~>
   me = this
   [] = for ever
     eq me, this
-    eq me, do => this
+    eq me, do ~> this
     break
     1
 

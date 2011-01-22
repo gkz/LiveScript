@@ -99,7 +99,7 @@ eq instance.name(), 'class'
 # Static method as a bound function.
 class Dog
   (@name) ->
-  @static = => new this 'Dog'
+  @static = ~> new this 'Dog'
 
 eq {func: Dog.static}.func().name, 'Dog'
 
@@ -107,8 +107,8 @@ eq {func: Dog.static}.func().name, 'Dog'
 # A bound function in a bound method.
 class Mini
   ->
-    @generate = =>
-      for i from 1 to 3 then do => => @num * i
+    @generate = ~>
+      for i from 1 to 3 then do ~> ~> @num * i
   num: 10
 
 eq (func() for func of new Mini().generate()) + '', '10,20,30'
@@ -188,10 +188,10 @@ eq Class, Namespace.Class
 
 
 class BoundCtor extends (-> {@attr})
-  (@attr, ret) =>
+  (@attr, ret) ~>
     return this if ret
     eq super(...).attr, @attr
-    @method = => this
+    @method = ~> this
 
 tbc = BoundCtor 'attr'
 eq tbc.attr, 'attr'
@@ -223,7 +223,7 @@ new ->
 
 
 class OddSuper
-  me = => this
+  me = ~> this
   super: me
   $uper: me
   1234 : me

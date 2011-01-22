@@ -47,7 +47,7 @@ eq 'Hello', String(
 
 eq '[object Object]', (
   {}
-  &.toString
+  ~.toString
   ::
   ?.constructor()
 ), 'other accessors should also continue lines'
@@ -70,9 +70,9 @@ parent =
   child:
     method: -> @member
     member: 42
-eq 42, do(0; parent.child&.method)
-eq 42, do(0; parent.child&."me#{'th'}od")
-eq 42, parent.child &. [\method] null
+eq 42, do(0; parent.child~.method)
+eq 42, do(0; parent.child~."me#{'th'}od")
+eq 42, parent.child ~. [\method] null
 
 
 # Bracketless Access
@@ -101,7 +101,7 @@ eq '2,3', '' + {2,3}<[2 3]>
 eq '-Infinity,Infinity', '' + Number[\NEGATIVE_INFINITY, \POSITIVE_INFINITY]
 
 
-# Implicit indexing.
+# Implicit Indexing (automatic dot insertion)
 eq @toString, @\toString
 eq @toString, @"to#{\S}tring"
 
