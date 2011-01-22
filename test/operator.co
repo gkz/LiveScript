@@ -178,9 +178,10 @@ eq 1, do -> 1
 eq @, do ~> @
 
 x = y = 1
-do (x = 2, y) ->
-  eq x, 2
-  eq y, 1
+do (x, y = 2, ~3) ->
+  eq 1, x
+  eq 2, y
+  eq 3, +@
   x = y = 3
 eq x, 1
 eq y, 1

@@ -33,7 +33,7 @@ class Node
     args = []
     if @contains(-> it.value is \this)
       args.push Literal \this
-      val = Value fun, [Index Key \call]
+      method = \.call
     mentionsArgs = false
     @traverseChildren ->
       mentionsArgs := it.value = \_args if it.value is \arguments
@@ -41,7 +41,7 @@ class Node
     if mentionsArgs
       args.push Literal \arguments
       fun.params.push Literal \_args
-    Call(val or fun, args).compileNode o
+    (Call(fun, args) <<< {method}).compileNode o
 
   # Compiles a child node as a block statement.
   compileBlock: (o, name) ->
@@ -251,7 +251,7 @@ class exports.Literal extends Node
 
   compile: (o, level) ->
     switch val = @value
-    case \this then return o.scope.method?.bound or val
+    case \this then return o.scope.fun?.bound or val
     case \void then val += ' 8'; fallthrough
     case \null
       if (level ? o.level) is LEVEL_ACCESS
@@ -463,7 +463,7 @@ class exports.Call extends Node
              ".apply(#{ @args.0.compile o }, #{@args.1.value})"
     return @compileSplat o, that if Splat.compileArray o, @args, true
     callee.newed = true if @new
-    code = (@new or '') + callee.compile(o, LEVEL_ACCESS) +
+    code = (@new or '') + callee.compile(o, LEVEL_ACCESS) + (@method or '') +
            "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
     if fun and not @new then "(#{code})" else code
 
@@ -587,9 +587,17 @@ class exports.Op extends Node
     return new Of first, second if op is \of
     if op is \do
       if first instanceof Fun
-        args = (ps = first.params).length and for p, i of ps
-          if p.op is \= && not p.logic then ps[i] = p.left; p.right else p
-      return Parens Call first, args
+        args = []
+        if (ps = first.params).length then for p, i of ps
+          if p.op is \= and not p.logic
+          then args.push p.right; ps[i] = p.left
+          else if p.op is \~ and not at?
+          then args.unshift p.first; at = i
+          else args.push p
+        if at?
+          ps.splice at, 1
+          method = \.call
+      return Parens Call(first, args) <<< {method}
     if op is \new
       if (call = first.head or first) instanceof Call
         call.digCalls().0.new = 'new '
@@ -950,7 +958,7 @@ class exports.Fun extends Node
     sscope = pscope.shared or pscope
     scope  = o.scope = @body.scope =
       new Scope (if @wrapper then pscope else sscope), @wrapper && sscope
-    scope.method = this
+    scope.fun = this
     delete o.globals
     scope.assign \_proto @proto.compile(o) + \.prototype if @proto
     o.indent += TAB
@@ -964,7 +972,7 @@ class exports.Fun extends Node
           #{tab}function
         """
         body.add Return Literal \_this
-      else if sscope.method?.bound
+      else if sscope.fun?.bound
       then @bound = that
       else sscope.assign \_this \this
     args = []; asns = []
@@ -1071,9 +1079,9 @@ class exports.Super extends Node
   isAssignable: YES
 
   compile: (o) ->
-    {method} = o.scope.shared or o.scope
-    throw SE @L 'super outside of a function' unless method
-    {name, clas} = method
+    {fun} = o.scope.shared or o.scope
+    throw SE @L 'super outside of a function' unless fun
+    {name, clas} = fun
     if name
       if clas
         return clas + \.superclass.prototype +
@@ -1291,7 +1299,7 @@ class exports.For extends While
       unless it instanceof Call and
              ((fn = it.callee.unwrap()) instanceof Fun or
               fn instanceof Parens and fn.=it instanceof Fun) and
-             fn.params.length is it.args.length
+             fn.params.length is it.args.length - !!it.method
         return if it instanceof [Fun, For] then null else it.eachChild dig
       if @index
         fn.params.push it.args.* = Literal @index
