@@ -60,7 +60,7 @@ eq '', <[]>[0]
 o = {k1: "v1", k2: 4, k3: (-> true),}
 ok o.k3() and o.k2 is 4 and o.k1 is "v1"
 
-ok {a: (num) -> num is 10 }.a 10
+eq 10, {a: Number}.a 10
 
 moe = {
   name:  'Moe'
@@ -70,12 +70,10 @@ moe = {
     @['greet'] "Hello"
   10: 'number'
 }
-
 eq moe.hello() ,"Hello Moe"
 eq moe[10]     ,'number'
 
 moe.hello = -> this['greet'] "Hello"
-
 eq moe.hello(), 'Hello Moe'
 
 
@@ -90,6 +88,19 @@ ok not obj.not()
 obj = {class: 'hot'}
 obj.function = 'dog'
 eq obj.class + obj.function, 'hotdog'
+
+
+# Property shorthands.
+new ->
+  a = 0; @b = 1; x = {a, @b, 2, \3}
+  eq x.a, 0
+  eq x.b, 1
+  eq x.2, 2
+  eq x.3, \3
+  c = null; y = {a || 1, @b && 2, c ? 3}
+  eq y.a, 1
+  eq y.b, 2
+  eq y.c, 3
 
 
 # [#5](https://github.com/satyr/coco/issues/5): Accessor Properties
@@ -232,13 +243,14 @@ obj = {
   (4 * 2): 8
   /* cached shorthand */
   (++i)
+  (--i) or 'default value'
   /*      splat       */
   ...o
   ...({splatMe: 'too'})
   /*   normal keys    */
   key: ok
   's': ok
-  0.0: ok
+  0.5: ok
 
   "#{'interpolated'}":
     """#{"nested"}""": 123: 456
@@ -247,9 +259,10 @@ obj = {
 eq obj.interpolated.nested[123], 456
 eq obj[8], 8
 eq obj[1], 1
+eq obj[0], 'default value'
 eq obj.splat  , 'me'
 eq obj.splatMe, 'too'
-ok obj.key is obj.s is obj[0]
+ok obj.key is obj.s is obj[1/2]
 
 eq 'braceless dynamic key',
   (key for key in """braceless #{ 0 in ((0):(0)) and 'dynamic' } key""": 0)[0]

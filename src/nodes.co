@@ -273,7 +273,7 @@ class exports.Var extends Atom
 #### Key
 # The name of a property, in the form of `{key: _}` or `_.key`.
 class exports.Key extends Atom
-  (name, reserved or name.reserved) ~> name += ''; @<<<{name, reserved}
+  (name, @reserved or name.reserved) ~> @name = '' + name
 
   isAssignable: -> not @reserved
 
@@ -308,7 +308,7 @@ class exports.Index extends Node
 class exports.Value extends Node
   (head, tails, at) ~>
     return head if not tails and head instanceof Value
-    @<<<{head, tails: tails || [], at}
+    @<<<{head, tails or [], at}
 
   children: <[ head tails ]>
 
@@ -541,7 +541,8 @@ class exports.Obj extends List
     {items} = this
     return (if @front then '({})' else '{}') unless items.length
     for node, i of items
-      if node instanceof Splat or (node.left or node) instanceof Parens
+      if node instanceof Splat or
+         (node.left or node.first or node) instanceof Parens
         rest = items.splice i, 9e9
         break
     code = ''; idt = o.indent += TAB; [last] = lastNonComment items; dic = {}
@@ -549,6 +550,7 @@ class exports.Obj extends List
       if node instanceof Comment
         code += idt + node.compile(o) + \\n
         continue
+      node.=first if logic = node.hasDefault()
       code += idt + if node.at
         (key = node.tails.0.key.compile o) + ': ' + node.compile o, LEVEL_LIST
       else if node instanceof Assign
@@ -562,6 +564,9 @@ class exports.Obj extends List
       else
         (key = node.compile o) + ': ' + key
       throw SE node.L "duplicate property name \"#{key}\"" if dic[0 + key]
+      logic and code += " #{
+        if logic.op is \? then "!= null ? #{key} :" else logic.op
+      } " + logic.second.compile o, LEVEL_OP
       code += dic[0 + key] = if node is last then \\n else \,\n
     code = "{#{ code and \\n + code + @tab }}"
     return @compileDynamic o, code, rest if rest
@@ -633,7 +638,7 @@ class exports.Op extends Node
   unfoldSoak: (o) ->
     @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, \first
 
-  hasDefault: -> @op of <[ ? || && ]>
+  hasDefault: -> switch @op case <[ ? || && ]> then this
 
   compileNode: (o) ->
     return @compileUnary o if not @second
@@ -802,14 +807,14 @@ class exports.Assign extends Node
     for node of nodes
       node.=it if splat = node instanceof Splat
       # `{a or b} = c` to `a = c.a or b`
-      if dfv = node.hasDefault() then dfv = node; node.=first
+      node.=first if logic = node.hasDefault()
       if node instanceof Parens
         [node, key] = Value(node.it).cacheReference o
       else if node instanceof Assign
       then key = node.left; node.=right
       else key = if node.at then node.tails.0.key else node
       node = Var node.name if node instanceof Key
-      node = dfv import {first: node} if dfv
+      node = logic import {first: node} if logic
       val  = Value lr ||= Var(rite), [Index key.asKey()]
       val  = Import Obj(), val if splat
       Assign(node, val, @op).compile o, LEVEL_TOP
@@ -829,13 +834,13 @@ class exports.Assign extends Node
           node.right = Value base, [Index node.right.asKey()]
         else
           # `o{k or v} = ..` to `{k: a.k or v} = ..`
-          if dfv = node.hasDefault() then dfv = node; node.=first
+          node.=first if logic = node.hasDefault()
           if node instanceof Parens
           # `a{(++i)} = b` to `{(_ref): a[_ref = ++i]} = b`
           then [node, key] = node.cache o, true; key = Parens key
           else key = node
           val = Value base, [Index node.asKey()]
-          val = dfv import {first: val} if dfv
+          val = logic import {first: val} if logic
           items[i] = Assign key, val, \:
       left = Obj items
     # `x[k] = a` to `[x[k]] = a`
@@ -876,6 +881,7 @@ class exports.Import extends Node
       if node instanceof Splat
         code += Import(lref, node.it).compile o, LEVEL_TOP
         continue
+      node.=first if logic = node.hasDefault()
       if dyna = node instanceof Parens
         [key, val] = node.it.cache o, true
       else if node instanceof Assign
@@ -889,6 +895,7 @@ class exports.Import extends Node
         {left: key, right: val} = node
       else if (key = val = node).at
         [{key}] = val.tails
+      val = logic import {first: val} if logic
       asn = Assign Value(lref, [Index if dyna then key else key.asKey()]), val
       code += asn.compile o, LEVEL_PAREN
     if sub is lref
