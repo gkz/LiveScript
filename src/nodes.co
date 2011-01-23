@@ -209,7 +209,8 @@ class exports.Block extends Node
     if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
 
   # **Block** is the only node that can serve as the root.
-  compileRoot: (o or {}) ->
+  compileRoot: (options) ->
+    o = {} <<<< options
     o.indent = @tab = if bare = delete o.bare then '' else TAB
     o.scope  = @scope = Scope.root = new Scope
     o.level  = LEVEL_TOP

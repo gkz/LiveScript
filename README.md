@@ -35,7 +35,7 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
         return b;
       });
 - Improved _ACI_ (automatic comma insertion): `f {} [] x` -> `f({}, [], x);`
-- Enabled compound _accessign_s: `a.+=b` -> `a += a.b;`
+- Enabled compound _accessigns_: `a.+=b` -> `a += a.b;`
 - `do` block can now work as a pair of normal parentheses.
 
 ### 0.2.2
