@@ -430,7 +430,7 @@ class exports.Value extends Node
 class exports.Call extends Node
   (@callee, args or [], sym) ~>
     if args.length is 1 and args.0 instanceof Splat and args.0.it.isEmpty()
-      @splat = true; args = [Literal \this; Var \arguments]
+      @thisplat = true; args = [Literal \this; Var \arguments]
     @<<<{args, soak: sym is \?(}
 
   children: <[ callee args ]>
@@ -467,11 +467,11 @@ class exports.Call extends Node
     return that.compile o if @unfoldAssign o
     {callee} = this
     callee <<< {@front} unless fun = (callee.head or callee) instanceof Fun
-    if @splat
+    if @thisplat
       return @compileSplat o, @args.1.value if @new
-      return callee.compile(o, LEVEL_ACCESS) +
-             ".apply(#{ @args.0.compile o }, #{@args.1.value})"
-    return @compileSplat o, that if Splat.compileArray o, @args, true
+      @method = \.apply
+    else if Splat.compileArray o, @args, true
+      return @compileSplat o, that
     callee.newed = true if @new
     code = (@new or '') + callee.compile(o, LEVEL_ACCESS) + (@method or '') +
            "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
