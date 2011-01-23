@@ -90,6 +90,7 @@ compileScript = (file, input, base) ->
       throw \ok
     Coco.emit \compile t
     t.output = t.nodes.compileRoot t.options
+    Coco.emit \write t
     switch
     case o.run     then Coco.run t.output, t.options <<< {+js}
     case o.print   then say t.output.trim()
