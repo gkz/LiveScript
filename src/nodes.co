@@ -112,6 +112,7 @@ class Node
   isComplex    : YES
   isStatement  : NO
   isAssignable : NO
+  isCallable   : NO
   isEmpty      : NO
   isAccessor   : NO
   # Do I contain a statement that jumps out of me?
@@ -132,7 +133,7 @@ class Node
 
   # Constructs a node that returns the current node's result.
   makeReturn: (name) ->
-    if name then Call Literal(name + \.push), [this] else Return this
+    if name then Call JS(name + \.push), [this] else Return this
 
   # Extra info for `toString`.
   show: String
@@ -180,6 +181,8 @@ class exports.Block extends Node
   isStatement: (o) ->
     return true if o and not o.level
     return true if node.isStatement o for node of @lines
+
+  isCallable: -> that.isCallable() if lastNonComment(@lines).0
 
   jumps: -> return that if node.jumps it for node of @lines
 
@@ -247,6 +250,8 @@ class exports.Literal extends Atom
 
   isEmpty: -> switch @value case <[ void null ]> then return true
 
+  isCallable: -> @value is \this
+
   compile: (o, level) ->
     switch val = @value
     case \this then return o.scope.fun?.bound or val
@@ -261,7 +266,8 @@ class exports.Literal extends Atom
 class exports.Var extends Atom
   (@value) ~>
 
-  isAssignable: YES
+  isAssignable : YES
+  isCallable   : YES
 
   assigns: -> it is @value
 
@@ -318,8 +324,9 @@ class exports.Value extends Node
   jumps        : -> not @tails.length and @head.jumps it
   assigns      : -> not @tails.length and @head.assigns it
   isStatement  : -> not @tails.length and @head.isStatement it
-  isComplex    : -> !!@tails.length or do @head.isComplex
-  isAssignable : -> !!@tails.length or do @head.isAssignable
+  isComplex    : -> @tails.length or do @head.isComplex
+  isAssignable : -> @tails.length or do @head.isAssignable
+  isCallable   : -> @tails.length or do @head.isCallable
 
   makeReturn: -> if @tails.length then super ... else @head.makeReturn it
 
@@ -438,6 +445,8 @@ class exports.Call extends Node
 
   show: -> (@new or '') + if @soak then \? else ''
 
+  isCallable: YES
+
   # Lists up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
   digCalls: ->
     list = [call = this]
@@ -467,6 +476,8 @@ class exports.Call extends Node
   compileNode: (o) ->
     return that.compile o if @unfoldAssign o
     {callee} = this
+    unless callee.isCallable()
+      throw SE callee.L callee.compile(o, LEVEL_ACCESS) + ' // invalid callee'
     callee <<< {@front} unless fun = (callee.head or callee) instanceof Fun
     if @thisplat
       return @compileSplat o, @args.1.value if @new
@@ -625,6 +636,9 @@ class exports.Op extends Node
 
   show: -> @op
 
+  isCallable: -> switch @op case <[ && || ? new delete ]>
+    @first.isCallable() or @second?.isCallable()
+
   EQUALITY = /^[!=]==?$/
   COMPARER = /^(?:[!=]=|[<>])=?$/
 
@@ -676,6 +690,8 @@ class exports.Op extends Node
     {op} = this
     return @compileDelete o if op is \delete and o.level
     code = @first.compile o, LEVEL_OP
+    if op is \new and not @first.isCallable()
+      throw SE @first.L code + ' // invalid constructor'
     code = if @post
     then code + op
     else if op of <[ new typeof delete ]> or
@@ -715,6 +731,8 @@ class exports.Assign extends Node
     @right.op is \~ and
     (fun = @right.first) instanceof Fun and fun.params.length < 2
 
+  isCallable: -> switch @op case <[ = := ]> then @right.isCallable()
+
   unfoldSoak: (o) -> If.unfoldSoak o, this, \left
 
   unfoldAssign: -> @access and this
@@ -748,7 +766,7 @@ class exports.Assign extends Node
       return name + ': ' + val
     unless left.isAssignable()
       throw SE left.L left.compile(o <<< indent: '', LEVEL_LIST) +
-                      ' // invalid assignment'
+                      ' // invalid assignee'
     if left instanceof Var
       if @op is \=
         o.scope.declare name
@@ -963,6 +981,8 @@ class exports.Fun extends Node
 
   named: -> @<<<{name: it, +statement}
 
+  isCallable: YES
+
   # Short-circuit `traverseChildren` method to prevent it
   # from crossing scope boundaries by default.
   traverseChildren: (_, xscope) -> super ... if xscope
@@ -1062,6 +1082,8 @@ class exports.Class extends Node
 
   children: <[ title sup fun ]>
 
+  isCallable: YES
+
   compileNode: (o) ->
     {fun} = this; {lines} = fun.body
     if @title
@@ -1093,7 +1115,8 @@ class exports.Class extends Node
 #### Super
 # Reference to the parent method or constructor.
 class exports.Super extends Node
-  isAssignable: YES
+  isAssignable : YES
+  isCallable   : YES
 
   compile: (o) ->
     {fun} = o.scope.shared or o.scope
@@ -1116,7 +1139,8 @@ class exports.Parens extends Node
 
   children: [\it]
 
-  isComplex: -> @it.isComplex()
+  isComplex  : -> @it.isComplex()
+  isCallable : -> @it.isCallable()
 
   compileNode: (o) ->
     {it} = this
@@ -1341,6 +1365,8 @@ class exports.Try extends Node
 
   isStatement: YES
 
+  isCallable: -> @attempt.isCallable() or @recovery?.isCallable()
+
   jumps: -> @attempt.jumps it or @recovery?.jumps it
 
   makeReturn: ->
@@ -1369,12 +1395,16 @@ class exports.Switch extends Node
 
   isStatement: YES
 
+  isCallable: ->
+    return true if c.isCallable() for c of @cases
+    @default?.isCallable()
+
   jumps: (x = {+block}) ->
-    return that if cs.body.jumps x for cs of @cases
+    return that if c.body.jumps x for c of @cases
     @default?.jumps x
 
   makeReturn: ->
-    cs.makeReturn it for cs of @cases
+    c.makeReturn it for c of @cases
     @default?.makeReturn it
     this
 
@@ -1394,6 +1424,8 @@ class exports.Case extends Node
   (@test, @body) ->
 
   children: <[ test body ]>
+
+  isCallable: -> @body.isCallable()
 
   makeReturn: ->
     [last] = lastNonComment @body.lines
@@ -1438,6 +1470,8 @@ class exports.If extends Node
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
     o and not o.level or @then.isStatement(o) or @else?.isStatement(o)
+
+  isCallable: -> @then.isCallable() or @else?.isCallable()
 
   jumps: -> @then.jumps it or @else?.jumps it
 
@@ -1484,6 +1518,7 @@ class exports.JS extends Node
   (@code) ~>
 
   terminator: ''
+  isCallable: YES
 
   compile: -> tabify @code, it.indent
 
@@ -1498,6 +1533,8 @@ class exports.Util extends Node
   (@verb) ~>
 
   @::{show} = Statement::
+
+  isCallable: YES
 
   compile: -> utility @verb
 

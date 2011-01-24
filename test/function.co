@@ -412,6 +412,11 @@ ok (@arguments, @eval) ->
 eq 0, I(-> it()) -> 0
 
 
+# Invalid call detection.
+throws '[] // invalid callee on line 1'      -> Coco.compile '[]()'
+throws '42 // invalid constructor on line 1' -> Coco.compile 'new 42'
+
+
 ### Backcalls
 g = (...a, f) -> f ...a
 h = (f, ...a) -> f a

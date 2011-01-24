@@ -61,7 +61,7 @@ eq 'restest', parent
 
 
 for nonref, i of <[ "" 0 f() this true ]>
-  throws nonref + ' // invalid assignment on line ' + (i+1)
+  throws nonref + ' // invalid assignee on line ' + (i+1)
   , -> Coco.compile Array(i+1).join(\\n) + "[#{nonref}] = v"
 
 
