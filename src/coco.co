@@ -19,15 +19,10 @@ Coco import
   VERSION: \0.2.3b
 
   # Compiles a string of Coco code to JavaScript.
-  compile: (code, options or {}) ->
-    fname = delete options.filename
-    try (parser.parse lex code).compileRoot options
-    catch e
-      e.message = "in #{fname}, #{e.message}" if fname
-      throw e
+  compile: (code, options) -> parser.parse(lex code).compileRoot options
 
   # Parses a string or tokens of Coco code, returning the AST.
-  nodes: -> parser.parse if typeof it == \string then lex it else it
+  nodes: -> parser.parse if typeof it is \string then lex it else it
 
   # Tokenizes a string of Coco code, returning the array of tokens.
   tokens: lex
@@ -60,7 +55,7 @@ if (fs = require \fs) and (path = require \path)
       module._compile (Coco.compile fs.readFileSync filename, \utf8), filename
   # __TODO__: Remove `registerExtension` when fully deprecated.
   else if require.registerExtension
-    require.registerExtension \.co, Coco.compile
+    require.registerExtension \.co Coco.compile
 
 #### other platforms
 else
