@@ -687,17 +687,20 @@ class exports.Op extends Node
     ' : ' + @second     .compile(o, LEVEL_LIST)
 
   compileUnary: (o) ->
-    {op} = this
-    return @compileDelete o if op is \delete and o.level
-    code = @first.compile o, LEVEL_OP
-    if op is \new and not @first.isCallable()
-      throw SE @first.L code + ' // invalid constructor'
-    code = if @post
-    then code + op
-    else if op of <[ new typeof delete ]> or
-            op of <[ + - ]> and @first.op is op
-    then op + ' ' + code
-    else op + code
+    {op, first} = this
+    if op is \delete
+      if first instanceof Var or not first.isAssignable()
+        throw SE @L 'invalid "delete"'
+      return @compileDelete o if o.level
+    code = first.compile o, LEVEL_OP
+    if op is \new and not first.isCallable()
+      throw SE first.L code + ' // invalid constructor'
+    if @post
+      code += op
+    else
+      op += ' ' if op of <[ new typeof delete ]> or
+                   op of <[ + - ]> and first.op is op
+      code = op + code
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   compileMultiIO: (o) ->
