@@ -248,9 +248,8 @@ class Atom extends Node
 class exports.Literal extends Atom
   (@value) ~> return JS '' + value if value.js
 
-  isEmpty: -> switch @value case <[ void null ]> then return true
-
-  isCallable: -> @value is \this
+  isEmpty    : -> switch @value case <[ void null ]> then true
+  isCallable : -> switch @value case <[ this eval ]> then true
 
   compile: (o, level) ->
     switch val = @value
@@ -1564,7 +1563,6 @@ Scope::<<<
 
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
-    throw SE 'redefining "eval" is deprecated' if name is \eval
     if @variables[@positions[name]]
     then that import {type}
     else @positions[name] = -1 + @variables.push {name, type}

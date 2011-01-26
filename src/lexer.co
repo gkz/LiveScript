@@ -123,16 +123,18 @@ exports import
       tag = \IDENTIFIER
     colon = match.2
     if at or colon or (if last\:: then @token \DOT \. else last.0 is \DOT)
-      (id = new String id).reserved = true if id of FORBIDDEN
-    else if id of COCO_KEYWORDS
+      if id of JS_KEYWORDS or id of RESERVED
+        (id = new String id).reserved = true
+    else if id of JS_KEYWORDS or id of <[ then of unless until arguments eval ]>
       switch tag = id.toUpperCase()
       case \FOR    then @seenFor = true; fallthrough
       case \THEN   then @seenFrom = @seenTo = false
       case \IMPORT then id  = \<<<
       case \UNLESS then tag = \IF
       case \UNTIL  then tag = \WHILE
+      case <[ THIS EVAL ]> then callable = true; fallthrough
       case <[ TRUE FALSE NULL VOID ARGUMENTS ]> then tag = \LITERAL
-      case <[ NEW DO TYPEOF DELETE    ]> then tag = \UNARY
+      case <[ NEW  DO  TYPEOF  DELETE ]> then tag = \UNARY
       case <[ BREAK CONTINUE DEBUGGER ]> then tag = \STATEMENT
       case <[ CATCH   FUNCTION ]> then id = ''
       case <[ IN OF INSTANCEOF ]>
@@ -158,8 +160,10 @@ exports import
     else if not last.1 and last.0 of <[ CATCH FUNCTION ]>
       return (last.1 = id).length
     @token tag, id
-    @last.alias = true if alias
-    @token \: \:       if colon
+    switch
+    case alias    then @last.alias    = true
+    case callable then @last.callable = true
+    case colon    then @token \: \:
     match.0.length
 
   # Matches a number, including decimal, hex and exponential notation.
@@ -352,7 +356,6 @@ exports import
     case <[ <<<  <<<< ]>               then tag = \IMPORT
     case <[ << >> >>> ]>               then tag = \SHIFT
     case <[  &  |  ^  ]>               then tag = \BITWISE
-    case \@                            then tag = \THIS
     case \;                            then tag = \TERMINATOR
     case \?(                           then tag = \CALL(
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
@@ -370,6 +373,7 @@ exports import
     default
       switch val
       case \\\\n then ++@line
+      case \@    then @token \LITERAL \this; @last.callable = true
       case \@@   then @token \LITERAL \arguments
       case \::
         @token \DOT ''; @token \IDENTIFIER \prototype
@@ -550,18 +554,16 @@ JS_KEYWORDS = <[
   new do delete typeof in instanceof import function debugger
 ]>
 
-# Coco-only keywords.
-COCO_KEYWORDS = JS_KEYWORDS.concat <[ then of unless until arguments ]>
+# Coco-only alias keywords.
 COCO_ALIASES  = not: <[ UNARY !  ]>, is: <[ COMPARE === ]>
               , and: <[ LOGIC && ]>, or: <[ LOGIC   ||  ]>
 
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid runtime errors.
-RESERVED = <[ var with const let enum export native ]>
-
-# The superset of both JavaScript keywords and reserved words, none of which may
-# be used as identifiers or properties.
-FORBIDDEN = JS_KEYWORDS.concat RESERVED
+RESERVED = <[
+  var with
+  const enum export
+]>
 
 ##### Regexes
 
