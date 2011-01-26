@@ -34,13 +34,13 @@ function rewrite ->
 function removeTerminators (tokens) ->
   i = -1
   break unless that.0 is \TERMINATOR while tokens[++i]
-  i and tokens.splice 0, i
+  i and tokens.splice 0 i
   i = 1
   while tokens[++i]
     continue unless tokens[i-1].0 is \TERMINATOR
     that.=0
-    tokens.splice i-1, 1 if that of EXPR_END or
-                            that of <[ ELSE CASE DEFAULT CATCH FINALLY ]>
+    tokens.splice i-1 1 if that of EXPR_END or
+                           that of <[ ELSE CASE DEFAULT CATCH FINALLY ]>
   void
 
 # The lexer has tagged each of the opening parenthesis of
@@ -85,13 +85,13 @@ function addImplicitIndentation (tokens) ->
       tokens.splice --i, 1 if tokens[i-1]?.0 is \TERMINATOR
       tokens[i] = indent
     else
-      tokens.splice ++i, 0, indent
+      tokens.splice ++i, 0 indent
     switch
-    case \, is next = tokens[i+1].0 then --i; fallthrough   # ->,
-    case \, is tokens[i+2]?.0       then go 0, i += 2; ++i  # -> 0,
-    case next of <[ ( [ { ]> and                            # -> [0],
+    case \, is next = tokens[i+1].0 then --i; fallthrough  # ->,
+    case \, is tokens[i+2]?.0       then go 0 i += 2; ++i  # -> 0,
+    case next of <[ ( [ { ]> and                           # -> [0],
          \, is tokens[idx = 1 + indexOfPair tokens, i+1]?.0
-      go 0, idx; ++i
+      go 0 idx; ++i
     default
       seenSwitch = false
       detectEnd tokens, i+1, ok, go
@@ -129,7 +129,7 @@ function addImplicitBraces (tokens) ->
     stack.push [\{]
     idx  = if paren then start.1 else i-1
     idx -= 2 while tokens[idx-2]?.0 is \COMMENT
-    tokens.splice idx, 0, [\{ \{ token.2]
+    tokens.splice idx, 0 [\{ \{ token.2]
     detectEnd tokens, ++i+1, ok, go
   function ok (token, i) ->
     return true  if token.1 is \; or \DEDENT is tag = token.0
@@ -137,7 +137,7 @@ function addImplicitBraces (tokens) ->
     t1 = tokens[i+1]?.0
     t1 is not (if tag is \, then \TERMINATOR else \COMMENT) and
     \: is not tokens[if t1 is \( then 1 + indexOfPair tokens, i+1 else i+2]?.0
-  function go (token, i) -> tokens.splice i, 0, [\} '' token.2]
+  function go (token, i) -> tokens.splice i, 0 [\} '' token.2]
   void
 
 # Methods may be optionally called without parentheses for simple cases.
@@ -158,7 +158,7 @@ function addImplicitParentheses (tokens) ->
     continue unless tag of ARG or tag is \+- and !(token.spaced or token.eol)
     skipBlock = seenSwitch = false
     tokens.splice --i, 1 if soak = prev.0 is \?
-    tokens.splice i++, 0, [\CALL( if soak then \?( else \(, token.2]
+    tokens.splice i++, 0 [\CALL( if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
   function ok (token, i) ->
     return true if token.alias and token.1 of <[ && || ]>
@@ -178,7 +178,7 @@ function addImplicitParentheses (tokens) ->
     false
   function go (token, i) ->
     ++i if token.0 is \DEDENT
-    tokens.splice i, 0, [\)CALL \) token.2]
+    tokens.splice i, 0 [\)CALL \) token.2]
   void
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
@@ -230,7 +230,7 @@ function rewriteClosingParens (tokens) ->
     ++debt[start]
     tok = [end, if start is \INDENT then stoken.1 else end]
     pos = if tokens[i+2]?.0 is start then stack.push stoken; i+3 else i
-    tokens.splice pos, 0, tok
+    tokens.splice pos, 0 tok
   void
 
 # - Slip unary {pl,min}uses off signed numbers.
@@ -243,15 +243,15 @@ function expandLiterals (tokens) ->
     case \STRNUM
       if ~'-+'.indexOf sig = (num = '' + token.1).charAt 0
         token.1 = num.slice 1
-        tokens.splice i++, 0, [\+- sig, token.2]
+        tokens.splice i++, 0 [\+- sig, token.2]
     case \RANGE
       ts = []; lno = token.2
       to = token.to - if token.op is \to then 0 else 1e-15
       for n from +token.1 to to by +token.by or 1
         if 32r200 < ts.push [\STRNUM n, lno], [\, \, lno]
-          carp 'range limit exceeded', lno
-      if ts.length then ts.pop() else carp 'empty range', lno
-      tokens.splice i, 1, ...ts
+          carp 'range limit exceeded' lno
+      if ts.length then ts.pop() else carp 'empty range' lno
+      tokens.splice i, 1 ...ts
       i += ts.length - 1
     case <[ ) )CALL ]> then break unless token.1
     case \}            then break if     token.1
@@ -259,7 +259,7 @@ function expandLiterals (tokens) ->
     case \LITERAL      then break
     default continue
     if token.spaced and tokens[i+1].0 of ARG
-      tokens.splice ++i, 0, [\, \, token.2]
+      tokens.splice ++i, 0 [\, \, token.2]
   void
 
 ### Helpers

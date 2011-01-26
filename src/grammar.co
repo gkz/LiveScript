@@ -30,8 +30,8 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 o = (patterns, action, options) ->
   patterns.=trim().split /\s+/
   action &&= unwrap.exec(action).1
-    .replace /\b(?!Er)[A-Z][\w.]*/g, \yy.$&
-    .replace /\.L\(/g, '$&yylineno, '
+    .replace /\b(?!Er)[A-Z][\w.]*/g \yy.$&
+    .replace /\.L\(/g '$&yylineno, '
   [patterns, action ? \$1, options]
 
 # Grammatical Rules
@@ -235,7 +235,7 @@ bnf =
   # The most basic form of `if` is a condition and an action. The following
   # `if`-related rules are broken up along these lines to avoid ambiguity.
   IfBlock:
-    o 'IF Expression Block'              -> L If $2, $3, name: $1
+    o              'IF Expression Block' -> L If $2, $3, name: $1
     o 'IfBlock ELSE IF Expression Block' -> $1.addElse L If $4, $5, name: $3
 
   LoopHead:
