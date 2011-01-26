@@ -39,7 +39,7 @@ class Node
       mentionsArgs := it.value = \_args if it.value is \arguments
       void
     if mentionsArgs
-      args.push Var \arguments
+      args.push Literal \arguments
       fun.params.push Var \_args
     (Call(fun, args) <<< {method}).compileNode o
 
@@ -438,7 +438,7 @@ class exports.Value extends Node
 class exports.Call extends Node
   (@callee, args or [], sym) ~>
     if args.length is 1 and args.0 instanceof Splat and args.0.it.isEmpty()
-      @thisplat = true; args = [Literal \this; Var \arguments]
+      @thisplat = true; args = [Literal \this; Literal \arguments]
     @<<<{args, soak: sym is \?(}
 
   children: <[ callee args ]>
@@ -1023,14 +1023,14 @@ class exports.Fun extends Node
       # `(a = x) ->` to `(a ? x) ->`
       else if p.op is \= and not p.logic
         params[i] = Op \? p.left, p.right
-    splatted &&= Assign Arr(paramName o, p for p of params), Var \arguments
+    splatted &&= Assign Arr(paramName o, p for p of params), Literal \arguments
     for p of params
       arg = p
       if dfv = arg.hasDefault()    then arg.=first
       else if arg instanceof Splat then arg.=it
       if arg.isEmpty()
         splatted or arg = Var scope.temporary \arg
-      else if arg.isComplex()
+      else if arg not instanceof Var
         val = ref = paramName o, p
         val = Op p.op, ref, p.second if dfv
         asns.push Assign arg, val
@@ -1075,7 +1075,7 @@ class exports.Fun extends Node
     else    if prm.hasDefault()     then prm.=first
     if prm.at
       prm = Var prm.tails.0.key.dollarize()
-    else if prm.isComplex() and not prm.isEmpty()
+    else if prm not instanceof Var and not prm.isEmpty()
       prm = Var o.scope.temporary \arg
     node.param = if splat then Splat prm else prm
 
@@ -1557,15 +1557,14 @@ exports.L = (yylineno, node) -> node import line: yylineno + 1
 # functions. Each scope knows about the function parameters and the variables
 # declared within it, and has references to its parent/shared enclosing scopes.
 function Scope (@parent, @shared) ->
-  @variables = [name: \arguments, type: \args]
-  @positions = arguments: 0
+  @variables = []
+  @positions = {}
   void
 Scope::<<<
 
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
-    switch name case <[ arguments eval ]>
-      throw SE "redefining \"#{name}\" is deprecated"
+    throw SE 'redefining "eval" is deprecated' if name is \eval
     if @variables[@positions[name]]
     then that import {type}
     else @positions[name] = -1 + @variables.push {name, type}
