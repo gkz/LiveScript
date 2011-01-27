@@ -94,7 +94,7 @@ bnf =
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
-    o 'UNARY Expression'  -> L Op $1, $2
+    o 'UNARY Expression'  -> L if $1 is \! then $2.invert() else Op $1, $2
     o '+-    Expression' (-> L Op $1, $2), prec: \UNARY
 
     o 'Expression +-       Expression' -> L Op $2, $1, $3
