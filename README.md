@@ -28,15 +28,44 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
-### 0.2.3b
+### 0.3.0
+#### Pure Additions
 - Added _backcall_, a sugar to flatten nested callbacks:
       $ coco -bpe 'a <- f; b'
       f(function(a){
         return b;
       });
-- Improved _ACI_ (automatic comma insertion): `f {} [] x` -> `f({}, [], x);`
-- Enabled compound _accessigns_: `a.+=b` -> `a += a.b;`
 - `do` block can now work as a pair of normal parentheses.
+- Improved _ACI_ (automatic comma insertion): `f {} [] x` -> `f({}, [], x);`
+- Improved _ADI_ (automatic dot insertion): `@@0'!'` -> `arguments[0]['!'];`
+- Multi-line block on the RHS of object property now works as an implicit array:
+      $ coco -bsp
+      a:
+        b
+        c
+
+      ({
+        a: [b, c]
+      });
+- Heregexes now support dynamic flags: `/// x #{? y } ///` -> `RegExp('x', y);`
+- Enabled compound _accessigns_: `a.+=b` -> `a += a.b;`
+- `...` in array destructuring (same as `...[]`) now skips items rather than `slice`ing them. ([coffee#870](https://github.com/jashkenas/coffee-script/issues/870))
+- Compilation errors now report line numbers.
+- `Coco` object now emits more events for use with `--require`.
+#### Incompatible Changes
+- <del>`=>`</del> -> <ins>`~>`</ins>
+- <del>`&.`</del> -> <ins>`~.`</ins>
+- Braceless objects no longer consume property shorthands.
+  ([coffee#618](https://github.com/jashkenas/coffee-script/issues/618))
+- Indentations within non-here strings are now stripped.
+      $ coco -bsp
+        '123
+         456'
+
+      '123456';
+- [Fixed](https://github.com/jashkenas/coffee-script/issues/1050)
+  block comment syntax to good ol' `/* */`.
+- `@0` is now `this[0]` rather than `arguments[0]`.
 
 ### 0.2.2
 - `is not` is the new `isnt`.
