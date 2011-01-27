@@ -563,6 +563,7 @@ COCO_ALIASES  = not: <[ UNARY !  ]>, is: <[ COMPARE === ]>
 RESERVED = <[
   var with
   const enum export
+  implements interface let package private protected public static yield
 ]>
 
 ##### Regexes
