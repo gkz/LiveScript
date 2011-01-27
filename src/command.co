@@ -155,19 +155,22 @@ printTokens = (tokens) ->
 # and evaluates it. Good for simple tests or poking around the
 # [**Node.js** API](http://nodejs.org/api/).
 repl = ->
-  repl = require(\readline).createInterface stdin = process.openStdin()
-  buf  = ''
+  readline = require \readline; stdin = process.openStdin(); buf = ''
+  if readline.createInterface.length < 3
+    repl = readline.createInterface stdin
+    stdin.on \data repl~.write
+  else
+    repl = readline.createInterface stdin, process.stdout
   repl.on \close stdin~.destroy
   repl.on \line ->
     code = buf + \\n + it
-    if \\ is code.slice -1 then buf := code.slice 0, -1; return
+    if \\ is code.slice -1 then buf := code.slice 0 -1; return
     buf := ''
     try
       global._ = Coco.eval code.slice(1), {+bare, +globals, filename: \repl}
       _ is void or console.dir _
     catch e say e
     repl.prompt()
-  stdin.on \data repl~.write
   process.on \uncaughtException -> say \\n + (it?.stack or it)
   __defineGetter__ \quit -> process.exit 0
   repl.setPrompt 'coco> '
