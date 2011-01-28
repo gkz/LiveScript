@@ -153,8 +153,11 @@ printTokens = (tokens) ->
 # A simple Read-Eval-Print-Loop. Compiles one line
 # (or a block of lines if continued using backslash) at a time to JavaScript
 # and evaluates it. Good for simple tests or poking around the
-# [**Node.js** API](http://nodejs.org/api/).
+# [**node.js** API](http://nodejs.org/api/).
 repl = ->
+  module.filename = process.cwd() + \/repl
+  {Script} = process.binding \evals
+  context  = Script.createContext() <<< {...global, module, require}
   readline = require \readline; stdin = process.openStdin(); buf = ''
   if readline.createInterface.length < 3
     repl = readline.createInterface stdin
@@ -167,8 +170,8 @@ repl = ->
     if \\ is code.slice -1 then buf := code.slice 0 -1; return
     buf := ''
     try
-      global._ = Coco.eval code.slice(1), {+bare, +globals, filename: \repl}
-      _ is void or console.dir _
+      _ = Script.runInContext Coco.compile(code.slice 1; {+bare}), context
+      _ is void or console.dir context._ = _
     catch e say e
     repl.prompt()
   process.on \uncaughtException -> say \\n + (it?.stack or it)

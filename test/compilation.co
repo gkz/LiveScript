@@ -16,11 +16,9 @@ eq '''
 ''', Coco.compile 'f ...a, b', {+globals}
 
 
-eq 'passed', Coco.eval '"passed"', {+bare, filename: 'test'}
-
-
-#750
+# [coffee#750](https://github.com/jashkenas/coffee-script/issues/750)
 throws 'unclosed CALL( on line 1', -> Coco.nodes 'f(->'
+
 
 throws 'missing " in a string on line 3', -> Coco.nodes '\n\n"\n'
 

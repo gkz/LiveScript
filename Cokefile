@@ -62,17 +62,17 @@ task \build:parser, 'rebuild the Jison parser (run "build" first)', ->
         .replace /\ncase \d+:this\.\$ = 0;\nbreak;/g, ''
   spit \lib/parser.js, src
 
-task \build:browser
-, 'rebuild the merged script for browser or other environments', ->
+task \build:browser \
+'rebuild the merged script for browser or other environments' ->
   co = ''
   for name of <[ rewriter lexer parser nodes coco ]>
     src = slurp "lib/#{name}.js"
-    co += "!function(require, exports){\n#{src}\n}(r, r['./#{name}'] = {});"
-  spit \extras/coco.raw.js, co = """
+    co += "!function(exports){\n#{src}\n}(require['./#{name}'] = {});"
+  spit \extras/coco.raw.js co = """
     (function(){
-    function r(path){ return r[path] }
+    function require(path){ return require[path] }
     #{co}
-    var Coco = this.Coco = r['./coco']
+    var Coco = this.Coco = require['./coco']
     #{ slurp \lib/browser.js }
     return Coco
     }.call(this))
