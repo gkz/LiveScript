@@ -55,9 +55,9 @@ if (fs = require \fs) and (path = require \path)
 else
   Coco import {
     run: (code, options or {}) ->
-      do Function Coco.compile code, options <<< {+bare}; void
-    # Attatch `require` for debugging.
+      do Function Coco.compile code, options <<< {+bare}
+    # Attach `require` for debugging.
     require
   }
   # Support Gecko JS Module.
-  @EXPORTED_SYMBOLS = [\Coco] if toString() is '[object BackstagePass]'
+  @EXPORTED_SYMBOLS = [\Coco] if "#{this}" is '[object BackstagePass]'

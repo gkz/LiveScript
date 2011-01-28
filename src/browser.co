@@ -21,7 +21,6 @@ Coco import
     void
 
 # Run scripts on page load.
-if @window
-  if @attachEvent
-  then attachEvent      \onload,           Coco.invoke
-  else addEventListener \DOMContentLoaded, Coco.invoke, false
+if @attachEvent
+then attachEvent      \onload           Coco.invoke
+else addEventListener \DOMContentLoaded Coco.invoke, false

@@ -73,7 +73,8 @@ task \build:browser \
     function require(path){ return require[path] }
     #{co}
     var Coco = this.Coco = require['./coco']
-    #{ slurp \lib/browser.js }
+    this.window && function(){\n#{ slurp \lib/browser.js }\n}()
+    this.WSH    && function(){\n#{ slurp \lib/wsh.js     }\n}()
     return Coco
     }.call(this))
   """

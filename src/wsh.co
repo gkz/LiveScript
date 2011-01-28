@@ -1,0 +1,13 @@
+# Minimal [Windows Script Host](http://en.wikipedia.org/wiki/Windows_Script_Host)
+# support.
+
+args = WSH.arguments
+fso  = WSH.createObject \Scripting.FileSystemObject
+
+for i from args.length
+  it = args.item i
+  co = fso.openTextFile(it, 1).readAll()
+  js = Coco.compile co
+  fso.openTextFile(it.replace /(?:\.co)?$/ \.js; 2 true).write js
+
+i or WSH.echo 'Usage: coco [files]'
