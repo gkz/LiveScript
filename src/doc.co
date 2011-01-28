@@ -10,7 +10,8 @@ doc = document.getElementById \doc or lmn \div id: \doc
 nav = document.getElementById \nav or do ->
   h  = '<div class=pointee>&#x2935;</div>'
   h += "<h1>#{title}</h1>" if title
-  h += "<li><a href=##{co}>#{co}</a>" for co of sources
+  for co of sources
+    h += if co then "<li><a href=##{co}>#{co}</a>" else '<p class=spacer>'
   h += '<li class=index><a href=#>#</a>'
   lmn \ul id: \nav, innerHTML: h
 

@@ -12,7 +12,7 @@
     }
     for (_i = 0, _len = (_ref = sources).length; _i < _len; ++_i) {
       co = _ref[_i];
-      h += "<li><a href=#" + co + ">" + co + "</a>";
+      h += co ? "<li><a href=#" + co + ">" + co + "</a>" : '<p class=spacer>';
     }
     h += '<li class=index><a href=#>#</a>';
     return lmn('ul', {
