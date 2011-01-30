@@ -125,13 +125,11 @@ exports import
     if at or colon or (if last\:: then @token \DOT \. else last.0 is \DOT)
       if id of JS_KEYWORDS or id of RESERVED
         (id = new String id).reserved = true
-    else if id of JS_KEYWORDS or id of <[ then of unless until arguments eval ]>
+    else if id of JS_KEYWORDS or id of <[ then of arguments eval ]>
       switch tag = id.toUpperCase()
       case \FOR    then @seenFor = true; fallthrough
       case \THEN   then @seenFrom = @seenTo = false
       case \IMPORT then id  = \<<<
-      case \UNLESS then tag = \IF
-      case \UNTIL  then tag = \WHILE
       case <[ THIS EVAL ]> then callable = true; fallthrough
       case <[ TRUE FALSE NULL VOID ARGUMENTS ]> then tag = \LITERAL
       case <[ NEW  DO  TYPEOF  DELETE ]> then tag = \UNARY
@@ -155,8 +153,9 @@ exports import
         last.1 = \!==
         return id.length
       [tag, id] = COCO_ALIASES[id]
-    else if id of RESERVED
-      @carp "reserved word \"#{id}\""
+    else if id is \unless  then tag = \IF
+    else if id is \until   then tag = \WHILE
+    else if id of RESERVED then @carp "reserved word \"#{id}\""
     else if not last.1 and last.0 of <[ CATCH FUNCTION ]>
       return (last.1 = id).length
     @token tag, id
@@ -368,8 +367,15 @@ exports import
         return val.length
     case \*
       tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
-    case <[ -> ~> ]> then tag = \FUNC_ARROW; @tagParameters()
-    case <[ <- <~ ]> then tag = \BACK_CALL ; @tagParameters()
+    case <[ -> ~> ]>
+      @tagParameters(); tag = \FUNC_ARROW
+    case <[ <- <~ ]>
+      @tagParameters(); tag = \BACKCALL
+      break if @last.0 is \)PARAM
+      {tokens} = this; i = tokens.length
+      continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ]>
+      tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
+      @token \)PARAM ''
     default
       switch val
       case \\\\n then ++@line

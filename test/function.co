@@ -424,7 +424,7 @@ h = (f, ...a) -> f a
 eq ok, do
   (a, b) <- g \a, \b
   eq b, \b
-  (...d) <- h ..., a
+  ...d <- h ..., a
   eq d.0.0, \a
   ok
 

@@ -63,13 +63,13 @@ compileScripts = ->
     yes or die "No such file or directory: #{source}"
     walk source, path.normalize(source), true
   function walk (source, base, top) ->
-    (e, stats) <- fs.stat source
+    e, stats <- fs.stat source
     if stats.isDirectory()
-      (e, files) <- fs.readdir source
+      e, files <- fs.readdir source
       files.forEach -> walk path.join(source, it), base
     else if top or path.extname(source).toLowerCase() is \.co
       watch source, base if o.watch
-      (e, buf) <- fs.readFile source
+      e, buf <- fs.readFile source
       compileScript source, buf.toString(), base
   void
 
@@ -118,7 +118,7 @@ compileStdin = ->
 watch = (source, base) ->
   fs.watchFile source, {+persistent, interval: 500ms} (curr, prev) ->
     return if curr.size is prev.size and +curr.mtime is +prev.mtime
-    (e, code) <- fs.readFile source
+    e, code <- fs.readFile source
     e and die e.stack || e
     compileScript source, code.toString(), base
 
