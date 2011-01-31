@@ -128,6 +128,7 @@ class Node
   asKey        : THIS
   asArr        : THIS
   dollarize    : String
+  selections   : NO
 
   invert: -> Op \! this
 
@@ -595,6 +596,8 @@ class exports.Obj extends List
 class exports.Arr extends List
   (@items or []) ~>
 
+  selections: -> @items.length > 1 and @items
+
   compileNode: (o) ->
     {items} = this
     return '[]' unless items.length
@@ -657,9 +660,11 @@ class exports.Op extends Node
 
   compileNode: (o) ->
     return @compileUnary o if not @second
-    return @compileChain o if COMPARER.test @op and COMPARER.test @first.op
-    return @compileExistence o if @op is \?
-    return @compileMultiIO   o if @op is \instanceof and @second instanceof Arr
+    switch @op
+    case \?          then return @compileExistence o
+    case \instanceof then return @compileIOS o, that if @second.selections()
+    default if COMPARER.test @op and COMPARER.test @first.op
+      return @compileChain o
     @first import {@front}
     code = "#{ @first .compile o, LEVEL_OP } #{@op} \
             #{ @second.compile o, LEVEL_OP }"
@@ -676,7 +681,7 @@ class exports.Op extends Node
     [sub, ref] = @first.second.cache o, true
     @first.second = sub
     code  = @first.compile o, LEVEL_OP
-    code .= slice 1, -1 if code.charAt(0) is \(
+    code .= slice 1 -1 if \( is code.charAt 0
     code += " && #{ ref.compile o } #{@op} #{ @second.compile o, LEVEL_OP }"
     if o.level < LEVEL_OP then code else "(#{code})"
 
@@ -703,14 +708,16 @@ class exports.Op extends Node
       code = op + code
     if o.level <= LEVEL_OP then code else "(#{code})"
 
-  compileMultiIO: (o) ->
-    [sub, ref] = @first.cache o, false, LEVEL_OP
-    tests = for item, i of @second.items
-      (if i then ref else sub) + ' instanceof ' + item.compile o
+  # `x instanceof [A, B]`
+  compileIOS: (o, items) ->
+    code = ''; [sub, ref] = @first.cache o, false LEVEL_OP
+    for item, i of items
+      code += "#{ if i then ' || ' + ref else sub } instanceof \
+               #{ item.compile o, LEVEL_OP }"
     o.scope.free ref unless sub is ref
-    code = tests.join ' || '
     if o.level < LEVEL_OP then code else "(#{code})"
 
+  # `v = delete o.k`
   compileDelete: (o) ->
     code = ref = o.scope.temporary \ref
     [get, del] = Value(@first).cacheReference o
@@ -939,13 +946,13 @@ class exports.Of extends Node
   @::<<<< Negatable
 
   compileNode: (o) ->
-    lvl = if arr = @array instanceof Arr then LEVEL_OP else LEVEL_LIST
-    [sub, ref] = @item.cache o, false, lvl
-    if arr
+    [sub, ref] = @item.cache o, false,
+      lvl = if items = @array.selections() then LEVEL_OP else LEVEL_LIST
+    if items
+      code = ''
       [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
-      tests = for item, i of @array.items
-        (if i then ref else sub) + cmp + item.compile o, lvl
-      code = tests.join cnj
+      for item, i of items
+        code += (if i then cnj + ref else sub) + cmp + item.compile o, lvl
     else
       code = "#{ utility \indexOf }.call(#{ @array.compile o, lvl }, #{ref}
             ) #{ if @negated then \< else \>= } 0"
