@@ -584,20 +584,18 @@ NUMBER = /// ^ (?
 | ( (?:\d+(?:\.\d+)?|\.\d+) (?:e[+-]?\d+)? ) [a-z]* # decimal
 ) ///i
 SYMBOL = /// ^ (?
-: [-+*/%&|^:<>]=    # compound assign / comparison
-| \\\S[^\s,;)}\]]*  # word
-| ([-+&|:])\1       # {in,de}crement / logic / prototype access
-| [-~=]>            # function
-| \([^\n\S]*\)      # call
-| [!=]==?           # equality
-| \.{3}             # splat/yadayadayada
-| [?&~]\.           # soak/bind access
-| <<(?:=|<<?)?      # left shift / import
-| >>>?=?            # rite shift
-| @@                # arguments shorthand
-| \\\n              # continued line
-| \?\(              # soak call
-| <[-~]             # back call
+: [-+*/%&|^:<>]=                # compound assign / comparison
+| \\(?: \S[^\s,;)}\]]* | \n)    # word / continued line
+| ([+&|:])\1                    # increment / logic / prototype access
+| -[->]                         # decrement / function
+| \([^\n\S]*\)                  # call
+| [!=]==?                       # equality
+| \.{3}                         # splat/placeholder/yadayadayada
+| \?[.(]                        # soak  access/call
+| ~[.>]                         # bound access/function
+| <(?: <(?: = | <<? )? | [-~])  # left shift / import / backcall
+| >>>?=?                        # rite shift
+| @@                            # arguments shorthand
 | \S
 ) ///
 SPACE     = /^(?=.)[^\n\S]*(?:#.*)?/
