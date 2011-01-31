@@ -214,7 +214,7 @@ exports import
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
       dent = 0/0
       dent = len unless dent <= len = m.0.length - 1 while m = tabs.exec doc
-      doc  = untabify doc, dent
+      doc  = detab doc, dent
       if doc.charAt(0) is \\n
         doc.=slice 1
         ++@line
@@ -230,14 +230,14 @@ exports import
   commentToken: ->
     text = if ~end = it.indexOf \*/ 2 then it.slice 0 end+2 else it + \*/
     if @last.0 of <[ TERMINATOR INDENT THEN ]>
-    then @token \COMMENT untabify text, @indent; @token \TERMINATOR \\n
+    then @token \COMMENT detab text, @indent; @token \TERMINATOR \\n
     else @last.spaced = true
     @countLines(text).length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     @carp 'unterminated JS literal' unless js = JSTOKEN.exec it
-    @token \LITERAL new String untabify (js.=0).slice(1, -1), @indent
+    @token \LITERAL new String detab (js.=0).slice(1 -1), @indent
     @last.1.js = true
     @countLines(js).length
 
@@ -534,14 +534,14 @@ exports import
 # Constructs a string token by escaping quotes and newlines.
 string = (body, quote) ->
   return quote + quote unless body
-  body.=replace /\\([\s\S])/g, ($0, $1) ->
+  body.=replace /\\([\s\S])/g ($0, $1) ->
     if $1 of [\\n quote] then $1 else $0
-  .replace /// #{quote} ///g, \\\$&
+  .replace /// #{quote} ///g \\\$&
   quote + body + quote
 
 # Erases all external indentations of specific length.
-untabify = (str, len) ->
-  if len then str.replace /// \n [^\n\S]{#{len}} ///g, \\n else str
+detab = (str, len) ->
+  if len then str.replace /// \n [^\n\S]{#{len}} ///g \\n else str
 
 # Erases all newlines and indentations.
 unlines = -> it.replace /\n[^\n\S]*/g ''

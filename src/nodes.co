@@ -1530,7 +1530,7 @@ class exports.JS extends Node
   terminator: ''
   isCallable: YES
 
-  compile: -> tabify @code, it.indent
+  compile: -> entab @code, it.indent
 
 #### Comment
 # Block comments are compiled as JavaScript block comments at the same position.
@@ -1620,7 +1620,7 @@ Scope::<<<
       if type of <[ var reuse ]>
         (if name.charAt(0) is \_ then tmp else usr).push name
       else if type.value
-        asn.push tabify name + ' = ' + type.value, o.indent
+        asn.push entab name + ' = ' + type.value, o.indent
     return asn.join ', ' if o.globals
     'var ' + that if usr.concat(tmp, asn).join ', '
 
@@ -1696,4 +1696,4 @@ function lastNonComment (nodes) ->
   break if node not instanceof Comment for node, i of nodes by -1
   [i >= 0 and node, i]
 
-function tabify (code, tab) -> code.replace /\n/g \\n + tab
+function entab (code, tab) -> code.replace /\n/g \\n + tab
