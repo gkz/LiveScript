@@ -58,12 +58,12 @@ class Node
     # Pass a `level` to precompile.
     return [sub.compile o, level; ref.value] if level?
     # If flagged as `once`, the tempvar will be auto-freed.
-    if once then [sub, ref import {+temp}] else [sub, ref, [ref.value]]
+    if once then [sub, ref <<< {+temp}] else [sub, ref, [ref.value]]
 
   # Compiles to a source/variable pair suitable for looping.
   compileLoopReference: (o, name) ->
     src = tmp = @compile o, LEVEL_LIST
-    unless -1/0 < +src < 1/0 or IDENTIFIER.test src and o.scope.check src
+    unless -1/0 < +src < 1/0 or this instanceof Var and o.scope.check src
       src = "#{ tmp = o.scope.temporary name } = #{src}"
     [src, tmp]
 
@@ -971,8 +971,8 @@ class exports.Existence extends Node
   @::<<<< Negatable
 
   compileNode: (o) ->
-    code = @it.compile o, LEVEL_OP
-    if IDENTIFIER.test code and not o.scope.check code, true
+    node = @it.unwrap(); code = node.compile o, LEVEL_OP
+    if node instanceof Var and not o.scope.check code, true
       code = 'typeof ' + code + if @negated
       then " == 'undefined' || #{code} === null"
       else " != 'undefined' && #{code} !== null"
