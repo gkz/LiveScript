@@ -131,9 +131,9 @@ exports import
       case \THEN   then @seenFrom = @seenTo = false
       case \IMPORT then id  = \<<<
       case <[ THIS EVAL ]> then callable = true; fallthrough
-      case <[ TRUE FALSE NULL VOID ARGUMENTS ]> then tag = \LITERAL
-      case <[ NEW  DO  TYPEOF  DELETE ]> then tag = \UNARY
-      case <[ BREAK CONTINUE DEBUGGER ]> then tag = \STATEMENT
+      case <[ TRUE FALSE NULL VOID ARGUMENTS DEBUGGER ]> then tag = \LITERAL
+      case <[ NEW DO TYPEOF DELETE ]> then tag = \UNARY
+      case <[ BREAK       CONTINUE ]> then tag = \STATEMENT
       case <[ CATCH   FUNCTION ]> then id = ''
       case <[ IN OF INSTANCEOF ]>
         if tag is not \INSTANCEOF and @seenFor

@@ -251,13 +251,13 @@ class exports.Literal extends Atom
   isEmpty    : -> switch @value case <[ void null ]> then true
   isCallable : -> switch @value case <[ this eval ]> then true
 
-  compile: (o, level) ->
+  compile: (o, level = o.level) ->
     switch val = @value
     case \this then return o.scope.fun?.bound or val
     case \void then val += ' 8'; fallthrough
-    case \null
-      if (level ? o.level) is LEVEL_ACCESS
-        throw SE @L 'invalid use of ' + @value
+    case \null then if level is LEVEL_ACCESS
+      throw SE @L 'invalid use of ' + @value
+    case \debugger then return '(function(){ debugger }())' if level
     val
 
 #### Var
@@ -1184,7 +1184,7 @@ class exports.Splat extends Parens
     "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
 
 #### Statement
-# `continue`, `break` or `debugger`
+# `continue` `break`
 class exports.Statement extends Node
   (@verb) ->
 
