@@ -666,9 +666,9 @@ class exports.Op extends Node
     default if COMPARER.test @op and COMPARER.test @first.op
       return @compileChain o
     @first import {@front}
-    code = "#{ @first .compile o, LEVEL_OP } #{@op} \
-            #{ @second.compile o, LEVEL_OP }"
-    if o.level <= LEVEL_OP then code else "(#{code})"
+    code = "#{ @first .compile o, level = LEVEL_OP + PREC[@op] } #{@op} \
+            #{ @second.compile o, level }"
+    if o.level <= level then code else "(#{code})"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. For example:
@@ -680,10 +680,10 @@ class exports.Op extends Node
   compileChain: (o) ->
     [sub, ref] = @first.second.cache o, true
     @first.second = sub
-    code  = @first.compile o, LEVEL_OP
+    code  = @first.compile o, level = LEVEL_OP + PREC[@op]
     code .= slice 1 -1 if \( is code.charAt 0
-    code += " && #{ ref.compile o } #{@op} #{ @second.compile o, LEVEL_OP }"
-    if o.level < LEVEL_OP then code else "(#{code})"
+    code += " && #{ ref.compile o } #{@op} #{ @second.compile o, level }"
+    if o.level <= LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
     firsts = @first.cache o, true
@@ -697,7 +697,7 @@ class exports.Op extends Node
       if first instanceof Var or not first.isAssignable()
         throw SE @L 'invalid "delete"'
       return @compileDelete o if o.level
-    code = first.compile o, LEVEL_OP
+    code = first.compile o, LEVEL_OP + PREC.unary
     if op is \new and not first.isCallable()
       throw SE first.L code + ' // invalid constructor'
     if @post
@@ -706,16 +706,16 @@ class exports.Op extends Node
       op += ' ' if op of <[ new typeof delete ]> or
                    op of <[ + - ]> and first.op is op
       code = op + code
-    if o.level <= LEVEL_OP then code else "(#{code})"
+    if o.level < LEVEL_ACCESS then code else "(#{code})"
 
   # `x instanceof [A, B]`
   compileIOS: (o, items) ->
-    code = ''; [sub, ref] = @first.cache o, false LEVEL_OP
+    code = ''; [sub, ref] = @first.cache o, false level = LEVEL_OP + PREC\<
     for item, i of items
       code += "#{ if i then ' || ' + ref else sub } instanceof \
-               #{ item.compile o, LEVEL_OP }"
+               #{ item.compile o, level }"
     o.scope.free ref unless sub is ref
-    if o.level < LEVEL_OP then code else "(#{code})"
+    if o.level <= LEVEL_OP then code else "(#{code})"
 
   # `v = delete o.k`
   compileDelete: (o) ->
@@ -946,20 +946,22 @@ class exports.Of extends Node
   @::<<<< Negatable
 
   compileNode: (o) ->
-    [sub, ref] = @item.cache o, false,
-      lvl = if items = @array.selections() then LEVEL_OP else LEVEL_LIST
+    items = @array.selections()
+    level = if items then LEVEL_OP + PREC\== else LEVEL_LIST
+    [sub, ref] = @item.cache o, false level
     if items
       code = ''
       [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
       for item, i of items
-        code += (if i then cnj + ref else sub) + cmp + item.compile o, lvl
+        code += (if i then cnj + ref else sub) + cmp + item.compile o, level
+      level = LEVEL_OP + PREC\||
     else
-      code = "#{ utility \indexOf }.call(#{ @array.compile o, lvl }, #{ref}
+      code = "#{ utility \indexOf }.call(#{ @array.compile o, level }, #{ref}
             ) #{ if @negated then \< else \>= } 0"
       return code if sub is ref
       code = sub + ', ' + code
     o.scope.free ref unless sub is ref
-    if o.level < lvl then code else "(#{code})"
+    if o.level < level then code else "(#{code})"
 
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
@@ -971,7 +973,7 @@ class exports.Existence extends Node
   @::<<<< Negatable
 
   compileNode: (o) ->
-    node = @it.unwrap(); code = node.compile o, LEVEL_OP
+    node = @it.unwrap(); code = node.compile o, LEVEL_OP + PREC\==
     if node instanceof Var and not o.scope.check code, true
       code = 'typeof ' + code + if @negated
       then " == 'undefined' || #{code} === null"
@@ -1156,7 +1158,7 @@ class exports.Parens extends Node
     {it} = this
     unless @keep or @newed
       if it instanceof [Atom, Value, Call, Fun, Parens] or
-         it instanceof Op and o.level < LEVEL_OP
+         it instanceof Op and o.level < LEVEL_OP + (PREC[it.op] or PREC.unary)
         return (it <<< {@front}).compile o, Math.max o.level, LEVEL_LIST
     o.level = LEVEL_PAREN
     if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
@@ -1409,7 +1411,7 @@ class exports.Switch extends Node
     return true if c.isCallable() for c of @cases
     @default?.isCallable()
 
-  jumps: (x = {+block}) ->
+  jumps: (x or {+block}) ->
     return that if c.body.jumps x for c of @cases
     @default?.jumps x
 
@@ -1681,6 +1683,16 @@ LEVEL_LIST   = 2  # [...]
 LEVEL_COND   = 3  # ... ? x : y
 LEVEL_OP     = 4  # !...
 LEVEL_ACCESS = 5  # ...[0]
+
+# Operator precedances.
+PREC = \? : .1, unary : .9
+PREC\&& = PREC\||                                                  = .2
+PREC\&  = PREC\^  = PREC\|                                         = .3
+PREC\== = PREC\!= = PREC\=== = PREC\!==                            = .4
+PREC\<  = PREC\>  = PREC\<=  = PREC\>= = PREC\in = PREC\instanceof = .5
+PREC\<< = PREC\>> = PREC\>>>                                       = .6
+PREC\+  = PREC\-                                                   = .7
+PREC\*  = PREC\/  = PREC\%                                         = .8
 
 # Tabs are two spaces for pretty printing.
 TAB = '  '

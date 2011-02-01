@@ -43,14 +43,14 @@ ok 'b' not in obj, 'allow `x not in y`'
 ok new String instanceof String
 ok new Number not instanceof String, 'allow `x not instanceof Y`'
 
-ok []    instanceof [String, Array]
-ok 0 not instanceof [String, Array]
+eq true, []    instanceof [String, Number and Array]
+eq true, 0 not instanceof [String, Array  or Number]
 
 
-ok 200 of [100, 200, 300]
-ok 200 of array = [100, 200, 300]
-ok 1 not of array
-ok 1 not of []
+eq true, 200 of [0 or 100, 200, 300]
+eq true, 200 of array = [100, 200, 300]
+eq true, 1 not of array
+eq true, 1 not of []
 ok array[0]++ of [99, 100], 'should cache testee'
 
 
