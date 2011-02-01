@@ -177,7 +177,7 @@ class exports.Block extends Node
 
   asArr: -> Arr @lines
 
-  isComplex: -> @lines.length > 1 or !!@lines.0?.isComplex()
+  isComplex: -> @lines.length > 1 or @lines.0?.isComplex()
 
   isStatement: (o) ->
     return true if o and not o.level
@@ -306,7 +306,7 @@ class exports.Index extends Node
 
   compile: (o) ->
     code = @key.compile o, LEVEL_PAREN
-    if @key instanceof Key and code.charAt(0) is not \'
+    if @key instanceof Key and \' is not code.charAt 0
     then ".#{code}" else "[#{code}]"
 
 #### Value
@@ -371,7 +371,7 @@ class exports.Value extends Node
       return that.compile o
     base = @head.compile o, LEVEL_ACCESS
     rest = ''; rest += t.compile o for t of @tails
-    base += ' ' if rest.charAt(0) is \. and SIMPLENUM.test base
+    base += ' ' if \. is rest.charAt 0 and SIMPLENUM.test base
     base + rest
 
   # Unfold a soak into an __If__: `a?.b` -> `a.b if a?`
@@ -420,7 +420,7 @@ class exports.Value extends Node
       stars = index.stars = []
       index.eachChild seek
       continue unless stars.length
-      [sub, ref, @temps] = Value(@head, @tails.slice 0, i).cache o
+      [sub, ref, @temps] = Value(@head, @tails.slice 0 i).cache o
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + \.length for star of stars
       return Value sub, @tails.slice i
@@ -428,7 +428,7 @@ class exports.Value extends Node
 
   multiPick: (o) ->
     for {key}, i of @tails then if key.length
-      [sub, ref, @temps] = Value(@head, @tails.slice 0, i).cache o
+      [sub, ref, @temps] = Value(@head, @tails.slice 0 i).cache o
       arr = (Value if j then ref else sub, [Index node] for node, j of key)
       return Value Arr(arr), @tails.slice i+1
     void
@@ -659,7 +659,7 @@ class exports.Op extends Node
   hasDefault: -> switch @op case <[ ? || && ]> then this
 
   compileNode: (o) ->
-    return @compileUnary o if not @second
+    return @compileUnary o unless @second
     switch @op
     case \?          then return @compileExistence o
     case \instanceof then return @compileIOS o, that if @second.selections()
@@ -1071,7 +1071,7 @@ class exports.Fun extends Node
     code += "(#{ args.join ', ' }){"
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if exps.length
     code += \}
-    if @ctor and name.charAt(0) is not \_
+    if @ctor and \_ is not name.charAt 0
       code += " #{name}.displayName = '#{name}';"
     code += "\n#{tab}return #{name};" if @returns
     return tab + code if @statement
@@ -1344,7 +1344,7 @@ class exports.For extends While
         item  = that
       head += Assign(@name, Literal item).compile(o, LEVEL_TOP) + \;
     body  = @compileBody o
-    head += \\n + @tab if @name and body.charAt(0) is \}
+    head += \\n + @tab if @name and \} is body.charAt 0
     head + body
 
   pluckDirectCalls: (o) ->
@@ -1440,15 +1440,16 @@ class exports.Case extends Node
   isCallable: -> @body.isCallable()
 
   makeReturn: ->
-    [last] = lastNonComment @body.lines
-    @body.makeReturn it unless last?.value is \fallthrough
+    unless lastNonComment(@body.lines)0.value is \fallthrough
+      @body.makeReturn it
+    this
 
   compileCase: (o, tab, nobr, bool) ->
     tests = if @test instanceof Arr then @test.items else [@test]
-    tests.length or tests.push Literal 'void'
+    tests.length or tests.push Literal \void
     if bool
       [t] = tests; i = 0; t = Op \|| t, that while tests[++i]
-      (@<<<{t, aSource: 't', aTarget: 'body'}).anaphorize()
+      (@<<<{t, aSource: \t, aTarget: \body}).anaphorize()
       tests = [@t.invert()]
     code = ''
     code += tab + "case #{ t.compile o, LEVEL_PAREN }:\n" for t of tests
@@ -1570,7 +1571,6 @@ function Scope (@parent, @shared) ->
   @positions = {}
   void
 Scope::<<<
-
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
     if @variables[@positions[name]]
@@ -1620,7 +1620,7 @@ Scope::<<<
     usr = []; tmp = []; asn = []
     for {name, type} of @variables
       if type of <[ var reuse ]>
-        (if name.charAt(0) is \_ then tmp else usr).push name
+        (if \_ is name.charAt 0 then tmp else usr).push name
       else if type.value
         asn.push entab name + ' = ' + type.value, o.indent
     return asn.join ', ' if o.globals
