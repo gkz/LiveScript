@@ -60,9 +60,10 @@ parent.+=slice 1
 eq 'restest', parent
 
 
-for nonref, i of <[ "" 0 f() this true ]>
-  throws nonref + ' // invalid assignee on line ' + (i+1)
-  , -> Coco.compile Array(i+1).join(\\n) + "[#{nonref}] = v"
+for nonref, i of <[ 0 f() this true ]>
+  throws nonref + ' // invalid assignee on line ' + (i+1), ->
+    x = if i then nonref else \... + nonref
+    Coco.compile Array(i+1).join(\\n) + "[#{x}, y] = z"
 
 
 throws 'assignment to undeclared variable "Math" on line 1'

@@ -811,7 +811,7 @@ class exports.Assign extends Node
       continue if node.isEmpty()
       if node instanceof Splat
         throw SE node.L 'multiple splats in an assignment' if ivar
-        len = nodes.length; empty = node.it.isEmpty()
+        len = nodes.length; empty = (node.=it).isEmpty()
         if i is len - 1
           break if empty
           val = utility(\slice) + \.call( + rite + if i then ", #{i})" else \)
