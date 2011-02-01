@@ -69,22 +69,22 @@ task \build:browser \
     src = slurp "lib/#{name}.js"
     co += "!function(exports){\n#{src}\n}(require['./#{name}'] = {});"
   spit \extras/coco.raw.js co = """
-    (function(){
+    this.Coco=function(){
     function require(path){ return require[path] }
     #{co}
-    var Coco = this.Coco = require['./coco']
+    return require['./coco']
+    }()
     this.window && function(){\n#{ slurp \lib/browser.js }\n}()
     this.WSH    && function(){\n#{ slurp \lib/wsh.js     }\n}()
-    return Coco
-    }.call(this))
+    this.Coco
   """
   {parser, uglify} = require \uglify-js
   ast = parser.parse co
   ast = uglify.ast_mangle  ast
   ast = uglify.ast_squeeze ast, {+extra}
-  spit \extras/coco.js, """
+  spit \extras/coco.js """
     // Coco #{Coco.VERSION}
-    // Copyright 2010, Jeremy Ashkenas + Satoshi Murakami
+    // Copyright 2011, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
     http://satyr.github.com/coco
     #{ uglify.gen_code ast };
