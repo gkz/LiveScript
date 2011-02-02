@@ -9,7 +9,7 @@ global import
   die  : -> warn it; process.exit 1
 
 # Use the [OptionParser](#optparse) to extract all options from `process.argv`.
-try o = require(\./optparse) do
+o = require(\./optparse) do
   compile     : 'compile to JavaScript and save as .js files'
   interactive : 'run an interactive Coco REPL'
   output      :['set the directory for compiled JavaScript' \DIR]
@@ -25,16 +25,20 @@ try o = require(\./optparse) do
   nodejs      :['pass options through to the "node" binary' \ARGS+ \N]
   version     : 'display Coco version'
   help        : 'display this help message'
-catch e die e
+
+if o.$unknowns.length
+  say "Unrecognized option(s): #{ o.$unknowns.join ' ' }\n"
+  help()
+  process.exit 1
 
 o.run = not (o.compile or o.print)
 o.print   ||= o.eval or o.stdin and o.compile
 o.compile ||= o.output
 sources = o.$args
 
-# Run `coco` by parsing passed options and determining what action to take.
-# Many flags cause us to divert before compiling anything. Flags passed after
-# `--` will be passed verbatim to your script as arguments in `process.argv`.
+# Many flags cause us to divert before compiling anything.
+# Arguments passed after `--` will be passed verbatim to your script as
+# `process.argv`.
 exports.run = ->
   return do forkNode if o.nodejs
   return do version  if o.version
@@ -191,7 +195,7 @@ forkNode = ->
     cwd: process.cwd(), env: process.env, customFds: [0 to 2]
 
 # Print the `--help` message.
-help = -> say """
+function help -> say """
   Usage: coco [options] [files] [arguments]
 
   Options:
@@ -199,4 +203,4 @@ help = -> say """
 """
 
 # Print the `--version` message.
-version = -> say "Coco #{Coco.VERSION}"
+function version -> say "Coco #{Coco.VERSION}"

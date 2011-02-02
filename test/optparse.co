@@ -18,11 +18,12 @@ eq result.help, true
 eq result.output, 'folder'
 eq result.$args + '', 'one,two'
 
-result = optparse result.$flags, <[ -N h --nodejs debug three ]>
+result = optparse result.$flags, <[ -N h --nodejs debug -3 three ]>
 
 ok result.nodejs instanceof Array
-eq result.nodejs + '', 'h,debug'
-eq result.$args + '', 'three'
+eq result.nodejs + '' ,'h,debug'
+eq result.$args + ''  ,'three'
+eq result.$unknowns.0 ,'-3'
 
 eq \Options:\n + result, '''
 Options:
