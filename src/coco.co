@@ -36,7 +36,8 @@ if (fs = require \fs) and (path = require \path)
   Coco.run = (code, options or {}) ->
     root = module
     root.=parent while root.parent
-    root.filename = if options.filename then fs.realpathSync that else \.
+    root.filename = process.argv.1 =
+      if options.filename then fs.realpathSync that else \.
     root.moduleCache &&= {}
     unless options.js
       if require.extensions or
