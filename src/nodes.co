@@ -168,6 +168,8 @@ class exports.Block extends Node
   add: ->
     if @back
       that.add it
+    else if it.lines
+      @lines.push ...that
     else
       @lines.push it
       @back = that if it.back

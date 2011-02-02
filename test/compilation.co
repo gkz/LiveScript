@@ -154,6 +154,14 @@ eq '!a;', Coco.compile '!!!a' {+bare}
 eq '+(function(){ debugger }());', Coco.compile '+debugger' {+bare}
 
 
+eq '1;\n2;\n3;\n4;', Coco.compile '''
+  1
+2
+    3
+  4
+''' {+bare}
+
+
 # [#1](https://github.com/satyr/coco/issues/1)
 λ = -> 七 = 7
 eq λ(), 7

@@ -428,9 +428,16 @@ eq ok, do
   eq d.0.0, \a
   ok
 
-ok \function is typeof new ->
+eq \function typeof new ->
   me = this
   f <~ I
   eq me, this
   <- ->
   f
+
+eq 5 do
+  1
+    <-I 2
+      3
+    4
+  5

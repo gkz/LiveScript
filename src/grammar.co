@@ -165,6 +165,7 @@ bnf =
   Body:
     o \Line                  -> Block $1
     o 'Body TERMINATOR Line' -> $1.add $3
+    o 'Body Block'           -> $1.add $2
     o 'Body TERMINATOR'
 
   # An optional, trailing comma.
@@ -273,7 +274,8 @@ bnf =
   Root:
     o \Body
     o 'Block TERMINATOR'
-    o '' -> Block()
+    o 'Block TERMINATOR Body' -> $1.add $3
+    o ''                      -> Block()
 
 # Precedence
 # ----------
