@@ -17,3 +17,8 @@ for use in any platform that supports JavaScript.
       Components.utils.import('resource://xqjs/coco.js');
       Coco.compile(code);
   ref. <https://developer.mozilla.org/en/Using_JavaScript_code_modules>
+
+
+mode-coco.js
+------------
+Coco mode for [Ace](http://ace.ajax.org) editor.

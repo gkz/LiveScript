@@ -42,33 +42,36 @@ coreSources = ->
   "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
 
 docs = <[ src/doc.co src/lang-co.co ]>
+webs = docs.concat \src/mode-coco.co
 
-task \build, 'build the Coco language from source', ->
-  run [\-bco \lib; ...sources().filter -> it not of docs]
+task \build 'build the Coco language from source' ->
+  run [\-bco \lib; ...sources().filter -> it not of webs]
 
-task \build:doc, 'build doc tools', -> run <[ -co doc ]>.concat docs
+task \build:doc 'build doc tools' ->
+  run <[ -co doc ]>.concat docs
 
-task \build:full, 'rebuild the source twice, and run the tests', ->
+task \build:full 'rebuild the source twice, and run the tests' ->
   exec 'bin/coke build && bin/coke build && bin/coke test'
   , (err, stdout, stderr) ->
     say stdout.trim() if stdout
     say stderr.trim() if stderr
     throw err         if err
 
-task \build:parser, 'rebuild the Jison parser (run "build" first)', ->
+task \build:parser 'rebuild the Jison parser (run "build" first)' ->
   src = require(\./lib/grammar).parser.generate()
         .replace /^[^]+?var (?=parser = {)/, \exports.
         .replace /return parser;[^]+/, ''
         .replace /\ncase \d+:this\.\$ = 0;\nbreak;/g, ''
-  spit \lib/parser.js, src
+  spit \lib/parser.js src
 
-task \build:browser \
-'rebuild the merged script for browser or other environments' ->
+task \build:browser 'rebuild extras/*.js' ->
+  xspit \mode-coco.raw.js co = Coco.compile slurp \src/mode-coco.co
+  xspit \mode-coco.js ug co
   co = ''
   for name of <[ rewriter lexer parser nodes coco ]>
     src = slurp "lib/#{name}.js"
     co += "!function(exports){\n#{src}\n}(require['./#{name}'] = {});"
-  spit \extras/coco.raw.js co = """
+  xspit \coco.raw.js co = """
     this.Coco=function(){
     function require(path){ return require[path] }
     #{co}
@@ -78,19 +81,26 @@ task \build:browser \
     this.WSH    && function(){\n#{ slurp \lib/wsh.js     }\n}()
     this.Coco
   """
-  {parser, uglify} = require \uglify-js
-  ast = parser.parse co
-  ast = uglify.ast_mangle  ast
-  ast = uglify.ast_squeeze ast, {+extra}
-  spit \extras/coco.js """
+  xspit \coco.js """
     // Coco #{Coco.VERSION}
     // Copyright 2011, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
     http://satyr.github.com/coco
-    #{ uglify.gen_code ast };
+    #{ ug co };
 
   """
   invoke \test:browser
+
+function xspit (name, code) ->
+  spit path = \extras/ + name, code
+  say '* ' + path
+
+function ug ->
+  {parser, uglify} = require \uglify-js
+  ast = parser.parse it
+  ast = uglify.ast_mangle  ast
+  ast = uglify.ast_squeeze ast, {+extra}
+  uglify.gen_code ast
 
 
 task \bench, 'quick benchmark of compilation time', ->

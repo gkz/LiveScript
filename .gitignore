@@ -1,4 +1,4 @@
 t.*
 test/*.js
 *#
-extras/coco.raw.js
+extras/*.raw.js
