@@ -14,7 +14,7 @@ module.exports = (
   #     nodejs : ['pass options to "node"' \ARGS+ \N]
   flags
   # The target arguments, default to the ones with current `process`.
-  args or process.argv.slice(2)
+  args or process.argv.slice 2
   # The base of `options` can optionally be passed.
   options or {}
 ) ->
@@ -25,7 +25,7 @@ module.exports = (
       {name, desc, arg, abbr} <<<
       long  : \-- + name
       short : abbr != 0 and "-#{ abbr or name }".slice 0 2
-      multi : arg and MULTI.test arg
+      multi : !!arg and MULTI.test arg
 
   # Expand merged flags within arguments. e.g.: `-wp` -> `-w -p`
   args = Array::concat.apply [], args.map ->
