@@ -44,7 +44,7 @@ exports import
     @indents = []
     # Prepend a newline if the input starts with an indented line,
     # so that INDENT is recorded properly.
-    if /^[^\n\S]+(?!#(?!##(?!#)))\S/.test code then code = \\n + code; --@line
+    if /^[^\n\S]+[^\s#]/.test code then code = \\n + code; --@line
     # Check the first character of current `code`, then call appropriate
     # tokenizers based on it. Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
@@ -52,7 +52,8 @@ exports import
       switch code.charAt 0
       case [' ' \#]
         i = @spaceToken code
-      case \\n then i = @lineToken  code
+      case \\n then i = @lineToken      code
+      case \\  then i = @backslashToken code
       case \'  then i = @heredocToken code, \' or @singleStringToken code
       case \"  then i = @heredocToken code, \" or @doubleStringToken code
       case \<
@@ -283,6 +284,15 @@ exports import
     @token \)CALL ''
     heregex.length
 
+  # Matches a word literal or ignores an escaped whitespace.
+  backslashToken: ->
+    unless word = WORD.exec it
+      ++@line if \\n is it.charAt 1
+      return 2
+    word.=0.slice 1
+    @strnum if \\ is word then "'\\\\'" else string word, \'
+    word.length + 1
+
   # Matches a words literal, a syntax sugar for a list of strings.
   wordsToken: ->
     @carp 'unterminated words' unless ~end = it.indexOf \]> 2
@@ -378,7 +388,6 @@ exports import
       @token \)PARAM ''
     default
       switch val
-      case \\\\n then ++@line
       case \@    then @token \LITERAL \this; @last.callable = true
       case \@@   then @token \LITERAL \arguments
       case \::
@@ -387,9 +396,6 @@ exports import
       default next = true
       return val.length unless next
       switch val.charAt 0
-      case \\
-        @strnum if \\ is word = val.slice 1 then "'\\\\'" else string word, \'
-        return val.length
       case \(
         if val.length > 1
           @token \CALL( \(
@@ -585,7 +591,6 @@ NUMBER = /// ^ (?
 ) ///i
 SYMBOL = /// ^ (?
 : [-+*/%&|^:<>]=                # compound assign / comparison
-| \\(?: \S[^\s,;)}\]]* | \n)    # word / continued line
 | ([+&|:])\1                    # increment / logic / prototype access
 | -[->]                         # decrement / function
 | \([^\n\S]*\)                  # call
@@ -602,6 +607,7 @@ SPACE     = /^(?=.)[^\n\S]*(?:#.*)?/
 MULTIDENT = /^(?:\s*#.*)*(?:\n[^\n\S]*)+/
 SIMPLESTR = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN   = /^`[^\\`]*(?:\\.[^\\`]*)*`/
+WORD      = /^\\\S[^\s,;)}\]]*/
 
 REGEX = /// ^
   / (?!\s)         # disallow leading whitespace
