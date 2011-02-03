@@ -316,7 +316,7 @@ eq o.5, 5
 eq void, []0
 
 
-throws 'stub code executed', -> ...
+throws \unimplemented -> ...
 
 
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)

@@ -160,7 +160,7 @@ bnf =
     , -> Call.back $2, $5, $6
 
     o \COMMENT -> L new Comment $1
-    o \...     -> L new Throw JS "Error('stub code executed')"
+    o \...     -> L new Throw JS "Error('unimplemented')"
   # A list of lines, separated by newlines or semicolons.
   Body:
     o \Line                  -> Block $1
