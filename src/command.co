@@ -34,6 +34,7 @@ if o.$unknowns.length
 o.run = not (o.compile or o.print)
 o.print   ||= o.eval or o.stdin and o.compile
 o.compile ||= o.output
+o.bare    ||= o.eval and o.run
 sources = o.$args
 
 # Many flags cause us to divert before compiling anything.
@@ -95,11 +96,16 @@ compileScript = (file, input, base) ->
       throw \ok
     Coco.emit \compile t
     t.output = t.nodes.compileRoot t.options
-    Coco.emit \write t
-    switch
-    case o.run     then Coco.run t.output, t.options <<< {+js}
-    case o.print   then say t.output.trim()
-    case o.compile then writeJs t.file, t.output, base
+    if o.run
+      Coco.emit \run t
+      if o.eval
+      then console.log (0; eval) t.output
+      else Coco.run t.output, t.options <<< {+js}
+    else
+      Coco.emit \write t
+      if o.print
+      then say t.output.trim()
+      else writeJs t.file, t.output, base
   catch e unless e is \ok
     if Coco.listeners(\failure).length
       Coco.emit \failure e, t
