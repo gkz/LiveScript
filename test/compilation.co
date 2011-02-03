@@ -162,6 +162,10 @@ eq '1;\n2;\n3;\n4;', Coco.compile '''
 ''' {+bare}
 
 
+# `__proto__` should be available as a variable name.
+eq 1, __proto__ = 1
+
+
 # [#1](https://github.com/satyr/coco/issues/1)
 λ = -> 七 = 7
 eq λ(), 7
