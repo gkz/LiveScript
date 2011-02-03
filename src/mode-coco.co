@@ -1,11 +1,46 @@
-# Defines _ace/mode/coco_ for [Ace](http://ace.ajax.org).
+# Defines an editing mode for [Ace](http://ace.ajax.org).
 #
 # Open [test/ace.htm](../test/ace.htm) to test.
+
+define \ace/mode/coco Mode: class CocoMode extends require(\ace/mode/text).Mode
+  ->
+    @$tokenizer =
+      new (require \ace/tokenizer).Tokenizer CocoMode.Rules
+    @$outdent   =
+      new (require \ace/mode/matching_brace_outdent).MatchingBraceOutdent
+
+  indenter = /// (?:
+    [({[=:] | [-~]> | \b(?: else | d(?:o|efault) | try | catch | finally )
+  ) \s* $ ///
+
+  getNextLineIndent: (state, line, tab) ->
+    indent   = @$getIndent line
+    {tokens} = @$tokenizer.getLineTokens line, state
+    unless tokens.length and tokens[*-1].type is \comment
+      indent += tab if state is \start and indenter.test line
+    indent
+
+  toggleCommentLines: (state, doc, startRow, endRow) ->
+    comment = /^(\s*)#/; range = new (require \ace/range).Range 0 0 0 0
+    for i from startRow to endRow
+      if out = comment.test line = doc.getLine i
+      then line.=replace comment, \$1
+      else line.=replace /^\s*/   \$&#
+      range.end.row = range.start.row = i
+      range.end.column = line.length + 1
+      doc.replace range, line
+    1 - out * 2
+
+  checkOutdent: (state, line, input) -> @$outdent.checkOutdent line, input
+
+  autoOutdent: (state, doc, row) -> @$outdent.autoOutdent doc, row
+
+### Highlight Rules
 
 identifier = '[$A-Za-z_\\x7f-\\uffff][$\\w\\x7f-\\uffff]*'
 stringfill = token: \string, regex: '.+'
 
-Rules =
+CocoMode.Rules =
 start: [
   token: \identifier
   regex: '(?:@|(?:\\.|::)\\s*)' + identifier
@@ -134,53 +169,13 @@ words:
   regex: '.*?]>'
   next : \start
   stringfill
-heregex: [
+heregex:
   token: \string.regex
   regex: '.+?///[imgy]{0,4}'
   next : \start
-,
-  token: \string.regex
-  regex: '.+'
-]
-comment: [
+  {}= token: \string.regex, regex: '.+'
+comment:
   token: \comment.doc
   regex: '.*?\\*/'
   next : \start
-,
-  token: \comment.doc
-  regex: '.+'
-]
-
-class Mode extends require(\ace/mode/text).Mode
-  ->
-    @$tokenizer = new (require \ace/tokenizer).Tokenizer Rules
-    @$outdent   =
-      new (require \ace/mode/matching_brace_outdent).MatchingBraceOutdent
-
-  indenter = /// (?:
-    [({[=:] | [-~]> | \b(?: else | d(?:o|efault) | try | catch | finally )
-  ) \s* $ ///
-
-  getNextLineIndent: (state, line, tab) ->
-    indent   = @$getIndent line
-    {tokens} = @$tokenizer.getLineTokens line, state
-    unless tokens.length and tokens[*-1].type is \comment
-      indent += tab if state is \start and indenter.test line
-    indent
-
-  toggleCommentLines: (state, doc, startRow, endRow) ->
-    comment = /^(\s*)#/; range = new (require \ace/range).Range 0 0 0 0
-    for i from startRow to endRow
-      if out = comment.test line = doc.getLine i
-      then line.=replace comment, \$1
-      else line.=replace /^\s*/   \$&#
-      range.end.row = range.start.row = i
-      range.end.column = line.length + 1
-      doc.replace range, line
-    1 - out * 2
-
-  checkOutdent: (state, line, input) -> @$outdent.checkOutdent line, input
-
-  autoOutdent: (state, doc, row) -> @$outdent.autoOutdent doc, row
-
-define \ace/mode/coco {Mode, Rules}
+  {}= token: \comment.doc, regex: '.+'
