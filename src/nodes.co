@@ -148,11 +148,11 @@ class Node
     tree
 
   # JSON serialization
-  stringify : -> JSON.stringify this
+  stringify : (space) -> JSON.stringify this, null space
   toJSON    : -> @<<< type: @constructor.displayName
 
 # JSON deserialization
-exports.parse    = -> exports.fromJSON JSON.parse it
+exports.parse    = (json) -> exports.fromJSON JSON.parse json
 exports.fromJSON = function ->
   return it unless it and typeof it is \object
   if it.type
