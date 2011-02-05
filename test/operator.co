@@ -230,6 +230,8 @@ eq '''
 });
 ''', Coco.compile '{a}<<<{b}<<<{c}', {+bare}
 
+ok ok.isPrototypeOf new []= (->) <<< prototype: ok
+
 
 ### `delete`
 i = 0

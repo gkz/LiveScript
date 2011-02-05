@@ -897,6 +897,8 @@ class exports.Import extends Node
 
   show: -> @all
 
+  isCallable: -> @left.isCallable()
+
   compileNode: (o) ->
     if @all or not @right.items
       return Call(Util "import#{ @all or '' }"; [@left, @right]).compile o
