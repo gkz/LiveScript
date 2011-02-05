@@ -59,9 +59,9 @@ task \build:full 'rebuild the source twice, and run the tests' ->
 
 task \build:parser 'rebuild the Jison parser (run "build" first)' ->
   src = require(\./lib/grammar).parser.generate()
-        .replace /^[^]+?var (?=parser = {)/, \exports.
-        .replace /return parser;[^]+/, ''
-        .replace /\ncase \d+:this\.\$ = 0;\nbreak;/g, ''
+        .replace /^[^]+?var (?=parser = {)/ \exports.
+        .replace /\ncase \d+:\nbreak;/g ''
+        .replace /return parser;[^]+/ ''
   spit \lib/parser.js src
 
 task \build:browser 'rebuild extras/*.js' ->
