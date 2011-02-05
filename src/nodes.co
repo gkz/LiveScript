@@ -549,6 +549,8 @@ class List extends Node
 class exports.Obj extends List
   (@items or []) ~>
 
+  asObj: THIS
+
   assigns: -> return true if node.assigns it for node of @items
 
   compileNode: (o) ->
@@ -599,6 +601,8 @@ class exports.Arr extends List
   (@items or []) ~>
 
   selections: -> @items.length > 1 and @items
+
+  asObj: -> Obj(Assign Literal(i), item, \: for item, i of @items)
 
   compileNode: (o) ->
     {items} = this
@@ -885,17 +889,17 @@ class exports.Assign extends Node
 # Operators that copy properties from right to left.
 class exports.Import extends Node
   (@left, @right, @all and \All) ~>
-    if not all and left instanceof Obj and right instanceof Obj
-      return Obj left.items.concat right.items
+    if not all and left instanceof Obj and right.items
+      return Obj left.items.concat right.asObj().items
 
   children: <[ left right ]>
 
   show: -> @all
 
   compileNode: (o) ->
-    if @all or @right not instanceof Obj
+    if @all or not @right.items
       return Call(Util "import#{ @all or '' }"; [@left, @right]).compile o
-    {items} = @right
+    {items} = @right.asObj()
     return @left.compile o unless items.length
     top = not o.level
     if top and items.length < 2

@@ -275,7 +275,7 @@ exports import
         val = token.1.replace HEREGEX_OMIT, ''
         continue if i and not val
         tokens.push token <<<
-          0: \STRNUM, 1: string val.replace(bs ||= /\\/g, \\\\\), \'
+          [\STRNUM string val.replace(bs ||= /\\/g, \\\\\), \']
       tokens.push [\+- \+ tokens[*-1]2]
     tokens.pop()
     if flags
