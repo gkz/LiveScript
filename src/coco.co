@@ -30,7 +30,7 @@ Coco import
   # Same as `tokens`, except that this skips [rewriting](#rewriter).
   lex: -> lex it, {-rewrite}
 
-Coco.nodes{parse} = nodes
+Coco.nodes{parse, fromJSON} = nodes
 
 #### [node.js](http://nodejs.org)
 if (fs = require \fs) and (path = require \path)

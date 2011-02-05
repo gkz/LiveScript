@@ -228,9 +228,9 @@ eq o.2, 2
 eq o.3, 3
 eq o.4, 4
 
-i = 0
-o{(i++)} = [ok]
-eq o.0, ok
+(i = 0; o){(i++), (i++)} = [5 6]
+eq 5 o.0
+eq 6 o.1
 
 
 # Destructuring with default values.

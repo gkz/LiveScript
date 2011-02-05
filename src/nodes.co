@@ -879,7 +879,7 @@ class exports.Assign extends Node
       then [sub, ref, @temps] = base.cache o
       else sub = ref = base
       for node, i of items
-        base = if i then sub else ref
+        base = if i then ref else sub
         if node instanceof Assign
           node.right = Value base, [Index node.right.asKey()]
         else
