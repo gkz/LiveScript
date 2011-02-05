@@ -14,9 +14,9 @@ run = (args) ->
   proc.stderr.on \data, say
   proc       .on \exit, -> process.exit it if it
 
-option \prefix, 'set the installation prefix for `coke install`', \DIR
+option \prefix 'set the installation prefix for `coke install`' \DIR
 
-task \install, 'install Coco into /usr/local (or --prefix)', (options) ->
+task \install 'install Coco into /usr/local (or --prefix)' (options) ->
   base = options.prefix or \/usr/local
   lib  = "#{base}/lib/coco"
   bin  = "#{base}/bin"
@@ -65,16 +65,18 @@ task \build:parser 'rebuild the Jison parser (run "build" first)' ->
   spit \lib/parser.js src
 
 task \build:browser 'rebuild extras/*.js' ->
-  xspit \mode-coco.raw.js co = Coco.compile slurp \src/mode-coco.co
-  xspit \mode-coco.js ug co
+  Coco = require \./lib/coco
+  xspit \mode-coco.raw.js js = Coco.compile slurp \src/mode-coco.co
+  xspit \mode-coco.js ug js
   co = ''
-  for name of <[ rewriter lexer parser nodes coco ]>
-    src = slurp "lib/#{name}.js"
-    co += "!function(exports){\n#{src}\n}(require['./#{name}'] = {});"
-  xspit \coco.raw.js co = """
-    this.Coco=function(){
+  for name of <[ rewriter lexer nodes coco ]>
+    code = slurp("src/#{name}.co").replace /^./mg '  $&'
+    co += "do (exports = require'./#{name}' = {}) ->\n#{code}\n  void\n"
+  xspit \coco.raw.js js = """
+    this.Coco = function(){
     function require(path){ return require[path] }
-    #{co}
+    var exports = require['./parser'] = {}; #{ slurp \lib/parser.js }
+    #{ Coco.compile co, {+bare} }
     return require['./coco']
     }()
     this.window && function(){\n#{ slurp \lib/browser.js }\n}()
@@ -86,7 +88,7 @@ task \build:browser 'rebuild extras/*.js' ->
     // Copyright 2011, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
     http://satyr.github.com/coco
-    #{ ug co };
+    #{ ug js };
 
   """
   invoke \test:browser
@@ -99,11 +101,11 @@ function ug ->
   {parser, uglify} = require \uglify-js
   ast = parser.parse it
   ast = uglify.ast_mangle  ast
-  ast = uglify.ast_squeeze ast, {+extra}
+  ast = uglify.ast_squeeze ast
   uglify.gen_code ast
 
 
-task \bench, 'quick benchmark of compilation time', ->
+task \bench 'quick benchmark of compilation time' ->
   Lexer    = require \./lib/lexer
   Rewriter = require \./lib/rewriter
   Coco     = require \./lib/coco
@@ -124,11 +126,11 @@ task \bench, 'quick benchmark of compilation time', ->
   nodes.traverseChildren (-> ++nc; void), true
   console.log msg, nc
 
-task \loc, 'count the lines of source code in the Coco compiler', ->
-  exec """
-    cat #{ coreSources().join ' ' } | \\
+task \loc 'count the lines of source code in the Coco compiler' ->
+  exec "
+    cat #{ coreSources().join ' ' } | \
     grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '
-  """, (err, out) -> say out.trim()
+  " (e, out) -> say out.trim()
 
 
 task \test 'run the Coco language test suite' ->
