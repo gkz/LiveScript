@@ -248,3 +248,8 @@ new ->
 # [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
 [void, null, v] = [1 to 3]
 eq v, 3
+
+
+# [coffee#1108](https://github.com/jashkenas/coffee-script/issues/1108)
+[z] = [0] ? [1]
+eq 0 z

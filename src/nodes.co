@@ -692,10 +692,11 @@ class exports.Op extends Node
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
-    firsts = @first.cache o, true
-    Existence(firsts.0) .compile(o, LEVEL_COND) +
-    ' ? ' + firsts.1    .compile(o, LEVEL_LIST) +
-    ' : ' + @second     .compile(o, LEVEL_LIST)
+    fsts = @first.cache o, true
+    code = Existence(fsts.0).compile(o, LEVEL_COND) +
+           ' ? ' + fsts.1   .compile(o, LEVEL_LIST) +
+           ' : ' + @second  .compile(o, LEVEL_LIST)
+    if o.level < LEVEL_COND then code else "(#{code})"
 
   compileUnary: (o) ->
     {op, first} = this
