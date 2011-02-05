@@ -147,6 +147,20 @@ class Node
     @eachChild -> tree += it.toString idt + TAB; void
     tree
 
+  # JSON serialization
+  stringify : -> JSON.stringify this
+  toJSON    : -> @<<< type: @constructor.displayName
+
+# JSON deserialization
+exports.parse    = -> exports.fromJSON JSON.parse it
+exports.fromJSON = function ->
+  return it unless it and typeof it is \object
+  if it.type
+    node = exports[it.type]::{}
+    node[key] = fromJSON val for key, val in it
+    return node
+  if it.length? then fromJSON v for v of it else it
+
 #### Modules
 
 Negatable =

@@ -138,6 +138,14 @@ task \test:browser
 , 'run the test suite against the merged browser script' ->
   runTests new -> eval slurp \extras/coco.js \utf8
 
+task \test:json 'test JSON {de,}serialization' ->
+  {nodes} = require \./lib/coco
+  json = nodes(slurp \src/nodes.co).stringify()
+  code = nodes.parse(json).compileRoot {+bare}
+  exec 'diff -u lib/nodes.js -' (e, out) ->
+    say out.trim() || tint \ok
+  .stdin.end code
+
 function runTests (Coco) ->
   startTime = Date.now()
   passedTests = failedTests = 0

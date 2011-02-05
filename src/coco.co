@@ -9,7 +9,7 @@ Coco = exports
 {lex}    = require \./lexer
 {parser} = require \./parser
 parser import
-  yy    : require \./nodes
+  yy    : nodes = require \./nodes
   lexer :
     lex           : -> [tag, @yytext, @yylineno] = @tokens[++@pos] or ['']; tag
     setInput      : -> @pos = -1; @tokens = it
@@ -29,6 +29,8 @@ Coco import
 
   # Same as `tokens`, except that this skips [rewriting](#rewriter).
   lex: -> lex it, {-rewrite}
+
+Coco.nodes{parse} = nodes
 
 #### [node.js](http://nodejs.org)
 if (fs = require \fs) and (path = require \path)
