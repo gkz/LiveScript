@@ -1,7 +1,8 @@
 # Regular expression literals.
 ok /x/.test 'x'
 ok 'x'.match /x/
-eq /\\/.source, '\\\\'
+eq /\\/ + '', '/\\\\/'
+eq //   + '', '/(?:)/'
 
 
 # Should not be mixed-up with the division operator.
@@ -14,6 +15,7 @@ eq g/h/i, 2/2/2
 eq [g][0]/h/i, (2)/2/2
 
 
+# Heregexes.
 eq /^I'm\s+Heregex?\/\/\//gim + '', ///
   ^ I'm \s+ Heregex? / // # or not
 ///gim + ''
@@ -27,9 +29,10 @@ eq '\\\\#{}\\\\\\\"', ///
  \\ \"
 ///.source
 
-eq ///  /// + '', '/(?:)/'
+eq ////// + '', '/(?:)/'
 
 eq /// _ #{?if 1 then \g else \m}/// + '', '/_/g'
+
 
 # ACI interaction.
 eq \/1/ '0'.replace ///#{0}/// ''+/1/ \g

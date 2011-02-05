@@ -216,9 +216,9 @@ exports import
     if ~doc.indexOf \\n
       tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
       dent = 0/0
-      dent = len unless dent <= len = m.0.length - 1 while m = tabs.exec doc
+      dent = len unless dent <= len = that.0.length - 1 while tabs.exec doc
       doc  = detab doc, dent
-      if doc.charAt(0) is \\n
+      if \\n is doc.charAt 0
         doc.=slice 1
         ++@line
     if q is \" and ~doc.indexOf \#{
@@ -254,7 +254,7 @@ exports import
     return 0 if @last.0 of <[ LITERAL CREMENT ]> or
                 @able true or not re = REGEX.exec it
     @token \LITERAL if re.=0 is \// then '/(?:)/' else re
-    @countLines(re).length
+    re.length
 
   # Matches a multiline and extended regex literal.
   heregexToken: ->
@@ -530,9 +530,9 @@ exports import
 
   # Checks if the last token is
   #
-  # - callable  via explicit parentheses : `f()`
-  # - indexable via implicit brackets    : `x''`
-  able: -> not @last.spaced and able @tokens, null, it
+  # - `f()`: `call`able via explicit parentheses
+  # - `x''`: indexable via implicit brackets
+  able: (call) -> not @last.spaced and able @tokens, null call
 
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
@@ -611,20 +611,15 @@ SIMPLESTR = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN   = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 WORD      = /^\\\S[^\s,;)}\]]*/
 
-REGEX = /// ^
-  / (?!\s)         # disallow leading whitespace
-  [^ [ / \n \\ ]*  # every other thing
-  (?:
-    (?: \\[\s\S]   # anything escaped
-      | \[         # character class
-           [^ \] \n \\ ]*
-           (?: \\[\s\S] [^ \] \n \\ ]* )*
-         ]
-    ) [^ [ / \n \\ ]*
-  )*
-  / [imgy]{0,4} (?!\w)
+REGEX = ///
+  ^ / (?!\s)           # disallow leading whitespace
+  [^ [ / \n \\ ]* (?:  # every other thing
+    (?: \\.                                  # anything escaped
+      | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]  # or character class
+    ) [^ [ / \n \\ ]*                        # every other thing again
+  )* / [imgy]{0,4} (?!\w)  # disallow trailing alphanumerics
 ///
-HEREGEX      = /// ^ /{3} ([\s\S]+?) /{3} ([imgy]{0,4}) (?!\w) ///
+HEREGEX      = /// ^ /{3} ([\s\S]*?) /{3} ([imgy]{0,4}) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 LINE_CONTINUER = /// ^ \s* (?: , | [?~]?\.(?!\.) | :: ) ///
