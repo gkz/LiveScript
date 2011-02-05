@@ -169,7 +169,7 @@ words:
   stringfill
 heregex:
   token: \string.regex
-  regex: '.+?///[imgy]{0,4}'
+  regex: '.*?///(?:\\?|[imgy]{0,4})'
   next : \start
   {}= token: \string.regex, regex: '.+'
 comment:

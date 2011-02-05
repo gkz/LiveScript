@@ -260,29 +260,29 @@ exports import
   heregexToken: ->
     @carp 'unterminated heregex' unless match = HEREGEX.exec it
     [heregex, body, flags] = match
+    flags = '' if dynaflag = flags is \?
     if 0 > body.indexOf \#{
       body.=replace(HEREGEX_OMIT, '').replace(/\//g \\\/)
-      @token \LITERAL, "/#{ body or '(?:)' }/#{flags}"
+      @token \LITERAL "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex).length
-    @token \IDENTIFIER \RegExp; @token \CALL( \(
-    {tokens} = this
-    for token, i of @interpolate body
+    @token \IDENTIFIER \RegExp; @token \CALL( ''
+    {tokens} = this; interp = @interpolate body
+    flags = interp.pop()1 if dynaflag and interp[*-1]0 is \TOKENS
+    for token, i of interp
       if token.0 is \TOKENS
-        if token.1.1?.1 is \?
-        then tokens.pop(); flags = token.1
-        else tokens.push ...token.1
+        tokens.push ...token.1
       else
         val = token.1.replace HEREGEX_OMIT, ''
         continue if i and not val
-        val.=replace bs ||= /\\/g, \\\\\
-        tokens.push [\STRNUM; string val, \'; token.2]
-      tokens.push [\+- \+ tokens[*-1].2]
+        tokens.push token <<<
+          0: \STRNUM, 1: string val.replace(bs ||= /\\/g, \\\\\), \'
+      tokens.push [\+- \+ tokens[*-1]2]
     tokens.pop()
     if flags
       @token \, \,
       if typeof flags is \string
-      then @token \STRNUM, "'#{flags}'"
-      else tokens.push ...flags.slice 2 -1
+      then @token \STRNUM "'#{flags}'"
+      else tokens.push ...flags
     @token \)CALL ''
     heregex.length
 
@@ -619,7 +619,7 @@ REGEX = ///
     ) [^ [ / \n \\ ]*                        # every other thing again
   )* / [imgy]{0,4} (?!\w)  # disallow trailing alphanumerics
 ///
-HEREGEX      = /// ^ /{3} ([\s\S]*?) /{3} ([imgy]{0,4}) ///
+HEREGEX      = /// ^ /{3} ([\s\S]*?) /{3} (\?|[imgy]{0,4}) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 LINE_CONTINUER = /// ^ \s* (?: , | [?~]?\.(?!\.) | :: ) ///

@@ -31,7 +31,7 @@ eq '\\\\#{}\\\\\\\"', ///
 
 eq ////// + '', '/(?:)/'
 
-eq /// _ #{?if 1 then \g else \m}/// + '', '/_/g'
+eq /// _ #{if 1 then \g else \m}///? + '', '/_/g'
 
 
 # ACI interaction.
