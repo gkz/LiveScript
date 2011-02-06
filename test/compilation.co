@@ -162,6 +162,13 @@ eq '1;\n2;\n3;\n4;', Coco.compile '''
 ''' {+bare}
 
 
+eq '''
+#!js
+var a;
+a = 1;
+''' Coco.compile '`#!js`; a = 1' {+bare}
+
+
 # `__proto__` should be available as a variable name.
 eq 1, __proto__ = 1
 
