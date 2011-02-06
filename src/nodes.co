@@ -263,7 +263,7 @@ class Atom extends Node
 #### Literal
 # `this`, regexes, and primitive values.
 class exports.Literal extends Atom
-  (@value) ~> return JS '' + value if value.js
+  (@value) ~> return JS "#{value}" true if value.js
 
   isEmpty    : -> switch @value case <[ void null ]> then true
   isCallable : -> switch @value case <[ this eval ]> then true
@@ -602,10 +602,11 @@ class exports.Obj extends List
     return @compileDynamic o, code, rest if rest
     if @front then "(#{code})" else code
 
-  compileDynamic: (o, code, props) ->
+  compileDynamic: (o, code, items) ->
     o.indent = @tab
+    return Import(JS code; Obj items).compile o if items.length < 2
     code = "#{ oref = o.scope.temporary \obj } = #{code}
-          , #{ Import(Var oref; Obj props).compile o, LEVEL_PAREN }"
+          , #{ Import(Var oref; Obj items).compile o, LEVEL_PAREN }"
     o.scope.free oref
     if o.level < LEVEL_LIST then code else "(#{code})"
 
@@ -919,7 +920,7 @@ class exports.Import extends Node
     {items} = @right.asObj()
     return @left.compile o unless items.length
     top = not o.level
-    if top and items.length < 2
+    if items.length < 2 and (top or items.0 instanceof Splat)
     then sub = lref = @left
     else [sub, lref, @temps] = @left.cache o
     [delim, space] = if top then [\; \\n + @tab] else [\, ' ']
@@ -1550,17 +1551,18 @@ class exports.If extends Node
 #### JS
 # Embedded JavaScript snippets.
 class exports.JS extends Node
-  (@code) ~>
+  (@code, @literal) ~>
 
   terminator: ''
   isCallable: YES
 
-  compile: -> entab @code, it.indent
+  compile: -> if @literal then entab @code, it.indent else @code
 
 #### Comment
-# Block comments are compiled as JavaScript block comments at the same position.
+# JavaScript block comments.
 class exports.Comment extends JS
   (@code) ->
+  literal: true
 
 #### Util
 # A wrapper node for utility functions.
