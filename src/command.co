@@ -1,3 +1,4 @@
+`#!/usr/bin/env node`
 # The `coco` utility.
 
 global import
