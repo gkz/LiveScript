@@ -63,8 +63,6 @@ while (0) {
 throws 'invalid use of void on line 1', -> Coco.compile 'do void'
 throws 'invalid use of null on line 1', -> Coco.compile 'null.po'
 
-throws 'invalid property name "this.p" on line 1', -> Coco.compile '{@p:@}'
-
 throws 'deprecated octal literal 0666 on line 1' ,-> Coco.tokens '0666'
 throws 'invalid radix 1 on line 1'               ,-> Coco.tokens '1r0'
 throws 'invalid radix 37 on line 1'              ,-> Coco.tokens '37r0'

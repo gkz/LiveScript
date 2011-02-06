@@ -55,9 +55,9 @@ eq '[object Object]', (
 
 aps = Array.prototype.toString
 eq aps, Array::toString
-eq aps, Array :: toString
+eq aps, Array ::toString
 eq aps, Array::\toString
-eq aps, Array:: \toString
+eq aps, Array ::\toString
 
 
 # Length Star

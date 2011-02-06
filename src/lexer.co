@@ -85,45 +85,40 @@ exports import
   # though `is` means `===` otherwise.
   identifierToken: ->
     return 0 unless match = IDENTIFIER.exec it
-    if at = \@ is (id = match.1).charAt 0
-      id.=slice 1
-      tag = \THISPROP
-    else
-      {last} = this
-      switch id
-      case \own
-        break unless last.0 is \FOR and last.1
-        last.1 = ''
+    {last} = this
+    switch id = match.1
+    case \own
+      break unless last.0 is \FOR and last.1
+      last.1 = ''
+      return id.length
+    case \from
+      break unless @tokens[*-2]?.0 is \FOR
+      @<<<{-seenFor, +seenFrom}
+      return @token(\FROM, id).length
+    case \ever
+      break unless last.0 is \FOR
+      @seenFor = false
+      return @token(\EVER, id).length
+    case <[ to til ]>
+      if @seenFrom
+        @<<<{-seenFrom, +seenTo}
+        return @token(\TO id).length
+      else if last.0 is \STRNUM and /^[-+\d.]/.test last.1
+        last <<< 0:\RANGE op:id
         return id.length
-      case \from
-        break unless @tokens[*-2]?.0 is \FOR
-        @<<<{-seenFor, +seenFrom}
-        return @token(\FROM, id).length
-      case \ever
-        break unless last.0 is \FOR
-        @seenFor = false
-        return @token(\EVER, id).length
-      case <[ to til ]>
-        if @seenFrom
-          @<<<{-seenFrom, +seenTo}
-          return @token(\TO id).length
-        else if last.0 is \STRNUM and /^[-+\d.]/.test last.1
-          last <<< 0:\RANGE op:id
-          return id.length
-      case \by
-        if @seenTo
-          @seenTo = false
-          return @token(\BY id).length
-        else if last.0 is \RANGE and last.to
-          last.by = true
-          return id.length
-      case \all
-        break unless last.0 is \IMPORT and last.1 is \<<<
-        last.1 += \<
+    case \by
+      if @seenTo
+        @seenTo = false
+        return @token(\BY id).length
+      else if last.0 is \RANGE and last.to
+        last.by = true
         return id.length
-      tag = \IDENTIFIER
-    colon = match.2
-    if at or colon or (if last\:: then @token \DOT \. else last.0 is \DOT)
+    case \all
+      break unless last.0 is \IMPORT and last.1 is \<<<
+      last.1 += \<
+      return id.length
+    tag = \IDENTIFIER; colon = match.2
+    if colon or last.0 is \DOT or @able() and !@token \DOT ''
       if id of JS_KEYWORDS or id of RESERVED
         (id = new String id).reserved = true
     else if id of <[ this eval ]>
@@ -583,7 +578,7 @@ RESERVED = <[
 ##### Regexes
 
 IDENTIFIER = /// ^
-  ( @? [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
+  ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 ///
 NUMBER = /// ^ (?

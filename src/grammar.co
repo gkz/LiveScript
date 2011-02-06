@@ -67,9 +67,6 @@ bnf =
   SimpleAssignable:
     o \IDENTIFIER -> L Var $1
 
-    # A reference to a property on `this`.
-    o \THISPROP thisprop = -> Value L(Literal \this), [Index L Key $1], true
-
     o 'Value DOT IDENTIFIER'           -> $1.add Index L(Key     $3) ,$2
     o 'Value DOT STRNUM'               -> $1.add Index L(Literal $3) ,$2
     o 'Value DOT Parenthetical'        -> $1.add Index $3.it         ,$2
@@ -204,21 +201,26 @@ bnf =
     o                                'FUNC_ARROW Block' -> L Fun [], $2, $1
 
   # Things that can be keys within an object literal.
-  Key:
+  KeyBase:
     o \IDENTIFIER -> L Key     $1
     o \STRNUM     -> L Literal $1
+  Key:
+    o \KeyBase
     o \Parenthetical
-    o \THISPROP thisprop
-
+  KeyValue:
+    o \Key
+    o 'LITERAL DOT KeyBase' -> Assign $3, Value(Literal $1; [Index $3, $2]), \:
+    o 'Key     DOT KeyBase' -> Assign $3, Value(        $1; [Index $3, $2]), \:
+  # Keys and values.
   Property:
     o 'Key : Expression' -> Assign $1, $3                 , \:
     o 'Key : Block'      -> Assign $1, $3.unwrap().asArr(), \:
+    o '+- Key'           -> Assign $2.asKey(), Literal($1 is \+), \:
 
-    o \Key
-    o '... Key' -> Splat  $2
-    o '+-  Key' -> Assign $2.asKey(), Literal($1 is \+), \:
+    o \KeyValue
+    o 'KeyValue LOGIC Expression' -> Op $2, $1, $3
 
-    o 'Key LOGIC Expression' -> Op $2, $1, $3
+    o '... Expression' -> Splat $2
 
     o \COMMENT -> L JS $1, true true
   # Properties within an object literal can be separated by

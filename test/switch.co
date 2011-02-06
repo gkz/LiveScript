@@ -93,7 +93,7 @@ case 4 then break
 case 5 then fallthrough
 case 6 then that
 case 7 then
-case[,]then
+case[] then
 default 8
 ''', {+bare}
 

@@ -127,7 +127,7 @@ class Node
   unwrap       : THIS
   asKey        : THIS
   asArr        : THIS
-  dollarize    : String
+  varName      : String
   selections   : NO
 
   invert: -> Op \! this
@@ -303,9 +303,6 @@ class exports.Key extends Atom
 
   isAssignable: -> not @reserved
 
-  dollarize: ->
-    (if @reserved or @name of <[ arguments eval ]> then \$ else '') + @name
-
   compile: @::show = -> if @reserved then "'#{@name}'" else @name
 
 #### Index
@@ -332,9 +329,9 @@ class exports.Index extends Node
 # Acts as a container for property access chains, by holding
 # __Index__ instances within `@tails`.
 class exports.Value extends Node
-  (head, tails, at) ~>
+  (head, tails) ~>
     return head if not tails and head instanceof Value
-    @<<<{head, tails or [], at}
+    @<<<{head, tails or []}
 
   children: <[ head tails ]>
 
@@ -351,6 +348,15 @@ class exports.Value extends Node
 
   # The value can be unwrapped as its inner node, if there are no accessors.
   unwrap: -> if @tails.length then this else @head
+
+  varName: ->
+    {key} = that if @tails[*-1]
+    if key instanceof Key
+      {name} = key
+      name = \$ + name if key.reserved or name of <[ arguments eval ]>
+    else if key instanceof Literal and /^[$\w]+$/.test key.value
+      name = \$ + key.value
+    name or ''
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions, so that e.g.
@@ -584,9 +590,7 @@ class exports.Obj extends List
         code += idt + node.compile(o) + \\n
         continue
       node.=first if logic = node.hasDefault()
-      code += idt + if node.at
-        (key = node.tails.0.key.compile o) + ': ' + node.compile o, LEVEL_LIST
-      else if node instanceof Assign
+      code += idt + if node instanceof Assign
         key = node.left.compile o
         if node.isAccessor()
           fun = node.right.first
@@ -866,7 +870,7 @@ class exports.Assign extends Node
         [node, key] = Value(node.it).cacheReference o
       else if node instanceof Assign
       then key = node.left; node.=right
-      else key = if node.at then node.tails.0.key else node
+      else key = node
       node = Var node.name if node instanceof Key
       node = logic import {first: node} if logic
       val  = Value lr ||= Var(rite), [Index key.asKey()]
@@ -949,8 +953,8 @@ class exports.Import extends Node
             , #{      fun.compile o, LEVEL_LIST })"
           continue
         {left: key, right: val} = node
-      else if (key = val = node).at
-        [{key}] = val.tails
+      else
+        key = val = node
       val = logic import {first: val} if logic
       asn = Assign Value(lref, [Index if dyna then key else key.asKey()]), val
       code += asn.compile o, LEVEL_PAREN
@@ -1109,8 +1113,8 @@ class exports.Fun extends Node
     prm = node
     if splat = prm instanceof Splat then prm.=it
     else    if prm.hasDefault()     then prm.=first
-    if prm.at
-      prm = Var prm.tails.0.key.dollarize()
+    if prm.varName()
+      prm = Var that
     else if prm not instanceof Var and not prm.isEmpty()
       prm = Var o.scope.temporary \arg
     node.param = if splat then Splat prm else prm
@@ -1124,11 +1128,8 @@ class exports.Class extends Node
   isCallable: YES
 
   compileNode: (o) ->
-    {fun} = this; {lines} = fun.body
-    if @title
-      decl = if @title instanceof Value
-      then @title.tails[*-1].key.dollarize()
-      else @title.value
+    {fun, title} = this; {lines} = fun.body
+    decl  = title.varName() or title.value if title
     name  = decl or @name
     name  = \_Class unless name and IDENTIFIER.test name
     lname = Var fun.bound = name
@@ -1147,8 +1148,8 @@ class exports.Class extends Node
       args  = [@sup]
       proto = Util.Extends lname, fun.params.* = Var \_super
     clas = Call fun <<< {proto}, args
-    clas = Assign lname , clas if decl and @title?.isComplex()
-    clas = Assign @title, clas if @title
+    clas = Assign lname, clas if decl and title.isComplex()
+    clas = Assign title, clas if title
     clas.compile o
 
 #### Super

@@ -52,10 +52,10 @@
   function lmn(name, attrs){
     return document.body.appendChild(__importAll(document.createElement(name), attrs));
   }
-  function load(_arg, _arg2){
+  function load(_arg, innerHTML){
     var name, sect;
     name = _arg[0], sect = _arg[1];
-    doc.innerHTML = _arg2;
+    doc.innerHTML = innerHTML;
     document.title = name + (title && ' - ' + title);
     if (sect) {
       document.getElementById(sect).scrollIntoView();
