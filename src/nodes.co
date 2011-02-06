@@ -218,10 +218,10 @@ class exports.Block extends Node
     for node of @lines
       node = node.unfoldSoak o or node
       if top
-        code = (node import {+front}).compile o
+        code = (node <<< {+front}).compile o
         code = o.indent + code + node.terminator unless node.isStatement o
       else
-        continue if node instanceof Comment
+        continue if node.comment
         code = node.compile o, LEVEL_LIST
       codes.push code
     return codes.join \\n if top
@@ -245,7 +245,7 @@ class exports.Block extends Node
     o.level = LEVEL_TOP
     code = post = ''
     for node, i of @lines
-      break unless node instanceof [Comment, Literal]
+      break unless node.comment or node instanceof Literal
     if i
       rest   = @lines.splice i, 9e9
       code   = @compileNode o
@@ -577,7 +577,7 @@ class exports.Obj extends List
         break
     code = ''; idt = o.indent += TAB; [last] = lastNonComment items; dic = {}
     for node of items
-      if node instanceof Comment
+      if node.comment
         code += idt + node.compile(o) + \\n
         continue
       node.=first if logic = node.hasDefault()
@@ -928,7 +928,7 @@ class exports.Import extends Node
     code = ''
     for node of items
       code += if com then space else delim
-      if com = node instanceof Comment
+      if com = node.comment
         code += node.compile o
         continue
       if node instanceof Splat
@@ -1143,7 +1143,7 @@ class exports.Class extends Node
     if @sup
       args  = [@sup]
       proto = Util.Extends lname, fun.params.* = Var \_super
-    clas = Call fun import {proto}, args
+    clas = Call fun <<< {proto}, args
     clas = Assign lname , clas if decl and @title?.isComplex()
     clas = Assign @title, clas if @title
     clas.compile o
@@ -1528,7 +1528,7 @@ class exports.If extends Node
     code += ') ' + @compileBlock o, \then
     return code unless @else
     code + ' else ' + if @chain
-    then @else.compile o import {indent: @tab, +elsed}, LEVEL_TOP
+    then @else.compile o <<< {indent: @tab, +elsed}, LEVEL_TOP
     else @compileBlock o, \else
 
   compileExpression: (o) ->
@@ -1551,18 +1551,12 @@ class exports.If extends Node
 #### JS
 # Embedded JavaScript snippets.
 class exports.JS extends Node
-  (@code, @literal) ~>
+  (@code, @literal, @comment) ~>
 
   terminator: ''
-  isCallable: YES
+  isCallable: -> not @comment
 
   compile: -> if @literal then entab @code, it.indent else @code
-
-#### Comment
-# JavaScript block comments.
-class exports.Comment extends JS
-  (@code) ->
-  literal: true
 
 #### Util
 # A wrapper node for utility functions.
@@ -1729,7 +1723,7 @@ IDENTIFIER = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
 function utility -> Scope.root.assign \__ + it, UTILITIES[it]
 
 function lastNonComment (nodes) ->
-  break if node not instanceof Comment for node, i of nodes by -1
+  break unless node.comment for node, i of nodes by -1
   [i >= 0 and node, i]
 
 function entab (code, tab) -> code.replace /\n/g \\n + tab
