@@ -11,7 +11,7 @@
 ,"directories" : {"lib" : "./lib"  }
 ,"main" : "./lib/coco"
 ,"bin"  :
- {"coco" : "./bin/coco"
- ,"coke" : "./bin/coke"
+ {"coco" : "./lib/command"
+ ,"coke" : "./lib/coke"
  }
 }

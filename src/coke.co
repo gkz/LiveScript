@@ -46,23 +46,22 @@ global import
 # Run `coke`. Executes all of the tasks you pass, in order. Note that Node's
 # asynchrony may cause tasks to execute in a different order than you'd expect.
 # If no tasks are passed, print the help screen.
-exports.run = ->
-  args = process.argv.slice 2
+do ->
+  args     = process.argv.slice 2
   filename = args.splice(0 2).1 if args.0 of <[ -f --cokefile ]>
-  path.exists filename ||= \Cokefile ->
-    unless it
-      console.error 'no "%s" in %s' filename, process.cwd()
-      process.exit 1
-    require.paths.push process.cwd()
-    Coco.run slurp(filename), {filename}
-    Options := require(\./optparse) Flags, args
-    if args.length
-    then Options.$args.forEach invoke
-    else printTasks()
-    void
+  <- path.exists filename ||= \Cokefile
+  unless it
+    console.error 'no "%s" in %s' filename, process.cwd()
+    process.exit 1
+  require.paths.push process.cwd()
+  Coco.run slurp(filename), {filename}
+  Options := require(\./optparse) Flags, args
+  if args.length
+  then Options.$args.forEach invoke
+  else printTasks()
 
 # Display the list of tasks in a format similar to `rake -T`.
-printTasks = ->
+function printTasks ->
   say '''
     Usage: coke [coke options] [task options] [tasks]
 

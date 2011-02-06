@@ -1,7 +1,3 @@
 #!/usr/bin/env node
-
-var path = require('path');
-var fs   = require('fs');
-var lib  = path.join(path.dirname(fs.realpathSync(__filename)), '../lib');
-
-require(lib + '/coke').run();
+var path = require('path'), fs = require('fs')
+require(path.join(path.dirname(fs.realpathSync(__filename)), '../lib/coke'))

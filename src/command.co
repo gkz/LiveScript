@@ -41,10 +41,11 @@ sources = o.$args
 # Many flags cause us to divert before compiling anything.
 # Arguments passed after `--` will be passed verbatim to your script as
 # `process.argv`.
-exports.run = ->
-  return do forkNode if o.nodejs
-  return do version  if o.version
-  return do help     if o.help
+switch
+case o.nodejs  then do forkNode
+case o.version then do version
+case o.help    then do help
+default
   require.paths.push process.cwd()
   if o.require
     {filename} = module
@@ -64,10 +65,10 @@ exports.run = ->
 # Asynchronously read in each Coco script in a list of source files and
 # compile them. If a directory is passed, recursively compile all
 # _.co_ files in it and all subdirectories.
-compileScripts = ->
+function compileScripts ->
   sources.forEach (source) ->
-    yes <- path.exists source
-    yes or die "No such file or directory: #{source}"
+    <- path.exists source
+    it or die "No such file or directory: #{source}"
     walk source, path.normalize(source), true
   function walk (source, base, top) ->
     e, stats <- fs.stat source
@@ -82,7 +83,7 @@ compileScripts = ->
 
 # Compile a single source script, containing the given code, according to the
 # requested options.
-compileScript = (file, input, base) ->
+function compileScript (file, input, base) ->
   t = {file, input, options: filename: file, bare: !!o.bare}
   try
     Coco.emit \lex t
@@ -121,7 +122,7 @@ compileScript = (file, input, base) ->
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**,
 # and write them back to **stdout**.
-compileStdin = ->
+function compileStdin ->
   code  = ''
   stdin = process.openStdin()
   stdin.on \data -> code += it if it
@@ -130,7 +131,7 @@ compileStdin = ->
 # Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--nodes` or `--print`.
-watch = (source, base) ->
+function watch (source, base) ->
   fs.watchFile source, {+persistent, interval: 500ms} (curr, prev) ->
     return if curr.size is prev.size and +curr.mtime is +prev.mtime
     e, code <- fs.readFile source
@@ -140,7 +141,7 @@ watch = (source, base) ->
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
-writeJs = (source, js, base) ->
+function writeJs (source, js, base) ->
   filename = path.basename(source, path.extname source) + \.js
   srcDir   = path.dirname source
   dir      = if o.output
@@ -158,7 +159,7 @@ writeJs = (source, js, base) ->
   else require(\child_process).exec "mkdir -p #{dir}", compile
 
 # Pretty-print a stream of tokens.
-printTokens = (tokens) ->
+function printTokens (tokens) ->
   lines = []
   for [tag, val, lno] of tokens
     tag += \: + val unless tag is val += ''
@@ -169,7 +170,7 @@ printTokens = (tokens) ->
 # (or a block of lines if continued using backslash) at a time to JavaScript
 # and evaluates it. Good for simple tests or poking around the
 # [**node.js** API](http://nodejs.org/api/).
-repl = ->
+function repl ->
   module.filename = process.cwd() + \/repl
   {Script} = process.binding \evals
   context  = Script.createContext() <<< {...global, module, require}
@@ -196,9 +197,9 @@ repl = ->
 
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
 # to it, preserving the other options.
-forkNode = ->
+function forkNode ->
   args = process.argv.slice 1; i = 0
-  args.splice i--, 2 if arg of <[ -N --nodejs ]> while arg = args[++i]
+  args.splice i--, 2 if that of <[ -N --nodejs ]> while args[++i]
   require(\child_process).spawn do
     process.execPath
     o.nodejs.join(' ').trim().split(/\s+/).concat args
