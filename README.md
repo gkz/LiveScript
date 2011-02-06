@@ -3,7 +3,8 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 
 ## Why
 On its way to hide bad parts of JavaScript, CoffeeScript accumulated its own:
-awkward variable scope, confusing/pointless keywords, long extension name, and so on.
+horrible variable scope, confusing/pointless keywords, awkward ranges,
+long extension, and so on.
 Coco tries to amend them, entwining good parts of both.
 
 ## Principles

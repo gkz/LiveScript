@@ -149,7 +149,7 @@ class Node
 
   # JSON serialization
   stringify : (space) -> JSON.stringify this, null space
-  toJSON    : -> @<<< type: @constructor.displayName
+  toJSON    : -> {type: @constructor.displayName, ...(@)}
 
 # JSON deserialization
 exports.parse    = (json) -> exports.fromJSON JSON.parse json
