@@ -1,8 +1,13 @@
 # Coco
 is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radical and practical.
 
+## Why
+On its way to hide bad parts of JavaScript, CoffeeScript accumulated its own:
+awkward variable scope, confusing/pointless keywords, long extension name, and so on.
+Coco tries to amend them, entwining good parts of both.
+
 ## Principles
-- Respect JavaScript/ECMAScript semantics, but supply ways to amend them.
+- Respect JavaScript/ECMAScript semantics.
 - Reserve less keywords.
 - Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 - Performance over readability.
@@ -27,6 +32,14 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
     coco -h; coke
 
 ## Changelog
+
+### 0.3.1
+- `debugger` now works anywhere.
+- Revised heregex flag syntax: `///#{x}#{y}///?` -> `RegExp('' + x, y);`
+- Removed `Coco.eval`.
+- Made _extras/coco.js_ work as a mini-compiler on WSH.
+- Added _extras/mode-coco.js_, an editing mode for Ace.
+- Added `--json` option.
 
 ### 0.3.0
 #### Pure Additions
