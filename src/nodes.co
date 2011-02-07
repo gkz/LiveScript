@@ -507,12 +507,12 @@ class exports.Call extends Node
     {callee} = this
     unless callee.isCallable()
       throw SE callee.L callee.compile(o, LEVEL_ACCESS) + ' // invalid callee'
-    callee <<< {@front} unless fun = (callee.head or callee) instanceof Fun
     if @thisplat
       return @compileSplat o, @args.1.value if @new
       @method = \.apply
     else if Splat.compileArray o, @args, true
       return @compileSplat o, that
+    callee <<< {@front} unless fun = (callee.head or callee) instanceof Fun
     callee.newed = true if @new
     code = (@new or '') + callee.compile(o, LEVEL_ACCESS) + (@method or '') +
            "(#{ (arg.compile o, LEVEL_LIST for arg of @args).join ', ' })"
@@ -531,7 +531,7 @@ class exports.Call extends Node
         #{idt}return result === Object(result) ? result : child;
         #{@tab}}(#{ @callee.compile o, LEVEL_LIST }, #{args}, function(){}))
       """
-    base = @callee
+    (base = Value @callee) <<< {@front}
     if (name = base.tails.pop()) and base.isComplex()
       base.front = false
       ref = o.scope.temporary \ref
@@ -644,16 +644,12 @@ class exports.Op extends Node
     case \of then return new Of first, second
     case \do
       if first instanceof Fun
-        args = []
-        if (ps = first.params).length then for p, i of ps
-          if p.op is \= and not p.logic
-          then args.push p.right; ps[i] = p.left
-          else if p.op is \~ and not at?
-          then args.unshift p.first; at = i
-          else args.push p
-        if at?
-          ps.splice at, 1
+        args = []; ps = first.params
+        if ps.length and ps.0.op is \~
+          args.push ps.shift()first
           method = \.call
+        for p, i of ps then args.push do
+          if p.op is \= and not p.logic then ps[i] = p.left; p.right else p
       return Parens Call(first, args) <<< {method}
     case \new
       if (call = first.head or first) instanceof Call
