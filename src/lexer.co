@@ -385,11 +385,9 @@ exports import
       @token \)PARAM ''
     default
       switch val
-      case \@    then @token \LITERAL \this; @last.callable = true
-      case \@@   then @token \LITERAL \arguments
-      case \::
-        @token \DOT ''; @token \IDENTIFIER \prototype
-        @last\:: = true
+      case \@  then @token \LITERAL \this; @last.callable = true
+      case \@@ then @token \LITERAL \arguments
+      case \:: then @token \DOT ''; @token \IDENTIFIER \prototype
       default next = true
       return val.length unless next
       switch val.charAt 0
@@ -512,7 +510,7 @@ exports import
 
   # Records a string/number token, supplying implicit dot if applicable.
   strnum: ->
-    dot = if @able() or @last\:: then not @token \DOT '' else @last.0 is \DOT
+    dot = if @able() then !@token \DOT '' else @last.0 is \DOT
     @token \STRNUM it
     @last.callable = true if dot
     void
