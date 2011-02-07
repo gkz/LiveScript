@@ -149,7 +149,7 @@ class Node
 
   # JSON serialization
   stringify : (space) -> JSON.stringify this, null space
-  toJSON    : -> {type: @constructor.displayName, ...(@)}
+  toJSON    : -> {type: @constructor.displayName, ...this}
 
 # JSON deserialization
 exports.parse    = (json) -> exports.fromJSON JSON.parse json
@@ -610,12 +610,7 @@ class exports.Obj extends List
     if @front then "(#{code})" else code
 
   compileDynamic: (o, code, items) ->
-    o.indent = @tab
-    return Import(JS code; Obj items).compile o if items.length < 2
-    code = "#{ oref = o.scope.temporary \obj } = #{code}
-          , #{ Import(Var oref; Obj items).compile o, LEVEL_PAREN }"
-    o.scope.free oref
-    if o.level < LEVEL_LIST then code else "(#{code})"
+    Import(JS code; Obj items).compile o <<< indent: @tab
 
 #### Arr
 # `[x, y]`

@@ -246,7 +246,7 @@ obj = {
   (--i) or 'default value'
   /*      splat       */
   ...o
-  ...({splatMe: 'too'})
+  ...{splatMe: 'too'}
   /*   normal keys    */
   key: ok
   's': ok
