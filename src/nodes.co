@@ -230,12 +230,16 @@ class exports.Block extends Node
 
   # **Block** is the only node that can serve as the root.
   compileRoot: (options) ->
-    o = {} <<<< options
+    o = {level: LEVEL_TOP, scope: @scope = Scope.root = new Scope} <<<< options
     o.indent = @tab = if bare = delete o.bare then '' else TAB
-    o.scope  = @scope = Scope.root = new Scope
-    o.level  = LEVEL_TOP
     shebang  = (first = @lines.0) instanceof JS and
                ~first.code.lastIndexOf \#! 0 and @lines.shift().code
+    if delete o.repl
+      if bare
+        [node, i] = lastNonComment @lines
+        @lines[i] = Parens node if node
+      else
+        @makeReturn()
     code = @compileWithDeclarations(o).replace /[^\n\S]+$/gm ''
     # If we happen to be the top-level **Block**, wrap everything in
     # a safety closure, unless requested not to.

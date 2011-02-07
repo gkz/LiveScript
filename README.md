@@ -9,10 +9,11 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Principles
 - Respect JavaScript/ECMAScript semantics.
-- Reserve less keywords.
 - Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 - Performance over readability.
 - Perl over Ruby.
+- Reserve less keywords.
+- Write less punctuations.
 
 ## Differences
 - [Additions](https://github.com/satyr/coco/wiki/additions)

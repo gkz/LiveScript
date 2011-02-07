@@ -6,7 +6,7 @@ eq 'one;\ntwo;', Coco.compile 'one\r\ntwo', {+bare}
 eq '_(_);', Coco.compile '\n\t_\t_\t\n', {+bare}
 
 
-# `globals: true` removes `var`s
+# `{+globals}` removes `var`s
 eq '''
 (function(){
   __slice = [].slice;
@@ -14,6 +14,14 @@ eq '''
 }).call(this);
 
 ''', Coco.compile 'f ...a, b', {+globals}
+
+
+# `{+repl}` forces the last value to be returned.
+eq 1, Function('return ' + Coco.compile 'delete @1' {+repl}).call {1}
+eq '''
+var _ref;
+(_ref = o.k, delete o.k, _ref);
+''' Coco.compile 'delete o.k' {+repl, +bare}
 
 
 # [coffee#750](https://github.com/jashkenas/coffee-script/issues/750)

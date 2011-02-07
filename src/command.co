@@ -187,7 +187,7 @@ function repl ->
     if \\ is code.slice -1 then buf := code.slice 0 -1; return
     buf := ''
     try
-      _ = Script.runInContext Coco.compile(code.slice 1; {+bare}), context
+      _ = Script.runInContext Coco.compile(code.slice 1; {+bare, +repl}), context
       _ is void or console.dir context._ = _
     catch e say e
     repl.prompt()
