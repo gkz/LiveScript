@@ -580,9 +580,10 @@ IDENTIFIER = /// ^
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 ///
 NUMBER = /// ^ (?
-: 0x[\da-f]+                                        # hex
-| ([1-9]\d?) r ([\da-z]+)                           # any radix
-| ( (?:\d+(?:\.\d+)?|\.\d+) (?:e[+-]?\d+)? ) [a-z]* # decimal
+: 0x[\da-f]+                                  # hex
+| ([1-9]\d?) r ([\da-z]+)                     # any radix
+| ( (?:\d+(?:\.\d+)?|\.\d+) (?:e[+-]?\d+)? )  # decimal
+  [a-z_]*                                     # comment
 ) ///i
 SYMBOL = /// ^ (?
 : [-+*/%&|^:<>]=                # compound assign / comparison

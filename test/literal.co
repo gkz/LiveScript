@@ -13,7 +13,7 @@ eq 255, 0xff
 ok 2r101010 == 8r52 == 36r16 == 42
 
 # With comment
-eq 1year * 365.25days * 24hours, 8766
+eq 1year * 365.25days * 24hours, 8766_total_hours
 
 
 # [#31](https://github.com/satyr/coco/issues/31): Numeric Ranges
