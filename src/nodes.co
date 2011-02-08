@@ -717,10 +717,14 @@ class exports.Op extends Node
 
   compileUnary: (o) ->
     {op, first} = this
-    if op is \delete
+    switch op
+    case \delete
       if first instanceof Var or not first.isAssignable()
         throw SE @L 'invalid "delete"'
       return @compileDelete o if o.level
+    case <[ ++ -- ]>
+      if first instanceof Var and not o.scope.check first.value, true
+        throw SE @L "modification of undeclared variable \"#{first.value}\""
     code = first.compile o, LEVEL_OP + PREC.unary
     if op is \new and not first.isCallable()
       throw SE first.L code + ' // invalid constructor'

@@ -69,6 +69,9 @@ for nonref, i of <[ 0 f() this true ]>
 throws 'assignment to undeclared variable "Math" on line 1'
 , -> Coco.compile 'Math ||:= 0'
 
+throws 'modification of undeclared variable "Math" on line 1'
+, -> Coco.compile '++Math'
+
 
 # Simple variable swapping.
 a = -1
