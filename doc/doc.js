@@ -91,6 +91,6 @@
   }
   function block(name, comment, code, i){
     code && (code = "<pre class=\"code prettyprint lang-co\"\n >" + code.replace(/&/g, '&amp;').replace(/</g, '&lt;') + "</pre>");
-    return "<div id=" + i + " class=block><div class=comment\n ><a class=anchor href=#" + name + i + ">#" + i + "</a\n >" + sdcv.makeHtml(comment) + "</div\n >" + code + "</div>";
+    return "<div id=" + i + " class=block><div class=comment\n ><a class=anchor href=#" + name + "" + i + ">#" + i + "</a\n >" + sdcv.makeHtml(comment) + "</div\n >" + code + "</div>";
   }
 }).call(this);

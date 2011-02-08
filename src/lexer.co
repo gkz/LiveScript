@@ -470,7 +470,7 @@ exports import
         ++i
         continue
       continue unless that is \# and \{ is str.charAt i+1
-      if pi < i
+      if pi < i or nested and s >= ''  # "#{0}#{1}" -> 0 + "" + 1
         ts.push [\S s = str.slice pi, i; @line]
         @countLines s
       code = @balancedString str.slice(i+1), \}
@@ -488,7 +488,7 @@ exports import
     if pi < str.length
       ts.push [\S s = str.slice pi; @line]
       @countLines s
-    ts.unshift [\S '' line] if ts.0?.0 is not \S
+    ts.unshift [\S '' line] unless s?
     return ts unless nlines?
     {tokens} = this
     dot = if @able() then tokens.push [\DOT '' line] else @last.0 is \DOT
