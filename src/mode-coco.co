@@ -2,15 +2,20 @@
 #
 # Open [test/ace.htm](../test/ace.htm) to test.
 
-define \ace/mode/coco Mode: class CocoMode extends require(\ace/mode/text).Mode
+require, exports, module <- define \ace/mode/coco
+
+exports.Mode = class CocoMode extends require(\ace/mode/text).Mode
   ->
     @$tokenizer =
       new (require \ace/tokenizer).Tokenizer CocoMode.Rules
     @$outdent   =
       new (require \ace/mode/matching_brace_outdent).MatchingBraceOutdent
 
-  indenter = /// (?:
-    [({[=:] | [-~]> | \b(?: else | d(?:o|efault) | try | catch | finally )
+  indenter = /// (?
+  : [({[=:]
+  | [-~]>
+  | \b (?: else | d(?:o|efault) | try | finally
+         | catch(?:\s*[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*)? )
   ) \s* $ ///
 
   getNextLineIndent: (state, line, tab) ->
@@ -70,6 +75,9 @@ start: [
     default \identifier
   regex: identifier + '(?:\\s*:)?'
 ,
+  token: \keyword
+  regex: '@@?(?!@)'
+,
   token: \string
   regex: '\\\\\\S[^\\s,;)}\\]]*'
 ,
@@ -119,11 +127,9 @@ start: [
   '
 ,
   token: \constant.numeric
-  regex: '(?
-    :0x[\\da-fA-F]+
-    |[1-9]\\d?[rR][\\da-zA-Z]+
-    |(?:\\d+(?:\\.\\d+)?)(?:[eE][+-]?\\d+)?[a-zA-Z]*
-  )'
+  regex: '(?:0x[\\da-fA-F]+
+            |(?:[1-9]\\d?)[rR][\\da-zA-Z]+
+            |(?:\\d+(?:\\.\\d+)?)(?:[eE][+-]?\\d+)?[a-zA-Z_]*)'
 ,
   token: \lparen
   regex: '[({[]'
@@ -136,6 +142,17 @@ start: [
 ,
   token: \text
   regex: \\\s+
+]
+heregex: [
+  token: \string.regex
+  regex: '.*?///(?:\\?|[imgy]{0,4})'
+  next : \start
+,
+  token: \comment.regex
+  regex: '\\s+(?:#.*)?'
+,
+  token: \string.regex
+  regex: '\\S+'
 ]
 qdoc:
   token: \string
@@ -167,13 +184,10 @@ words:
   regex: '.*?]>'
   next : \start
   stringfill
-heregex:
-  token: \string.regex
-  regex: '.*?///(?:\\?|[imgy]{0,4})'
-  next : \start
-  {}= token: \string.regex, regex: '.+'
 comment:
   token: \comment.doc
   regex: '.*?\\*/'
   next : \start
   {}= token: \comment.doc, regex: '.+'
+
+void

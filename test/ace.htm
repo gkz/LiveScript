@@ -8,18 +8,28 @@ body    {overflow:hidden}
 </style
 
 ><pre id=editor>
+#!/usr/bin/env coco
+
 try
-  throw URIError decodeURI 0.12345678e9f + 'qstring' + ''' qdoc '''
+  throw URIError decodeURI 0xbad - 36rCoco * 123456.7e+8f / .9
+catch e
+  console.log \word + 'qstring' + "qqstring" + '''
+    qdoc
+  ''' + """
+    qqdoc
+  """
 
-"qqstring" + """ qqdoc """ + <[ words ]>
+do ->
+  switch it
+  case <[ quoted words ]>
+    return /regex/imgy.test ///
+      heregex  # comment
+    ///imgy
+  /* JS Comment */
+  this is: not `JS`
+  void
 
-/regex/imgy.test /// heregex ///imgy
-
-`js` /* jscomment */
-
-do -> do: it
-
-var # illegal
+var illegal
 </pre
 
 ><script src=../extras/ace.js></script
