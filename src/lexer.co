@@ -240,14 +240,13 @@ exports import
     @countLines(js).length
 
   # Matches a regular expression literal, aka regex.
-  # Lexing regexes is difficult to distinguish from division,
-  # so we borrow some basic heuristics from JavaScript.
   regexToken: ->
-    # We distinguish it from the division operator using a list of tokens that
-    # a regex never immediately follows.
-    # Our list becomes shorter when spaced, due to sans-parentheses calls.
-    return 0 if @last.0 of <[ LITERAL CREMENT ]> or
-                @able true or not re = REGEX.exec it
+    # Distinguish from division operator.
+    if able @tokens, null
+      return 0 unless @last.spaced and re = REGEX.exec it
+    # Must be a regex when the last token is unindexable.
+    else unless re = REGEX.exec it
+      @carp 'unterminated regex'
     @token \LITERAL if re.=0 is \// then '/(?:)/' else re
     re.length
 
@@ -611,7 +610,7 @@ REGEX = ///
     (?: \\.                                  # anything escaped
       | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]  # or character class
     ) [^ [ / \n \\ ]*                        # every other thing again
-  )* / [imgy]{0,4} (?!\w)  # disallow trailing alphanumerics
+  )* / [imgy]{0,4} (?!\d)  # disallow trailing numbers
 ///
 HEREGEX      = /// ^ /{3} ([\s\S]*?) /{3} (\?|[imgy]{0,4}) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g

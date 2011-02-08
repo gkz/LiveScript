@@ -34,8 +34,15 @@ eq ////// + '', '/(?:)/'
 eq /// _ #{if 1 then \g else \m}///? + '', '/_/g'
 
 
-# ACI interaction.
+# ACI interaction
 eq \/1/ '0'.replace ///#{0}/// ''+/1/ \g
+
+
+# ADI interaction
+eq true, /a/itest \A
+
+
+throws 'unterminated regex on line 1' -> Coco.compile '/1'
 
 
 # [coffee#584](https://github.com/jashkenas/coffee-script/issues/584)
