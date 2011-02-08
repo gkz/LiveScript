@@ -145,11 +145,14 @@ eq config.production.server   ,'dreamboat'
 eq config.development.timeout ,10
 eq config.production.timeout  ,1000
 
-obj =
-  a: 2
-  b: 3
+o =
+  a: 1
+  b: 2, c: d: 3
+  e: f:
+    'g': 4
+  0: 5
 
-eq 6, obj.a * obj.b
+eq '1,2,3,4,5' '' + [o.a, o.b, o.c.d, o.e.f.g, o.0]
 
 obj =
   a: 2,
