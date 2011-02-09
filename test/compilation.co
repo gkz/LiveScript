@@ -35,6 +35,8 @@ throws 'unterminated string on line 3'    , -> Coco.nodes "\n\n'\n"
 throws 'unterminated words on line 3'     , -> Coco.nodes '\n\n<[\n'
 throws 'unterminated heregex on line 3'   , -> Coco.nodes '\n\n///\n'
 
+throws 'contaminated indent %20 on line 2' -> Coco.lex '1\n\t 2'
+
 
 eq 'for (k in o) {}'
 , Coco.compile 'for k in o then', {+bare, +globals}

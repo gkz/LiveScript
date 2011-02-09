@@ -315,26 +315,28 @@ exports import
   # Keeps track of the level of indentation, because a single dedent
   # can close multiple indents, so we need to know how far in we happen to be.
   lineToken: ->
-    @countLines indent = MULTIDENT.exec(it).0
-    {last} = this; last <<< {+eol, +spaced}
-    @seenFrom = @seenTo = false
-    size = indent.length - 1 - indent.lastIndexOf \\n
+    [input, indent] = MULTIDENT.exec it
+    @countLines input; @seenFrom = @seenTo = false
+    {last} = this; last.eol = last.spaced = true
     noNewline = LINE_CONTINUER.test it or last.0 of
-      <[ +- DOT ASSIGN LOGIC MATH COMPARE RELATION SHIFT IMPORT ]>
+      <[ +- DOT ASSIGN LOGIC MATH COMPARE RELATION IMPORT SHIFT BITWISE ]>
+    size = indent.length
+    if size and (@emender ||= ///[^#{ indent.charAt 0 }]///)exec indent
+      @carp "contaminated indent #{ escape that }"
     if size - @indebt is @indent
       noNewline or @newline()
-      return indent.length
+      return input.length
     if size > @indent
       if noNewline
         @indebt = size - @indent
-        return indent.length
+        return input.length
       @indents.push @token \INDENT size - @indent + @dedebt
       @dedebt = @indebt = 0
     else
       @indebt = 0
       @dedent @indent - size, noNewline
     @indent = size
-    indent.length
+    input.length
 
   # Consumes non-newline whitespaces and a line comment after them if any.
   spaceToken: ->
@@ -599,7 +601,7 @@ SYMBOL = /// ^ (?
 | \S
 ) ///
 SPACE     = /^(?=.)[^\n\S]*(?:#.*)?/
-MULTIDENT = /^(?:\s*#.*)*(?:\n[^\n\S]*)+/
+MULTIDENT = /^(?:\s*#.*)*(?:\n([^\n\S]*))+/
 SIMPLESTR = /^'[^\\']*(?:\\.[^\\']*)*'/
 JSTOKEN   = /^`[^\\`]*(?:\\.[^\\`]*)*`/
 WORD      = /^\\\S[^\s,;)}\]]*/
