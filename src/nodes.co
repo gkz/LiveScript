@@ -709,6 +709,8 @@ class exports.Op extends Node
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
+    unless o.level
+      return Op(\&& Existence(@first).invert(), @second).compile o
     fsts = @first.cache o, true
     code = Existence(fsts.0).compile(o, LEVEL_COND) +
            ' ? ' + fsts.1   .compile(o, LEVEL_LIST) +
@@ -1003,14 +1005,17 @@ class exports.Existence extends Node
   @::<<<< Negatable
 
   compileNode: (o) ->
-    node = @it.unwrap(); code = node.compile o, LEVEL_OP + PREC\==
-    if node instanceof Var and not o.scope.check code, true
+    node = @it.unwrap()
+    code = node.compile o, LEVEL_OP + PREC\==
+    op   = if node instanceof Var and not o.scope.check code, true
       code = 'typeof ' + code + if @negated
       then " == 'undefined' || #{code} === null"
       else " != 'undefined' && #{code} !== null"
+      \||
     else
       code += " #{ if @negated then \= else \! }= null"
-    if o.level <= LEVEL_COND then code else "(#{code})"
+      \==
+    if o.level < LEVEL_OP + PREC[op] then code else "(#{code})"
 
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
@@ -1075,9 +1080,7 @@ class exports.Fun extends Node
         asns.push Assign arg, val
         arg = ref
       else if dfv
-        asns.push if p.op is \?
-        then Op \&& Literal(arg.value + ' == null'), Assign arg, p.second
-        else Assign arg, p.second, \=, p.op
+        asns.push Assign arg, p.second, \=, p.op
       splatted or args.push arg
     wasEmpty = not (exps = body.lines).length
     if splatted then asns.unshift splatted else
