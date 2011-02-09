@@ -23,7 +23,7 @@ global import
   # and the function to run as the action itself.
   task: (name, description, action) ->
     [action, description] = [description, ''] unless action
-    Aliases[name.split(/\W+/).filter(String).map(-> it.0).join ''] ||= name
+    Aliases[name.split(/\W+/)filter(String)map(-> it.0)join ''] ||= name
     Tasks[name] = {name, description, action}
 
   # Define an option that the Cokefile accepts. The parsed options hash,
@@ -49,7 +49,7 @@ global import
 # If no tasks are passed, print the help screen.
 do ->
   args     = process.argv.slice 2
-  filename = args.splice(0 2).1 if args.0 of <[ -f --cokefile ]>
+  filename = args.splice(0 2)1 if args.0 of <[ -f --cokefile ]>
   <- path.exists filename ||= \Cokefile
   unless it
     console.error 'no "%s" in %s' filename, process.cwd()
@@ -68,10 +68,10 @@ function printTasks ->
 
     Tasks:
   '''
-  width = Math.max ...Object.keys(Tasks).map -> it.length
-  pad   = Array(width >> 1).join '  '
+  width = Math.max ...Object.keys(Tasks)map -> it.length
+  pad   = Array(width >> 1)join '  '
   for name, task in Tasks
-    say "  #{ (name + pad).slice 0 width }  #{task.description}"
+    say "  #{ (name + pad)slice 0 width }  #{task.description}"
   say '\nTask options:\n' + that if Options.toString()
   say '''
 

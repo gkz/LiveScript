@@ -41,7 +41,7 @@ function lmn (name, attrs) ->
 
 function load ([name, sect], doc.innerHTML) ->
   document.title = name + (title and ' - ' + title)
-  document.getElementById(sect).scrollIntoView() if sect
+  document.getElementById(sect)scrollIntoView() if sect
   # [google-code-prettify](http://code.google.com/p/google-code-prettify/)
   # highlights the code, with the help of our [lang-co](#lang-co) plugin.
   prettyPrint()
@@ -68,7 +68,7 @@ function build (name, source) ->
 function block (name, comment, code, i) ->
   code &&= """
    <pre class="code prettyprint lang-co"
-    >#{ code.replace(/&/g '&amp;').replace(/</g '&lt;') }</pre>
+    >#{ code.replace(/&/g '&amp;')replace(/</g '&lt;') }</pre>
   """
   """
    <div id=#{i} class=block><div class=comment

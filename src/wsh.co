@@ -6,8 +6,8 @@ fso  = WSH.createObject \Scripting.FileSystemObject
 
 for i from args.length
   it = args.item i
-  co = fso.openTextFile(it, 1).readAll()
+  co = fso.openTextFile(it, 1)readAll()
   js = Coco.compile co
-  fso.openTextFile(it.replace /(?:\.co)?$/ \.js; 2 true).write js
+  fso.openTextFile(it.replace /(?:\.co)?$/ \.js; 2 true)write js
 
 i or WSH.echo 'Usage: coco [files]'

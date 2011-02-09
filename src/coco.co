@@ -19,7 +19,7 @@ Coco import
   VERSION: \0.3.2b
 
   # Compiles a string of Coco code to JavaScript.
-  compile: (code, options) -> parser.parse(lex code).compileRoot options
+  compile: (code, options) -> parser.parse(lex code)compileRoot options
 
   # Parses a string or tokens of Coco code, returning the AST.
   nodes: -> parser.parse if typeof it is \string then lex it else it
@@ -43,7 +43,7 @@ if (fs = require \fs) and (path = require \path)
     root.moduleCache &&= {}
     unless options.js
       if require.extensions or
-         path.extname(root.filename).toLowerCase() is not \.co
+         path.extname(root.filename)toLowerCase() is not \.co
         code = Coco.compile code, options
     root._compile code, root.filename
 

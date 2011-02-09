@@ -32,7 +32,7 @@ exports import
   # we move forward within the code past the token, and begin again.
   ) -> exports{}.tokenize code || '', options || {}
   tokenize: (code, o) ->
-    code.=replace(/\r/g '').replace(/\s+$/ '')
+    code.=replace(/\r/g '')replace(/\s+$/ '')
     # Stream of parsed tokens,
     # initialized with a TERMINATOR token to ensure `@last` always exists.
     @tokens = [@last = [\TERMINATOR '' 0]]
@@ -94,22 +94,22 @@ exports import
     case \from
       break unless @tokens[*-2]?.0 is \FOR
       @<<<{-seenFor, +seenFrom}
-      return @token(\FROM, id).length
+      return @token(\FROM id)length
     case \ever
       break unless last.0 is \FOR
       @seenFor = false
-      return @token(\EVER, id).length
+      return @token(\EVER id)length
     case <[ to til ]>
       if @seenFrom
         @<<<{-seenFrom, +seenTo}
-        return @token(\TO id).length
+        return @token(\TO id)length
       else if last.0 is \STRNUM and /^[-+\d.]/.test last.1
         last <<< 0:\RANGE op:id
         return id.length
     case \by
       if @seenTo
         @seenTo = false
-        return @token(\BY id).length
+        return @token(\BY id)length
       else if last.0 is \RANGE and last.to
         last.by = true
         return id.length
@@ -120,7 +120,7 @@ exports import
     tag = \IDENTIFIER; colon = match.2
     if colon or last.0 is \DOT or @able() and !@token \DOT ''
       if id of JS_KEYWORDS or id of RESERVED
-        (id = new String id).reserved = true
+        (id = new String id)reserved = true
     else if id of <[ this eval ]>
       @token \LITERAL id; @last.callable = true
       return id.length
@@ -137,7 +137,7 @@ exports import
         if tag is not \INSTANCEOF and @seenFor
           if tag is \OF
             @seenTo = true
-            id = last.0 is \IDENTIFIER and @tokens[*-2].0 is \, and
+            id = last.0 is \IDENTIFIER and @tokens[*-2]0 is \, and
                  (@tokens.splice -2 2; last.1)
           @seenFor = false
           tag = \FOR + tag
@@ -158,7 +158,7 @@ exports import
     default
       @carp "reserved word \"#{id}\"" if id of RESERVED
       if not last.1 and last.0 of <[ CATCH FUNCTION ]>
-        return (last.1 = id).length
+        return (last.1 = id)length
     @token tag, id
     @token \: \: if colon
     match.0.length
@@ -191,7 +191,7 @@ exports import
   singleStringToken: ->
     @carp 'unterminated string' unless str = SIMPLESTR.exec it
     @strnum unlines str.=0
-    @countLines(str).length
+    @countLines(str)length
 
   # Ensures that quotation marks are balanced within
   # the string's contents, and within nested interpolations.
@@ -200,7 +200,7 @@ exports import
     if 0 < str.indexOf \#{ 1
     then @interpolate str.slice(1 -1), unlines
     else @strnum unlines str
-    @countLines(str).length
+    @countLines(str)length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
@@ -230,14 +230,14 @@ exports import
     if @last.0 of <[ TERMINATOR INDENT THEN ]>
     then @token \COMMENT detab text, @indent; @token \TERMINATOR \\n
     else @last.spaced = true
-    @countLines(text).length
+    @countLines(text)length
 
   # Matches JavaScript interpolated directly into the source via backticks.
   jsToken: ->
     @carp 'unterminated JS literal' unless js = JSTOKEN.exec it
-    @token \LITERAL new String detab (js.=0).slice(1 -1), @indent
+    @token \LITERAL new String detab (js.=0)slice(1 -1), @indent
     @last.1.js = true
-    @countLines(js).length
+    @countLines(js)length
 
   # Matches a regular expression literal, aka regex.
   regexToken: ->
@@ -256,9 +256,9 @@ exports import
     [heregex, body, flags] = match
     flags = '' if dynaflag = flags is \?
     if 0 > body.indexOf \#{
-      body.=replace(HEREGEX_OMIT, '').replace(/\//g \\\/)
+      body.=replace(HEREGEX_OMIT, '')replace(/\//g \\\/)
       @token \LITERAL "/#{ body or '(?:)' }/#{flags}"
-      return @countLines(heregex).length
+      return @countLines(heregex)length
     @token \IDENTIFIER \RegExp; @token \CALL( ''
     {tokens} = this; interp = @interpolate body
     flags = interp.pop()1 if dynaflag and interp[*-1]0 is \TOKENS
@@ -295,7 +295,7 @@ exports import
     @token \DOT '' if @able()
     @token \[ \[
     {tokens, line} = this
-    for row of it.slice(2 end).split \\n
+    for row of it.slice(2 end)split \\n
       if row.match w ||= /\S+/g then for word of that
         tokens.push [\STRNUM; string word, \'; line] <<< {+spaced}
       ++line
@@ -369,7 +369,7 @@ exports import
       tag = \ASSIGN
       switch @last.0
       case \LOGIC
-        (val = new String val).logic = @tokens.pop().1
+        (val = new String val)logic = @tokens.pop()1
       case \DOT then if @last.1 is \.
         @last.1 += val
         return val.length
@@ -400,7 +400,7 @@ exports import
         tag = \CALL( if @able true
       case \{ then @able() and @token \CLONE ''
       case \[ then @able() and @token \DOT   ''
-    @token(tag, val).length
+    @token(tag, val)length
 
   #### Token Manipulators
 
@@ -482,8 +482,8 @@ exports import
       nested.shift() if nested.0?.0 is \TERMINATOR
       if len = nested.length
         if len > 1
-          nested.unshift [\( \( nested[ 0 ].2]
-          nested.push    [\) \) nested[len].2]
+          nested.unshift [\( \( nested[ 0 ]2]
+          nested.push    [\) \) nested[len]2]
         ts.push [\TOKENS nested]
       @countLines code
     if pi < str.length
@@ -495,7 +495,7 @@ exports import
     dot = if @able() then tokens.push [\DOT '' line] else @last.0 is \DOT
     tokens.push [\( \( line]
     for t, i of ts
-      tokens.push [\+- \+ tokens[*-1].2] if i
+      tokens.push [\+- \+ tokens[*-1]2] if i
       if t.0 is \TOKENS
       then tokens.push ...t.1
       else tokens.push [\STRNUM nlines string t.1, \"; t.2]
