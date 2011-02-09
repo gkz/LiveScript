@@ -26,7 +26,7 @@ class Node
   compileClosure: (o) ->
     # Statements that _jump_ out of current context (like `return`) can't be
     # an expression via closure-wrapping, as their meaning will change.
-    if @jumps() then throw SE that.L 'inconvertible statement'
+    that.carp 'inconvertible statement' if @jumps()
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
     (fun = Fun [], Block this).wrapper = true
@@ -100,8 +100,9 @@ class Node
     then hasThat that if it[that]
     else it.eachChild hasThat
 
-  # Appends `@line` number to an error message.
-  L: -> it + ' on line ' + (@line or @traverseChildren -> it.line)
+  # Throw a syntax error, appending `@line` number to the message.
+  carp: ->
+    throw SyntaxError "#{it} on line #{ @line or @traverseChildren -> it.line }"
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -280,7 +281,7 @@ class exports.Literal extends Atom
     case \this then return o.scope.fun?.bound or val
     case \void then val += ' 8'; fallthrough
     case \null then if level is LEVEL_ACCESS
-      throw SE @L 'invalid use of ' + @value
+      @carp 'invalid use of ' + @value
     case \debugger then return '(function(){ debugger }())' if level
     val
 
@@ -506,7 +507,7 @@ class exports.Call extends Node
     return that.compile o if @unfoldAssign o
     {callee} = this
     unless callee.isCallable()
-      throw SE callee.L callee.compile(o, LEVEL_ACCESS) + ' // invalid callee'
+      callee.carp callee.compile(o, LEVEL_ACCESS) + ' // invalid callee'
     if @thisplat
       return @compileSplat o, @args.1.value if @new
       @method = \.apply
@@ -604,7 +605,7 @@ class exports.Obj extends List
           node.compile o
       else
         (key = node.compile o) + ': ' + key
-      throw SE node.L "duplicate property name \"#{key}\"" if dic[0 + key]
+      node.carp "duplicate property name \"#{key}\"" if dic[0 + key]
       logic and code += " #{
         if logic.op is \? then "!= null ? #{key} :" else logic.op
       } " + logic.second.compile o, LEVEL_OP
@@ -722,14 +723,14 @@ class exports.Op extends Node
     switch op
     case \delete
       if first instanceof Var or not first.isAssignable()
-        throw SE @L 'invalid "delete"'
+        @carp 'invalid "delete"'
       return @compileDelete o if o.level
     case <[ ++ -- ]>
       if first instanceof Var and not o.scope.check first.value, true
-        throw SE @L "modification of undeclared variable \"#{first.value}\""
+        @carp "modification of undeclared variable \"#{first.value}\""
     code = first.compile o, LEVEL_OP + PREC.unary
     if op is \new and not first.isCallable()
-      throw SE first.L code + ' // invalid constructor'
+      first.carp code + ' // invalid constructor'
     if @post
       code += op
     else
@@ -789,7 +790,7 @@ class exports.Assign extends Node
     left = @transleft(o).unwrap()
     if left.items
       return @compileDestructuring o, left unless @logic
-      throw SE @L "\"#{@show()}\" cannot destructure"
+      @carp "indestructurable assignment #{@show()}"
     return @compileConditional o, left if @logic
     if left.hasDefault()
       right = Op left.op, right, left.second
@@ -802,16 +803,16 @@ class exports.Assign extends Node
       right.clas   = that if that.1
     val = right.compile o, LEVEL_LIST
     if @op is \:
-      throw SE left.L "invalid property name \"#{name}\"" if left.isComplex()
+      left.carp "invalid property name \"#{name}\"" if left.isComplex()
       return name + ': ' + val
     unless left.isAssignable()
-      throw SE left.L left.compile(o <<< indent: '', LEVEL_LIST) +
-                      ' // invalid assignee'
+      left.carp "#{ left.compile o <<< indent: '', LEVEL_LIST } \
+                 // invalid assignee"
     if left instanceof Var
       if @op is \=
         o.scope.declare name
       else unless o.scope.check name, true
-        throw SE left.L "assignment to undeclared variable \"#{name}\""
+        left.carp "assignment to undeclared variable \"#{name}\""
     code = name + " #{ if @op is \:= then \= else @op } " + val
     if o.level < LEVEL_COND then code else "(#{code})"
 
@@ -840,7 +841,7 @@ class exports.Assign extends Node
     for node, i of nodes
       continue if node.isEmpty()
       if node instanceof Splat
-        throw SE node.L 'multiple splats in an assignment' if ivar
+        node.carp 'multiple splats in an assignment' if ivar
         len = nodes.length; empty = (node.=it).isEmpty()
         if i is len - 1
           break if empty
@@ -1007,14 +1008,11 @@ class exports.Existence extends Node
   compileNode: (o) ->
     node = @it.unwrap()
     code = node.compile o, LEVEL_OP + PREC\==
-    op   = if node instanceof Var and not o.scope.check code, true
-      code = 'typeof ' + code + if @negated
-      then " == 'undefined' || #{code} === null"
-      else " != 'undefined' && #{code} !== null"
-      \||
+    if node instanceof Var and not o.scope.check code, true
+      [op, eq] = if @negated then <[ || = ]> else <[ && ! ]>
+      code = "typeof #{code} #{eq}= 'undefined' #{op} #{code} #{eq}== null"
     else
-      code += " #{ if @negated then \= else \! }= null"
-      \==
+      code += " #{ op = if @negated then \== else \!= } null"
     if o.level < LEVEL_OP + PREC[op] then code else "(#{code})"
 
 #### Fun
@@ -1089,15 +1087,15 @@ class exports.Fun extends Node
       dic = {}
       for a, i of args
         if dic[0 + a.=compile o]
-          throw SE args[i].L "duplicate formal argument \"#{a}\""
+          args[i]carp "duplicate formal argument \"#{a}\""
         scope.add args[i] = dic[0 + a] = a, \arg
     exps.unshift ...asns if asns.length
     body.makeReturn() unless wasEmpty or @ctor
     if @statement
       unless name
-        throw SE @L 'nameless function'
+        @carp 'nameless function'
       unless o.block.scope is pscope
-        throw SE @L 'function declaration under a statement'
+        @carp 'function declaration under a statement'
       scope .add name, \function
       pscope.add name, \function unless @returns
       code += ' ' + name
@@ -1141,7 +1139,7 @@ class exports.Class extends Node
         lines[i] = Import Var(\_proto), node
         proto = lname
       else if node instanceof Fun and not node.statement
-        throw SE node.L 'more than one constructor in a class' if ctor
+        node.carp 'more than one constructor in a class' if ctor
         proto = lname if (ctor = node).bound
     lines.unshift ctor = Fun() unless ctor
     lines.push lname
@@ -1162,7 +1160,7 @@ class exports.Super extends Node
 
   compile: (o) ->
     {fun} = o.scope.shared or o.scope
-    throw SE @L 'super outside of a function' unless fun
+    @carp 'super outside of a function' unless fun
     {name, clas} = fun
     if name
       if clas
@@ -1171,7 +1169,7 @@ class exports.Super extends Node
       else if IDENTIFIER.test name
         return name + \.superclass
     return \_super if o.scope.check \_super
-    throw SE @L 'super in an anonymous function'
+    @carp 'super in an anonymous function'
 
 #### Parens
 # An extra set of parentheses,
@@ -1655,8 +1653,6 @@ Scope::<<<
 function YES  -> true
 function NO   -> false
 function THIS -> this
-
-SE = SyntaxError
 
 UTILITIES =
   # Creates an object's prototypal child, ensuring `__proto__`.
