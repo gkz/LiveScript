@@ -18,7 +18,7 @@ module.exports = (
   # The base of `options` can optionally be passed.
   options or {}
 ) ->
-  unless '[object Array]' is {}.toString.call flags
+  unless '[object Array]' is {}toString.call flags
     MULTI = /[*+]/
     flags = for name in flags
       [desc, arg, abbr] = []concat flags[name]
@@ -28,7 +28,7 @@ module.exports = (
       multi : !!arg and MULTI.test arg
 
   # Expand merged flags within arguments. e.g.: `-wp` -> `-w -p`
-  args = Array::concat.apply [], args.map ->
+  args = Array::concat.apply [] args.map ->
     if /^-\w{2,}/test it then it.slice(1)split('')map(-> \- + it) else it
 
   # Parse the list of arguments, populating an `options` object with all of the

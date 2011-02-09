@@ -28,8 +28,8 @@ unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 # optionally. If no action is specified, we simply pass the value of the
 # previous nonterminal.
 o = (patterns, action, options) ->
-  patterns.=trim().split /\s+/
-  action &&= unwrap.exec(action).1
+  patterns.=trim()split /\s+/
+  action &&= unwrap.exec(action)1
     .replace /\b(?!Er)[A-Z][\w.]*/g \yy.$&
     .replace /\.L\(/g '$&yylineno, '
   [patterns, action or '', options]
@@ -102,7 +102,7 @@ bnf =
     o 'Expression LOGIC    Expression' -> Op $2, $1, $3
     o 'Expression RELATION Expression' ->
       []= if \! is $2.charAt 0
-      then Op($2.slice 1; $1; $3).invert()
+      then Op($2.slice 1; $1; $3)invert()
       else Op $2, $1, $3
 
     o 'Expression IMPORT Expression' -> Import $1, $3, $2 is \<<<<
@@ -213,8 +213,8 @@ bnf =
     o 'Key     DOT KeyBase' -> Assign $3, Value(        $1; [Index $3, $2]), \:
   # Keys and values.
   Property:
-    o 'Key : Expression' -> Assign $1, $3                 , \:
-    o 'Key : Block'      -> Assign $1, $3.unwrap().asArr(), \:
+    o 'Key : Expression' -> Assign $1, $3                , \:
+    o 'Key : Block'      -> Assign $1, $3.unwrap()asArr(), \:
     o '+- Key'           -> Assign $2.asKey(), Literal($1 is \+), \:
 
     o \KeyValue
@@ -305,7 +305,7 @@ operators = [
   <[ right     IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
   <[ left      POST_IF FOR WHILE ]>
 # Reverse them because Jison orders precedence from low to high.
-].reverse()
+]reverse()
 
 # Wrapping Up
 # -----------
@@ -325,4 +325,4 @@ tokens = do
 # Finally, initialize the `parser` with `bnf`, `operators`, `tokens`,
 # and the name of the root.
 exports.parser =
-  new (require \jison).Parser {bnf, operators, tokens, startSymbol: \Root}
+  new (require \jison)Parser {bnf, operators, tokens, startSymbol: \Root}

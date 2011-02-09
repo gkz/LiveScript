@@ -44,7 +44,7 @@ exports import
     @indents = []
     # Prepend a newline if the input starts with an indented line,
     # so that INDENT is recorded properly.
-    if /^[^\n\S]+[^\s#]/.test code then code = \\n + code; --@line
+    if /^[^\n\S]+[^\s#]/test code then code = \\n + code; --@line
     # Check the first character of current `code`, then call appropriate
     # tokenizers based on it. Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
@@ -103,7 +103,7 @@ exports import
       if @seenFrom
         @<<<{-seenFrom, +seenTo}
         return @token(\TO id)length
-      else if last.0 is \STRNUM and /^[-+\d.]/.test last.1
+      else if last.0 is \STRNUM and /^[-+\d.]/test last.1
         last <<< 0:\RANGE op:id
         return id.length
     case \by
@@ -476,7 +476,7 @@ exports import
         @countLines s
       code = @balancedString str.slice(i+1), \}
       pi   = 1 + i += code.length
-      continue unless code.=slice 1, -1
+      continue unless code.=slice 1 -1
       nested = @lex code, {@line, -rewrite}
       nested.pop()
       nested.shift() if nested.0?.0 is \TERMINATOR

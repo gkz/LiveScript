@@ -49,7 +49,7 @@ if (fs = require \fs) and (path = require \path)
 
   if require.extensions
     require.extensions\.co = (module, filename) ->
-      module._compile (Coco.compile fs.readFileSync filename, \utf8), filename
+      module._compile Coco.compile(fs.readFileSync filename, \utf8), filename
   # __TODO__: Remove `registerExtension` when fully deprecated.
   else if require.registerExtension
     require.registerExtension \.co Coco.compile

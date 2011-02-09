@@ -359,7 +359,7 @@ class exports.Value extends Node
     if key instanceof Key
       {name} = key
       name = \$ + name if key.reserved or name of <[ arguments eval ]>
-    else if key instanceof Literal and /^[$\w]+$/.test key.value
+    else if key instanceof Literal and /^[$\w]+$/test key.value
       name = \$ + key.value
     name or ''
 
@@ -671,7 +671,7 @@ class exports.Op extends Node
 
   invert: ->
     if EQUALITY.test(op = @op) and not COMPARER.test(@first.op)
-      @op = '!='.charAt(op.indexOf \=) + op.slice 1
+      @op = '!='charAt(op.indexOf \=) + op.slice 1
       return this
     return Op \! Parens this if @second
     return @first if op is \! and @first.op of <[ ! in instanceof < > <= >= ]>
