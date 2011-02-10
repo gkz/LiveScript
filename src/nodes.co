@@ -1213,15 +1213,18 @@ class exports.Splat extends Parens
     if list.length is 1
       code = list.0.compile o, LEVEL_LIST
       return if apply then code else utility(\slice) + ".call(#{code})"
-    args = list.slice index
-    for node, i of args
+    args = []; atoms = []
+    for node of list.splice index, 9e9
       code = node.compile o, LEVEL_LIST
-      args[i] = if node instanceof Splat
-      then utility(\slice) + ".call(#{code})"
-      else "[#{code}]"
-    return args.0 + ".concat(#{ args.slice(1)join ', ' })" unless index
-    base = (node.compile o, LEVEL_LIST for node of list.slice 0 index)
-    "[#{ base.join ', ' }].concat(#{ args.join ', ' })"
+      if node instanceof Splat
+        atoms.length &&= !args.push "[#{ atoms.join ', ' }]"
+        args.push utility(\slice) + ".call(#{code})"
+      else atoms.push code
+    args.push "[#{ atoms.join ', ' }]" if atoms.length
+    base = if index
+    then "[#{ (node.compile o, LEVEL_LIST for node of list)join ', ' }]"
+    else args.shift()
+    "#{base}.concat(#{ args.join ', ' })"
 
 #### Statement
 # `continue` `break`
