@@ -670,7 +670,7 @@ class exports.Op extends Node
   COMPARER = /^(?:[!=]=|[<>])=?$/
 
   invert: ->
-    if EQUALITY.test(op = @op) and not COMPARER.test(@first.op)
+    if EQUALITY.test op = @op and not COMPARER.test @first.op
       @op = '!='charAt(op.indexOf \=) + op.slice 1
       return this
     return Op \! Parens this if @second
@@ -728,6 +728,9 @@ class exports.Op extends Node
     case <[ ++ -- ]>
       if first instanceof Var and not o.scope.check first.value, true
         @carp "modification of undeclared variable \"#{first.value}\""
+    case \classof
+      return "#{ utility \toString }.call(
+              #{ first.compile o, LEVEL_LIST }).slice(8, -1)"
     code = first.compile o, LEVEL_OP + PREC.unary
     if op is \new and not first.isCallable()
       first.carp code + ' // invalid constructor'
@@ -1689,8 +1692,9 @@ UTILITIES =
   '''
 
   # Shortcuts to speed up the lookup time for native functions.
-  slice   : '[].slice'
-  indexOf : '''
+  slice    : '[].slice'
+  toString : '{}.toString'
+  indexOf  : '''
     [].indexOf || function(x){
       for (var i = this.length; i-- && this[i] !== x;); return i;
     }

@@ -18,7 +18,7 @@ module.exports = (
   # The base of `options` can optionally be passed.
   options or {}
 ) ->
-  unless '[object Array]' is {}toString.call flags
+  unless typeof! flags is \Array
     MULTI = /[*+]/
     flags = for name in flags
       [desc, arg, abbr] = []concat flags[name]

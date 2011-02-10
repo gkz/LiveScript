@@ -354,7 +354,6 @@ exports import
     switch tag = val.=0
     case <[ . ?. ~. ]>                 then tag = \DOT
     case <[ + - ]>                     then tag = \+-
-    case <[ ! ~ ]>                     then tag = \UNARY
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
     case <[ && || ]>                   then tag = \LOGIC
     case \?                            then tag = \LOGIC if @last.spaced
@@ -375,6 +374,12 @@ exports import
         return val.length
     case \*
       tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
+    case \!
+      if not @last.spaced and @last.1 is \typeof
+        @last.1 = \classof
+        return val.length
+      fallthrough
+    case \~ then tag = \UNARY
     case <[ -> ~> ]>
       @tagParameters(); tag = \FUNC_ARROW
     case <[ <- <~ ]>
