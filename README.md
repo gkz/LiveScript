@@ -35,6 +35,30 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
+### 0.3.2
+- Unrestricted ADI for identifiers beyond `@` and `::`.
+      $ coco -bpe '/x/exec(s)input'
+      /x/.exec(s).input;
+- Expanded property shorthands beyond `@foo`:
+      $ coco -bpe '{a.b, (c.d)e}'
+      ({
+        b: a.b,
+        e: c.d.e
+      });
+- Added `typeof!`, which inspects the internal _[[Class]]_ property:
+      $ coco -e 'typeof! //'
+      RegExp
+- Added shebang support.
+      $ coco -pe '`#!node`; ...'
+      #!node
+      (function(){
+        throw Error('unimplemented');
+      }).call(this);
+- REPL results now evaluate more intuitively:
+      coco> i for i from 3
+      [ 0, 1, 2 ]
+- Disallowed whitespace mixup for indentations.
+
 ### 0.3.1
 - `debugger` now works anywhere.
 - Revised heregex flag syntax: `///#{x}#{y}///?` -> `RegExp('' + x, y);`
