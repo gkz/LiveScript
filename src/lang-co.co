@@ -25,16 +25,16 @@ tint \co [
   [\com /// ^ /\* [\S\s]* \*/ ///]
   [\pln /// ^ (?
   : \.{3}
-  | (?: [?~]?\.\s* | [)}\]] | :: ) #{ident}?
+  | (?: [?~]?\. (?:\s*(?:[-+*/%&|^:]|>>>?|<<)?=)? \s* | [)}\]] | :: ) #{ident}?
   | #{ident} [^\n\S]* :(?!:)
   ) ///]
   # ref. [retrie](https://github.com/satyr/retrie)
   [\kwd /// ^ (?
   : t(?:ry|h(?:row|en)|ypeof)
-  | f(?:or(?: [^\n\S]+(?:own|ever) )?|inally|unction)
+  | f(?:or(?:[^\n\S]+(?:own|ever))?|inally|unction)
   | n(?:ew|ot)
   | c(?:ontinue|a(?:se|tch)|lass)
-  | i(?:[fs]|n(?:stanceof)?|mport(?:[^\n\S]+ all)?)
+  | i(?:[fs]|n(?:stanceof)?|mport(?:[^\n\S]+all)?)
   | e(?:lse|xtends)
   | d(?:e(?:fault|lete|bugger)|o)
   | un(?:less|til)
@@ -49,6 +49,7 @@ tint \co [
   [\glb /// ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number
   | Object | RegExp | S(?:tring|yntaxError) | TypeError
+  | is(?:NaN|Finite) | parse(?:Int|Float) | (?:en|de)codeURI(?:Component)?
   ) #{kwend} ///]
   [\var /// ^ #{ident} ///]
   [\str /^<\[[\S\s]*?]>/]
