@@ -2,3 +2,4 @@ t.*
 test/*.js
 *#
 extras/*.raw.js
+doc/*.raw.js

@@ -14,6 +14,18 @@ run = (args) ->
   proc.stderr.on \data, say
   proc       .on \exit, -> process.exit it if it
 
+slobber = (path, code) ->
+  spit path, code
+  say '* ' + path
+
+minify = ->
+  {parser, uglify} = require \uglify-js
+  ast = parser.parse it
+  ast = uglify.ast_mangle  ast
+  ast = uglify.ast_squeeze ast
+  uglify.gen_code ast
+
+
 option \prefix 'set the installation prefix for `coke install`' \DIR
 
 task \install 'install Coco into /usr/local (or --prefix)' (options) ->
@@ -34,21 +46,14 @@ task \install 'install Coco into /usr/local (or --prefix)' (options) ->
     say if err then stderr.trim() else tint \done
 
 
-sources = ->
-  ext = /\.co$/i
-  \src/ + file if ext.test file for file of dir \src
-
-coreSources = ->
-  "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
-
-docs = <[ src/doc.co src/lang-co.co ]>
-webs = docs.concat \src/mode-coco.co
+docs = <[ doc.co lang-co.co ]>
+webs = docs.concat \mode-coco.co
 
 task \build 'build the Coco language from source' ->
-  run [\-bco \lib; ...sources().filter -> it not of webs]
-
-task \build:doc 'build doc tools' ->
-  run <[ -co doc ]>.concat docs
+  ext = /\.co$/
+  sources = for file of dir \src
+    \src/ + file if ext.test file and file not of webs
+  run [\-bco \lib]concat sources
 
 task \build:full 'rebuild the source twice, and run the tests' ->
   exec 'bin/coke build && bin/coke build && bin/coke test'
@@ -64,15 +69,22 @@ task \build:parser 'rebuild the Jison parser (run "build" first)' ->
         .replace /return parser;[^]+/ ''
   spit \lib/parser.js src
 
-task \build:browser 'rebuild extras/*.js' ->
+task \build:doc 'rebuild doc tools' ->
+  <- docs.forEach
+  name = it.slice 0 -3; js = require(\./lib/coco)compile slurp \src/ + it
+  slobber "doc/#{name}.raw.js"    js
+  slobber "doc/#{name}.js" minify js
+
+task \build:browser 'rebuild extras' ->
   Coco = require \./lib/coco
-  xspit \mode-coco.raw.js js = Coco.compile slurp \src/mode-coco.co
-  xspit \mode-coco.js ug js
+  js = Coco.compile slurp \src/mode-coco.co
+  slobber \extras/mode-coco.raw.js    js
+  slobber \extras/mode-coco.js minify js
   co = ''
   for name of <[ rewriter lexer nodes coco ]>
     code = slurp("src/#{name}.co").replace /^./mg '  $&'
     co += "do (exports = require'./#{name}' = {}) ->\n#{code}\n  void\n"
-  xspit \coco.raw.js js = """
+  slobber \extras/coco.raw.js js = """
     this.Coco = function(){
     function require(path){ return require[path] }
     var exports = require['./parser'] = {}; #{ slurp \lib/parser.js }
@@ -83,27 +95,19 @@ task \build:browser 'rebuild extras/*.js' ->
     this.WSH    && function(){\n#{ slurp \lib/wsh.js     }\n}()
     this.Coco
   """
-  xspit \coco.js """
+  slobber \extras/coco.js """
     // Coco #{Coco.VERSION}
     // Copyright 2011, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
     http://satyr.github.com/coco
-    #{ ug js };
+    #{ minify js };
 
   """
   invoke \test:browser
 
-function xspit (name, code) ->
-  spit path = \extras/ + name, code
-  say '* ' + path
 
-function ug ->
-  {parser, uglify} = require \uglify-js
-  ast = parser.parse it
-  ast = uglify.ast_mangle  ast
-  ast = uglify.ast_squeeze ast
-  uglify.gen_code ast
-
+coreSources = ->
+  "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
 
 task \bench 'quick benchmark of compilation time' ->
   Lexer    = require \./lib/lexer
