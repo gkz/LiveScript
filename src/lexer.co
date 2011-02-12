@@ -174,7 +174,6 @@ exports import
     case \0 then if num.charAt(1) not of ['' \x \.]
       @carp "deprecated octal literal #{num}"
     if radix = match.1
-      @carp "invalid radix #{radix}" unless 2 <= radix <= 36
       num = parseInt rnum = match.2, radix
       if isNaN num or num is parseInt rnum.slice(0, -1), radix
         @carp "invalid number #{rnum} in base #{radix}"
@@ -587,9 +586,9 @@ IDENTIFIER = /// ^
 ///
 NUMBER = /// ^ (?
 : 0x[\da-f]+                                  # hex
-| ([1-9]\d?) r ([\da-z]+)                     # any radix
+| ([2-9]|[12]\d|3[0-6]) r ([\da-z]+)          # 2-36 base
 | ( (?:\d+(?:\.\d+)?|\.\d+) (?:e[+-]?\d+)? )  # decimal
-  [a-z_]*                                     # comment
+  [a-z_]*                                     # decimal comment
 ) ///i
 SYMBOL = /// ^ (?
 : [-+*/%&|^:<>]=                # compound assign / comparison

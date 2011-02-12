@@ -74,8 +74,6 @@ throws 'invalid use of void on line 1', -> Coco.compile 'do void'
 throws 'invalid use of null on line 1', -> Coco.compile 'null.po'
 
 throws 'deprecated octal literal 0666 on line 1' ,-> Coco.tokens '0666'
-throws 'invalid radix 1 on line 1'               ,-> Coco.tokens '1r0'
-throws 'invalid radix 37 on line 1'              ,-> Coco.tokens '37r0'
 throws 'invalid number 8 in base 8 on line 1'    ,-> Coco.tokens '8r8'
 
 
