@@ -4,32 +4,34 @@ tint = (ext, shortcuts, fallthroughs) ->
   rule.splice 2 0 0 if rule.length < 4 for rule of shortcuts
   PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
 
+ident = '(?:[$A-Za-z_\\x7f-\\uffff][$\\w\\x7f-\\uffff]*)'
+kwend = '(?![$\\w\\x7f-\\uffff])'
+
 ### Main
 tint \co [
-  [\str /// ^ ' (?: ''[\S\s]*?'' | [^\\']*(?:\\.[^\\']*)* ) ' /// \']
-  [\lang-co-qq /^("""[\S\s]*?""")/ \"]
-  [\lang-co-qq /// ^ ( " [^\\"]*(?:\\.[^\\"]*)* " ) /// \"]
-  [\lang-co-qr /// ^ ( /{3} [\S\s]*? /{3} (?:\?|[imgy]{0,4}) ) /// \/]
-  [\lang-co-at /^(@+[$\w\x7f-\uffff]*)/ \@]
-  [\com /^\#.*/ \#]
+  [\str /// ^ '(?: ''[\S\s]*?'' | [^\\']*(?:\\.[^\\']*)* )' /// \']
+  [\lang-co-qq ///(^ " (?: ""[\S\s]*?"" | [^\\"]*(?:\\.[^\\"]*)* ) " )/// \"]
+  [\lang-co-qr ///(^ /{3} [\S\s]*? /{3} (?:\?|[imgy]{0,4}) )/// \/]
+  [\lang-co-at ///(^ @@? #{ident}? )/// \@]
+  [\com /^#.*/ \#]
   [\typ /// ^ (?
   : 0x[\da-f]+
   | [1-9]\d? r [\da-z]+
-  | (?:\d+(?:\.\d+)?) (?:e[+-]?\d+)? [a-z]*
+  | (?:\d+(?:\.\d+)?) (?:e[+-]?\d+)? [a-z_]*
   ) ///i \0123456789]
   [\lang-js /^`([^\\`]*(?:\\.[^\\`]*)*)`/ \`]
 ] [
   [\str /// ^ \\ \S [^\s,;)}\]]* ///]
   [\com /// ^ /\* [\S\s]* \*/ ///]
-  # ref. [retrie](https://github.com/satyr/retrie)
   [\pln /// ^ (?
-  : (?: \@ | (?:\.|::) \s* ) [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*
-  | [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* [^\n\S]* : (?!:)
-  | \.{3}
+  : \.{3}
+  | (?: [?~]?\.\s* | [)}\]] | :: ) #{ident}?
+  | #{ident} [^\n\S]* :(?!:)
   ) ///]
+  # ref. [retrie](https://github.com/satyr/retrie)
   [\kwd /// ^ (?
   : t(?:ry|h(?:row|en)|ypeof)
-  | f(?:or(?:[^\n\S]+ (?:own|ever))?|inally|unction)
+  | f(?:or(?: [^\n\S]+(?:own|ever) )?|inally|unction)
   | n(?:ew|ot)
   | c(?:ontinue|a(?:se|tch)|lass)
   | i(?:[fs]|n(?:stanceof)?|mport(?:[^\n\S]+ all)?)
@@ -37,27 +39,28 @@ tint \co [
   | d(?:e(?:fault|lete|bugger)|o)
   | un(?:less|til)
   | o[fr] | return | break | while | switch | and
-  ) \b ///]
-  [\typ /// ^ (?: true | false | null | void ) \b ///]
+  ) #{kwend} ///]
+  [\typ /// ^ (?: true | false | null | void ) #{kwend} ///]
   [\ctx /// ^ (?
   : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
   | it | arguments | eval | super | by
-  ) \b ///]
+  ) #{kwend} ///]
   [\glb /// ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number
   | Object | RegExp | S(?:tring|yntaxError) | TypeError
-  ) \b(?![^\n\S]*:(?!:)) ///]
-  [\var /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/]
+  ) #{kwend} ///]
+  [\var /// ^ #{ident} ///]
   [\str /^<\[[\S\s]*?]>/]
-  [\lang-co-r /// ^ [^/] ( / (?![\s/])
+  [\lang-co-r /// ^ [^/] (
+    / (?![\s/])
     [^ [ / \n \\ ]*
     (?:
       (?: \\.
         | \[ [^\]\n\\]*(?:\\.[^\]\n\\]*)* \]
       ) [^ [ / \n \\ ]*
-    )* / [imgy]{0,4} ) (?!\w)
-  ///]
+    )* / [imgy]{0,4}
+  ) (?!\d) ///]
 ]
 
 ### Subrules
@@ -68,4 +71,4 @@ tint \co-qq [hashbraces] [[\str /^[\S\s]+?/]]
 tint \co-qr [hashbraces] [[\com /^\s#(?!{).*/] regexes]
 tint \co-r  [] [regexes]
 
-tint \co-at [[\ctx /^@+/ \@]] [[\typ /^\d+/]]
+tint \co-at [[\ctx /^@+/ \@]] []
