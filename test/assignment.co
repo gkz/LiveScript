@@ -185,7 +185,16 @@ eq obj.a, 'a'
 eq obj.b, 'b'
 
 
-ok {} = [] = true, 'empty assignment is allowed'
+# Empty assignments
+{} = -> /* will be front and should be wrapped */
+
+eq 1, [] = 1
+eq 9, 3 * [] = 2 + 1
+eq ok, new []=(-> -> ok)()
+
+i = 0
+[{}] = ++i
+eq i, 1
 
 
 x = 'y'
@@ -199,14 +208,6 @@ throws 'indestructurable assignment ?= on line 1', -> Coco.compile '[_] ?= [_]'
 {(*>>1): mid, (*-1): last} = [1, 2, 3, 4, 5]
 eq mid , 3
 eq last, 5
-
-
-eq 9, 3 * [] = 2 + 1
-
-
-i = 0
-[{}] = ++i
-eq i, 1
 
 
 a = b = 0

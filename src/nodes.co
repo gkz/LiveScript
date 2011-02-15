@@ -789,7 +789,7 @@ class exports.Assign extends Node
 
   compileNode: (o) ->
     {right} = this
-    return right.compile o, LEVEL_ACCESS if @left.isEmpty()
+    return (Parens(right) <<< {@front, @newed}).compile o if @left.isEmpty()
     left = @transleft(o)unwrap()
     if left.items
       return @compileDestructuring o, left unless @logic
