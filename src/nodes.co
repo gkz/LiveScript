@@ -584,38 +584,35 @@ class exports.Obj extends List
   compileNode: (o) ->
     {items} = this
     return (if @front then '({})' else '{}') unless items.length
+    code = ''; idt = \\n + o.indent += TAB; dic = {}
     for node, i of items
-      if node instanceof Splat or
-         (node.left or node.first or node) instanceof Parens
-        rest = items.splice i, 9e9
-        break
-    code = ''; idt = o.indent += TAB; [last] = lastNonComment items; dic = {}
-    for node of items
       if node.comment
-        code += idt + node.compile(o) + \\n
+        code += idt + node.compile o
         continue
       node.=first if logic = node.hasDefault()
+      if node instanceof Splat or (node.left or node) instanceof Parens
+        rest = items.slice i
+        break
+      if multi then code += \, else multi = true
       code += idt + if node instanceof Assign
         key = node.left.compile o
         if node.isAccessor()
           fun = node.right.first
-          (key = (if fun.params.length then \set else \get) + ' ' + key) +
-          fun.compile(o, LEVEL_LIST)slice 8
+          key = "#{ if fun.params.length then \set else \get } #{key}"
+          key + fun.compile(o, LEVEL_LIST)slice 8
         else
           node.compile o
       else
-        (key = node.compile o) + ': ' + key
-      node.carp "duplicate property name \"#{key}\"" if dic[0 + key]
-      logic and code += " #{
+        "#{ key = node.compile o }: #{key}"
+      dic[0 + key] = 0 + key in dic and
+        node.carp "duplicate property name \"#{key}\""
+      logic and code += """ #{
         if logic.op is \? then "!= null ? #{key} :" else logic.op
-      } " + logic.second.compile o, LEVEL_OP
-      code += dic[0 + key] = if node is last then \\n else \,\n
-    code = "{#{ code and \\n + code + @tab }}"
-    return @compileDynamic o, code, rest if rest
-    if @front then "(#{code})" else code
-
-  compileDynamic: (o, code, items) ->
-    Import(JS code; Obj items)compile o <<< indent: @tab
+      } """ + logic.second.compile o, LEVEL_OP
+    code = "{#{ code and code + \\n + @tab }}"
+    if rest
+    then Import(JS code; Obj rest)compile o <<< indent: @tab
+    else if @front then "(#{code})" else code
 
 #### Arr
 # `[x, y]`
