@@ -261,7 +261,7 @@ eq ok, new ->
   /* even with trailing comments. */
 
 
-throws 'function declaration under a statement on line 1', ->
+throws 'misplaced function declaration on line 1', ->
   Coco.compile 'if 1 then function F ->'
 
 

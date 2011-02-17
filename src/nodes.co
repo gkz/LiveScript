@@ -506,7 +506,7 @@ class exports.Call extends Node
   compileNode: (o) ->
     return that.compile o if @unfoldAssign o
     {callee} = this
-    unless callee.isCallable()
+    callee.isCallable() or
       callee.carp callee.compile(o, LEVEL_ACCESS) + ' // invalid callee'
     if @thisplat
       return @compileSplat o, @args.1.value if @new
@@ -546,7 +546,7 @@ class exports.Call extends Node
     "#{fun}.apply(#{ ref or null }, #{args})"
 
   @back = (params, arrow, call) ->
-    call = Call call unless call instanceof Call
+    call instanceof Call or call = Call call
     {args} = call
     break if a instanceof Splat and a.it.isEmpty() for a, i of args
     call import back: (args[i] = Fun params, null, arrow.charAt(1) + \>)body
@@ -745,7 +745,7 @@ class exports.Op extends Node
     for item, i of items
       code += "#{ if i then ' || ' + ref else sub } instanceof \
                #{ item.compile o, level }"
-    o.scope.free ref unless sub is ref
+    sub is ref or o.scope.free ref
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   # `v = delete o.k`
@@ -805,7 +805,7 @@ class exports.Assign extends Node
     if @op is \:
       left.carp "invalid property name \"#{name}\"" if left.isComplex()
       return name + ': ' + val
-    unless left.isAssignable()
+    left.isAssignable() or
       left.carp "#{ left.compile o <<< indent: '', LEVEL_LIST } \
                  // invalid assignee"
     if left instanceof Var
@@ -964,7 +964,7 @@ class exports.Import extends Node
     then code.=slice delim.length
     else code = sub.compile(o, LEVEL_PAREN) + code
     return code if top
-    unless node instanceof Splat
+    node instanceof Splat or
       code += (if com then ' ' else ', ') + lref.compile o, LEVEL_LIST
     if o.level < LEVEL_LIST then code else "(#{code})"
 
@@ -1080,7 +1080,8 @@ class exports.Fun extends Node
       else if dfv
         asns.push Assign arg, p.second, \=, p.op
       splatted or args.push arg
-    wasEmpty = not (exps = body.lines)length
+    {lines}  = body
+    wasEmpty = not lines.length
     if splatted then asns.unshift splatted else
       args.0 = Var \it if not args.length and not @wrapper and
                           body.contains(-> it.value is \it)
@@ -1089,18 +1090,16 @@ class exports.Fun extends Node
         if dic[0 + a.=compile o]
           args[i]carp "duplicate formal argument \"#{a}\""
         scope.add args[i] = dic[0 + a] = a, \arg
-    exps.unshift ...asns if asns.length
+    lines.unshift ...asns if asns.length
     body.makeReturn() unless wasEmpty or @ctor
     if @statement
-      unless name
-        @carp 'nameless function'
-      unless o.block.scope is pscope
-        @carp 'function declaration under a statement'
+      name                    or @carp 'nameless function'
+      pscope is o.block.scope or @carp 'misplaced function declaration'
       scope .add name, \function
       pscope.add name, \function unless @returns
       code += ' ' + name
     code += "(#{ args.join ', ' }){"
-    code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if exps.length
+    code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if lines.length
     code += \}
     if @ctor and \_ is not name.charAt 0
       code += " #{name}.displayName = '#{name}';"
@@ -1141,7 +1140,7 @@ class exports.Class extends Node
       else if node instanceof Fun and not node.statement
         node.carp 'more than one constructor in a class' if ctor
         proto = lname if (ctor = node)bound
-    lines.unshift ctor = Fun() unless ctor
+    ctor or lines.unshift ctor = Fun()
     lines.push lname
     ctor import {name, +ctor, +statement, -clas}
     if @sup
@@ -1160,7 +1159,7 @@ class exports.Super extends Node
 
   compile: (o) ->
     {fun} = o.scope.shared or o.scope
-    @carp 'super outside of a function' unless fun
+    fun or @carp 'super outside of a function'
     {name, clas} = fun
     if name
       if clas
@@ -1187,7 +1186,7 @@ class exports.Parens extends Node
     unless @keep or @newed
       if it instanceof [Atom, Value, Call, Fun, Parens] or
          it instanceof Op and o.level < LEVEL_OP + (PREC[it.op] or PREC.unary)
-        return (it <<< {@front})compile o, Math.max o.level, LEVEL_LIST
+        return (it <<< {@front})compile o, Math.max o.level, LEVEL_PAREN
     o.level = LEVEL_PAREN
     if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
 
@@ -1341,7 +1340,7 @@ class exports.For extends While
     else
       if @name or @object and @own
         [srcPart, svar] = @source.compileLoopReference o, \ref
-        temps.push svar unless srcPart is svar
+        srcPart is svar or temps.push svar
       else
         srcPart = svar = @source.compile o, LEVEL_PAREN
       unless @object
@@ -1359,7 +1358,7 @@ class exports.For extends While
         o.scope.assign \_own '{}.hasOwnProperty'
         ownPart = "if (_own.call(#{svar}, #{idx})) "
     else
-      vars += ', ' + step unless step is pvar
+      step is pvar or vars += ', ' + step
       forPart = vars + "; #{cond}; " + switch +pvar
       case  1 then \++ + idx
       case -1 then \-- + idx
@@ -1471,8 +1470,7 @@ class exports.Case extends Node
   isCallable: -> @body.isCallable()
 
   makeReturn: ->
-    unless lastNonComment(@body.lines)0.value is \fallthrough
-      @body.makeReturn it
+    lastNonComment(@body.lines)0.value is \fallthrough or @body.makeReturn it
     this
 
   compileCase: (o, tab, nobr, bool) ->
@@ -1512,7 +1510,7 @@ class exports.If extends Node
   # An **If** only compiles into a statement if either of its bodies needs
   # to be a statement. Otherwise a conditional operator is safe.
   isStatement: (o) ->
-    o and not o.level or @then.isStatement(o) or @else?.isStatement(o)
+    o and not o.level or @then.isStatement o or @else?.isStatement o
 
   isCallable: -> @then.isCallable() or @else?.isCallable()
 

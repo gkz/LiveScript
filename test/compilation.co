@@ -20,7 +20,7 @@ eq '''
 eq 1, Function('return ' + Coco.compile 'delete @1' {+repl}).call {1}
 eq '''
 var _ref;
-(_ref = o.k, delete o.k, _ref);
+_ref = o.k, delete o.k, _ref;
 ''' Coco.compile 'delete o.k' {+repl, +bare}
 
 
