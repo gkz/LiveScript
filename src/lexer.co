@@ -392,7 +392,7 @@ exports import
       switch val
       case \@  then @token \LITERAL \this; @last.callable = true
       case \@@ then @token \LITERAL \arguments
-      case \:: then @token \DOT ''; @token \IDENTIFIER \prototype
+      case \:: then @able() and @token \DOT ''; @token \IDENTIFIER \prototype
       default next = true
       return val.length unless next
       switch val.charAt 0
@@ -621,4 +621,4 @@ REGEX = ///
 HEREGEX      = /// ^ /{3} ([\s\S]*?) /{3} (\?|[imgy]{0,4}) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
-LINE_CONTINUER = /// ^ \s* (?: , | [?~]?\.(?!\.) | :: ) ///
+LINE_CONTINUER = /// ^ \s* (?: , | [?~]?\.(?!\.) ) ///

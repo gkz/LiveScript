@@ -711,8 +711,8 @@ class exports.Op extends Node
       return Op(\&& Existence(@first)invert(), @second)compile o
     fsts = @first.cache o, true
     code = Existence(fsts.0)compile(o, LEVEL_COND) +
-           ' ? ' + fsts.1   .compile(o, LEVEL_LIST) +
-           ' : ' + @second  .compile(o, LEVEL_LIST)
+           ' ? ' + fsts.1  .compile(o, LEVEL_LIST) +
+           ' : ' + @second .compile(o, LEVEL_LIST)
     if o.level < LEVEL_COND then code else "(#{code})"
 
   compileUnary: (o) ->

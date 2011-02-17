@@ -45,20 +45,16 @@ eq 'Hello', String(
               """)
 
 
-eq '[object Object]', (
-  {}
+eq msg = 'other accessors should also continue lines',
+  msg
   ~.toString
-  ::
-  ?.constructor()
-), 'other accessors should also continue lines'
+  ?.valueOf()()
 
 
 aps = Array.prototype.toString
 eq aps, Array::toString
-eq aps, Array ::toString
 eq aps, Array::\toString
-eq aps, Array ::\toString
-
+eq 0, (:::0)::
 
 # Length Star
 eq [1, 2, 3][*-1], 3
