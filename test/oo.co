@@ -29,22 +29,6 @@ eq (new ThirdChild).func('four'), '9two/three/four'
 eq (new ThirdChild).array.join(' '), '1 2 3'
 
 
-class OneClass
-  @new = 'new'
-  function: 'function'
-  (@name) ->
-
-class TwoClass extends OneClass then -> super ...
-
-Function::new = -> new this ...arguments
-
-eq TwoClass.new('three').name, 'three'
-eq (new OneClass).function, 'function'
-eq OneClass.new, 'new'
-
-delete Function::new
-
-
 # And now the same tests, but written in the manual style:
 Base = ->
 Base::func = (string) ->
@@ -112,20 +96,6 @@ class Mini
   num: 10
 
 eq (func() for func of new Mini().generate()) + '', '10,20,30'
-
-
-# Testing a contructor called with varargs.
-class Connection
-  (one, two, three) ->
-    [@one, @two, @three] = [one, two, three]
-
-  out: ->
-    "#{@one}-#{@two}-#{@three}"
-
-list = [3, 2, 1]
-conn = new Connection ...list
-ok conn instanceof Connection
-eq conn.out(), '3-2-1'
 
 
 # Test calling super and passing along all arguments.
@@ -206,7 +176,7 @@ class Importer
 
 class NewSuper extends Importer
   -> eq new super({ok}).ok, ok
-  method1: -> new super ...
+  method1: -> new super it
 
 ns = new NewSuper
 eq ns.method1({1})[1], 1

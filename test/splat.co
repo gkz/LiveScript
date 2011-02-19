@@ -76,13 +76,14 @@ ok x is not o.x , 'should copy o.x'
 ok y is not o[y], 'should copy o[y]'
 
 
+throws 'splatting "new" on line 1' -> Coco.compile 'new C ...a'
+throws 'splatting "new" on line 1' -> Coco.compile 'new C ...'
+
+
 class Thisplat
   ->
     [me, [a0, a1, a2]] = @f ...
     eq me, this
-    eq a0 * a2, 21
-    [me, [a0, a1, a2]] = new @f ...
-    ok this is not me
     eq a0 * a2, 21
   f: -> [this, arguments]
 

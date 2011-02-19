@@ -411,7 +411,7 @@ class exports.Value extends Node
       return that
     for index, i of @tails then if index.symbol is \?.
       index.symbol = ''
-      fst = Value @head, @tails.slice 0, i
+      fst = Value @head, @tails.slice 0 i
       snd = Value @head, @tails.slice i
       if fst.isComplex()
         ref = o.scope.temporary \ref
@@ -426,14 +426,14 @@ class exports.Value extends Node
       return that
     for index, i of @tails then if index.assign
       index.assign = ''
-      lr = Value(@head, @tails.slice 0, i)cacheReference o
+      lr = Value(@head, @tails.slice 0 i)cacheReference o
       return Assign(lr.0; Value lr.1, @tails.slice i; that) <<< {+access}
     void
 
   unfoldBind: (o) ->
     for index, i of @tails then if index.symbol is \~.
       index.symbol = ''
-      args   = Value(@head, @tails.slice 0, i)cache o, true
+      args   = Value(@head, @tails.slice 0 i)cache o, true
       args.1 = Value args.1, [index]
       call   = Call Util(\bind), args
       call   = Parens call, true if @newed
@@ -468,7 +468,7 @@ class exports.Value extends Node
 class exports.Call extends Node
   (@callee, args or [], sym) ~>
     if args.length is 1 and args.0 instanceof Splat and args.0.it.isEmpty()
-      @thisplat = true; args = [Literal \this; Literal \arguments]
+      @method = \.apply; args = [Literal \this; Literal \arguments]
     @<<<{args, soak: sym is \?(}
 
   children: <[ callee args ]>
@@ -486,11 +486,11 @@ class exports.Call extends Node
   unfoldSoak: (o) ->
     if @soak
       return that if If.unfoldSoak o, this, \callee
-      [left, rite] = @callee.cacheReference o
-      rite = Call rite, @args
-      rite import {@new}
-      left = Literal "typeof #{ left.compile o } == 'function'"
-      return If left, Value(rite), {+soak}
+      lr = @callee.cacheReference o
+      return If do
+        JS "typeof #{ lr.0.compile o } == 'function'"
+        Value Call(lr.1, @args) <<< {@new}
+        {+soak}
     for call of @digCalls()
       call.callee.head = ifn if ifn
       ifn = If.unfoldSoak o, call, \callee
@@ -508,10 +508,8 @@ class exports.Call extends Node
     {callee} = this
     callee.isCallable() or
       callee.carp callee.compile(o, LEVEL_ACCESS) + ' // invalid callee'
-    if @thisplat
-      return @compileSplat o, @args.1.value if @new
-      @method = \.apply
-    else if Splat.compileArray o, @args, true
+    if @method and @new or Splat.compileArray o, @args, true
+      @carp 'splatting "new"' if @new
       return @compileSplat o, that
     callee <<< {@front} unless fun = (callee.head or callee) instanceof Fun
     callee.newed = true if @new
@@ -522,16 +520,6 @@ class exports.Call extends Node
   # If you call a function with a splat, it's converted into a JavaScript
   # `.apply()` call to allow an array of arguments to be passed.
   compileSplat: (o, args) ->
-    if @new
-      # If it's a constructor, we have to inject an inner constructor.
-      idt = @tab + TAB
-      return """
-        (function(func, args, ctor){
-        #{idt}ctor.prototype = func.prototype;
-        #{idt}var child = new ctor, result = func.apply(child, args);
-        #{idt}return result === Object(result) ? result : child;
-        #{@tab}}(#{ @callee.compile o, LEVEL_LIST }, #{args}, function(){}))
-      """
     (base = Value @callee) <<< {@front}
     if (name = base.tails.pop()) and base.isComplex()
       base.front = false
