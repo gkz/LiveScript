@@ -343,6 +343,9 @@ class exports.Value extends Node
 
   add: -> @tails.push it; this
 
+  # __Value__ can be unwrapped as its inner node, if there are no subnodes.
+  unwrap: -> if @tails.length then this else @head
+
   jumps        : -> not @tails.length and @head.jumps it
   assigns      : -> not @tails.length and @head.assigns it
   isStatement  : -> not @tails.length and @head.isStatement it
@@ -356,9 +359,6 @@ class exports.Value extends Node
   makeReturn: -> if @tails.length then super ... else @head.makeReturn it
 
   getCall: -> (tail = @tails[*-1]) instanceof Call and tail
-
-  # The value can be unwrapped as its inner node, if there are no accessors.
-  unwrap: -> if @tails.length then this else @head
 
   varName: ->
     {key} = that if @tails[*-1]
@@ -388,7 +388,7 @@ class exports.Value extends Node
     # `a().b`
     if base.isComplex()
       ref  = o.scope.temporary \base
-      base = Value Parens Assign Var(ref), base
+      base = Value Assign Var(ref), base
       bref = Var(ref) <<< {+temp}
     # `a{}`
     return [base, bref] unless name
@@ -424,21 +424,15 @@ class exports.Value extends Node
       return that
     for node, i of @tails
       if node.soak
-        node.soak = false
-        lr = Value(@head, @tails.slice 0 i)cacheReference o
+        node.soak = ''
+        [test, @head] = Value(@head, @tails.splice 0 i)cacheReference o
         return If do
-          JS "typeof #{ lr.0.compile o, LEVEL_OP } == 'function'"
-          Value lr.1, @tails.slice i
-          {+soak}
+          JS "typeof #{ test.compile o, LEVEL_OP } == 'function'"
+          this, {+soak}
       else if node.symbol is \?.
         node.symbol = ''
-        fst = Value @head, @tails.slice 0 i
-        snd = Value @head, @tails.slice i
-        if fst.isComplex()
-          ref = o.scope.temporary \ref
-          fst = Parens Assign Var(ref), fst
-          snd.head = Var(ref) <<< {+temp}
-        return If Existence(fst), snd, {+soak}
+        [test, @head] = Value(@head, @tails.splice 0 i)unwrap()cache o, true
+        return If Existence(test), this, {+soak}
     void
 
   unfoldAssign: (o) ->
@@ -447,8 +441,8 @@ class exports.Value extends Node
       return that
     for index, i of @tails then if index.assign
       index.assign = ''
-      lr = Value(@head, @tails.slice 0 i)cacheReference o
-      return Assign(lr.0; Value lr.1, @tails.slice i; that) <<< {+access}
+      [left, @head] = Value(@head, @tails.splice 0 i)cacheReference o
+      return Assign(left, this, that) <<< {+access}
     void
 
   expandSplat: (o) ->
@@ -522,7 +516,7 @@ class exports.Call extends Node
 
   @make = (callee, args) -> Value(callee)add Call args
   @back = (params, arrow, node) ->
-    (call = node.getCall()) or node = Value(node).add call = Call()
+    (call = node.getCall()) or node = Value(node)add call = Call()
     {args} = call
     break if a instanceof Splat and a.it.isEmpty() for a, i of args
     node import back: (args[i] = Fun params, null, arrow.charAt(1) + \>)body
@@ -760,7 +754,7 @@ class exports.Assign extends Node
 
   compileNode: (o) ->
     {right} = this
-    return (Parens(right) <<< {@front, @newed}).compile o if @left.isEmpty()
+    return (Parens(right) <<< {@front, @newed})compile o if @left.isEmpty()
     left = @transleft(o)unwrap()
     if left.items
       return @compileDestructuring o, left unless @logic
@@ -1525,9 +1519,9 @@ class exports.If extends Node
 
   # Unfolds a node's child if soak, then tuck the node under the created **If**.
   @unfoldSoak = (o, parent, name) ->
-    if ifn = parent[name]unfoldSoak o
-      parent[name] = ifn.then; ifn.then = Value parent
-    ifn
+    if parent[name]unfoldSoak o
+      parent[name] = that.then
+      that import then: Value parent
 
 #### JS
 # Embedded JavaScript snippets.
