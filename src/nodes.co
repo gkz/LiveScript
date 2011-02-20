@@ -404,11 +404,12 @@ class exports.Value extends Node
   compileNode: (o) ->
     @head import {@front, @newed}
     return @head.compile o unless @tails.length
-    if @unfoldAssign o or @unfoldBind o or @poleStar o or @multiPick o
-      return that.compile o
+    return that .compile o if @unfoldAssign o or @multiPick o
     if @tails.0 instanceof Call and not @head.isCallable()
       @carp 'invalid callee'
+    @expandBind  o
     @expandSplat o
+    @expandStar  o
     base = @head.compile o, LEVEL_ACCESS; rest = ''
     for t of @tails
       base = 'new ' + base if t.new
@@ -466,26 +467,31 @@ class exports.Value extends Node
       call.args = [ref or Literal(\null), JS args]
     void
 
-  unfoldBind: (o) ->
-    for index, i of @tails then if index.symbol is \~.
+  expandBind: (o) ->
+    {tails} = this; i = -1
+    while index = tails[++i]
+      continue unless index.symbol is \~.
       index.symbol = ''
-      args   = Value(@head, @tails.slice 0 i)cache o, true
-      args.1 = Value args.1, [index]
+      args   = Value(@head, tails.splice 0 i)unwrap()cache o, true
+      args.1 = Value args.1, [tails.shift()]
       call   = Call.make Util(\bind), args
-      call   = Parens call, true if @newed
-      return Value call, @tails.slice i+1
+      @head  = if @newed then Parens call, true else call
+      i = -1
     void
 
-  poleStar: (o) ->
-    for index, i of @tails
-      continue if index.stars or index.args or index.key instanceof Key
+  expandStar: (o) ->
+    {tails} = this; i = -1
+    while index = tails[++i]
+      continue if index.args or index.stars or index.key instanceof Key
       stars = index.stars = []
       index.eachChild seek
       continue unless stars.length
-      [sub, ref, @temps] = Value(@head, @tails.slice 0 i)cache o
+      [sub, ref, temps] = Value(@head, tails.splice 0 i)unwrap()cache o
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + \.length for star of stars
-      return Value sub, @tails.slice i
+      @head = JS sub.compile(o, LEVEL_ACCESS) + tails.shift()compile o
+      o.scope.free temps.0 if temps
+      i = -1
     function seek ->
       if it.value is \*               then stars.push it
       else unless it instanceof Index then it.eachChild seek
