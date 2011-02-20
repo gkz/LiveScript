@@ -298,7 +298,7 @@ operators = [
   <[ left      +-           ]>
   <[ left      SHIFT IMPORT ]>
   <[ left      RELATION     ]>
-  <[ left      COMPARE      ]>
+  <[ right     COMPARE      ]>
   <[ left      BITWISE      ]>
   <[ left      LOGIC        ]>
   <[ right     : ASSIGN RETURN THROW EXTENDS INDENT ]>

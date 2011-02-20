@@ -638,7 +638,7 @@ class exports.Op extends Node
   COMPARER = /^(?:[!=]=|[<>])=?$/
 
   invert: ->
-    if EQUALITY.test op = @op and not COMPARER.test @first.op
+    if EQUALITY.test op = @op and not COMPARER.test @second.op
       @op = '!='charAt(op.indexOf \=) + op.slice 1
       return this
     return Op \! Parens this if @second
@@ -655,7 +655,7 @@ class exports.Op extends Node
     switch @op
     case \?          then return @compileExistence o
     case \instanceof then return @compileIOS o, that if @second.selections()
-    default if COMPARER.test @op and COMPARER.test @first.op
+    default if COMPARER.test @op and COMPARER.test @second.op
       return @compileChain o
     @first import {@front}
     code = "#{ @first .compile o, level = LEVEL_OP + PREC[@op] } #{@op} \
@@ -670,11 +670,10 @@ class exports.Op extends Node
   #
   # See <http://docs.python.org/reference/expressions.html#notin>.
   compileChain: (o) ->
-    [sub, ref] = @first.second.cache o, true
-    @first.second = sub
-    code  = @first.compile o, level = LEVEL_OP + PREC[@op]
-    code .= slice 1 -1 if \( is code.charAt 0
-    code += " && #{ ref.compile o } #{@op} #{ @second.compile o, level }"
+    code = @first.compile o, level = LEVEL_OP + PREC[@op]
+    [sub, @second.first] = @second.first.cache o, true
+    code += " #{@op} #{ sub    .compile o, level    } && \
+                     #{ @second.compile o, LEVEL_OP }"
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o) ->
