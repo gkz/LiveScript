@@ -41,7 +41,7 @@ class Node
     if mentionsArgs
       args.push Literal \arguments
       fun.params.push Var \_args
-    (Call(fun, args) <<< {method})compileNode o
+    Parens(Value(fun, [Call(args) <<< {method}]), true)compileNode o
 
   # Compiles a child node as a block statement.
   compileBlock: (o, name) ->
@@ -130,12 +130,13 @@ class Node
   asArr        : THIS
   varName      : String
   selections   : NO
+  getCall      : NO
 
   invert: -> Op \! this
 
   # Constructs a node that returns the current node's result.
-  makeReturn: (name) ->
-    if name then Call JS(name + \.push), [this] else Return this
+  makeReturn: (arref) ->
+    if arref then Call.make JS(arref + \.push), [this] else Return this
 
   # Extra info for `toString`.
   show: String
@@ -346,10 +347,15 @@ class exports.Value extends Node
   assigns      : -> not @tails.length and @head.assigns it
   isStatement  : -> not @tails.length and @head.isStatement it
   isComplex    : -> @tails.length or do @head.isComplex
-  isAssignable : -> @tails.length or do @head.isAssignable
   isCallable   : -> @tails.length or do @head.isCallable
+  isAssignable : ->
+    if @tails[*-1]
+    then that instanceof Index
+    else @head.isAssignable
 
   makeReturn: -> if @tails.length then super ... else @head.makeReturn it
+
+  getCall: -> (tail = @tails[*-1]) instanceof Call and tail
 
   # The value can be unwrapped as its inner node, if there are no accessors.
   unwrap: -> if @tails.length then this else @head
@@ -374,6 +380,7 @@ class exports.Value extends Node
   #
   cacheReference: (o) ->
     name = @tails[*-1]
+    return @cache o, true if name instanceof Call
     # `a` `a.b`
     if @tails.length < 2 and not @head.isComplex() and not name?.isComplex()
       return [this, this]
@@ -383,7 +390,7 @@ class exports.Value extends Node
       ref  = o.scope.temporary \base
       base = Value Parens Assign Var(ref), base
       bref = Var(ref) <<< {+temp}
-    # `a()`
+    # `a{}`
     return [base, bref] unless name
     # `a[b()]`
     if name.isComplex()
@@ -399,8 +406,13 @@ class exports.Value extends Node
     return @head.compile o unless @tails.length
     if @unfoldAssign o or @unfoldBind o or @poleStar o or @multiPick o
       return that.compile o
-    base = @head.compile o, LEVEL_ACCESS
-    rest = ''; rest += t.compile o for t of @tails
+    if @tails.0 instanceof Call and not @head.isCallable()
+      @carp 'invalid callee'
+    @expandSplat o
+    base = @head.compile o, LEVEL_ACCESS; rest = ''
+    for t of @tails
+      base = 'new ' + base if t.new
+      rest += t.compile o
     base += ' ' if \. is rest.charAt 0 and SIMPLENUM.test base
     base + rest
 
@@ -409,15 +421,23 @@ class exports.Value extends Node
     if @head.unfoldSoak o
       that.then.tails.push ...@tails
       return that
-    for index, i of @tails then if index.symbol is \?.
-      index.symbol = ''
-      fst = Value @head, @tails.slice 0 i
-      snd = Value @head, @tails.slice i
-      if fst.isComplex()
-        ref = o.scope.temporary \ref
-        fst = Parens Assign Var(ref), fst
-        snd.head = Var(ref) <<< {+temp}
-      return If Existence(fst), snd, {+soak}
+    for node, i of @tails
+      if node.soak
+        node.soak = false
+        lr = Value(@head, @tails.slice 0 i)cacheReference o
+        return If do
+          JS "typeof #{ lr.0.compile o, LEVEL_OP } == 'function'"
+          Value lr.1, @tails.slice i
+          {+soak}
+      else if node.symbol is \?.
+        node.symbol = ''
+        fst = Value @head, @tails.slice 0 i
+        snd = Value @head, @tails.slice i
+        if fst.isComplex()
+          ref = o.scope.temporary \ref
+          fst = Parens Assign Var(ref), fst
+          snd.head = Var(ref) <<< {+temp}
+        return If Existence(fst), snd, {+soak}
     void
 
   unfoldAssign: (o) ->
@@ -430,23 +450,35 @@ class exports.Value extends Node
       return Assign(lr.0; Value lr.1, @tails.slice i; that) <<< {+access}
     void
 
+  expandSplat: (o) ->
+    {tails} = this; i = -1
+    while call = tails[++i]
+      {thisplat, args} = call
+      continue unless thisplat or args &&= Splat.compileArray o, args, true
+      @carp 'splatting "new"' if call.new
+      call.method = \.apply
+      if thisplat
+        delete call.thisplat
+        continue
+      if tails[i-1] instanceof Index
+        [@head, ref] = Value(@head, tails.splice 0 i-1)cache o, true
+        i = 0
+      call.args = [ref or Literal(\null), JS args]
+    void
+
   unfoldBind: (o) ->
     for index, i of @tails then if index.symbol is \~.
       index.symbol = ''
       args   = Value(@head, @tails.slice 0 i)cache o, true
       args.1 = Value args.1, [index]
-      call   = Call Util(\bind), args
+      call   = Call.make Util(\bind), args
       call   = Parens call, true if @newed
       return Value call, @tails.slice i+1
     void
 
   poleStar: (o) ->
-    function seek ->
-      if it.value is \*               then stars.push it
-      else unless it instanceof Index then it.eachChild seek
-      void
     for index, i of @tails
-      continue if index.stars or index.key instanceof Key
+      continue if index.stars or index.args or index.key instanceof Key
       stars = index.stars = []
       index.eachChild seek
       continue unless stars.length
@@ -454,10 +486,14 @@ class exports.Value extends Node
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + \.length for star of stars
       return Value sub, @tails.slice i
+    function seek ->
+      if it.value is \*               then stars.push it
+      else unless it instanceof Index then it.eachChild seek
+      void
     void
 
   multiPick: (o) ->
-    for {key}, i of @tails then if key.length
+    for {key}, i of @tails then if key?.length
       [sub, ref, @temps] = Value(@head, @tails.slice 0 i)cache o
       arr = (Value if j then ref else sub, [Index node] for node, j of key)
       return Value Arr(arr), @tails.slice i+1
@@ -466,78 +502,24 @@ class exports.Value extends Node
 #### Call
 # `x(y)`
 class exports.Call extends Node
-  (@callee, args or [], sym) ~>
+  (args or [], sym) ~>
     if args.length is 1 and args.0 instanceof Splat and args.0.it.isEmpty()
-      @method = \.apply; args = [Literal \this; Literal \arguments]
-    @<<<{args, soak: sym is \?(}
+      @thisplat = true; args = [Literal \this; Literal \arguments]
+    @<<<{args, soak: sym is \?( and \?}
 
-  children: <[ callee args ]>
+  children: [\args]
 
-  show: -> (@new or '') + if @soak then \? else ''
+  show: -> (@new or '') + (@soak or '') + (@thisplat or '')
 
-  isCallable: YES
+  compile: (o) ->
+    "#{@method || ''}(#{ (a.compile o, LEVEL_LIST for a of @args)join ', ' })"
 
-  # Lists up a chain of calls from bottom. Used for unfolding `?.` and `.=`.
-  digCalls: ->
-    list = [call = this]
-    list.push call while call.=callee.head instanceof Call
-    list.reverse()
-
-  unfoldSoak: (o) ->
-    if @soak
-      return that if If.unfoldSoak o, this, \callee
-      lr = @callee.cacheReference o
-      return If do
-        JS "typeof #{ lr.0.compile o } == 'function'"
-        Value Call(lr.1, @args) <<< {@new}
-        {+soak}
-    for call of @digCalls()
-      call.callee.head = ifn if ifn
-      ifn = If.unfoldSoak o, call, \callee
-    ifn
-
-  unfoldAssign: (o) ->
-    for call of @digCalls()
-      call.callee.head = asn if asn
-      if asn = call.callee.unfoldAssign o
-        call.callee = asn.right; asn.right = Value call
-    asn
-
-  compileNode: (o) ->
-    return that.compile o if @unfoldAssign o
-    {callee} = this
-    callee.isCallable() or
-      callee.carp callee.compile(o, LEVEL_ACCESS) + ' // invalid callee'
-    if @method and @new or Splat.compileArray o, @args, true
-      @carp 'splatting "new"' if @new
-      return @compileSplat o, that
-    callee <<< {@front} unless fun = (callee.head or callee) instanceof Fun
-    callee.newed = true if @new
-    code = (@new or '') + callee.compile(o, LEVEL_ACCESS) + (@method or '') +
-           "(#{ (arg.compile o, LEVEL_LIST for arg of @args)join ', ' })"
-    if fun and not @new then "(#{code})" else code
-
-  # If you call a function with a splat, it's converted into a JavaScript
-  # `.apply()` call to allow an array of arguments to be passed.
-  compileSplat: (o, args) ->
-    (base = Value @callee) <<< {@front}
-    if (name = base.tails.pop()) and base.isComplex()
-      base.front = false
-      ref = o.scope.temporary \ref
-      fun = "(#{ref} = #{ base.compile o, LEVEL_LIST })#{ name.compile o }"
-      o.scope.free ref
-    else
-      if name
-        ref = base.compile o
-        base.add name
-      fun = base.compile o
-    "#{fun}.apply(#{ ref or null }, #{args})"
-
-  @back = (params, arrow, call) ->
-    call instanceof Call or call = Call call
+  @make = (callee, args) -> Value(callee)add Call args
+  @back = (params, arrow, node) ->
+    (call = node.getCall()) or node = Value(node).add call = Call()
     {args} = call
     break if a instanceof Splat and a.it.isEmpty() for a, i of args
-    call import back: (args[i] = Fun params, null, arrow.charAt(1) + \>)body
+    node import back: (args[i] = Fun params, null, arrow.charAt(1) + \>)body
 
 #### Clone
 # An operation that creates a new object with its `__proto__`
@@ -550,9 +532,7 @@ class exports.Clone extends Node
   unfoldSoak: -> If.unfoldSoak it, this, \base
 
   compileNode: (o) ->
-    call = Call Util(\clone), [@base]
-    call = Parens call, true if @newed
-    Import(call, Obj @mixins)compileNode o
+    Import(Call.make(Util \clone; [@base]), Obj @mixins)compileNode o
 
 #### List
 # An abstract node for a list of items.
@@ -636,12 +616,13 @@ class exports.Op extends Node
           method = \.call
         for p, i of ps then args.push do
           if p.op is \= and not p.logic then ps[i] = p.left; p.right else p
-      return Parens Call(first, args) <<< {method}
+      return Parens Value(first)add Call(args) <<< {method}
     case \new
-      if (call = first.head or first) instanceof Call
-        call.digCalls()0.new = 'new '
-        return first
       first.newed = true
+      if first instanceof Value
+        for node of first.tails then if node instanceof Call
+          node.new = true
+          return first
     @<<<{op, first, second, post}
 
   children: <[ first second ]>
@@ -716,9 +697,8 @@ class exports.Op extends Node
     case \classof
       return "#{ utility \toString }.call(
               #{ first.compile o, LEVEL_LIST }).slice(8, -1)"
+    first.carp 'invalid constructor' if op is \new and not first.isCallable()
     code = first.compile o, LEVEL_OP + PREC.unary
-    if op is \new and not first.isCallable()
-      first.carp code + ' // invalid constructor'
     if @post
       code += op
     else
@@ -892,7 +872,8 @@ class exports.Assign extends Node
           items[i] = Assign key, val, \:
       left = Obj items
     # `x[k] = a` to `[x[k]] = a`
-    else if left instanceof Value and left.tails[*-1]?.key.length
+    else if left instanceof Value and
+            (tail = left.tails[*-1]) instanceof Index and tail.key.length
       {key} = left.tails.pop()
       [sub, ref, @temps] = left.cache o
       left = Arr(Value if i then ref else sub, [Index k] for k, i of key)
@@ -913,7 +894,8 @@ class exports.Import extends Node
 
   compileNode: (o) ->
     if @all or not @right.items
-      return Call(Util "import#{ @all or '' }"; [@left, @right])compile o
+      return Call.make Util("import#{ @all or '' }"), [@left, @right]
+             .compile o
     {items} = @right.asObj()
     return @left.compile o unless items.length
     top = not o.level
@@ -1134,7 +1116,7 @@ class exports.Class extends Node
     if @sup
       args  = [@sup]
       proto = Util.Extends lname, fun.params.* = Var \_super
-    clas = Call fun <<< {proto}, args
+    clas = Parens Call.make(fun<<<{proto} args), true
     clas = Assign lname, clas if decl and title.isComplex()
     clas = Assign title, clas if title
     clas.compile o
@@ -1172,7 +1154,7 @@ class exports.Parens extends Node
   compileNode: (o) ->
     {it} = this
     unless @keep or @newed
-      if it instanceof [Atom, Value, Call, Fun, Parens] or
+      if it instanceof [Atom, Value, Fun, Parens] or
          it instanceof Op and o.level < LEVEL_OP + (PREC[it.op] or PREC.unary)
         return (it <<< {@front})compile o, Math.max o.level, LEVEL_PAREN
     o.level = LEVEL_PAREN
@@ -1367,19 +1349,19 @@ class exports.For extends While
 
   pluckDirectCalls: (o) ->
     @body.eachChild dig = ~>
-      unless it instanceof Call and
-             ((fn = it.callee.unwrap()) instanceof Fun or
+      unless (call = it.getCall()) and it.tails.length is 1 and
+             ((fn = it.head.unwrap()) instanceof Fun or
               fn instanceof Parens and fn.=it instanceof Fun) and
-             fn.params.length is it.args.length - !!it.method
+             fn.params.length is call.args.length - !!call.method
         return if it instanceof [Fun, For] then null else it.eachChild dig
       if @index
-        fn.params.push it.args.* = Var @index
+        fn.params.push call.args.* = Var @index
       if name = @name
-        it.args.push if name.isComplex()
+        call.args.push if name.isComplex()
         then Var @nref ||= @temps.* = o.scope.temporary \ref
         else name
         fn.params.push name
-      it.callee = Var ref = o.scope.temporary \fn
+      it.head = Var ref = o.scope.temporary \fn
       o.scope.assign ref, fn.compile o <<< indent: '', LEVEL_LIST
       o.indent = @tab
       void
@@ -1565,7 +1547,7 @@ class exports.Util extends Node
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
   # returning the left one.
-  @Extends = -> Call Util(\extends), @@[0 1]
+  @Extends = -> Call.make Util(\extends), @@[0 1]
 
 #### Parser Utils
 # Helpers for modifying nodes in [parser](../lib/parser.js).

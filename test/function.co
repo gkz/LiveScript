@@ -396,8 +396,8 @@ eq 0, I(-> it()) -> 0
 
 
 # Invalid call detection.
-throws '[] // invalid callee on line 1'      -> Coco.compile '[]()'
-throws '42 // invalid constructor on line 1' -> Coco.compile 'new 42'
+throws 'invalid callee on line 1'      -> Coco.compile '[]()'
+throws 'invalid constructor on line 1' -> Coco.compile 'new 42'
 
 
 ### Backcalls

@@ -61,7 +61,7 @@ bnf =
     o \LITERAL       -> Value L Literal $1
     o \Parenthetical -> Value $1
 
-    o 'Value CALL( ArgList OptComma )CALL' -> Value L Call $1, $3, $2
+    o 'Value CALL( ArgList OptComma )CALL' -> $1.add Call $3, $2
 
   # Variables and properties that can be assigned to.
   SimpleAssignable:
