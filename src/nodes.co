@@ -29,7 +29,7 @@ class Node
     that.carp 'inconvertible statement' if @jumps()
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
-    (fun = Fun [], Block this)wrapper = true
+    (fun = Fun [] Block this)wrapper = true
     args = []
     if @contains(-> it.value is \this)
       args.push Literal \this
@@ -404,12 +404,10 @@ class exports.Chain extends Node
   compileNode: (o) ->
     @head import {@front, @newed}
     return @head.compile o unless @tails.length
-    return that .compile o if @unfoldAssign o or @multiPick o
+    return that .compile o if @unfoldAssign o
     if @tails.0 instanceof Call and not @head.isCallable()
       @carp 'invalid callee'
-    @expandBind  o
-    @expandSplat o
-    @expandStar  o
+    @expandArray o; @expandBind o; @expandSplat o; @expandStar o
     base = @head.compile o, LEVEL_ACCESS; rest = ''
     for t of @tails
       base = 'new ' + base if t.new
@@ -492,11 +490,15 @@ class exports.Chain extends Node
       void
     void
 
-  multiPick: (o) ->
-    for {key}, i of @tails then if key?.length
-      [sub, ref, @temps] = Chain(@head, @tails.slice 0 i)cache o
-      arr = (Chain if j then ref else sub, [Index node] for node, j of key)
-      return Chain Arr(arr), @tails.slice i+1
+  expandArray: (o) ->
+    {tails} = this; i = -1
+    while index = tails[++i] then if index.key?.length
+      [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap()cache o
+      @head = JS Arr do
+        Chain if j then ref else sub, [Index n] for n, j of tails.shift()key
+      .compile o
+      o.scope.free temps.0 if temps
+      i = -1
     void
 
 #### Call
@@ -1090,7 +1092,7 @@ class exports.Fun extends Node
 
 #### Class
 class exports.Class extends Node
-  (@title, @sup, body) -> @fun = Fun [], body
+  (@title, @sup, body) -> @fun = Fun [] body
 
   children: <[ title sup fun ]>
 
