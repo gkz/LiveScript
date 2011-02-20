@@ -387,14 +387,14 @@ class exports.Chain extends Node
     base = Chain @head, @tails.slice 0 -1
     # `a().b`
     if base.isComplex()
-      ref  = o.scope.temporary \base
+      ref  = o.scope.temporary \ref
       base = Chain Assign Var(ref), base
       bref = Var(ref) <<< {+temp}
     # `a{}`
     return [base, bref] unless name
     # `a[b()]`
     if name.isComplex()
-      ref  = o.scope.temporary \name
+      ref  = o.scope.temporary \key
       name = Index Assign Var(ref), name.key
       nref = Index Var(ref) <<< {+temp}
     [base.add name; Chain bref || base.head, [nref or name]]
