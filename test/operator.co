@@ -243,7 +243,8 @@ O = ->
 eq delete (o = new O)[new O], 7
 eq o[7], void
 
-throws 'invalid "delete" on line 1' -> Coco.compile 'delete []'
+throws 'invalid deletion on line 1' -> Coco.compile 'delete a'
+throws 'invalid deletion on line 1' -> Coco.compile 'delete 0'
 
 
 ### `typeof!`

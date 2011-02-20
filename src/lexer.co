@@ -461,7 +461,7 @@ exports import
         switch chr
         case [\" \'] then stack.push end = chr
         case \{      then stack.push end = \}
-    @carp "missing #{stack.pop()} in a string"
+    @carp "missing `#{stack.pop()}` in a string"
 
   # Expands variables and expressions inside double-quoted strings or heregexes
   # using Ruby-like notation for substitution of arbitrary expressions.

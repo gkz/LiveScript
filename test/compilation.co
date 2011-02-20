@@ -24,11 +24,13 @@ _ref = o.k, delete o.k, _ref;
 ''' Coco.compile 'delete o.k' {+repl, +bare}
 
 
+throws 'too many `)` on line 1' -> Coco.nodes '())'
+
 # [coffee#750](https://github.com/jashkenas/coffee-script/issues/750)
 throws 'unclosed CALL( on line 1', -> Coco.nodes 'f(->'
 
 
-throws 'missing " in a string on line 3', -> Coco.nodes '\n\n"\n'
+throws 'missing `"` in a string on line 2' -> Coco.nodes '\n"\n'
 
 throws 'unterminated JS literal on line 3', -> Coco.nodes '\n\n```\n'
 throws 'unterminated string on line 3'    , -> Coco.nodes "\n\n'\n"

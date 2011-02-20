@@ -70,6 +70,11 @@ maya = new Hive.Bee 'Maya'
 eq maya.name, 'Maya'
 
 
+# Invalid "super"s.
+throws 'stray "super" on line 1'                  -> Coco.compile 'super'
+throws '"super" in a nameless function on line 1' -> Coco.compile '-> super'
+
+
 # Class with JS-keyword properties.
 class Class
   class: 'class'

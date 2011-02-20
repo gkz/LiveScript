@@ -689,8 +689,7 @@ class exports.Op extends Node
     {op, first} = this
     switch op
     case \delete
-      if first instanceof Var or not first.isAssignable()
-        @carp 'invalid "delete"'
+      @carp 'invalid deletion' if first instanceof Var or !first.isAssignable()
       return @compileDelete o if o.level
     case <[ ++ -- ]>
       if first instanceof Var and not o.scope.check first.value, true
@@ -1130,7 +1129,7 @@ class exports.Super extends Node
 
   compile: (o) ->
     {fun} = o.scope.shared or o.scope
-    fun or @carp 'super outside of a function'
+    fun or @carp 'stray "super"'
     {name, clas} = fun
     if name
       if clas
@@ -1139,7 +1138,7 @@ class exports.Super extends Node
       else if IDENTIFIER.test name
         return name + \.superclass
     return \_super if o.scope.check \_super
-    @carp 'super in an anonymous function'
+    @carp '"super" in a nameless function'
 
 #### Parens
 # An extra set of parentheses,
