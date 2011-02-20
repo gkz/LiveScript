@@ -136,9 +136,11 @@ exports import
       case <[ IN OF INSTANCEOF ]>
         if tag is not \INSTANCEOF and @seenFor
           if tag is \OF
-            @seenTo = true
-            id = last.0 is \IDENTIFIER and @tokens[*-2]0 is \, and
-                 (@tokens.splice -2 2; last.1)
+            id = ''; @seenTo = true
+            if last.0 is \IDENTIFIER
+              switch @tokens[*-2]0
+              case \,        then @tokens.splice -2 1; fallthrough
+              case <[ } ] ]> then @tokens.pop(); id = last.1
           @seenFor = false
           tag = \FOR + tag
           break

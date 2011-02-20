@@ -207,3 +207,10 @@ while 1
   break for ever
   eq that, 1
   break
+
+
+# Destructuring `for`-`of`
+r = 0
+r += a * b * i for [a, b] i of [[2 3] [5 7]]
+r += a + b + i for {a, b} i of [{\a \b}]
+eq r, '35ab0'
