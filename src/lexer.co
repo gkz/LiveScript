@@ -374,7 +374,7 @@ exports import
         @last.1 += val
         return val.length
     case \*
-      tag = if @last.0 of <[ [ ( DOT , ; ]> then \STRNUM else \MATH
+      tag = if able @tokens then \MATH else \STRNUM
     case \!
       if not @last.spaced and @last.1 is \typeof
         @last.1 = \classof
