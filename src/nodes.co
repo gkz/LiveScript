@@ -41,7 +41,7 @@ class Node
     if mentionsArgs
       args.push Literal \arguments
       fun.params.push Var \_args
-    Parens(Value(fun, [Call(args) <<< {method}]), true)compileNode o
+    Parens(Chain(fun, [Call(args) <<< {method}]), true)compileNode o
 
   # Compiles a child node as a block statement.
   compileBlock: (o, name) ->
@@ -331,19 +331,19 @@ class exports.Index extends Node
     if @key instanceof Key and \' is not code.charAt 0
     then ".#{code}" else "[#{code}]"
 
-#### Value
-# Acts as a container for property access chains, by holding
-# __Index__ instances within `@tails`.
-class exports.Value extends Node
+#### Chain
+# Acts as a container for property-access/function-call chains, by holding
+# __Index__ or __Call__ instances as `@tails`.
+class exports.Chain extends Node
   (head, tails) ~>
-    return head if not tails and head instanceof Value
+    return head if not tails and head instanceof Chain
     @<<<{head, tails or []}
 
   children: <[ head tails ]>
 
   add: -> @tails.push it; this
 
-  # __Value__ can be unwrapped as its inner node, if there are no subnodes.
+  # __Chain__ can be unwrapped as its inner node, if there are no subnodes.
   unwrap: -> if @tails.length then this else @head
 
   jumps        : -> not @tails.length and @head.jumps it
@@ -384,11 +384,11 @@ class exports.Value extends Node
     # `a` `a.b`
     if @tails.length < 2 and not @head.isComplex() and not name?.isComplex()
       return [this, this]
-    base = Value @head, @tails.slice 0 -1
+    base = Chain @head, @tails.slice 0 -1
     # `a().b`
     if base.isComplex()
       ref  = o.scope.temporary \base
-      base = Value Assign Var(ref), base
+      base = Chain Assign Var(ref), base
       bref = Var(ref) <<< {+temp}
     # `a{}`
     return [base, bref] unless name
@@ -397,7 +397,7 @@ class exports.Value extends Node
       ref  = o.scope.temporary \name
       name = Index Assign Var(ref), name.key
       nref = Index Var(ref) <<< {+temp}
-    [base.add name; Value bref || base.head, [nref or name]]
+    [base.add name; Chain bref || base.head, [nref or name]]
 
   SIMPLENUM = /^\d+$/
 
@@ -417,7 +417,7 @@ class exports.Value extends Node
     base += ' ' if \. is rest.charAt 0 and SIMPLENUM.test base
     base + rest
 
-  # Unfold a soak into an __If__: `a?.b` -> `a.b if a?`
+  # Unfolds a soak into an __If__: `a?.b` -> `a.b if a?`
   unfoldSoak: (o) ->
     if @head.unfoldSoak o
       that.then.tails.push ...@tails
@@ -425,13 +425,13 @@ class exports.Value extends Node
     for node, i of @tails
       if node.soak
         node.soak = ''
-        [test, @head] = Value(@head, @tails.splice 0 i)cacheReference o
+        [test, @head] = Chain(@head, @tails.splice 0 i)cacheReference o
         return If do
           JS "typeof #{ test.compile o, LEVEL_OP } == 'function'"
           this, {+soak}
       else if node.symbol is \?.
         node.symbol = ''
-        [test, @head] = Value(@head, @tails.splice 0 i)unwrap()cache o, true
+        [test, @head] = Chain(@head, @tails.splice 0 i)unwrap()cache o, true
         return If Existence(test), this, {+soak}
     void
 
@@ -441,7 +441,7 @@ class exports.Value extends Node
       return that
     for index, i of @tails then if index.assign
       index.assign = ''
-      [left, @head] = Value(@head, @tails.splice 0 i)cacheReference o
+      [left, @head] = Chain(@head, @tails.splice 0 i)cacheReference o
       return Assign(left, this, that) <<< {+access}
     void
 
@@ -456,7 +456,7 @@ class exports.Value extends Node
         delete call.thisplat
         continue
       if tails[i-1] instanceof Index
-        [@head, ref] = Value(@head, tails.splice 0 i-1)cache o, true
+        [@head, ref] = Chain(@head, tails.splice 0 i-1)cache o, true
         i = 0
       call.args = [ref or Literal(\null), JS args]
     void
@@ -466,8 +466,8 @@ class exports.Value extends Node
     while index = tails[++i]
       continue unless index.symbol is \~.
       index.symbol = ''
-      args   = Value(@head, tails.splice 0 i)unwrap()cache o, true
-      args.1 = Value args.1, [tails.shift()]
+      args   = Chain(@head, tails.splice 0 i)unwrap()cache o, true
+      args.1 = Chain args.1, [tails.shift()]
       call   = Call.make Util(\bind), args
       @head  = if @newed then Parens call, true else call
       i = -1
@@ -480,7 +480,7 @@ class exports.Value extends Node
       stars = index.stars = []
       index.eachChild seek
       continue unless stars.length
-      [sub, ref, temps] = Value(@head, tails.splice 0 i)unwrap()cache o
+      [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap()cache o
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + \.length for star of stars
       @head = JS sub.compile(o, LEVEL_ACCESS) + tails.shift()compile o
@@ -494,9 +494,9 @@ class exports.Value extends Node
 
   multiPick: (o) ->
     for {key}, i of @tails then if key?.length
-      [sub, ref, @temps] = Value(@head, @tails.slice 0 i)cache o
-      arr = (Value if j then ref else sub, [Index node] for node, j of key)
-      return Value Arr(arr), @tails.slice i+1
+      [sub, ref, @temps] = Chain(@head, @tails.slice 0 i)cache o
+      arr = (Chain if j then ref else sub, [Index node] for node, j of key)
+      return Chain Arr(arr), @tails.slice i+1
     void
 
 #### Call
@@ -514,9 +514,9 @@ class exports.Call extends Node
   compile: (o) ->
     "#{@method || ''}(#{ (a.compile o, LEVEL_LIST for a of @args)join ', ' })"
 
-  @make = (callee, args) -> Value(callee)add Call args
+  @make = (callee, args) -> Chain(callee)add Call args
   @back = (params, arrow, node) ->
-    (call = node.getCall()) or node = Value(node)add call = Call()
+    (call = node.getCall()) or node = Chain(node)add call = Call()
     {args} = call
     break if a instanceof Splat and a.it.isEmpty() for a, i of args
     node import back: (args[i] = Fun params, null, arrow.charAt(1) + \>)body
@@ -616,10 +616,10 @@ class exports.Op extends Node
           method = \.call
         for p, i of ps then args.push do
           if p.op is \= and not p.logic then ps[i] = p.left; p.right else p
-      return Parens Value(first)add Call(args) <<< {method}
+      return Parens Chain(first)add Call(args) <<< {method}
     case \new
       first.newed = true
-      if first instanceof Value
+      if first instanceof Chain
         for node of first.tails then if node instanceof Call
           node.new = true
           return first
@@ -677,7 +677,7 @@ class exports.Op extends Node
 
   compileExistence: (o) ->
     unless o.level
-      return Op(\&& Existence(@first)invert(), @second)compile o
+      return Op(\&& Existence(@first)invert(), @second)compileNode o
     fsts = @first.cache o, true
     code = Existence(fsts.0)compile(o, LEVEL_COND) +
            ' ? ' + fsts.1  .compile(o, LEVEL_LIST) +
@@ -719,7 +719,7 @@ class exports.Op extends Node
   # `v = delete o.k`
   compileDelete: (o) ->
     code = ref = o.scope.temporary \ref
-    [get, del] = Value(@first)cacheReference o
+    [get, del] = Chain(@first)cacheReference o
     code += " = #{ get.compile o, LEVEL_LIST }
        , delete #{ del.compile o, LEVEL_LIST }, #{ref}"
     if o.level < LEVEL_LIST then code else "(#{code})"
@@ -785,8 +785,8 @@ class exports.Assign extends Node
     if o.level < LEVEL_COND then code else "(#{code})"
 
   compileConditional: (o, left) ->
-    refs = Value(left)cacheReference o
-    Op(@logic; refs.0; Assign refs.1, @right, @op)compile o
+    [test, @left] = Chain(left)cacheReference o
+    Op(delete @logic, test, this)compileNode o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
@@ -828,7 +828,7 @@ class exports.Assign extends Node
         val = Var val
       else
         if (inc = ivar) and start < i then inc += " + #{ i - start }"
-        val = Value lr ||= Literal(rite), [Index Literal inc || i]
+        val = Chain lr ||= Literal(rite), [Index Literal inc || i]
       Assign(node, val, @op)compile o, LEVEL_TOP
 
   rendObj: (o, nodes, rite) ->
@@ -837,13 +837,13 @@ class exports.Assign extends Node
       # `{a or b} = c` to `a = c.a or b`
       node.=first if logic = node.hasDefault()
       if node instanceof Parens
-        [node, key] = Value(node.it)cacheReference o
+        [node, key] = Chain(node.it)cacheReference o
       else if node instanceof Assign
       then key = node.left; node.=right
       else key = node
       node = Var node.name if node instanceof Key
       node = logic import {first: node} if logic
-      val  = Value lr ||= Var(rite), [Index key.asKey()]
+      val  = Chain lr ||= Var(rite), [Index key.asKey()]
       val  = Import Obj(), val if splat
       Assign(node, val, @op)compile o, LEVEL_TOP
 
@@ -859,7 +859,7 @@ class exports.Assign extends Node
       for node, i of items
         base = if i then ref else sub
         if node instanceof Assign
-          node.right = Value base, [Index node.right.asKey()]
+          node.right = Chain base, [Index node.right.asKey()]
         else
           # `o{k or v} = ..` to `{k: a.k or v} = ..`
           node.=first if logic = node.hasDefault()
@@ -867,16 +867,16 @@ class exports.Assign extends Node
           # `a{(++i)} = b` to `{(_ref): a[_ref = ++i]} = b`
           then [node, key] = node.cache o, true; key = Parens key
           else key = node
-          val = Value base, [Index node.asKey()]
+          val = Chain base, [Index node.asKey()]
           val = logic import {first: val} if logic
           items[i] = Assign key, val, \:
       left = Obj items
     # `x[k] = a` to `[x[k]] = a`
-    else if left instanceof Value and
+    else if left instanceof Chain and
             (tail = left.tails[*-1]) instanceof Index and tail.key.length
       {key} = left.tails.pop()
       [sub, ref, @temps] = left.cache o
-      left = Arr(Value if i then ref else sub, [Index k] for k, i of key)
+      left = Arr(Chain if i then ref else sub, [Index k] for k, i of key)
     left
 
 #### Import
@@ -895,7 +895,7 @@ class exports.Import extends Node
   compileNode: (o) ->
     if @all or not @right.items
       return Call.make Util("import#{ @all or '' }"), [@left, @right]
-             .compile o
+             .compileNode o
     {items} = @right.asObj()
     return @left.compile o unless items.length
     top = not o.level
@@ -928,7 +928,7 @@ class exports.Import extends Node
       else
         key = val = node
       val = logic import {first: val} if logic
-      asn = Assign Value(lref, [Index if dyna then key else key.asKey()]), val
+      asn = Assign Chain(lref, [Index if dyna then key else key.asKey()]), val
       code += asn.compile o, LEVEL_PAREN
     if sub is lref
     then code.=slice delim.length
@@ -1154,7 +1154,7 @@ class exports.Parens extends Node
   compileNode: (o) ->
     {it} = this
     unless @keep or @newed
-      if it instanceof [Atom, Value, Fun, Parens] or
+      if it instanceof [Atom, Chain, Fun, Parens] or
          it instanceof Op and o.level < LEVEL_OP + (PREC[it.op] or PREC.unary)
         return (it <<< {@front})compile o, Math.max o.level, LEVEL_PAREN
     o.level = LEVEL_PAREN
@@ -1521,7 +1521,7 @@ class exports.If extends Node
   @unfoldSoak = (o, parent, name) ->
     if parent[name]unfoldSoak o
       parent[name] = that.then
-      that import then: Value parent
+      that import then: Chain parent
 
 #### JS
 # Embedded JavaScript snippets.
