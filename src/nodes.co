@@ -277,12 +277,11 @@ class exports.Literal extends Atom
   isEmpty    : -> switch @value case <[ void null ]> then true
   isCallable : -> switch @value case <[ this eval ]> then true
 
-  compile: (o, level = o.level) ->
+  compile: (o, level ? o.level) ->
     switch val = @value
-    case \this then return o.scope.fun?.bound or val
-    case \void then val += ' 8'; fallthrough
-    case \null then if level is LEVEL_ACCESS
-      @carp 'invalid use of ' + @value
+    case \this     then return o.scope.fun?.bound or val
+    case \void     then val += ' 8'; fallthrough
+    case \null     then @carp 'invalid use of ' + @value if level is LEVEL_CALL
     case \debugger then return '(function(){ debugger }())' if level
     val
 
@@ -408,7 +407,7 @@ class exports.Chain extends Node
     if @tails.0 instanceof Call and not @head.isCallable()
       @carp 'invalid callee'
     @expandArray o; @expandBind o; @expandSplat o; @expandStar o
-    base = @head.compile o, LEVEL_ACCESS; rest = ''
+    base = @head.compile o, LEVEL_CALL; rest = ''
     for t of @tails
       base = 'new ' + base if t.new
       rest += t.compile o
@@ -481,7 +480,7 @@ class exports.Chain extends Node
       [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap()cache o
       ref += ' ' if SIMPLENUM.test ref.=compile o
       star.value = ref + \.length for star of stars
-      @head = JS sub.compile(o, LEVEL_ACCESS) + tails.shift()compile o
+      @head = JS sub.compile(o, LEVEL_CALL) + tails.shift()compile o
       o.scope.free temps.0 if temps
       i = -1
     function seek ->
@@ -706,7 +705,7 @@ class exports.Op extends Node
       op += ' ' if op of <[ new typeof delete ]> or
                    op of <[ + - ]> and first.op is op
       code = op + code
-    if o.level < LEVEL_ACCESS then code else "(#{code})"
+    if o.level < LEVEL_CALL then code else "(#{code})"
 
   # `x instanceof [A, B]`
   compileIOS: (o, items) ->
@@ -794,7 +793,7 @@ class exports.Assign extends Node
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o, left) ->
     {items} = left; len = items.length
-    rite = @right.compile o, if len is 1 then LEVEL_ACCESS else LEVEL_LIST
+    rite = @right.compile o, if len is 1 then LEVEL_CALL else LEVEL_LIST
     if (len > 1 or o.level) and
        (not IDENTIFIER.test rite or left.assigns rite)
       cache = "#{ rref = o.scope.temporary \ref } = #{rite}"
@@ -1675,7 +1674,7 @@ LEVEL_PAREN  = 1  # (...)
 LEVEL_LIST   = 2  # [...]
 LEVEL_COND   = 3  # ... ? x : y
 LEVEL_OP     = 4  # !...
-LEVEL_ACCESS = 5  # ...[0]
+LEVEL_CALL   = 5  # ...()
 
 # Operator precedances.
 PREC = \? : .1, unary : .9
