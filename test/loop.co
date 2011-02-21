@@ -161,20 +161,26 @@ eq r + '', '1'
 eq (while 1 then break; 1).length, 0
 
 
-# For each dynamic call below `for`,
-# define it outside and pass loop variables to it.
+# For each dynamic call below a loop,
+# define it outside and pass loop variables to it if any.
+them = []
+until them.1
+  with them
+    @push @@callee
+eq ...them
+
 fs = for i, [a, b] in [[], [1, 2], [3, 4]] then if a
   me = this
   do ~>
     return if i < 2
     eq me, this
     eq a * b, 12
-  do function fn -> -> [a + b, fn]
+  do -> {callee} = @@; -> [a + b, callee]
 [one, two] = (f() for f of fs)
-eq one[0] * two[0], 21
-eq one[1] , two[1]
+eq one.0 * two.0, 21
+eq one.1 , two.1
 
-fs = for x, y in {2, 3, 5} then ((z) -> -> x * y * z) 7
+fs = for x, y in {2, 3, 5} then let (z = 7) -> -> x * y * z
 eq fs.1(), 63
 
 

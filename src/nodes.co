@@ -627,7 +627,7 @@ class exports.Op extends Node
     switch op
     case \of then return new Of first, second
     case \do
-      return []= if first instanceof Fun
+      return if first instanceof Fun
       then Call.block first
       else Parens Call.make first
     case \new
@@ -1025,6 +1025,7 @@ class exports.Fun extends Node
     scope.fun = this
     delete o.globals
     scope.assign \_proto @proto.compile(o) + \.prototype if @proto
+    o.indent = @tab = '' if @plucked
     o.indent += TAB
     {params, body, name, tab} = this
     code = \function
@@ -1074,7 +1075,7 @@ class exports.Fun extends Node
     lines.unshift ...asns if asns.length
     body.makeReturn() unless wasEmpty or @ctor or @void
     if @statement
-      name                    or @carp 'nameless function'
+      name                    or @carp  'nameless function declaration'
       pscope is o.block.scope or @carp 'misplaced function declaration'
       scope .add name, \function
       pscope.add name, \function unless @returns
@@ -1082,6 +1083,9 @@ class exports.Fun extends Node
     code += "(#{ args.join ', ' }){"
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if lines.length
     code += \}
+    if @plucked
+      sscope.assign ref = sscope.temporary(\fn), code
+      return ref
     if @ctor and \_ is not name.charAt 0
       code += " #{name}.displayName = '#{name}';"
     code += "\n#{tab}return #{name};" if @returns
@@ -1272,6 +1276,7 @@ class exports.While extends Node
     this
 
   compileNode: (o) ->
+    @pluckDirectCalls o
     code = unless @test then \true else
       @anaphorize()
       (if @negated then @test.invert() else @test)compile o, LEVEL_PAREN
@@ -1289,6 +1294,23 @@ class exports.While extends Node
       end = "}\n#{@tab}return #{ res or '[]' };"
     return end unless lines.length
     "\n#{ @body.compile o, LEVEL_TOP }\n" + @tab + end
+
+  pluckDirectCalls: (o) ->
+    @body.eachChild dig = ~>
+      unless it.calling
+        return if it instanceof [Fun, While] then null else it.eachChild dig
+      {it, head: fun, tails: [call]} = it
+      return if fun.statement
+      if this instanceof For
+        return if fun.params.length ^ call.args.length - !!call.method
+        @index and fun.params.push call.args.* = Var @index
+        if name = @name
+          call.args.push if name.isComplex()
+          then Var @nref ||= @temps.* = o.scope.temporary \ref
+          else name
+          fun.params.push name
+      fun.plucked = true
+      void
 
 #### For
 # Coco's replacements for the `for` loop are array, object or range iterators.
@@ -1358,25 +1380,6 @@ class exports.For extends While
     body  = @compileBody o
     head += \\n + @tab if @name and \} is body.charAt 0
     head + body
-
-  pluckDirectCalls: (o) ->
-    @body.eachChild dig = ~>
-      unless (call = it.getCall()) and it.tails.length is 1 and
-             ((fn = it.head.unwrap()) instanceof Fun or
-              fn instanceof Parens and fn.=it instanceof Fun) and
-             fn.params.length is call.args.length - !!call.method
-        return if it instanceof [Fun, For] then null else it.eachChild dig
-      if @index
-        fn.params.push call.args.* = Var @index
-      if name = @name
-        call.args.push if name.isComplex()
-        then Var @nref ||= @temps.* = o.scope.temporary \ref
-        else name
-        fn.params.push name
-      it.head = Var ref = o.scope.temporary \fn
-      o.scope.assign ref, fn.compile o <<< indent: '', LEVEL_LIST
-      o.indent = @tab
-      void
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
