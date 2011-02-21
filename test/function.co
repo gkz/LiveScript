@@ -438,3 +438,11 @@ new ->
     x = y = 3
   eq x, 1
   eq y, 1
+
+
+# `with`
+with o = {}
+  @a = 1
+  @b = 2
+eq o.a + o.b, 3
+eq ok, with ok then this

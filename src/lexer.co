@@ -565,7 +565,7 @@ enlines = -> it.replace /\n/g \\\n
 JS_KEYWORDS = <[
   true false null this void super return throw break continue
   if else for while switch case default try catch finally class extends
-  new do let delete typeof in instanceof import function debugger
+  new do delete typeof in instanceof import function let with debugger
 ]>
 
 # Coco-only alias keywords.
@@ -575,8 +575,7 @@ COCO_ALIASES  = not: <[ UNARY !  ]>, is: <[ COMPARE === ]>
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid runtime errors.
 RESERVED = <[
-  var with
-  const enum export
+  var  const enum export
   implements interface package private protected public static yield
 ]>
 

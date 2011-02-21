@@ -141,6 +141,8 @@ bnf =
     o 'TRY Block CATCH Block FINALLY Block' -> new Try $2, $3, $4, $6
     o 'TRY Block             FINALLY Block' -> new Try $2, null null $4
 
+    o 'WITH Expression Block' -> Parens Call.make Fun([] $3), [$2] \.call
+
     # A class definition have a title, superreference, or body,
     # each of which is optional.
     o 'CLASS OptExtends'                        -> new Class null $2

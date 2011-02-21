@@ -41,7 +41,7 @@ class Node
     if mentionsArgs
       args.push Literal \arguments
       fun.params.push Var \_args
-    Parens(Chain(fun, [Call(args) <<< {method}]), true)compileNode o
+    Parens(Call.make fun, args, method; true)compileNode o
 
   # Compiles a child node as a block statement.
   compileBlock: (o, name) ->
@@ -518,7 +518,7 @@ class exports.Call extends Node
   compile: (o) ->
     "#{@method || ''}(#{ (a.compile o, LEVEL_LIST for a of @args)join ', ' })"
 
-  @make = (callee, args) -> Chain(callee)add Call args
+  @make = (callee, args, method) -> Chain(callee)add Call(args) <<< {method}
 
   @back = (params, arrow, node) ->
     (call = node.getCall()) or node = Chain(node)add call = Call()
