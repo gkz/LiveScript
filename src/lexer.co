@@ -30,7 +30,7 @@ exports import
   # remaining code, or a custom recursive token-matching method
   # (for interpolations). When the next token has been recorded,
   # we move forward within the code past the token, and begin again.
-  ) -> exports{}.tokenize code || '', options || {}
+  ) -> exports{}tokenize code || '', options || {}
   tokenize: (code, o) ->
     code.=replace(/\r/g '')replace(/\s+$/ '')
     # Stream of parsed tokens,
@@ -565,7 +565,7 @@ enlines = -> it.replace /\n/g \\\n
 JS_KEYWORDS = <[
   true false null this void super return throw break continue
   if else for while switch case default try catch finally class extends
-  new do delete typeof in instanceof import function debugger
+  new do let delete typeof in instanceof import function debugger
 ]>
 
 # Coco-only alias keywords.
@@ -577,7 +577,7 @@ COCO_ALIASES  = not: <[ UNARY !  ]>, is: <[ COMPARE === ]>
 RESERVED = <[
   var with
   const enum export
-  implements interface let package private protected public static yield
+  implements interface package private protected public static yield
 ]>
 
 ##### Regexes

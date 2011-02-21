@@ -113,6 +113,8 @@ bnf =
     o \Function
     o 'FUNCTION Function' -> $2.named $1
 
+    o 'LET Function' -> Call.let $2
+
     # The full complement of `if` and `unless` expressions,
     # including postfix one-liners.
     o \IfBlock

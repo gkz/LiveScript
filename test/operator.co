@@ -170,7 +170,7 @@ a = "1#{2}3" +
 eq a, '123456'
 
 
-# Multiple operators should space themselves.
+# Multiple unary {plus,minus}es should space themselves.
 eq(+ +1, - -1)
 
 
@@ -179,18 +179,8 @@ eq '', do do do -> -> -> do String
 eq 1, do -> 1
 eq @, do ~> @
 
-x = y = 1
-do (~0, x, y = 2) ->
-  eq 0, +@
-  eq 1, x
-  eq 2, y
-  x = y = 3
-eq x, 1
-eq y, 1
-
 
 ### `import`
-
 x = 'xx'
 o = (-> {} import {42, '', x, @X, (x), ...([0])}).call {X: 'XX'}
 eq o[42], 42

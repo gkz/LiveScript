@@ -368,7 +368,7 @@ eq 1, f 1, 0
 eq 6, f 1, 1
 eq 2, f 0, 0
 
-do (a = I(1)) -> eq a, 1
+do (a ? I(1)) -> eq a, 1
 
 eq 1, do []= (a || 0 || 1) -> a
 
@@ -426,3 +426,15 @@ eq 5 do
       3
     4
   5
+
+
+# `let`
+new ->
+  x = y = 1; @z = 2
+  let (x = 0, y, @z) ->
+    eq x, 0
+    eq y, 1
+    eq z, 2
+    x = y = 3
+  eq x, 1
+  eq y, 1

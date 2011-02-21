@@ -298,6 +298,8 @@ class exports.Var extends Atom
 
   asKey: -> Key(@value) <<< {@line}
 
+  varName: @::show
+
   compile: (o) ->
     o.scope.free @value if @temp
     @value
@@ -517,11 +519,25 @@ class exports.Call extends Node
     "#{@method || ''}(#{ (a.compile o, LEVEL_LIST for a of @args)join ', ' })"
 
   @make = (callee, args) -> Chain(callee)add Call args
+
   @back = (params, arrow, node) ->
     (call = node.getCall()) or node = Chain(node)add call = Call()
     {args} = call
     break if a instanceof Splat and a.it.isEmpty() for a, i of args
     node import back: (args[i] = Fun params, null, arrow.charAt(1) + \>)body
+
+  @let = (fun) ->
+    args = fun.params; ps = fun.params = []
+    for a, i of args then ps.push do
+      if a.op is \= and not a.logic
+      then args[i] = a.right; a.left
+      else if a.varName()
+      then Var that
+      else a.carp 'invalid "let" argument'
+    if delete fun.bound
+      fun.method = \.call
+      args.unshift Literal \this
+    Parens @make fun, args
 
 #### Clone
 # An operation that creates a new object with its `__proto__`
@@ -610,15 +626,7 @@ class exports.Op extends Node
   (op, first, second, post) ~>
     switch op
     case \of then return new Of first, second
-    case \do
-      if first instanceof Fun
-        args = []; ps = first.params
-        if ps.length and ps.0.op is \~
-          args.push ps.shift()first
-          method = \.call
-        for p, i of ps then args.push do
-          if p.op is \= and not p.logic then ps[i] = p.left; p.right else p
-      return Parens Chain(first)add Call(args) <<< {method}
+    case \do then return Parens Call.make first
     case \new
       first.newed = true
       if first instanceof Chain
