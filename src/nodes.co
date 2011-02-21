@@ -41,7 +41,7 @@ class Node
     if mentionsArgs
       args.push Literal \arguments
       fun.params.push Var \_args
-    Parens(Call.make fun, args, method; true)compileNode o
+    Parens(Chain fun, [Call(args) <<< {method}]; true)compileNode o
 
   # Compiles a child node as a block statement.
   compileBlock: (o, name) ->
@@ -518,7 +518,10 @@ class exports.Call extends Node
   compile: (o) ->
     "#{@method || ''}(#{ (a.compile o, LEVEL_LIST for a of @args)join ', ' })"
 
-  @make = (callee, args, method) -> Chain(callee)add Call(args) <<< {method}
+  @make = (callee, args) -> Chain(callee)add Call args
+
+  @block = (fun, args, method) ->
+    Parens(Chain fun, [Call(args) <<< {method}]) <<< {+calling}
 
   @back = (params, arrow, node) ->
     (call = node.getCall()) or node = Chain(node)add call = Call()
@@ -534,10 +537,7 @@ class exports.Call extends Node
       else if a.varName()
       then Var that
       else a.carp 'invalid "let" argument'
-    if delete fun.bound
-      fun.method = \.call
-      args.unshift Literal \this
-    Parens @make fun, args
+    @block fun, args, delete fun.bound && (args.unshift Literal \this; \.call)
 
 #### Clone
 # An operation that creates a new object with its `__proto__`
@@ -626,7 +626,10 @@ class exports.Op extends Node
   (op, first, second, post) ~>
     switch op
     case \of then return new Of first, second
-    case \do then return Parens Call.make first
+    case \do
+      return []= if first instanceof Fun
+      then Call.block first
+      else Parens Call.make first
     case \new
       first.newed = true
       if first instanceof Chain
@@ -1061,15 +1064,15 @@ class exports.Fun extends Node
     {lines}  = body
     wasEmpty = not lines.length
     if splatted then asns.unshift splatted else
-      args.0 = Var \it if not args.length and not @wrapper and
-                          body.contains(-> it.value is \it)
+      unless args.length or @wrapper
+        body.contains(-> it.value is \it) and args.0 = Var \it
       dic = {}
       for a, i of args
         if dic[0 + a.=compile o]
           args[i]carp "duplicate formal argument \"#{a}\""
         scope.add args[i] = dic[0 + a] = a, \arg
     lines.unshift ...asns if asns.length
-    body.makeReturn() unless wasEmpty or @ctor
+    body.makeReturn() unless wasEmpty or @ctor or @void
     if @statement
       name                    or @carp 'nameless function'
       pscope is o.block.scope or @carp 'misplaced function declaration'
@@ -1106,7 +1109,7 @@ class exports.Class extends Node
 
   compileNode: (o) ->
     {fun, title} = this; {lines} = fun.body
-    decl  = title.varName() or title.value if title
+    decl  = title?.varName()
     name  = decl or @name
     name  = \_Class unless name and IDENTIFIER.test name
     lname = Var fun.bound = name
@@ -1164,6 +1167,7 @@ class exports.Parens extends Node
     unless @keep or @newed
       if it instanceof [Atom, Chain, Fun, Parens] or
          it instanceof Op and o.level < LEVEL_OP + (PREC[it.op] or PREC.unary)
+        it.head.void = true if @calling and not o.level
         return (it <<< {@front})compile o, Math.max o.level, LEVEL_PAREN
     o.level = LEVEL_PAREN
     if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"

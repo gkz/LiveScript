@@ -439,6 +439,12 @@ new ->
   eq x, 1
   eq y, 1
 
+eq '''
+(function(){
+  this;
+}).call(this);
+''' Coco.compile 'let ~> this' {+bare}
+
 
 # `with`
 with o = {}
