@@ -370,6 +370,8 @@ eq 2, f 0, 0
 
 do (a = I(1)) -> eq a, 1
 
+eq 1, do []= (a || 0 || 1) -> a
+
 
 (->
   eq @@  , arguments

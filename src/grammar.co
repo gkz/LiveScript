@@ -300,7 +300,7 @@ operators = [
   <[ left      RELATION     ]>
   <[ right     COMPARE      ]>
   <[ left      BITWISE      ]>
-  <[ left      LOGIC        ]>
+  <[ right     LOGIC        ]>
   <[ right     : ASSIGN RETURN THROW EXTENDS INDENT ]>
   <[ right     IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
   <[ left      POST_IF FOR WHILE ]>
