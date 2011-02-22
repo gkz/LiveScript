@@ -80,7 +80,10 @@ bnf =
   Expression:
     o \Chain -> $1.unwrap()
 
-    o 'Assignable ASSIGN Expression' -> Assign $1, $3, $2
+    o 'Assignable ASSIGN Expression'
+    , -> Assign $1, $3, $2
+    o 'Assignable ASSIGN INDENT ArgList OptComma DEDENT'
+    , -> Assign $1, Arr.maybe($4), $2
 
     o 'CREMENT SimpleAssignable' -> Op $1, $2
     o 'SimpleAssignable CREMENT' -> Op $2, $1, null true
@@ -217,8 +220,8 @@ bnf =
     o 'Key     DOT KeyBase' -> Assign $3, Chain(        $1; [Index $3, $2]), \:
   # Keys and values.
   Property:
-    o 'Key : Expression' -> Assign $1, $3           , \:
-    o 'Key : Block'      -> Assign $1, $3.maybeArr(), \:
+    o 'Key : Expression'                     -> Assign $1, $3           , \:
+    o 'Key : INDENT ArgList OptComma DEDENT' -> Assign $1, Arr.maybe($4), \:
     o '+- Key'           -> Assign $2.asKey(), Literal($1 is \+), \:
 
     o \KeyValue

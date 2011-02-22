@@ -284,13 +284,20 @@ eq ok, obj.key
 # Implicit Array
 o =
   atom:
-    1
+    0
   list:
-    /* 2 */
-    3
-    4
-eq 1 o.atom, 1
+    1
+    2
+eq 0 o.atom
 eq 2 o.list.length
+
+a =
+  3
+a =
+  a, 4
+a =
+  ...a
+eq '3,4' ''+a
 
 
 ### JS Literal

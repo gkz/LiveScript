@@ -192,11 +192,6 @@ class exports.Block extends Node
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this
 
-  maybeArr: ->
-    {lines} = this; i = lines.length
-    lines.splice i, 1 if lines[i]comment while i--
-    if lines.length is 1 then lines.0 else Arr lines
-
   isComplex: -> @lines.length > 1 or @lines.0?.isComplex()
 
   isStatement: (o) ->
@@ -631,6 +626,10 @@ class exports.Arr extends List
     if code = Splat.compileArray o, items
       return if @newed then "(#{code})" else code
     "[#{ List.compile o, items }]"
+
+  @maybe = (nodes) ->
+    return nodes.0 if nodes.length is 1 and nodes.0 not instanceof Splat
+    this nodes
 
 #### Op
 # Simple Arithmetic and logical operations, with some special conversions.
@@ -1181,7 +1180,7 @@ class exports.Parens extends Node
   compileNode: (o) ->
     {it} = this
     unless @keep or @newed
-      if it instanceof [Atom, Chain, Fun, Parens] or
+      if it instanceof [Atom, Chain, Fun, Parens, List] or
          it instanceof Op and o.level < LEVEL_OP + (PREC[it.op] or PREC.unary)
         it.head.void = true if @calling and not o.level
         return (it <<< {@front})compile o, Math.max o.level, LEVEL_PAREN

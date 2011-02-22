@@ -318,9 +318,11 @@ exports import
   lineToken: ->
     [input, indent] = MULTIDENT.exec it
     @countLines input; @seenFrom = @seenTo = false
-    {last} = this; last.eol = last.spaced = true
-    noNewline = LINE_CONTINUER.test it or last.0 of
-      <[ +- DOT ASSIGN LOGIC MATH COMPARE RELATION IMPORT SHIFT BITWISE ]>
+    {last} = this; [tag] = last; noNewline =
+      tag of <[ +- DOT LOGIC MATH COMPARE RELATION IMPORT SHIFT BITWISE ]> or
+      tag is \ASSIGN and ''+last.1 not of <[ = := ]> or
+      LINE_CONTINUER.test it
+    last.eol = last.spaced = true
     size = indent.length
     if size and (@emender ||= ///[^#{ indent.charAt 0 }]///)exec indent
       @carp "contaminated indent #{ escape that }"
