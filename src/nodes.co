@@ -609,16 +609,17 @@ class exports.Arr extends List
 
   asObj: -> Obj(Assign Literal(i), item, \: for item, i of @items)
 
-  compileNode: (o) ->
+  compile: (o) ->
     {items} = this
     return '[]' unless items.length
     if code = Splat.compileArray o, items
       return if @newed then "(#{code})" else code
-    o.indent += TAB
-    code = (obj.compile o, LEVEL_LIST for obj of items)join ', '
-    if 0 < code.indexOf \\n
-    then "[\n#{o.indent}#{code}\n#{@tab}]"
-    else "[#{code}]"
+    o.indent = (tab = o.indent) + TAB
+    for item, i of items
+      code += (if i then ', ' else '') + item.compile o, LEVEL_LIST
+    o.indent = tab
+    code = "\n#{tab+TAB}#{code}\n#{tab}" if ~code.indexOf \\n
+    "[#{code}]"
 
 #### Op
 # Simple Arithmetic and logical operations, with some special conversions.
