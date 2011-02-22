@@ -15,10 +15,10 @@
 class Node
   compile: (options, level) ->
     o = {}; continue for key, o[key] in options
-    o import {level} if level?
+    o <<< {level} if level?
     node = @unfoldSoak o or this
     # If a statement appears within an expression, wrap it in a closure.
-    return node.compileClosure o if o.level and node.isStatement o
+    return node.compileClosure o if o.level and node.isStatement()
     code = (node import tab: o.indent)compileNode o
     o.scope.free tmp for tmp of node.temps if node.temps
     code
@@ -41,7 +41,7 @@ class Node
     if mentionsArgs
       args.push Literal \arguments
       fun.params.push Var \_args
-    Parens(Chain fun, [Call(args) <<< {method}]; true)compileNode o
+    Parens(Chain fun, [Call(args) <<< {method}]; true)compile o
 
   # Compiles a child node as a block statement.
   compileBlock: (o, name) ->
@@ -194,10 +194,6 @@ class exports.Block extends Node
 
   isComplex: -> @lines.length > 1 or @lines.0?.isComplex()
 
-  isStatement: (o) ->
-    return true if o and not o.level
-    return true if node.isStatement o for node of @lines
-
   isCallable: -> that.isCallable() if lastNonComment(@lines)0
 
   jumps: -> return that if node.jumps it for node of @lines
@@ -221,7 +217,7 @@ class exports.Block extends Node
       else
         node = node.unfoldSoak o or node
         code = (node <<< {+front})compile o, level
-        code = o.indent + code + node.terminator unless node.isStatement o
+        code = o.indent + code + node.terminator unless node.isStatement()
       codes.push code
     return codes.join \\n unless level
     code = codes.join ', ' or 'void 8'
@@ -347,7 +343,7 @@ class exports.Chain extends Node
 
   jumps        : -> not @tails.length and @head.jumps it
   assigns      : -> not @tails.length and @head.assigns it
-  isStatement  : -> not @tails.length and @head.isStatement it
+  isStatement  : -> not @tails.length and @head.isStatement()
   isComplex    : -> @tails.length or do @head.isComplex
   isCallable   : -> @tails.length or do @head.isCallable
   isAssignable : ->
@@ -1177,15 +1173,16 @@ class exports.Parens extends Node
   isComplex  : -> @it.isComplex  ()
   isCallable : -> @it.isCallable ()
 
-  compileNode: (o) ->
+  compile: (o, level ? o.level) ->
     {it} = this
     unless @keep or @newed
       if it instanceof [Atom, Chain, Fun, Parens, List] or
-         it instanceof Op and o.level < LEVEL_OP + (PREC[it.op] or PREC.unary)
-        it.head.void = true if @calling and not o.level
-        return (it <<< {@front})compile o, Math.max o.level, LEVEL_PAREN
-    o.level = LEVEL_PAREN
-    if it.isStatement o then it.compileClosure o else "(#{ it.compile o })"
+         it instanceof Op and level < LEVEL_OP + (PREC[it.op] or PREC.unary)
+        it.head.void = true if not level and @calling
+        return (it <<< {@front})compile o, Math.max level, LEVEL_PAREN
+    if it.isStatement()
+    then it.compileClosure o
+    else "(#{ it.compile o, LEVEL_PAREN })"
 
 #### Splat
 # A splat, either as an argument to a call
@@ -1494,17 +1491,14 @@ class exports.If extends Node
 
   @::{show} = Negatable
 
+  terminator: ''
+
   # Rewrites a chain of **If**s to add a default case as the final `else`.
   addElse: ->
     if @chain
     then @else.addElse it
     else @chain = (@else = it) instanceof If
     this
-
-  # An **If** only compiles into a statement if either of its bodies needs
-  # to be a statement. Otherwise a conditional operator is safe.
-  isStatement: (o) ->
-    o and not o.level or @then.isStatement o or @else?.isStatement o
 
   isCallable: -> @then.isCallable() or @else?.isCallable()
 
@@ -1517,22 +1511,21 @@ class exports.If extends Node
 
   compileNode: (o) ->
     @anaphorize()
-    if @isStatement o then @compileStatement o else @compileExpression o
+    @negated and @if.=invert()
+    if o.level then @compileExpression o else @compileStatement o
 
   compileStatement: (o) ->
-    code = (if delete o.elsed then '' else @tab) + 'if (' +
-           (if @negated then @if.invert() else @if)compile o, LEVEL_PAREN
+    code = 'if (' + @if.compile o, LEVEL_PAREN
     o.indent += TAB
     @then = Block @then
     code += ') ' + @compileBlock o, \then
     return code unless @else
     code + ' else ' + if @chain
-    then @else.compile o <<< {indent: @tab, +elsed}, LEVEL_TOP
+    then @else.compile o <<< indent: @tab, LEVEL_TOP
     else @compileBlock o, \else
 
   compileExpression: (o) ->
-    cond = if @negated then @if.invert() else @if
-    code = cond.compile o, LEVEL_COND
+    code = @if.compile o, LEVEL_COND
     pad  = if @else?.isComplex() and @then.isComplex()
     then \\n + o.indent += TAB else ' '
     code += pad + '? ' +  @then .compile(o, LEVEL_LIST) +
