@@ -127,7 +127,6 @@ class Node
   unfoldAssign : NO
   unwrap       : THIS
   asKey        : THIS
-  asArr        : THIS
   varName      : String
   selections   : NO
   getCall      : NO
@@ -193,7 +192,10 @@ class exports.Block extends Node
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this
 
-  asArr: -> Arr @lines
+  maybeArr: ->
+    {lines} = this; i = lines.length
+    lines.splice i, 1 if lines[i]comment while i--
+    if lines.length is 1 then lines.0 else Arr lines
 
   isComplex: -> @lines.length > 1 or @lines.0?.isComplex()
 
@@ -1550,6 +1552,8 @@ class exports.If extends Node
 # Embedded JavaScript snippets.
 class exports.JS extends Node
   (@code, @literal, @comment) ~>
+
+  show: -> if @comment then @code else "`#{@code}`"
 
   terminator: ''
   isCallable: -> not @comment

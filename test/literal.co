@@ -281,11 +281,16 @@ obj.val = ok
 eq ok, obj.key
 
 
-# Implicit Arrays
-eq 2, (-> it.arr.length) do
-  arr:
-    0
+# Implicit Array
+o =
+  atom:
     1
+  list:
+    /* 2 */
+    3
+    4
+eq 1 o.atom, 1
+eq 2 o.list.length
 
 
 ### JS Literal
