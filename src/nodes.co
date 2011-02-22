@@ -211,25 +211,25 @@ class exports.Block extends Node
       @lines.splice i, 1 if node instanceof Return and not node.it
     this
 
-  compileNode: (o) ->
-    o.block = this
-    codes = []; top = not o.level
+  compile: (o, level ? o.level) ->
+    level or o.block = this
+    codes = []
     for node of @lines
-      node = node.unfoldSoak o or node
-      if top
-        code = (node <<< {+front})compile o
-        code = o.indent + code + node.terminator unless node.isStatement o
-      else
+      if level
         continue if node.comment
         code = node.compile o, LEVEL_LIST
+      else
+        node = node.unfoldSoak o or node
+        code = (node <<< {+front})compile o, level
+        code = o.indent + code + node.terminator unless node.isStatement o
       codes.push code
-    return codes.join \\n if top
+    return codes.join \\n unless level
     code = codes.join ', ' or 'void 8'
-    if codes.length > 1 and o.level >= LEVEL_LIST then "(#{code})" else code
+    if codes.length > 1 and level >= LEVEL_LIST then "(#{code})" else code
 
   # **Block** is the only node that can serve as the root.
   compileRoot: (options) ->
-    o = {level: LEVEL_TOP, scope: @scope = Scope.root = new Scope} <<<< options
+    o = {level: LEVEL_TOP, scope: @scope = Scope.root = new Scope, ...options}
     o.indent = @tab = if bare = delete o.bare then '' else TAB
     shebang  = (first = @lines.0) instanceof JS and
                ~first.code.lastIndexOf \#! 0 and @lines.shift()code
@@ -254,9 +254,9 @@ class exports.Block extends Node
       break unless node.comment or node instanceof Literal
     if i
       rest   = @lines.splice i, 9e9
-      code   = @compileNode o
+      code   = @compile o
       @lines = rest
-    code &&+= \\n if post = (if @lines.length then @compileNode o else '')
+    code &&+= \\n if post = (if @lines.length then @compile o else '')
     code += o.indent + that + \;\n if @scope?.vars o
     code + post
 
@@ -1174,8 +1174,8 @@ class exports.Parens extends Node
 
   children: [\it]
 
-  isComplex  : -> @it.isComplex()
-  isCallable : -> @it.isCallable()
+  isComplex  : -> @it.isComplex  ()
+  isCallable : -> @it.isCallable ()
 
   compileNode: (o) ->
     {it} = this
