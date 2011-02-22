@@ -38,7 +38,8 @@ tint \co [
   | e(?:lse|xtends)
   | d(?:e(?:fault|lete|bugger)|o)
   | un(?:less|til)
-  | o[fr] | return | break | while | switch | and
+  | w(?:hile|ith)
+  | o[fr] | return | break | switch | and | let
   ) #{kwend} ///]
   [\typ /// ^ (?: true | false | null | void ) #{kwend} ///]
   [\ctx /// ^ (?

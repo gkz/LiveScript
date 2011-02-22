@@ -14,10 +14,10 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
       new (require \ace/mode/matching_brace_outdent)MatchingBraceOutdent
 
   indenter = /// (?
-  : [({[=:]
-  | [-~]>
-  | \b (?: else | d(?:o|efault) | try | finally
-         | catch (?: \s* #{identifier} )? )
+    : [({[=:]
+    | [-~]>
+    | \b (?: else | d(?:o|efault) | try | finally
+           | catch (?: \s* #{identifier} )? )
   ) \s* $ ///
 
   getNextLineIndent: (state, line, tab) ->
@@ -47,7 +47,7 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
 keywordend = "(?![$\\w]|\\s*:(?!:))"
 stringfill = token: \string, regex: '.+'
 
-CocoMode.Rules =
+CocoMode.Rules = \
 start: [
   token: \keyword
   regex: '(?
@@ -61,7 +61,8 @@ start: [
     |a(?:nd|rguments)
     |n(?:ew|ot)
     |un(?:less|til)
-    |o[fr]|return|break|while
+    |w(?:hile|ith)
+    |o[fr]|return|break|let
   )' + keywordend
 ,
   token: \constant.language
@@ -72,7 +73,7 @@ start: [
     :p(?:ackage|r(?:ivate|otected)|ublic)
     |i(?:mplements|nterface)
     |e(?:num|xport)
-    |var|with|const|let|static|yield
+    |var|const|static|yield
   )' + keywordend
 ,
   token: \language.support.class
