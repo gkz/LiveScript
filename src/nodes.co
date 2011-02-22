@@ -516,7 +516,9 @@ class exports.Call extends Node
   show: -> (@new or '') + (@soak or '') + (@thisplat or '')
 
   compile: (o) ->
-    "#{@method || ''}(#{ (a.compile o, LEVEL_LIST for a of @args)join ', ' })"
+    code  = (@method or '') + \(
+    code += (if i then ', ' else '')+ a.compile o, LEVEL_LIST for a, i of @args
+    code + \)
 
   @make = (callee, args) -> Chain(callee)add Call args
 
@@ -553,10 +555,22 @@ class exports.Clone extends Node
     Import(Call.make(Util \clone; [@base]), Obj @mixins)compileNode o
 
 #### List
-# An abstract node for a list of items.
+# An abstract node for a list of comma-separated items.
 class List extends Node
   children : [\items]
   isEmpty  : -> not @items.length
+
+  @compile = (o, items) ->
+    switch items.length
+    case 0 then return ''
+    case 1 then return items.0.compile o, LEVEL_LIST
+    {indent, level} = o
+    o <<< indent: indent + TAB, level: LEVEL_LIST
+    code  = items[i = 0]compile o
+    code += ', ' + item.compile o while item = items[++i]
+    code  = "\n#{o.indent}#{code}\n#{indent}" if ~code.indexOf \\n
+    o <<< {indent, level}
+    code
 
 #### Obj
 # `{x: y}`
@@ -614,12 +628,7 @@ class exports.Arr extends List
     return '[]' unless items.length
     if code = Splat.compileArray o, items
       return if @newed then "(#{code})" else code
-    o.indent = (tab = o.indent) + TAB
-    for item, i of items
-      code += (if i then ', ' else '') + item.compile o, LEVEL_LIST
-    o.indent = tab
-    code = "\n#{tab+TAB}#{code}\n#{tab}" if ~code.indexOf \\n
-    "[#{code}]"
+    "[#{ List.compile o, items }]"
 
 #### Op
 # Simple Arithmetic and logical operations, with some special conversions.
@@ -1204,9 +1213,7 @@ class exports.Splat extends Parens
         args.push utility(\slice) + ".call(#{code})"
       else atoms.push code
     args.push "[#{ atoms.join ', ' }]" if atoms.length
-    base = if index
-    then "[#{ (node.compile o, LEVEL_LIST for node of list)join ', ' }]"
-    else args.shift()
+    base = if index then "[#{ List.compile o, list }]" else args.shift()
     "#{base}.concat(#{ args.join ', ' })"
 
 #### Statement
