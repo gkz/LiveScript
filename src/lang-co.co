@@ -45,7 +45,7 @@ tint \co [
   [\ctx /// ^ (?
   : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
-  | it | arguments | eval | super | by
+  | it | arguments | eval | by | super | prototype
   ) #{kwend} ///]
   [\glb /// ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number

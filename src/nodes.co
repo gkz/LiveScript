@@ -291,7 +291,7 @@ class exports.Var extends Atom
 
   asKey: -> Key(@value) <<< {@line}
 
-  varName: @::show
+  varName: ::show
 
   compile: (o) ->
     o.scope.free @value if @temp
@@ -304,7 +304,7 @@ class exports.Key extends Atom
 
   isAssignable: -> not @reserved
 
-  compile: @::show = -> if @reserved then "'#{@name}'" else @name
+  compile: ::show = -> if @reserved then "'#{@name}'" else @name
 
 #### Index
 # Dots and brackets to access an object's property.
@@ -964,7 +964,7 @@ class exports.Of extends Node
 
   children: <[ item array ]>
 
-  @::<<<< Negatable
+  ::<<<< Negatable
 
   compileNode: (o) ->
     items = @array.selections()
@@ -991,7 +991,7 @@ class exports.Existence extends Node
 
   children: [\it]
 
-  @::<<<< Negatable
+  ::<<<< Negatable
 
   compileNode: (o) ->
     node = @it.unwrap()
@@ -1031,7 +1031,7 @@ class exports.Fun extends Node
       new Scope (if @wrapper then pscope else sscope), @wrapper && sscope
     scope.fun = this
     delete o.globals
-    scope.assign \_proto @proto.compile(o) + \.prototype if @proto
+    scope.assign \prototype @proto.compile(o) + \.prototype if @proto
     o.indent = @tab = '' if @plucked
     o.indent += TAB
     {params, body, name, tab} = this
@@ -1040,7 +1040,7 @@ class exports.Fun extends Node
       if @ctor
         scope.assign \_this 'new _ctor'
         code += """
-           _ctor(){} _ctor.prototype = _proto;
+           _ctor(){} _ctor.prototype = prototype;
           #{tab}function
         """
         body.add Return Literal \_this
@@ -1123,23 +1123,27 @@ class exports.Class extends Node
     decl  = title?.varName()
     name  = decl or @name
     name  = \_Class unless name and IDENTIFIER.test name
-    lname = Var fun.bound = name
-    fun.body.traverseChildren -> it.clas = name if it instanceof Fun; void
+    vname = Var fun.bound = name
+    proto = null
+    fun.body.traverseChildren ->
+      if   it.value is \prototype then proto  := vname
+      else it instanceof Fun      then it.clas = name
+      void
     for node, i of lines
       if node instanceof Obj
-        lines[i] = Import Var(\_proto), node
-        proto = lname
+        lines[i] = Import Var(\prototype), node
+        proto = vname
       else if node instanceof Fun and not node.statement
-        node.carp 'more than one constructor in a class' if ctor
-        proto = lname if (ctor = node)bound
+        ctor and node.carp 'redundant constructor'
+        (ctor = node)bound and proto = vname
     ctor or lines.unshift ctor = Fun()
-    lines.push lname
-    ctor import {name, +ctor, +statement, -clas}
+    ctor <<< {name, +ctor, +statement, -clas}
+    lines.push vname
     if @sup
       args  = [@sup]
-      proto = Util.Extends lname, fun.params.* = Var \_super
+      proto = Util.Extends vname, fun.params.* = Var \_super
     clas = Parens Call.make(fun<<<{proto} args), true
-    clas = Assign lname, clas if decl and title.isComplex()
+    clas = Assign vname, clas if decl and title.isComplex()
     clas = Assign title, clas if title
     clas.compile o
 
@@ -1259,7 +1263,7 @@ class exports.While extends Node
 
   aSource: \test, aTarget: \body
 
-  @::{show} = Negatable
+  ::{show} = Negatable
 
   isStatement: YES
 
@@ -1489,7 +1493,7 @@ class exports.If extends Node
 
   aSource: \if, aTarget: \then
 
-  @::{show} = Negatable
+  ::{show} = Negatable
 
   terminator: ''
 
@@ -1557,7 +1561,7 @@ class exports.JS extends Node
 class exports.Util extends Node
   (@verb) ~>
 
-  @::{show} = Statement::
+  ::{show} = Statement::
 
   isCallable: YES
 
