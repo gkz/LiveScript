@@ -60,14 +60,24 @@ ok (new class I then amI: -> @ instanceof I).amI()
 
 
 # `super` calls in constructors of classes that are defined as object properties.
-class Hive
-  (@name) ->
+Bee       = class then (@name, ...@attributes) ->
+Bee.Honey = class extends Bee then -> super ...
 
-class Hive.Bee extends Hive
-  (name) -> super ...
+bee = new Bee.Honey 'Maya' \adventurous \flighty
+eq "#{bee.name} is #{ bee.attributes.join ' and ' }."
+ , 'Maya is adventurous and flighty.'
 
-maya = new Hive.Bee 'Maya'
-eq maya.name, 'Maya'
+
+# Test calling super and passing along all arguments.
+class Parent
+  method: (...args) -> @args = args
+
+class Child extends Parent
+  method: -> super ...
+
+c = new Child
+c.method 1, 2, 3, 4
+eq c.args.join(' '), '1 2 3 4'
 
 
 # Invalid "super"s.
@@ -103,18 +113,6 @@ class Mini
 eq (func() for func of new Mini().generate()) + '', '10,20,30'
 
 
-# Test calling super and passing along all arguments.
-class Parent
-  method: (...args) -> @args = args
-
-class Child extends Parent
-  method: -> super ...
-
-c = new Child
-c.method 1, 2, 3, 4
-eq c.args.join(' '), '1 2 3 4'
-
-
 # Test classes wrapped in decorators.
 func = (klass) ->
   klass::prop = 'value'
@@ -148,6 +146,7 @@ eq Static.static.two, 2
 
 # Nothing classes.
 ok class instanceof Function
+
 
 Namespace = {}
 Class     = null
@@ -206,7 +205,7 @@ class OddSuper
 class OddSuperSub extends OddSuper
   super: -> super()
   $uper: -> super()
-  1234 : -> super()
+  1234 : -> do super
 
 oss = new OddSuperSub
 eq oss.super(), OddSuper
@@ -226,6 +225,13 @@ class Sup
     eq super, Sup
 
 ok new Sup.Sub instanceof Sup
+
+
+# `::`/`prototype` under class body
+new class ProtoTest extends Object
+  eq ::, @prototype
+  eq super, Object
+  eq prototype = 0, ::
 
 
 #### Clone

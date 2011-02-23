@@ -293,9 +293,7 @@ class exports.Var extends Atom
 
   varName: ::show
 
-  compile: (o) ->
-    o.scope.free @value if @temp
-    @value
+  compile: (o) -> if @temp then o.scope.free @value else @value
 
 #### Key
 # The name of a property, in the form of `{key: _}` or `_.key`.
@@ -1090,9 +1088,7 @@ class exports.Fun extends Node
     code += "(#{ args.join ', ' }){"
     code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if lines.length
     code += \}
-    if @plucked
-      sscope.assign ref = sscope.temporary(\fn), code
-      return ref
+    return sscope.assign sscope.temporary(\fn), code if @plucked
     if @ctor and \_ is not name.charAt 0
       code += " #{name}.displayName = '#{name}';"
     code += "\n#{tab}return #{name};" if @returns
@@ -1299,8 +1295,7 @@ class exports.While extends Node
     if @returns
       [last, i] = lastNonComment lines
       if last and last not instanceof Throw
-        o.scope.assign res = \_results, '[]'
-        lines[i] = last.makeReturn res
+        lines[i] = last.makeReturn res = o.scope.assign \_results '[]'
       end = "}\n#{@tab}return #{ res or '[]' };"
     return end unless lines.length
     "\n#{ @body.compile o, LEVEL_TOP }\n" + @tab + end
@@ -1590,7 +1585,7 @@ Scope::<<<
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
     if @variables[@positions[name]]
-    then that import {type}
+    then that <<< {type}
     else @positions[name] = -1 + @variables.push {name, type}
     name
 
@@ -1601,8 +1596,8 @@ Scope::<<<
       scope = that
     else
       scope = this
-    scope.add name, \var unless scope.type(name) of <[ var arg ]>
-    void
+    unless (type = scope.type name) and (type of <[ var arg ]> or type.value)
+      scope.add name, \var
 
   # Ensures that an assignment is made at the top of this scope.
   assign: (name, value) -> @add name, {value}
@@ -1617,7 +1612,6 @@ Scope::<<<
       else (i++ + parseInt name, 36)toString 36
       break if @type(temp) of [\reuse void]
     @add temp, \var
-    temp
 
   # Allows a variable to be reused.
   free: -> @add it, \reuse
@@ -1626,7 +1620,7 @@ Scope::<<<
   # Walks up the scope if `above` flag is specified.
   check: (name, above) ->
     return found if (found = @positions[name] in @variables) or not above
-    !!@parent?.check name, above
+    @parent?.check name, above
 
   # Gets the type of a variable from name.
   type: -> @variables[@positions[it]]?.type
