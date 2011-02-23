@@ -439,6 +439,11 @@ new ->
   eq x, 1
   eq y, 1
 
+eq \chainable,
+  let ->
+    \chain
+  .concat \able
+
 eq '''
 (function(){
   this;

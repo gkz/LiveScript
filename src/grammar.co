@@ -63,6 +63,8 @@ bnf =
 
     o 'Chain CALL( ArgList OptComma )CALL' -> $1.add Call $3, $2
 
+    o 'LET Function' -> Chain Call.let $2
+
   # Variables and properties that can be assigned to.
   SimpleAssignable:
     o \IDENTIFIER -> L Var $1
@@ -115,8 +117,6 @@ bnf =
     # Functions can be either anonymous, or named using `function` keyword.
     o \Function
     o 'FUNCTION Function' -> $2.named $1
-
-    o 'LET Function' -> Call.let $2
 
     # The full complement of `if` and `unless` expressions,
     # including postfix one-liners.
