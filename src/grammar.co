@@ -55,7 +55,7 @@ bnf =
     o '[ ArgList    OptComma ]' -> L Arr $2
     o '{ Properties OptComma }' -> L Obj $2
 
-    o 'Chain CLONE { Properties OptComma }' -> new Clone $1.unwrap(), $4
+    o 'Chain CLONE { Properties OptComma }' -> Clone $1.unwrap(), $4
 
   # The types of things that can be accessed or called into.
   Chain:

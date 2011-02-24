@@ -218,9 +218,10 @@ eq b, 2
 
 # Destructuring into properties.
 a = []
-a[1, 0] = [0, 1]
-eq a.0, 1
-eq a.1, 0
+a[0 [] [2]] = [0 1 [2]]
+eq a.0, 0
+eq a.2, 2
+eq a[[]], void
 
 o = {}; k = \v
 o{k, 0, \1, (2), three: 3, (2*2): 4} =
@@ -232,9 +233,15 @@ eq o.2, 2
 eq o.3, 3
 eq o.4, 4
 
-(i = 0; o){(i++), (i++)} = [5 6]
-eq 5 o.0
-eq 6 o.1
+(i = 5; o){(i++), (i++)} = {5 6}
+eq o.5, 5
+eq o.6, 6
+
+o{a: [7 8], o: {9 \a}} = a: [7 8], o: {9 \a}
+eq o.7, 7
+eq o.8, 8
+eq o.9, 9
+eq o.a, \a
 
 
 # Destructuring with default values.

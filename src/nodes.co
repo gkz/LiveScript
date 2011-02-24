@@ -534,7 +534,7 @@ class exports.Call extends Node
 # An operation that creates a new object with its `__proto__`
 # set to the operand, attaching specified properties.
 class exports.Clone extends Node
-  (@base, @mixins) ->
+  (@base, @mixins) ~>
 
   children: <[ base mixins ]>
 
@@ -767,9 +767,8 @@ class exports.Assign extends Node
   $ ///
 
   compileNode: (o) ->
-    {right} = this
-    return (Parens(right) <<< {@front, @newed})compile o if @left.isEmpty()
-    left = @transleft(o)unwrap()
+    {right} = this; left = @transleft(o)unwrap()
+    return (Parens(right) <<< {@front, @newed})compile o if left.isEmpty()
     if left.items
       return @compileDestructuring o, left unless @logic
       @carp "indestructurable assignment #{@show()}"
@@ -873,7 +872,7 @@ class exports.Assign extends Node
       for node, i of items
         base = if i then ref else sub
         if node instanceof Assign
-          node.right = Chain base, [Index node.right.asKey()]
+          node.right = rechain base, node.right
         else
           # `o{k or v} = ..` to `{k: a.k or v} = ..`
           node.=first if logic = node.hasDefault()
@@ -882,16 +881,23 @@ class exports.Assign extends Node
           then [node, key] = node.cache o, true; key = Parens key
           else key = node
           val = Chain base, [Index node.asKey()]
-          val = logic import {first: val} if logic
+          val = logic <<< {first: val} if logic
           items[i] = Assign key, val, \:
-      left = Obj items
+      return Obj items
     # `x[k] = a` to `[x[k]] = a`
-    else if left instanceof Chain and
-            (tail = left.tails[*-1]) instanceof Index and tail.key.length
+    if left instanceof Chain and
+       (tail = left.tails[*-1]) instanceof Index and tail.key.length
       {key} = left.tails.pop()
       [sub, ref, @temps] = left.cache o
-      left = Arr(Chain if i then ref else sub, [Index k] for k, i of key)
+      return Arr(rechain if i then ref else sub, k for k, i of key)
     left
+
+  # `o` + `{x}` -> `o{x}`
+  function rechain (head, tail) ->
+    return tail if tail.isEmpty()
+    if tail instanceof Obj
+    then Clone head, tail.items
+    else Chain head, [Index::{key: tail.items || tail.asKey()}]
 
 #### Import
 # Operators that copy properties from right to left.
