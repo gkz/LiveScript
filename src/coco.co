@@ -47,12 +47,9 @@ if (fs = require \fs) and (path = require \path)
         code = Coco.compile code, options
     root._compile code, root.filename
 
-  if require.extensions
-    require.extensions\.co = (module, filename) ->
-      module._compile Coco.compile(fs.readFileSync filename, \utf8), filename
-  # __TODO__: Remove `registerExtension` when fully deprecated.
-  else if require.registerExtension
-    require.registerExtension \.co Coco.compile
+  require.extensions\.co = (module, filename) ->
+    module._compile \
+      Coco.compile(fs.readFileSync filename, \utf8; {+bare}), filename
 
 #### other platforms
 else

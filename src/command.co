@@ -152,7 +152,7 @@ function writeJs (source, js, base) ->
     e <- fs.writeFile jsPath, js || \\n
     return warn e if e
     if o.compile and o.watch
-      (try require(\util)log catch then say) "Compiled #{source}"
+      require(\util)log "Compiled #{source}"
   <- path.exists dir
   if it
   then do compile
