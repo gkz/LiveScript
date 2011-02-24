@@ -51,8 +51,11 @@ bnf =
   # Everything that can be assigned to.
   Assignable:
     o \SimpleAssignable
+
     o '[ ArgList    OptComma ]' -> L Arr $2
     o '{ Properties OptComma }' -> L Obj $2
+
+    o 'Chain CLONE { Properties OptComma }' -> new Clone $1.unwrap(), $4
 
   # The types of things that can be accessed or called into.
   Chain:
@@ -73,8 +76,6 @@ bnf =
     o 'Chain DOT STRNUM'               -> $1.add Index L(Literal $3) ,$2
     o 'Chain DOT Parenthetical'        -> $1.add Index $3.it         ,$2
     o 'Chain DOT [ ArgList OptComma ]' -> $1.add L Index $4          ,$2
-
-    o 'Chain CLONE { Properties OptComma }' -> new Clone $1.unwrap(), $4
 
     o \SUPER -> L new Super
 
