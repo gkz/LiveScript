@@ -223,10 +223,11 @@ bnf =
   Property:
     o 'Key : Expression'                     -> Assign $1, $3           , \:
     o 'Key : INDENT ArgList OptComma DEDENT' -> Assign $1, Arr.maybe($4), \:
-    o '+- Key'           -> Assign $2.asKey(), Literal($1 is \+), \:
 
     o \KeyValue
     o 'KeyValue LOGIC Expression' -> Op $2, $1, $3
+
+    o '+- Key' -> Assign $2.asKey(), Literal($1 is \+), \:
 
     o '... Expression' -> Splat $2
 

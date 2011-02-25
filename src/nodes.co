@@ -208,7 +208,7 @@ class exports.Block extends Node
     this
 
   compile: (o, level ? o.level) ->
-    level or o.block = this
+    unless level then o.block = this; tab = o.indent
     codes = []
     for node of @lines
       if level
@@ -216,8 +216,8 @@ class exports.Block extends Node
         code = node.compile o, LEVEL_LIST
       else
         node = node.unfoldSoak o or node
-        code = (node <<< {+front})compile o, level
-        code = o.indent + code + node.terminator unless node.isStatement()
+        code = tab + (node <<< {+front})compile o, level
+        code += node.terminator unless node.isStatement()
       codes.push code
     return codes.join \\n unless level
     code = codes.join ', ' or 'void 8'
@@ -393,7 +393,7 @@ class exports.Chain extends Node
   SIMPLENUM = /^\d+$/
 
   compileNode: (o) ->
-    @head import {@front, @newed}
+    @head <<< {@front, @newed}
     return @head.compile o unless @tails.length
     return that .compile o if @unfoldAssign o
     if @tails.0 instanceof Call and not @head.isCallable()
@@ -435,8 +435,7 @@ class exports.Chain extends Node
     void
 
   expandSplat: (o) ->
-    {tails} = this; i = -1
-    while call = tails[++i]
+    {tails} = this; i = -1; while call = tails[++i]
       {thisplat, args} = call
       continue unless thisplat or args &&= Splat.compileArray o, args, true
       @carp 'splatting "new"' if call.new
@@ -451,10 +450,9 @@ class exports.Chain extends Node
     void
 
   expandBind: (o) ->
-    {tails} = this; i = -1
-    while index = tails[++i]
-      continue unless index.symbol is \~.
-      index.symbol = ''
+    {tails} = this; i = -1; while tails[++i]
+      continue unless that.symbol is \~.
+      that.symbol = ''
       args   = Chain(@head, tails.splice 0 i)unwrap()cache o, true
       args.1 = Chain args.1, [tails.shift()]
       call   = Call.make Util(\bind), args
@@ -463,11 +461,10 @@ class exports.Chain extends Node
     void
 
   expandStar: (o) ->
-    {tails} = this; i = -1
-    while index = tails[++i]
-      continue if index.args or index.stars or index.key instanceof Key
-      stars = index.stars = []
-      index.eachChild seek
+    {tails} = this; i = -1; while tails[++i]
+      continue if that.args or that.stars or that.key instanceof Key
+      stars = that.stars = []
+      that.eachChild seek
       continue unless stars.length
       [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap()cache o
       ref += ' ' if SIMPLENUM.test ref.=compile o
@@ -482,8 +479,7 @@ class exports.Chain extends Node
     void
 
   expandArray: (o) ->
-    {tails} = this; i = -1
-    while index = tails[++i] then if index.key?.length
+    {tails} = this; i = -1; while tails[++i] then if that.key?.length
       [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap()cache o
       @head = JS Arr do
         Chain if j then ref else sub, [Index n] for n, j of tails.shift()key
@@ -556,7 +552,7 @@ class List extends Node
     {indent, level} = o
     o <<< indent: indent + TAB, level: LEVEL_LIST
     code  = items[i = 0]compile o
-    code += ', ' + item.compile o while item = items[++i]
+    code += ', ' + that.compile o while items[++i]
     code  = "\n#{o.indent}#{code}\n#{indent}" if ~code.indexOf \\n
     o <<< {indent, level}
     code
@@ -671,7 +667,7 @@ class exports.Op extends Node
     case \instanceof then return @compileIOS o, that if @second.selections()
     default if COMPARER.test @op and COMPARER.test @second.op
       return @compileChain o
-    @first import {@front}
+    @first <<< {@front}
     code = "#{ @first .compile o, level = LEVEL_OP + PREC[@op] } #{@op} \
             #{ @second.compile o, level }"
     if o.level <= level then code else "(#{code})"
@@ -855,7 +851,7 @@ class exports.Assign extends Node
       then key = node.left; node.=right
       else key = node
       node = Var node.name if node instanceof Key
-      node = logic import {first: node} if logic
+      node = logic <<< {first: node} if logic
       val  = Chain lr ||= Var(rite), [Index key.asKey()]
       val  = Import Obj(), val if splat
       Assign(node, val, @op)compile o, LEVEL_TOP
@@ -947,7 +943,7 @@ class exports.Import extends Node
         {left: key, right: val} = node
       else
         key = val = node
-      val = logic import {first: val} if logic
+      val = logic <<< {first: val} if logic
       asn = Assign Chain(lref, [Index if dyna then key else key.asKey()]), val
       code += asn.compile o, LEVEL_PAREN
     if sub is lref
@@ -1096,8 +1092,7 @@ class exports.Fun extends Node
     if @ctor and \_ is not name.charAt 0
       code += " #{name}.displayName = '#{name}';"
     code += "\n#{tab}return #{name};" if @returns
-    return tab + code if @statement
-    if @front then "(#{code})" else code
+    if @front and not @statement then "(#{code})" else code
 
   function paramName (o, node) ->
     return that if node.param
@@ -1231,7 +1226,7 @@ class exports.Statement extends Node
   jumps: ->
     not (it and (it.loop or it.block and @verb is not \continue)) and this
 
-  compileNode: -> it.indent + @verb + \;
+  compileNode: -> @verb + \;
 
 #### Throw
 class exports.Throw extends Statement
@@ -1241,7 +1236,7 @@ class exports.Throw extends Statement
 
   jumps: NO
 
-  compileNode: (o) -> o.indent + "throw #{ @it.compile o, LEVEL_PAREN };"
+  compileNode: (o) -> "throw #{ @it.compile o, LEVEL_PAREN };"
 
 #### Return
 class exports.Return extends Throw
@@ -1250,8 +1245,7 @@ class exports.Return extends Throw
   jumps: THIS
 
   compileNode: (o) ->
-    it = if @it then ' ' + @it.compile o, LEVEL_PAREN else ''
-    o.indent + "return#{it};"
+    "return#{ if @it then ' ' + @it.compile o, LEVEL_PAREN else '' };"
 
 #### While
 # The traditional `while` loop.
@@ -1290,7 +1284,7 @@ class exports.While extends Node
     code = unless @test then \true else
       @anaphorize()
       (if @negated then @test.invert() else @test)compile o, LEVEL_PAREN
-    code = @tab + if code is \true then 'for (;;' else 'while (' + code
+    code = if code is \true then 'for (;;' else 'while (' + code
     o.indent += TAB
     code + ') {' + @compileBody o
 
@@ -1377,7 +1371,7 @@ class exports.For extends While
       case -1 then \-- + idx
       default idx + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
     @pluckDirectCalls o
-    head = @tab + "for (#{forPart}) #{ ownPart or '' }{"
+    head = "for (#{forPart}) #{ ownPart or '' }{"
     o.indent += TAB
     if @name
       head += \\n + o.indent
@@ -1412,7 +1406,7 @@ class exports.Try extends Node
 
   compileNode: (o) ->
     o.indent += TAB
-    code = @tab + 'try ' + @compileBlock o, \attempt
+    code = 'try ' + @compileBlock o, \attempt
     if @recovery or not @ensure
       code += " catch (#{ @thrown or \_e }) " + @compileBlock o, \recovery
     if @ensure
@@ -1445,8 +1439,9 @@ class exports.Switch extends Node
     this
 
   compileNode: (o) ->
+    {tab} = this
     topic = !!@topic and (@anaphorize(); @topic.compile o, LEVEL_PAREN)
-    code  = "#{ tab = @tab }switch (#{topic}) {\n"
+    code  = "switch (#{topic}) {\n"
     stop  = @default or @cases.length - 1
     code += c.compileCase o, tab, i is stop, !topic for c, i of @cases
     if @default
