@@ -26,21 +26,20 @@ minify = ->
   uglify.gen_code ast
 
 
-option \prefix 'set the installation prefix for `coke install`' \DIR
+option \prefix 'set the installation prefix for `install`' \DIR
 
 task \install 'install Coco into /usr/local (or --prefix)' (options) ->
   base = options.prefix or \/usr/local
   lib  = "#{base}/lib/coco"
   bin  = "#{base}/bin"
-  node = "~/.node_libraries/coco"
+  nlib = "~/.node_libraries"
   exec [
     "echo Installing Coco to #{lib}"
-    "mkdir -p #{lib} #{bin}"
-    "cp -rf bin lib LICENSE README.md package.json #{lib}"
-    "ln -sfv #{lib}/bin/coco #{bin}/coco"
-    "ln -sfv #{lib}/bin/coke #{bin}/coke"
-    "mkdir -p ~/.node_libraries"
-    "ln -sfnv #{lib}/lib #{node}"
+    "mkdir -p #{lib} #{bin} #{nlib}"
+    "cp -rf lib LICENSE README.md package.json #{lib}"
+    "ln -sfv  #{lib}/lib/command.js #{bin}/coco"
+    "ln -sfv  #{lib}/lib/coke.js    #{bin}/coke"
+    "ln -sfnv #{lib}/lib #{nlib}/coco"
   ].join(' && '), (err, stdout, stderr) ->
     say stdout.trim() if stdout
     say if err then stderr.trim() else tint \done
