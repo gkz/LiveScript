@@ -389,7 +389,7 @@ exports import
       @tagParameters(); tag = \BACKCALL
       break if @last.0 is \)PARAM
       {tokens} = this; i = tokens.length
-      continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ]>
+      continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ( ]>
       tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
       @token \)PARAM ''
     default

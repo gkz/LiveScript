@@ -427,6 +427,8 @@ eq 5 do
     4
   5
 
+eq 6 (a <- g 6; a)
+
 
 # `let`
 new ->
