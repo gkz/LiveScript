@@ -20,7 +20,7 @@ class Node
     # If a statement appears within an expression, wrap it in a closure.
     return node.compileClosure o if o.level and node.isStatement()
     code = (node import tab: o.indent)compileNode o
-    o.scope.free tmp for tmp of node.temps if node.temps
+    o.scope.free tmp for tmp of that if node.temps
     code
 
   compileClosure: (o) ->
@@ -30,23 +30,24 @@ class Node
     # The wrapper shares a scope with its parent closure
     # to preserve the expected lexical scope.
     (fun = Fun [] Block this)wrapper = true
+    hasThis = hasArgs = false
+    @traverseChildren ->
+      switch it.value
+      case \this      then hasThis := true
+      case \arguments then hasArgs := it.value = \_args
+      void
     args = []
-    if @contains(-> it.value is \this)
+    if hasThis
       args.push Literal \this
       method = \.call
-    mentionsArgs = false
-    @traverseChildren ->
-      mentionsArgs := it.value = \_args if it.value is \arguments
-      void
-    if mentionsArgs
+    if hasArgs
       args.push Literal \arguments
       fun.params.push Var \_args
     Parens(Chain fun, [Call(args) <<< {method}]; true)compile o
 
   # Compiles a child node as a block statement.
-  compileBlock: (o, name) ->
-    code = \\n + that + \\n + @tab if @[name]?.compile o, LEVEL_TOP
-    "{#{ code or '' }}"
+  compileBlock: (o, node) ->
+    if node?.compile o, LEVEL_TOP then "{\n#{that}\n#{@tab}}" else '{}'
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -76,7 +77,7 @@ class Node
     void
 
   # Performs `eachChild` on every descendant.
-  # Overridden by `Fun` not to cross scope by default.
+  # Overridden by __Fun__ not to cross scope by default.
   traverseChildren: (fn, xscope) ->
     @eachChild -> if fn(it)? then that else it.traverseChildren fn, xscope
 
@@ -261,7 +262,7 @@ class Atom extends Node
   isComplex : NO
 
 #### Literal
-# `this`, regexes, and primitive values.
+# `this`, `debugger`, regexes and primitives.
 class exports.Literal extends Atom
   (@value) ~> return JS "#{value}" true if value.js
 
@@ -367,7 +368,7 @@ class exports.Chain extends Node
   #
   # compiles to
   #
-  #     (_base = a())[_name = b()] || (_base[_name] = c);
+  #     (_ref = a())[_key = b()] || (_ref[_key] = c);
   #
   cacheReference: (o) ->
     name = @tails[*-1]
@@ -406,7 +407,7 @@ class exports.Chain extends Node
     base += ' ' if \. is rest.charAt 0 and SIMPLENUM.test base
     base + rest
 
-  # Unfolds a soak into an __If__: `a?.b` -> `a.b if a?`
+  # Unfolds a soak into an __If__: `a?.b` => `a.b if a?`
   unfoldSoak: (o) ->
     if @head.unfoldSoak o
       that.then.tails.push ...@tails
@@ -620,7 +621,7 @@ class exports.Arr extends List
     this nodes
 
 #### Op
-# Simple Arithmetic and logical operations, with some special conversions.
+# Simple arithmetic and logical operations, with some special conversions.
 class exports.Op extends Node
   (op, first, second, post) ~>
     switch op
@@ -673,9 +674,9 @@ class exports.Op extends Node
     if o.level <= level then code else "(#{code})"
 
   # Mimic Python's chained comparisons when multiple comparison operators are
-  # used sequentially. For example:
+  # used sequentially. e.g.:
   #
-  #     $ coco -e 'console.log 50 < 65 === 9r72 > 10'
+  #     $ coco -e '50 < 65 === 9r72 > 10'
   #     true
   #
   # See <http://docs.python.org/reference/expressions.html#notin>.
@@ -843,7 +844,7 @@ class exports.Assign extends Node
   rendObj: (o, nodes, rite) ->
     for node of nodes
       node.=it if splat = node instanceof Splat
-      # `{a or b} = c` to `a = c.a or b`
+      # `{a or b} = c` => `a = c.a or b`
       node.=first if logic = node.hasDefault()
       if node instanceof Parens
         [node, key] = Chain(node.it)cacheReference o
@@ -856,10 +857,10 @@ class exports.Assign extends Node
       val  = Import Obj(), val if splat
       Assign(node, val, @op)compile o, LEVEL_TOP
 
-  # Resolves property destructuring.
+  # Resolves subdestructuring.
   transleft: (o) ->
     {left} = this
-    # `x{k} = o` to `{k: x.k} = o`
+    # `x{k} = o` => `{k: x.k} = o`
     if left instanceof Clone
       {base, mixins: items} = left
       if items.length > 1
@@ -870,17 +871,17 @@ class exports.Assign extends Node
         if node instanceof Assign
           node.right = rechain base, node.right
         else
-          # `o{k or v} = ..` to `{k: a.k or v} = ..`
+          # `o{k or v} = ..` => `{k: a.k or v} = ..`
           node.=first if logic = node.hasDefault()
           if node instanceof Parens
-          # `a{(++i)} = b` to `{(_ref): a[_ref = ++i]} = b`
+          # `a{(++i)} = b` => `{(_ref): a[_ref = ++i]} = b`
           then [node, key] = node.cache o, true; key = Parens key
           else key = node
           val = Chain base, [Index node.asKey()]
           val = logic <<< {first: val} if logic
           items[i] = Assign key, val, \:
       return Obj items
-    # `x[k] = a` to `[x[k]] = a`
+    # `x[k] = a` => `[x[k]] = a`
     if left instanceof Chain and
        (tail = left.tails[*-1]) instanceof Index and tail.key.length
       {key} = left.tails.pop()
@@ -888,7 +889,7 @@ class exports.Assign extends Node
       return Arr(rechain if i then ref else sub, k for k, i of key)
     left
 
-  # `o` + `{x}` -> `o{x}`
+  # `o` + `{x}` => `o{x}`
   function rechain (head, tail) ->
     return tail if tail.isEmpty()
     if tail instanceof Obj
@@ -896,7 +897,7 @@ class exports.Assign extends Node
     else Chain head, [Index::{key: tail.items || tail.asKey()}]
 
 #### Import
-# Operators that copy properties from right to left.
+# Copies properties from right to left.
 class exports.Import extends Node
   (@left, @right, @all and \All) ~>
     if not all and left instanceof Obj and right.items
@@ -1014,11 +1015,11 @@ class exports.Fun extends Node
 
   isCallable: YES
 
+  isStatement: -> !!@statement
+
   # Short-circuit `traverseChildren` method to prevent it
   # from crossing scope boundaries by default.
   traverseChildren: (_, xscope) -> super ... if xscope
-
-  isStatement: -> !!@statement
 
   makeReturn: -> if @statement then @<<<{+returns} else super ...
 
@@ -1047,9 +1048,9 @@ class exports.Fun extends Node
       else sscope.assign \_this \this
     args = []; asns = []
     for p, i of params
-      # `(a, ...b) ->` to `-> [a, ...b] = @@`
+      # `(a, ...b) ->` => `-> [a, ...b] = @@`
       if p instanceof Splat then splatted = true
-      # `(a = x) ->` to `(a ? x) ->`
+      # `(a = x) ->` => `(a ? x) ->`
       else if p.op is \= and not p.logic
         params[i] = Op \? p.left, p.right
     splatted &&= Assign Arr(paramName o, p for p of params), Literal \arguments
@@ -1406,11 +1407,11 @@ class exports.Try extends Node
 
   compileNode: (o) ->
     o.indent += TAB
-    code = 'try ' + @compileBlock o, \attempt
+    code = 'try ' + @compileBlock o, @attempt
     if @recovery or not @ensure
-      code += " catch (#{ @thrown or \_e }) " + @compileBlock o, \recovery
+      code += " catch (#{ @thrown or \_e }) " + @compileBlock o, @recovery
     if @ensure
-      code += " finally " + @compileBlock o, \ensure
+      code += " finally " + @compileBlock o, @ensure
     code
 
 #### Switch
@@ -1514,12 +1515,11 @@ class exports.If extends Node
   compileStatement: (o) ->
     code = 'if (' + @if.compile o, LEVEL_PAREN
     o.indent += TAB
-    @then = Block @then
-    code += ') ' + @compileBlock o, \then
+    code += ') ' + @compileBlock o, Block @then
     return code unless @else
     code + ' else ' + if @chain
     then @else.compile o <<< indent: @tab, LEVEL_TOP
-    else @compileBlock o, \else
+    else @compileBlock o, @else
 
   compileExpression: (o) ->
     code = @if.compile o, LEVEL_COND
