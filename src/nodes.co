@@ -81,12 +81,6 @@ class Node
   traverseChildren: (fn, xscope) ->
     @eachChild -> if fn(it)? then that else it.traverseChildren fn, xscope
 
-  # Do I, or any of my children, contain a node of a certain kind?
-  # Recursively traverses down the nodes' descendants and passess them to
-  # `pred`, returning `true` when it finds a match.
-  # Does not cross scope boundaries.
-  contains: (pred) -> !!@traverseChildren -> pred it or null
-
   # Performs anaphoric conversion if a `that` is found within `@[@aTarget]`.
   anaphorize: ->
     @children = [@aTarget]
@@ -1072,7 +1066,7 @@ class exports.Fun extends Node
     wasEmpty = not lines.length
     if splatted then asns.unshift splatted else
       unless args.length or @wrapper
-        body.contains(-> it.value is \it) and args.0 = Var \it
+        body.traverseChildren(-> it.value is \it or null) and args.0 = Var \it
       dic = {}
       for a, i of args
         if dic[0 + a.=compile o]
