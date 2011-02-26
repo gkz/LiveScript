@@ -24,6 +24,11 @@ throws 'range limit exceeded on line 1' , -> Coco.tokens '0 to 1 by 1e-4'
 throws 'empty range on line 3'          , -> Coco.tokens '\n\n 1 to 0'
 
 
+eq 1 do ->
+  0
+  .25 + .75
+
+
 ### Arrays
 
 a = [((x) -> x), ((x) -> x * x)]
