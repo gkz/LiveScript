@@ -17,16 +17,17 @@ eq 1year * 365.25days * 24hours, 8766_total_hours
 
 
 # [#31](https://github.com/satyr/coco/issues/31): Numeric Ranges
-eq '1,2,3'  ,''+ [1 to +3]
-eq '1,0,-1' ,''+ Array 1 to -1 by -1
+eq '1,2,3'  ''+ [1 to +3]
+eq '1,0,-1' ''+ Array 1 to -1 by -1
 
-throws 'range limit exceeded on line 1' , -> Coco.tokens '0 to 1 by 1e-4'
-throws 'empty range on line 3'          , -> Coco.tokens '\n\n 1 to 0'
+throws 'range limit exceeded on line 1' -> Coco.tokens '0 to 1 by 1e-4'
+throws 'empty range on line 3'          -> Coco.tokens '\n\n 1 to 0'
 
 
-eq 1 do ->
-  0
-  .25 + .75
+# [coffee#1168](https://github.com/jashkenas/coffee-script/issues/1168)
+eq .1 do
+  'leading floating point should not suppress newline'
+  .1
 
 
 ### Arrays
@@ -51,13 +52,13 @@ eq [1, 2,] + '', '1,2'
 result = [['a']
  {b: 'c'}]
 
-eq 'a', result[0][0]
-eq 'c', result[1]['b']
+eq 'a', result.0.0
+eq 'c', result.1.b
 
 
 eq '<[ quoted words ]>', <[ <[ quoted words ]\> ]>.join ' '
-eq  1, <[]>.length
-eq '', <[]>[0]
+eq  1, <[]>length
+eq '', <[]>0
 
 
 ### Objects
