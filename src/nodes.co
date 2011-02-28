@@ -874,9 +874,12 @@ class exports.Assign extends Node
     # `x[k] = a` => `[x[k]] = a`
     if left instanceof Chain and
        (tail = left.tails[*-1]) instanceof Index and tail.key.length
-      {key} = left.tails.pop()
-      [sub, ref, @temps] = left.cache o
-      return Arr(rechain if i then ref else sub, k for k, i of key)
+      items = left.tails.pop()key; [sub, ref, @temps] = left.cache o
+      for item, i of items
+        item.=it if splat = item instanceof Splat
+        item = rechain if i then ref else sub, item
+        items[i] = if splat then Splat item else item
+      return Arr items
     left
 
   # `o` + `{x}` => `o{x}`

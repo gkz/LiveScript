@@ -243,6 +243,11 @@ eq o.8, 8
 eq o.9, 9
 eq o.a, \a
 
+o[\b, ...\c, \d] = [0 to 3]
+eq o.b, 0
+eq o.c+'' '1,2'
+eq o.d, 3
+
 
 # Destructuring with default values.
 new ->
