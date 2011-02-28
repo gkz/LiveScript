@@ -180,8 +180,8 @@ bnf =
 
   Arg:
     o     \Expression
-    o '... Expression' -> L Splat $2
-    o \...             -> L Splat Arr()
+    o '... Expression' -> Splat $2
+    o \...             -> Splat L Arr()
   # **ArgList** is either the list of objects passed into a function call,
   # the parameter list of a function, or the contents of an array literal
   # (i.e. comma-separated expressions). Newlines work as well.

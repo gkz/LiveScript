@@ -1039,38 +1039,33 @@ class exports.Fun extends Node
       else if sscope.fun?.bound
       then @bound = that
       else sscope.assign \_this \this
-    args = []; asns = []
+    {lines} = body; wasEmpty = not lines.length; args = []; asns = []
     for p, i of params
-      # `(a, ...b) ->` => `-> [a, ...b] = @@`
       if p instanceof Splat then splatted = true
       # `(a = x) ->` => `(a ? x) ->`
       else if p.op is \= and not p.logic
         params[i] = Op \? p.left, p.right
-    splatted &&= Assign Arr(paramName o, p for p of params), Literal \arguments
-    for p of params
-      arg = p
-      if dfv = arg.hasDefault()    then arg.=first
-      else if arg instanceof Splat then arg.=it
-      if arg.isEmpty()
-        splatted or arg = Var scope.temporary \arg
-      else if arg not instanceof Var
-        val = ref = paramName o, p
-        val = Op p.op, ref, p.second if dfv
-        asns.push Assign arg, val
-        arg = ref
-      else if dfv
-        asns.push Assign arg, p.second, \=, p.op
-      splatted or args.push arg
-    {lines}  = body
-    wasEmpty = not lines.length
-    if splatted then asns.unshift splatted else
-      unless args.length or @wrapper
-        body.traverseChildren(-> it.value is \it or null) and args.0 = Var \it
+    if splatted
+      # `(a, ...b) ->` => `-> [a, ...b] = @@`
+      asns.push Assign Arr(params), Literal \arguments
+    else
+      unless params.length or @wrapper
+        params.0 = Var \it if body.traverseChildren(-> it.value is \it or null)
       dic = {}
-      for a, i of args
-        if dic[0 + a.=compile o]
-          args[i]carp "duplicate formal argument \"#{a}\""
-        scope.add args[i] = dic[0 + a] = a, \arg
+      for p of params
+        arg = p
+        if dfv = arg.hasDefault()    then arg.=first
+        else if arg instanceof Splat then arg.=it
+        if arg.isEmpty()
+          arg = Var scope.temporary \arg
+        else if arg not instanceof Var
+          ref = Var arg.varName() || scope.temporary \arg
+          asns.push Assign arg, if dfv then Op p.op, ref, p.second else ref
+          arg = ref
+        else if dfv
+          asns.push Assign arg, p.second, \=, p.op
+        args.push a = scope.add arg.value, \arg
+        arg.carp "duplicate formal argument \"#{a}\"" if dic[0+a] = 0+a in dic
     lines.unshift ...asns if asns.length
     body.makeReturn() unless wasEmpty or @ctor or @void
     if @statement
@@ -1087,17 +1082,6 @@ class exports.Fun extends Node
       code += " #{name}.displayName = '#{name}';"
     code += "\n#{tab}return #{name};" if @returns
     if @front and not @statement then "(#{code})" else code
-
-  function paramName (o, node) ->
-    return that if node.param
-    prm = node
-    if splat = prm instanceof Splat then prm.=it
-    else    if prm.hasDefault()     then prm.=first
-    if prm.varName()
-      prm = Var that
-    else if prm not instanceof Var and not prm.isEmpty()
-      prm = Var o.scope.temporary \arg
-    node.param = if splat then Splat prm else prm
 
 #### Class
 class exports.Class extends Node
@@ -1186,23 +1170,22 @@ class exports.Splat extends Parens
 
   assigns: -> @it.assigns it
 
-  compile: -> @it.compile @@0, @@1
+  compile: -> @carp 'invalid splat'
 
   # Compiles a list of nodes mixed with splats to a proper array.
   @compileArray = (o, list, apply) ->
     break if node instanceof Splat for node, index of list
     return '' if index >= list.length
     if list.length is 1
-      code = list.0.compile o, LEVEL_LIST
+      code = list.0.it.compile o, LEVEL_LIST
       return if apply then code else utility(\slice) + ".call(#{code})"
     args = []; atoms = []
     for node of list.splice index, 9e9
-      code = node.compile o, LEVEL_LIST
       if node instanceof Splat
-        atoms.length &&= !args.push "[#{ atoms.join ', ' }]"
-        args.push utility(\slice) + ".call(#{code})"
-      else atoms.push code
-    args.push "[#{ atoms.join ', ' }]" if atoms.length
+        atoms.length &&= !args.push "[#{ List.compile o, atoms }]"
+        args.push utility(\slice) + ".call(#{ node.it.compile o, LEVEL_LIST })"
+      else atoms.push node
+    args.push "[#{ List.compile o, atoms }]" if atoms.length
     base = if index then "[#{ List.compile o, list }]" else args.shift()
     "#{base}.concat(#{ args.join ', ' })"
 
@@ -1576,7 +1559,7 @@ Scope::<<<
   add: (name, type) ->
     if @variables[@positions[name]]
     then that <<< {type}
-    else @positions[name] = -1 + @variables.push {name, type}
+    else @positions[name] = ~-@variables.push {name, type}
     name
 
   # Declares a variable unless declared already.
