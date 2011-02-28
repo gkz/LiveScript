@@ -24,26 +24,24 @@ class Node
     code
 
   compileClosure: (o) ->
-    # Statements that _jump_ out of current context (like `return`) can't be
-    # an expression via closure-wrapping, as their meaning will change.
+    # A statement that _jumps_ out of current context (like `return`) can't be
+    # an expression via closure-wrapping, as its meaning will change.
     that.carp 'inconvertible statement' if @jumps()
-    # The wrapper shares a scope with its parent closure
-    # to preserve the expected lexical scope.
-    (fun = Fun [] Block this)wrapper = true
-    hasThis = hasArgs = false
+    fun = Fun [] Block this; call = Call(); hasThis = hasArgs = false
     @traverseChildren ->
       switch it.value
       case \this      then hasThis := true
       case \arguments then hasArgs := it.value = \_args
       void
-    args = []
     if hasThis
-      args.push Literal \this
-      method = \.call
+      call.args.push Literal \this
+      call.method = \.call
     if hasArgs
-      args.push Literal \arguments
+      call.args.push Literal \arguments
       fun.params.push Var \_args
-    Parens(Chain fun, [Call(args) <<< {method}]; true)compile o
+    # Flag the function as `wrapper` so that it shares a scope
+    # with its parent to preserve the expected lexical scope.
+    Parens(Chain fun<<<{+wrapper} [call]; true)compile o
 
   # Compiles a child node as a block statement.
   compileBlock: (o, node) ->
@@ -164,9 +162,7 @@ Negatable =
   invert : -> @negated ^= 1; this
 
 #### Block
-# A list of expressions that forms the body of an
-# indented block of code--the implementation of a function, a clause in an
-# `if`, `switch`, `try`, and so on.
+# A list of expressions that forms the body of an indented block of code.
 class exports.Block extends Node
   (node) ~>
     return node if node instanceof Block
@@ -238,14 +234,13 @@ class exports.Block extends Node
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
     o.level = LEVEL_TOP
-    code = post = ''
-    for node, i of @lines
-      break unless node.comment or node instanceof Literal
+    code = ''
+    break unless node.comment or node instanceof Literal for node, i of @lines
     if i
       rest   = @lines.splice i, 9e9
       code   = @compile o
       @lines = rest
-    code &&+= \\n if post = (if @lines.length then @compile o else '')
+    code &&+= \\n if post = @compile o
     code += o.indent + that + \;\n if @scope?.vars o
     code + post
 
@@ -269,7 +264,7 @@ class exports.Literal extends Atom
     case \void     then val += ' 8'; fallthrough
     case \null     then @carp 'invalid use of ' + @value if level is LEVEL_CALL
     case \debugger then return '(function(){ debugger }())' if level
-    case \*        then return '0'
+    case \*        then return \0
     val
 
 #### Var
@@ -366,6 +361,7 @@ class exports.Chain extends Node
   #
   cacheReference: (o) ->
     name = @tails[*-1]
+    # `a.b()`
     return @cache o, true if name instanceof Call
     # `a` `a.b`
     if @tails.length < 2 and not @head.isComplex() and not name?.isComplex()
@@ -1108,7 +1104,7 @@ class exports.Class extends Node
 
   isCallable: YES
 
-  compileNode: (o) ->
+  compile: (o, level) ->
     {fun, title} = this; {lines} = fun.body
     decl  = title?.varName()
     name  = decl or @name
@@ -1135,7 +1131,7 @@ class exports.Class extends Node
     clas = Parens Call.make(fun<<<{proto} args), true
     clas = Assign vname, clas if decl and title.isComplex()
     clas = Assign title, clas if title
-    clas.compile o
+    clas.compile o, level
 
 #### Super
 # Reference to the parent method or constructor.
@@ -1144,8 +1140,7 @@ class exports.Super extends Node
   isCallable   : YES
 
   compile: (o) ->
-    {fun} = o.scope.shared or o.scope
-    fun or @carp 'stray "super"'
+    {fun or @carp 'stray "super"'} = o.scope.shared or o.scope
     {name, clas} = fun
     if name
       if clas
@@ -1246,7 +1241,7 @@ class exports.Return extends Throw
 # The traditional `while` loop.
 # Returns an array of values collected from the last expression when requested.
 class exports.While extends Node
-  (@test, name) -> @negated = name is \until
+  (@test, @negated) ->
 
   children: <[ test body ]>
 
