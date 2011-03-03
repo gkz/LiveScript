@@ -119,7 +119,7 @@ class Node
   unfoldSoak   : NO
   unfoldAssign : NO
   unwrap       : THIS
-  asKey        : THIS
+  maybeKey     : THIS
   varName      : String
   selections   : NO
   getCall      : NO
@@ -277,7 +277,7 @@ class exports.Var extends Atom
 
   assigns: -> it is @value
 
-  asKey: -> Key(@value) <<< {@line}
+  maybeKey: -> Key(@value) <<< {@line}
 
   varName: ::show
 
@@ -843,7 +843,7 @@ class exports.Assign extends Node
       else key = node
       node = Var node.name if node instanceof Key
       node = logic <<< {first: node} if logic
-      val  = Chain lr ||= Var(rite), [Index key.asKey()]
+      val  = Chain lr ||= Var(rite), [Index key.maybeKey()]
       val  = Import Obj(), val if splat
       Assign(node, val, @op)compile o, LEVEL_TOP
 
@@ -867,7 +867,7 @@ class exports.Assign extends Node
           # `a{(++i)} = b` => `{(_ref): a[_ref = ++i]} = b`
           then [node, key] = node.cache o, true; key = Parens key
           else key = node
-          val = Chain base, [Index node.asKey()]
+          val = Chain base, [Index node.maybeKey()]
           val = logic <<< {first: val} if logic
           items[i] = Assign key, val, \:
       return Obj items
@@ -887,7 +887,7 @@ class exports.Assign extends Node
     return tail if tail.isEmpty()
     if tail instanceof Obj
     then Clone head, tail.items
-    else Chain head, [Index::{key: tail.items || tail.asKey()}]
+    else Chain head, [Index::{key: tail.items || tail.maybeKey()}]
 
 #### Import
 # Copies properties from right to left.
@@ -937,9 +937,9 @@ class exports.Import extends Node
         {left: key, right: val} = node
       else
         key = val = node
+      dyna or key.=maybeKey()
       val = logic <<< {first: val} if logic
-      asn = Assign Chain(lref, [Index if dyna then key else key.asKey()]), val
-      code += asn.compile o, LEVEL_PAREN
+      code += Assign(Chain lref, [Index key]; val)compile o, LEVEL_PAREN
     if sub is lref
     then code.=slice delim.length
     else code = sub.compile(o, LEVEL_PAREN) + code
