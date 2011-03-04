@@ -16,7 +16,7 @@ parser import
     upcomingInput : -> ''
 
 Coco import
-  VERSION: \0.3.3b
+  VERSION: \0.4.0b
 
   # Compiles a string of Coco code to JavaScript.
   compile: (code, options) -> parser.parse(lex code)compileRoot options

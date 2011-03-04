@@ -35,17 +35,29 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 
 ## Changelog
 
+### 0.4.0b
+- Added `let`. `do` is back at being simple call.
+    $ coco -bpe 'let (a = f()) ->'
+    (function(a){})(f());
+- Added `with`.
+    $ coco -bpe 'with f() then'
+    (function(){}).call(f());
+- Made `::` a pure sugar for `prototype`, which can now refer to `@prototype` under class body.
+- `new` no longer accepts splatted arguments.
+- Fixed [the performance bug](https://github.com/jashkenas/coffee-script/issues/1033) wrt long method chains.
+- Quit supporting node.js 0.3.* or lower.
+
 ### 0.3.2
 - Unrestricted ADI for identifiers beyond `@` and `::`.
       $ coco -bpe '/x/exec(s)input'
       /x/.exec(s).input;
-- Expanded property shorthands beyond `@foo`:
+- Expanded property shorthands beyond `@foo`.
       $ coco -bpe '{a.b, (c.d)e}'
       ({
         b: a.b,
         e: c.d.e
       });
-- Added `typeof!`, which inspects the internal _[[Class]]_ property:
+- Added `typeof!`, which inspects the internal _[[Class]]_ property.
       $ coco -e 'typeof! //'
       RegExp
 - Added shebang support.
@@ -54,7 +66,7 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
       (function(){
         throw Error('unimplemented');
       }).call(this);
-- REPL results now evaluate more intuitively:
+- REPL results now evaluate more intuitively.
       coco> i for i from 3
       [ 0, 1, 2 ]
 - Disallowed whitespace mixup for indentations.
