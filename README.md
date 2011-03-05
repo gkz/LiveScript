@@ -23,7 +23,7 @@ Coco tries to amend them, entwining good parts of both.
 ## Installation
 Install [node.js](http://nodejs.org), then
 
-    git clone git:github.com/satyr/coco.git && cd coco && bin/coke i
+    git clone git://github.com/satyr/coco.git && cd coco && bin/coke i
 
 Or install [npm](https://github.com/isaacs/npm#readme), then
 
