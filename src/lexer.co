@@ -173,7 +173,7 @@ exports import
     case \. then if @able()
       @token \DOT \.; @token \STRNUM num.slice 1; @last.callable = true
       return match.0.length
-    case \0 then if num.charAt(1) not of ['' \x \.]
+    case \0 then if num.charAt(1) not of ['' \. \x \X]
       @carp "deprecated octal literal #{num}"
     if radix = match.1
       num = parseInt rnum = match.2, radix

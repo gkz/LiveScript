@@ -156,7 +156,7 @@ start: [
   next : \key
 ,
   token: \constant.numeric
-  regex: '(?:0x[\\da-fA-F]+
+  regex: '(?:0[xX][\\da-fA-F]+
             |(?:[1-9]\\d?)[rR][\\da-zA-Z]+
             |(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:[eE][+-]?\\d+)?[a-zA-Z_]*)'
 ,
