@@ -159,7 +159,11 @@ eq '''
 eq '!a;', Coco.compile '!!!a' {+bare}
 
 
-eq '+(function(){ debugger }());', Coco.compile '+debugger' {+bare}
+eq '''
++(function(){
+  debugger;
+}());
+''' Coco.compile '+debugger' {+bare}
 
 
 eq '1;\n2;\n3;\n4;', Coco.compile '''

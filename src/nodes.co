@@ -263,8 +263,9 @@ class exports.Literal extends Atom
     case \this     then return o.scope.fun?.bound or val
     case \void     then val += ' 8'; fallthrough
     case \null     then @carp 'invalid use of ' + @value if level is LEVEL_CALL
-    case \debugger then return '(function(){ debugger }())' if level
     case \*        then return \0
+    case \debugger then if level
+      return "(function(){\n#{ o.indent + TAB }debugger;\n#{o.indent}}())"
     val
 
 #### Var
