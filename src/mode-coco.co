@@ -197,7 +197,7 @@ key: [
   next : \start
 ,
   token: \text
-  regex: ''
+  regex: '.'
   next : \start
 ]
 qdoc:
