@@ -205,8 +205,8 @@ bnf =
   # **Function** is the function literal, defined by an indented **Block**
   # preceded by an optional parameter list and a function arrow.
   Function:
-    o 'PARAM( ArgList OptComma )PARAM FUNC_ARROW Block' -> L Fun $2, $6, $5
-    o                                'FUNC_ARROW Block' -> L Fun [], $2, $1
+    o 'PARAM( ArgList OptComma )PARAM -> Block' -> L Fun $2, $6, $5
+    o                                '-> Block' -> L Fun [], $2, $1
 
   # Things that can be keys within an object literal.
   KeyBase:

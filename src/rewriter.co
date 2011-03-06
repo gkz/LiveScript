@@ -69,7 +69,7 @@ function addImplicitIndentation (tokens) ->
   i = -1
   while token = tokens[++i]
     [tag] = token
-    continue unless tag of <[ THEN FUNC_ARROW ELSE DEFAULT TRY CATCH FINALLY ]>
+    continue unless tag of <[ THEN -> ELSE DEFAULT TRY CATCH FINALLY ]>
     switch next = tokens[i+1]0
     case <[ INDENT THEN ]> then continue
     case \IF               then continue if tag is \ELSE
@@ -171,7 +171,7 @@ function addImplicitParentheses (tokens) ->
     case \INDENT
       return skipBlock := false if skipBlock
       return pre.0 not of
-        <[ { [ , FUNC_ARROW ELSE TRY CATCH FINALLY DEFAULT UNARY ]>
+        <[ { [ , -> ELSE TRY CATCH FINALLY DEFAULT UNARY ]>
     case <[ TERMINATOR POST_IF FOR WHILE BY TO ]>
       return pre.0 is not \,
     false
@@ -314,5 +314,5 @@ for [left, rite] of BALANCED_PAIRS
   EXPR_END  .push INVERSES[left] = rite
 
 # Tokens that can start an argument list.
-ARG = <[ ( [ { ... IDENTIFIER STRNUM LITERAL RANGE PARAM( FUNC_ARROW FUNCTION
-         UNARY CREMENT IF TRY CLASS SWITCH LET WITH SUPER ]>
+ARG = <[ IDENTIFIER STRNUM LITERAL ( [ { -> PARAM( FUNCTION ...
+         UNARY CREMENT IF TRY CLASS SWITCH LET WITH RANGE SUPER ]>

@@ -384,7 +384,7 @@ exports import
       fallthrough
     case \~ then tag = \UNARY
     case <[ -> ~> ]>
-      @tagParameters(); tag = \FUNC_ARROW
+      @tagParameters(); tag = \->
     case <[ <- <~ ]>
       @tagParameters(); tag = \BACKCALL
       break if @last.0 is \)PARAM
