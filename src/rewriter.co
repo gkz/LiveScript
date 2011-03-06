@@ -69,17 +69,10 @@ function addImplicitIndentation (tokens) ->
   i = -1
   while token = tokens[++i]
     [tag] = token
-    if \INDENT is next = tokens[i+1]?.0
-      switch
-      case token.1 is \do
-        (pair = tokens[indexOfPair tokens, i+1])0 = \)
-        tokens[i+1] <<< {pair, 0: \(, 1: \do}
-      default continue
-      tokens.splice i, 1
-      continue
-    continue if next is \THEN
-    continue unless tag of <[ THEN FUNC_ARROW DEFAULT TRY CATCH FINALLY ]> or
-                    tag is \ELSE and next is not \IF
+    continue unless tag of <[ THEN FUNC_ARROW ELSE DEFAULT TRY CATCH FINALLY ]>
+    switch next = tokens[i+1]0
+    case <[ INDENT THEN ]> then continue
+    case \IF               then continue if tag is \ELSE
     indent = [\INDENT 0 token.2]; dedent = [\DEDENT 0]
     if tag is \THEN
       tokens.splice --i, 1 if tokens[i-1]?.0 is \TERMINATOR
@@ -87,9 +80,9 @@ function addImplicitIndentation (tokens) ->
     else
       tokens.splice ++i, 0 indent
     switch
-    case \, is next = tokens[i+1]0 then --i; fallthrough  # ->,
-    case \, is tokens[i+2]?.0      then go 0 i+=2; ++i    # -> 0,
-    case next of <[ ( [ { ]> and                          # -> [0],
+    case \, is next           then --i; fallthrough  # ->,
+    case \, is tokens[i+2]?.0 then go 0 i+=2; ++i    # -> 0,
+    case next of <[ ( [ { ]> and                     # -> [0],
          \, is tokens[idx = 1 + indexOfPair tokens, i+1]?.0
       go 0 idx; ++i
     default
@@ -105,8 +98,7 @@ function addImplicitIndentation (tokens) ->
     case \SWITCH            then not seenSwitch := true
     case <[ CASE DEFAULT ]> then not seenSwitch
   function go (token, i) ->
-    dedent{2} = token
-    tokens.splice if tokens[i-1]0 is \, then i-1 else i, 0 dedent
+    tokens.splice if tokens[i-1]0 is \, then i-1 else i, 0 dedent <<< {token.2}
   void
 
 # Object literals may be written without braces for simple cases.
@@ -149,14 +141,17 @@ function addImplicitParentheses (tokens) ->
   i = 0; brackets = []
   while token = tokens[++i]
     [tag] = token; prev = tokens[i-1]
-    if \[ is tag
+    if doblock = token.1 is \do and tokens[i+1]?.0 is \INDENT
+      tokens.splice i, 1
+      (tpair = tokens[indexOfPair tokens, i])0 = \)
+      (token = tokens[                    i])0 = \(
+    else if tag is \[
       brackets.push prev.0 is \DOT
-    if \] is prev.0
+    if prev.0 is \]
       if brackets.pop() then token.index = true else continue
     continue unless prev.spaced and able tokens, i, true
-    if tag is \( and token.1 is \do
-      token.     0 = \CALL(
-      token.pair.0 = \)CALL
+    if doblock
+      token.0 = \CALL(; tpair.0 = \)CALL
       continue
     continue unless tag of ARG or tag is \+- and !(token.spaced or token.eol)
     skipBlock = seenSwitch = false
@@ -175,7 +170,8 @@ function addImplicitParentheses (tokens) ->
       return true if pre.eol or pre.0 is \DEDENT
     case \INDENT
       return skipBlock := false if skipBlock
-      return pre.0 not of <[ { [ , FUNC_ARROW ELSE TRY CATCH FINALLY DEFAULT ]>
+      return pre.0 not of
+        <[ { [ , FUNC_ARROW ELSE TRY CATCH FINALLY DEFAULT UNARY ]>
     case <[ TERMINATOR POST_IF FOR WHILE BY TO ]>
       return pre.0 is not \,
     false

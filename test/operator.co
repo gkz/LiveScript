@@ -179,6 +179,17 @@ eq '', do do do -> -> -> do String
 eq 1, do -> 1
 eq @, do ~> @
 
+eq 1, do then 0; 1
+eq 3, do
+  2
+  3
+
+a = Array do
+  a: 0, b: 1
+  2, 3
+eq 1, a.0.b
+eq 3, a.2
+
 
 ### `import`
 x = 'xx'
