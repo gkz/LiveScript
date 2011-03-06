@@ -884,7 +884,7 @@ class exports.Assign extends Node
     left
 
   # `o` + `{x}` => `o{x}`
-  function rechain (head, tail) ->
+  function rechain(head, tail) ->
     return tail if tail.isEmpty()
     if tail instanceof Obj
     then Clone head, tail.items
@@ -1551,7 +1551,7 @@ exports.L = (yylineno, node) -> node import line: yylineno + 1
 # generate code, you create a tree of scopes in the same shape as the nested
 # functions. Each scope knows about the function parameters and the variables
 # declared within it, and has references to its parent/shared enclosing scopes.
-function Scope (@parent, @shared) ->
+function Scope(@parent, @shared) ->
   @variables = []
   @positions = {}
   void
@@ -1687,8 +1687,8 @@ IDENTIFIER = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
 # Declares a utility function at the top level.
 function utility -> Scope.root.assign \__ + it, UTILITIES[it]
 
-function lastNonComment (nodes) ->
+function lastNonComment(nodes) ->
   break unless node.comment for node, i of nodes by -1
   [i >= 0 and node, i]
 
-function entab (code, tab) -> code.replace /\n/g \\n + tab
+function entab(code, tab) -> code.replace /\n/g \\n + tab

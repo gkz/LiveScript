@@ -6,13 +6,13 @@ red   = '\33[0;31m'
 green = '\33[0;32m'
 reset = '\33[0m'
 
-tint = (text, color = green) -> color + text + reset
+tint = (text, color ? green) -> color + text + reset
 
 # Run our node/coco interpreter.
 run = (args) ->
-  proc = spawn \bin/coco, args
-  proc.stderr.on \data, say
-  proc       .on \exit, -> process.exit it if it
+  proc = spawn \bin/coco args
+  proc.stderr.on \data say
+  proc       .on \exit -> process.exit it if it
 
 slobber = (path, code) ->
   spit path, code
@@ -40,7 +40,7 @@ task \install 'install Coco into /usr/local (or --prefix)' (options) ->
     "ln -sfv  #{lib}/lib/command.js #{bin}/coco"
     "ln -sfv  #{lib}/lib/coke.js    #{bin}/coke"
     "ln -sfnv #{lib}/lib #{nlib}/coco"
-  ].join(' && '), (err, stdout, stderr) ->
+  ]join(' && '), (err, stdout, stderr) ->
     say stdout.trim() if stdout
     say if err then stderr.trim() else tint \done
 
@@ -62,7 +62,7 @@ task \build:full 'rebuild the source twice, and run the tests' ->
     throw err         if err
 
 task \build:parser 'rebuild the Jison parser (run "build" first)' ->
-  src = require(\./lib/grammar).parser.generate()
+  src = require(\./lib/grammar)parser.generate()
         .replace /^[^]+?var (?=parser = {)/ \exports.
         .replace /\ncase \d+:\nbreak;/g ''
         .replace /return parser;[^]+/ ''
@@ -81,7 +81,7 @@ task \build:browser 'rebuild extras' ->
   slobber \extras/mode-coco.js minify js
   co = ''
   for name of <[ rewriter lexer nodes coco ]>
-    code = slurp("src/#{name}.co").replace /^./mg '  $&'
+    code = slurp("src/#{name}.co")replace /^./mg '  $&'
     co += "do (exports = require'./#{name}' = {}) ->\n#{code}\n  void\n"
   slobber \extras/coco.raw.js js = """
     this.Coco = function(){
@@ -112,7 +112,7 @@ task \bench 'quick benchmark of compilation time' ->
   Lexer    = require \./lib/lexer
   Rewriter = require \./lib/rewriter
   Coco     = require \./lib/coco
-  co     = coreSources().map(-> slurp it).join \\n
+  co     = coreSources()map(-> slurp it)join \\n
   fmt    = -> "#{bold}#{ "   #{it}".slice -4 }#{reset} ms"
   total  = nc = 0
   now    = Date.now()
@@ -131,7 +131,7 @@ task \bench 'quick benchmark of compilation time' ->
 
 task \loc 'count the lines of source code in the Coco compiler' ->
   exec "
-    cat #{ coreSources().join ' ' } | \
+    cat #{ coreSources()join ' ' } | \
     grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '
   " (e, out) -> say out.trim()
 
@@ -145,13 +145,13 @@ task \test:browser
 
 task \test:json 'test JSON {de,}serialization' ->
   {nodes} = require \./lib/coco
-  json = nodes(slurp \src/nodes.co).stringify()
-  code = nodes.parse(json).compileRoot {+bare}
+  json = nodes(slurp \src/nodes.co)stringify()
+  code = nodes.parse(json)compileRoot {+bare}
   exec 'diff -u lib/nodes.js -' (e, out) ->
     say out.trim() || tint \ok
   .stdin.end code
 
-function runTests (Coco) ->
+function runTests(Coco) ->
   startTime = Date.now()
   passedTests = failedTests = 0
   for name, func in require \assert then do ->
@@ -162,12 +162,12 @@ function runTests (Coco) ->
       ok false 'should throw: ' + msg
   }
   process.on \exit ->
-    time = ((Date.now() - startTime) / 1e3).toFixed 2
+    time = ((Date.now() - startTime) / 1e3)toFixed 2
     message = "passed #{passedTests} tests in #{time} seconds"
     say if failedTests
     then tint "failed #{failedTests} and #{message}", red
     else tint message
-  dir(\test).forEach (file) ->
+  dir(\test)forEach (file) ->
     return unless /\.co$/i.test file
     code = slurp filename = path.join \test file
     try Coco.run code, {filename}
@@ -177,7 +177,7 @@ function runTests (Coco) ->
       msg = '' + /^.+/.exec stk
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/.exec msg
         m[i] = tint m[i].replace(/\\n/g \\n), bold for i of [2 4]
-        msg  = m.slice(1).join \\n
+        msg  = m.slice(1)join \\n
       {1: row, 2: col} = ///#{filename}:(\d+):(\d+)\)?$///m.exec(stk) or ''
       say tint "failed #{filename}:#{row--}:#{col--}", red
       if row >= 0
@@ -189,6 +189,6 @@ function runTests (Coco) ->
         return say stk
       say msg
       {(row): line} = lines = code.split \\n
-      say lines.slice(row-8, row+0).join \\n
+      say lines.slice(row-8, row+0)join \\n
       say line .slice(0 col) + tint line.slice(col), bold
-      say lines.slice(row+1, row+9).join \\n
+      say lines.slice(row+1, row+9)join \\n

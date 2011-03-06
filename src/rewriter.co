@@ -31,7 +31,7 @@ function rewrite ->
 # - Dispatch leading terminators that would introduce ambiguity in the grammar.
 # - Some blocks occur in the middle of expressions.
 #   Remove their trailing terminators here to simplify things.
-function removeTerminators (tokens) ->
+function removeTerminators(tokens) ->
   i = -1
   break unless that.0 is \TERMINATOR while tokens[++i]
   i and tokens.splice 0 i
@@ -45,7 +45,7 @@ function removeTerminators (tokens) ->
 
 # The lexer has tagged each of the opening parenthesis of
 # a call. Match it with its closing pair.
-function closeCalls (tokens) ->
+function closeCalls(tokens) ->
   stack = []
   for token of tokens
     switch token.0
@@ -55,7 +55,7 @@ function closeCalls (tokens) ->
 
 # Tag postfix conditionals as such, so that we can parse them with a
 # different precedence.
-function tagPostfixConditionals (tokens) ->
+function tagPostfixConditionals(tokens) ->
   detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
   function ok -> it.0 of <[ TERMINATOR INDENT ]>
   function go -> token.0 = \POST_IF if it.0 is not \INDENT
@@ -65,7 +65,7 @@ function tagPostfixConditionals (tokens) ->
 # expressions that lack ending delimiters. **Rewriter** adds the implicit
 # blocks, so it doesn't need to. `)` can close a single-line block,
 # but we need to make sure it's balanced.
-function addImplicitIndentation (tokens) ->
+function addImplicitIndentation(tokens) ->
   i = -1
   while token = tokens[++i]
     [tag] = token
@@ -88,7 +88,7 @@ function addImplicitIndentation (tokens) ->
     default
       seenSwitch = false
       detectEnd tokens, i+1, ok, go
-  function ok (token, i) ->
+  function ok(token, i) ->
     switch token.0
     case \DEDENT            then true
     case \TERMINATOR        then token.1 is not \;
@@ -97,13 +97,13 @@ function addImplicitIndentation (tokens) ->
     case \FINALLY           then tag of <[ TRY CATCH THEN ]>
     case \SWITCH            then not seenSwitch := true
     case <[ CASE DEFAULT ]> then not seenSwitch
-  function go (token, i) ->
+  function go(token, i) ->
     tokens.splice if tokens[i-1]0 is \, then i-1 else i, 0 dedent <<< {token.2}
   void
 
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
-function addImplicitBraces (tokens) ->
+function addImplicitBraces(tokens) ->
   stack = []; i = -1
   while token = tokens[++i]
     unless \: is tag = token.0
@@ -123,7 +123,7 @@ function addImplicitBraces (tokens) ->
     idx -= 2 while tokens[idx-2]?.0 is \COMMENT
     tokens.splice idx, 0 [\{ \{ token.2]
     detectEnd tokens, ++i+1, ok, go
-  function ok (token, i) ->
+  function ok(token, i) ->
     return true if token.1 is \; or \DEDENT is tag = token.0
     switch tag
     case \,          then break
@@ -132,12 +132,12 @@ function addImplicitBraces (tokens) ->
     t1 = tokens[i+1]?.0
     t1 is not (if tag is \, then \TERMINATOR else \COMMENT) and
     \: is not tokens[if t1 is \( then 1 + indexOfPair tokens, i+1 else i+2]?.0
-  function go (token, i) -> tokens.splice i, 0 [\} '' token.2]
+  function go(token, i) -> tokens.splice i, 0 [\} '' token.2]
   void
 
 # Methods may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
-function addImplicitParentheses (tokens) ->
+function addImplicitParentheses(tokens) ->
   i = 0; brackets = []
   while token = tokens[++i]
     [tag] = token; prev = tokens[i-1]
@@ -158,7 +158,7 @@ function addImplicitParentheses (tokens) ->
     tokens.splice --i, 1 if soak = prev.0 is \?
     tokens.splice i++, 0 [\CALL( if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
-  function ok (token, i) ->
+  function ok(token, i) ->
     return true if token.alias and token.1 of <[ && || ]>
     pre = tokens[i-1]
     switch token.0
@@ -175,13 +175,13 @@ function addImplicitParentheses (tokens) ->
     case <[ TERMINATOR POST_IF FOR WHILE BY TO ]>
       return pre.0 is not \,
     false
-  function go (token, i) ->
+  function go(token, i) ->
     tokens.splice i + (token.0 is \DEDENT), 0 [\)CALL '' token.2]
   void
 
 # Ensure that all listed pairs of tokens are correctly balanced throughout
 # the course of the token stream.
-function ensureBalance (tokens) ->
+function ensureBalance(tokens) ->
   levels = {}; olines = {}
   for token of tokens
     [tag] = token
@@ -210,7 +210,7 @@ function ensureBalance (tokens) ->
 #    up balanced in the end.
 # 4. Be careful not to alter array or parentheses delimiters with overzealous
 #    rewriting.
-function rewriteClosingParens (tokens) ->
+function rewriteClosingParens(tokens) ->
   debt  = {}; debt[key] = 0 for key in INVERSES
   stack = []; i = -1
   while token = tokens[++i]
@@ -232,7 +232,7 @@ function rewriteClosingParens (tokens) ->
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand number ranges.
 # - Insert a comma between a primitive argument and a non-primitive one.
-function expandLiterals (tokens) ->
+function expandLiterals(tokens) ->
   i = -1
   while token = tokens[++i]
     switch token.0
@@ -262,7 +262,7 @@ function expandLiterals (tokens) ->
 
 # Seeks `tokens` from index `i` for a token of the same level matching `ok`,
 # then calls `go`.
-function detectEnd (tokens, i, ok, go) ->
+function detectEnd(tokens, i, ok, go) ->
   levels = 0
   while token = tokens[i]
     if      not levels then return go token, i if ok token, i
@@ -274,14 +274,14 @@ function detectEnd (tokens, i, ok, go) ->
   void
 
 # Checks whether or not the previous token is {index,`call`}able.
-function able (tokens, i = tokens.length, call) ->
+function able(tokens, i = tokens.length, call) ->
   [tag] = token = tokens[i-1]
   tag of <[ IDENTIFIER SUPER ] ]> or
   if call
   then token.callable or tag is \? or tag of <[ ) )CALL ]> and token.1
   else tag of <[ STRNUM LITERAL ) )CALL } ]>
 
-function indexOfPair (tokens, i) ->
+function indexOfPair(tokens, i) ->
   level = 1; end = INVERSES[start = tokens[i]0]
   while tokens[++i]
     switch that.0
@@ -289,7 +289,7 @@ function indexOfPair (tokens, i) ->
     case end   then return i unless --level
   -1
 
-function carp (msg, lno) -> throw SyntaxError "#{msg} on line #{-~lno}"
+function carp(msg, lno) -> throw SyntaxError "#{msg} on line #{-~lno}"
 
 ### Constants
 
