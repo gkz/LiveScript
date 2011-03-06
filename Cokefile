@@ -48,33 +48,33 @@ task \install 'install Coco into /usr/local (or --prefix)' (options) ->
 docs = <[ doc.co lang-co.co ]>
 webs = docs.concat \mode-coco.co
 
-task \build 'build the Coco language from source' ->
+task \build 'build lib/ from src/' ->
   ext = /\.co$/
   sources = for file of dir \src
     \src/ + file if ext.test file and file not of webs
   run [\-bco \lib]concat sources
 
-task \build:full 'rebuild the source twice, and run the tests' ->
+task \build:full 'build twice and run tests' ->
   exec 'bin/coke build && bin/coke build && bin/coke test'
   , (err, stdout, stderr) ->
     say stdout.trim() if stdout
     say stderr.trim() if stderr
     throw err         if err
 
-task \build:parser 'rebuild the Jison parser (run "build" first)' ->
+task \build:parser 'build lib/parser.js from lib/grammar.js' ->
   src = require(\./lib/grammar)parser.generate()
         .replace /^[^]+?var (?=parser = {)/ \exports.
         .replace /\ncase \d+:\nbreak;/g ''
         .replace /return parser;[^]+/ ''
   spit \lib/parser.js src
 
-task \build:doc 'rebuild doc tools' ->
+task \build:doc 'build doc/' ->
   <- docs.forEach
   name = it.slice 0 -3; js = require(\./lib/coco)compile slurp \src/ + it
   slobber "doc/#{name}.raw.js"    js
   slobber "doc/#{name}.js" minify js
 
-task \build:browser 'rebuild extras' ->
+task \build:browser 'build extras/' ->
   Coco = require \./lib/coco
   js = Coco.compile slurp \src/mode-coco.co
   slobber \extras/mode-coco.raw.js    js
@@ -129,18 +129,16 @@ task \bench 'quick benchmark of compilation time' ->
   nodes.traverseChildren (-> ++nc; void), true
   console.log msg, nc
 
-task \loc 'count the lines of source code in the Coco compiler' ->
+task \loc 'count the lines of main compiler code' ->
   exec "
     cat #{ coreSources()join ' ' } | \
     grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '
   " (e, out) -> say out.trim()
 
 
-task \test 'run the Coco language test suite' ->
-  runTests require \./lib/coco
+task \test 'run test/' -> runTests require \./lib/coco
 
-task \test:browser
-, 'run the test suite against the merged browser script' ->
+task \test:browser 'run test/ against extras/coco.js' ->
   runTests new -> eval slurp \extras/coco.js \utf8
 
 task \test:json 'test JSON {de,}serialization' ->
