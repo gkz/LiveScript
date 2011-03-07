@@ -38,8 +38,8 @@ exports import
     @tokens = [@last = [\TERMINATOR '' 0]]
     # The current line.
     @line = o.line | 0
-    # The current indentation level, over-indentation and under-outdentation.
-    @indent = @indebt = @dedebt = 0
+    # The current indentation/under-outdentation levels.
+    @indent = @debt = 0
     # The stack of all current indentation levels.
     @indents = []
     # Prepend a newline if the input starts with an indented line,
@@ -78,10 +78,7 @@ exports import
 
   # Matches an identifying literal: variables, keywords, accessors, etc.
   # Check to ensure that JavaScript reserved words aren't being used as
-  # identifiers. Because Coco reserves a handful of keywords that are
-  # allowed in JavaScript, we're careful not to tag them as keywords when
-  # referenced as property names here, so you can still do `jQuery.is()` even
-  # though `is` means `===` otherwise.
+  # identifiers.
   doIdentifier: ->
     return 0 unless match = IDENTIFIER.exec it
     {last} = this
@@ -245,8 +242,8 @@ exports import
     if able @tokens, null
       return 0 unless @last.spaced and re = REGEX.exec it
     # Must be a regex when the last token is unindexable.
-    else unless re = REGEX.exec it
-      @carp 'unterminated regex'
+    else
+      re = REGEX.exec it or @carp 'unterminated regex'
     @token \LITERAL if re.=0 is \// then '/(?:)/' else re
     re.length
 
@@ -269,7 +266,7 @@ exports import
         val = token.1.replace HEREGEX_OMIT, ''
         continue if i and not val
         tokens.push token <<<
-          [\STRNUM string val.replace(bs ||= /\\/g, \\\\\), \']
+          \STRNUM string(val.replace bs ||= /\\/g, \\\\\; \')
       tokens.push [\+- \+ tokens[*-1]2]
     tokens.pop()
     if flags
@@ -317,27 +314,20 @@ exports import
   doLine: ->
     [input, indent] = MULTIDENT.exec it
     @countLines input; @seenFrom = @seenTo = false
-    {last} = this; [tag] = last; noNewline =
-      tag of <[ +- DOT LOGIC MATH COMPARE RELATION IMPORT SHIFT BITWISE ]> or
-      tag is \ASSIGN and ''+last.1 not of <[ = := ]> or
-      LINE_CONTINUER.test it
-    last.eol = last.spaced = true
-    size = indent.length
-    if size and (@emender ||= ///[^#{ indent.charAt 0 }]///)exec indent
+    {last} = this; [tag] = last <<< {+eol, +spaced}
+    return input.length if \
+      tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]> or
+      tag is \ASSIGN and ''+last.1 not of <[ = := ]>
+    if indent and (@emender ||= ///[^#{ indent.charAt 0 }]///)exec indent
       @carp "contaminated indent #{ escape that }"
-    if size - @indebt is @indent
-      noNewline or @newline()
-      return input.length
-    if size > @indent
-      if noNewline
-        @indebt = size - @indent
-        return input.length
-      @indents.push @token \INDENT size - @indent + @dedebt
-      @dedebt = @indebt = 0
+    continued = LINE_CONTINUER.test it
+    if @indent < indent.=length
+      return input.length if continued
+      @indents.push @token \INDENT indent - @indent + @debt
+      @debt = 0
     else
-      @indebt = 0
-      @dedent @indent - size, noNewline
-    @indent = size
+      @dedent @indent - indent, continued
+    @<<<{indent}
     input.length
 
   # Consumes non-newline whitespaces and a line comment after them if any.
@@ -411,20 +401,21 @@ exports import
 
   #### Token Manipulators
 
-  # Records a dedent token, or multiple tokens if we happen to be moving back
-  # inwards past several recorded indents.
-  dedent: (moveOut, noNewline) ->
-    while moveOut > 0
+  # Records DEDENT(s).
+  # Multiple if we are moving back inwards past several recorded INDENTs.
+  dedent: (tab, noNewline) ->
+    while tab > 0
       unless idt = @indents[*-1]
-        moveOut = 0
-      else if idt <= @dedebt
-        moveOut -= idt
-        @dedebt -= idt
+        tab = 0
+      else if idt <= @debt
+        tab   -= idt
+        @debt -= idt
       else
-        moveOut -= @token \DEDENT @indents.pop() - @dedebt
-        @dedebt  = 0
-    @dedebt -= moveOut
-    @newline() unless noNewline
+        tab  -= @token \DEDENT @indents.pop() - @debt
+        @debt = 0
+    @debt -= tab
+    noNewline or @newline()
+    void
 
   # Generates a newline token. Consecutive newlines get merged together.
   newline: -> @token \TERMINATOR \\n unless @last.0 is \TERMINATOR

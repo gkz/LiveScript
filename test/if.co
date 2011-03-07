@@ -66,20 +66,20 @@ eq i, 2
 eq 2, do -> if 0 then -> 1 else 2
 
 
-# With a suppressed indentation via assignment.
-eq 70,
-  if      false then 10
-  else if false    then 20
-  else if 0     then 30
-  else if NaN   then 40
-  else               50 +
-       if false then 10
-       else          20
+# With suppressed indentations.
+eq 6,
+  if 0 then 1 \
+       else 2 +
+         if 3 then 4 \
+         else      5
 
-
-if 'tight formatting with leading `then` is allowed'
-then ok    'yay'
-else throw 'boo'
+# With leading `then`.
+if 0
+then ok false
+else
+  eq 2, if 1
+  then 2
+  else 3
 
 
 # [coffee#738](https://github.com/jashkenas/coffee-script/issues/738)

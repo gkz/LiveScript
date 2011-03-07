@@ -22,7 +22,7 @@ module.exports = (
     MULTI = /[*+]/
     flags = for name in flags
       [desc, arg, abbr] = []concat flags[name]
-      {name, desc, arg, abbr} <<<
+      {name, desc, arg, abbr} <<< \
       long  : \-- + name
       short : abbr != 0 and "-#{ abbr or name }"slice 0 2
       multi : !!arg and MULTI.test arg
@@ -47,7 +47,7 @@ module.exports = (
       else  options[flag.name] = value
       `continue ARGS;`
     if FLAG.test arg then unknowns.push arg else break
-  options import
+  options import \
   $flags    : flags
   $args     : args.slice i
   $literals : literals or []
