@@ -50,23 +50,22 @@ exports import
     # returning the number of characters it has consumed.
     while code.=slice i
       switch code.charAt 0
-      case [' ' \#]
-        i = @spaceToken code
-      case \\n then i = @lineToken      code
-      case \\  then i = @backslashToken code
-      case \'  then i = @heredocToken code, \' or @singleStringToken code
-      case \"  then i = @heredocToken code, \" or @doubleStringToken code
+      case ' ' then i = @doSpace     code
+      case \\n then i = @doLine      code
+      case \\  then i = @doBackslash code
+      case \'  then i = @doHeredoc code, \' or @singleStringToken code
+      case \"  then i = @doHeredoc code, \" or @doubleStringToken code
       case \<
-        i = @[if \[ is code.charAt 1 then \wordsToken else \literalToken] code
+        i = @[if \[ is code.charAt 1 then \doWords else \doLiteral] code
       case \/
         i = if \* is code.charAt 1
-        then @commentToken code
+        then @doComment code
         else if \// is code.substr 1 2
-        then @heregexToken code
-        else @regexToken code or @literalToken code
-      case \` then i = @jsToken code
-      default i = @identifierToken code or @numberToken code or
-                  @literalToken    code or @spaceToken  code
+        then @doHeregex code
+        else @doRegex code or @doLiteral code
+      case \` then i = @doJS code
+      default i = @doIdentifier code or @doNumber code or
+                  @doLiteral    code or @doSpace  code
     # Close up all remaining open blocks.
     @dedent @indent
     # Dispose initial TERMINATOR.
@@ -83,7 +82,7 @@ exports import
   # allowed in JavaScript, we're careful not to tag them as keywords when
   # referenced as property names here, so you can still do `jQuery.is()` even
   # though `is` means `===` otherwise.
-  identifierToken: ->
+  doIdentifier: ->
     return 0 unless match = IDENTIFIER.exec it
     {last} = this
     switch id = match.1
@@ -166,7 +165,7 @@ exports import
     match.0.length
 
   # Matches a number, including decimal, hex and exponential notation.
-  numberToken: ->
+  doNumber: ->
     return 0 unless match = NUMBER.exec it
     num = match.3 or match.0; {last} = this
     switch num.charAt 0
@@ -205,7 +204,7 @@ exports import
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
   # preserve whitespace, but ignore indentation to the left.
-  heredocToken: (code, q) ->
+  doHeredoc: (code, q) ->
     return 0 unless code.slice(1 3) is q+q and ~end = code.indexOf q+q+q, 3
     txt = code.slice 3 end
     lnl = txt is not doc = txt.replace /\n[^\n\S]*$/ ''
@@ -226,22 +225,22 @@ exports import
     txt.length + 6
 
   # Matches block comments.
-  commentToken: ->
+  doComment: ->
     text = if ~end = it.indexOf \*/ 2 then it.slice 0 end+2 else it + \*/
     if @last.0 of <[ TERMINATOR INDENT THEN ]>
     then @token \COMMENT detab text, @indent; @token \TERMINATOR \\n
     else @last.spaced = true
     @countLines(text)length
 
-  # Matches JavaScript interpolated directly into the source via backticks.
-  jsToken: ->
+  # Matches embedded JavaScript.
+  doJS: ->
     @carp 'unterminated JS literal' unless js = JSTOKEN.exec it
     @token \LITERAL new String detab (js.=0)slice(1 -1), @indent
     @last.1.js = true
     @countLines(js)length
 
   # Matches a regular expression literal, aka regex.
-  regexToken: ->
+  doRegex: ->
     # Distinguish from division operator.
     if able @tokens, null
       return 0 unless @last.spaced and re = REGEX.exec it
@@ -252,7 +251,7 @@ exports import
     re.length
 
   # Matches a multiline and extended regex literal.
-  heregexToken: ->
+  doHeregex: ->
     @carp 'unterminated heregex' unless match = HEREGEX.exec it
     [heregex, body, flags] = match
     flags = '' if dynaflag = flags is \?
@@ -282,7 +281,7 @@ exports import
     heregex.length
 
   # Matches a word literal or ignores an escaped whitespace.
-  backslashToken: ->
+  doBackslash: ->
     unless word = WORD.exec it
       ++@line if \\n is it.charAt 1
       return 2
@@ -291,7 +290,7 @@ exports import
     word.length + 1
 
   # Matches a words literal, a syntax sugar for a list of strings.
-  wordsToken: ->
+  doWords: ->
     @carp 'unterminated words' unless ~end = it.indexOf \]> 2
     @token \DOT '' if @able()
     @token \[ \[
@@ -315,7 +314,7 @@ exports import
   #
   # Keeps track of the level of indentation, because a single dedent
   # can close multiple indents, so we need to know how far in we happen to be.
-  lineToken: ->
+  doLine: ->
     [input, indent] = MULTIDENT.exec it
     @countLines input; @seenFrom = @seenTo = false
     {last} = this; [tag] = last; noNewline =
@@ -342,7 +341,7 @@ exports import
     input.length
 
   # Consumes non-newline whitespaces and a line comment after them if any.
-  spaceToken: ->
+  doSpace: ->
     # Tag the previous token as being `.spaced`,
     # because there are cases where it makes a difference.
     (match = SPACE.exec it) and (@last.spaced = true; match.0.length)
@@ -352,7 +351,7 @@ exports import
   # the proper order of operations. There are some symbols that we tag specially
   # here. `;` and newlines are both treated as a TERMINATOR, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
-  literalToken: ->
+  doLiteral: ->
     return 0 unless val = SYMBOL.exec it
     switch tag = val.=0
     case <[ . ?. ~. ]>                 then tag = \DOT
@@ -605,7 +604,7 @@ SYMBOL = /// ^ (?
 | <(?: <(?: = | <<? )? | [-~])  # left shift / import / backcall
 | >>>?=?                        # rite shift
 | @@                            # arguments shorthand
-| \S
+| [^\s#]
 ) ///
 SPACE     = /^(?=.)[^\n\S]*(?:#.*)?/
 MULTIDENT = /^(?:\s*#.*)*(?:\n([^\n\S]*))+/
