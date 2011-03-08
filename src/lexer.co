@@ -122,7 +122,7 @@ exports import
       switch tag = id.toUpperCase()
       case \FOR    then @seenFor = true; fallthrough
       case \THEN   then @seenFrom = @seenTo = false
-      case \IMPORT then id  = \<<<
+      case \IMPORT then id = \<<<
       case <[ TRUE FALSE NULL VOID ARGUMENTS DEBUGGER ]> then tag = \LITERAL
       case <[ NEW DO TYPEOF DELETE ]> then tag = \UNARY
       case <[ BREAK       CONTINUE ]> then tag = \STATEMENT
@@ -226,7 +226,7 @@ exports import
 
   # Matches embedded JavaScript.
   doJS: ->
-    @carp 'unterminated JS literal' unless js = JSTOKEN.exec it
+    js = JSTOKEN.exec it or @carp 'unterminated JS literal'
     @token \LITERAL new String detab (js.=0)slice(1 -1), @indent
     @last.1.js = true
     @countLines(js)length
@@ -244,8 +244,7 @@ exports import
 
   # Matches a multiline and extended regex literal.
   doHeregex: ->
-    @carp 'unterminated heregex' unless match = HEREGEX.exec it
-    [heregex, body, flags] = match
+    [heregex, body, flags] = HEREGEX.exec it or @carp 'unterminated heregex'
     flags = '' if dynaflag = flags is \?
     if 0 > body.indexOf \#{
       body.=replace(HEREGEX_OMIT, '')replace(/\//g \\\/)
@@ -307,22 +306,25 @@ exports import
   # Keeps track of the level of indentation, because a single dedent
   # can close multiple indents, so we need to know how far in we happen to be.
   doLine: ->
-    [input, indent] = MULTIDENT.exec it
-    @countLines input; @seenFrom = @seenTo = false
-    {last} = this; [tag] = last <<< {+eol, +spaced}
-    return input.length if \
-      tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]> or
-      tag is \ASSIGN and ''+last.1 not of <[ = := ]>
-    if indent and (@emender ||= ///[^#{ indent.charAt 0 }]///)exec indent
-      @carp "contaminated indent #{ escape that }"
-    continued = LINE_CONTINUER.test it
-    if @indent < indent.=length
-      return input.length if continued
-      @indents.push @token \INDENT indent - @indent + @debt
-      @debt = 0
+    [input, tabs] = MULTIDENT.exec it
+    @countLines input
+    {last} = this; last <<< {+eol, +spaced}
+    indent = tabs.length
+    if indent < @indent
+      @dedent @indent - indent, LINE_CONTINUER.test it
     else
-      @dedent @indent - indent, continued
-    @<<<{indent}
+      if tabs and (@emender ||= ///[^#{ tabs.charAt 0 }]///)exec tabs
+        @carp "contaminated indent #{ escape that }"
+      if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := ]>     or
+         tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]> or
+         LINE_CONTINUER.test it
+        return input.length
+      if @indent < indent
+        @indents.push @token \INDENT indent - @indent + @debt
+        @debt = 0
+      else
+        @newline()
+    @<<<{indent, -seenFrom, -seenTo}
     input.length
 
   # Consumes non-newline whitespaces and a line comment after them if any.
