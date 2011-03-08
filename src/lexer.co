@@ -39,8 +39,8 @@ exports import
     @tokens = [@last = [\TERMINATOR '' 0]]
     # The current line. Starts from -1 to setoff the prepended newline.
     @line = ~-o.line
-    # The current indentation/under-dedentation levels.
-    @indent = @debt = 0
+    # The current indentation level.
+    @indent = 0
     # The stack of all current indentation levels.
     @indents = []
     # Check the first character of current `code`, then call appropriate
@@ -324,10 +324,8 @@ exports import
          LINE_CONTINUER.test it
         return length
       if @indent < indent
-        @indents.push @token \INDENT indent - @indent + @debt
-        @debt = 0
-      else
-        @newline()
+      then @indents.push @token \INDENT indent - @indent
+      else @newline()
     @<<<{indent, -seenFrom, -seenTo}
     length
 
