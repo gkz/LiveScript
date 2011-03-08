@@ -623,9 +623,10 @@ class exports.Op extends Node
       else Parens Call.make first
     case \new
       first.newed = true
-      if first instanceof Chain
-        for node of first.tails then if node instanceof Call
-          node.new = true
+      if (chain = first.base or first) instanceof Chain
+        chain.=head.base while chain.head.base instanceof Chain
+        for node of chain.tails then if node instanceof Call
+          node <<< {\new}
           return first
     @<<<{op, first, second, post}
 
