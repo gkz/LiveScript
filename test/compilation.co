@@ -104,9 +104,9 @@ STRNUM,2,2
 TERMINATOR,
 ,3
 STRNUM,3,3
-DEDENT,2,3
-),),3
-+-,+,3
+DEDENT,2,4
+),),4
++-,+,4
 STRNUM," 4",4
 ),,4
 TERMINATOR,

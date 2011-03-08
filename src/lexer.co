@@ -32,19 +32,17 @@ exports import
   # we move forward within the code past the token, and begin again.
   ) -> exports{}tokenize code || '', options || {}
   tokenize: (code, o) ->
-    code.=replace(/\r/g '')replace(/\s+$/ '')
+    # Prepend a newline to handle leading INDENT.
+    code = \\n + code.replace /\r/g ''
     # Stream of parsed tokens,
     # initialized with a TERMINATOR token to ensure `@last` always exists.
     @tokens = [@last = [\TERMINATOR '' 0]]
-    # The current line.
-    @line = o.line | 0
-    # The current indentation/under-outdentation levels.
+    # The current line. Starts from -1 to setoff the prepended newline.
+    @line = ~-o.line
+    # The current indentation/under-dedentation levels.
     @indent = @debt = 0
     # The stack of all current indentation levels.
     @indents = []
-    # Prepend a newline if the input starts with an indented line,
-    # so that INDENT is recorded properly.
-    if /^[^\n\S]+[^\s#]/test code then code = \\n + code; --@line
     # Check the first character of current `code`, then call appropriate
     # tokenizers based on it. Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
