@@ -294,14 +294,13 @@ function carp(msg, lno) -> throw SyntaxError "#{msg} on line #{-~lno}"
 ### Constants
 
 # List of the token pairs that must be balanced.
-BALANCED_PAIRS = [
-       <[ ( ) ]>
-       <[ [ ] ]>
-       <[ { } ]>
+BALANCED_PAIRS =
+  <[      ( )      ]>
+  <[      [ ]      ]>
+  <[      { }      ]>
   <[  CALL( )CALL  ]>
   <[ PARAM( )PARAM ]>
   <[ INDENT DEDENT ]>
-]
 
 # The inverse mappings of `BALANCED_PAIRS` we're trying to fix up, so we can
 # look things up from either end.

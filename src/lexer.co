@@ -66,6 +66,7 @@ exports import
                   @doLiteral    code or @doSpace  code
     # Close up all remaining open blocks.
     @dedent @indent
+    @newline()
     # Dispose initial TERMINATOR.
     @tokens.shift()
     # Rewrite the token stream unless explicitly asked not to.
@@ -308,24 +309,27 @@ exports import
   doLine: ->
     [input, tabs] = MULTIDENT.exec it
     @countLines input
-    {last} = this; last <<< {+eol, +spaced}
+    {last} = this; {length} = input
+    last <<< {+eol, +spaced}
+    return length if length >= it.length
     indent = tabs.length
     if indent < @indent
-      @dedent @indent - indent, LINE_CONTINUER.test it
+      @dedent @indent - indent
+      LINE_CONTINUER.test it or @newline()
     else
       if tabs and (@emender ||= ///[^#{ tabs.charAt 0 }]///)exec tabs
         @carp "contaminated indent #{ escape that }"
       if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := ]>     or
          tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]> or
          LINE_CONTINUER.test it
-        return input.length
+        return length
       if @indent < indent
         @indents.push @token \INDENT indent - @indent + @debt
         @debt = 0
       else
         @newline()
     @<<<{indent, -seenFrom, -seenTo}
-    input.length
+    length
 
   # Consumes non-newline whitespaces and a line comment after them if any.
   doSpace: ->
@@ -398,20 +402,12 @@ exports import
 
   #### Token Manipulators
 
-  # Records DEDENT(s).
+  # Records DEDENT(s) given tab `count`.
   # Multiple if we are moving back inwards past several recorded INDENTs.
-  dedent: (tab, noNewline) ->
-    while tab > 0
-      unless idt = @indents[*-1]
-        tab = 0
-      else if idt <= @debt
-        tab   -= idt
-        @debt -= idt
-      else
-        tab  -= @token \DEDENT @indents.pop() - @debt
-        @debt = 0
-    @debt -= tab
-    noNewline or @newline()
+  dedent: (count) ->
+    while count > 0 and indent = @indents.pop()
+      @carp "unmatched dedent (#{count} for #{indent})" if count < indent
+      count -= @token \DEDENT indent
     void
 
   # Generates a newline token. Consecutive newlines get merged together.

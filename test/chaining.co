@@ -32,12 +32,11 @@ eq 32,
 
 
 # Ensure that indented array literals don't trigger whitespace rewriting.
-func = -> eq arguments.length, 1
-func(
-  [[[[[],
-                []],
-              [[]]]],
-    []])
+eq 2 [
+  [[[[],
+     []],
+  [[]]]],
+[]].length
 
 eq 'Hello', String(
               """

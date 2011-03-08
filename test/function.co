@@ -154,50 +154,23 @@ counter =
     this
 
 counter
-  .tick ->
-    3
-  .tick ->
-    2
-  .tick ->
-    1
+.tick ->
+   3
+.tick ->
+  2
+.tick ->
+ 1
 
 eq counter.results.join(' '), '3 2 1'
 
 
-# Make incorrect indentation safe.
-func = ->
-  obj = {
-          key: 10
-        }
-  obj.key - 5
-
-eq func(), 5
-
-
-# Chained calls with indented implicit object literals.
-result = null
-obj =
-  method: (val)  -> this
-  second: (hash) -> result := hash.three
-obj
-  .method(
-    101
-  ).second(
-    one:
-      two: 2
-    three: 3
-  )
-eq result, 3
-
-
 # Newline-supressed call chains with nested functions.
-obj  =
-  call: -> this
+obj  = call: -> this
 func = ->
   obj
-    .call ->
-      one two
-    .call ->
+  .call ->
+    one two
+  .call ->
       three four
   101
 
