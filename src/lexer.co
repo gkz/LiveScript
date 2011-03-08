@@ -22,8 +22,8 @@ exports import
   lex: (
     # Coco source to be parsed into an array of tokens.
     code
-    #  - `.rewrite` <br> Suppresses [rewriting](#rewriter) if `false`.
-    #  - `.line`    <br> Specifies the starting line. Defaults to `0`.
+    #  - `.raw`  <br> Suppresses [rewriting](#rewriter) if truthy.
+    #  - `.line` <br> Specifies the starting line. Defaults to `0`.
     options
   # `tokenize` is Lexer's main method. Scan by attempting to match tokens
   # one at a time, using a regular expression anchored at the start of the
@@ -64,13 +64,13 @@ exports import
       case \` then i = @doJS code
       default i = @doIdentifier code or @doNumber code or
                   @doLiteral    code or @doSpace  code
-    # Close up all remaining open blocks.
-    @dedent @indent
-    @newline()
     # Dispose initial TERMINATOR.
     @tokens.shift()
+    # Close up all remaining open blocks.
+    @dedent @indent
+    o.inter or @newline()
     # Rewrite the token stream unless explicitly asked not to.
-    rewrite @tokens if o.rewrite != 0
+    o.raw or rewrite @tokens
     @tokens
 
   #### Tokenizers
@@ -460,14 +460,14 @@ exports import
         ++i
         continue
       continue unless that is \# and \{ is str.charAt i+1
-      if pi < i or nested and s >= ''  # "#{0}#{1}" -> 0 + "" + 1
-        ts.push [\S s = str.slice pi, i; @line]
+      # "#{0}#{1}" -> 0 + "" + 1
+      if pi < i or nested and s >= ''
+        ts.push [\S; s = str.slice pi, i; @line]
         @countLines s
       code = @balancedString str.slice(i+1), \}
       pi   = 1 + i += code.length
       continue unless code.=slice 1 -1
-      nested = @lex code, {@line, -rewrite}
-      nested.pop()
+      nested = @lex code, {@line, +inter, +raw}
       nested.shift() if nested.0?.0 is \TERMINATOR
       if len = nested.length
         if len > 1

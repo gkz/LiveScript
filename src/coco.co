@@ -28,7 +28,7 @@ Coco import
   tokens: lex
 
   # Same as `tokens`, except that this skips [rewriting](#rewriter).
-  lex: -> lex it, {-rewrite}
+  lex: -> lex it, {+raw}
 
 Coco.nodes{parse, fromJSON} = nodes
 

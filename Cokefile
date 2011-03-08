@@ -109,15 +109,14 @@ coreSources = ->
   "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
 
 task \bench 'quick benchmark of compilation time' ->
-  Lexer    = require \./lib/lexer
-  Rewriter = require \./lib/rewriter
   Coco     = require \./lib/coco
+  Rewriter = require \./lib/rewriter
   co     = coreSources()map(-> slurp it)join \\n
-  fmt    = -> "#{bold}#{ "   #{it}".slice -4 }#{reset} ms"
+  fmt    = -> "#{bold}#{ "   #{it}"slice -4 }#{reset} ms"
   total  = nc = 0
   now    = Date.now()
   time   = -> total += ms = -(now - now := Date.now()); fmt ms
-  tokens = Lexer.lex co, {-rewrite}
+  tokens = Coco.lex co
   msg    = "Lex     #{time()} (#{tokens.length} tokens)\n"
   Rewriter.rewrite tokens
   msg   += "Rewrite #{time()} (#{tokens.length} tokens)\n"
@@ -172,21 +171,21 @@ function runTests(Coco) ->
     catch e
       ++failedTests
       return say e unless stk = e?.stack
-      msg = '' + /^.+/.exec stk
-      if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/.exec msg
-        m[i] = tint m[i].replace(/\\n/g \\n), bold for i of [2 4]
+      msg = '' + /^.+/exec stk
+      if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
+        m[i] = tint m[i]replace(/\\n/g \\n), bold for i of [2 4]
         msg  = m.slice(1)join \\n
       {1: row, 2: col} = ///#{filename}:(\d+):(\d+)\)?$///m.exec(stk) or ''
-      say tint "failed #{filename}:#{row--}:#{col--}", red
+      say tint "failed #{filename}:#{row--}:#{col--}" red
       if row >= 0
         code = Coco.compile code
-      else if /\bon line (\d+)\b/.test msg
+      else if /\bon line (\d+)\b/test msg
         row = RegExp.$1 - 1
         col = 0
       else
         return say stk
       say msg
       {(row): line} = lines = code.split \\n
-      say lines.slice(row-8, row+0)join \\n
+      say lines.slice(row-8 row+0)join \\n
       say line .slice(0 col) + tint line.slice(col), bold
-      say lines.slice(row+1, row+9)join \\n
+      say lines.slice(row+1 row+9)join \\n

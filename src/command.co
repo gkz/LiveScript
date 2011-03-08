@@ -87,7 +87,7 @@ function compileScript(file, input, base) ->
   t = {file, input, options: filename: file, bare: !!o.bare}
   try
     Coco.emit \lex t
-    t.tokens = Coco.tokens t.input, rewrite: !o.lex
+    t.tokens = Coco.tokens t.input, raw: o.lex
     if o.lex or o.tokens
       printTokens t.tokens
       throw \ok
