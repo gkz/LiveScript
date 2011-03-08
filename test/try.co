@@ -36,5 +36,12 @@ finally
   #!nothing
 
 
+# Nested implicit indentations
 eq 1, do -> try 1
 eq 2, do -> try do -> throw 1 catch do -> 2 finally
+
+
+# Empty `throw`
+try throw
+catch
+  eq null e

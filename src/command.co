@@ -90,15 +90,15 @@ function compileScript(file, input, base) ->
     t.tokens = Coco.tokens t.input, raw: o.lex
     if o.lex or o.tokens
       printTokens t.tokens
-      throw \ok
+      throw
     Coco.emit \parse t
     t.nodes = Coco.nodes t.tokens
     if o.nodes
       say t.nodes.toString()trim()
-      throw \ok
+      throw
     if o.json
       say t.nodes.stringify 1
-      throw \ok
+      throw
     Coco.emit \compile t
     t.output = t.nodes.compileRoot t.options
     if o.run
@@ -111,12 +111,12 @@ function compileScript(file, input, base) ->
       if o.print
       then say t.output.trimRight()
       else writeJs t.file, t.output, base
-  catch unless e is \ok
+  catch if e
     if Coco.listeners(\failure)length
       Coco.emit \failure e, t
     else
       warn "Failed at: #{file}\n" if file
-      (if o.watch then warn else die) e?.stack || e
+      (if o.watch then warn else die) e.stack || e
     return
   Coco.emit \success t
 

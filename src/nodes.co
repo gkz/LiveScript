@@ -1214,7 +1214,8 @@ class exports.Throw extends Statement
 
   jumps: NO
 
-  compileNode: (o) -> "throw #{ @it.compile o, LEVEL_PAREN };"
+  compileNode: (o) ->
+    "throw #{ (@it or Literal \null)compile o, LEVEL_PAREN };"
 
 #### Return
 class exports.Return extends Throw

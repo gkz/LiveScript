@@ -137,6 +137,7 @@ bnf =
     o 'THROW  Expression' -> new Throw $2
     o \STATEMENT          -> L new Statement $1
     o \RETURN             -> L Return()
+    o \THROW              -> L new Throw
 
     o 'SWITCH Expression Cases'               -> new Switch $2, $3
     o 'SWITCH Expression Cases DEFAULT Block' -> new Switch $2, $3, $5
