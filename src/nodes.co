@@ -1365,7 +1365,7 @@ class exports.For extends While
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Node
-  (@attempt, @thrown, @recovery, @ensure) ->
+  (@attempt, @thrown ? \_e, @recovery, @ensure) ->
 
   children: <[ attempt recovery ensure ]>
 
@@ -1386,9 +1386,9 @@ class exports.Try extends Node
     o.indent += TAB
     code = 'try ' + @compileBlock o, @attempt
     if @recovery or not @ensure
-      code += " catch (#{ @thrown or \_e }) " + @compileBlock o, @recovery
+      code += " catch (#{ @thrown or \e }) " + @compileBlock o, @recovery
     if @ensure
-      code += " finally " + @compileBlock o, @ensure
+      code += ' finally ' + @compileBlock o, @ensure
     code
 
 #### Switch

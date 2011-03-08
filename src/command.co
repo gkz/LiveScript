@@ -111,7 +111,7 @@ function compileScript(file, input, base) ->
       if o.print
       then say t.output.trimRight()
       else writeJs t.file, t.output, base
-  catch e unless e is \ok
+  catch unless e is \ok
     if Coco.listeners(\failure)length
       Coco.emit \failure e, t
     else
@@ -188,7 +188,7 @@ function repl ->
     try
       _ = Script.runInContext Coco.compile(code.slice 1; {+bare, +repl}), context
       _ is void or console.dir context._ = _
-    catch e say e
+    catch then say e
     repl.prompt()
   process.on \uncaughtException -> say \\n + (it?.stack or it)
   __defineGetter__ \quit -> process.exit 0
