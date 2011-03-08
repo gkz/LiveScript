@@ -51,8 +51,8 @@ exports import
       case ' ' then i = @doSpace     code
       case \\n then i = @doLine      code
       case \\  then i = @doBackslash code
-      case \'  then i = @doHeredoc code, \' or @singleStringToken code
-      case \"  then i = @doHeredoc code, \" or @doubleStringToken code
+      case \'  then i = @doHeredoc code, \' or @doString code
+      case \"  then i = @doHeredoc code, \" or @doString code, 2q
       case \<
         i = @[if \[ is code.charAt 1 then \doWords else \doLiteral] code
       case \/
@@ -182,19 +182,16 @@ exports import
     else if sign then @token \STRNUM num else @strnum num
     match.0.length
 
-  # Matches a normal string without interpolations.
-  singleStringToken: ->
-    @carp 'unterminated string' unless str = SIMPLESTR.exec it
-    @strnum unlines str.=0
-    @countLines(str)length
-
-  # Ensures that quotation marks are balanced within
-  # the string's contents, and within nested interpolations.
-  doubleStringToken: ->
-    str = @balancedString it, \"
-    if 0 < str.indexOf \#{ 1
-    then @interpolate str.slice(1 -1), unlines
-    else @strnum unlines str
+  # Matches a normal string literal.
+  doString: (code, double) ->
+    if double
+      str = @balancedString code, \"
+      if 0 < str.indexOf \#{ 1
+        @interpolate str.slice(1 -1), unlines
+        return str.length
+    else
+      [str] = SIMPLESTR.exec code or @carp 'unterminated string'
+    @strnum unlines str
     @countLines(str)length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
