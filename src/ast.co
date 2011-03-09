@@ -697,6 +697,7 @@ class exports.Op extends Node
     case <[ ++ -- ]>
       if first instanceof Var and not o.scope.check first.value, true
         @carp "modification of undeclared variable \"#{first.value}\""
+      first{front} = this if @post
     case \classof
       return "#{ utility \toString }.call(
               #{ first.compile o, LEVEL_LIST }).slice(8, -1)"
@@ -765,7 +766,7 @@ class exports.Assign extends Node
     if left.hasDefault()
       right = Op left.op, right, left.second
       left.=first
-    name = left.compile o, LEVEL_LIST
+    name = (left <<< {+front})compile o, LEVEL_LIST
     # Keep track of the name of the base object
     # we've been assigned to, for correct internal references.
     if right instanceof [Fun, Class] and METHOD_DEF.exec name

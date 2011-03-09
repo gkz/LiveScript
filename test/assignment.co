@@ -202,6 +202,12 @@ x = 'y'
 eq x, 49344
 
 
+{}p   = 0
+[{}p] = 1
+{}p++
+ok 'LHS should take care frontness'
+
+
 throws 'indestructurable assignment ?= on line 1', -> Coco.compile '[_] ?= [_]'
 
 
