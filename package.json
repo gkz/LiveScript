@@ -2,7 +2,7 @@
 ,"description" : "Unfancy CoffeeScript"
 ,"keywords"    : ["language", "compiler", "coffeescript", "javascript"]
 ,"author"      : "satyr <murky.satyr@gmail.com> (http://satyr.github.com)"
-,"version"     : "0.3.2"
+,"version"     : "0.4.0b"
 ,"homepage"    : "http://satyr.github.com/coco/"
 ,"repository"  : {"type": "git", "url": "git://github.com/satyr/coco.git"}
 ,"licenses"    :
@@ -13,7 +13,7 @@
 ,"directories" : {"lib" : "./lib"  }
 ,"main" : "./lib/coco"
 ,"bin"  :
- {"coco" : "./lib/command"
- ,"coke" : "./lib/coke"
+ {"coco" : "./lib/command.js"
+ ,"coke" : "./lib/coke.js"
  }
 }
