@@ -37,7 +37,6 @@ o.run = not (o.compile or o.print)
 o.print   ||= o.eval or o.stdin and o.compile
 o.compile ||= o.output
 o.bare    ||= o.eval and o.run
-sources = o.$args
 
 # Many flags cause us to divert before compiling anything.
 # Arguments passed after `--` will be passed verbatim to your script as
@@ -47,17 +46,20 @@ case o.nodejs  then do forkNode
 case o.version then do version
 case o.help    then do help
 default
+  {$args} = o
+  {argv}  = process
+  argv.0  = argv.1
   if o.require
     ({filename} = module)filename = \.
     that.forEach require
     module <<< {filename}
   switch
-  case o.interactive then repl()
-  case o.stdin       then compileStdin()
-  case o.eval        then compileScript '' sources.join \\n
-  case sources.length
+  case o.interactive then argv.1 = \repl  ; repl()
+  case o.stdin       then argv.1 = \stdin ; compileStdin()
+  case o.eval        then argv.1 = \eval  ; compileScript '' $args.join \\n
+  case $args.length
     process.argv.splice 2 9e9,
-      ...if o.run then sources.splice 1 else [], ...o.$literals
+      ...if o.run then $args.splice 1 else [], ...o.$literals
     compileScripts()
   default version(); help(); repl()
 
@@ -65,7 +67,7 @@ default
 # compile them. If a directory is passed, recursively compile all
 # _.co_ files in it and all subdirectories.
 function compileScripts ->
-  sources.forEach (source) ->
+  $args.forEach (source) ->
     <- path.exists source
     it or die "No such file or directory: #{source}"
     walk source, path.normalize(source), true
