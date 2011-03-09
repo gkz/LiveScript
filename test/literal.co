@@ -161,11 +161,12 @@ o =
 
 eq '1,2,3,4,5' '' + [o.a, o.b, o.c.d, o.e.f.g, o.0]
 
-obj =
-  a: 2,
-  b: 3,
+# Implicit call should step over INDENT after `:`.
+o = Object a:
+  b: 2,
+  c: 3,
 
-eq 6, obj.a * obj.b
+eq 6, o.a.b * o.a.c
 
 
 /* Top-level braceless object */
