@@ -80,7 +80,7 @@ task \build:browser 'build extras/' ->
   slobber \extras/mode-coco.raw.js    js
   slobber \extras/mode-coco.js minify js
   co = ''
-  for name of <[ rewriter lexer nodes coco ]>
+  for name of <[ rewriter lexer ast coco ]>
     code = slurp("src/#{name}.co")replace /^./mg '  $&'
     co += "do (exports = require'./#{name}' = {}) ->\n#{code}\n  void\n"
   slobber \extras/coco.raw.js js = """
@@ -106,7 +106,7 @@ task \build:browser 'build extras/' ->
 
 
 coreSources = ->
-  "src/#{src}.co" for src of <[ coco grammar lexer nodes rewriter ]>
+  "src/#{src}.co" for src of <[ coco grammar lexer ast rewriter ]>
 
 task \bench 'quick benchmark of compilation time' ->
   Coco     = require \./lib/coco
@@ -120,12 +120,12 @@ task \bench 'quick benchmark of compilation time' ->
   msg    = "Lex     #{time()} (#{tokens.length} tokens)\n"
   Rewriter.rewrite tokens
   msg   += "Rewrite #{time()} (#{tokens.length} tokens)\n"
-  nodes  = Coco.nodes tokens
+  tree   = Coco.ast tokens
   msg   += "Parse   #{time()} (%s nodes)\n"
-  js     = nodes.compileRoot {+bare}
+  js     = tree.compileRoot {+bare}
   msg   += "Compile #{time()} (#{js.length} chars)\n" +
            "TOTAL   #{ fmt total }"
-  nodes.traverseChildren (-> ++nc; void), true
+  tree.traverseChildren (-> ++nc; void), true
   console.log msg, nc
 
 task \loc 'count the lines of main compiler code' ->
@@ -141,10 +141,10 @@ task \test:browser 'run test/ against extras/coco.js' ->
   runTests new -> eval slurp \extras/coco.js \utf8
 
 task \test:json 'test JSON {de,}serialization' ->
-  {nodes} = require \./lib/coco
-  json = nodes(slurp \src/nodes.co)stringify()
-  code = nodes.parse(json)compileRoot {+bare}
-  exec 'diff -u lib/nodes.js -' (e, out) ->
+  {ast} = require \./lib/coco
+  json = ast(slurp \src/ast.co)stringify()
+  code = ast.parse(json)compileRoot {+bare}
+  exec 'diff -u lib/ast.js -' (e, out) ->
     say out.trim() || tint \ok
   .stdin.end code
 

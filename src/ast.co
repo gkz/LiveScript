@@ -134,7 +134,7 @@ class Node
   show: String
 
   # String representation of the node for inspecting the parse tree.
-  # This is what `coco --nodes` prints out.
+  # This is what `coco --ast` prints out.
   toString: (idt or '') ->
     tree = \\n + idt + @constructor.displayName
     tree += ' ' + that if @show()

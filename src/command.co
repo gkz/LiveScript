@@ -2,14 +2,14 @@
 # The `coco` utility.
 
 global import
-  Coco : require(\./coco) import all require(\events)EventEmitter::
+  Coco : require \./coco
   fs   : require \fs
   path : require \path
   say  : -> process.stdout.write              it + \\n
   warn : -> process.binding(\stdio)writeError it + \\n
   die  : -> warn it; process.exit 1
 
-# Use the [OptionParser](#optparse) to extract all options from `process.argv`.
+# Use the [option parser](#optparse).
 o = require(\./optparse) do
   compile     : 'compile to JavaScript and save as .js files'
   interactive : 'run an interactive Coco REPL'
@@ -22,9 +22,9 @@ o = require(\./optparse) do
   bare        : 'compile without the top-level function wrapper'
   lex         : 'print the tokens the lexer produces'
   tokens      : 'print the tokens the rewriter produces'
-  nodes       : 'print the parse tree the parser produces'
-  json        : 'print the parse tree as JSON'
-  nodejs      :['pass options through to the "node" binary' \ARGS+ \N]
+  ast         : 'print the syntax tree the parser produces'
+  json        : 'print the syntax tree as JSON'
+  nodejs      :['pass options through to the "node" binary' \ARGS+]
   version     : 'display Coco version'
   help        : 'display this help message'
 
@@ -47,7 +47,6 @@ case o.nodejs  then do forkNode
 case o.version then do version
 case o.help    then do help
 default
-  require.paths.push process.cwd()
   if o.require
     ({filename} = module)filename = \.
     that.forEach require
@@ -92,15 +91,15 @@ function compileScript(file, input, base) ->
       printTokens t.tokens
       throw
     Coco.emit \parse t
-    t.nodes = Coco.nodes t.tokens
-    if o.nodes
-      say t.nodes.toString()trim()
+    t.ast = Coco.ast t.tokens
+    if o.ast
+      say t.ast.toString()trim()
       throw
     if o.json
-      say t.nodes.stringify 1
+      say t.ast.stringify 1
       throw
     Coco.emit \compile t
-    t.output = t.nodes.compileRoot t.options
+    t.output = t.ast.compileRoot t.options
     if o.run
       Coco.emit \run t
       if o.eval
@@ -130,7 +129,7 @@ function compileStdin ->
 
 # Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
-# such as `--nodes` or `--print`.
+# such as `--ast` or `--print`.
 function watch(source, base) ->
   fs.watchFile source, {+persistent, interval: 500ms} (curr, prev) ->
     return if curr.size is prev.size and +curr.mtime is +prev.mtime

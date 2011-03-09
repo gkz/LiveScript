@@ -24,18 +24,18 @@ _ref = o.k, delete o.k, _ref;
 ''' Coco.compile 'delete o.k' {+repl, +bare}
 
 
-throws 'too many `)` on line 1' -> Coco.nodes '())'
+throws 'too many `)` on line 1' -> Coco.tokens '())'
 
 # [coffee#750](https://github.com/jashkenas/coffee-script/issues/750)
-throws 'unclosed CALL( on line 1', -> Coco.nodes 'f(->'
+throws 'unclosed CALL( on line 1', -> Coco.tokens 'f(->'
 
 
-throws 'missing `"` in a string on line 2' -> Coco.nodes '\n"\n'
+throws 'missing `"` in a string on line 2' -> Coco.lex '\n"\n'
 
-throws 'unterminated JS literal on line 3', -> Coco.nodes '\n\n```\n'
-throws 'unterminated string on line 3'    , -> Coco.nodes "\n\n'\n"
-throws 'unterminated words on line 3'     , -> Coco.nodes '\n\n<[\n'
-throws 'unterminated heregex on line 3'   , -> Coco.nodes '\n\n///\n'
+throws 'unterminated JS literal on line 3', -> Coco.lex '\n\n```\n'
+throws 'unterminated string on line 3'    , -> Coco.lex "\n\n'\n"
+throws 'unterminated words on line 3'     , -> Coco.lex '\n\n<[\n'
+throws 'unterminated heregex on line 3'   , -> Coco.lex '\n\n///\n'
 
 throws 'contaminated indent %20 on line 2'    -> Coco.lex '1\n\t 2'
 throws 'unmatched dedent (1 for 2) on line 3' -> Coco.lex '1\n  2\n 3'
