@@ -30,34 +30,17 @@ Coco import
   # Same as `tokens`, except that this skips [rewriting](#rewriter).
   lex: -> lex it, {+raw}
 
+  # Runs Coco code directly.
+  run: (code, options or {}) ->
+    do Function Coco.compile code, options <<< {+bare}
+
 Coco.nodes{parse, fromJSON} = nodes
 
-#### [node.js](http://nodejs.org)
-if (fs = require \fs) and (path = require \path)
-  # Executes a string of Coco, correctly setting relative `require`.
-  Coco.run = (code, options or {}) ->
-    root = module
-    root.=parent while root.parent
-    root.filename = process.argv.1 =
-      if options.filename then fs.realpathSync that else \.
-    root.moduleCache &&= {}
-    unless options.js
-      if require.extensions or
-         path.extname(root.filename)toLowerCase() is not \.co
-        code = Coco.compile code, options
-    root._compile code, root.filename
-
-  require.extensions\.co = (module, filename) ->
-    module._compile \
-      Coco.compile(fs.readFileSync filename, \utf8; {+bare}), filename
-
-#### other platforms
+if require.extensions
+  # -> [node](#node)
+  require(\./node) Coco
 else
-  Coco import {
-    run: (code, options or {}) ->
-      do Function Coco.compile code, options <<< {+bare}
-    # Attach `require` for debugging.
-    require
-  }
+  # Attach `require` for debugging.
+  Coco import {require}
   # Support Gecko JS Module.
   @EXPORTED_SYMBOLS = [\Coco] if "#{this}" is '[object BackstagePass]'

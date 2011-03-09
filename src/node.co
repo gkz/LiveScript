@@ -1,0 +1,24 @@
+#### [node.js](http://nodejs.org) setups
+# - Override `.run`.
+# - Inherit `EventEmitter`.
+# - Register _.co_ extension.
+
+module.exports = (Coco) ->
+  fs = require \fs
+
+  Coco.run = (code, options or {}) ->
+    root = module
+    root.=parent while root.parent
+    # Hack for relative `require`.
+    root.filename = process.argv.1 =
+      if delete options.filename then fs.realpathSync that else \.
+    root.moduleCache &&= {}
+    options.js or code = Coco.compile code, options
+    root._compile code, root.filename
+
+  Coco import all require(\events)EventEmitter::
+
+  require.extensions\.co = (module, filename) ->
+    module._compile do
+      Coco.compile fs.readFileSync(filename, \utf8), {+bare}
+      filename
