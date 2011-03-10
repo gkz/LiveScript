@@ -182,24 +182,22 @@ function repl ->
   repl     = readline.createInterface stdin, process.stdout
   repl.on \close stdin~.destroy
   repl.on \line ->
-    code = buf + \\n + it
-    if \\ is code.slice -1 then buf := code.slice 0 -1; return
+    if \\ is it.slice -1
+      buf += (buf && \\n) + it.slice 0 -1
+      return
+    code = (buf && \\n) + it
     buf := ''
     try
       if o.compile
-        console.log \%s Coco.compile code, {o.bare}
+        say Coco.compile code, {o.bare}
       else
-        _ = Script.runInContext \
-              Coco.compile(code.slice 1; {+bare, +repl}), context
+        _ = Script.runInContext Coco.compile(code, {+bare, +repl}), context
         _ is void or console.dir context._ = _
     catch then say e
     repl.prompt()
   process.on \uncaughtException -> say \\n + (it?.stack or it)
-  __defineGetter__ \quit -> process.exit 0
   prompt = \coco
-  if o.compile
-    prompt += ' -c'
-    prompt += \b if o.bare
+  prompt += " -c#{ if o.bare then \b else '' }" if o.compile
   repl.setPrompt prompt + '> '
   repl.prompt()
 
