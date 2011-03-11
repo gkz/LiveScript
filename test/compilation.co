@@ -1,9 +1,11 @@
+bare = {+bare}
+
 # Ensure that carriage returns don't break compilation on Windows.
-eq 'one;\ntwo;', Coco.compile 'one\r\ntwo', {+bare}
+eq 'one;\ntwo;', Coco.compile 'one\r\ntwo' bare
 
 
 # Tab characters should work.
-eq '_(_);', Coco.compile '\n\t_\t_\t\n', {+bare}
+eq '_(_);', Coco.compile '\n\t_\t_\t\n' bare
 
 
 # `{+globals}` removes `var`s
@@ -58,10 +60,10 @@ I = function(it){
 "use strict"
 `LABEL:`
 I = -> it
-''', {+bare}
+''' bare
 
 
-eq "a['in'] = this['in'];", Coco.compile 'a import {@in}', {+bare}
+eq "a['in'] = this['in'];", Coco.compile 'a import {@in}' bare
 
 
 eq '''
@@ -70,7 +72,7 @@ while (0) {
     (1, 2);
   }
 }
-''', Coco.compile '(1; 2) while 0 while 0', {+bare}
+''', Coco.compile '(1; 2) while 0 while 0' bare
 
 
 throws 'invalid use of null on line 1', -> Coco.compile 'null.po'
@@ -80,7 +82,7 @@ throws 'deprecated octal literal 0666 on line 1' ,-> Coco.tokens '0666'
 throws 'invalid number 8 in base 8 on line 1'    ,-> Coco.tokens '8r8'
 
 
-eq '(function(){})();', Coco.compile 'do->', {+bare}
+eq '(function(){})();', Coco.compile 'do->' bare
 
 
 tokens = Coco.lex '''
@@ -122,7 +124,7 @@ TERMINATOR,
 
 
 # Indentation on line 1 should be valid.
-eq '1;\n2;', Coco.compile '  1\n  2', {+bare}
+eq '1;\n2;', Coco.compile '  1\n  2' bare
 
 
 eq '''
@@ -154,17 +156,17 @@ eq '''
   var _ref;
   throw a < (_ref = +b) && _ref < c;
 }());
-''', Coco.compile '(throw a < +b < c)' {+bare}
+''', Coco.compile '(throw a < +b < c)' bare
 
 
-eq '!a;', Coco.compile '!!!a' {+bare}
+eq '!a;', Coco.compile '!!!a' bare
 
 
 eq '''
 +(function(){
   debugger;
 }());
-''' Coco.compile '+debugger' {+bare}
+''' Coco.compile '+debugger' bare
 
 
 eq '1;\n2;\n3;\n4;\n5;', Coco.compile '''
@@ -173,14 +175,14 @@ eq '1;\n2;\n3;\n4;\n5;', Coco.compile '''
     3
 4
  5
-''' {+bare}
+''' bare
 
 
 eq '''
 #!js
 var a;
 a = 1;
-''' Coco.compile '`#!js`; a = 1' {+bare}
+''' Coco.compile '`#!js`; a = 1' bare
 
 
 # `__proto__` should be available as a variable name.
@@ -190,3 +192,13 @@ eq 1, __proto__ = 1
 # [#1](https://github.com/satyr/coco/issues/1)
 λ = -> 七 = 7
 eq λ(), 7
+
+
+# [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)
+eq '''
+(function(){});
+null;
+''' Coco.compile '''
+-> void;
+null
+''' bare

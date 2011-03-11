@@ -36,7 +36,7 @@ exports import
     code = \\n + code.replace /\r/g ''
     # Stream of parsed tokens,
     # initialized with a TERMINATOR token to ensure `@last` always exists.
-    @tokens = [@last = [\TERMINATOR '' 0]]
+    @tokens = [@last = [\TERMINATOR \\n 0]]
     # The current line. Starts from -1 to setoff the prepended newline.
     @line = ~-o.line
     # The current indentation level.
@@ -409,7 +409,7 @@ exports import
     void
 
   # Generates a newline token. Consecutive newlines get merged together.
-  newline: -> @token \TERMINATOR \\n unless @last.0 is \TERMINATOR
+  newline: -> @token \TERMINATOR \\n unless @last.1 is \\n
 
   # A source of ambiguity in our grammar used to be parameter lists in function
   # definitions versus argument lists in function calls. Walk backwards, tagging
