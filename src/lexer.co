@@ -369,6 +369,9 @@ exports import
       if not @last.spaced and @last.1 is \typeof
         @last.1 = \classof
         return val.length
+      if @last.1 is \. or @able() and @token \DOT \.
+        @last.1 += val
+        return val.length
       fallthrough
     case \~ then tag = \UNARY
     case <[ -> ~> ]>
@@ -382,7 +385,10 @@ exports import
       @token \)PARAM ''
     default
       switch val
-      case \@  then @token \LITERAL \this; @last.callable = true
+      case \@
+        if @last.1 is \. or @able() and @token \DOT \.
+        then @last.1 += val
+        else @token \LITERAL \this; @last.callable = true
       case \@@ then @token \LITERAL \arguments
       case \:: then @able() and @token \DOT ''; @token \IDENTIFIER \prototype
       default next = true

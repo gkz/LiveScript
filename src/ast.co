@@ -300,7 +300,11 @@ class exports.Index extends Node
     switch key.length
     case 0 then @key = Key \__proto__
     case 1 then @key = key.0
-    @assign = symbol.slice 1 if \= is symbol?.slice -1
+    if symbol
+      switch symbol.slice -1
+      case \= then @assign = symbol.slice 1
+      case \! then @vivify = Obj
+      case \@ then @vivify = Arr
 
   children: [\key]
 
@@ -323,7 +327,12 @@ class exports.Chain extends Node
 
   children: <[ head tails ]>
 
-  add: -> @tails.push it; this
+  add: ->
+    @tails.push it
+    if delete it.vivify
+      @head  = Assign Chain(@head, @tails), that(), \= \||
+      @tails = []
+    this
 
   # __Chain__ can be unwrapped as its inner node, if there are no subnodes.
   unwrap: -> if @tails.length then this else @head

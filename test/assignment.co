@@ -267,6 +267,14 @@ new ->
   eq @a * @b * @c, 30
 
 
+# Semiautovivification.
+o = {}
+o.!a.@b .push 0 1
+o.a!c@d .push 2 3
+eq '0,1' ''+o.a.b
+eq '2,3' ''+o.a.c.d
+
+
 # [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
 [void, null, v] = [1 to 3]
 eq v, 3
