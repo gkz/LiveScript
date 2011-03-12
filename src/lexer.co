@@ -113,7 +113,7 @@ exports import
       last.1 += \<
       return id.length
     tag = \IDENTIFIER; colon = match.2
-    if colon or last.0 is \DOT or @able() and !@token \DOT ''
+    if colon or last.0 is \DOT or @adi()
       if id of JS_KEYWORDS or id of RESERVED
         (id = new String id)reserved = true
     else if id of <[ this eval ]>
@@ -165,8 +165,8 @@ exports import
     return 0 unless match = NUMBER.exec it
     num = match.3 or match.0; {last} = this
     switch num.charAt 0
-    case \. then if @able()
-      @token \DOT \.; @token \STRNUM num.slice 1; @last.callable = true
+    case \. then if @adi()
+      @token \STRNUM num.slice 1; @last.callable = true
       return match.0.length
     case \0 then if num.charAt(1) not of ['' \. \x \X]
       @carp "deprecated octal literal #{num}"
@@ -284,7 +284,7 @@ exports import
   # Matches a words literal, a syntax sugar for a list of strings.
   doWords: ->
     @carp 'unterminated words' unless ~end = it.indexOf \]> 2
-    @token \DOT '' if @able()
+    @adi()
     @token \[ \[
     {tokens, line} = this
     for row of it.slice(2 end)split \\n
@@ -370,7 +370,7 @@ exports import
         return val.length
       fallthrough
     case \~
-      if @last.1 of <[ . ?. ]> or @able() and @token \DOT \.
+      if @last.1 of <[ . ?. ]> or @adi()
         @last.1 += val
         return val.length
       tag = \UNARY
@@ -386,11 +386,11 @@ exports import
     default
       switch val
       case \@
-        if @last.1 is \. or @able() and @token \DOT \.
+        if @last.1 is \. or @adi()
         then @last.1 += val
         else @token \LITERAL \this; @last.callable = true
       case \@@ then @token \LITERAL \arguments
-      case \:: then @able() and @token \DOT ''; @token \IDENTIFIER \prototype
+      case \:: then @adi(); @token \IDENTIFIER \prototype
       default next = true
       return val.length unless next
       switch val.charAt 0
@@ -400,8 +400,8 @@ exports import
           @token \)CALL \)
           return val.length
         tag = \CALL( if @able true
-      case \{ then @able() and @token \CLONE ''
-      case \[ then @able() and @token \DOT   ''
+      case \[ then @adi()
+      case \{ then @token \CLONE '' if @able()
     @token(tag, val)length
 
   #### Token Manipulators
@@ -506,7 +506,7 @@ exports import
 
   # Records a string/number token, supplying implicit dot if applicable.
   strnum: ->
-    dot = if @able() then !@token \DOT '' else @last.0 is \DOT
+    dot = @adi() or @last.0 is \DOT
     @token \STRNUM it
     @last.callable = true if dot
     void
@@ -522,6 +522,9 @@ exports import
   # - `f()`: `call`able via explicit parentheses
   # - `x''`: indexable via implicit brackets
   able: (call) -> not @last.spaced and able @tokens, null call
+
+  # Supplies an implicit DOT if applicable.
+  adi: -> @token \DOT \. if @able()
 
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
