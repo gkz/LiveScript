@@ -164,7 +164,7 @@ function printTokens(tokens) ->
   lines = []
   for [tag, val, lno] of tokens
     tag += \: + val unless tag is val += ''
-    (lines[lno] ||= [])push tag
+    lines@[lno]push tag
   say(if l then l.join(' ')replace /\n/g \\\n else '') for l of lines
 
 # A simple Read-Eval-Print-Loop. Compiles one line
@@ -180,7 +180,7 @@ function repl ->
   readline = require \readline
   stdin    = process.openStdin()
   repl     = readline.createInterface stdin, process.stdout
-  repl.on \close stdin~.destroy
+  repl.on \close stdin~destroy
   repl.on \line ->
     if \\ is it.slice -1
       buf += (buf && \\n) + it.slice 0 -1

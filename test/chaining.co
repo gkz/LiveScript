@@ -46,7 +46,7 @@ eq 'Hello', String(
 
 eq msg = 'other accessors should also continue lines',
   msg
-  ~.toString
+  .~toString
   ?.valueOf()()
 
 
@@ -65,9 +65,9 @@ parent =
   child:
     method: -> @member
     member: 42
-eq 42, do(0; parent.child~.method)
-eq 42, do(0; parent.child~."me#{'th'}od")
-eq 42, parent.child ~. [\method] null
+eq 42, do(0; parent.child.~method)
+eq 42, do(0; parent.child~"me#{'th'}od")
+eq 42, parent.child . ~ [\method] null
 
 
 # Bracketless Access
@@ -102,3 +102,13 @@ eq @toString, @"to#{\S}tring"
 
 {ok}\ok 1
 [ok]0 1
+
+
+# Semiautovivification
+o = {}
+o.!a.@b .push 0 1
+o.a!c@d .push 2 3
+o?.!a.e = 4
+eq '0,1' ''+o.a.b
+eq '2,3' ''+o.a.c.d
+eq 4 o.a.e

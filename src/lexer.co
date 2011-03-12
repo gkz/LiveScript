@@ -343,8 +343,8 @@ exports import
   doLiteral: ->
     return 0 unless val = SYMBOL.exec it
     switch tag = val.=0
-    case <[ . ?. ~. ]>                 then tag = \DOT
-    case <[ + - ]>                     then tag = \+-
+    case <[ . ?. ]>                    then tag = \DOT
+    case <[ + -  ]>                    then tag = \+-
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
     case <[ && || ]>                   then tag = \LOGIC
     case \?                            then tag = \LOGIC if @last.spaced
@@ -357,10 +357,9 @@ exports import
     case \?(                           then tag = \CALL(
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= ]>
       tag = \ASSIGN
-      switch @last.0
-      case \LOGIC
+      if @last.0 is \LOGIC
         (val = new String val)logic = @tokens.pop()1
-      case \DOT then if @last.1 is \.
+      else if @last.1 of <[ . ?. ]>
         @last.1 += val
         return val.length
     case \*
@@ -369,11 +368,12 @@ exports import
       if not @last.spaced and @last.1 is \typeof
         @last.1 = \classof
         return val.length
-      if @last.1 is \. or @able() and @token \DOT \.
+      fallthrough
+    case \~
+      if @last.1 of <[ . ?. ]> or @able() and @token \DOT \.
         @last.1 += val
         return val.length
-      fallthrough
-    case \~ then tag = \UNARY
+      tag = \UNARY
     case <[ -> ~> ]>
       @tagParameters(); tag = \->
     case <[ <- <~ ]>
@@ -611,4 +611,4 @@ REGEX = ///
 HEREGEX      = /// ^ /{3} ([\s\S]*?) /{3} (\?|[imgy]{0,4}) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
-LINE_CONTINUER = /// ^ \s* (?: , | [?~]?\.(?![.\d]) ) ///
+LINE_CONTINUER = /// ^ \s* (?: , | \??\.(?![.\d]) ) ///

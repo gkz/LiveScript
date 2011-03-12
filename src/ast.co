@@ -296,19 +296,22 @@ class exports.Key extends Atom
 #### Index
 # Dots and brackets to access an object's property.
 class exports.Index extends Node
-  (@key, @symbol) ~>
+  (@key, symbol or \.) ~>
     switch key.length
     case 0 then @key = Key \__proto__
     case 1 then @key = key.0
-    if symbol
-      switch symbol.slice -1
-      case \= then @assign = symbol.slice 1
-      case \! then @vivify = Obj
-      case \@ then @vivify = Arr
+    if \? is symbol.charAt 0
+      @soak = \?
+      symbol.=slice 1
+    switch symbol.slice -1
+    case \= then @assign = symbol.slice 1
+    case \! then @vivify = Obj
+    case \@ then @vivify = Arr
+    @<<<{symbol}
 
   children: [\key]
 
-  show: -> @symbol
+  show: -> (@soak or '') + @symbol
 
   isComplex: -> @key.isComplex()
 
@@ -412,17 +415,16 @@ class exports.Chain extends Node
     if @head.unfoldSoak o
       that.then.tails.push ...@tails
       return that
-    for node, i of @tails
-      if node.soak
-        node.soak = ''
+    for node, i of @tails then if node.soak
+      node.soak = ''
+      return if node instanceof Call
         [test, @head] = Chain(@head, @tails.splice 0 i)cacheReference o
-        return If do
+        If do
           JS "typeof #{ test.compile o, LEVEL_OP } == 'function'"
           this, {+soak}
-      else if node.symbol is \?.
-        node.symbol = ''
+      else
         [test, @head] = Chain(@head, @tails.splice 0 i)unwrap()cache o, true
-        return If Existence(test), this, {+soak}
+        If Existence(test), this, {+soak}
     void
 
   unfoldAssign: (o) ->
@@ -452,7 +454,7 @@ class exports.Chain extends Node
 
   expandBind: (o) ->
     {tails} = this; i = -1; while tails[++i]
-      continue unless that.symbol is \~.
+      continue unless that.symbol is \.~
       that.symbol = ''
       args   = Chain(@head, tails.splice 0 i)unwrap()cache o, true
       args.1 = Chain args.1, [tails.shift()]

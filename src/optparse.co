@@ -43,8 +43,8 @@ module.exports = (
       continue unless arg of [flag.short, flag.long]
       value = if flag.arg then args[++i] else true
       if flag.multi
-      then (options[flag.name] ||= [])push value
-      else  options[flag.name] = value
+      then options@[flag.name]push value
+      else options.[flag.name] = value
       `continue ARGS;`
     if FLAG.test arg then unknowns.push arg else break
   options import \

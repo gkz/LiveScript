@@ -143,7 +143,7 @@ eq 3, new (->      (x, y) -> x + y)()     ...args
 # but not to helper functions.
 eq 1, new [...[-> [1]]].0().0             # __slice
 eq 1, new {f: -> [1]}{}.f().0             # __clone
-eq 'object', typeof new {f: Number}~.f()  # __bind
+eq 'object', typeof new {f: Number}.~f()  # __bind
 
 
 # Chained blocks, with proper indentation levels:
