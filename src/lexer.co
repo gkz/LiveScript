@@ -82,10 +82,6 @@ exports import
     return 0 unless match = IDENTIFIER.exec it
     {last} = this
     switch id = match.1
-    case \own
-      break unless last.0 is \FOR and last.1
-      last.1 = ''
-      return id.length
     case \from
       break unless @tokens[*-2]?.0 is \FOR
       @<<<{-seenFor, +seenFrom}
@@ -156,6 +152,7 @@ exports import
       @carp "reserved word \"#{id}\"" if id of RESERVED
       if not last.1 and last.0 of <[ CATCH FUNCTION ]>
         return (last.1 = id)length
+      tag = \OWN if id is \own and last.0 is \FOR
     @token tag, id
     @token \: \: if colon
     match.0.length

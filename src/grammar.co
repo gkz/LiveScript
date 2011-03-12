@@ -260,10 +260,14 @@ bnf =
     o 'FOR Assignable FOROF Expression BY Expression'
     , -> new For name: $2, index: $3, source: $4, step: $6
 
-    o 'FOR IDENTIFIER              FORIN Expression'
-    , -> new For object: true, own: !$1, index: $2,           source: $4
-    o 'FOR IDENTIFIER , Assignable FORIN Expression'
-    , -> new For object: true, own: !$1, index: $2, name: $4, source: $6
+    o 'FOR     IDENTIFIER              FORIN Expression'
+    , -> new For {+object, -own, index: $2,           source: $4}
+    o 'FOR     IDENTIFIER , Assignable FORIN Expression'
+    , -> new For {+object, -own, index: $2, name: $4, source: $6}
+    o 'FOR OWN IDENTIFIER              FORIN Expression'
+    , -> new For {+object, +own, index: $3,           source: $5}
+    o 'FOR OWN IDENTIFIER , Assignable FORIN Expression'
+    , -> new For {+object, +own, index: $3, name: $5, source: $7}
 
     o 'FOR IDENTIFIER FROM Expression'
     , -> new For index: $2, from: Literal(0), op: \til, to: $4
