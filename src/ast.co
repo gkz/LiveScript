@@ -60,11 +60,11 @@ class Node
     if once then [sub, ref <<< {+temp}] else [sub, ref, [ref.value]]
 
   # Compiles to a source/variable pair suitable for looping.
-  compileLoopReference: (o, name) ->
-    src = tmp = @compile o, LEVEL_LIST
-    unless -1/0 < +src < 1/0 or this instanceof Var and o.scope.check src
-      src = "#{ tmp = o.scope.temporary name } = #{src}"
-    [src, tmp]
+  compileLoopReference: (o, name, level) ->
+    if this instanceof Var and o.scope.check @value or
+       this instanceof Literal or @op is \- and -1/0 < +@first.value < 1/0
+      return [tmp = @compile o; tmp]
+    [tmp = o.scope.temporary name; Assign(Var tmp; this)compile o, level]
 
   # Passes each child to a function, returning its return value if exists.
   eachChild: (fn) ->
@@ -733,10 +733,12 @@ class exports.Op extends Node
 
   # `v = delete o.k`
   compileDelete: (o) ->
-    code = ref = o.scope.temporary \ref
     [get, del] = Chain(@first)cacheReference o
-    code += " = #{ get.compile o, LEVEL_LIST }
-       , delete #{ del.compile o, LEVEL_LIST }, #{ref}"
+    code = if @assigned then '' else "#{ ref = o.scope.temporary \ref } = "
+    code += "#{ get.compile o, LEVEL_LIST }
+    , delete #{ del.compile o, LEVEL_LIST }"
+    return code if @assigned
+    code += ", #{ o.scope.free ref }"
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Assign
@@ -783,7 +785,7 @@ class exports.Assign extends Node
     if right instanceof [Fun, Class] and METHOD_DEF.exec name
       right.name ||= that.2 or that.3
       right.clas   = that if that.1
-    val = right.compile o, LEVEL_LIST
+    val = (right <<< {+assigned})compile o, LEVEL_LIST
     if @op is \:
       left.carp "invalid property name \"#{name}\"" if left.isComplex()
       return name + ': ' + val
@@ -791,12 +793,16 @@ class exports.Assign extends Node
       left.carp "#{ left.compile o <<< indent: '', LEVEL_LIST } \
                  // invalid assignee"
     if left instanceof Var
+      del = right.op is \delete
       if @op is \=
         o.scope.declare name
       else unless o.scope.check name, true
         left.carp "assignment to undeclared variable \"#{name}\""
     code = name + " #{ if @op is \:= then \= else @op } " + val
-    if o.level < LEVEL_COND then code else "(#{code})"
+    if o.level
+      code += ", #{name}" if del
+      code  = "(#{code})" if that > (if del then LEVEL_PAREN else LEVEL_LIST)
+    code
 
   compileConditional: (o, left) ->
     [test, @left] = Chain(left)cacheReference o
@@ -1323,11 +1329,11 @@ class exports.For extends While
     then o.scope.declare idx
     else temps.push idx = o.scope.temporary \i
     unless @object
-      [step, pvar] = (@step || Literal 1)compileLoopReference o, \step
-      temps.push pvar unless step is pvar
+      [pvar, step] = (@step || Literal 1)compileLoopReference o, \step LEVEL_TOP
+      pvar is step or temps.push pvar
     if @from
       eq = if @op is \til then '' else \=
-      [tail, tvar] = @to.compileLoopReference o, \to
+      [tvar, tail] = @to.compileLoopReference o, \to LEVEL_TOP
       vars = idx + ' = ' + @from.compile o
       unless tail is tvar
         vars += ', ' + tail
@@ -1337,12 +1343,12 @@ class exports.For extends While
       else "#{pvar} < 0 ? #{idx} >#{eq} #{tvar} : #{idx} <#{eq} #{tvar}"
     else
       if @name or @object and @own
-        [srcPart, svar] = @source.compileLoopReference o, \ref
+        [svar, srcPart] = @source.compileLoopReference o, \ref,
+          if @object then LEVEL_TOP else LEVEL_CALL
         srcPart is svar or temps.push svar
       else
         srcPart = svar = @source.compile o, LEVEL_PAREN
       unless @object
-        srcPart = "(#{srcPart})" unless srcPart is svar
         if 0 > pvar and (pvar | 0) is +pvar  # negative int
           vars = "#{idx} = #{srcPart}.length - 1"
           cond = "#{idx} >= 0"
