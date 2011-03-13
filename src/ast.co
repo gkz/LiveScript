@@ -225,7 +225,7 @@ class exports.Block extends Node
         @lines[i] = Parens node if node
       else
         @makeReturn()
-    code = @compileWithDeclarations(o)replace /[^\n\S]+$/gm ''
+    code = @compileWithDeclarations o
     # Wrap everything in a safety closure unless requested not to.
     bare or code = "(function(){\n#{code}\n}).call(this);\n"
     if prefix then prefix + \\n + code else code
