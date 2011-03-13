@@ -2,8 +2,6 @@
 # [tokenizing](#lexer), [parsing](#grammar), and [compiling](#ast)
 # Coco source into JavaScript.
 
-Coco = exports
-
 # Override Jison's default lexer, so that it can accept
 # the generic stream of tokens our lexer produces.
 {lex}    = require \./lexer
@@ -15,8 +13,8 @@ parser import
     setInput      : -> @pos = -1; @tokens = it
     upcomingInput : -> ''
 
-Coco import
-  VERSION: \0.4.0b
+exports import
+  VERSION: \0.4.0
 
   # Compiles a string of Coco code to JavaScript.
   compile: (code, options) -> parser.parse(lex code)compileRoot options
@@ -33,16 +31,16 @@ Coco import
 
   # Runs Coco code directly.
   run: (code, options or {}) ->
-    do Function Coco.compile code, options <<< {+bare}
+    do Function exports.compile code, options <<< {+bare}
 
 # Builds AST from JSON string/object.
-Coco.ast{parse, fromJSON} = ast
+exports.ast{parse, fromJSON} = ast
 
 if require.extensions
   # -> [node](#node)
-  require(\./node) Coco
+  require(\./node) exports
 else
   # Attach `require` for debugging.
-  Coco import {require}
+  exports import {require}
   # Support Gecko JS Module.
   @EXPORTED_SYMBOLS = [\Coco] if "#{this}" is '[object BackstagePass]'

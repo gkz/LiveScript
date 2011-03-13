@@ -21,13 +21,14 @@ Coco tries to amend them, entwining good parts of both.
 - [Incompatibilities](https://github.com/satyr/coco/wiki/incompatibilities)
 
 ## Installation
-Install [node.js](http://nodejs.org), then
+
+### on [node.js](http://nodejs.org)
 
     git clone git://github.com/satyr/coco.git && cd coco && bin/coke i
 
-Or install [npm](https://github.com/isaacs/npm#readme), then
+### via [npm](https://github.com/isaacs/npm#readme)
 
-    npm install coco
+    npm i coco
 
 ## Help
 
@@ -36,13 +37,19 @@ Or install [npm](https://github.com/isaacs/npm#readme), then
 ## Changelog
 
 ### 0.4.0b
-- Added `let`. `do` is back at being simple call.
+- Added `let`. Unary `do` is back at being simple call.
     $ coco -bpe 'let (a = f()) ->'
     (function(a){})(f());
 - Added `with`.
     $ coco -bpe 'with f() then'
     (function(){}).call(f());
-- Made `::` a pure sugar for `prototype`, which can now refer to `@prototype` under class body.
+- Added semiautovivification.
+    $ coco -bpe 'base.!obj.@arr'
+    var _ref;
+    (_ref = base.obj || (base.obj = {})).arr || (_ref.arr = []);
+- Made `::` a pure sugar for `prototype`, which can now directly refer to `@::` under class body.
+- `?.` can now appear anywhere a normal dot can be used.
+- `~.` is changed to `. ~`.
 - `new` no longer accepts splatted arguments.
 - Fixed [the performance bug](https://github.com/jashkenas/coffee-script/issues/1033) wrt long method chains.
 - Quit supporting node.js 0.3.* or lower.
