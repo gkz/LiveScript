@@ -51,6 +51,8 @@ Coco tries to amend them, entwining good parts of both.
 - `?.` can now appear anywhere a normal dot can be used.
 - `~.` is changed to `. ~`.
 - `new` no longer accepts splatted arguments.
+- `--interactive` now works with `--compile` and `--bare`.
+- Renamed `--nodes` option and `.nodes` method to `--ast`/`.ast`.
 - Fixed [the performance bug](https://github.com/jashkenas/coffee-script/issues/1033) wrt long method chains.
 - Quit supporting node.js 0.3.* or lower.
 
