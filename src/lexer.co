@@ -171,10 +171,14 @@ exports import
       num = parseInt rnum = match.2, radix
       if isNaN num or num is parseInt rnum.slice(0 -1), radix
         @carp "invalid number #{rnum} in base #{radix}"
-    if sign = last.0 is \+- and not last.spaced
-      num = last.1 + num
-      @tokens.pop()
-      @last = last = @tokens[*-1]
+    unless last.spaced
+      if sign = last.0 is \+-
+        num = last.1 + num
+        @tokens.pop()
+        @last = last = @tokens[*-1]
+      # `@0.0` => `@[0][0]`
+      else if match.3 and ~(dotpos = num.indexOf \.) and able @tokens
+        match.0 = num.=slice 0 dotpos
     if last.0 is \RANGE and (not last.to or last.by is true)
     then last[if last.to then \by else \to] = num
     else if sign then @token \STRNUM num else @strnum num

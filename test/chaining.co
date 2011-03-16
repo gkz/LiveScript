@@ -103,6 +103,8 @@ eq @toString, @"to#{\S}tring"
 {ok}\ok 1
 [ok]0 1
 
+eq 0 [[0]]0.0
+
 
 # Semiautovivification
 o = {}
