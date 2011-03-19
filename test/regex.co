@@ -53,3 +53,7 @@ ok /:\/[/]goog/.test 'http://google.com'
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Should be indexable.
 eq /0/['source'], ///#{0}///['source']
+
+
+# Should be cached aptly.
+eq 0 (/_/ <<< {0})0

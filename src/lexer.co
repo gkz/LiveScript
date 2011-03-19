@@ -228,9 +228,8 @@ exports import
 
   # Matches embedded JavaScript.
   doJS: ->
-    js = JSTOKEN.exec it or @carp 'unterminated JS literal'
-    @token \LITERAL new String detab (js.=0)slice(1 -1), @indent
-    @last.1.js = true
+    [js] = JSTOKEN.exec it or @carp 'unterminated JS literal'
+    @js detab js.slice(1 -1), @indent
     @countLines(js)length
 
   # Matches a regular expression literal, aka regex.
@@ -241,7 +240,7 @@ exports import
     # Must be a regex when the last token is unindexable.
     else
       re = REGEX.exec it or @carp 'unterminated regex'
-    @token \LITERAL if re.=0 is \// then '/(?:)/' else re
+    @js if re.=0 is \// then '/(?:)/' else re
     re.length
 
   # Matches a multiline and extended regex literal.
@@ -250,7 +249,7 @@ exports import
     flags = '' if dynaflag = flags is \?
     if 0 > body.indexOf \#{
       body.=replace(HEREGEX_OMIT, '')replace(/\//g \\\/)
-      @token \LITERAL "/#{ body or '(?:)' }/#{flags}"
+      @js "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex)length
     @token \IDENTIFIER \RegExp; @token \CALL( ''
     {tokens} = this; interp = @interpolate body
@@ -511,6 +510,9 @@ exports import
     @token \STRNUM it
     @last.callable = true if dot
     void
+
+  # Records a literal token flagged embedded.
+  js: -> @token \LITERAL new String(it) <<< {+js}
 
   # Increments `@line` by the number of newlines in a string.
   countLines: (str) ->
