@@ -48,7 +48,7 @@ default false
 ok result, '`case`s can take bare arrays'
 
 
-# Sans-condition
+# Sans-topic
 eq ok, switch
 case null                    then 0
 case !1                      then 1
@@ -106,3 +106,10 @@ while 1
   break
 
 switch case [0, 2, 4,] then eq 2, that
+
+
+# Sans-condition
+switch
+  ok 1 'caseless switch is allowed'
+  break if true
+  ok 0 'for early breaking'
