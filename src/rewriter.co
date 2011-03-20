@@ -92,6 +92,7 @@ function addImplicitIndentation(tokens) ->
     switch token.0
     case \DEDENT            then true
     case \TERMINATOR        then token.1 is not \;
+    case \DOT               then tokens[i-1]eol
     case \ELSE              then tag is \THEN
     case \CATCH             then tag is \TRY
     case \FINALLY           then tag of <[ TRY CATCH THEN ]>
