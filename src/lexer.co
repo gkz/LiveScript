@@ -117,13 +117,13 @@ exports import
       return id.length
     else if id of JS_KEYWORDS or id of <[ then of arguments ]>
       switch tag = id.toUpperCase()
-      case \FOR    then @seenFor = true; fallthrough
-      case \THEN   then @seenFrom = @seenTo = false
-      case \IMPORT then id = \<<<
+      case \FOR  then @seenFor = true; fallthrough
+      case \THEN then @seenFrom = @seenTo = false
+      case \IMPORT              then id = \<<<
+      case <[ CATCH FUNCTION ]> then id = ''
       case <[ TRUE FALSE NULL VOID ARGUMENTS DEBUGGER ]> then tag = \LITERAL
-      case <[ NEW DO TYPEOF DELETE ]> then tag = \UNARY
-      case <[ BREAK       CONTINUE ]> then tag = \STATEMENT
-      case <[ CATCH   FUNCTION ]> then id = ''
+      case <[ NEW DO TYPEOF DELETE                    ]> then tag = \UNARY
+      case <[ BREAK CONTINUE                          ]> then tag = \JUMP
       case <[ IN OF INSTANCEOF ]>
         if tag is not \INSTANCEOF and @seenFor
           if tag is \OF

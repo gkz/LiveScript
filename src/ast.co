@@ -1219,12 +1219,12 @@ class exports.Splat extends Parens
     base = if index then "[#{ List.compile o, list }]" else args.shift()
     "#{base}.concat(#{ args.join ', ' })"
 
-#### Statement
-# `continue` `break`
-class exports.Statement extends Node
-  (@verb) ->
+#### Jump
+# `break` `continue`
+class exports.Jump extends Node
+  (@verb, @label) ->
 
-  show: -> @verb
+  show: -> @verb + if @label then ' ' + that else ''
 
   isStatement : YES
   makeReturn  : THIS
@@ -1232,10 +1232,10 @@ class exports.Statement extends Node
   jumps: ->
     not (it and (it.loop or it.block and @verb is not \continue)) and this
 
-  compileNode: -> @verb + \;
+  compileNode: -> @show() + \;
 
 #### Throw
-class exports.Throw extends Statement
+class exports.Throw extends Jump
   (@it) ->
 
   children: [\it]
@@ -1275,8 +1275,8 @@ class exports.While extends Node
     return node if node.jumps context for node of lines
 
   addBody: (@body) ->
-    [last, i] = lastNonComment body.lines
-    body.lines.splice i, 1 if last.verb is \continue
+    [top] = body.lines
+    body.lines.length = 0 if top?.verb is \continue and not top.label
     this
 
   makeReturn: ->
@@ -1309,7 +1309,7 @@ class exports.While extends Node
     @body.eachChild dig = ~>
       unless it.calling
         return if it instanceof [Fun, While] then null else it.eachChild dig
-      {it, head: fun, tails: [call]} = it
+      {head: fun, tails: [call]} = it.=it
       return if fun.statement
       if this instanceof For
         return if fun.params.length ^ call.args.length - !!call.method
@@ -1477,7 +1477,7 @@ class exports.Case extends Node
     @body.lines[i] = JS '// fallthrough' if ft = last.value is \fallthrough
     o.indent = tab += TAB
     code += that + \\n        if @body.compile o, LEVEL_TOP
-    code += tab  + 'break;\n' unless nobr or ft or last instanceof Statement
+    code += tab  + 'break;\n' unless nobr or ft or last instanceof Jump
     code
 
 #### If
@@ -1556,7 +1556,7 @@ class exports.JS extends Node
 class exports.Util extends Node
   (@verb) ~>
 
-  ::{show} = Statement::
+  {::show} = Jump::
 
   isCallable: YES
 

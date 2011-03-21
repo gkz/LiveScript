@@ -134,9 +134,12 @@ bnf =
     o 'Expression LoopHead' -> $2.addBody Block $1
 
     o 'RETURN Expression' -> Return $2
-    o 'THROW  Expression' -> new Throw $2
-    o \STATEMENT          -> L new Statement $1
     o \RETURN             -> L Return()
+
+    o \JUMP               -> L new Jump $1
+    o 'JUMP IDENTIFIER'   -> L new Jump $1, $2
+
+    o 'THROW  Expression' -> new Throw $2
     o \THROW              -> L new Throw
 
     o 'SWITCH Expression Cases'               -> new Switch $2, $3

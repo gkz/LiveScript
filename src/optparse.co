@@ -45,7 +45,7 @@ module.exports = (
       if flag.multi
       then options@[flag.name]push value
       else options.[flag.name] = value
-      `continue ARGS;`
+      continue ARGS
     if FLAG.test arg then unknowns.push arg else break
   options import \
   $flags    : flags
