@@ -108,7 +108,6 @@ class Node
   isAssignable : NO
   isCallable   : NO
   isEmpty      : NO
-  isAccessor   : NO
   # Do I contain a statement that jumps out of me?
   jumps: NO
   # Do I assign a certain variable?
@@ -291,6 +290,10 @@ class exports.Key extends Atom
 
   isAssignable: -> not @reserved
 
+  varName: ->
+    {name} = this
+    (if @reserved or name of <[ arguments eval ]> then \$ else '') + name
+
   compile: ::show = -> if @reserved then "'#{@name}'" else @name
 
 #### Index
@@ -357,8 +360,7 @@ class exports.Chain extends Node
   varName: ->
     {key} = that if @tails[*-1]
     if key instanceof Key
-      {name} = key
-      name = \$ + name if key.reserved or name of <[ arguments eval ]>
+      name = key.varName()
     else if key instanceof Literal and /^[$\w]+$/test key.value
       name = \$ + key.value
     name or ''
@@ -578,21 +580,23 @@ class exports.Obj extends List
         code += idt + node.compile o
         continue
       node.=first if logic = node.hasDefault()
-      if node instanceof Splat or (node.left or node) instanceof Parens
+      if node instanceof Splat or (node.key or node) instanceof Parens
         rest = items.slice i
         break
       if multi then code += \, else multi = true
-      code += idt + if node instanceof Assign
-        key = node.left.compile o
-        if node.isAccessor()
-          fun = node.right.first
-          key = "#{ if fun.params.length then \set else \get } #{key}"
-          key + fun.compile(o, LEVEL_LIST)slice 8
+      code += idt + if node instanceof Prop
+        {key, val} = node
+        if node.accessor
+          key = "#{ if val.params.length then \set else \get } \
+                 #{ key.compile o }"
+          key + val.compile(o, LEVEL_LIST)slice 8
         else
-          node.compile o
+          if key instanceof Key and val instanceof [Fun, Class]
+            val.name = key.varName()
+          "#{ key.=compile o }: #{ val.compile o, LEVEL_LIST }"
       else
         "#{ key = node.compile o }: #{key}"
-      dic[0 + key] = 0 + key in dic and
+      dic[0+key] = 0+key in dic and
         node.carp "duplicate property name \"#{key}\""
       logic and code += """ #{
         if logic.op is \? then "!= null ? #{key} :" else logic.op
@@ -602,6 +606,19 @@ class exports.Obj extends List
     then Import(JS code; Obj rest)compile o <<< indent: @tab
     else if @front then "(#{code})" else code
 
+#### Prop
+# `x: y`
+class exports.Prop extends Node
+  (@key, @val) ~>
+    if val.op is \~ and val.first.params?.length < 2
+      @<<<{\accessor val: val.first}
+
+  children: <[ key val ]>
+
+  show: -> @accessor
+
+  assigns: -> @val.assigns it
+
 #### Arr
 # `[x, y]`
 class exports.Arr extends List
@@ -609,7 +626,7 @@ class exports.Arr extends List
 
   selections: -> @items.length > 1 and @items
 
-  asObj: -> Obj(Assign Literal(i), item, \: for item, i of @items)
+  asObj: -> Obj(Prop Literal(i), item for item, i of @items)
 
   compile: (o) ->
     {items} = this
@@ -742,8 +759,7 @@ class exports.Op extends Node
     if o.level < LEVEL_LIST then code else "(#{code})"
 
 #### Assign
-# Assignment to a local variable or the property of an object,
-# including `:` within object literals.
+# Assignment to a variable/property.
 class exports.Assign extends Node
   (@left, @right, @op or \=, @logic or @op.logic) ~> @op += ''
 
@@ -751,11 +767,7 @@ class exports.Assign extends Node
 
   show: -> (@logic or '') + @op
 
-  assigns: -> @[if @op is \: then \right else \left]assigns it
-
-  isAccessor: ->
-    @right.op is \~ and
-    (fun = @right.first) instanceof Fun and fun.params.length < 2
+  assigns: -> @left.assigns it
 
   isCallable: -> switch @op case <[ = := ]> then @right.isCallable()
 
@@ -786,9 +798,6 @@ class exports.Assign extends Node
       right.name ||= that.2 or that.3
       right.clas   = that if that.1
     val = (right <<< {+assigned})compile o, LEVEL_LIST
-    if @op is \:
-      left.carp "invalid property name \"#{name}\"" if left.isComplex()
-      return name + ': ' + val
     left.isAssignable() or
       left.carp "#{ left.compile o <<< indent: '', LEVEL_LIST } \
                  // invalid assignee"
@@ -858,9 +867,9 @@ class exports.Assign extends Node
       node.=first if logic = node.hasDefault()
       if node instanceof Parens
         [node, key] = Chain(node.it)cacheReference o
-      else if node instanceof Assign
-      then key = node.left; node.=right
-      else key = node
+      else if node instanceof Prop
+      then node = ({key} = node)val
+      else key  = node
       node = Var node.name if node instanceof Key
       node = logic <<< {first: node} if logic
       val  = Chain lr ||= Var(rite), [Index key.maybeKey()]
@@ -878,8 +887,8 @@ class exports.Assign extends Node
       else sub = ref = base
       for node, i of items
         base = if i then ref else sub
-        if node instanceof Assign
-          node.right = rechain base, node.right
+        if node instanceof Prop
+          node.val = rechain base, node.val
         else
           # `o{k or v} = ..` => `{k: a.k or v} = ..`
           node.=first if logic = node.hasDefault()
@@ -889,7 +898,7 @@ class exports.Assign extends Node
           else key = node
           val = Chain base, [Index node.maybeKey()]
           val = logic <<< {first: val} if logic
-          items[i] = Assign key, val, \:
+          items[i] = Prop key, val
       return Obj items
     # `x[k] = a` => `[x[k]] = a`
     if left instanceof Chain and
@@ -946,15 +955,16 @@ class exports.Import extends Node
       node.=first if logic = node.hasDefault()
       if dyna = node instanceof Parens
         [key, val] = node.it.cache o, true
-      else if node instanceof Assign
-        if node.isAccessor()
-          fun = node.right.first
+      else if node instanceof Prop
+        {key, val} = node
+        if node.accessor
+          key = if key instanceof Key
+          then "'#{key.name}'"
+          else key.compile o, LEVEL_LIST
           code += "#{ lref.compile o }
-            .__define#{ if fun.params.length then \S else \G }etter__
-            (#{ node.left.compile o, LEVEL_LIST }
-            , #{      fun.compile o, LEVEL_LIST })"
+            .__define#{ if val.params.length then \S else \G }etter__
+            (#{key}, #{ val.compile o, LEVEL_LIST })"
           continue
-        {left: key, right: val} = node
       else
         key = val = node
       dyna or key.=maybeKey()
