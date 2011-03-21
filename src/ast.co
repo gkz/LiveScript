@@ -290,6 +290,8 @@ class exports.Key extends Atom
 
   isAssignable: -> not @reserved
 
+  assigns: -> it is @name
+
   varName: ->
     {name} = this
     (if @reserved or name of <[ arguments eval ]> then \$ else '') + name
@@ -549,6 +551,7 @@ class exports.Clone extends Node
 class List extends Node
   children : [\items]
   isEmpty  : -> not @items.length
+  assigns  : -> return true if node.assigns it for node of @items
 
   @compile = (o, items) ->
     switch items.length
@@ -568,8 +571,6 @@ class exports.Obj extends List
   (@items or []) ~>
 
   asObj: THIS
-
-  assigns: -> return true if node.assigns it for node of @items
 
   compileNode: (o) ->
     {items} = this

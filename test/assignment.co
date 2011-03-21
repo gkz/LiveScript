@@ -84,6 +84,11 @@ eq "#{ do -> [a, b] := [b, a] }", '-1,-2'
 eq a, -1
 eq b, -2
 
+a = [0 1]
+[a, b] = a
+eq a, 0
+eq b, 1
+
 
 #713
 eq (onetwo = [1, 2]), [a, b] = [c, d] = onetwo
@@ -104,10 +109,9 @@ eq tails + '', '5,6'
 
 
 # Object destructuring.
-{x: a, y: b, z: c} = {x: 10, y: 20, z: 30}
-eq a, 10
-eq b, 20
-eq c, 30
+{a: a, b} = {a: 0, b: 1}
+eq a, 0
+eq b, 1
 
 {name: a, family: {'elder-brother': {addresses: [one, {city: b}]}}} =
   name  : 'Moe'
@@ -123,13 +127,16 @@ eq b, 'Moquasset NY, 10021'
 
 {person: {address: [ignore, ...addr]}} =
   person:
-    address: [
+    address:
       "------"
       "Street 101"
       "Apt 101"
       "City 101"
-    ]
-ok addr.join(', ') is 'Street 101, Apt 101, City 101'
+eq addr.join(', '), 'Street 101, Apt 101, City 101'
+
+a = {\a \b}
+{a, b} = a
+eq a+b, \ab
 
 
 # Destructuring with object shorthand.
@@ -143,7 +150,7 @@ eq first  , 'Prince'
 eq second , 'Bowie'
 
 
-# Destructuring within for-in.
+# Destructuring on `for`-`in`/`of`.
 persons =
   George     : {name: 'Bob'  }
   Bob        : {name: 'Alice'}
