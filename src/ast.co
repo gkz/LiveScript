@@ -1148,12 +1148,11 @@ class exports.Super extends Node
 
   compile: (o) ->
     {fun or @carp 'stray "super"'} = o.scope.shared or o.scope
-    {name, clas} = fun
-    if name
-      if clas
-        return clas + \.superclass.prototype +
+    if name = fun.name
+      if fun.clas
+        return that + \.superclass.prototype +
                if IDENTIFIER.test name then \. + name else \[ + name + \]
-      else if IDENTIFIER.test name
+      else if fun.ctor or fun.statement
         return name + \.superclass
     return \_super if o.scope.check \_super
     @carp '"super" in a nameless function'
