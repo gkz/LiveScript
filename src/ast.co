@@ -12,7 +12,7 @@
 # the environment from higher in the tree (such as if a returned value is
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
-class Node
+Node = :::
   compile: (options, level) ->
     o = {}; continue for key, o[key] in options
     o <<< {level} if level?
@@ -86,12 +86,12 @@ class Node
       if (base = this)[name = @aSource] instanceof Existence
         base.=[name]; name = \it
       base[name] = Assign Var(\that), base[name]
+    function hasThat ->
+      it.value is \that or if it.aSource
+      then hasThat that if it[that]
+      else it.eachChild hasThat
     delete @children
     void
-  function hasThat ->
-    it.value is \that or if it.aSource
-    then hasThat that if it[that]
-    else it.eachChild hasThat
 
   # Throw a syntax error, appending `@line` number to the message.
   carp: ->
@@ -1224,7 +1224,7 @@ class exports.Splat extends Parens
 class exports.Jump extends Node
   (@verb, @label) ->
 
-  show: -> @verb + if @label then ' ' + that else ''
+  show: -> (@verb or '') + if @label then ' ' + that else ''
 
   isStatement : YES
   makeReturn  : THIS
