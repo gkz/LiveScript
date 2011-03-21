@@ -12,7 +12,7 @@
 # the environment from higher in the tree (such as if a returned value is
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
-Node = :::
+(Node = -> ...):: =
   compile: (options, level) ->
     o = {}; continue for key, o[key] in options
     o <<< {level} if level?
@@ -1538,6 +1538,26 @@ class exports.If extends Node
     if parent[name]unfoldSoak o
       parent[name] = that.then
       that import then: Chain parent
+
+#### Label
+# A labeled block or statement.
+class exports.Label extends Node
+  (@label, @it) ->
+
+  ::{children, isCallable} = Parens::
+
+  show: -> @label
+
+  isStatement : YES
+  jumps       : -> @it.jumps it
+  makeReturn  : -> @it.=makeReturn it; this
+
+  compileNode: (o) ->
+    {it} = this
+    it.isStatement() or it = Block it
+    "#{ @label or \$ }: " + if it instanceof Block
+    then o.indent += TAB; @compileBlock o, it
+    else it.compile o
 
 #### JS
 # Embedded JavaScript snippets.

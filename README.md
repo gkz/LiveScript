@@ -36,7 +36,12 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.4.0b
+### 0.4.1b
+- Added label support.
+    $ coco -bpe ':L break L'
+    L: break L;
+
+### 0.4.0
 - Added `let`. Unary `do` is back at being simple call.
     $ coco -bpe 'let (a = f()) ->'
     (function(a){})(f());

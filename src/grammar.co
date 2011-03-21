@@ -164,10 +164,13 @@ bnf =
 
     o 'Chain EXTENDS Expression' -> Util.Extends $1.unwrap(), $3
 
-  # A line of Coco can be either an expression, backcall, comment, or
+    o 'LABEL Block' -> new Label $1, $2
+
+  # A line of Coco can be either a (labeled) expression, backcall, comment or
   # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm).
   Line:
     o \Expression
+    o 'LABEL Expression' -> new Label $1, $2
 
     o 'PARAM( ArgList OptComma )PARAM BACKCALL Expression'
     , -> Call.back $2, $5, $6

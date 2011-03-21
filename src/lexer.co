@@ -150,7 +150,7 @@ exports import
     case \until  then tag = \WHILE
     default
       @carp "reserved word \"#{id}\"" if id of RESERVED
-      if not last.1 and last.0 of <[ CATCH FUNCTION ]>
+      if not last.1 and last.0 of <[ CATCH FUNCTION LABEL ]>
         return (last.1 = id)length
       tag = \OWN if id is \own and last.0 is \FOR
     @token tag, id
@@ -362,17 +362,21 @@ exports import
       else if @last.1 of <[ . ?. ]>
         @last.1 += val
         return val.length
+    case \:
+      if @last.0 not of <[ IDENTIFIER STRNUM ) ]>
+        @token \LABEL ''
+        return 1
     case \*
       tag = if able @tokens then \MATH else \STRNUM
     case \!
       if not @last.spaced and @last.1 is \typeof
         @last.1 = \classof
-        return val.length
+        return 1
       fallthrough
     case \~
       if @last.1 of <[ . ?. ]> or @adi()
         @last.1 += val
-        return val.length
+        return 1
       tag = \UNARY
     case <[ -> ~> ]>
       @tagParameters(); tag = \->
@@ -384,15 +388,16 @@ exports import
       tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
       @token \)PARAM ''
     default
-      switch val
-      case \@
-        if @last.1 is \. or @adi()
-        then @last.1 += val
-        else @token \LITERAL \this; @last.callable = true
-      case \@@ then @token \LITERAL \arguments
-      case \:: then @adi(); @token \IDENTIFIER \prototype
-      default next = true
-      return val.length unless next
+      :ALIASES
+        switch val
+        case \@
+          if @last.1 is \. or @adi()
+          then @last.1 += val
+          else @token \LITERAL \this; @last.callable = true
+        case \@@ then @token \LITERAL \arguments
+        case \:: then @adi(); @token \IDENTIFIER \prototype
+        default break ALIASES
+        return val.length
       switch val.charAt 0
       case \(
         if val.length > 1

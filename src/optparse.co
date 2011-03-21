@@ -36,8 +36,7 @@ module.exports = (
   # containing the remaining non-option arguments, and `options.$literals`
   # all the arguments after __--__.
   FLAG = /^-[-\w]+$/; unknowns = []
-  `ARGS:`
-  for arg, i of args
+  :ARGS for arg, i of args
     if arg is \-- then literals = args.slice i+1; break
     for flag of flags
       continue unless arg of [flag.short, flag.long]
