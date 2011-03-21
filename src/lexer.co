@@ -113,7 +113,7 @@ exports import
       if id of JS_KEYWORDS or id of RESERVED
         (id = new String id)reserved = true
     else if id of <[ this eval ]>
-      @token \LITERAL id; @last.callable = true
+      @token \LITERAL id, true
       return id.length
     else if id of JS_KEYWORDS or id of <[ then of arguments ]>
       switch tag = id.toUpperCase()
@@ -163,7 +163,7 @@ exports import
     num = match.3 or match.0; {last} = this
     switch num.charAt 0
     case \. then if @adi()
-      @token \STRNUM num.slice 1; @last.callable = true
+      @token \STRNUM num.slice(1), true
       return match.0.length
     case \0 then if num.charAt(1) not of ['' \. \x \X]
       @carp "deprecated octal literal #{num}"
@@ -393,7 +393,7 @@ exports import
         case \@
           if @last.1 is \. or @adi()
           then @last.1 += val
-          else @token \LITERAL \this; @last.callable = true
+          else @token \LITERAL \this true
         case \@@ then @token \LITERAL \arguments
         case \:: then @adi(); @token \IDENTIFIER \prototype
         default break ALIASES
@@ -499,22 +499,20 @@ exports import
       if t.0 is \TOKENS
       then tokens.push ...t.1
       else tokens.push [\STRNUM nlines string t.1, \"; t.2]
-    @token \) ''
-    @last.callable = true if dot
+    @token \) '' dot
     void
 
   #### Helpers
 
   # Adds a token to the results,
   # taking note of the line number and returning `value`.
-  token: (tag, value) -> @tokens.push @last = [tag, value, @line]; value
+  token: (tag, value, callable) ->
+    @tokens.push @last = [tag, value, @line]
+    @last.callable = true if callable
+    value
 
   # Records a string/number token, supplying implicit dot if applicable.
-  strnum: ->
-    dot = @adi() or @last.0 is \DOT
-    @token \STRNUM it
-    @last.callable = true if dot
-    void
+  strnum: -> @token \STRNUM it, @adi() || @last.0 is \DOT; void
 
   # Records a literal token flagged embedded.
   js: -> @token \LITERAL new String(it) <<< {+js}
