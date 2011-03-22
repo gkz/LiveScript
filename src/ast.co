@@ -549,7 +549,7 @@ class exports.Clone extends Node
   unfoldSoak: -> If.unfoldSoak it, this, \base
 
   compileNode: (o) ->
-    Import(Call.make(Util \clone; [@base]), Obj @mixins)compileNode o
+    Import(Call.make(Util \clone; [@base]), Obj @mixins)compile o
 
 #### List
 # An abstract node for a list of comma-separated items.
@@ -770,17 +770,22 @@ class exports.Op extends Node
   # - `[x] * 3` => `[x, x, x]`
   compileRepeat: (o) ->
     {first: x, second: n} = this
-    unless n instanceof Literal and 1 < n.value < 0x100
+    unless n instanceof Literal and n.value < 0x100
       ref = "repeat#{ if x instanceof Arr then \Array else \String }"
       return Call.make(Util ref; [x, n])compile o
     n = +n.value
-    if x instanceof Arr
+    return x.compile o if 1 <= n < 2
+    if x instanceof Literal
+      (q = (x.=compile o)charAt()) + "#{ x.slice 1 -1 }" * n + q
+    else if x instanceof Arr
+      if n < 1 then return Block::{lines: x.items}add(JS '[]')compile o
       {items} = x; refs = []
       [items[i], refs.*] = item.cache o, 1x for item, i of items
-      \[ + List.compile(o, items) + ", #{ List.compile o, refs }"*(n-1) + \]
-    else if x instanceof Literal
-      (q = (x.=compile o)charAt()) + "#{ x.slice 1 -1 }" * n + q
+      items.push JS() <<< compile: ->
+        (", #{ List.compile o, refs }" * (n-1))slice 2
+      x.compile o
     else
+      if n < 1 then return Block(x.it)add(JS "''")compile o
       [x, ref] = x.cache o, 1, LEVEL_OP
       x += " + #{ref}" * (n-1)
       if o.level < LEVEL_OP + PREC\+ then x else "(#{x})"

@@ -37,6 +37,9 @@ Coco tries to amend them, entwining good parts of both.
 ## Changelog
 
 ### 0.4.1b
+- Added string/array multiplication.
+    $ coco -e '["#{0*1}" * 2] * 3'
+    [ '00', '00', '00' ]
 - Added label support.
     $ coco -bpe ':L break L'
     L: break L;
