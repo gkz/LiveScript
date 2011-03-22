@@ -97,9 +97,8 @@ eq 20, sum ->
 
 
 # Implicit calls against trailing conditional branches.
-eq 1, if false then 0 else 1
-eq 0, # `switch` currently needs indentation here
-  switch 0 case 0 then 0 default 1
+eq 2, if 0 then 1 else 2
+eq 6, switch 3 case 4 then 5 default 6
 
 
 # Implicit calls using leading commas.

@@ -493,7 +493,7 @@ exports import
     return ts unless nlines?
     {tokens} = this
     dot = if @able() then tokens.push [\DOT '' line] else @last.0 is \DOT
-    tokens.push [\( \( line]
+    tokens.push [\( \" line]
     for t, i of ts
       tokens.push [\+- \+ tokens[*-1]2] if i
       if t.0 is \TOKENS

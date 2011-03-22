@@ -204,8 +204,8 @@ bnf =
     o 'ArgList OptComma INDENT ArgList OptComma DEDENT' -> $1.concat $4
 
   Parenthetical:
-    o '(        Body        )' -> Parens $2.unwrap()
-    o '( INDENT Body DEDENT )' -> Parens $3.unwrap()
+    o '(        Body        )' -> Parens $2.unwrap(), false, $1 is \"
+    o '( INDENT Body DEDENT )' -> Parens $3.unwrap(), false, $1 is \"
 
   # An indented block of expressions. Note that [Rewriter](#rewriter)
   # converts some single-line forms into blocks for us.
