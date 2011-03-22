@@ -1409,11 +1409,12 @@ class exports.Try extends Node
 
   compileNode: (o) ->
     o.indent += TAB
-    code = 'try ' + @compileBlock o, @attempt
+    code = "try #{@compileBlock o, @attempt}"
     if @recovery or not @ensure
-      code += " catch (#{ @thrown or \e }) " + @compileBlock o, @recovery
+      o.scope.check v = @thrown || \e or o.scope.add v, \catch
+      code += " catch (#{v}) #{ @compileBlock o, @recovery }"
     if @ensure
-      code += ' finally ' + @compileBlock o, @ensure
+      code += " finally #{ @compileBlock o, @ensure }"
     code
 
 #### Switch
