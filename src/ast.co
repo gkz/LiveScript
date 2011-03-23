@@ -807,12 +807,6 @@ class exports.Assign extends Node
 
   unfoldAssign: -> @access and this
 
-  METHOD_DEF = /// ^
-    (?: ([\s\S]+)\.prototype(?=\.) | [\s\S]*? )
-    (?: (?:\.|^) ([$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*)
-      | \[ ( ([\"\']).+?\4 | \d+ ) ] )
-  $ ///
-
   compileNode: (o) ->
     {right} = this; left = @transleft(o)unwrap()
     return (Parens(right) <<< {@front, @newed})compile o if left.isEmpty()
@@ -823,23 +817,24 @@ class exports.Assign extends Node
     if left.hasDefault()
       right = Op left.op, right, left.second
       left.=first
+    left.isAssignable() or left.carp \
+      "#{ left.compile o, LEVEL_LIST } // invalid assignee"
+    # Peek names for `class` and/or `super`.
+    if right instanceof [Fun, Class]
+      {head, tails} = left
+      # `clas::name = ->` or `name = ->`
+      right.name ||= if tails then tails[*-1]?.key.compile o else left.value
+      right.clas ||= head instanceof Var and tails.length is 2 and
+                     tails.0.key?.name is \prototype and head.value
     name = (left <<< {+front})compile o, LEVEL_LIST
-    # Keep track of the name of the base object
-    # we've been assigned to, for correct internal references.
-    if right instanceof [Fun, Class] and METHOD_DEF.exec name
-      right.name ||= that.2 or that.3
-      right.clas   = that if that.1
-    val = (right <<< {+assigned})compile o, LEVEL_LIST
-    left.isAssignable() or
-      left.carp "#{ left.compile o <<< indent: '', LEVEL_LIST } \
-                 // invalid assignee"
+    code = "#{name} #{ if @op is \:= then \= else @op } " +
+           (right <<< {+assigned})compile o, LEVEL_LIST
     if left instanceof Var
       del = right.op is \delete
       if @op is \=
         o.scope.declare name
       else unless o.scope.check name, true
         left.carp "assignment to undeclared variable \"#{name}\""
-    code = name + " #{ if @op is \:= then \= else @op } " + val
     if o.level
       code += ", #{name}" if del
       code  = "(#{code})" if that > (if del then LEVEL_PAREN else LEVEL_LIST)
