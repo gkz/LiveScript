@@ -274,6 +274,11 @@ new ->
   eq @a * @b * @c, 30
 
 
+# ACI on postcrement
+i = 0
+eq '0,1,0' ''+ [i++ i-- i]
+
+
 # [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
 [void, null, v] = [1 to 3]
 eq v, 3

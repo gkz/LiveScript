@@ -221,7 +221,7 @@ function rewriteClosingParens(tokens) ->
       continue
     if debt[inv = INVERSES[tag]] > 0
       --debt[inv]
-      tokens.splice i--, 1
+      tokens.splice i-- 1
       continue
     stoken = stack.pop()
     continue if tag is end = INVERSES[start = stoken.0]
@@ -240,7 +240,7 @@ function expandLiterals(tokens) ->
     case \STRNUM
       if ~'-+'indexOf sig = (num = '' + token.1)charAt 0
         token.1 = num.slice 1
-        tokens.splice i++, 0 [\+- sig, token.2]
+        tokens.splice i++ 0 [\+- sig, token.2]
     case \RANGE
       ts = []; lno = token.2
       to = token.to - if token.op is \to then 0 else 1e-15
@@ -250,10 +250,11 @@ function expandLiterals(tokens) ->
       if ts.length then ts.pop() else carp 'empty range' lno
       tokens.splice i, 1 ...ts
       i += ts.length - 1
-    case <[ ) )CALL ]> then break unless token.1
-    case \}            then break if     token.1
-    case \]            then break unless token.index
     case \LITERAL      then break
+    case <[ ) )CALL ]> then break unless token.1
+    case \]            then break unless token.index
+    case \}            then break if token.1
+    case \CREMENT      then break if i and able tokens, i-1
     default continue
     if token.spaced and tokens[i+1]0 of ARG
       tokens.splice ++i, 0 [\, \, token.2]
