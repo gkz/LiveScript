@@ -36,13 +36,16 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.4.1b
+### 0.4.1
 - Added string/array multiplication.
     $ coco -e '["#{0*1}" * 2] * 3'
     [ '00', '00', '00' ]
 - Added label support.
     $ coco -bpe ':L break L'
     L: break L;
+- Aliased `constructor` as `..`.
+    $ coco -bpe '@..static'
+    this.constructor['static'];
 
 ### 0.4.0
 - Added `let`. Unary `do` is back at being simple call.
