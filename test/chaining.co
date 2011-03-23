@@ -99,7 +99,7 @@ eq '2,3', '' + {2,3}<[2 3]>
 eq '-Infinity,Infinity', '' + Number[\NEGATIVE_INFINITY, \POSITIVE_INFINITY]
 
 
-# Implicit Indexing (automatic dot insertion)
+# Automatic Dot Insertion
 eq @toString, @\toString
 eq @toString, @"to#{\S}tring"
 
@@ -107,6 +107,9 @@ eq @toString, @"to#{\S}tring"
 [ok]0 1
 
 eq 0 [[0]]0.0
+
+eq null [null]?0
+eq void {0}?1?p
 
 
 # Semiautovivification

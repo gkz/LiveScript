@@ -531,7 +531,10 @@ exports import
   able: (call) -> not @last.spaced and able @tokens, null call
 
   # Supplies an implicit DOT if applicable.
-  adi: -> @token \DOT \. if @able()
+  adi: ->
+    not @last.spaced and if @last.0 is \?
+    then @last <<< [\DOT \?.]
+    else able @tokens and @token \DOT \.
 
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
