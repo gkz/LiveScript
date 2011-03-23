@@ -4,7 +4,7 @@ is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radica
 ## Why
 On its way to hide bad parts of JavaScript, CoffeeScript accumulated its own:
 horrible variable scope, confusing/pointless keywords, awkward ranges,
-long extension, and so on.
+long extension, [and so on](https://github.com/satyr/coco/wiki/wtfcs).
 Coco tries to amend them, entwining good parts of both.
 
 ## Principles
