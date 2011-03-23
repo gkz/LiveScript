@@ -395,7 +395,8 @@ exports import
           then @last.1 += val
           else @token \LITERAL \this true
         case \@@ then @token \LITERAL \arguments
-        case \:: then @adi(); @token \IDENTIFIER \prototype
+        case \:: then i = \prototype; fallthrough
+        case \.. then @adi(); @token \ID i || \constructor
         default break ALIASES
         return val.length
       switch val.charAt 0
@@ -590,17 +591,17 @@ NUMBER = /// ^ (?
   [a-z_]*                                     # decimal comment
 ) ///i
 SYMBOL = /// ^ (?
-: [-+*/%&|^:<>]=                # compound assign / comparison
-| ([+&|:])\1                    # increment / logic / prototype access
-| -[->]                         # decrement / function
-| \([^\n\S]*\)                  # call
-| [!=]==?                       # equality
-| \.{3}                         # splat/placeholder/yadayadayada
-| \?[.(]                        # soak  access/call
-| ~[.>]                         # bound access/function
-| <(?: <(?: = | <<? )? | [-~])  # left shift / import / backcall
-| >>>?=?                        # rite shift
-| @@                            # arguments shorthand
+: [-+*/%&|^:<>]=              # compound assign / comparison
+| ([+&|:])\1                  # increment / logic / `prototype`
+| -[->]                       # decrement / function
+| \([^\n\S]*\)                # call
+| [!=]==?                     # equality
+| \.{1,3}                     # `constructor` / splat/placeholder/yadayadayada
+| \?[.(]                      # soak access/call
+| ~[.>]                       # bind access/function
+| <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
+| >>>?=?                      # rite shift
+| @@                          # `arguments`
 | [^\s#]
 ) ///
 SPACE     = /^(?=.)[^\n\S]*(?:#.*)?/

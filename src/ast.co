@@ -141,14 +141,14 @@
   # String representation of the node for inspecting the parse tree.
   # This is what `coco --ast` prints out.
   toString: (idt or '') ->
-    tree = \\n + idt + @constructor.displayName
+    tree = \\n + idt + @..displayName
     tree += ' ' + that if @show()
     @eachChild -> tree += it.toString idt + TAB; void
     tree
 
   # JSON serialization
   stringify : (space) -> JSON.stringify this, null space
-  toJSON    : -> {type: @constructor.displayName, ...this}
+  toJSON    : -> {type: @..displayName, ...this}
 
 # JSON deserialization
 exports.parse    = (json) -> exports.fromJSON JSON.parse json
@@ -859,7 +859,7 @@ class exports.Assign extends Node
        (not IDENTIFIER.test rite or left.assigns rite)
       cache = "#{ rref = o.scope.temporary \ref } = #{rite}"
       rite  = rref
-    list = @"rend#{ left.constructor.displayName }" o, items, rite
+    list = @"rend#{ left..displayName }" o, items, rite
     o.scope.free rref  if rref
     list.unshift cache if cache
     list.push rite     if o.level or not list.length
