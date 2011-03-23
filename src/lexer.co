@@ -83,7 +83,7 @@ exports import
     {last} = this
     switch id = match.1
     case \from
-      break unless @tokens[*-2]?.0 is \FOR
+      break unless @tokens[*-2]?0 is \FOR
       @<<<{-seenFor, +seenFrom}
       return @token(\FROM id)length
     case \ever
@@ -480,7 +480,7 @@ exports import
       pi   = 1 + i += code.length
       continue unless code.=slice 1 -1
       nested = @lex code, {@line, +inter, +raw}
-      nested.shift() if nested.0?.0 is \TERMINATOR
+      nested.shift() if nested.0?0 is \TERMINATOR
       if len = nested.length
         if len > 1
           nested.unshift [\( \( nested[ 0 ]2]

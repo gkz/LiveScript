@@ -45,7 +45,7 @@
 
   # Compiles a child node as a block statement.
   compileBlock: (o, node) ->
-    if node?.compile o, LEVEL_TOP then "{\n#{that}\n#{@tab}}" else '{}'
+    if node?compile o, LEVEL_TOP then "{\n#{that}\n#{@tab}}" else '{}'
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -188,7 +188,7 @@ class exports.Block extends Node
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this
 
-  isComplex: -> @lines.length > 1 or @lines.0?.isComplex()
+  isComplex: -> @lines.length > 1 or @lines.0?isComplex()
 
   isCallable: -> that.isCallable() if lastNonComment(@lines)0
 
@@ -223,7 +223,7 @@ class exports.Block extends Node
   compileRoot: (options) ->
     o = {level: LEVEL_TOP, scope: @scope = Scope.root = new Scope, ...options}
     o.indent = if bare = delete o.bare then '' else TAB
-    prefix = @lines.shift()code if /^(?:#!|javascript:)/test @lines.0?.code
+    prefix = @lines.shift()code if /^(?:#!|javascript:)/test @lines.0?code
     if delete o.repl
       if bare
         [node, i] = lastNonComment @lines
@@ -246,7 +246,7 @@ class exports.Block extends Node
       code   = @compile o
       @lines = rest
     code &&+= \\n if post = @compile o
-    code += o.indent + that + \;\n if @scope?.vars o
+    code += o.indent + that + \;\n if @scope?vars o
     code + post
 
 #### Atom
@@ -266,7 +266,7 @@ class exports.Literal extends Atom
 
   compile: (o, level ? o.level) ->
     switch val = "#{@value}"
-    case \this     then return o.scope.fun?.bound or val
+    case \this     then return o.scope.fun?bound or val
     case \void     then val += ' 8'; fallthrough
     case \null     then @carp 'invalid use of ' + @value if level is LEVEL_CALL
     case \*        then return \0
@@ -388,7 +388,7 @@ class exports.Chain extends Node
     # `a.b()`
     return @cache o, true if name instanceof Call
     # `a` `a.b`
-    if @tails.length < 2 and not @head.isComplex() and not name?.isComplex()
+    if @tails.length < 2 and not @head.isComplex() and not name?isComplex()
       return [this] * 2
     base = Chain @head, @tails.slice 0 -1
     # `a().b`
@@ -491,7 +491,7 @@ class exports.Chain extends Node
     void
 
   expandArray: (o) ->
-    {tails} = this; i = -1; while tails[++i] then if that.key?.length
+    {tails} = this; i = -1; while tails[++i] then if that.key?length
       [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap()cache o
       @head = JS Arr do
         Chain if j then ref else sub, [Index n] for n, j of tails.shift()key
@@ -616,7 +616,7 @@ class exports.Obj extends List
 # `x: y`
 class exports.Prop extends Node
   (@key, @val) ~>
-    if val.op is \~ and val.first.params?.length < 2
+    if val.op is \~ and val.first.params?length < 2
       @<<<{\accessor val: val.first}
 
   children: <[ key val ]>
@@ -669,7 +669,7 @@ class exports.Op extends Node
   show: -> @op
 
   isCallable: -> switch @op case <[ && || ? new delete ]>
-    @first.isCallable() or @second?.isCallable()
+    @first.isCallable() or @second?isCallable()
 
   EQUALITY = /^[!=]==?$/
   COMPARER = /^(?:[!=]=|[<>])=?$/
@@ -823,9 +823,9 @@ class exports.Assign extends Node
     if right instanceof [Fun, Class]
       {head, tails} = left
       # `clas::name = ->` or `name = ->`
-      right.name ||= if tails then tails[*-1]?.key.compile o else left.value
+      right.name ||= if tails then tails[*-1]?key.compile o else left.value
       right.clas ||= head instanceof Var and tails.length is 2 and
-                     tails.0.key?.name is \prototype and head.value
+                     tails.0.key?name is \prototype and head.value
     name = (left <<< {+front})compile o, LEVEL_LIST
     code = "#{name} #{ if @op is \:= then \= else @op } " +
            (right <<< {+assigned})compile o, LEVEL_LIST
@@ -1092,7 +1092,7 @@ class exports.Fun extends Node
           #{tab}function
         """
         body.add Return Literal \_this
-      else if sscope.fun?.bound
+      else if sscope.fun?bound
       then @bound = that
       else sscope.assign \_this \this
     {lines} = body; wasEmpty = not lines.length; args = []; asns = []
@@ -1149,7 +1149,7 @@ class exports.Class extends Node
 
   compile: (o, level) ->
     {fun, title} = this; {lines} = fun.body
-    decl  = title?.varName()
+    decl  = title?varName()
     name  = decl or @name
     name  = \_Class unless name and ID.test name
     vname = Var fun.bound = name
@@ -1306,7 +1306,7 @@ class exports.While extends Node
 
   addBody: (@body) ->
     [top] = body.lines
-    body.lines.length = 0 if top?.verb is \continue and not top.label
+    body.lines.length = 0 if top?verb is \continue and not top.label
     this
 
   makeReturn: ->
@@ -1428,9 +1428,9 @@ class exports.Try extends Node
 
   isStatement: YES
 
-  isCallable: -> @attempt.isCallable() or @recovery?.isCallable()
+  isCallable: -> @attempt.isCallable() or @recovery?isCallable()
 
-  jumps: -> @attempt.jumps it or @recovery?.jumps it
+  jumps: -> @attempt.jumps it or @recovery?jumps it
 
   makeReturn: ->
     @attempt .=makeReturn it
@@ -1461,15 +1461,15 @@ class exports.Switch extends Node
 
   isCallable: ->
     return true if c.isCallable() for c of @cases
-    @default?.isCallable()
+    @default?isCallable()
 
   jumps: (x or {+block}) ->
     return that if c.body.jumps x for c of @cases
-    @default?.jumps x
+    @default?jumps x
 
   makeReturn: ->
     c.makeReturn it for c of @cases
-    @default?.makeReturn it
+    @default?makeReturn it
     this
 
   compileNode: (o) ->
@@ -1531,9 +1531,9 @@ class exports.If extends Node
     else @chain = (@else = it) instanceof If
     this
 
-  isCallable: -> @then.isCallable() or @else?.isCallable()
+  isCallable: -> @then.isCallable() or @else?isCallable()
 
-  jumps: -> @then.jumps it or @else?.jumps it
+  jumps: -> @then.jumps it or @else?jumps it
 
   makeReturn: ->
     @then.=makeReturn it
@@ -1556,10 +1556,10 @@ class exports.If extends Node
 
   compileExpression: (o) ->
     code = @if.compile o, LEVEL_COND
-    pad  = if @else?.isComplex() and @then.isComplex()
+    pad  = if @else?isComplex() and @then.isComplex()
     then \\n + o.indent += TAB else ' '
-    code += pad + '? ' +  @then .compile(o, LEVEL_LIST) +
-            pad + ': ' + (@else?.compile(o, LEVEL_LIST) or 'void 8')
+    code += pad + '? ' +  @then.compile(o, LEVEL_LIST) +
+            pad + ': ' + (@else?compile(o, LEVEL_LIST) or 'void 8')
     if o.level < LEVEL_COND then code else "(#{code})"
 
   unfoldSoak: -> @soak and this
@@ -1671,10 +1671,10 @@ Scope::<<<
   # Walks up the scope if `above` flag is specified.
   check: (name, above) ->
     return found if (found = @positions[name] in @variables) or not above
-    @parent?.check name, above
+    @parent?check name, above
 
   # Gets the type of a variable from name.
-  type: -> @variables[@positions[it]]?.type
+  type: -> @variables[@positions[it]]?type
 
   # Returns the list of variables declared in this scope.
   vars: (o) ->

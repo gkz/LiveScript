@@ -167,10 +167,9 @@ function runTests(Coco) ->
   dir(\test)forEach (file) ->
     return unless /\.co$/i.test file
     code = slurp filename = path.join \test file
-    try Coco.run code, {filename}
-    catch e
+    try Coco.run code, {filename} catch
       ++failedTests
-      return say e unless stk = e?.stack
+      return say e unless stk = e?stack
       msg = '' + /^.+/exec stk
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
         m[i] = tint m[i]replace(/\\n/g \\n), bold for i of [2 4]
