@@ -277,8 +277,7 @@ function detectEnd(tokens, i, ok, go) ->
 # Checks whether or not the previous token is {index,`call`}able.
 function able(tokens, i = tokens.length, call) ->
   [tag] = token = tokens[i-1]
-  tag of <[ IDENTIFIER SUPER ] ]> or
-  if call
+  tag of <[ ID ] SUPER ]> or if call
   then token.callable or tag is \? or tag of <[ ) )CALL ]> and token.1
   else tag of <[ STRNUM LITERAL ) )CALL } ]>
 
@@ -314,5 +313,5 @@ for [left, rite] of BALANCED_PAIRS
   EXPR_END  .push INVERSES[left] = rite
 
 # Tokens that can start an argument list.
-ARG = <[ IDENTIFIER STRNUM LITERAL ( [ { -> PARAM( FUNCTION ...
-         UNARY CREMENT IF TRY CLASS SWITCH LET WITH RANGE SUPER LABEL ]>
+ARG = <[ ID STRNUM LITERAL ( [ { -> PARAM( FUNCTION UNARY CREMENT ...
+         IF TRY CLASS SWITCH LET WITH RANGE SUPER LABEL ]>

@@ -79,7 +79,7 @@ exports import
   # Check to ensure that JavaScript reserved words aren't being used as
   # identifiers.
   doIdentifier: ->
-    return 0 unless match = IDENTIFIER.exec it
+    return 0 unless match = ID.exec it
     {last} = this
     switch id = match.1
     case \from
@@ -108,7 +108,7 @@ exports import
       break unless last.0 is \IMPORT and last.1 is \<<<
       last.1 += \<
       return id.length
-    tag = \IDENTIFIER; colon = match.2
+    tag = \ID; colon = match.2
     if colon or last.0 is \DOT or @adi()
       if id of JS_KEYWORDS or id of RESERVED
         (id = new String id)reserved = true
@@ -128,7 +128,7 @@ exports import
         if tag is not \INSTANCEOF and @seenFor
           if tag is \OF
             id = ''; @seenTo = true
-            if last.0 is \IDENTIFIER
+            if last.0 is \ID
               switch @tokens[*-2]0
               case \,        then @tokens.splice -2 1; fallthrough
               case <[ } ] ]> then @tokens.pop(); id = last.1
@@ -251,7 +251,7 @@ exports import
       body.=replace(HEREGEX_OMIT, '')replace(/\//g \\\/)
       @js "/#{ body or '(?:)' }/#{flags}"
       return @countLines(heregex)length
-    @token \IDENTIFIER \RegExp; @token \CALL( ''
+    @token \ID \RegExp; @token \CALL( ''
     {tokens} = this; interp = @interpolate body
     flags = interp.pop()1 if dynaflag and interp[*-1]0 is \TOKENS
     for token, i of interp
@@ -363,7 +363,7 @@ exports import
         @last.1 += val
         return val.length
     case \:
-      if @last.0 not of <[ IDENTIFIER STRNUM ) ]>
+      if @last.0 not of <[ ID STRNUM ) ]>
         @token \LABEL ''
         return 1
     case \*
@@ -580,7 +580,7 @@ RESERVED = <[
 
 ##### Regexes
 
-IDENTIFIER = /// ^
+ID = /// ^
   ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 ///

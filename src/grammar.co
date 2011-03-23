@@ -70,9 +70,9 @@ bnf =
 
   # Variables and properties that can be assigned to.
   SimpleAssignable:
-    o \IDENTIFIER -> L Var $1
+    o \ID -> L Var $1
 
-    o 'Chain DOT IDENTIFIER'           -> $1.add Index L(Key     $3) ,$2
+    o 'Chain DOT ID'                   -> $1.add Index L(Key     $3) ,$2
     o 'Chain DOT STRNUM'               -> $1.add Index L(Literal $3) ,$2
     o 'Chain DOT Parenthetical'        -> $1.add Index $3.it         ,$2
     o 'Chain DOT [ ArgList OptComma ]' -> $1.add L Index $4          ,$2
@@ -136,8 +136,9 @@ bnf =
     o 'RETURN Expression' -> Return $2
     o \RETURN             -> L Return()
 
-    o \JUMP               -> L new Jump $1
-    o 'JUMP IDENTIFIER'   -> L new Jump $1, $2
+    # `break`/`continue`
+    o \JUMP     -> L new Jump $1
+    o 'JUMP ID' -> L new Jump $1, $2
 
     o 'THROW  Expression' -> new Throw $2
     o \THROW              -> L new Throw
@@ -221,8 +222,8 @@ bnf =
 
   # Things that can be keys within an object literal.
   KeyBase:
-    o \IDENTIFIER -> L Key     $1
-    o \STRNUM     -> L Literal $1
+    o \ID     -> L Key     $1
+    o \STRNUM -> L Literal $1
   Key:
     o \KeyBase
     o \Parenthetical
@@ -267,20 +268,20 @@ bnf =
     o 'FOR Assignable FOROF Expression BY Expression'
     , -> new For name: $2, index: $3, source: $4, step: $6
 
-    o 'FOR     IDENTIFIER              FORIN Expression'
+    o 'FOR     ID              FORIN Expression'
     , -> new For {+object, -own, index: $2,           source: $4}
-    o 'FOR     IDENTIFIER , Assignable FORIN Expression'
+    o 'FOR     ID , Assignable FORIN Expression'
     , -> new For {+object, -own, index: $2, name: $4, source: $6}
-    o 'FOR OWN IDENTIFIER              FORIN Expression'
+    o 'FOR OWN ID              FORIN Expression'
     , -> new For {+object, +own, index: $3,           source: $5}
-    o 'FOR OWN IDENTIFIER , Assignable FORIN Expression'
+    o 'FOR OWN ID , Assignable FORIN Expression'
     , -> new For {+object, +own, index: $3, name: $5, source: $7}
 
-    o 'FOR IDENTIFIER FROM Expression'
+    o 'FOR ID FROM Expression'
     , -> new For index: $2, from: Literal(0), op: \til, to: $4
-    o 'FOR IDENTIFIER FROM Expression TO Expression'
+    o 'FOR ID FROM Expression TO Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6
-    o 'FOR IDENTIFIER FROM Expression TO Expression BY Expression'
+    o 'FOR ID FROM Expression TO Expression BY Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, step : $8
 
     o 'WHILE Expression' -> new While $2, $1 is \until

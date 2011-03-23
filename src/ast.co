@@ -855,8 +855,7 @@ class exports.Assign extends Node
   compileDestructuring: (o, left) ->
     {items} = left; len = items.length
     rite = @right.compile o, if len is 1 then LEVEL_CALL else LEVEL_LIST
-    if (len > 1 or o.level) and
-       (not IDENTIFIER.test rite or left.assigns rite)
+    if (len > 1 or o.level) and (not ID.test rite or left.assigns rite)
       cache = "#{ rref = o.scope.temporary \ref } = #{rite}"
       rite  = rref
     list = @"rend#{ left..displayName }" o, items, rite
@@ -1157,7 +1156,7 @@ class exports.Class extends Node
     {fun, title} = this; {lines} = fun.body
     decl  = title?.varName()
     name  = decl or @name
-    name  = \_Class unless name and IDENTIFIER.test name
+    name  = \_Class unless name and ID.test name
     vname = Var fun.bound = name
     proto = null
     fun.body.traverseChildren ->
@@ -1193,7 +1192,7 @@ class exports.Super extends Node
     if name = fun.name
       if fun.clas
         return that + \.superclass.prototype +
-               if IDENTIFIER.test name then \. + name else \[ + name + \]
+               if ID.test name then \. + name else \[ + name + \]
       else if fun.ctor or fun.statement
         return name + \.superclass
     return \_super if o.scope.check \_super
@@ -1776,8 +1775,9 @@ PREC\*  = PREC\/  = PREC\%                                         = .8
 
 TAB = ' ' * 2
 
-IDENTIFIER = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
-SIMPLENUM  = /^\d+$/
+ID = /^[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*$/
+
+SIMPLENUM = /^\d+$/
 
 ##### Helpers
 
