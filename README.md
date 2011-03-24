@@ -36,28 +36,32 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.4.2b
+- Enabled ADI on `?.`.
+- Enabled ACI on `++`/`--`.
+
 ### 0.4.1
 - Added string/array multiplication.
-    $ coco -e '["#{0*1}" * 2] * 3'
-    [ '00', '00', '00' ]
+      $ coco -e '["#{0*1}" * 2] * 3'
+      [ '00', '00', '00' ]
 - Added label support.
-    $ coco -bpe ':L break L'
-    L: break L;
+      $ coco -bpe ':L break L'
+      L: break L;
 - Aliased `constructor` as `..`.
-    $ coco -bpe '@..static'
-    this.constructor['static'];
+      $ coco -bpe '@..static'
+      this.constructor['static'];
 
 ### 0.4.0
 - Added `let`. Unary `do` is back at being simple call.
-    $ coco -bpe 'let (a = f()) ->'
-    (function(a){})(f());
+      $ coco -bpe 'let (a = f()) ->'
+      (function(a){})(f());
 - Added `with`.
-    $ coco -bpe 'with f() then'
-    (function(){}).call(f());
+      $ coco -bpe 'with f() then'
+      (function(){}).call(f());
 - Added semiautovivification.
-    $ coco -bpe 'base.!obj.@arr'
-    var _ref;
-    (_ref = base.obj || (base.obj = {})).arr || (_ref.arr = []);
+      $ coco -bpe 'base.!obj.@arr'
+      var _ref;
+      (_ref = base.obj || (base.obj = {})).arr || (_ref.arr = []);
 - Made `::` a pure sugar for `prototype`, which can now directly refer to `@::` under class body.
 - `?.` can now appear anywhere a normal dot can be used.
 - `~.` is changed to `. ~`.
