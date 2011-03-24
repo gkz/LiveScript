@@ -25,12 +25,13 @@ tint \co [
   [\com /// ^ /\* [\S\s]* \*/ ///]
   [\pln /// ^ (?
   : \.{3}
-  | (?: [?~]?\. (?:\s*(?:[-+*/%&|^:]|>>>?|<<)?=)? \s* | [)}\]] | :: ) #{ident}?
+  | (?: \.\s*(?:(?:[-+*/%&|^:]|>>>?|<<)?=|[~!@])?\s* | [)}\]?] | :: )
+    (?: #{ident}[~!@]? )+
   | #{ident} [^\n\S]* :(?!:)
   ) ///]
   # ref. [retrie](https://github.com/satyr/retrie)
   [\kwd /// ^ (?
-  : t(?:ry|h(?:row|en)|ypeof)
+  : t(?:ry|h(?:row|en)|ypeof!?)
   | f(?:or(?:[^\n\S]+(?:own|ever))?|inally|unction)
   | n(?:ew|ot)
   | c(?:ontinue|a(?:se|tch)|lass)
