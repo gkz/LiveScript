@@ -259,7 +259,7 @@ exports import
         tokens.push ...token.1
       else
         val = token.1.replace HEREGEX_OMIT, ''
-        continue if i and not val
+        continue if not val and i > 1
         tokens.push token <<<
           \STRNUM string(val.replace bs ||= /\\/g, \\\\\; \')
       tokens.push [\+- \+ tokens[*-1]2]
@@ -488,7 +488,7 @@ exports import
         ts.push [\TOKENS nested]
       @countLines code
     if pi < str.length
-      ts.push [\S s = str.slice pi; @line]
+      ts.push [\S; s = str.slice pi; @line]
       @countLines s
     ts.unshift [\S '' line] unless s?
     return ts unless nlines?
@@ -496,10 +496,14 @@ exports import
     dot = if @able() then tokens.push [\DOT '' line] else @last.0 is \DOT
     tokens.push [\( \" line]
     for t, i of ts
-      tokens.push [\+- \+ tokens[*-1]2] if i
       if t.0 is \TOKENS
-      then tokens.push ...t.1
-      else tokens.push [\STRNUM nlines string t.1, \"; t.2]
+        tokens.push ...t.1
+      else
+        s = nlines string t.1, \"
+        continue if i > 1 and s.length < 3
+        tokens.push [\STRNUM s, t.2]
+      tokens.push [\+- \+ tokens[*-1]2]
+    tokens.pop()
     @token \) '' dot
     void
 
