@@ -257,13 +257,15 @@ class Atom extends Node
   isComplex : NO
 
 #### Literal
-# `this`, `debugger`, regexes and primitives.
+# `this`, `debugger`, and primitives.
 class exports.Literal extends Atom
   (@value) ~> return JS "#{value}" true if value.js
 
   isEmpty    : -> switch @value case <[ void null ]> then true
   isCallable : -> switch @value case <[ this eval ]> then true
   isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt()
+
+  varName: -> if /^\w+$/test @value then \$ + @value else ''
 
   compile: (o, level ? o.level) ->
     switch val = "#{@value}"
@@ -367,13 +369,7 @@ class exports.Chain extends Node
 
   getCall: -> (tail = @tails[*-1]) instanceof Call and tail
 
-  varName: ->
-    {key} = that if @tails[*-1]
-    if key instanceof Key
-      name = key.varName()
-    else if key instanceof Literal and /^[$\w]+$/test key.value
-      name = \$ + key.value
-    name or ''
+  varName: -> @tails[*-1]?key?varName()
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions, so that e.g.
@@ -598,8 +594,7 @@ class exports.Obj extends List
                  #{ key.compile o }"
           key + val.compile(o, LEVEL_LIST)slice 8
         else
-          if key instanceof Key and val instanceof [Fun, Class]
-            val.name = key.varName()
+          val.name = key.varName() if val instanceof [Fun, Class]
           "#{ key.=compile o }: #{ val.compile o, LEVEL_LIST }"
       else
         "#{ key = node.compile o }: #{key}"
