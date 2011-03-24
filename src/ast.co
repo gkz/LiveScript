@@ -62,12 +62,14 @@
     # If flagged as `once`, the tempvar will be auto-freed.
     if once then [sub, ref <<< {+temp}] else [sub, ref, [ref.value]]
 
-  # Compiles to a source/variable pair suitable for looping.
-  compileLoopReference: (o, name, level) ->
+  # Compiles to a variable/source pair suitable for looping.
+  compileLoopReference: (o, name, ret) ->
     if this instanceof Var and o.scope.check @value or
        this instanceof Literal or @op is \- and -1/0 < +@first.value < 1/0
-      return [tmp = @compile o; tmp]
-    [tmp = o.scope.temporary name; Assign(Var tmp; this)compile o, level]
+      return [@compile o] * 2
+    asn = Assign Var(tmp = o.scope.temporary name), this
+    ret or asn.void = true
+    [tmp; asn.compile o, if ret then LEVEL_CALL else LEVEL_PAREN]
 
   # Passes each child to a function, returning its return value if exists.
   eachChild: (fn) ->
@@ -155,7 +157,7 @@ exports.parse    = (json) -> exports.fromJSON JSON.parse json
 exports.fromJSON = function ->
   return it unless it and typeof it is \object
   if it.type
-    node = exports[it.type]::{}
+    node = exports[that]::{}
     node[key] = fromJSON val for key, val in it
     return node
   if it.length? then fromJSON v for v of it else it
@@ -848,15 +850,15 @@ class exports.Assign extends Node
   # when assigning to an array or object literal.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
   compileDestructuring: (o, left) ->
-    {items} = left; len = items.length
+    {items} = left; len = items.length; ret = o.level and not @void
     rite = @right.compile o, if len is 1 then LEVEL_CALL else LEVEL_LIST
-    if (len > 1 or o.level) and (not ID.test rite or left.assigns rite)
+    if (ret or len > 1) and (not ID.test rite or left.assigns rite)
       cache = "#{ rref = o.scope.temporary \ref } = #{rite}"
       rite  = rref
     list = @"rend#{ left..displayName }" o, items, rite
     o.scope.free rref  if rref
     list.unshift cache if cache
-    list.push rite     if o.level or not list.length
+    list.push rite     if ret or not list.length
     code = list.join ', '
     if list.length < 2 or o.level < LEVEL_LIST then code else "(#{code})"
 
@@ -884,7 +886,7 @@ class exports.Assign extends Node
       else
         if (inc = ivar) and start < i then inc += " + #{ i - start }"
         val = Chain lr ||= Literal(rite), [Index Literal inc || i]
-      Assign(node, val, @op)compile o, LEVEL_TOP
+      (Assign(node, val, @op) <<< {+\void})compile o, LEVEL_PAREN
 
   rendObj: (o, nodes, rite) ->
     for node of nodes
@@ -900,7 +902,7 @@ class exports.Assign extends Node
       node = logic <<< {first: node} if logic
       val  = Chain lr ||= Var(rite), [Index key.maybeKey()]
       val  = Import Obj(), val if splat
-      Assign(node, val, @op)compile o, LEVEL_TOP
+      (Assign(node, val, @op) <<< {+\void})compile o, LEVEL_PAREN
 
   # Resolves subdestructuring.
   transleft: (o) ->
@@ -976,7 +978,7 @@ class exports.Import extends Node
         code += node.compile o
         continue
       if node instanceof Splat
-        code += Import(lref, node.it)compile o, LEVEL_TOP
+        code += Import(lref, node.it)compile o
         continue
       node.=first if logic = node.hasDefault()
       if dyna = node instanceof Parens
@@ -1201,7 +1203,7 @@ class exports.Parens extends Node
 
   children: [\it]
 
-  show: -> @string and \""
+  show: -> @string and '""'
 
   isComplex  : -> @it.isComplex  ()
   isCallable : -> @it.isCallable ()
@@ -1369,11 +1371,11 @@ class exports.For extends While
     then o.scope.declare idx
     else temps.push idx = o.scope.temporary \i
     unless @object
-      [pvar, step] = (@step || Literal 1)compileLoopReference o, \step LEVEL_TOP
+      [pvar, step] = (@step || Literal 1)compileLoopReference o, \step
       pvar is step or temps.push pvar
     if @from
       eq = if @op is \til then '' else \=
-      [tvar, tail] = @to.compileLoopReference o, \to LEVEL_TOP
+      [tvar, tail] = @to.compileLoopReference o, \to
       vars = idx + ' = ' + @from.compile o
       unless tail is tvar
         vars += ', ' + tail
@@ -1383,11 +1385,10 @@ class exports.For extends While
       else "#{pvar} < 0 ? #{idx} >#{eq} #{tvar} : #{idx} <#{eq} #{tvar}"
     else
       if @name or @object and @own
-        [svar, srcPart] = @source.compileLoopReference o, \ref,
-          if @object then LEVEL_TOP else LEVEL_CALL
-        srcPart is svar or temps.push svar
+        [svar, srcPart] = @source.compileLoopReference o, \ref, not @object
+        svar is srcPart or temps.push svar
       else
-        srcPart = svar = @source.compile o, LEVEL_PAREN
+        svar = srcPart = @source.compile o, LEVEL_PAREN
       unless @object
         if 0 > pvar and (pvar | 0) is +pvar  # negative int
           vars = "#{idx} = #{srcPart}.length - 1"
