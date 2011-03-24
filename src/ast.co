@@ -207,8 +207,7 @@ class exports.Block extends Node
 
   compile: (o, level ? o.level) ->
     unless level then o.block = this; tab = o.indent
-    codes = []
-    for node of @lines
+    codes = for node of @lines
       if level
         continue if node.comment
         code = node.compile o, LEVEL_LIST
@@ -216,7 +215,7 @@ class exports.Block extends Node
         node = node.unfoldSoak o or node
         code = tab + (node <<< {+front})compile o, level
         code += node.terminator unless node.isStatement()
-      codes.push code
+      code
     return codes.join \\n unless level
     code = codes.join ', ' or 'void 8'
     if codes.length > 1 and level >= LEVEL_LIST then "(#{code})" else code
@@ -821,6 +820,7 @@ class exports.Assign extends Node
       left.=first
     left.isAssignable() or left.carp \
       "#{ left.compile o, LEVEL_LIST } // invalid assignee"
+    right.=it if right instanceof Parens and not right.keep
     # Peek names for `class` and/or `super`.
     if right instanceof [Fun, Class]
       {head, tails} = left
@@ -828,9 +828,16 @@ class exports.Assign extends Node
       right.name ||= if tails then tails[*-1]?key.compile o else left.value
       right.clas ||= head instanceof Var and tails.length is 2 and
                      tails.0.key?name is \prototype and head.value
+    {op} = this; op = \= if op is \:=
     name = (left <<< {+front})compile o, LEVEL_LIST
-    code = "#{name} #{ if @op is \:= then \= else @op } " +
-           (right <<< {+assigned})compile o, LEVEL_LIST
+    code = if not o.level and right instanceof While
+      # Optimize `a = while ...`.
+      right.makeReturn res = o.scope.temporary \_results
+      """#{res} = [];
+         #{@tab}#{ right.compile o }
+         #{@tab}#{name} #{op} #{ o.scope.free res }"""
+    else
+      "#{name} #{op} " + (right <<< {+assigned})compile o, LEVEL_LIST
     if left instanceof Var
       del = right.op is \delete
       if @op is \=
@@ -1070,7 +1077,7 @@ class exports.Fun extends Node
 
   # Short-circuit `traverseChildren` method to prevent it
   # from crossing scope boundaries by default.
-  traverseChildren: (_, xscope) -> super ... if xscope
+  traverseChildren: ([] xscope) -> super ... if xscope
 
   makeReturn: -> if @statement then @<<<{+returns} else super ...
 
