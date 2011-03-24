@@ -823,17 +823,17 @@ class exports.Assign extends Node
       right.name ||= if tails then tails[*-1]?key.compile o else left.value
       right.clas ||= head instanceof Var and tails.length is 2 and
                      tails.0.key?name is \prototype and head.value
-    {op} = this; op = \= if op is \:=
+    decl = left instanceof Var
+    sign = @op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
-    code = if not o.level and right instanceof While
+    code = if decl and not o.level and right instanceof While
       # Optimize `a = while ...`.
-      right.makeReturn res = o.scope.temporary \_results
-      """#{res} = [];
-         #{@tab}#{ right.compile o }
-         #{@tab}#{name} #{op} #{ o.scope.free res }"""
+      """#{ res = o.scope.temporary \_results } = [];
+         #{@tab}#{ right.makeReturn(res)compile o }
+         #{@tab}#{name} #{sign} #{ o.scope.free res }"""
     else
-      "#{name} #{op} " + (right <<< {+assigned})compile o, LEVEL_LIST
-    if left instanceof Var
+      "#{name} #{sign} " + (right <<< {+assigned})compile o, LEVEL_LIST
+    if decl
       del = right.op is \delete
       if @op is \=
         o.scope.declare name
