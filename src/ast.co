@@ -806,10 +806,8 @@ class exports.Assign extends Node
   compileNode: (o) ->
     {right} = this; left = @transleft(o)unwrap()
     return (Parens(right) <<< {@front, @newed})compile o if left.isEmpty()
-    if left.items
-      return @compileDestructuring o, left unless @logic
-      @carp "indestructurable assignment #{@show()}"
-    return @compileConditional o, left if @logic
+    return @compileDestructuring o, left if left.items
+    return @compileConditional   o, left if @logic
     if left.hasDefault()
       right = Op left.op, right, left.second
       left.=first
@@ -845,8 +843,8 @@ class exports.Assign extends Node
     code
 
   compileConditional: (o, left) ->
-    [test, @left] = Chain(left)cacheReference o
-    Op(delete @logic, test, this)compileNode o
+    lefts = Chain(left)cacheReference o
+    Op(@logic, lefts.0, @<<<{left: lefts.1, -logic})compileNode o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
@@ -888,7 +886,7 @@ class exports.Assign extends Node
       else
         if (inc = ivar) and start < i then inc += " + #{ i - start }"
         val = Chain lr ||= Literal(rite), [Index Literal inc || i]
-      (Assign(node, val, @op) <<< {+\void})compile o, LEVEL_PAREN
+      @{left: node, right: val, +\void}compile o, LEVEL_PAREN
 
   rendObj: (o, nodes, rite) ->
     for node of nodes
@@ -904,7 +902,7 @@ class exports.Assign extends Node
       node = logic <<< {first: node} if logic
       val  = Chain lr ||= Var(rite), [Index key.maybeKey()]
       val  = Import Obj(), val if splat
-      (Assign(node, val, @op) <<< {+\void})compile o, LEVEL_PAREN
+      @{left: node, right: val, +\void}compile o, LEVEL_PAREN
 
   # Resolves subdestructuring.
   transleft: (o) ->

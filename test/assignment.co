@@ -215,18 +215,9 @@ eq x, 49344
 ok 'LHS should take care frontness'
 
 
-throws 'indestructurable assignment ?= on line 1', -> Coco.compile '[_] ?= [_]'
-
-
 {(*>>1): mid, (*-1): last} = [1, 2, 3, 4, 5]
 eq mid , 3
 eq last, 5
-
-
-a = b = 0
-[a, b] += [1, 2]
-eq a, 1
-eq b, 2
 
 
 # Destructuring into properties.
@@ -272,6 +263,19 @@ new ->
 
   @{a ? 2, \b ? 3, ([\c]) ? 5} = {}
   eq @a * @b * @c, 30
+
+
+# Compound/Conditional Destructuring
+a = b = c = null
+
+[a, b] += [2 3]
+[b, c] ?= [4 5]
+eq '2,3,5' ''+[a,b,c]
+
+o = d: 0, e: 1
+o{d, e} &&*= d: 2, e: 3
+eq 0 o.d
+eq 3 o.e
 
 
 # ACI on postcrement
