@@ -2,9 +2,11 @@
 is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radical and practical.
 
 ## Why
-On its way to hide bad parts of JavaScript, CoffeeScript accumulated its own:
-horrible variable scope, confusing/pointless keywords, awkward ranges,
-long extension, [and so on](https://github.com/satyr/coco/wiki/wtfcs).
+On its way to hide JavaScript's bad parts, CoffeeScript has accumulated own quirks:
+[horrible variable scope](https://github.com/jashkenas/coffee-script/issues/712),
+[awkward ranges](https://github.com/jashkenas/coffee-script/issues/746),
+confusing/pointless keywords, long extension,
+[and so on](https://github.com/satyr/coco/wiki/wtfcs).
 Coco tries to amend them, entwining good parts of both.
 
 ## Principles
@@ -23,24 +25,19 @@ Coco tries to amend them, entwining good parts of both.
 ## Installation
 
 ### on [node.js](http://nodejs.org)
-
-    git clone git://github.com/satyr/coco.git && cd coco && bin/coke i
+`git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
 ### via [npm](https://github.com/isaacs/npm#readme)
-
-    npm i coco
-
-## Help
-
-    coco -h; coke
+`npm i coco`
 
 ## Changelog
 
 ### 0.4.2b
 - Enabled:
--- ADI on `?.`
--- ACI on `++`/`--`
--- _conditional_ compound destructuring assignments
+  - ADI on `?.`
+  - ACI on `++`/`--`
+  - _conditional_ compound destructuring assignments
+  - colors and tab completion in REPL
 
 ### 0.4.1
 - Added string/array multiplication.
