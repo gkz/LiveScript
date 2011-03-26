@@ -5,9 +5,14 @@ global import
   Coco : require \./coco
   fs   : require \fs
   path : require \path
+  util : require \util
   say  : -> process.stdout.write it + \\n
   warn : -> process.stderr.write it + \\n
   die  : -> warn it; process.exit 1
+  p    : -> []forEach.call @@, console.dir
+  pp   : (x, showHidden, depth) ->
+    say util.inspect x, showHidden, depth, !process.env.NODE_DISABLE_COLORS
+  ppp  : -> pp it, true null
 
 # Use the [option parser](#optparse).
 o = require(\./optparse) do
@@ -149,7 +154,7 @@ function writeJS(source, js, base) ->
   function compile ->
     e <- fs.writeFile jsPath, js || \\n
     return warn e if e
-    require(\util)log "#{source} => #{jsPath}" if o.watch
+    util.log "#{source} => #{jsPath}" if o.watch
   <- path.exists dir
   if it
   then do compile
@@ -168,13 +173,15 @@ function printTokens(tokens) ->
 # Good for simple tests or poking around the
 # [**node.js** API](http://nodejs.org/api/).
 function repl ->
-  module.filename = process.cwd() + \/repl
+  # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
+  module.paths = module.._nodeModulePaths \
+    module.filename = process.cwd() + \/repl
   {Script} = process.binding \evals
   context  = Script.createContext() <<< {...global, module, require}
-  buf      = ''
-  readline = require \readline
-  stdin    = process.openStdin()
-  repl     = readline.createInterface stdin, process.stdout
+  buf   = ''
+  stdin = process.openStdin()
+  repl  = require(\readline)createInterface stdin, process.stdout,
+    require(\repl)REPLServer::{context, commands: []}~complete
   repl.on \close stdin~destroy
   repl.on \line ->
     if \\ is it.slice -1
@@ -187,10 +194,10 @@ function repl ->
         say Coco.compile code, {o.bare}
       else
         _ = Script.runInContext Coco.compile(code, {+bare, +repl}), context
-        _ is void or console.dir context._ = _
+        _ is void or pp context._ = _
     catch then say e
     repl.prompt()
-  process.on \uncaughtException -> say \\n + (it?stack or it)
+  process.on \uncaughtException -> say "\n#{ it?stack or it }"
   prompt = \coco
   prompt += " -c#{ if o.bare then \b else '' }" if o.compile
   repl.setPrompt prompt + '> '
