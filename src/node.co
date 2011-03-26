@@ -4,15 +4,18 @@
 # - Register _.co_ extension.
 
 module.exports = (Coco) ->
-  fs = require \fs
+  fs   = require \fs
+  path = require \path
 
   Coco.run = (code, options or {}) ->
     root = module
     root.=parent while root.parent
-    # Hack for relative `require`.
-    root.filename = process.argv.1 =
-      if delete options.filename then fs.realpathSync that else \.
     root.moduleCache &&= {}
+    # Hack for relative `require`.
+    root.filename = if delete options.filename
+      root.paths = root.._nodeModulePaths path.dirname that
+      process.argv.1 = path.resolve that
+    else \.
     options.js or code = Coco.compile code, options
     root._compile code, root.filename
 

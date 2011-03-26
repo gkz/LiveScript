@@ -37,8 +37,10 @@ Coco tries to amend them, entwining good parts of both.
 ## Changelog
 
 ### 0.4.2b
-- Enabled ADI on `?.`.
-- Enabled ACI on `++`/`--`.
+- Enabled:
+-- ADI on `?.`
+-- ACI on `++`/`--`
+-- _conditional_ compound destructuring assignments
 
 ### 0.4.1
 - Added string/array multiplication.
