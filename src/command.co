@@ -5,19 +5,19 @@ global import
   Coco : require \./coco
   fs   : require \fs
   path : require \path
-  say  : -> process.stdout.write              it + \\n
-  warn : -> process.binding(\stdio)writeError it + \\n
+  say  : -> process.stdout.write it + \\n
+  warn : -> process.stderr.write it + \\n
   die  : -> warn it; process.exit 1
 
 # Use the [option parser](#optparse).
 o = require(\./optparse) do
   compile     : 'compile to JavaScript and save as .js files'
-  interactive : 'run an interactive Coco REPL'
+  interactive : 'start REPL'
   output      :['set the directory for compiled JavaScript' \DIR]
   watch       : 'watch scripts for changes, and recompile'
   print       : 'print the compiled JavaScript to stdout'
-  stdin       : 'listen for and compile scripts over stdin'
-  eval        : 'compile a string from the command line'
+  stdin       : 'read stdin'
+  eval        : 'read command line arguments as script'
   require     :['require libraries before executing' \FILE+]
   bare        : 'compile without the top-level function wrapper'
   lex         : 'print the tokens the lexer produces'
@@ -25,30 +25,31 @@ o = require(\./optparse) do
   ast         : 'print the syntax tree the parser produces'
   json        : 'print the syntax tree as JSON'
   nodejs      :['pass options through to the "node" binary' \ARGS+]
-  version     : 'display Coco version'
-  help        : 'display this help message'
+  version     : 'display version'
+  help        : 'display this'
 
 if o.$unknowns.length
   say "Unrecognized option(s): #{ o.$unknowns.join ' ' }\n"
   help()
   process.exit 1
 
-o.run = not (o.compile or o.print)
-o.print   ||= o.eval or o.stdin and o.compile
-o.compile ||= o.output
-o.bare    ||= o.eval and o.run
-
 # Many flags cause us to divert before compiling anything.
-# Arguments passed after `--` will be passed verbatim to your script as
-# `process.argv`.
 switch
 case o.nodejs  then do forkNode
 case o.version then do version
 case o.help    then do help
 default
+  o.run = not (o.compile or o.print)
+  o.print   ||= o.eval or o.stdin and o.compile
+  o.compile ||= o.output
+  o.bare    ||= o.eval and o.run
   {$args} = o
   {argv}  = process
   argv.0  = argv.1
+  argv.splice 2 9e9
+  argv.push ...if o.stdin then $args else if o.eval then [] else $args.splice 1
+  # Arguments passed after __--__ will be passed verbatim to your script.
+  argv.push ...o.$literals
   if o.require
     ({filename} = module)filename = \.
     that.forEach require
@@ -57,11 +58,7 @@ default
   case o.interactive then argv.1 = \repl  ; repl()
   case o.stdin       then argv.1 = \stdin ; compileStdin()
   case o.eval        then argv.1 = \eval  ; compileScript '' $args.join \\n
-  case $args.length
-    process.argv.splice 2 9e9,
-      ...if o.run then $args.splice 1 else []
-      ...o.$literals
-    compileScripts()
+  case $args.length  then compileScripts()
   default version(); help(); repl()
 
 # Asynchronously read in each Coco script in a list of source files and
