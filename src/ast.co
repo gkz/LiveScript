@@ -90,7 +90,8 @@
     if @eachChild hasThat
       if (base = this)[name = @aSource] instanceof Existence
         base.=[name]; name = \it
-      base[name] = Assign Var(\that), base[name]
+      unless base[name]value is \that
+        base[name] = Assign Var(\that), base[name]
     function hasThat ->
       it.value is \that or if it.aSource
       then hasThat that if it[that]
