@@ -129,10 +129,10 @@ task \bench 'quick benchmark of compilation time' ->
   console.log msg, nc
 
 task \loc 'count the lines of main compiler code' ->
-  exec "
-    cat #{ coreSources()join ' ' } | \
-    grep -v '^\\( *#\\|\\s*$\\)' | wc -l | tr -s ' '
-  " (e, out) -> say out.trim()
+  count = 0; line = /^[^\n\S]*[^#\s]/mg
+  code  = coreSources()map(-> slurp it)join \\n
+  ++count while line.test code
+  console.log count
 
 
 task \test 'run test/' -> runTests require \./lib/coco
