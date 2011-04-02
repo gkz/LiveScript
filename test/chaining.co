@@ -15,7 +15,7 @@ eq \dog, str.
 
 result = '' + str
   .replace /.$/ -> it.toLowerCase()
-  .split('')
+  .split ''
   .reverse()
    .reverse()
     .reverse()
@@ -49,6 +49,10 @@ eq msg = 'other accessors should also continue lines',
   msg
   .~toString
   ?.valueOf()()
+
+eq 0,
+  [0]
+  ?.0
 
 
 # `prototype`/`constructor` shorhands

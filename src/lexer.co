@@ -301,8 +301,8 @@ exports import
   # then the newline is suppressed:
   #
   #     elements
-  #       .each( ... )
-  #       .map( ... )
+  #     .map -> ...
+  #     .get()
   #
   # Keeps track of the level of indentation, because a single dedent
   # can close multiple indents, so we need to know how far in we happen to be.
@@ -628,4 +628,4 @@ REGEX = ///
 HEREGEX      = /// ^ /{3} ([\s\S]*?) /{3} (\?|[imgy]{0,4}) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
-LINE_CONTINUER = /// ^ \s* (?: , | \??\.(?![.\d]) ) ///
+LINE_CONTINUER = /// ^ \s* (?: , | \?\. | \.(?![.\d]) ) ///
