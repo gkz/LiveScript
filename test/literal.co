@@ -291,25 +291,6 @@ obj.val = ok
 eq ok, obj.key
 
 
-# Implicit Array
-o =
-  atom:
-    0
-  list:
-    1
-    2
-eq 0 o.atom
-eq 2 o.list.length
-
-a =
-  3
-a =
-  a, 4
-a =
-  ...a
-eq '3,4' ''+a
-
-
 ### JS Literal
 
 eq '\\`', `

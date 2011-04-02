@@ -367,6 +367,17 @@ exports import
         @token \LABEL ''
         return 1
     case \*
+      # Enable list-like notation:
+      #
+      #     I2 =
+      #       * 1 0
+      #       * 0 1
+      #
+      if @last.0 of <[ INDENT TERMINATOR ]> and /^.[^\n\S]*(?=\S)/exec it
+        @indent += val = that.0.length
+        @tokens .push [\{ \{ @line] [\} \} @line] [\ASSIGN \= @line]
+        @indents.push @token \INDENT val
+        return val
       tag = if able @tokens then \MATH else \STRNUM
     case \!
       if not @last.spaced and @last.1 is \typeof
