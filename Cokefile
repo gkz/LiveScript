@@ -32,17 +32,17 @@ task \install 'install Coco into /usr/local (or --prefix)' (options) ->
   base = options.prefix or \/usr/local
   lib  = "#{base}/lib/coco"
   bin  = "#{base}/bin"
-  nlib = "~/.node_libraries"
-  exec [
-    "echo Installing Coco to #{lib}"
-    "mkdir -p #{lib} #{bin} #{nlib}"
-    "cp -rf lib LICENSE README.md package.json #{lib}"
-    "ln -sfv  #{lib}/lib/command.js #{bin}/coco"
-    "ln -sfv  #{lib}/lib/coke.js    #{bin}/coke"
-    "ln -sfnv #{lib}/lib #{nlib}/coco"
-  ]join(' && '), (err, stdout, stderr) ->
-    say stdout.trim() if stdout
-    say if err then stderr.trim() else tint \done
+  nlib = \~/.node_libraries
+  e, stdout, stderr <- exec """
+    echo Installing Coco to #{lib}
+    mkdir -p #{lib} #{bin} #{nlib}
+    cp -rf lib LICENSE README.md package.json #{lib}
+    ln -sfv  #{lib}/lib/command.js #{bin}/coco
+    ln -sfv  #{lib}/lib/coke.js    #{bin}/coke
+    ln -sfnv #{lib}/lib #{nlib}/coco
+  """replace /\n/g \&&
+  say stdout.trim() if stdout
+  say if e then stderr.trim() else tint \done
 
 
 docs = <[ doc.co lang-co.co ]>
@@ -130,8 +130,7 @@ task \bench 'quick benchmark of compilation time' ->
 
 task \loc 'count the lines of main compiler code' ->
   count = 0; line = /^[^\n\S]*[^#\s]/mg
-  code  = coreSources()map(-> slurp it)join \\n
-  ++count while line.test code
+  ++count while line.test code for code of coreSources()map(-> slurp it)
   console.log count
 
 
@@ -174,7 +173,7 @@ function runTests(Coco) ->
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
         m[i] = tint m[i]replace(/\\n/g \\n), bold for i of [2 4]
         msg  = m.slice(1)join \\n
-      {1: row, 2: col} = ///#{filename}:(\d+):(\d+)\)?$///m.exec(stk) or ''
+      [[] row, col] = ///#{filename}:(\d+):(\d+)\)?$///m.exec(stk) or ''
       say tint "failed #{filename}:#{row--}:#{col--}" red
       if row >= 0
         code = Coco.compile code
