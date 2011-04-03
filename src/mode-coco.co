@@ -44,196 +44,203 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
 
 ### Highlight Rules
 
-keywordend = "(?![$\\w]|\\s*:(?!:))"
+keywordend = '(?![$\\w]|\\s*:(?!:))'
 stringfill = token: \string, regex: '.+'
 
-CocoMode.Rules = \
-start: [
-  token: \keyword
-  regex: '(?
-    :t(?:h(?:is|row|en)|ry|ypeof)
-    |c(?:ontinue|a(?:se|tch)|lass)
-    |i(?:n(?:stanceof)?|mport|[fs])
-    |d(?:e(?:fault|lete|bugger)|o)
-    |f(?:or|inally|unction)
-    |s(?:uper|witch)
-    |e(?:lse|xtends|val)
-    |a(?:nd|rguments)
-    |n(?:ew|ot)
-    |un(?:less|til)
-    |w(?:hile|ith)
-    |o[fr]|return|break|let
-  )' + keywordend
-,
-  token: \constant.language
-  regex: '(?:true|false|null|void)' + keywordend
-,
-  token: \invalid.illegal
-  regex: '(?
-    :p(?:ackage|r(?:ivate|otected)|ublic)
-    |i(?:mplements|nterface)
-    |e(?:num|xport)
-    |var|const|static|yield
-  )' + keywordend
-,
-  token: \language.support.class
-  regex: '(?
-    :R(?:e(?:gExp|ferenceError)|angeError)
-    |S(?:tring|yntaxError)
-    |E(?:rror|valError)
-    |Array|Boolean|Date|Function|Number|Object|TypeError|URIError
-  )' + keywordend
-,
-  token: \language.support.function
-  regex: '(?
-    :is(?:NaN|Finite)
-    |parse(?:Int|Float)
-    |encodeURI(?:Component)?
-    |decodeURI(?:Component)?
-    |Math|JSON
-  )' + keywordend
-,
-  token: \variable.language
-  regex: '(?:t(?:hat|il|o)|f(?:rom|allthrough)|it|by)' + keywordend
-,
-  token: \identifier
-  regex: identifier + '\\s*:(?!:)'
-,
-  token: \variable
-  regex: identifier
-,
-  token: \keyword
-  regex: '@+'
-  next : \key
-,
-  token: \string
-  regex: '\\\\\\S[^\\s,;)}\\]]*'
-,
-  token: \string.doc
-  regex: \'''
-  next : \qdoc
-,
-  token: \string.doc
-  regex: \"""
-  next : \qqdoc
-,
-  token: \string
-  regex: \'
-  next : \qstring
-,
-  token: \string
-  regex: \"
-  next : \qqstring
-,
-  token: \string
-  regex: \`
-  next : \js
-,
-  token: \string
-  regex: '<\\['
-  next : \words
-,
-  token: \string.regex
-  regex: \///
-  next : \heregex
-,
-  token: \comment.doc
-  regex: '/\\*'
-  next : \comment
-,
-  token: \comment
-  regex: '#.*'
-,
-  token: \string.regex
-  regex: '
-    /(?!\\s)
-    [^[/\\n\\\\]*
-    (?: (?:\\\\.
-          |\\[[^\\]\\n\\\\]*(?:\\\\.[^\\]\\n\\\\]*)*\\]
-        )[^[/\\n\\\\]*
-    )*/[imgy]{0,4}(?!\\w)
-  '
-  next : \key
-,
-  token: \constant.numeric
-  regex: '(?:0[xX][\\da-fA-F]+
-            |(?:[1-9]\\d?)[rR][\\da-zA-Z]+
-            |(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:[eE][+-]?\\d+)?[a-zA-Z_]*)'
-,
-  token: \lparen
-  regex: '[({[]'
-,
-  token: \rparen
-  regex: '[)}\\]]'
-  next : \key
-,
-  token: \keyword.operator
-  regex: '(?:[?~]?\\.\\s*|::)'
-  next : \key
-,
-  token: \keyword.operator
-  regex: \\\S+
-,
-  token: \text
-  regex: \\\s+
-]
-heregex: [
-  token: \string.regex
-  regex: '.*?///(?:\\?|[imgy]{0,4})'
-  next : \start
-,
-  token: \string.regex
-  regex: '\\s*#{'
-,
-  token: \comment.regex
-  regex: '\\s+(?:#.*)?'
-,
-  token: \string.regex
-  regex: '\\S+'
-]
-key: [
-  token: \identifier
-  regex: identifier
-  next : \start
-,
-  token: \text
-  regex: '.'
-  next : \start
-]
-qdoc:
-  token: \string
-  regex: ".*?'''"
-  next : \key
-  stringfill
-qqdoc:
-  token: \string
-  regex: '.*?"""'
-  next : \key
-  stringfill
-qstring:
-  token: \string
-  regex: "[^\\\\']*(?:\\\\.[^\\\\']*)*'"
-  next : \key
-  stringfill
-qqstring:
-  token: \string
-  regex: '[^\\\\"]*(?:\\\\.[^\\\\"]*)*"'
-  next : \key
-  stringfill
-js:
-  token: \string
-  regex: '[^\\\\`]*(?:\\\\.[^\\\\`]*)*`'
-  next : \key
-  stringfill
-words:
-  token: \string
-  regex: '.*?]>'
-  next : \key
-  stringfill
-comment:
-  token: \comment.doc
-  regex: '.*?\\*/'
-  next : \start
-  {}= token: \comment.doc, regex: '.+'
+CocoMode.Rules =
+  start:
+    * token: \keyword
+      regex: '(?
+        :t(?:h(?:is|row|en)|ry|ypeof!?)
+        |c(?:ontinue|a(?:se|tch)|lass)
+        |i(?:n(?:stanceof)?|mport(?:\\s+all)?|[fs])
+        |d(?:e(?:fault|lete|bugger)|o)
+        |f(?:or(?:\\s+own)?|inally|unction)
+        |s(?:uper|witch)
+        |e(?:lse|xtends|val)
+        |a(?:nd|rguments)
+        |n(?:ew|ot)
+        |un(?:less|til)
+        |w(?:hile|ith)
+        |o[fr]|return|break|let
+      )' + keywordend
+
+    * token: \constant.language
+      regex: '(?:true|false|null|void)' + keywordend
+
+    * token: \invalid.illegal
+      regex: '(?
+        :p(?:ackage|r(?:ivate|otected)|ublic)
+        |i(?:mplements|nterface)
+        |e(?:num|xport)
+        |var|const|static|yield
+      )' + keywordend
+
+    * token: \language.support.class
+      regex: '(?
+        :R(?:e(?:gExp|ferenceError)|angeError)
+        |S(?:tring|yntaxError)
+        |E(?:rror|valError)
+        |Array|Boolean|Date|Function|Number|Object|TypeError|URIError
+      )' + keywordend
+
+    * token: \language.support.function
+      regex: '(?
+        :is(?:NaN|Finite)
+        |parse(?:Int|Float)
+        |Math|JSON
+        |(?:en|de)codeURI(?:Component)?
+      )' + keywordend
+
+    * token: \variable.language
+      regex: '(?:t(?:hat|il|o)|f(?:rom|allthrough)|it|by)' + keywordend
+
+    * token: \identifier
+      regex: identifier + '\\s*:(?!:)'
+
+    * token: \variable
+      regex: identifier
+
+    * token: \keyword.operator
+      regex: '(?:\\.{3}|\s+\?)'
+
+    * token: \keyword.variable
+      regex: '(?:@+|::|\\.\\.)'
+      next : \key
+
+    * token: \keyword.operator
+      regex: '(?:\\.|\\?\\.?)\\s*'
+      next : \key
+
+    * token: \string
+      regex: '\\\\\\S[^\\s,;)}\\]]*'
+
+    * token: \string.doc
+      regex: \'''
+      next : \qdoc
+
+    * token: \string.doc
+      regex: \"""
+      next : \qqdoc
+
+    * token: \string
+      regex: \'
+      next : \qstring
+
+    * token: \string
+      regex: \"
+      next : \qqstring
+
+    * token: \string
+      regex: \`
+      next : \js
+
+    * token: \string
+      regex: '<\\['
+      next : \words
+
+    * token: \string.regex
+      regex: \///
+      next : \heregex
+
+    * token: \comment.doc
+      regex: '/\\*'
+      next : \comment
+
+    * token: \comment
+      regex: '#.*'
+
+    * token: \string.regex
+      regex: '
+        /(?!\\s)
+        [^[/\\n\\\\]*
+        (?: (?:\\\\.
+              |\\[[^\\]\\n\\\\]*(?:\\\\.[^\\]\\n\\\\]*)*\\]
+            )[^[/\\n\\\\]*
+        )*/[imgy]{0,4}(?!\\d)
+      '
+      next : \key
+
+    * token: \constant.numeric
+      regex: '(?:0[xX][\\da-fA-F]+
+                |(?:[1-9]\\d?)[rR][\\da-zA-Z]+
+                |(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:[eE][+-]?\\d+)?[a-zA-Z_]*)'
+
+    * token: \lparen
+      regex: '[({[]'
+
+    * token: \rparen
+      regex: '[)}\\]]'
+      next : \key
+
+    * token: \keyword.operator
+      regex: \\\S+
+
+    * token: \text
+      regex: \\\s+
+
+  heregex:
+    * token: \string.regex
+      regex: '.*?///(?:\\?|[imgy]{0,4})'
+      next : \start
+    * token: \string.regex
+      regex: '\\s*#{'
+    * token: \comment.regex
+      regex: '\\s+(?:#.*)?'
+    * token: \string.regex
+      regex: '\\S+'
+
+  key:
+    * token: \keyword.operator
+      regex: '[.?@!]+'
+    * token: \identifier
+      regex: identifier
+      next : \start
+    * token: \text
+      regex: '.'
+      next : \start
+
+  comment:
+    * token: \comment.doc
+      regex: '.*?\\*/'
+      next : \start
+    * token: \comment.doc
+      regex: '.+'
+
+  qdoc:
+    token: \string
+    regex: ".*?'''"
+    next : \key
+    stringfill
+
+  qqdoc:
+    token: \string
+    regex: '.*?"""'
+    next : \key
+    stringfill
+
+  qstring:
+    token: \string
+    regex: "[^\\\\']*(?:\\\\.[^\\\\']*)*'"
+    next : \key
+    stringfill
+
+  qqstring:
+    token: \string
+    regex: '[^\\\\"]*(?:\\\\.[^\\\\"]*)*"'
+    next : \key
+    stringfill
+
+  js:
+    token: \string
+    regex: '[^\\\\`]*(?:\\\\.[^\\\\`]*)*`'
+    next : \key
+    stringfill
+
+  words:
+    token: \string
+    regex: '.*?\\]>'
+    next : \key
+    stringfill
 
 void
