@@ -52,7 +52,8 @@ default
   {argv}  = process
   argv.0  = argv.1
   argv.splice 2 9e9
-  argv.push ...if o.stdin then $args else if o.eval then [] else $args.splice 1
+  argv.push ...if o.stdin then $args else
+    if o.run then $args.splice 1 9e9 else []
   # Arguments passed after __--__ will be passed verbatim to your script.
   argv.push ...o.$literals
   if o.require
