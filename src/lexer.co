@@ -162,9 +162,9 @@ exports import
     return 0 unless match = NUMBER.exec it
     num = match.3 or match.0; {last} = this
     switch num.charAt 0
+    # `x.0` => `x[0]`
     case \. then if @adi()
-      @token \STRNUM num.slice(1), true
-      return match.0.length
+      return @token(\STRNUM num.slice(1), true)length + 1
     case \0 then if num.charAt(1) not of ['' \. \x \X]
       @carp "deprecated octal literal #{num}"
     if radix = match.1
@@ -312,9 +312,9 @@ exports import
     {last} = this; {length} = input
     last <<< {+eol, +spaced}
     return length if length >= it.length
-    dent = tabs.length
-    if dent < @dent
-      @dedent @dent - dent
+    delta = tabs.length - @dent
+    if delta < 0
+      @dedent -delta
       LINE_CONTINUER.test it or @newline()
     else
       if tabs and (@emender ||= ///[^#{ tabs.charAt 0 }]///)exec tabs
@@ -323,10 +323,8 @@ exports import
          tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]> or
          LINE_CONTINUER.test it
         return length
-      if @dent < dent
-      then @dents.push @token \INDENT dent - @dent
-      else @newline()
-    @<<<{dent, -seenFrom, -seenTo}
+      if delta then @indent delta else @newline()
+    @<<<{-seenFrom, -seenTo}
     length
 
   # Consumes non-newline whitespaces and a line comment after them if any.
@@ -367,16 +365,15 @@ exports import
         @token \LABEL ''
         return 1
     case \*
-      # Enable list-like notation:
+      # Enable list notation:
       #
       #     I2 =
       #       * 1 0
       #       * 0 1
       #
-      if @last.0 of <[ INDENT TERMINATOR ]> and /^.[^\n\S]*(?=\S)/exec it
-        @dent += val = that.0.length
-        @tokens .push [\{ \{ @line] [\} \} @line] [\ASSIGN \= @line]
-        @dents.push @token \INDENT val
+      if @last.0 of <[ TERMINATOR INDENT THEN ]> and /^.[^\n\S]*(?=\S)/exec it
+        @tokens.push [\{ \{ @line] [\} \} @line] [\ASSIGN \= @line]
+        @indent val = that.0.length
         return val
       tag = if able @tokens then \MATH else \STRNUM
     case \!
@@ -423,12 +420,18 @@ exports import
 
   #### Token Manipulators
 
-  # Records DEDENT(s) given tab `count`.
-  # Multiple if we are moving back inwards past several recorded INDENTs.
-  dedent: (count) ->
-    while count > 0 and dent = @dents.pop()
-      @carp "unmatched dedent (#{count} for #{dent})" if count < dent
-      count -= @token \DEDENT dent
+  # Records an INDENT.
+  indent: (delta) ->
+    @dent += delta
+    @dents.push @token \INDENT delta
+    void
+
+  # Records a DEDENT, or DEDENTs if there are multiple matching INDENTs.
+  dedent: (debt) ->
+    @dent -= debt
+    while debt > 0 and dent = @dents.pop()
+      @carp "unmatched dedent (#{debt} for #{dent})" if debt < dent
+      debt -= @token \DEDENT dent
     void
 
   # Generates a newline token. Consecutive newlines get merged together.
