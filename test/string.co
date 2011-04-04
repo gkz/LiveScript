@@ -1,10 +1,13 @@
-eq '(((dollars)))', '\(\(\(dollars\)\)\)'
-eq 'one two three', "on
-e tw
-o three"
-eq "four five", 'fou
-
-r five'
+eq '({[dollars]})', '\(\{\[dollars\]\}\)'
+eq 'one two three',
+   "one t
+     wo t
+      hree"
+eq "four five",
+  '
+  four \
+  five
+  '
 
 
 hello = 'Hello'
@@ -15,12 +18,8 @@ eq "[#{hello}#{world}]", '[HelloWorld]'
 eq "#{hello}##{world}", 'Hello#World'
 eq "Hello #{ 1 + 2 } World", 'Hello 3 World'
 eq "#{hello} #{ 1 + 2 } #{world}", "Hello 3 World"
-
-
-[s, t, r, i, n, g] = ['s', 't', 'r', 'i', 'n', 'g']
-eq "#{s}#{t}#{r}#{i}#{n}#{g}", 'string'
-eq "\#{s}\#{t}\#{r}\#{i}\#{n}\#{g}", '#{s}#{t}#{r}#{i}#{n}#{g}'
-eq "\#{string}", '#{string}'
+eq "#{hello + world}", 'HelloWorld'
+eq "#{hello + ' ' + world + '!'}", 'Hello World!'
 
 
 eq "\#{Escaping} first", '#{Escaping} first'
@@ -40,10 +39,6 @@ eq "#{
 
 eq "I won ##{20} last night.", 'I won #20 last night.'
 eq "I won ##{'#20'} last night.", 'I won ##20 last night.'
-
-
-eq "#{hello + world}", 'HelloWorld'
-eq "#{hello + ' ' + world + '!'}", 'Hello World!'
 
 
 list = [0 to 5]
@@ -83,7 +78,6 @@ a = """
     basic heredoc
     on two lines
     """
-
 eq a, "basic heredoc\non two lines"
 
 
@@ -92,7 +86,6 @@ a = '''
       "b
     c
     '''
-
 eq a, "a\n  \"b\nc"
 
 
@@ -101,20 +94,16 @@ a
  b
   c
 """
-
 eq a, "a\n b\n  c"
 
 
-a = '''one-liner'''
-
-eq a, 'one-liner'
+eq '''one-liner''', 'one-liner'
 
 
 a = """
       out
       here
 """
-
 eq a, "out\nhere"
 
 
@@ -123,7 +112,6 @@ a = '''
      b
    c
     '''
-
 eq a, "    a\n  b\nc"
 
 
@@ -133,13 +121,10 @@ a
 
 b c
 '''
-
 eq a, "a\n\n\nb c"
 
 
-a = '''more"than"one"quote'''
-
-eq a, 'more"than"one"quote'
+eq '''more"than"one"quote''', 'more"than"one"quote'
 
 
 # [coffee#647](https://github.com/jashkenas/coffee-script/issues/647)
@@ -170,13 +155,14 @@ eq b, "basic heredoc \#{10}\non two lines"
 eq '''here's an apostrophe''', "here's an apostrophe"
 
 
-# The indentation detector ignores blank lines without trailing whitespace.
+# Blank lines are ignored for indentation detection.
 a = """
     one
+
     two
 
     """
-ok a, "one\ntwo\n"
+ok a, "one\n\ntwo\n"
 
 
 eq ''' line 0
@@ -207,7 +193,6 @@ eq \c, 'c'
 eq('+', \+)
 eq '\\', [\\\].0
 eq '$', {\$}.\$
-eq \\\, \\
 
 
 # [coffee#923](https://github.com/jashkenas/coffee-script/issues/923)
@@ -230,3 +215,9 @@ o"#{k}" true
 # Automatic Comma Insertion
 eq "#{0}" \0
 eq \2 '1'.replace "#{1}" -> 2
+
+
+# Trailing backslashes are themselves.
+eq '''\''' '\\'
+eq """\""" "\\"
+eq \\\\ \\ + \\

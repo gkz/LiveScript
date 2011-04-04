@@ -58,8 +58,8 @@ eq 'c', result.1.b
 
 
 eq '<[ quoted words ]>', <[ <[ quoted words ]\> ]>.join ' '
-eq  1, <[]>length
-eq '', <[]>0
+eq \\ <[\]>0
+eq 0  <[ ]>length
 
 
 ### Objects

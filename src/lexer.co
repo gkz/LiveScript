@@ -30,7 +30,7 @@ exports import
   # remaining code, or a custom recursive token-matching method
   # (for interpolations). When the next token has been recorded,
   # we move forward within the code past the token, and begin again.
-  ) -> exports{}tokenize code || '', options || {}
+  ) -> exports{}tokenize code||'' options||{}
   tokenize: (code, o) ->
     # Prepend a newline to handle leading INDENT.
     code = \\n + code.replace /\r/g ''
@@ -51,8 +51,8 @@ exports import
       case ' ' then i = @doSpace     code
       case \\n then i = @doLine      code
       case \\  then i = @doBackslash code
-      case \'  then i = @doHeredoc code, \' or @doString code
-      case \"  then i = @doHeredoc code, \" or @doString code, 2q
+      case \'  then i = @doHeredoc code, \' or @doString code, \'
+      case \"  then i = @doHeredoc code, \" or @doString code, \"
       case \<
         i = @[if \[ is code.charAt 1 then \doWords else \doLiteral] code
       case \/
@@ -185,15 +185,15 @@ exports import
     match.0.length
 
   # Matches a normal string literal.
-  doString: (code, double) ->
-    if double
-      str = @balancedString code, \"
+  doString: (code, q) ->
+    if q is \"
+      str = @balancedString code, q
       if 0 < str.indexOf \#{ 1
         @interpolate str.slice(1 -1), unlines
         return str.length
     else
       [str] = SIMPLESTR.exec code or @carp 'unterminated string'
-    @strnum unlines str
+    @strnum unlines string q, str.slice 1 -1
     @countLines(str)length
 
   # Matches heredocs, adjusting indentation to the correct level, as heredocs
@@ -213,7 +213,7 @@ exports import
     if q is \" and ~doc.indexOf \#{
       @interpolate doc, enlines
     else
-      @strnum enlines string doc, q
+      @strnum enlines string q, doc
       @countLines doc
     ++@line if lnl
     txt.length + 6
@@ -261,7 +261,7 @@ exports import
         val = token.1.replace HEREGEX_OMIT, ''
         continue if not val and i > 1
         tokens.push token <<<
-          \STRNUM string(val.replace bs ||= /\\/g, \\\\\; \')
+          \STRNUM  string \' val.replace BS||=/\\/g \\\\
       tokens.push [\+- \+ tokens[*-1]2]
     tokens.pop()
     if flags
@@ -272,14 +272,11 @@ exports import
     @token \)CALL ''
     heregex.length
 
-  # Matches a word literal or ignores an escaped whitespace.
+  # Matches a word literal, or ignores a sequence of whitespaces.
   doBackslash: ->
-    unless word = WORD.exec it
-      ++@line if \\n is it.charAt 1
-      return 2
-    word.=0.slice 1
-    @strnum if \\ is word then "'\\\\'" else string word, \'
-    word.length + 1
+    [input, word] = BSTOKEN.exec it
+    if word then @strnum string \' word else @countLines input
+    input.length
 
   # Matches a words literal, a syntax sugar for a list of strings.
   doWords: ->
@@ -288,11 +285,10 @@ exports import
     @token \[ \[
     {tokens, line} = this
     for row of it.slice(2 end)split \\n
-      if row.match w ||= /\S+/g then for word of that
-        tokens.push [\STRNUM; string word, \'; line] <<< {+spaced}
+      if row.match WS||=/\S+/g then for word of that
+        tokens.push [\STRNUM; string \' word; line] <<< {+spaced}
       ++line
     @line = line - 1
-    @token \STRNUM "''" unless word
     @token \] \]
     end + 2
 
@@ -404,7 +400,7 @@ exports import
           else @token \LITERAL \this true
         case \@@ then @token \LITERAL \arguments
         case \:: then i = \prototype; fallthrough
-        case \.. then @adi(); @token \ID i || \constructor
+        case \.. then @adi(); @token \ID i||\constructor
         default break ALIASES
         return val.length
       switch val.charAt 0
@@ -513,7 +509,7 @@ exports import
       if t.0 is \TOKENS
         tokens.push ...t.1
       else
-        s = nlines string t.1, \"
+        s = nlines string \" t.1
         continue if i > 1 and s.length < 3
         tokens.push [\STRNUM s, t.2]
       tokens.push [\+- \+ tokens[*-1]2]
@@ -559,23 +555,24 @@ exports import
 
 #### String Helpers
 
-# Constructs a string token by escaping quotes and newlines.
-string = (body, quote) ->
-  return quote + quote unless body
-  body.=replace /\\([\s\S])/g ($0, $1) ->
-    if $1 of [\\n quote] then $1 else $0
-  .replace /// #{quote} ///g \\\$&
-  quote + body + quote
+# Constructs a string token by (un)escaping quotes and newlines.
+string = let (
+  escaped = /\\(?:[\\0-7bfnrtuvx]|([\w\W]))?/g
+  descape = ($0, $1) -> $1 or if $0.length > 1 then $0 else \\\\
+  qs = "'":/'/g '"':/"/g
+) -> (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
 
-# Erases all external indentations of specific length.
-detab = (str, len) ->
-  if len then str.replace /// \n [^\n\S]{#{len}} ///g \\n else str
+# Erases all external indentations up to specified length.
+function detab(str, len) ->
+  if len then str.replace detab[len]||=///\n[^\n\S]{1,#{len}}///g \\n else str
 
 # Erases all newlines and indentations.
-unlines = -> it.replace /\n[^\n\S]*/g ''
+function unlines -> it.replace INDENTS, ''
+INDENTS = /\n[^\n\S]*/g
 
 # Keeps newlines by escaping them.
-enlines = -> it.replace /\n/g \\\n
+function enlines -> it.replace LINES, \\\n
+LINES = /\n/g
 
 #### Constants
 
@@ -627,9 +624,9 @@ SYMBOL = /// ^ (?
 ) ///
 SPACE     = /^(?=.)[^\n\S]*(?:#.*)?/
 MULTIDENT = /^(?:\s*#.*)*(?:\n([^\n\S]*))+/
-SIMPLESTR = /^'[^\\']*(?:\\.[^\\']*)*'/
-JSTOKEN   = /^`[^\\`]*(?:\\.[^\\`]*)*`/
-WORD      = /^\\\S[^\s,;)}\]]*/
+SIMPLESTR = /^'[^\\']*(?:\\[\s\S][^\\']*)*'/
+JSTOKEN   = /^`[^\\`]*(?:\\[\s\S][^\\`]*)*`/
+BSTOKEN   = /^\\(?:(\S[^\s,;)}\]]*)|\s+)/
 
 REGEX = ///
   ^ / (?!\s)           # disallow leading whitespace
