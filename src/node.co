@@ -12,7 +12,7 @@ module.exports = (Coco) ->
     root.=parent while root.parent
     root.moduleCache &&= {}
     # Hack for relative `require`.
-    root.filename = if delete options.filename
+    root.filename = if options.filename
       root.paths = root.._nodeModulePaths path.dirname that
       process.argv.1 = path.resolve that
     else \.
@@ -23,5 +23,5 @@ module.exports = (Coco) ->
 
   require.extensions\.co = (module, filename) ->
     module._compile do
-      Coco.compile fs.readFileSync(filename, \utf8), {+bare}
+      Coco.compile fs.readFileSync(filename, \utf8), {filename, +bare}
       filename

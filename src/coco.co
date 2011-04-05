@@ -14,10 +14,13 @@ parser import
     upcomingInput : -> ''
 
 exports import
-  VERSION: \0.4.2
+  VERSION: \0.4.3b
 
   # Compiles a string of Coco code to JavaScript.
-  compile: (code, options) -> parser.parse(lex code)compileRoot options
+  compile: (code, options) ->
+    try parser.parse(lex code)compileRoot options catch
+      e.message += "\nat #{that}" if options?filename
+      throw e
 
   # Parses a string or tokens of Coco code,
   # returning the [AST](http://en.wikipedia.org/wiki/Abstract_syntax_tree).

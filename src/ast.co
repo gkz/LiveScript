@@ -224,6 +224,7 @@ class exports.Block extends Node
   # **Block** is the only node that can serve as the root.
   compileRoot: (options) ->
     o = {level: LEVEL_TOP, scope: @scope = Scope.root = new Scope, ...options}
+    delete o.filename
     o.indent = if bare = delete o.bare then '' else TAB
     prefix = @lines.shift()code if /^(?:#!|javascript:)/test @lines.0?code
     if delete o.repl

@@ -169,20 +169,19 @@ function runTests(Coco) ->
     try Coco.run code, {filename} catch
       ++failedTests
       return say e unless stk = e?stack
-      msg = '' + /^.+/exec stk
+      msg = e.message or ''+ /^[^]+?(?=\n    at )/exec stk
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
         m[i] = tint m[i]replace(/\\n/g \\n), bold for i of [2 4]
         msg  = m.slice(1)join \\n
-      [[] row, col] = ///#{filename}:(\d+):(\d+)\)?$///m.exec(stk) or ''
-      say tint "failed #{filename}:#{row--}:#{col--}" red
-      if row >= 0
+      [[] row, col] = ///#{filename}:(\d+):(\d+)\)?$///m.exec stk or ''
+      if row and col
+        say tint "#{msg}\n#{red}at #{filename}:#{row--}:#{col--}" red
         code = Coco.compile code
-      else if /\bon line (\d+)\b/test msg
-        row = RegExp.$1 - 1
+      else if /\bon line (\d+)\b/exec msg
+        say tint msg, red
+        row = that.1 - 1
         col = 0
-      else
-        return say stk
-      say msg
+      else return say stk
       {(row): line} = lines = code.split \\n
       say lines.slice(row-8 row+0)join \\n
       say line .slice(0 col) + tint line.slice(col), bold
