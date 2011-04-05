@@ -32,12 +32,18 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.4.2b
+### 0.4.2
 - Enabled:
   - ADI on `?.`
   - ACI on `++`/`--`
   - _conditional_ compound destructuring assignments
   - colors and tab completion in REPL
+- Made leading `*`s serve like list markers.
+      $ coco -bsp
+      * * 0
+        * 1
+
+      [0, 1];
 
 ### 0.4.1
 - Added string/array multiplication.
