@@ -240,16 +240,15 @@ exports import
     # Must be a regex when the last token is unindexable.
     else
       re = REGEX.exec it or @carp 'unterminated regex'
-    @js if re.=0 is \// then '/(?:)/' else re
-    re.length
+    @regex re.1, re.2
+    re.0.length
 
   # Matches a multiline and extended regex literal.
   doHeregex: ->
     [heregex, body, flags] = HEREGEX.exec it or @carp 'unterminated heregex'
     flags = '' if dynaflag = flags is \?
     if 0 > body.indexOf \#{
-      body.=replace(HEREGEX_OMIT, '')replace(/\//g \\\/)
-      @js "/#{ body or '(?:)' }/#{flags}"
+      @regex body.replace(HEREGEX_OMIT, '')replace(/\//g \\\/), flags
       return @countLines(heregex)length
     @token \ID \RegExp; @token \CALL( ''
     {tokens} = this; interp = @interpolate body
@@ -532,6 +531,11 @@ exports import
   # Records a literal token flagged embedded.
   js: -> @token \LITERAL new String(it) <<< {+js}
 
+  # Records a regex token.
+  regex: (body, flags) ->
+    try RegExp body catch @carp e.message
+    @js "/#{ body or '(?:)' }/#{ flags and flags.replace /(.)(?=.*\1)/g '' }"
+
   # Increments `@line` by the number of newlines in a string.
   countLines: (str) ->
     pos = 0
@@ -629,14 +633,14 @@ JSTOKEN   = /^`[^\\`]*(?:\\[\s\S][^\\`]*)*`/
 BSTOKEN   = /^\\(?:(\S[^\s,;)}\]]*)|\s+)/
 
 REGEX = ///
-  ^ / (?!\s)           # disallow leading whitespace
+  ^ /( (?!\s)          # disallow leading whitespace
   [^ [ / \n \\ ]* (?:  # every other thing
     (?: \\.                                  # anything escaped
       | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]  # or character class
     ) [^ [ / \n \\ ]*                        # every other thing again
-  )* / [imgy]{0,4} (?!\d)  # disallow trailing numbers
+  )* )/ ([imgy]{0,4}) (?!\d)  # disallow trailing numbers
 ///
-HEREGEX      = /// ^ /{3} ([\s\S]*?) /{3} (\?|[imgy]{0,4}) ///
+HEREGEX      = /// ^ /{3} ([\s\S]*?) /{3} ([imgy]{1,4}|\??) ///
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 LINE_CONTINUER = /// ^ \s* (?: , | \?\. | \.(?![.\d]) ) ///

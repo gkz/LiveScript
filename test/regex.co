@@ -42,7 +42,7 @@ eq \/1/ '0'.replace ///#{0}/// ''+/1/ \g
 eq true, /a/itest \A
 
 
-throws 'unterminated regex on line 1' -> Coco.compile '/1'
+throws 'unterminated regex on line 1' -> Coco.lex '/1'
 
 
 # [coffee#584](https://github.com/jashkenas/coffee-script/issues/584)
@@ -57,3 +57,12 @@ eq /0/['source'], ///#{0}///['source']
 
 # Should be cached aptly.
 eq 0 (/_/ <<< {0})0
+
+
+# Should deduplicate flags.
+ok //gggg
+ok //////mimi
+
+
+# Should disallow trailing backslash.
+ok try Coco.lex '///\\///'; 0 catch 1
