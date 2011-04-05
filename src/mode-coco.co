@@ -44,7 +44,7 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
 
 ### Highlight Rules
 
-keywordend = '(?![$\\w]|\\s*:(?!:))'
+keywordend = '(?![$\\w]|\\s*:(?![:=]))'
 stringfill = token: \string, regex: '.+'
 
 CocoMode.Rules =
