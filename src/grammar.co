@@ -173,8 +173,7 @@ bnf =
     o \Expression
     o 'LABEL Expression' -> new Label $1, $2
 
-    o 'PARAM( ArgList OptComma )PARAM BACKCALL Expression'
-    , -> Call.back $2, $5, $6
+    o 'PARAM( ArgList OptComma )PARAM <- Expression' -> Call.back $2, $5, $6
 
     o \COMMENT -> L JS $1, true true
     o \...     -> L new Throw JS "Error('unimplemented')"

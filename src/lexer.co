@@ -381,11 +381,10 @@ exports import
         @last.1 += val
         return 1
       tag = \UNARY
-    case <[ -> ~> ]>
-      @tagParameters(); tag = \->
-    case <[ <- <~ ]>
-      @tagParameters(); tag = \BACKCALL
-      break if @last.0 is \)PARAM
+    case \~> then tag = \->
+    case \<~ then tag = \<-; fallthrough
+    case \<-
+      break if @last.1 is \)
       {tokens} = this; i = tokens.length
       continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ( ]>
       tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
@@ -431,21 +430,6 @@ exports import
 
   # Generates a newline token. Consecutive newlines get merged together.
   newline: -> @token \TERMINATOR \\n unless @last.1 is \\n
-
-  # A source of ambiguity in our grammar used to be parameter lists in function
-  # definitions versus argument lists in function calls. Walk backwards, tagging
-  # parameters specially in order to make things easier for the parser.
-  tagParameters: ->
-    return unless @last.0 is \) and @last.1
-    {tokens} = this; level = 1; i = tokens.length - 1
-    while tok = tokens[--i]
-      switch tok.0
-      case <[ ) )CALL ]> then ++level
-      case <[ ( CALL( ]>
-        break if --level
-        if that is \( then tok.0 = \PARAM(; @last.0 = \)PARAM
-        return
-    void
 
   # Matches a balanced group such as a double-quoted string. Pass in
   # a series of delimiters, all of which must be nested correctly within the
@@ -537,10 +521,7 @@ exports import
     @js "/#{ body or '(?:)' }/#{ flags and flags.replace /(.)(?=.*\1)/g '' }"
 
   # Increments `@line` by the number of newlines in a string.
-  countLines: (str) ->
-    pos = 0
-    ++@line while pos = 1 + str.indexOf \\n pos
-    str
+  countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
 
   # Checks if the last token is
   #

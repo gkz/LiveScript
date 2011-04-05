@@ -18,7 +18,7 @@ exports import {rewrite, able}
 
 function rewrite ->
   removeTerminators      it
-  closeCalls             it
+  transformParens        it
   addImplicitIndentation it
   tagPostfixConditionals it
   addImplicitParentheses it
@@ -43,14 +43,20 @@ function removeTerminators(tokens) ->
                            that of <[ ELSE CASE DEFAULT CATCH FINALLY ]>
   void
 
-# The lexer has tagged each of the opening parenthesis of
-# a call. Match it with its closing pair.
-function closeCalls(tokens) ->
+# - `CALL( )` => ` CALL( )CALL`
+# - `( ) -> ` => `PARAM( )PARAM ->`
+function transformParens(tokens) ->
   stack = []
-  for token of tokens
+  for token, i of tokens
     switch token.0
-    case <[ ( CALL( ]> then stack.push that
-    case <[ ) )CALL ]> then stack.pop() is \CALL( and token.0 = \)CALL
+    case <[ ( CALL( ]> then stack.push token
+    case <[ ) )CALL ]> then if pair = stack.pop()
+      if pair.0 is \CALL(
+        token.0 =  \)CALL
+      else if token.1 and tokens[i+1]?0 of <[ -> <- ]>
+        pair. 0 = \PARAM(
+        token.0 = \)PARAM
+        ++i
   void
 
 # Tag postfix conditionals as such, so that we can parse them with a
@@ -80,9 +86,9 @@ function addImplicitIndentation(tokens) ->
     else
       tokens.splice ++i, 0 indent
     switch
-    case \, is next           then --i; fallthrough  # ->,
+    case \, is next          then --i; fallthrough  # ->,
     case \, is tokens[i+2]?0 then go 0 i+=2; ++i    # -> 0,
-    case next of <[ ( [ { ]> and                     # -> [0],
+    case next of <[ ( [ { ]> and                    # -> [0],
          \, is tokens[idx = 1 + indexOfPair tokens, i+1]?0
       go 0 idx; ++i
     default
