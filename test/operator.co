@@ -204,6 +204,9 @@ eq o[0], 0
 o import all new class then deep: 'copy'
 eq o.deep, 'copy'
 
+o import all: \base
+eq o.all, \base
+
 a = [0]
 a import (*): 1, (*): 2
 eq a[1], 1

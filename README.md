@@ -36,7 +36,7 @@ Coco tries to amend them, entwining good parts of both.
 - Enabled:
   - ADI on `?.`
   - ACI on `++`/`--`
-  - _conditional_ compound destructuring assignments
+  - conditional destructuring assignments
   - colors and tab completion in REPL
 - Made leading `*`s serve like list markers.
       $ coco -bsp

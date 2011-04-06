@@ -80,58 +80,29 @@ exports import
   # identifiers.
   doIdentifier: ->
     return 0 unless match = ID.exec it
-    {last} = this
-    switch id = match.1
-    case \from
-      break unless @tokens[*-2]?0 is \FOR
-      @<<<{-seenFor, +seenFrom}
-      return @token(\FROM id)length
-    case \ever
-      break unless last.0 is \FOR
-      @seenFor = false
-      return @token(\EVER id)length
-    case <[ to til ]>
-      if @seenFrom
-        @<<<{-seenFrom, +seenTo}
-        return @token(\TO id)length
-      else if last.0 is \STRNUM and /^[-+\d.]/test last.1
-        last <<< 0:\RANGE op:id
-        return id.length
-    case \by
-      if @seenTo
-        @seenTo = false
-        return @token(\BY id)length
-      else if last.0 is \RANGE and last.to
-        last.by = true
-        return id.length
-    case \all
-      break unless last.0 is \IMPORT and last.1 is \<<<
-      last.1 += \<
-      return id.length
-    tag = \ID; colon = match.2
+    {last} = this; tag = \ID; [[] id, colon] = match
     if colon or last.0 is \DOT or @adi()
       if id of JS_KEYWORDS or id of RESERVED
         (id = new String id)reserved = true
     else if id of <[ this eval ]>
-      @token \LITERAL id, true
-      return id.length
+      return @token(\LITERAL id, true)length
     else if id of JS_KEYWORDS or id of <[ then of arguments ]>
       switch tag = id.toUpperCase()
       case \FOR  then @seenFor = true; fallthrough
       case \THEN then @seenFrom = @seenTo = false
-      case \IMPORT              then id = \<<<
-      case <[ CATCH FUNCTION ]> then id = ''
       case <[ TRUE FALSE NULL VOID ARGUMENTS DEBUGGER ]> then tag = \LITERAL
-      case <[ NEW DO TYPEOF DELETE                    ]> then tag = \UNARY
-      case <[ BREAK CONTINUE                          ]> then tag = \JUMP
+      case <[ NEW DO TYPEOF DELETE ]> then tag = \UNARY
+      case <[ BREAK CONTINUE       ]> then tag = \JUMP
+      case <[ CATCH FUNCTION ]> then id = ''
+      case \IMPORT              then id = \<<<
       case <[ IN OF INSTANCEOF ]>
         if tag is not \INSTANCEOF and @seenFor
+          # FOROF holds the index variable.
           if tag is \OF
             id = ''; @seenTo = true
-            if last.0 is \ID
-              switch @tokens[*-2]0
-              case \,        then @tokens.splice -2 1; fallthrough
-              case <[ } ] ]> then @tokens.pop(); id = last.1
+            if last.0 is \ID then switch @tokens[*-2]0
+            case \,        then @tokens.splice -2 1; fallthrough
+            case <[ } ] ]> then @tokens.pop(); id = last.1
           @seenFor = false
           tag = \FOR + tag
           break
@@ -142,17 +113,39 @@ exports import
     else switch id
     case <[ and or is not ]>
       if id is \not and last.alias and last.1 is \===
-        last.1 = \!==
-        return id.length
-      @token ...COCO_ALIASES[id]; @last.alias = true
+      then last.1 = \!==
+      else @token ...COCO_ALIASES[id]; @last.alias = true
       return id.length
     case \unless then tag = \IF
     case \until  then tag = \WHILE
+    case \own    then tag = \OWN if last.0 is \FOR
+    case \all then if last.1 is \<<<
+      last.1 += \<
+      return 3
+    case \from then if @tokens[*-2]?0 is \FOR
+      @<<<{-seenFor, +seenFrom}
+      tag =\FROM
+    case \ever then if last.0 is \FOR
+      @<<<{-seenFor}
+      tag = \EVER
+    case <[ to til ]>
+      if @seenFrom
+        @<<<{-seenFrom, +seenTo}
+        tag = \TO
+      else if last.0 is \STRNUM and not isNaN last.1
+        last <<< 0:\RANGE op:id
+        return id.length
+    case \by
+      if @seenTo
+        @<<<{-seenTo}
+        tag = \BY
+      else if last.0 is \RANGE and last.to
+        last.by = true
+        return 2
     default
       @carp "reserved word \"#{id}\"" if id of RESERVED
       if not last.1 and last.0 of <[ CATCH FUNCTION LABEL ]>
         return (last.1 = id)length
-      tag = \OWN if id is \own and last.0 is \FOR
     @token tag, id
     @token \: \: if colon
     match.0.length
