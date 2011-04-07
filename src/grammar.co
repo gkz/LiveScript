@@ -116,7 +116,7 @@ bnf =
       then Op($2.slice 1; $1; $3)invert()
       else Op $2, $1, $3
 
-    o 'Expression ?' -> Existence $1
+    o 'Chain ?' -> Existence $1.unwrap()
 
     # Functions can be either anonymous, or named using `function` keyword.
     o \Function
@@ -305,33 +305,25 @@ bnf =
     o 'Block TERMINATOR Body' -> $1.add $3
     o ''                      -> Block()
 
-# Precedence
-# ----------
-# Operators at the top of this list have higher precedence than the ones lower
-# down as in [Yacc](http://dinosaur.compilertools.net/yacc/index.html).
-# Following these rules is what makes `2 + 3 * 4` parse as:
-#
-#     2 + (3 * 4)
-#
-# And not:
-#
-#     (2 + 3) * 4
-operators = [
-  <[ nonassoc  CREMENT      ]>
-  <[ left      ?            ]>
-  <[ right     UNARY        ]>
-  <[ left      MATH         ]>
-  <[ left      +-           ]>
-  <[ left      SHIFT IMPORT ]>
-  <[ left      RELATION     ]>
-  <[ right     COMPARE      ]>
-  <[ left      BITWISE      ]>
-  <[ right     LOGIC        ]>
-  <[ right     : ASSIGN RETURN THROW EXTENDS INDENT ]>
-  <[ right     IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
-  <[ left      POST_IF FOR WHILE ]>
-# Reverse them because Jison orders precedence from low to high.
-]reverse()
+# Precedence and Associativity
+# ----------------------------
+# Following these rules is what makes
+# `a + b * c` parse as `a + (b * c)` (rather than `(a + b) * c`),
+# and `x = y = z` `x = (y = z)` (not `(x = y) = z`).
+operators =
+  # Listed from lower precedence.
+  <[ left     POST_IF FOR WHILE ]>
+  <[ right    IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
+  <[ right    : ASSIGN RETURN THROW EXTENDS INDENT ]>
+  <[ right    LOGIC        ]>
+  <[ left     BITWISE      ]>
+  <[ right    COMPARE      ]>
+  <[ left     RELATION     ]>
+  <[ left     SHIFT IMPORT ]>
+  <[ left     +-           ]>
+  <[ left     MATH         ]>
+  <[ right    UNARY        ]>
+  <[ nonassoc CREMENT      ]>
 
 # Wrapping Up
 # -----------
