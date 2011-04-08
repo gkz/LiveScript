@@ -190,6 +190,9 @@ a = Array do
 eq 1, a.0.b
 eq 3, a.2
 
+fn = null
+eq void fn? do then 4;5
+
 
 ### `import`
 x = 'xx'

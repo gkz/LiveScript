@@ -104,8 +104,9 @@ function addImplicitIndentation(tokens) ->
     case \FINALLY           then tag of <[ TRY CATCH THEN ]>
     case \SWITCH            then not seenSwitch := true
     case <[ CASE DEFAULT ]> then not seenSwitch
-  function go(token, i) ->
-    tokens.splice if tokens[i-1]0 is \, then i-1 else i, 0 dedent <<< {token.2}
+  function go([] i) ->
+    tokens.splice if tokens[i-1]0 is \, then i-1 else i,
+                  0, dedent <<< {(tokens[i])2}
   void
 
 # Object literals may be written without braces for simple cases.
@@ -145,24 +146,29 @@ function addImplicitBraces(tokens) ->
 # Methods may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
 function addImplicitParentheses(tokens) ->
-  i = 0; brackets = []
+  i = -1; brackets = []
   while token = tokens[++i]
-    [tag] = token; prev = tokens[i-1]
     if doblock = token.1 is \do and tokens[i+1]?0 is \INDENT
       tokens.splice i, 1
       (tpair = tokens[indexOfPair tokens, i])0 = \)
       (token = tokens[                    i])0 = \(
-    else if tag is \[
+    continue unless i
+    [tag] = token; prev = tokens[i-1]
+    if tag is \[
       brackets.push prev.0 is \DOT
     if prev.0 is \]
       if brackets.pop() then token.index = true else continue
     continue unless prev.spaced and able tokens, i, true
+    soak = prev.0 is \?
     if doblock
       token.0 = \CALL(; tpair.0 = \)CALL
+      if soak
+        tokens.splice i-1 1
+        token.1 = \?(
       continue
     continue unless tag of ARG or tag is \+- and !(token.spaced or token.eol)
     skipBlock = seenSwitch = false
-    tokens.splice --i, 1 if soak = prev.0 is \?
+    tokens.splice --i, 1 if soak
     tokens.splice i++, 0 [\CALL( if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
   function ok(token, i) ->
