@@ -3,24 +3,31 @@ identityWrap = (x) -> -> x
 eq true, identityWrap(identityWrap(true))()()
 
 
-# Chained accesses split true period/newline, backwards and forwards.
-str = 'god'
+# Chained accesses split on dot + newline, backwards and forwards.
+$ = {}
+$.self = $
+$.begin = $.do = $.end = -> this
 
-eq \dog, str.
-  split('').
-  reverse().
-   reverse().
-     reverse().
-  join('')
+ok $.
+  begin().
+     do().
+   self.
+     self.
+  end().
+self
 
-result = '' + str
-  .replace /.$/ -> it.toLowerCase()
-  .split ''
-  .reverse()
-   .reverse()
-    .reverse()
-  .join ''
-eq \dog, result
+# Leading dots introduce dummy indentations and/or close implicit calls.
+r = $.self
+     .begin()
+       .do()
+       .do -> 0
+       .begin()
+         .do ->
+            2
+            3
+       .end ->
+     .end()
+eq r, $
 
 
 # Newline suppression for binary operators.
@@ -38,6 +45,7 @@ eq 2 [
      []],
   [[]]]],
 []].length
+
 
 eq 'Hello', String(
               """

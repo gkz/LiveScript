@@ -108,6 +108,13 @@ eq \
   2
 , 2
 
+a = Array 0
+        , do ->
+          1
+        , do -> 2; 2
+        , 3
+eq a+'' '0,1,2,3'
+
 
 # Assignment to an inner variable that shares a name with
 # an `Object.prototype` member should not leak.

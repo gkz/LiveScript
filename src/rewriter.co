@@ -86,7 +86,7 @@ function addImplicitIndentation(tokens) ->
     else
       tokens.splice ++i, 0 indent
     switch
-    case \, is next          then --i; fallthrough  # ->,
+    case next of <[ , DOT ]> then --i; fallthrough  # ->,
     case \, is tokens[i+2]?0 then go 0 i+=2; ++i    # -> 0,
     case next of <[ ( [ { ]> and                    # -> [0],
          \, is tokens[idx = 1 + indexOfPair tokens, i+1]?0
@@ -98,7 +98,7 @@ function addImplicitIndentation(tokens) ->
     switch token.0
     case \DEDENT            then true
     case \TERMINATOR        then token.1 is not \;
-    case \DOT               then tokens[i-1]eol
+    case \,                 then tokens[i-1]eol
     case \ELSE              then tag is \THEN
     case \CATCH             then tag is \TRY
     case \FINALLY           then tag of <[ TRY CATCH THEN ]>

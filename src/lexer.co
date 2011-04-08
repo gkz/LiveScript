@@ -309,11 +309,11 @@ exports import
     else
       if tabs and (@emender ||= ///[^#{ tabs.charAt 0 }]///)exec tabs
         @carp "contaminated indent #{ escape that }"
-      if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := ]>     or
-         tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]> or
-         LINE_CONTINUER.test it
+      if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := ]> or
+         tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]>
         return length
-      if delta then @indent delta else @newline()
+      cont = LINE_CONTINUER.test it
+      if delta then @indent delta, cont else cont or @newline()
     @<<<{-seenFrom, -seenTo}
     length
 
@@ -410,9 +410,9 @@ exports import
   #### Token Manipulators
 
   # Records an INDENT.
-  indent: (delta) ->
+  indent: (delta, dummy) ->
     @dent += delta
-    @dents.push @token \INDENT delta
+    @dents.push if dummy then ''+delta else @token \INDENT delta
     void
 
   # Records a DEDENT, or DEDENTs if there are multiple matching INDENTs.
@@ -420,7 +420,8 @@ exports import
     @dent -= debt
     while debt > 0 and dent = @dents.pop()
       @carp "unmatched dedent (#{debt} for #{dent})" if debt < dent
-      debt -= @token \DEDENT dent
+      @token \DEDENT dent if typeof dent is \number
+      debt -= dent
     void
 
   # Generates a newline token. Consecutive newlines get merged together.
