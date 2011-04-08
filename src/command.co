@@ -179,17 +179,21 @@ function repl ->
     module.filename = process.cwd() + \/repl
   {Script} = process.binding \evals
   context  = Script.createContext() <<< {...global, module, require}
-  buf   = ''
+  code  = ''
+  cont  = false
   stdin = process.openStdin()
   repl  = require(\readline)createInterface stdin, process.stdout,
     require(\repl)REPLServer::{context, commands: []}~complete
+  prompt = \coco
+  prompt += " -c#{ if o.bare then \b else '' }" if o.compile
+  repl._ttyWrite = (char) -> cont := char is \\n; @[]_ttyWrite ...
   repl.on \close stdin~destroy
   repl.on \line ->
-    if \\ is it.slice -1
-      buf += (buf && \\n) + it.slice 0 -1
+    if cont
+      code += it + \\n
+      repl.output.write \. * prompt.length + '. '
       return
-    code = (buf && \\n) + it
-    buf := ''
+    code += it
     try
       if o.compile
         say Coco.compile code, {o.bare}
@@ -197,10 +201,9 @@ function repl ->
         _ = Script.runInContext Coco.compile(code, {+bare, +repl}), context
         _ is void or pp context._ = _
     catch then say e
+    code := ''
     repl.prompt()
   process.on \uncaughtException -> say "\n#{ it?stack or it }"
-  prompt = \coco
-  prompt += " -c#{ if o.bare then \b else '' }" if o.compile
   repl.setPrompt prompt + '> '
   repl.prompt()
 
