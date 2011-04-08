@@ -48,15 +48,6 @@ o = (patterns, action, options) ->
 # value for the _MATH_ terminal, and `$3` would be the value of the second
 # _Expression_.
 bnf =
-  # Everything that can be assigned to.
-  Assignable:
-    o \SimpleAssignable
-
-    o '[ ArgList    OptComma ]' -> L Arr $2
-    o '{ Properties OptComma }' -> L Obj $2
-
-    o 'Chain CLONE { Properties OptComma }' -> Clone $1.unwrap(), $4
-
   # The types of things that can be accessed or called into.
   Chain:
     o \Assignable    -> Chain $1
@@ -72,12 +63,60 @@ bnf =
   SimpleAssignable:
     o \ID -> L Var $1
 
-    o 'Chain DOT ID'                   -> $1.add Index L(Key     $3) ,$2
-    o 'Chain DOT STRNUM'               -> $1.add Index L(Literal $3) ,$2
-    o 'Chain DOT Parenthetical'        -> $1.add Index $3.it         ,$2
-    o 'Chain DOT [ ArgList OptComma ]' -> $1.add L Index $4          ,$2
+    o 'Chain DOT Key'                  -> $1.add Index $3, $2
+    o 'Chain DOT [ ArgList OptComma ]' -> $1.add Index $4, $2
 
     o \SUPER -> L new Super
+
+  # **Key** represents a property name, before `:` or after `.`.
+  Key:
+    o \KeyBase
+    o \Parenthetical
+  KeyBase:
+    o \ID     -> L Key     $1
+    o \STRNUM -> L Literal $1
+
+  # **ArgList** is either the list of objects passed into a function call,
+  # the parameter list of a function, or the contents of an array literal
+  # (i.e. comma-separated expressions). Newlines work as well.
+  ArgList:
+    o ''                                                -> []
+    o \Arg                                              -> [$1]
+    o 'ArgList , Arg'                                   -> $1.concat $3
+    o 'ArgList OptComma TERMINATOR Arg'                 -> $1.concat $4
+    o 'ArgList OptComma INDENT ArgList OptComma DEDENT' -> $1.concat $4
+  Arg:
+    o     \Expression
+    o '... Expression' -> Splat $2
+    o \...             -> Splat L Arr()
+
+  # An optional, trailing comma.
+  OptComma:
+    o ''
+    o \,
+
+  # A list of lines, separated by newlines or semicolons.
+  Body:
+    o \Line                  -> Block $1
+    o 'Body TERMINATOR Line' -> $1.add $3
+    o 'Body Block'           -> $1.add $2
+    o 'Body TERMINATOR'
+  # A line of Coco can be either a (labeled) expression, backcall, comment or
+  # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm).
+  Line:
+    o \Expression
+    o 'LABEL Expression' -> new Label $1, $2
+
+    o 'PARAM( ArgList OptComma )PARAM <- Expression' -> Call.back $2, $5, $6
+
+    o \COMMENT -> L JS $1, true true
+    o \...     -> L Throw JS "Error('unimplemented')"
+
+  # An indented block of expressions. Note that [Rewriter](#rewriter)
+  # converts some single-line forms into blocks for us.
+  Block:
+    o 'INDENT Body DEDENT' -> $2
+    o 'INDENT      DEDENT' -> Block()
 
   # All the different types of expressions in our language.
   Expression:
@@ -166,70 +205,11 @@ bnf =
 
     o 'LABEL Block' -> new Label $1, $2
 
-  # A line of Coco can be either a (labeled) expression, backcall, comment or
-  # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm).
-  Line:
-    o \Expression
-    o 'LABEL Expression' -> new Label $1, $2
-
-    o 'PARAM( ArgList OptComma )PARAM <- Expression' -> Call.back $2, $5, $6
-
-    o \COMMENT -> L JS $1, true true
-    o \...     -> L Throw JS "Error('unimplemented')"
-  # A list of lines, separated by newlines or semicolons.
-  Body:
-    o \Line                  -> Block $1
-    o 'Body TERMINATOR Line' -> $1.add $3
-    o 'Body Block'           -> $1.add $2
-    o 'Body TERMINATOR'
-
-  # An optional, trailing comma.
-  OptComma:
-    o ''
-    o \,
-
-  Arg:
-    o     \Expression
-    o '... Expression' -> Splat $2
-    o \...             -> Splat L Arr()
-  # **ArgList** is either the list of objects passed into a function call,
-  # the parameter list of a function, or the contents of an array literal
-  # (i.e. comma-separated expressions). Newlines work as well.
-  ArgList:
-    o ''                                                -> []
-    o \Arg                                              -> [$1]
-    o 'ArgList , Arg'                                   -> $1.concat $3
-    o 'ArgList OptComma TERMINATOR Arg'                 -> $1.concat $4
-    o 'ArgList OptComma INDENT ArgList OptComma DEDENT' -> $1.concat $4
-
-  Parenthetical:
-    o '(        Body        )' -> Parens $2.unwrap(), false, $1 is \"
-    o '( INDENT Body DEDENT )' -> Parens $3.unwrap(), false, $1 is \"
-
-  # An indented block of expressions. Note that [Rewriter](#rewriter)
-  # converts some single-line forms into blocks for us.
-  Block:
-    o 'INDENT Body DEDENT' -> $2
-    o 'INDENT      DEDENT' -> Block()
-
-  # **Function** is the function literal, defined by an indented **Block**
-  # preceded by an optional parameter list and a function arrow.
-  Function:
-    o 'PARAM( ArgList OptComma )PARAM -> Block' -> L Fun $2, $6, $5
-    o                                '-> Block' -> L Fun [], $2, $1
-
-  # Things that can be keys within an object literal.
-  KeyBase:
-    o \ID     -> L Key     $1
-    o \STRNUM -> L Literal $1
-  Key:
-    o \KeyBase
-    o \Parenthetical
+  # Keys and values.
   KeyValue:
     o \Key
     o 'LITERAL DOT KeyBase' -> Prop $3, Chain(Literal $1; [Index $3, $2])
     o 'Key     DOT KeyBase' -> Prop $3, Chain(        $1; [Index $3, $2])
-  # Keys and values.
   Property:
     o 'Key : Expression'                     -> Prop $1, $3
     o 'Key : INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($4)
@@ -256,6 +236,25 @@ bnf =
   IfBlock:
     o              'IF Expression Block' -> If $2, $3, name: $1
     o 'IfBlock ELSE IF Expression Block' -> $1.addElse If $4, $5, name: $3
+
+  Parenthetical:
+    o '(        Body        )' -> Parens $2.unwrap(), false, $1 is \"
+    o '( INDENT Body DEDENT )' -> Parens $3.unwrap(), false, $1 is \"
+
+  # Everything that can be assigned to.
+  Assignable:
+    o \SimpleAssignable
+
+    o '[ ArgList    OptComma ]' -> L Arr $2
+    o '{ Properties OptComma }' -> L Obj $2
+
+    o 'Chain CLONE { Properties OptComma }' -> Clone $1.unwrap(), $4
+
+  # **Function** is the function literal, defined by an indented **Block**
+  # preceded by an optional parameter list and a function arrow.
+  Function:
+    o 'PARAM( ArgList OptComma )PARAM -> Block' -> L Fun $2, $6, $5
+    o                                '-> Block' -> L Fun [], $2, $1
 
   LoopHead:
     # The source of a `for`-loop is an array, object, or range.
