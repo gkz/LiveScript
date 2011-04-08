@@ -1267,7 +1267,7 @@ class exports.Jump extends Node
 
 #### Throw
 class exports.Throw extends Jump
-  (@it) ->
+  (@it) ~>
 
   children: [\it]
 
@@ -1275,6 +1275,8 @@ class exports.Throw extends Jump
 
   compileNode: (o) ->
     "throw #{ (@it or Literal \null)compile o, LEVEL_PAREN };"
+
+  Jump.throw = this
 
 #### Return
 class exports.Return extends Throw
@@ -1284,6 +1286,8 @@ class exports.Return extends Throw
 
   compileNode: (o) ->
     "return#{ if @it then ' ' + @it.compile o, LEVEL_PAREN else '' };"
+
+  Jump.return = this
 
 #### While
 # The traditional `while` loop.

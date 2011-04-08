@@ -177,8 +177,8 @@ function addImplicitParentheses(tokens) ->
       return true if pre.eol or pre.0 is \DEDENT
     case \INDENT
       return skipBlock := false if skipBlock
-      return pre.0 not of
-        <[ { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY ]>
+      return pre.0 not of <[
+        { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY HURL ]>
     case <[ TERMINATOR POST_IF FOR WHILE BY TO ]>
       return pre.0 is not \,
     false

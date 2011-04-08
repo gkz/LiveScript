@@ -133,17 +133,14 @@ bnf =
     o 'LoopHead   Block'    -> $1.addBody $2
     o 'Expression LoopHead' -> $2.addBody Block $1
 
-    o 'RETURN Expression'                     -> Return $2
-    o 'RETURN INDENT ArgList OptComma DEDENT' -> Return Arr.maybe $3
-    o \RETURN                                 -> L Return()
+    # `return` or `throw`
+    o 'HURL Expression'                     -> Jump[$1] $2
+    o 'HURL INDENT ArgList OptComma DEDENT' -> Jump[$1] Arr.maybe $3
+    o \HURL                                 -> L Jump[$1]()
 
-    # `break`/`continue`
+    # `break` or `continue`
     o \JUMP     -> L new Jump $1
     o 'JUMP ID' -> L new Jump $1, $2
-
-    o 'THROW Expression'                     -> new Throw $2
-    o 'THROW INDENT ArgList OptComma DEDENT' -> new Throw Arr.maybe $3
-    o \THROW                                 -> L new Throw
 
     o 'SWITCH Expression Cases'               -> new Switch $2, $3
     o 'SWITCH Expression Cases DEFAULT Block' -> new Switch $2, $3, $5
@@ -178,7 +175,7 @@ bnf =
     o 'PARAM( ArgList OptComma )PARAM <- Expression' -> Call.back $2, $5, $6
 
     o \COMMENT -> L JS $1, true true
-    o \...     -> L new Throw JS "Error('unimplemented')"
+    o \...     -> L Throw JS "Error('unimplemented')"
   # A list of lines, separated by newlines or semicolons.
   Body:
     o \Line                  -> Block $1
@@ -314,7 +311,7 @@ operators =
   # Listed from lower precedence.
   <[ left     POST_IF FOR WHILE ]>
   <[ right    IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
-  <[ right    : ASSIGN RETURN THROW EXTENDS INDENT ]>
+  <[ right    : ASSIGN HURL EXTENDS INDENT ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
