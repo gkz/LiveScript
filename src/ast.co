@@ -1252,7 +1252,8 @@ class exports.Splat extends Node
     "#{base}.concat(#{ args.join ', ' })"
 
   function ensureArray(node) ->
-    return node if node instanceof Arr or
+    node.=it while node instanceof Parens
+    return node if node instanceof [Arr, While] or
                    node.op is \* and node.first instanceof Arr
     Call.make JS(utility(\slice) + \.call), [node]
 
