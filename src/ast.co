@@ -761,28 +761,29 @@ class exports.Op extends Node
     code += ", #{ o.scope.free ref }"
     if o.level < LEVEL_LIST then code else "(#{code})"
 
-  # - `'x' * 3` => `'xxx'`
-  # - `[x] * 3` => `[x, x, x]`
   compileRepeat: (o) ->
-    {first: x, second: n} = this
-    unless n instanceof Literal and n.value < 0x100
-      ref = "repeat#{ if x instanceof Arr then \Array else \String }"
-      return Call.make(Util ref; [x, n])compile o
+    {first: x, second: n} = this; {items} = x
+    if (x = JS that if items and Splat.compileArray o, items) or
+       not (n instanceof Literal and n.value < 0x20)
+      x = Call.make Util(\repeat + if items then \Array else \String), [x, n]
+      return x.compile o
     n = +n.value
     return x.compile o if 1 <= n < 2
-    if x instanceof Literal
-      (q = (x.=compile o)charAt()) + "#{ x.slice 1 -1 }" * n + q
-    else if x instanceof Arr
-      if n < 1 then return Block::{lines: x.items}add(JS '[]')compile o
-      {items} = x; refs = []
+    # `[x] * 2` => `[x, x]`
+    if items
+      if n < 1 then return Block::{lines: items}add(JS '[]')compile o
+      refs = []
       [items[i], refs.*] = item.cache o, 1x for item, i of items
-      items.push JS() <<< compile: ->
-        (", #{ List.compile o, refs }" * (n-1))slice 2
+      items.push JS() <<<
+        compile: -> (", #{ List.compile o, refs }" * (n-1))slice 2
       x.compile o
+    # `'x' * 2` => `'xx'`
+    else if x instanceof Literal
+      (q = (x.=compile o)charAt()) + "#{ x.slice 1 -1 }" * n + q
+    # `"#{x}" * 2` => `(_ref = "" + x) + _ref`
     else
       if n < 1 then return Block(x.it)add(JS "''")compile o
-      [x, ref] = x.cache o, 1, LEVEL_OP
-      x += " + #{ref}" * (n-1)
+      x = (refs = x.cache o, 1, LEVEL_OP)0 + " + #{refs.1}" * (n-1)
       if o.level < LEVEL_OP + PREC\+ then x else "(#{x})"
 
 #### Assign
