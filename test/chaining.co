@@ -16,16 +16,16 @@ ok $.
   end().
 self
 
-# Leading dots introduce dummy indentations and/or close implicit calls.
+# Leading dots introduce dummy blocks and/or close implicit calls/indentations.
 r = $.self
      .begin()
        .do()
-       .do -> 0
+       .do -> 0; 1
        .begin()
          .do ->
             2
             3
-       .end ->
+       .end 4, ->
      .end()
 eq r, $
 
