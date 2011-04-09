@@ -1239,17 +1239,22 @@ class exports.Splat extends Node
     break if node instanceof Splat for node, index of list
     return '' if index >= list.length
     if list.length is 1
-      code = list.0.it.compile o, LEVEL_LIST
-      return if apply then code else utility(\slice) + ".call(#{code})"
+      node = (if apply then Object else ensureArray) list.0.it
+      return node.compile o, LEVEL_LIST
     args = []; atoms = []
     for node of list.splice index, 9e9
       if node instanceof Splat
         atoms.length &&= !args.push "[#{ List.compile o, atoms }]"
-        args.push utility(\slice) + ".call(#{ node.it.compile o, LEVEL_LIST })"
+        args.push ensureArray(node.it)compile o, LEVEL_LIST
       else atoms.push node
     args.push "[#{ List.compile o, atoms }]" if atoms.length
     base = if index then "[#{ List.compile o, list }]" else args.shift()
     "#{base}.concat(#{ args.join ', ' })"
+
+  function ensureArray(node) ->
+    return node if node instanceof Arr or
+                   node.op is \* and node.first instanceof Arr
+    Call.make JS(utility(\slice) + \.call), [node]
 
 #### Jump
 # `break` `continue`

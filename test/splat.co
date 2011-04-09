@@ -139,3 +139,12 @@ eq '''
   a = arguments[arguments.length - 1];
 });
 ''', Coco.compile '(..., a) ->', {+bare}
+
+
+# arrays and `arguments` and should be passed directly to `.apply`.
+eq 'f.apply(null, [x, x, x]);' Coco.compile 'f ...[x]*3' {+bare}
+eq 'f.apply(null, arguments);' Coco.compile 'f ...@@'    {+bare}
+eq '''
+var __slice = [].slice;
+f.apply(null, __slice.call(this));
+''' Coco.compile 'f ...@' {+bare}
