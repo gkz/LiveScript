@@ -11,18 +11,8 @@ eq fn(1 to 5), '3,4'
 eq fn(6 to 7), ''
 
 
-obj =
-  name: 'moe'
-  accessor: (...args) ->
-    '' + [@name].concat args
-  getNames: ->
-    args = ['jane', 'ted']
-    @accessor ...args
-  index: 0
-  0: {method: -> this is obj[0]}
-
-eq obj.getNames(), 'moe,jane,ted'
-ok obj[obj.index++].method(...[0]), 'should cache base value'
+a = [0  method: -> this is a.1]
+ok a[++a.0]method(...a), 'should cache base value'
 
 
 quartet = [0 to 3]
@@ -38,28 +28,13 @@ eq '42,0,1,2,3', '' + [
 
 # Splats with `super`.
 class Parent
-  meth: (...args) -> args
+  meth: (...args) -> ''+ args
 
 class Child extends Parent
-  meth: ->
-    nums = [0, 1]
-    super ...nums
+  nums: [0, 1]
+  meth: -> super ...@nums, 2
 
-eq '0,1', '' + (new Child).meth()
-
-
-# Functions with splats being called with too few arguments.
-pen = null
-fun = (first, ...variable, penultimate, ultimate) -> pen := penultimate
-
-fun 1 to 9
-eq pen, 8
-
-fun 1 to 3
-eq pen, 2
-
-fun 1 2
-eq pen, 2
+eq '0,1,2' new Child()meth()
 
 
 # Array splat expansions with assigns.
@@ -78,6 +53,9 @@ ok y is not o[y], 'should copy o[y]'
 
 throws 'splatting "new" on line 1' -> Coco.compile 'new C ...a'
 throws 'splatting "new" on line 1' -> Coco.compile 'new C ...'
+
+throws 'multiple splat in an assignment on line 1'
+     , -> Coco.compile '[...a, ...b] = c'
 
 
 class Thisplat

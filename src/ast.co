@@ -866,14 +866,14 @@ class exports.Assign extends Node
     for node, i of nodes
       continue if node.isEmpty()
       if node instanceof Splat
-        node.carp 'multiple splats in an assignment' if ivar
+        node.carp 'multiple splat in an assignment' if ivar
         len = nodes.length; empty = (node.=it)isEmpty()
         if i is len - 1
           break if empty
           val = utility(\slice) + \.call( + rite + if i then ", #{i})" else \)
         else
           val = "#{rite}.length - #{ len - i - 1 }"
-          # Optimize `(..., a) ->`.
+          # Optimize `[..., a] = b`.
           if empty and i is len - 2
             ivar = val
             continue
@@ -885,7 +885,7 @@ class exports.Assign extends Node
         val = Var val
       else
         if (inc = ivar) and start < i then inc += " + #{ i - start }"
-        val = Chain lr ||= Literal(rite), [Index Literal inc || i]
+        val = Chain rcache||=Literal(rite), [Index JS inc || i]
       @{left: node, right: val, +\void}compile o, LEVEL_PAREN
 
   rendObj: (o, nodes, rite) ->
@@ -1099,21 +1099,21 @@ class exports.Fun extends Node
       else sscope.assign \_this \this
     {lines} = body; wasEmpty = not lines.length; args = []; asns = []
     for p, i of params
-      if p instanceof Splat then splatted = true
+      if p instanceof Splat then splat = p
       # `(a = x) ->` => `(a ? x) ->`
       else if p.op is \= and not p.logic
         params[i] = Op \? p.left, p.right
-    if splatted
+    if splat
       # `(a, ...b) ->` => `-> [a, ...b] = @@`
-      asns.push Assign Arr(params), Literal \arguments
+      if params.1 or not splat.it.isEmpty()
+        asns.push Assign Arr(params), Literal \arguments
     else
       unless params.length or @wrapper
         params.0 = Var \it if body.traverseChildren(-> it.value is \it or null)
       dic = {}
       for p of params
         arg = p
-        if dfv = arg.hasDefault()    then arg.=first
-        else if arg instanceof Splat then arg.=it
+        arg.=first if dfv = arg.hasDefault()
         if arg.isEmpty()
           arg = Var scope.temporary \arg
         else if arg not instanceof Var
@@ -1238,18 +1238,18 @@ class exports.Splat extends Node
   @compileArray = (o, list, apply) ->
     break if node instanceof Splat for node, index of list
     return '' if index >= list.length
-    if list.length is 1
-      node = (if apply then Object else ensureArray) list.0.it
-      return node.compile o, LEVEL_LIST
+    unless list.1
+      return (if apply then Object else ensureArray) list.0.it
+             .compile o, LEVEL_LIST
     args = []; atoms = []
     for node of list.splice index, 9e9
       if node instanceof Splat
-        atoms.length &&= !args.push "[#{ List.compile o, atoms }]"
-        args.push ensureArray(node.it)compile o, LEVEL_LIST
+        atoms.length &&= !args.push Arr atoms
+        args.push ensureArray node.it
       else atoms.push node
-    args.push "[#{ List.compile o, atoms }]" if atoms.length
-    base = if index then "[#{ List.compile o, list }]" else args.shift()
-    "#{base}.concat(#{ args.join ', ' })"
+    args.push Arr atoms if atoms.length
+    (if index then Arr list else args.shift())compile(o, LEVEL_CALL) +
+    ".concat(#{ List.compile o, args })"
 
   function ensureArray(node) ->
     node.=it while node instanceof Parens
