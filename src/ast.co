@@ -492,9 +492,9 @@ class exports.Chain extends Node
   expandArray: (o) ->
     {tails} = this; i = -1; while tails[++i] then if that.key?length
       [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap()cache o
-      @head = JS Arr do
-        Chain if j then ref else sub, [Index n] for n, j of tails.shift()key
-      .compile o
+      items = for key, j of tails.shift()key
+        Chain if j then ref else sub, [Index key]
+      @head = JS Arr(items)compile o
       o.scope.free temps.0 if temps
       i = -1
     void
@@ -1253,7 +1253,9 @@ class exports.Splat extends Node
 
   function ensureArray(node) ->
     node.=it while node instanceof Parens
+    node.=unwrap()
     return node if node instanceof [Arr, While] or
+                   node instanceof Chain and node.tails[*-1]key?length or
                    node.op is \* and node.first instanceof Arr
     Call.make JS(utility(\slice) + \.call), [node]
 
