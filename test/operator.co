@@ -254,5 +254,13 @@ throws 'invalid deletion on line 1' -> Coco.compile 'delete a'
 throws 'invalid deletion on line 1' -> Coco.compile 'delete 0'
 
 
-### `typeof!`
+### [[Class]] sniffing
 eq \RegExp typeof! //
+
+
+### Power
+eq -512, -2 ** 2**3 * 2
+
+a = [2]; i = 0
+a[i++] **= 3
+eq a.0, 8

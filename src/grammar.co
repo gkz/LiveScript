@@ -141,19 +141,21 @@ bnf =
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
-    o 'UNARY Expression'  -> []= if $1 is \! then $2.invert() else Op $1, $2
-    o '+-    Expression' (-> Op $1, $2), prec: \UNARY
+    o 'Expression +-       Expression' op = -> Op $2, $1, $3
+    o 'Expression COMPARE  Expression' op
+    o 'Expression LOGIC    Expression' op
+    o 'Expression MATH     Expression' op
+    o 'Expression SHIFT    Expression' op
+    o 'Expression BITWISE  Expression' op
+    o 'Expression **       Expression' op
 
-    o 'Expression +-       Expression' -> Op $2, $1, $3
-    o 'Expression MATH     Expression' -> Op $2, $1, $3
-    o 'Expression SHIFT    Expression' -> Op $2, $1, $3
-    o 'Expression COMPARE  Expression' -> Op $2, $1, $3
-    o 'Expression BITWISE  Expression' -> Op $2, $1, $3
-    o 'Expression LOGIC    Expression' -> Op $2, $1, $3
     o 'Expression RELATION Expression' ->
       []= if \! is $2.charAt 0
       then Op($2.slice 1; $1; $3)invert()
       else Op $2, $1, $3
+
+    o 'UNARY Expression'  -> []= if $1 is \! then $2.invert() else Op $1, $2
+    o '+-    Expression' (-> Op $1, $2), prec: \UNARY
 
     o 'Chain ?' -> Existence $1.unwrap()
 
@@ -319,6 +321,7 @@ operators =
   <[ left     +-           ]>
   <[ left     MATH         ]>
   <[ right    UNARY        ]>
+  <[ right    **           ]>
   <[ nonassoc CREMENT      ]>
 
 # Wrapping Up

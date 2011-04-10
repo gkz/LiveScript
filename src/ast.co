@@ -697,6 +697,7 @@ class exports.Op extends Node
     switch @op
     case \?          then return @compileExistence o
     case \instanceof then return @compileIOS o, that if @second.selections()
+    case \**         then return @compilePow o
     case \*
       return @compileRepeat o if @first.isString() or @first instanceof Arr
     default
@@ -793,6 +794,8 @@ class exports.Op extends Node
       x = (refs = x.cache o, 1, LEVEL_OP)0 + " + #{refs.1}" * (n-1)
       if o.level < LEVEL_OP + PREC\+ then x else "(#{x})"
 
+  compilePow: (o) -> Call.make(JS \Math.pow; [@first, @second])compile o
+
 #### Assign
 # Assignment to a variable/property.
 class exports.Assign extends Node
@@ -811,7 +814,7 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
-    {right} = this; left = @transleft(o)unwrap()
+    {op, right} = this; left = @transleft(o)unwrap()
     return (Parens(right) <<< {@front, @newed})compile o if left.isEmpty()
     return @compileDestructuring o, left if left.items
     return @compileConditional   o, left if @logic
@@ -820,7 +823,10 @@ class exports.Assign extends Node
       left.=first
     left.isAssignable() or left.carp \
       "#{ left.compile o, LEVEL_LIST } // invalid assignee"
-    right.=it if right instanceof Parens and not right.keep
+    right.=it while right instanceof Parens and not right.keep
+    if op is \**=
+      lefts = Chain(left)cacheReference o
+      op = \:=; left = lefts.0; right = Op \** lefts.1, right
     # Peek names for `class` and/or `super`.
     if right instanceof [Fun, Class]
       {head, tails} = left
@@ -829,7 +835,7 @@ class exports.Assign extends Node
       right.clas ||= head instanceof Var and tails.length is 2 and
                      tails.0.key?name is \prototype and head.value
     decl = left instanceof Var
-    sign = @op.replace \: ''
+    sign = op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
     code = if decl and not o.level and right instanceof While
       # Optimize `a = while ...`.
@@ -840,7 +846,7 @@ class exports.Assign extends Node
       "#{name} #{sign} " + (right <<< {+assigned})compile o, LEVEL_LIST
     if decl
       del = right.op is \delete
-      if @op is \=
+      if op is \=
         o.scope.declare name
       else unless o.scope.check name, true
         left.carp "assignment to undeclared variable \"#{name}\""
@@ -851,7 +857,7 @@ class exports.Assign extends Node
 
   compileConditional: (o, left) ->
     lefts = Chain(left)cacheReference o
-    Op(@logic, lefts.0, @<<<{left: lefts.1, -logic})compileNode o
+    Op(@logic, lefts.0, @<<<{-logic, left: lefts.1})compileNode o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
