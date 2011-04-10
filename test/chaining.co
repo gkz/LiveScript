@@ -53,14 +53,27 @@ eq 'Hello', String(
               """)
 
 
-eq msg = 'other accessors should also continue lines',
-  msg
-  .~toString
-  ?.valueOf()()
-
+eq msg = 'special accessors should also continue lines',
+   msg
+   .~toString
+   ?.valueOf()()
 eq 0,
   [0]
   ?.0
+
+
+# Bracketless Accesses
+a = [0]
+eq 0, a.0
+eq 0, a."0"
+eq 0, a."#{0}"
+eq 0, a.(0)
+eq 0, [a].0.0
+eq a.* = 1, a.1
+eq '0'.0, '10'.1
+
+eq 1, [-> it]. 0  1
+eq 1, [-> it].'0' 1
 
 
 # `prototype`/`constructor` shorhands
@@ -75,7 +88,10 @@ eq [1, 2, 3][*-1], 3
 eq 0[*], void
 eq [0][*-*], 0
 
+throws 'stray star on line 1' -> Coco.compile '[*-1]'
 
+
+# Binding Access
 parent =
   child:
     method: -> @member
@@ -83,20 +99,6 @@ parent =
 eq 42, do(0; parent.child.~method)
 eq 42, do(0; parent.child~"me#{'th'}od")
 eq 42, parent.child . ~ [\method] null
-
-
-# Bracketless Access
-a = [0]
-eq 0, a.0
-eq 0, a."0"
-eq 0, a."#{0}"
-eq 0, a.(0)
-eq 0, [a].0.0
-eq a.* = 1, a.1
-eq '0'.0, '10'.1
-
-eq 1, [-> it]. 0  1
-eq 1, [-> it].'0' 1
 
 
 # Dots have to workaround syntax error when accessing a simple number.

@@ -144,7 +144,7 @@
   # String representation of the node for inspecting the parse tree.
   # This is what `coco --ast` prints out.
   toString: (idt or '') ->
-    tree = \\n + idt + @..displayName
+    tree  = \\n + idt + @..displayName
     tree += ' ' + that if @show()
     @eachChild -> tree += it.toString idt + TAB; void
     tree
@@ -274,9 +274,9 @@ class exports.Literal extends Atom
     case \this     then return o.scope.fun?bound or val
     case \void     then val += ' 8'; fallthrough
     case \null     then @carp 'invalid use of ' + @value if level is LEVEL_CALL
-    case \*        then return \0
     case \debugger then if level
       return "(function(){\n#{ o.indent + TAB }debugger;\n#{o.indent}}())"
+    case \* then @carp 'stray star'
     val
 
 #### Var
@@ -1386,12 +1386,12 @@ class exports.For extends While
       [pvar, step] = (@step || Literal 1)compileLoopReference o, \step
       pvar is step or temps.push pvar
     if @from
-      eq = if @op is \til then '' else \=
       [tvar, tail] = @to.compileLoopReference o, \to
       vars = idx + ' = ' + @from.compile o
       unless tail is tvar
         vars += ', ' + tail
         temps.push tvar
+      eq   = if @op is \til then '' else \=
       cond = if +pvar
       then "#{idx} #{ if pvar < 0 then \> else \< }#{eq} #{tvar}"
       else "#{pvar} < 0 ? #{idx} >#{eq} #{tvar} : #{idx} <#{eq} #{tvar}"
@@ -1402,7 +1402,7 @@ class exports.For extends While
       else
         svar = srcPart = @source.compile o, LEVEL_PAREN
       unless @object
-        if 0 > pvar and (pvar | 0) is +pvar  # negative int
+        if 0 > pvar and ~~pvar is +pvar  # negative int
           vars = "#{idx} = #{srcPart}.length - 1"
           cond = "#{idx} >= 0"
         else
@@ -1569,10 +1569,9 @@ class exports.If extends Node
 
   compileExpression: (o) ->
     code = @if.compile o, LEVEL_COND
-    pad  = if @else?isComplex() and @then.isComplex()
-    then \\n + o.indent += TAB else ' '
-    code += pad + '? ' +  @then.compile(o, LEVEL_LIST) +
-            pad + ': ' + (@else?compile(o, LEVEL_LIST) or 'void 8')
+    pad  = if @else?isComplex() then \\n + o.indent += TAB else ' '
+    code += "#{pad}? #{ @then.compile o, LEVEL_LIST              }
+             #{pad}: #{ @else?compile o, LEVEL_LIST  or 'void 8' }"
     if o.level < LEVEL_COND then code else "(#{code})"
 
   unfoldSoak: -> @soak and this
