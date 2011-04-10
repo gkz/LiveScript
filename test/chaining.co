@@ -107,10 +107,14 @@ eq '0 .go;'  , Coco.compile '0.go', {+bare}
 eq "0['do'];", Coco.compile '0.do', {+bare}
 
 
+# Multiaccess
 eq '2,3', '' + [3,2][1,0]
 eq '2,3', '' + [0,1,2,3][*-2,*-1]
 eq '2,3', '' + {2,3}<[2 3]>
 eq '-Infinity,Infinity', '' + Number[\NEGATIVE_INFINITY, \POSITIVE_INFINITY]
+
+throws 'calling an array on line 1'    -> Coco.compile 'a[0 1]()'
+throws 'invalid constructor on line 1' -> Coco.compile 'new a[0 1]'
 
 
 # Automatic Dot Insertion

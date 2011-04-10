@@ -116,6 +116,7 @@
   isCallable   : NO
   isEmpty      : NO
   isString     : NO
+  isArray      : NO
 
   # Do I contain a statement that jumps out of me?
   jumps: NO
@@ -193,7 +194,8 @@ class exports.Block extends Node
 
   isComplex: -> @lines.length > 1 or @lines.0?isComplex()
 
-  isCallable: -> that.isCallable() if lastNonComment(@lines)0
+  isCallable : -> that.isCallable() if lastNonComment(@lines)0
+  isArray    : -> that.isArray   () if lastNonComment(@lines)0
 
   jumps: -> return that if node.jumps it for node of @lines
 
@@ -360,12 +362,12 @@ class exports.Chain extends Node
   jumps        : -> not @tails.length and @head.jumps it
   assigns      : -> not @tails.length and @head.assigns it
   isStatement  : -> not @tails.length and @head.isStatement()
-  isComplex    : -> @tails.length or do @head.isComplex
-  isCallable   : -> @tails.length or do @head.isCallable
+  isComplex    : -> @tails.length or @head.isComplex()
+  isCallable   : -> if @tails.length then !@isArray() else @head.isCallable()
+  isArray      : ->
+    if @tails[*-1] then that.key?length else @head.isArray()
   isAssignable : ->
-    if @tails[*-1]
-    then that instanceof Index
-    else @head.isAssignable
+    if @tails[*-1] then that instanceof Index else @head.isAssignable
 
   makeReturn: -> if @tails.length then super ... else @head.makeReturn it
 
@@ -490,7 +492,8 @@ class exports.Chain extends Node
     void
 
   expandArray: (o) ->
-    {tails} = this; i = -1; while tails[++i] then if that.key?length
+    {tails} = this; i = -1; while tail = tails[++i] then if tail.key?length
+      tail.carp 'calling an array' if tails[i+1] instanceof Call
       [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap()cache o
       items = for key, j of tails.shift()key
         Chain if j then ref else sub, [Index key]
@@ -628,6 +631,8 @@ class exports.Prop extends Node
 class exports.Arr extends List
   (@items or []) ~>
 
+  isArray: YES
+
   selections: -> @items.length > 1 and @items
 
   asObj: -> Obj(Prop Literal(i), item for item, i of @items)
@@ -668,6 +673,8 @@ class exports.Op extends Node
 
   isCallable: -> switch @op case <[ && || ? new delete ]>
     @first.isCallable() or @second?isCallable()
+
+  isArray: -> @op is \* and @first instanceof Arr
 
   EQUALITY = /^[!=]==?$/
   COMPARER = /^(?:[!=]=|[<>])=?$/
@@ -1207,6 +1214,7 @@ class exports.Parens extends Node
 
   isComplex  : -> @it.isComplex  ()
   isCallable : -> @it.isCallable ()
+  isArray    : -> @it.isArray    ()
   isString   : -> @string
 
   compile: (o, level ? o.level) ->
@@ -1252,11 +1260,7 @@ class exports.Splat extends Node
     ".concat(#{ List.compile o, args })"
 
   function ensureArray(node) ->
-    node.=it while node instanceof Parens
-    node.=unwrap()
-    return node if node instanceof [Arr, While] or
-                   node instanceof Chain and node.tails[*-1]key?length or
-                   node.op is \* and node.first instanceof Arr
+    return node if node.isArray()
     Call.make JS(utility(\slice) + \.call), [node]
 
 #### Jump
@@ -1310,7 +1314,8 @@ class exports.While extends Node
 
   ::{show} = Negatable
 
-  isStatement: YES
+  isStatement : YES
+  isArray     : YES
 
   jumps: ->
     {lines} = @body
