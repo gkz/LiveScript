@@ -965,6 +965,7 @@ class exports.Import extends Node
   show: -> @all
 
   isCallable: -> @left.isCallable()
+  isArray   : -> @left.isArray()
 
   compileNode: (o) ->
     if @all or not @right.items
@@ -1330,9 +1331,8 @@ class exports.While extends Node
 
   makeReturn: ->
     if it
-      @body.makeReturn it
-    else unless @jumps()
-      @returns = true
+    then @body.makeReturn it
+    else @jumps() or @returns = true
     this
 
   compileNode: (o) ->
@@ -1551,6 +1551,8 @@ class exports.If extends Node
 
   isCallable: -> @then.isCallable() or @else?isCallable()
 
+  isArray: -> @else?isArray() and @then.isArray()
+
   jumps: -> @then.jumps it or @else?jumps it
 
   makeReturn: ->
@@ -1592,7 +1594,7 @@ class exports.If extends Node
 class exports.Label extends Node
   (@label, @it) ->
 
-  ::{children, isCallable} = Parens::
+  ::{children, isCallable, isArray} = Parens::
 
   show: -> @label
 
