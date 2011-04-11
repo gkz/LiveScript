@@ -147,7 +147,6 @@ bnf =
     o 'Expression MATH     Expression' op
     o 'Expression SHIFT    Expression' op
     o 'Expression BITWISE  Expression' op
-    o 'Expression **       Expression' op
 
     o 'Expression RELATION Expression' ->
       []= if \! is $2.charAt 0
@@ -320,7 +319,6 @@ operators =
   <[ left     SHIFT IMPORT ]>
   <[ left     +-           ]>
   <[ left     MATH         ]>
-  <[ left     **           ]>
   <[ right    UNARY        ]>
   <[ nonassoc CREMENT      ]>
 
@@ -334,7 +332,7 @@ tokens = do
   for name, alternatives in bnf
     for alt of alternatives
       if name is \Root
-      then alt.1   = "return #{ alt.1 or \$$ }"
+      then alt.1   = "return #{ alt.1 or \$$ };"
       else alt.1 &&= "$$ = #{alt.1};"
       token if token not in bnf for token of alt.0
 .join ' '

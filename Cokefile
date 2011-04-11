@@ -62,11 +62,13 @@ task \build:full 'build twice and run tests' ->
     throw err         if err
 
 task \build:parser 'build lib/parser.js from lib/grammar.js' ->
-  src = require(\./lib/grammar)parser.generate()
-        .replace /^[^]+?var (?=parser = {)/ \exports.
-        .replace /\ncase \d+:\nbreak;/g ''
-        .replace /return parser;[^]+/ ''
-  spit \lib/parser.js src
+  spit \lib/parser.js,
+    require(\./lib/grammar)parser.generate()
+      .replace /^[^]+?var (?=parser = {)/ \exports.
+      .replace /\ncase \d+:\nbreak;/g ''
+      .replace /return parser;[^]+/ ''
+      .replace /(:[^]+?break;)(?=\ncase \d+\1)/g \:
+      .replace /(:return .+)\nbreak;/g \$1
 
 task \build:doc 'build doc/' ->
   <- docs.forEach
