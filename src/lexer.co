@@ -329,8 +329,8 @@ exports import
   # here. `;` and newlines are both treated as a TERMINATOR, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   doLiteral: ->
-    return 0 unless val = SYMBOL.exec it
-    switch tag = val.=0
+    return 0 unless sym = SYMBOL.exec it
+    switch tag = val = sym.=0
     case <[ . ?. ]>                    then tag = \DOT
     case <[ + -  ]>                    then tag = \+-
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
@@ -341,8 +341,11 @@ exports import
     case <[ <<<  <<<< ]>               then tag = \IMPORT
     case <[ << >> >>> ]>               then tag = \SHIFT
     case <[  &  |  ^  ]>               then tag = \BITWISE
-    case \;                            then tag = \TERMINATOR
+    case \(                            then tag = \CALL( if @able true
     case \?(                           then tag = \CALL(
+    case \;                            then tag = \TERMINATOR
+    case \: then if @last.0 not of <[ ID STRNUM ) ]>
+      tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= **= ]>
       tag = \ASSIGN
       if @last.0 is \LOGIC
@@ -350,31 +353,22 @@ exports import
       else if @last.1 of <[ . ?. ]> or @last.0 is \? and @adi()
         @last.1 += val
         return val.length
-    case \:
-      if @last.0 not of <[ ID STRNUM ) ]>
-        @token \LABEL ''
-        return 1
     case \*
-      # Enable list notation:
-      #
-      #     I2 =
-      #       * 1 0
-      #       * 0 1
-      #
       if @last.0 of <[ TERMINATOR INDENT THEN ]> and /^.[^\n\S]*(?=\S)/exec it
         @tokens.push [\{ \{ @line] [\} \} @line] [\ASSIGN \= @line]
         @indent val = that.0.length
         return val
       tag = if able @tokens then \MATH else \STRNUM
+    case \@
+      if @last.1 of <[ . ?. ]> or @adi()
+      then @last.1 += val
+      else @token \LITERAL \this true
+      return 1
     case \!
-      if not @last.spaced and @last.1 is \typeof
-        @last.1 = \classof
-        return 1
+      return (@last.1 = \classof; 1) if not @last.spaced and @last.1 is \typeof
       fallthrough
     case \~
-      if @last.1 of <[ . ?. ]> or @adi()
-        @last.1 += val
-        return 1
+      return (@last.1 += val; 1) if @last.1 of <[ . ?. ]> or @adi()
       tag = \UNARY
     case \~> then tag = \->
     case \<~ then tag = \<-; fallthrough
@@ -384,28 +378,15 @@ exports import
       continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ( ]>
       tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
       @token \)PARAM ''
-    default
-      :ALIASES
-        switch val
-        case \@
-          if @last.1 is \. or @adi()
-          then @last.1 += val
-          else @token \LITERAL \this true
-        case \@@ then @token \LITERAL \arguments
-        case \:: then i = \prototype; fallthrough
-        case \.. then @adi(); @token \ID i||\constructor
-        default break ALIASES
-        return val.length
-      switch val.charAt 0
-      case \(
-        if val.length > 1
-          @token \CALL( \(
-          @token \)CALL \)
-          return val.length
-        tag = \CALL( if @able true
-      case \[ then @adi()
-      case \{ then @token \CLONE '' if @able()
-    @token(tag, val)length
+    case \[  then @adi()
+    case \{  then @token \CLONE '' if @able()
+    case \@@ then tag = \LITERAL; val = \arguments
+    case \:: then i = \prototype; fallthrough
+    case \.. then @adi(); tag = \ID; val = i || \constructor
+    default if \( is val.charAt 0
+      @token \CALL( \(; tag = \)CALL; val = \)
+    @token tag, val
+    sym.length
 
   #### Token Manipulators
 
@@ -420,8 +401,7 @@ exports import
     @dent -= debt
     while debt > 0 and dent = @dents.pop()
       @carp "unmatched dedent (#{debt} for #{dent})" if debt < dent
-      @token \DEDENT dent if typeof dent is \number
-      debt -= dent
+      debt -= if typeof dent is \number then @token \DEDENT dent else dent
     void
 
   # Generates a newline token. Consecutive newlines get merged together.
