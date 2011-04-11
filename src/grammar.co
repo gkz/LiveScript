@@ -320,8 +320,8 @@ operators =
   <[ left     SHIFT IMPORT ]>
   <[ left     +-           ]>
   <[ left     MATH         ]>
+  <[ left     **           ]>
   <[ right    UNARY        ]>
-  <[ right    **           ]>
   <[ nonassoc CREMENT      ]>
 
 # Wrapping Up

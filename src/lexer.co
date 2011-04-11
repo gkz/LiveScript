@@ -600,7 +600,7 @@ SYMBOL = /// ^ (?
 | ~[.>]                       # bind access/function
 | <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
 | >>>?=?                      # rite shift
-| \*\*=?                      # power
+| \*\*=?                      # pow
 | @@                          # `arguments`
 | [^\s#]
 ) ///

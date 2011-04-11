@@ -32,6 +32,11 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.4.3b
+- Added `**` operator.
+- No longer accepts invalid regex literals.
+- REPL now uses _^J_ to continue lines.
+
 ### 0.4.2
 - Enabled:
   - ADI on `?.`
