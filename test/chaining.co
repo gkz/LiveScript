@@ -129,6 +129,13 @@ eq 0 [[0]]0.0
 eq null [null]?0
 eq void {0}?1?p
 
+v = void
+x = y: {\z}
+eq void v?=y.z
+eq void v
+eq \z   x?=y.z
+eq \z   x
+
 
 # Semiautovivification
 o = {}

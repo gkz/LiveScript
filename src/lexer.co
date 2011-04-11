@@ -347,7 +347,7 @@ exports import
       tag = \ASSIGN
       if @last.0 is \LOGIC
         (val = new String val)logic = @tokens.pop()1
-      else if @last.1 of <[ . ?. ]>
+      else if @last.1 of <[ . ?. ]> or @last.0 is \? and @adi()
         @last.1 += val
         return val.length
     case \:
