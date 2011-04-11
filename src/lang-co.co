@@ -9,28 +9,28 @@ kwend = '(?![$\\w\\x7f-\\uffff])'
 
 ### Main
 tint \co [
-  [\str        /// ^ '(?: ''[\S\s]*?'' | [^\\']*(?:\\[\S\s][^\\']*)* )'  /// \']
-  [\lang-co-qq ///(^ "(?: ""[\S\s]*?"" | [^\\"]*(?:\\[\S\s][^\\"]*)* )" )/// \"]
-  [\lang-co-qr ///(^ /{3} [\S\s]*? /{3} (?:\?|[imgy]{0,4}) )/// \/]
-  [\lang-co-at ///(^ @@? #{ident}? )/// \@]
+  [\str        // ^ '(?: ''[\S\s]*?'' | [^\\']*(?:\\[\S\s][^\\']*)* )'  // \']
+  [\lang-co-qq //(^ "(?: ""[\S\s]*?"" | [^\\"]*(?:\\[\S\s][^\\"]*)* )" )// \"]
+  [\lang-co-qr //(^ / / [\S\s]*? / / (?:[imgy]{1,4}|\??) )// \/]
+  [\lang-co-at //(^ @@? #{ident}? )// \@]
   [\com /^#.*/ \#]
-  [\typ /// ^ (?
+  [\typ // ^ (?
   : 0x[\da-f]+
   | [1-9]\d? r [\da-z]+
   | (?:\d+(?:\.\d+)?) (?:e[+-]?\d+)? [a-z_]*
-  ) ///i \0123456789]
+  ) //i \0123456789]
   [\lang-js /^`([^\\`]*(?:\\[\S\s][^\\`]*)*)`/ \`]
 ] [
-  [\str /// ^ \\ \S [^\s,;)}\]]* ///]
-  [\com /// ^ /\* [\S\s]* \*/ ///]
-  [\pln /// ^ (?
+  [\str // ^ \\ \S [^\s,;)}\]]* //]
+  [\com // ^ /\* [\S\s]* \*/ //]
+  [\pln // ^ (?
   : \.{3}
   | (?: \.\s*(?:(?:[-+*/%&|^:]|>>>?|<<)?=|[~!@])?\s* | [)}\]?] | :: )
     (?: #{ident}[?~!@]? )+
   | #{ident} [^\n\S]* :(?![:=])
-  ) ///]
+  ) //]
   # ref. [retrie](https://github.com/satyr/retrie)
-  [\kwd /// ^ (?
+  [\kwd // ^ (?
   : t(?:ry|h(?:row|en)|ypeof!?)
   | f(?:or(?:[^\n\S]+(?:own|ever))?|inally|unction)
   | n(?:ew|ot)
@@ -41,21 +41,21 @@ tint \co [
   | un(?:less|til)
   | w(?:hile|ith)
   | o[fr] | return | break | switch | and | let
-  ) #{kwend} ///]
-  [\typ /// ^ (?: true | false | null | void ) #{kwend} ///]
-  [\ctx /// ^ (?
+  ) #{kwend} //]
+  [\typ // ^ (?: true | false | null | void ) #{kwend} //]
+  [\ctx // ^ (?
   : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
   | it | arguments | eval | by | super | prototype
-  ) #{kwend} ///]
-  [\glb /// ^ (?
+  ) #{kwend} //]
+  [\glb // ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number
   | Object | RegExp | S(?:tring|yntaxError) | TypeError
   | is(?:NaN|Finite) | parse(?:Int|Float) | (?:en|de)codeURI(?:Component)?
-  ) #{kwend} ///]
-  [\var /// ^ #{ident} ///]
+  ) #{kwend} //]
+  [\var // ^ #{ident} //]
   [\str /^<\[[\S\s]*?]>/]
-  [\lang-co-r /// ^ [^/] (
+  [\lang-co-r // ^ [^/] (
     / (?![\s/])
     [^ [ / \n \\ ]*
     (?:
@@ -63,7 +63,7 @@ tint \co [
         | \[ [^\]\n\\]*(?:\\.[^\]\n\\]*)* \]
       ) [^ [ / \n \\ ]*
     )* / [imgy]{0,4}
-  ) (?!\d) ///]
+  ) (?!\d) //]
 ]
 
 ### Subrules

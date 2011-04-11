@@ -12,7 +12,7 @@ Coco import
   # Activates Coco in the browser by having it compile and evaluate
   # all script tags with `coco` type.
   invoke: ->
-    type = ///^ (?: text/ | application/ )? coco $///i
+    type = //^ (?: text/ | application/ )? coco $//i
     for script of document.getElementsByTagName \script
       continue unless type.test script.type
       if script.src

@@ -255,7 +255,7 @@ throws 'invalid deletion on line 1' -> Coco.compile 'delete 0'
 
 
 ### [[Class]] sniffing
-eq \RegExp typeof! //
+eq \RegExp typeof! /^/
 
 
 ### Pow

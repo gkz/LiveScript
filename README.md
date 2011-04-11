@@ -33,6 +33,7 @@ Coco tries to amend them, entwining good parts of both.
 ## Changelog
 
 ### 0.4.3b
+- Dieted heregex syntax: `/// re ///` => `// re //`
 - Added `**` operator.
 - No longer accepts invalid regex literals.
 - REPL now uses _^J_ to continue lines.

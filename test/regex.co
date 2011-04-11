@@ -2,7 +2,7 @@
 ok /x/.test 'x'
 ok 'x'.match /x/
 eq /\\/ + '', '/\\\\/'
-eq //   + '', '/(?:)/'
+eq /^/.source, '^'
 
 
 # Should not be mixed-up with the division operator.
@@ -16,26 +16,26 @@ eq [g][0]/h/i, (2)/2/2
 
 
 # Heregexes.
-eq /^I'm\s+Heregex?\/\/\//gim + '', ///
-  ^ I'm \s+ Heregex? / // # or not
-///gim + ''
+eq /^I'm\s+Heregex?\/\//gim + '', //
+  ^ I'm \s+ Heregex? / / # or not
+//gim + ''
 
-eq '\\\\#{}\\\\\\\"', ///
+eq '\\\\#{}\\\\\\\"', //
  #{
    "#{ '\\' }" # normal comment
  }
  # regex comment
  \#{}
  \\ \"
-///.source
+//.source
 
-eq ////// + '', '/(?:)/'
+eq '(?:)' ////source
 
-eq /// _ #{if 1 then \g else \m}///? + '', '/_/g'
+eq // _ #{if 1 then \g else \m}//? + '', '/_/g'
 
 
 # ACI interaction
-eq \/1/ '0'.replace ///#{0}/// ''+/1/ \g
+eq \/1/ '0'.replace //#{0}// ''+/1/ \g
 
 
 # ADI interaction
@@ -52,7 +52,7 @@ ok /:\/[/]goog/.test 'http://google.com'
 
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Should be indexable.
-eq /0/['source'], ///#{0}///['source']
+eq /0/['source'], //#{0}//['source']
 
 
 # Should be cached aptly.
@@ -60,9 +60,9 @@ eq 0 (/_/ <<< {0})0
 
 
 # Should deduplicate flags.
-ok //gggg
-ok //////mimi
+ok /^/gggg
+ok ////mimi
 
 
 # Should disallow trailing backslash.
-ok try Coco.lex '///\\///'; 0 catch 1
+ok try Coco.lex '//\\//'; 0 catch 1

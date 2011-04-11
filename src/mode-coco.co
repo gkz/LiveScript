@@ -13,12 +13,12 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
     @$outdent   =
       new (require \ace/mode/matching_brace_outdent)MatchingBraceOutdent
 
-  indenter = /// (?
+  indenter = // (?
     : [({[=:]
     | [-~]>
     | \b (?: else | d(?:o|efault) | try | finally
            | catch (?: \s* #{identifier} )? )
-  ) \s* $ ///
+  ) \s* $ //
 
   getNextLineIndent: (state, line, tab) ->
     indent   = @$getIndent line
@@ -140,7 +140,7 @@ CocoMode.Rules =
       next : \words
 
     * token: \string.regex
-      regex: \///
+      regex: \//
       next : \heregex
 
     * token: \comment.doc
@@ -181,7 +181,7 @@ CocoMode.Rules =
 
   heregex:
     * token: \string.regex
-      regex: '.*?///(?:\\?|[imgy]{0,4})'
+      regex: '.*?//(?:[imgy]{1,4}|\\??)'
       next : \start
     * token: \string.regex
       regex: '\\s*#{'
