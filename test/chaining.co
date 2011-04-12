@@ -30,13 +30,9 @@ r = $.self
 eq r, $
 
 
-# Newline suppression for binary operators.
-eq 32,
-  1 *
-  2 +
-  3 -
-  4 <<
-  5
+# Semicolon suppression before dots.
+eq \1,
+  8.toString 8; .charAt 0
 
 
 # Ensure that indented array literals don't trigger whitespace rewriting.

@@ -1,7 +1,14 @@
-ok 500 > 50 > 5 > -5
+# Newline suppression for binary operators.
+eq 32,
+  1 *
+  2 +
+  3 -
+  4 <<
+  5
 
-ok true is     true
-ok true is not false
+
+# Chained Comparisons
+ok 500 > 50 > 5 > -5
 
 ok 0 is 0 is not 50 is 50
 
@@ -20,9 +27,9 @@ ok 1 > i++ < 1, 'chained operations should evaluate each value only once'
 eq 1, (1 unless 1 < 0 == 0)
 
 
+# (In)equality
 a = 1
 b = '1'
-
 ok a == b
 ok not a != b
 ok not (a === b)
@@ -30,8 +37,11 @@ ok not (a is  b)
 ok a !==  b
 ok a is not b
 
+ok true is     true
+ok true is not false
 
-# `and`/`or` closes implicit calls
+
+# `and`/`or` closes implicit calls.
 eq('1', String 0 and String 1)
 eq('0', String 0 or  String 1)
 
