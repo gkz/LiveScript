@@ -681,7 +681,10 @@ class exports.Op extends Node
   isCallable: -> switch @op case <[ && || ? new delete ]>
     @first.isCallable() or @second?isCallable()
 
-  isArray: -> @op is \* and @first instanceof Arr
+  isArray: ->
+    switch @op
+    case \* then @first instanceof Arr
+    case \/ then @second.isString() or @second instanceof JS
 
   EQUALITY = /^[!=]==?$/
   COMPARER = /^(?:[!=]=|[<>])=?$/
@@ -703,8 +706,9 @@ class exports.Op extends Node
     return @compileUnary o unless @second
     switch @op
     case \?          then return @compileExistence o
-    case \instanceof then return @compileIOS o, that if @second.selections()
     case \**         then return @compilePow o
+    case \instanceof then return @compileIOS o, that if @second.selections()
+    case \/          then return @compileSplit o if @isArray()
     case \*
       return @compileJoin   o if @second.isString()
       return @compileRepeat o if @first.isString() or @first instanceof Arr
@@ -781,6 +785,11 @@ class exports.Op extends Node
     if @first.isArray()
     then Chain(@first, [Index Key \join; Call [@second]])compile o
     else Call.make(JS utility(\join) + \.call; [@first, @second])compile o
+
+  compileSplit: (o) ->
+    if @first.isString()
+    then Chain(@first, [Index Key \split; Call [@second]])compile o
+    else Call.make(JS utility(\split) + \.call; [@first, @second])compile o
 
   compileRepeat: (o) ->
     {first: x, second: n} = this; {items} = x
@@ -1784,6 +1793,7 @@ UTILITIES =
   # Shortcuts to speed up the lookup time for native functions.
   join     : '[].join'
   slice    : '[].slice'
+  split    : "''.split"
   toString : '{}.toString'
   indexOf  : '''
     [].indexOf || function(x){
