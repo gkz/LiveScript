@@ -16,11 +16,11 @@ ok a[++a.0]method(...a), 'should cache base value'
 
 
 quartet = [0 to 3]
-eq '0,1,2,3,42', '' + [
+eq '0,1,2,3,42' String [
   ...quartet
   42
 ]
-eq '42,0,1,2,3', '' + [
+eq '42,0,1,2,3' String [
   42
   ...quartet
 ]
@@ -38,7 +38,7 @@ eq '0,1,2' new Child()meth()
 
 
 # Array splat expansions with assigns.
-eq '0,1,2,3,4', '' + [a = 0, ...[1 2 3], b = 4]
+eq '0,1,2,3,4' String [a = 0, ...[1 2 3], b = 4]
 eq a, 0
 eq b, 4
 

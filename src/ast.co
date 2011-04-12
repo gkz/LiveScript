@@ -665,6 +665,13 @@ class exports.Op extends Node
         for node of chain.tails then if node instanceof Call
           node <<< {\new}
           return first
+    case \+
+      if first instanceof Arr
+        first.items.push Splat second
+        return first
+      if second instanceof Arr
+        second.items.unshift Splat first
+        return second
     @<<<{op, first, second, post}
 
   children: <[ first second ]>

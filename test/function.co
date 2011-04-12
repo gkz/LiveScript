@@ -123,7 +123,7 @@ ok constructor is not 'word'
 
 
 # Implicit call including an implicit object and a trailing function.
-meth = (arg, obj, func) -> '' + [obj.a, arg, func()]
+meth = (arg, obj, func) -> String [obj.a, arg, func()]
 eq '13,apple,orange', meth 'apple', b: 1, a: 13, ->
   'orange'
 

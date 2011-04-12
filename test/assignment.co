@@ -270,7 +270,7 @@ a = b = c = null
 
 [a, b] += [2 3]
 [b, c] ?= [4 5]
-eq '2,3,5' ''+[a,b,c]
+eq '2,3,5' String [a,b,c]
 
 o = d: 0, e: 1
 o{d, e} &&*= d: 2, e: 3
@@ -280,7 +280,7 @@ eq 3 o.e
 
 # ACI on postcrement
 i = 0
-eq '0,1,0' ''+ [i++ i-- i]
+eq '010' [i++ i-- i] * ''
 
 
 # [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
