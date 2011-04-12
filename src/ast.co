@@ -699,6 +699,7 @@ class exports.Op extends Node
     case \instanceof then return @compileIOS o, that if @second.selections()
     case \**         then return @compilePow o
     case \*
+      return @compileJoin   o if @second.isString()
       return @compileRepeat o if @first.isString() or @first instanceof Arr
     default
       return @compileChain  o if COMPARER.test @op and COMPARER.test @second.op
@@ -769,6 +770,11 @@ class exports.Op extends Node
     code += ", #{ o.scope.free ref }"
     if o.level < LEVEL_LIST then code else "(#{code})"
 
+  compileJoin: (o) ->
+    if @first.isArray()
+    then Chain(@first, [Index Key \join; Call [@second]])compile o
+    else Call.make(JS utility(\join) + \.call; [@first, @second])compile o
+
   compileRepeat: (o) ->
     {first: x, second: n} = this; {items} = x
     if (x = JS that if items and Splat.compileArray o, items) or
@@ -808,6 +814,8 @@ class exports.Assign extends Node
   assigns: -> @left.assigns it
 
   isCallable: -> switch @op case <[ = := ]> then @right.isCallable()
+
+  isArray: -> @right.isArray()
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, \left
 
@@ -1767,6 +1775,7 @@ UTILITIES =
   '''
 
   # Shortcuts to speed up the lookup time for native functions.
+  join     : '[].join'
   slice    : '[].slice'
   toString : '{}.toString'
   indexOf  : '''
