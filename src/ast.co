@@ -115,8 +115,9 @@
   isAssignable : NO
   isCallable   : NO
   isEmpty      : NO
-  isString     : NO
   isArray      : NO
+  isString     : NO
+  isMatcher    : -> @isString()
 
   # Do I contain a statement that jumps out of me?
   jumps: NO
@@ -684,7 +685,12 @@ class exports.Op extends Node
   isArray: ->
     switch @op
     case \* then @first instanceof Arr
-    case \/ then @second.isString() or @second instanceof JS
+    case \/ then @second.isMatcher()
+
+  isString: ->
+    switch @op
+    case \+ then @second and (@first.isString() or @second.isString())
+    case <[ typeof classof ]> then true
 
   EQUALITY = /^[!=]==?$/
   COMPARER = /^(?:[!=]=|[<>])=?$/
@@ -708,10 +714,11 @@ class exports.Op extends Node
     case \?          then return @compileExistence o
     case \**         then return @compilePow o
     case \instanceof then return @compileIOS o, that if @second.selections()
-    case \/          then return @compileSplit o if @isArray()
     case \*
       return @compileJoin   o if @second.isString()
       return @compileRepeat o if @first.isString() or @first instanceof Arr
+    case \- then return @compileRemove o if @second.isMatcher()
+    case \/ then return @compileSplit  o if @second.isMatcher()
     default
       return @compileChain  o if COMPARER.test @op and COMPARER.test @second.op
     @first <<< {@front}
@@ -781,15 +788,17 @@ class exports.Op extends Node
     code += ", #{ o.scope.free ref }"
     if o.level < LEVEL_LIST then code else "(#{code})"
 
-  compileJoin: (o) ->
-    if @first.isArray()
-    then Chain(@first, [Index Key \join; Call [@second]])compile o
-    else Call.make(JS utility(\join) + \.call; [@first, @second])compile o
+  compileMethod: (o, klass, method, arg) ->
+    args = [@second]concat arg || []
+    if @first"is#{klass}"()
+      Chain(@first, [Index Key method; Call args])compile o
+    else
+      args.unshift @first
+      Call.make(JS utility(method) + \.call; args)compile o
 
-  compileSplit: (o) ->
-    if @first.isString()
-    then Chain(@first, [Index Key \split; Call [@second]])compile o
-    else Call.make(JS utility(\split) + \.call; [@first, @second])compile o
+  compileJoin   : -> @compileMethod it, \Array  \join
+  compileRemove : -> @compileMethod it, \String \replace JS "''"
+  compileSplit  : -> @compileMethod it, \String \split
 
   compileRepeat: (o) ->
     {first: x, second: n} = this; {items} = x
@@ -850,8 +859,8 @@ class exports.Assign extends Node
     right.=it while right instanceof Parens and not right.keep
     if op is \**= or
        op is \+= and right instanceof Arr or
-       op is \*= and right.isString() or
-       op is \/= and(right.isString() or right instanceof JS)
+       op is \*= and right.isString()     or
+       op of <[ -= /= ]> and right.isMatcher()
       [left] = lefts = Chain(left)cacheReference o
       right  = Op op.slice(0 -1), lefts.1, right; op = \:=
     # Peek names for `class` and/or `super`.
@@ -1249,7 +1258,7 @@ class exports.Parens extends Node
   isComplex  : -> @it.isComplex  ()
   isCallable : -> @it.isCallable ()
   isArray    : -> @it.isArray    ()
-  isString   : -> @string
+  isString   : -> @string or @it.isString()
 
   compile: (o, level ? o.level) ->
     {it} = this
@@ -1649,8 +1658,10 @@ class exports.JS extends Node
 
   show: -> if @comment then @code else "`#{@code}`"
 
-  terminator: ''
-  isCallable: -> not @comment
+  terminator : ''
+
+  isCallable : -> not @comment
+  isMatcher  : -> not @comment and \/ is @code.charAt 0
 
   compile: -> if @literal then entab @code, it.indent else @code
 
@@ -1793,11 +1804,12 @@ UTILITIES =
     }
   '''
 
-  # Shortcuts to speed up the lookup time for native functions.
+  # Shortcuts to speed up the lookup time for native methods.
+  split    : "''.split"
+  replace  : "''.replace"
+  toString : '{}.toString'
   join     : '[].join'
   slice    : '[].slice'
-  split    : "''.split"
-  toString : '{}.toString'
   indexOf  : '''
     [].indexOf || function(x){
       for (var i = this.length; i-- && this[i] !== x;); return i;

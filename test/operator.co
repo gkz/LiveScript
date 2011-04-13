@@ -295,6 +295,11 @@ eq '0@@1' (-> @@ * \@@) 0 1
 eq '0.1' b *= \.
 eq '0.1' b
 
+### Remove
+eq '01'  b - \.
+eq \.    b -= /\d/g
+eq '0.1' b = .1 - ''
+
 ### Split
 eq '0,1' String a / \,
 eq 2 (/abc/ / /[^/]+/)length
