@@ -299,5 +299,5 @@ eq '0.1' b
 eq '0,1' String a / \,
 eq 2 (/abc/ / /[^/]+/)length
 eq "#{ x = ''+ Math.random() }"/'.'*'.' x
-eq '0,1' ''+ b /= \.
+eq '0,1' ''+ b /= /\D/
 eq '0,1' ''+ b

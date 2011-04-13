@@ -589,13 +589,15 @@ SIMPLESTR = /^'[^\\']*(?:\\[\s\S][^\\']*)*'/
 JSTOKEN   = /^`[^\\`]*(?:\\[\s\S][^\\`]*)*`/
 BSTOKEN   = /^\\(?:(\S[^\s,;)}\]]*)|\s+)/
 
+# In normal regex literal, leading whitespace and equal sign are disallowed
+# to disambiguate from the division operator. Same goes for trailing digits.
 REGEX = //
-  ^ /( (?!\s)          # disallow leading whitespace
-  [^ [ / \n \\ ]* (?:  # every other thing
+  ^ /( (?![\s=])
+  [^ [ / \n \\ ]* (?:                        # every other thing
     (?: \\.                                  # anything escaped
       | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]  # or character class
     ) [^ [ / \n \\ ]*                        # every other thing again
-  )* )/ ([imgy]{0,4}) (?!\d)  # disallow trailing numbers
+  )* )/ ([imgy]{0,4}) (?!\d)
 //
 HEREGEX      = // ^ / / ([\s\S]*?) / / ([imgy]{1,4}|\??) //
 HEREGEX_OMIT = /\s+(?:#.*)?/g
