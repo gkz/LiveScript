@@ -848,9 +848,12 @@ class exports.Assign extends Node
     left.isAssignable() or left.carp \
       "#{ left.compile o, LEVEL_LIST } // invalid assignee"
     right.=it while right instanceof Parens and not right.keep
-    if op is \**=
-      lefts = Chain(left)cacheReference o
-      op = \:=; left = lefts.0; right = Op \** lefts.1, right
+    if op is \**= or
+       op is \+= and right instanceof Arr or
+       op is \*= and right.isString() or
+       op is \/= and(right.isString() or right instanceof JS)
+      [left] = lefts = Chain(left)cacheReference o
+      right  = Op op.slice(0 -1), lefts.1, right; op = \:=
     # Peek names for `class` and/or `super`.
     if right instanceof [Fun, Class]
       {head, tails} = left

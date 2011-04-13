@@ -279,18 +279,25 @@ eq a.0, 8
 
 ## Overloaded
 a = [0 1]
+b = ''
 
 ### Concat
 eq '0,1,2' String a + [2]
-eq '0,1,3'   String [...a] + {0: 3, length: 1}
+eq '3,4,5' String [3 4] + {0: 5, length: 1}
+eq '0,1' ''+ b += [0 1]
+ok b instanceof a..
 
 ### Join
 eq '0==1' a * \==
 eq '0101' [... a] * 2 * ''
 eq '(01)' <[( )]> * "#{a * ''}"
 eq '0@@1' (-> @@ * \@@) 0 1
+eq '0.1' b *= \.
+eq '0.1' b
 
 ### Split
 eq '0,1' String a / \,
 eq 2 (/abc/ / /[^/]+/)length
 eq "#{ x = ''+ Math.random() }"/'.'*'.' x
+eq '0,1' ''+ b /= \.
+eq '0,1' ''+ b
