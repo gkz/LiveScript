@@ -83,7 +83,7 @@ else
 
 
 # [coffee#738](https://github.com/jashkenas/coffee-script/issues/738)
-eq 1, do if true then -> 1
+ok if true then -> 1
 
 
 eq '''

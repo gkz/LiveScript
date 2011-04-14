@@ -99,9 +99,14 @@
     delete @children
     void
 
-  # Throw a syntax error, appending `@line` number to the message.
+  # Throws a syntax error, appending `@line` number to the message.
   carp: ->
     throw SyntaxError "#{it} on line #{ @line or @traverseChildren -> it.line }"
+
+  # Defines delegaters.
+  delegate: (names, fn) ->
+    for name of names then @[name] = do -> -> fn.call this, name, it
+    void
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -195,8 +200,8 @@ class exports.Block extends Node
 
   isComplex: -> @lines.length > 1 or @lines.0?isComplex()
 
-  isCallable : -> that.isCallable() if lastNonComment(@lines)0
-  isArray    : -> that.isArray   () if lastNonComment(@lines)0
+  ::delegate <[ isCallable isArray isString ]> ->
+    that[it]() if lastNonComment(@lines)0
 
   jumps: -> return that if node.jumps it for node of @lines
 
@@ -360,9 +365,9 @@ class exports.Chain extends Node
   # __Chain__ can be unwrapped as its inner node, if there are no subnodes.
   unwrap: -> if @tails.length then this else @head
 
-  jumps        : -> not @tails.length and @head.jumps it
-  assigns      : -> not @tails.length and @head.assigns it
-  isStatement  : -> not @tails.length and @head.isStatement()
+  ::delegate <[ jumps assigns isStatement isString ]>
+           , (it, arg) -> not @tails.length and @head[it] arg
+
   isComplex    : -> @tails.length or @head.isComplex()
   isCallable   : -> if @tails.length then !@isArray() else @head.isCallable()
   isArray      : ->
@@ -693,6 +698,7 @@ class exports.Op extends Node
     switch @op
     case \+ then break unless @second; fallthrough
     case \* then @first.isString() or @second.isString()
+    case \- then @second?isMatcher()
     case <[ typeof classof ]> then true
 
   EQUALITY = /^[!=]==?$/
@@ -843,7 +849,15 @@ class exports.Assign extends Node
 
   isCallable: -> switch @op case <[ = := ]> then @right.isCallable()
 
-  isArray: -> @right.isArray()
+  isArray: ->
+    switch @op
+    case <[ = := += ]> then do @right.isArray
+    case \/=           then do @right.isMatcher
+
+  isString: ->
+    switch @op
+    case <[ = := += *= ]> then do @right.isString
+    case \-=              then do @right.isMatcher
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, \left
 
@@ -1012,8 +1026,7 @@ class exports.Import extends Node
 
   show: -> @all
 
-  isCallable: -> @left.isCallable()
-  isArray   : -> @left.isArray()
+  ::delegate <[ isCallable isArray ]> -> @left[it]()
 
   compileNode: (o) ->
     if @all or not @right.items
@@ -1261,9 +1274,8 @@ class exports.Parens extends Node
 
   show: -> @string and '""'
 
-  isComplex  : -> @it.isComplex  ()
-  isCallable : -> @it.isCallable ()
-  isArray    : -> @it.isArray    ()
+  ::delegate <[ isComplex isCallable isArray ]> -> @it[it]()
+
   isString   : -> @string or @it.isString()
 
   compile: (o, level ? o.level) ->
@@ -1597,9 +1609,7 @@ class exports.If extends Node
     else @chain = (@else = it) instanceof If
     this
 
-  isCallable: -> @then.isCallable() or @else?isCallable()
-
-  isArray: -> @else?isArray() and @then.isArray()
+  ::delegate <[ isCallable isArray isString ]> -> @else?[it]() and @then[it]()
 
   jumps: -> @then.jumps it or @else?jumps it
 
