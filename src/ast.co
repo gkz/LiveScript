@@ -647,7 +647,9 @@ class exports.Arr extends List
 
   @maybe = (nodes) ->
     return nodes.0 if nodes.length is 1 and nodes.0 not instanceof Splat
-    this nodes
+    Arr nodes
+
+  @wrap = -> Arr [Splat it <<< isArray: YES]
 
 #### Op
 # Simple arithmetic and logical operations, with some special conversions.
@@ -689,7 +691,8 @@ class exports.Op extends Node
 
   isString: ->
     switch @op
-    case \+ then @second and (@first.isString() or @second.isString())
+    case \+ then break unless @second; fallthrough
+    case \* then @first.isString() or @second.isString()
     case <[ typeof classof ]> then true
 
   EQUALITY = /^[!=]==?$/
@@ -720,7 +723,7 @@ class exports.Op extends Node
     case \- then return @compileRemove o if @second.isMatcher()
     case \/ then return @compileSplit  o if @second.isMatcher()
     default
-      return @compileChain  o if COMPARER.test @op and COMPARER.test @second.op
+      return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
     @first <<< {@front}
     code = "#{ @first .compile o, level = LEVEL_OP + PREC[@op] } #{@op} \
             #{ @second.compile o, level }"
@@ -861,8 +864,10 @@ class exports.Assign extends Node
        op is \+= and right instanceof Arr or
        op is \*= and right.isString()     or
        op of <[ -= /= ]> and right.isMatcher()
-      [left] = lefts = Chain(left)cacheReference o
-      right  = Op op.slice(0 -1), lefts.1, right; op = \:=
+      [left, reft] = Chain(left)cacheReference o
+      right = Op op.slice(0 -1), reft, right
+      op    = \:=
+    left.=unwrap()
     # Peek names for `class` and/or `super`.
     if right instanceof [Fun, Class]
       {head, tails} = left
@@ -915,11 +920,12 @@ class exports.Assign extends Node
     for node, i of nodes
       continue if node.isEmpty()
       if node instanceof Splat
-        node.carp 'multiple splat in an assignment' if ivar
+        ivar and node.carp 'multiple splat in an assignment'
         len = nodes.length; empty = (node.=it)isEmpty()
         if i is len - 1
           break if empty
-          val = utility(\slice) + \.call( + rite + if i then ", #{i})" else \)
+          val = Arr.wrap JS \
+            utility(\slice) + \.call( + rite + if i then ", #{i})" else \)
         else
           val = "#{rite}.length - #{ len - i - 1 }"
           # Optimize `[..., a] = b`.
@@ -927,13 +933,13 @@ class exports.Assign extends Node
             ivar = val
             continue
           start = i + 1; @temps = [ivar = o.scope.temporary \i]
-          if empty then node = Var ivar else val = "
-            #{len} <= #{rite}.length \
-            ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar} = #{val}) \
-            : (#{ivar} = #{i}, [])"
-        val = Var val
+          val = if empty then node = Var ivar; Var val else
+            Arr.wrap JS "
+              #{len} <= #{rite}.length \
+              ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar} = #{val}) \
+              : (#{ivar} = #{i}, [])"
       else
-        if (inc = ivar) and start < i then inc += " + #{ i - start }"
+        (inc = ivar) and start < i and inc += " + #{ i - start }"
         val = Chain rcache||=Literal(rite), [Index JS inc || i]
       @{left: node, right: val, +\void}compile o, LEVEL_PAREN
 
@@ -949,7 +955,7 @@ class exports.Assign extends Node
       else key  = node
       node = Var node.name if node instanceof Key
       node = logic <<< {first: node} if logic
-      val  = Chain lr ||= Var(rite), [Index key.maybeKey()]
+      val  = Chain rcache||=Var(rite), [Index key.maybeKey()]
       val  = Import Obj(), val if splat
       @{left: node, right: val, +\void}compile o, LEVEL_PAREN
 
