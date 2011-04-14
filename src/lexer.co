@@ -226,16 +226,22 @@ exports import
     @js detab js.slice(1 -1), @dent
     @countLines(js)length
 
-  # Matches a regular expression literal, aka regex.
+  # Matches a regular expression literal aka _regex_,
+  # disambiguating from division operators.
   doRegex: ->
-    # Distinguish from division operator.
-    if able @tokens, null
-      return 0 unless @last.spaced and re = REGEX.exec it
-    # Must be a regex when the last token is unindexable.
+    # To coexist with implicit call and ACI,
+    # disallow leading space or equal sign when applicable.
+    #
+    #     f /re/ 9 /ex/   # f(/re/, 9, /ex/)
+    #     a /= b / c / d  # division
+    #
+    if (divisable = able @tokens) and @last.spaced
+      return 0 if /^\/[ =]/test it or not match = REGEX.exec it
     else
-      re = REGEX.exec it or @carp 'unterminated regex'
-    @regex re.1, re.2
-    re.0.length
+      return 0 if divisable
+      match = REGEX.exec it or @carp 'unterminated regex'
+    @regex match.1, match.2
+    match.0.length
 
   # Matches a multiline and extended regex literal.
   doHeregex: ->
@@ -589,15 +595,13 @@ SIMPLESTR = /^'[^\\']*(?:\\[\s\S][^\\']*)*'/
 JSTOKEN   = /^`[^\\`]*(?:\\[\s\S][^\\`]*)*`/
 BSTOKEN   = /^\\(?:(\S[^\s,;)}\]]*)|\s+)/
 
-# In normal regex literal, leading whitespace and equal sign are disallowed
-# to disambiguate from the division operator. Same goes for trailing digits.
 REGEX = //
-  ^ /( (?![\s=])
+  ^ /(
   [^ [ / \n \\ ]* (?:                        # every other thing
     (?: \\.                                  # anything escaped
       | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]  # or character class
     ) [^ [ / \n \\ ]*                        # every other thing again
-  )* )/ ([imgy]{0,4}) (?!\d)
+  )* )/ ([imgy]{0,4})
 //
 HEREGEX      = // ^ / / ([\s\S]*?) / / ([imgy]{1,4}|\??) //
 HEREGEX_OMIT = /\s+(?:#.*)?/g

@@ -16,6 +16,9 @@ eq [g][0]/h/i, (2)/2/2
 
 eq 2, g /= h / i
 
+eq \=, /=/ .source
+eq ' ' (/ /)source
+
 
 # Heregexes.
 eq /^I'm\s+Heregex?\/\//gim + '', //
