@@ -6,6 +6,18 @@ eq 32,
   4 <<
   5
 
+if  false
+or  true
+and null
+?   true
+  and :  'property name'
+  andy?  # nickname
+  eq 7 1
+     & 2
+     | 3
+     ^ 4
+else ok 0 'leading logical/bitwise operators should continue lines'
+
 
 # Chained Comparisons
 ok 500 > 50 > 5 > -5

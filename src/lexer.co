@@ -606,4 +606,6 @@ REGEX = //
 HEREGEX      = // ^ / / ([\s\S]*?) / / ([imgy]{1,4}|\??) //
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
-LINE_CONTINUER = // ^ \s* (?: , | \?\. | \.(?![.\d]) ) //
+LINE_CONTINUER = // ^ \s* (?:
+  [,?&|^] | \.(?![.\d]) | (?:and|or)(?![$\w\x7f-\uffff]|[^\n\S]*:(?![:=]))
+) //

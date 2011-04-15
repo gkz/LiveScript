@@ -64,8 +64,8 @@
 
   # Compiles to a variable/source pair suitable for looping.
   compileLoopReference: (o, name, ret) ->
-    if this instanceof Var and o.scope.check @value or
-       this instanceof Literal or @op is \- and -1/0 < +@first.value < 1/0
+    if this instanceof Var and o.scope.check @value
+    or this instanceof Literal or @op is \- and -1/0 < +@first.value < 1/0
       return [@compile o] * 2
     asn = Assign Var(tmp = o.scope.temporary name), this
     ret or asn.void = true
@@ -773,8 +773,8 @@ class exports.Op extends Node
     if @post
       code += op
     else
-      op += ' ' if op of <[ new typeof delete ]> or
-                   op of <[ + - ]> and first.op is op
+      op += ' ' if op of <[ new typeof delete ]>
+                or op of <[ + - ]> and first.op is op
       code = op + code
     if o.level < LEVEL_CALL then code else "(#{code})"
 
@@ -811,8 +811,8 @@ class exports.Op extends Node
 
   compileRepeat: (o) ->
     {first: x, second: n} = this; {items} = x
-    if (x = JS that if items and Splat.compileArray o, items) or
-       not (n instanceof Literal and n.value < 0x20)
+    if (x = JS that if items and Splat.compileArray o, items)
+    or not (n instanceof Literal and n.value < 0x20)
       x = Call.make Util(\repeat + if items then \Array else \String), [x, n]
       return x.compile o
     n = +n.value
@@ -874,10 +874,10 @@ class exports.Assign extends Node
     left.isAssignable() or left.carp \
       "#{ left.compile o, LEVEL_LIST } // invalid assignee"
     right.=it while right instanceof Parens and not right.keep
-    if op is \**= or
-       op is \+= and right instanceof Arr or
-       op is \*= and right.isString()     or
-       op of <[ -= /= ]> and right.isMatcher()
+    if op is \**=
+    or op is \+= and right instanceof Arr
+    or op is \*= and right.isString()
+    or op of <[ -= /= ]> and right.isMatcher()
       [left, reft] = Chain(left)cacheReference o
       right = Op op.slice(0 -1), reft, right
       op    = \:=
@@ -1281,8 +1281,8 @@ class exports.Parens extends Node
   compile: (o, level ? o.level) ->
     {it} = this
     unless @keep or @newed
-      if it instanceof [Atom, Chain, Fun, Parens, List] or
-         it instanceof Op and level < LEVEL_OP + (PREC[it.op] or PREC.unary)
+      if it instanceof [Atom, Chain, Fun, Parens, List]
+      or it instanceof Op and level < LEVEL_OP + (PREC[it.op] or PREC.unary)
         it.head.void = true if not level and @calling
         return (it <<< {@front})compile o, Math.max level, LEVEL_PAREN
     if it.isStatement()
