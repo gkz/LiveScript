@@ -950,9 +950,9 @@ class exports.Assign extends Node
           start = i + 1; @temps = [ivar = o.scope.temporary \i]
           val = if empty then node = Var ivar; Var val else
             Arr.wrap JS "
-              #{len} <= #{rite}.length \
-              ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar} = #{val}) \
-              : (#{ivar} = #{i}, [])"
+              #{len} <= #{rite}.length
+              \ ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar} = #{val})
+              \ : (#{ivar} = #{i}, [])"
       else
         (inc = ivar) and start < i and inc += " + #{ i - start }"
         val = Chain rcache||=Literal(rite), [Index JS inc || i]

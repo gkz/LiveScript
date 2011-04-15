@@ -8,7 +8,10 @@ eq "four five",
   four \
   five
   '
-
+eq 'six seven' '
+   six
+ \ seven
+'
 
 hello = 'Hello'
 world = 'World'
