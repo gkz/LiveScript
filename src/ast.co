@@ -1,5 +1,5 @@
-# Contains all of the node classes for the syntax tree. Most
-# nodes are created as the result of actions in the [grammar](#grammar),
+# Contains all of the node classes for the AST (abstract syntax tree).
+# Most nodes are created as the result of actions in the [grammar](#grammar),
 # but some are created by other nodes as a method of code generation. To convert
 # the syntax tree into a string of JavaScript code, call `compileRoot`.
 
@@ -674,6 +674,7 @@ class exports.Op extends Node
           node <<< {\new}
           return first
     case \+
+      break unless second
       if first instanceof Arr
         first.items.push Splat second
         return first

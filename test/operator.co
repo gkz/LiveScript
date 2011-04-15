@@ -192,11 +192,15 @@ a = "1#{2}3" +
 eq a, '123456'
 
 
-# Multiple unary {plus,minus}es should space themselves.
+### Unary `+`/`-`
+eq  0, +[]
+eq -1, -true
+
+# Should space themselves when repeated.
 eq(+ +1, - -1)
 
 
-# `do`
+### `do`
 eq '', do do do -> -> -> do String
 eq 1, do -> 1
 eq @, do ~> @
