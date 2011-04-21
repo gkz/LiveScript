@@ -286,8 +286,11 @@ bnf =
     o 'FOR EVER'         -> L new While
 
   Cases:
-    o       'CASE Expression Block' -> [new Case $2, $3]
-    o 'Cases CASE Expression Block' -> $1.concat new Case $3, $4
+    o       'CASE Tests Block' -> [new Case $2, $3]
+    o 'Cases CASE Tests Block' -> $1.concat new Case $3, $4
+  Tests:
+    o         \Expression  -> [$1]
+    o 'Tests , Expression' -> $1.concat $3
 
   # Optional `extends` clause for class definition.
   OptExtends:
