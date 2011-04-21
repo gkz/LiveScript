@@ -108,7 +108,7 @@ function compileScript(file, input, base) ->
     if o.run
       Coco.emit \run t
       if o.eval
-      then console.log (0; eval) t.output
+      then global <<< {module, require}; console.log (0; eval) t.output
       else Coco.run t.output, t.options <<< {+js}
     else
       Coco.emit \write t
