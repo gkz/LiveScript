@@ -27,16 +27,19 @@ Coco tries to amend them, entwining good parts of both.
 ### on [node.js](http://nodejs.org)
 `git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
-### via [npm](https://github.com/isaacs/npm#readme)
+### via [npm](http://npmjs.org)
 `npm i coco`
 
 ## Changelog
 
-### 0.4.3b
-- Dieted heregex syntax: `/// re ///` => `// re //`
+### 0.5.0b
 - Added `**` operator.
-- No longer accepts invalid regex literals.
+- Overloaded `+`/`-`/`/` (in addition to `*`) for arrays and strings.
 - REPL now uses _^J_ to continue lines.
+- Major regex changes:
+  - Dieted heregex syntax: `/// re ///` => `// re //`
+  - Allowed leading whitespace in normal regex literals when unambiguous.
+  - No longer accepts invalid regexes.
 
 ### 0.4.2
 - Enabled:
@@ -77,10 +80,11 @@ Coco tries to amend them, entwining good parts of both.
 - Revised heregex flag syntax: `///#{x}#{y}///?` -> `RegExp('' + x, y);`
 - Removed `Coco.eval`.
 - Made _extras/coco.js_ work as a mini-compiler on WSH.
-- Added _extras/mode-coco.js_, an editing mode for Ace.
+- Added _extras/mode-coco.js_, an editing mode for [Ace](http://ace.ajax.org).
 - Added `--json` option.
 
 ### 0.3.0
+
 #### Pure Additions
 - Added _backcall_, a sugar to flatten nested callbacks.
 - `do` block can now work as a pair of normal parentheses.
@@ -92,6 +96,7 @@ Coco tries to amend them, entwining good parts of both.
 - `...` in array destructuring (same as `...[]`) now skips items rather than `slice`ing them. ([coffee#870](https://github.com/jashkenas/coffee-script/issues/870))
 - Compilation errors now report line numbers.
 - `Coco` object now emits more events for use with `--require`.
+
 #### Incompatible Changes
 - <del>`=>`</del> -> <ins>`~>`</ins>
 - <del>`&.`</del> -> <ins>`~.`</ins>
