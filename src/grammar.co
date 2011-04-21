@@ -57,7 +57,9 @@ bnf =
 
     o 'Chain CALL( ArgList OptComma )CALL' -> $1.add Call $3, $2
 
-    o 'LET Function' -> Chain Call.let $2
+    o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
+
+    o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 
   # Variables and properties that can be assigned to.
   SimpleAssignable:
@@ -193,8 +195,6 @@ bnf =
     o 'TRY Block CATCH Block FINALLY Block' -> new Try $2, $3, $4, $6
     o 'TRY Block             FINALLY Block' -> new Try $2, null null $4
 
-    o 'WITH Expression Block' -> Call.block Fun([] $3), [$2] \.call
-
     # A class definition have a title, superreference, or body,
     # each of which is optional.
     o 'CLASS OptExtends'                        -> new Class null $2
@@ -286,11 +286,12 @@ bnf =
     o 'FOR EVER'         -> L new While
 
   Cases:
-    o       'CASE Tests Block' -> [new Case $2, $3]
-    o 'Cases CASE Tests Block' -> $1.concat new Case $3, $4
-  Tests:
+    o       'CASE Exprs Block' -> [new Case $2, $3]
+    o 'Cases CASE Exprs Block' -> $1.concat new Case $3, $4
+
+  Exprs:
     o         \Expression  -> [$1]
-    o 'Tests , Expression' -> $1.concat $3
+    o 'Exprs , Expression' -> $1.concat $3
 
   # Optional `extends` clause for class definition.
   OptExtends:

@@ -35,11 +35,12 @@ Coco tries to amend them, entwining good parts of both.
 ### 0.5.0b
 - Added `**` operator.
 - Overloaded `+`/`-`/`/` (in addition to `*`) for arrays and strings.
-- REPL now uses _^J_ to continue lines.
+- Revised `let`: `let (a) ~>` => `let a then`
 - Major regex changes:
-  - Dieted heregex syntax: `/// re ///` => `// re //`
+  - Dieted heregex: `/// re ///` => `// re //`
   - Allowed leading whitespace in normal regex literals when unambiguous.
   - No longer accepts invalid regexes.
+- REPL now uses _^J_ to continue lines.
 
 ### 0.4.2
 - Enabled:

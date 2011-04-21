@@ -84,7 +84,7 @@ task \build:browser 'build extras/' ->
   co = ''
   for name of <[ rewriter lexer ast coco ]>
     code = slurp("src/#{name}.co")replace /^./mg ' $&'
-    co += "let (exports = require'./#{name}' = {}) ->\n#{code}\n void\n"
+    co += "let exports = require'./#{name}' = {}\n#{code}\n void\n"
   slobber \extras/coco.raw.js js = """
     this.Coco = function(){
     function require(path){ return require[path] }

@@ -77,8 +77,10 @@ function addImplicitIndentation(tokens) ->
     [tag] = token
     continue unless tag of <[ THEN -> ELSE DEFAULT TRY CATCH FINALLY ]>
     switch next = tokens[i+1]0
-    case <[ INDENT THEN ]> then continue
-    case \IF               then continue if tag is \ELSE
+    case \IF then continue if tag is \ELSE
+    case \INDENT \THEN
+      tokens.splice i-- 1 if tag is \THEN
+      continue
     indent = [\INDENT 0 token.2]; dedent = [\DEDENT 0]
     if tag is \THEN
       tokens.splice --i, 1 if tokens[i-1]?0 is \TERMINATOR
@@ -175,8 +177,8 @@ function addImplicitParentheses(tokens) ->
     return true if token.alias and token.1 of <[ && || ]>
     pre = tokens[i-1]
     switch token.0
-    case \SWITCH             then seenSwitch := true; fallthrough
-    case <[ IF CLASS WITH ]> then skipBlock  := true
+    case \SWITCH                 then seenSwitch := true; fallthrough
+    case <[ IF CLASS LET WITH ]> then skipBlock  := true
     case \CASE
       if seenSwitch then skipBlock := true else return true
     case \DOT
@@ -296,7 +298,7 @@ function detectEnd(tokens, i, ok, go) ->
 function able(tokens, i ? tokens.length, call) ->
   [tag] = token = tokens[i-1]
   tag of <[ ID ] SUPER ]> or if call
-  then token.callable or tag is \? or tag of <[ ) )CALL ]> and token.1
+  then token.callable or tag of <[ ? LET ]> or tag of <[ ) )CALL ]> and token.1
   else tag of <[ STRNUM LITERAL ) )CALL } ]>
 
 function indexOfPair(tokens, i) ->

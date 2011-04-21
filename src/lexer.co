@@ -522,11 +522,11 @@ exports import
 #### String Helpers
 
 # Constructs a string token by (un)escaping quotes and newlines.
-string = let (
+string = let do
   escaped = /\\(?:[\\0-7bfnrtuvx]|[^\n\S]|([\w\W]))?/g
   descape = ($0, $1) -> $1 or if $0 is \\ then \\\\ else $0
   qs = "'":/'/g '"':/"/g
-) -> (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
+then (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
 
 # Erases all external indentations up to specified length.
 function detab(str, len) ->

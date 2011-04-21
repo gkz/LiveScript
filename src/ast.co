@@ -528,7 +528,7 @@ class exports.Call extends Node
   @make = (callee, args) -> Chain(callee)add Call args
 
   @block = (fun, args, method) ->
-    Parens(Chain fun, [Call(args) <<< {method}]) <<< {+calling}
+    Parens(Chain fun, [Call(args) <<< {method}]; true) <<< {+calling}
 
   @back = (params, arrow, node) ->
     (call = node.getCall()) or node = Chain(node)add call = Call()
@@ -536,15 +536,13 @@ class exports.Call extends Node
     break if a instanceof Splat and a.it.isEmpty() for a, i of args
     node import back: (args[i] = Fun params, null, arrow.charAt(1) + \>)body
 
-  @let = (fun) ->
-    args = fun.params; ps = fun.params = []
-    for a, i of args then ps.push do
+  @let = (args, body) ->
+    params = for a, i of args
       if a.op is \= and not a.logic
       then args[i] = a.right; a.left
-      else if a.varName()
-      then Var that
-      else a.carp 'invalid "let" argument'
-    @block fun, args, delete fun.bound && (args.unshift Literal \this; \.call)
+      else Var a.varName() || a.carp 'invalid "let" argument'
+    args.unshift Literal \this
+    @block Fun(params, body), args, \.call
 
 #### Clone
 # An operation that creates a new object with its `__proto__`
@@ -1281,10 +1279,10 @@ class exports.Parens extends Node
 
   compile: (o, level ? o.level) ->
     {it} = this
+    it.head.void = true if not level and @calling
     unless @keep or @newed
       if it instanceof [Atom, Chain, Fun, Parens, List]
       or it instanceof Op and level < LEVEL_OP + (PREC[it.op] or PREC.unary)
-        it.head.void = true if not level and @calling
         return (it <<< {@front})compile o, Math.max level, LEVEL_PAREN
     if it.isStatement()
     then it.compileClosure o
@@ -1419,7 +1417,7 @@ class exports.While extends Node
     @body.eachChild dig = ~>
       unless it.calling
         return if it instanceof [Fun, While] then null else it.eachChild dig
-      {head: fun, tails: [call]} = it.=it
+      {head: fun, tails: [call]} = it.it
       return if fun.statement
       if this instanceof For
         return if fun.params.length ^ call.args.length - !!call.method
