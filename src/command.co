@@ -48,9 +48,8 @@ default
   o.print   ||= o.eval or o.stdin and o.compile
   o.compile ||= o.output
   o.bare    ||= o.eval and o.run
-  {$args} = o
-  {argv}  = process
-  argv.0  = argv.1
+  {$args} = o; {argv} = process
+  process.execPath = argv.0 = argv.1
   argv.splice 2 9e9
   argv.push ...if o.stdin then $args else
     if o.run then $args.splice 1 9e9 else []
