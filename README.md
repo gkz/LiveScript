@@ -45,34 +45,16 @@ Coco tries to amend them, entwining good parts of both.
   - conditional destructuring assignments
   - colors and tab completion in REPL
 - Made leading `*`s serve like list markers.
-      $ coco -bsp
-      * * 0
-        * 1
-
-      [0, 1];
 
 ### 0.4.1
 - Added string/array multiplication.
-      $ coco -e '["#{0*1}" * 2] * 3'
-      [ '00', '00', '00' ]
 - Added label support.
-      $ coco -bpe ':L break L'
-      L: break L;
 - Aliased `constructor` as `..`.
-      $ coco -bpe '@..static'
-      this.constructor['static'];
 
 ### 0.4.0
 - Added `let`. Unary `do` is back at being simple call.
-      $ coco -bpe 'let (a = f()) ->'
-      (function(a){})(f());
 - Added `with`.
-      $ coco -bpe 'with f() then'
-      (function(){}).call(f());
 - Added semiautovivification.
-      $ coco -bpe 'base.!obj.@arr'
-      var _ref;
-      (_ref = base.obj || (base.obj = {})).arr || (_ref.arr = []);
 - Made `::` a pure sugar for `prototype`, which can now directly refer to `@::` under class body.
 - `?.` can now appear anywhere a normal dot can be used.
 - `~.` is changed to `. ~`.
@@ -84,26 +66,10 @@ Coco tries to amend them, entwining good parts of both.
 
 ### 0.3.2
 - Unrestricted ADI for identifiers beyond `@` and `::`.
-      $ coco -bpe '/x/exec(s)input'
-      /x/.exec(s).input;
 - Expanded property shorthands beyond `@foo`.
-      $ coco -bpe '{a.b, (c.d)e}'
-      ({
-        b: a.b,
-        e: c.d.e
-      });
 - Added `typeof!`, which inspects the internal _[[Class]]_ property.
-      $ coco -e 'typeof! //'
-      RegExp
 - Added shebang support.
-      $ coco -pe '`#!node`; ...'
-      #!node
-      (function(){
-        throw Error('unimplemented');
-      }).call(this);
 - REPL results now evaluate more intuitively.
-      coco> i for i from 3
-      [ 0, 1, 2 ]
 - Disallowed whitespace mixup for indentations.
 
 ### 0.3.1
@@ -116,23 +82,11 @@ Coco tries to amend them, entwining good parts of both.
 
 ### 0.3.0
 #### Pure Additions
-- Added _backcall_, a sugar to flatten nested callbacks:
-      $ coco -bpe 'a <- f; b'
-      f(function(a){
-        return b;
-      });
+- Added _backcall_, a sugar to flatten nested callbacks.
 - `do` block can now work as a pair of normal parentheses.
 - Improved _ACI_ (automatic comma insertion): `f {} [] x` -> `f({}, [], x);`
 - Improved _ADI_ (automatic dot insertion): `@@0'!'` -> `arguments[0]['!'];`
-- Multi-line block on the RHS of object property now works as an implicit array:
-      $ coco -bsp
-      a:
-        b
-        c
-
-      ({
-        a: [b, c]
-      });
+- Multi-line block on the RHS of object property now works as an implicit array.
 - Heregexes now support dynamic flags: `/// x #{? y } ///` -> `RegExp('x', y);`
 - Enabled compound _accessigns_: `a.+=b` -> `a += a.b;`
 - `...` in array destructuring (same as `...[]`) now skips items rather than `slice`ing them. ([coffee#870](https://github.com/jashkenas/coffee-script/issues/870))
@@ -144,11 +98,6 @@ Coco tries to amend them, entwining good parts of both.
 - Braceless objects no longer consume property shorthands.
   ([coffee#618](https://github.com/jashkenas/coffee-script/issues/618))
 - Indentations within non-here strings are now stripped.
-      $ coco -bsp
-        '123
-         456'
-
-      '123456';
 - [Fixed](https://github.com/jashkenas/coffee-script/issues/1050)
   block comment syntax to good ol' `/* */`.
 - `@0` is now `this[0]` rather than `arguments[0]`.
@@ -157,24 +106,18 @@ Coco tries to amend them, entwining good parts of both.
 - `is not` is the new `isnt`.
 - `@'++'` is now valid as a shorthand for `@['++']`.
 - Commas between primitive values are now optional.
-      $ coco -bpe '[null true 1 "2"]'
-      [null, true, 1, "2"];
 - _coke_ now automatically aliases tasks.
 - _extras/coco.js_ now works as a Gecko JS Module.
 - Grouped documentation suite into _doc/_ for portability.
 - Rewrote _src/optparse.co_.
 
 ### 0.2.1
-- Added numeric ranges:
-      $ bin/coco -bpe 'f -1 to 1, [2 to 8 by 3]'
-      f(-1, 0, 1, [2, 5, 8]);
-- Destructuring assignments can now specify default values using logical operators:
-      $ coco -bpe '[@a || b] = c'
-      this.a = c[0] || b;
-  Default arguments syntax has been changed accordingly (`(a || b) ->` instead of `(a ||= b) ->`).
-- `do` now performs special conversions against function literals with parameters, making it work as pseudo-`let` and Coffee 1.0.0 compliant:
-      $ coco -bpe 'do (x = y, z) ->'
-      (function(x, z){}(y, z));
+- Added numeric ranges.
+- Destructuring assignments can now specify default values using logical operators.
+  Default arguments syntax has been changed accordingly.
+  (`(a || b) ->` instead of `(a ||= b) ->`)
+- `do` now performs special conversions against function literals with parameters,
+  making it work as pseudo-`let` and Coffee 1.0.0 compliant.
 - Allowed `for i from x then` as a sugar for `for i from 0 til x then`.
 - Disallowed duplicate formal arguments.
 - Improved syntax-highlight in _src/index.html_.
@@ -182,15 +125,7 @@ Coco tries to amend them, entwining good parts of both.
 ### 0.2.0
 - Version bump for Xmas, in concert with [Coffee 1.0.0](http://news.ycombinator.com/item?id=2037801).
 - `@@` is now a shorthand for `arguments`.
-- `do` can now indicate a call against indented arguments, so that you can write
-      f do
-        x
-        y
-  instead of
-      f(
-        x
-        y
-      )
+- `do` can now indicate a call against indented arguments.
 - `and` and `or` now close implicit calls, making you write even less parens:
   `f x and g y or z` -> `f(x) && g(y) || z;`
 - `catch`'s variable declaration is no longer required.
