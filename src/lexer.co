@@ -85,15 +85,15 @@ exports import
         (id = new String id)reserved = true
     # keywords
     else switch id
-    case \for  then @seenFor = true; fallthrough
-    case \then then @seenFrom = @seenTo = false
     case <[ this eval ]> then return @token(\LITERAL id, true)length
     case <[ true false null void arguments debugger ]> then tag = \LITERAL
-    case <[ new do typeof delete ]> then tag = \UNARY
-    case <[ return throw         ]> then tag = \HURL
-    case <[ break continue       ]> then tag = \JUMP
-    case <[ catch function ]> then id = ''
-    case \import              then id = \<<<
+    case \new \do \typeof \delete then tag = \UNARY
+    case \return \throw           then tag = \HURL
+    case \break  \continue        then tag = \JUMP
+    case \catch \function then id = ''
+    case \import          then id = \<<<
+    case \for  then @seenFor = true; fallthrough
+    case \then then @seenFrom = @seenTo = false
     case <[ in of instanceof ]>
       if id is not \instanceof and @seenFor
         tag = \FOR + id.toUpperCase(); @seenFor = false
@@ -101,8 +101,8 @@ exports import
         if id is \of
           id = ''; @seenTo = true
           if last.0 is \ID then switch @tokens[*-2]0
-          case \,        then @tokens.splice -2 1; fallthrough
-          case <[ } ] ]> then @tokens.pop(); id = last.1
+          case \,    then @tokens.splice -2 1; fallthrough
+          case \} \] then @tokens.pop(); id = last.1
         break
       if last.1 is \!
         @tokens.pop()
@@ -133,7 +133,7 @@ exports import
       case \ever then if last.0 is \FOR
         @<<<{-seenFor}
         tag = \EVER
-      case <[ to til ]>
+      case \to \til
         if @seenFrom
           @<<<{-seenFrom, +seenTo}
           tag = \TO
@@ -307,8 +307,7 @@ exports import
     {last} = this; {length} = input
     last <<< {+eol, +spaced}
     return length if length >= it.length
-    delta = tabs.length - @dent
-    if delta < 0
+    if 0 > delta = tabs.length - @dent
       @dedent -delta
       LINE_CONTINUER.test it or @newline()
     else

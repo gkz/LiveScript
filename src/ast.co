@@ -272,8 +272,8 @@ class Atom extends Node
 class exports.Literal extends Atom
   (@value) ~> return JS "#{value}" true if value.js
 
-  isEmpty    : -> switch @value case <[ void null ]> then true
-  isCallable : -> switch @value case <[ this eval ]> then true
+  isEmpty    : -> switch @value case \void \null then true
+  isCallable : -> switch @value case \this \eval then true
   isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt()
 
   varName: -> if /^\w+$/test @value then \$ + @value else ''
@@ -699,7 +699,7 @@ class exports.Op extends Node
     case \+ then break unless @second; fallthrough
     case \* then @first.isString() or @second.isString()
     case \- then @second?isMatcher()
-    case <[ typeof classof ]> then true
+    case \typeof \classof then true
 
   EQUALITY = /^[!=]==?$/
   COMPARER = /^(?:[!=]=|[<>])=?$/
@@ -715,7 +715,7 @@ class exports.Op extends Node
   unfoldSoak: (o) ->
     @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, \first
 
-  hasDefault: -> switch @op case <[ ? || && ]> then this
+  hasDefault: -> switch @op case \? \|| \&& then this
 
   compileNode: (o) ->
     return @compileUnary o unless @second
@@ -761,7 +761,7 @@ class exports.Op extends Node
     case \delete
       @carp 'invalid deletion' if first instanceof Var or !first.isAssignable()
       return @compileDelete o if o.level
-    case <[ ++ -- ]>
+    case \++ \--
       if first instanceof Var and not o.scope.check first.value, true
         @carp "modification of undeclared variable \"#{first.value}\""
       first{front} = this if @post
@@ -847,17 +847,17 @@ class exports.Assign extends Node
 
   assigns: -> @left.assigns it
 
-  isCallable: -> switch @op case <[ = := ]> then @right.isCallable()
+  isCallable: -> switch @op case \= \:= then @right.isCallable()
 
   isArray: ->
     switch @op
-    case <[ = := += ]> then do @right.isArray
-    case \/=           then do @right.isMatcher
+    case \= \:= \+= then do @right.isArray
+    case \/=        then do @right.isMatcher
 
   isString: ->
     switch @op
-    case <[ = := += *= ]> then do @right.isString
-    case \-=              then do @right.isMatcher
+    case \= \:= \+= \*= then do @right.isString
+    case \-=            then do @right.isMatcher
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, \left
 
