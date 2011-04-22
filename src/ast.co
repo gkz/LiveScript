@@ -105,7 +105,8 @@
 
   # Defines delegaters.
   delegate: (names, fn) ->
-    for name of names then @[name] = do -> -> fn.call this, name, it
+    for name of names then let
+      @[name] = -> fn.call this, name, it
     void
 
   # Default implementations of the common node properties and methods. Nodes
@@ -1275,7 +1276,7 @@ class exports.Parens extends Node
 
   ::delegate <[ isComplex isCallable isArray ]> -> @it[it]()
 
-  isString   : -> @string or @it.isString()
+  isString: -> @string or @it.isString()
 
   compile: (o, level ? o.level) ->
     {it} = this

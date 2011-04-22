@@ -58,6 +58,7 @@ bnf =
     o 'Chain CALL( ArgList OptComma )CALL' -> $1.add Call $3, $2
 
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
+    o 'LET                              Block' -> Chain Call.let [], $2
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 
