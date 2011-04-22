@@ -388,6 +388,8 @@ new ->
     if n < 2 then 1 else n * act n-1
   eq 120 f.act 5
 
+  ok function ok then throw
+
 
 ### `let`
 new ->
