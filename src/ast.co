@@ -92,7 +92,7 @@
         base.=[name]; name = \it
       unless base[name]value is \that
         base[name] = Assign Var(\that), base[name]
-    function hasThat ->
+    function hasThat
       it.value is \that or if it.aSource
       then hasThat that if it[that]
       else it.eachChild hasThat
@@ -163,7 +163,7 @@
 
 # JSON deserialization
 exports.parse    = (json) -> exports.fromJSON JSON.parse json
-exports.fromJSON = function ->
+exports.fromJSON = function
   return it unless it and typeof it is \object
   if it.type
     node = exports[that]::{}
@@ -492,7 +492,7 @@ class exports.Chain extends Node
       @head = JS sub.compile(o, LEVEL_CALL) + tails.shift()compile o
       o.scope.free temps.0 if temps
       i = -1
-    function seek ->
+    function seek
       if it.value is \*               then stars.push it
       else unless it instanceof Index then it.eachChild seek
       void
@@ -1009,7 +1009,7 @@ class exports.Assign extends Node
     left
 
   # `o` + `{x}` => `o{x}`
-  function rechain(head, tail) ->
+  function rechain(head, tail)
     return tail if tail.isEmpty()
     if tail instanceof Obj
     then Clone head, tail.items
@@ -1320,7 +1320,7 @@ class exports.Splat extends Node
     (if index then Arr list else args.shift())compile(o, LEVEL_CALL) +
     ".concat(#{ List.compile o, args })"
 
-  function ensureArray(node) ->
+  function ensureArray(node)
     return node if node.isArray()
     Call.make JS(utility(\slice) + \.call), [node]
 
@@ -1709,7 +1709,7 @@ exports.L = (yylineno, node) -> node import line: yylineno + 1
 # generate code, you create a tree of scopes in the same shape as the nested
 # functions. Each scope knows about the function parameters and the variables
 # declared within it, and has references to its parent/shared enclosing scopes.
-function Scope(@parent, @shared) ->
+function Scope(@parent, @shared)
   @variables = []
   @positions = {}
   void
@@ -1863,7 +1863,7 @@ SIMPLENUM = /^\d+$/
 # Declares a utility function at the top level.
 function utility -> Scope.root.assign \__ + it, UTILITIES[it]
 
-function lastNonComment(nodes) ->
+function lastNonComment(nodes)
   break unless node.comment for node, i of nodes by -1
   [i >= 0 and node, i]
 

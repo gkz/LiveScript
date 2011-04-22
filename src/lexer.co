@@ -528,7 +528,7 @@ string = let do
 then (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
 
 # Erases all external indentations up to specified length.
-function detab(str, len) ->
+function detab(str, len)
   if len then str.replace detab[len]||=//\n[^\n\S]{1,#{len}}//g \\n else str
 
 # Erases all newlines and indentations.

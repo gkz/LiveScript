@@ -164,6 +164,8 @@ bnf =
     # Functions can be either anonymous, or named using `function` keyword.
     o \Function
     o 'FUNCTION Function' -> $2.named $1
+    o 'FUNCTION ( ArgList OptComma ) Block' -> L Fun($3, $6)named $1
+    o 'FUNCTION                      Block' -> L Fun([], $2)named $1
 
     # The full complement of `if` and `unless` expressions,
     # including postfix one-liners.

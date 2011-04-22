@@ -69,12 +69,12 @@ default
 # Asynchronously read in each Coco script in a list of source files and
 # compile them. If a directory is passed, recursively compile all
 # _.co_ files in it and all subdirectories.
-function compileScripts ->
+function compileScripts
   $args.forEach (source) ->
     <- path.exists source
     it or die "No such file or directory: #{source}"
     walk source, path.normalize(source), true
-  function walk(source, base, top) ->
+  function walk(source, base, top)
     e, stats <- fs.stat source
     if stats.isDirectory()
       e, files <- fs.readdir source
@@ -87,7 +87,7 @@ function compileScripts ->
 
 # Compile a single source script, containing the given code, according to the
 # requested options.
-function compileScript(file, input, base) ->
+function compileScript(file, input, base)
   t = {file, input, options: filename: file, bare: !!o.bare}
   try
     Coco.emit \lex t
@@ -125,7 +125,7 @@ function compileScript(file, input, base) ->
   Coco.emit \success t
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**.
-function compileStdin ->
+function compileStdin
   code = ''
   with process.openStdin()
     @on \data -> code += it
@@ -134,7 +134,7 @@ function compileStdin ->
 # Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--ast` or `--print`.
-function watch(source, base) ->
+function watch(source, base)
   fs.watchFile source, {+persistent, interval: 500ms} (curr, prev) ->
     return if curr.size is prev.size and +curr.mtime is +prev.mtime
     e, code <- fs.readFile source
@@ -144,14 +144,14 @@ function watch(source, base) ->
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
-function writeJS(source, js, base) ->
+function writeJS(source, js, base)
   filename = path.basename(source, path.extname source) + \.js
   srcDir   = path.dirname source
   dir      = if o.output
   then path.join that, srcDir.slice (if base is \. then 0 else base.length)
   else srcDir
   jsPath = path.join dir, filename
-  function compile ->
+  function compile
     e <- fs.writeFile jsPath, js || \\n
     return warn e if e
     util.log "#{source} => #{jsPath}" if o.watch
@@ -161,7 +161,7 @@ function writeJS(source, js, base) ->
   else require(\child_process)exec "mkdir -p #{dir}" compile
 
 # Pretty-print a stream of tokens.
-function printTokens(tokens) ->
+function printTokens(tokens)
   lines = []
   for [tag, val, lno] of tokens
     lines@[lno]push if tag.toLowerCase() is val then tag else "#{tag}:#{val}"
@@ -172,7 +172,7 @@ function printTokens(tokens) ->
 # and evaluates (or prints if _-c_) it.
 # Good for simple tests or poking around the
 # [**node.js** API](http://nodejs.org/api/).
-function repl ->
+function repl
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
   module.paths = module.._nodeModulePaths \
     module.filename = process.cwd() + \/repl
@@ -208,7 +208,7 @@ function repl ->
 
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
 # to it, preserving the other options.
-function forkNode ->
+function forkNode
   args = process.argv.slice 1; i = 0
   args.splice i-- 2 if that of <[ -N --nodejs ]> while args[++i]
   require(\child_process)spawn do

@@ -1,12 +1,5 @@
-# `it`
 I = (x) -> x
 eq I, I I
-
-I = -> it
-eq I, I I I
-
-eq \0, (-> (key for key in it).0) {0}
-
 
 # Bare calls.
 eq I (), I( )
@@ -30,24 +23,6 @@ obj = {
 eq obj, obj.bound()
 ok obj is not obj.unbound()
 eq obj, obj.nested()
-
-
-# Python decorator style wrapper that memoizes any function.
-memoize = (fn) ->
-  cache = {}
-  (...args) ->
-    key = '' + args
-    if key in cache
-    then cache[key]
-    else cache[key] = fn.apply this, args
-
-fastAdd = memoize (a, b) -> a + b
-
-eq 10, fastAdd(5, 5)
-eq 10, fastAdd(5, 5)
-
-okFunc = (f) -> ok(f())
-okFunc -> true
 
 
 # Multi-blocks with optional parens.
@@ -398,7 +373,23 @@ eq 5 do
 eq 6 (a <- g 6; a)
 
 
-# `let`
+### `function`
+new ->
+  function undef1 ->
+  function undef2
+    void
+  eq void undef1()
+  eq void undef2()
+
+  function bound ~> this
+  eq this, bound.call \this
+
+  f = act: function (n)
+    if n < 2 then 1 else n * act n-1
+  eq 120 f.act 5
+
+
+### `let`
 new ->
   x = y = 1; @z = 2
   let x = 0, y, @z
@@ -424,7 +415,7 @@ ok let [it] = [ok]
   it is ok
 
 
-# `with`
+### `with`
 with o = {}
   @a = 1
   @b = 2

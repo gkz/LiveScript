@@ -61,7 +61,7 @@ path.exists filename ||= \Cokefile ->
   else printTasks()
 
 # Display the list of tasks in a format similar to `rake -T`.
-function printTasks ->
+function printTasks
   say '''
     Usage: coke [coke options] [task options] [tasks]
 

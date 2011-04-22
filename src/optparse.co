@@ -58,7 +58,7 @@ module.exports = (
   #     -N, --nodejs ARGS+  pass options to "node"
   toString: help
 
-function help ->
+function help
   longs = @$flags.map -> it.long + if it.arg then ' ' + that else ''
   width = Math.max ...longs.map -> it.length
   pad   = ' ' * width

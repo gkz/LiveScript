@@ -149,7 +149,7 @@ task \test:json 'test JSON {de,}serialization' ->
     say out.trim() || tint \ok
   .stdin.end code
 
-function runTests(Coco) ->
+function runTests(Coco)
   startTime = Date.now()
   passedTests = failedTests = 0
   for name, func in require \assert then do ->
