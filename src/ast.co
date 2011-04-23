@@ -201,7 +201,7 @@ class exports.Block extends Node
 
   isComplex: -> @lines.length > 1 or @lines.0?isComplex()
 
-  ::delegate <[ isCallable isArray isString ]> ->
+  ::delegate <[ isCallable isArray isString isMatcher ]> ->
     that[it]() if lastNonComment(@lines)0
 
   jumps: -> return that if node.jumps it for node of @lines
@@ -366,7 +366,7 @@ class exports.Chain extends Node
   # __Chain__ can be unwrapped as its inner node, if there are no subnodes.
   unwrap: -> if @tails.length then this else @head
 
-  ::delegate <[ jumps assigns isStatement isString ]>
+  ::delegate <[ jumps assigns isStatement isString isMatcher ]>
            , (it, arg) -> not @tails.length and @head[it] arg
 
   isComplex    : -> @tails.length or @head.isComplex()
@@ -859,6 +859,11 @@ class exports.Assign extends Node
     case \= \:= \+= \*= then do @right.isString
     case \-=            then do @right.isMatcher
 
+  isMatcher: ->
+    switch @op
+    case \= \:= then @right.isMatcher()
+    default @isString()
+
   unfoldSoak: (o) -> If.unfoldSoak o, this, \left
 
   unfoldAssign: -> @access and this
@@ -1276,7 +1281,7 @@ class exports.Parens extends Node
 
   ::delegate <[ isComplex isCallable isArray ]> -> @it[it]()
 
-  isString: -> @string or @it.isString()
+  ::delegate <[ isString isMatcher ]> -> @string or @it[it]()
 
   compile: (o, level ? o.level) ->
     {it} = this
@@ -1611,7 +1616,8 @@ class exports.If extends Node
     else @chain = (@else = it) instanceof If
     this
 
-  ::delegate <[ isCallable isArray isString ]> -> @else?[it]() and @then[it]()
+  ::delegate <[ isCallable isArray isString isMatcher]> ->
+    @else?[it]() and @then[it]()
 
   jumps: -> @then.jumps it or @else?jumps it
 
