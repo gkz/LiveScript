@@ -38,7 +38,6 @@ if o.$unknowns.length
   help()
   process.exit 1
 
-# Many flags cause us to divert before compiling anything.
 switch
 case o.nodejs  then do forkNode
 case o.version then do version
@@ -66,6 +65,12 @@ default
   case $args.length  then compileScripts()
   default version(); help(); repl()
 
+# Calls a `fs` method, exiting on error.
+function fshoot(name, arg, callback)
+  e, result <- fs[name] arg
+  die e.stack || e if e
+  callback result
+
 # Asynchronously read in each Coco script in a list of source files and
 # compile them. If a directory is passed, recursively compile all
 # _.co_ files in it and all subdirectories.
@@ -75,13 +80,13 @@ function compileScripts
     it or die "No such file or directory: #{source}"
     walk source, path.normalize(source), true
   function walk(source, base, top)
-    e, stats <- fs.stat source
+    stats <- fshoot \stat source
     if stats.isDirectory()
-      e, files <- fs.readdir source
+      files <- fshoot \readdir source
       files.forEach -> walk path.join(source, it), base
     else if top or path.extname(source)toLowerCase() is \.co
       watch source, base if o.watch
-      e, buf <- fs.readFile source
+      buf <- fshoot \readFile source
       compileScript source, buf.toString(), base
   void
 
@@ -137,8 +142,7 @@ function compileStdin
 function watch(source, base)
   fs.watchFile source, {+persistent, interval: 500ms} (curr, prev) ->
     return if curr.size is prev.size and +curr.mtime is +prev.mtime
-    e, code <- fs.readFile source
-    e and die e.stack || e
+    code <- fshoot \readFile source
     compileScript source, code.toString(), base
 
 # Write out a JavaScript source file with the compiled code. By default, files
