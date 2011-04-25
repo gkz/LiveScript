@@ -32,15 +32,16 @@ exports import
   # we move forward within the code past the token, and begin again.
   ) -> exports{}tokenize code||'' options||{}
   tokenize: (code, o) ->
+    @inter or code.=replace /\r/g ''
     # Prepend a newline to handle leading INDENT.
-    code = \\n + code.replace /\r/g ''
+    code = \\n + code
     # Stream of parsed tokens,
     # initialized with a TERMINATOR token to ensure `@last` always exists.
     @tokens = [@last = [\TERMINATOR \\n 0]]
     # The current line. Starts from -1 to setoff the prepended newline.
     @line = ~-o.line
-    # The current indentation level.
-    @dent = 0
+    # The current indentation level and curly-brace count.
+    @dent = @braces = 0
     # The stack of all current indentation levels.
     @dents = []
     # Check the first character of current `code`, then call appropriate
@@ -48,11 +49,10 @@ exports import
     # returning the number of characters it has consumed.
     while code.=slice i
       switch code.charAt 0
-      case ' ' then i = @doSpace     code
-      case \\n then i = @doLine      code
-      case \\  then i = @doBackslash code
-      case \'  then i = @doHeredoc code, \' or @doString code, \'
-      case \"  then i = @doHeredoc code, \" or @doString code, \"
+      case ' '   then i = @doSpace     code
+      case \\n   then i = @doLine      code
+      case \\    then i = @doBackslash code
+      case \' \" then i = @doString    code
       case \<
         i = if \[ is code.charAt 1 then @doWords code else @doLiteral code
       case \/
@@ -67,7 +67,7 @@ exports import
     @tokens.shift()
     # Close up all remaining open blocks.
     @dedent @dent
-    o.inter or @newline()
+    if @inter then @rest or @carp 'unterminated interpolation' else @newline()
     # Rewrite the token stream unless explicitly asked not to.
     o.raw or rewrite @tokens
     @tokens
@@ -179,39 +179,37 @@ exports import
     else if sign then @token \STRNUM num else @strnum num
     match.0.length
 
-  # Matches a normal string literal.
-  doString: (code, q) ->
+  # Matches a string literal.
+  doString: ->
+    q = it.charAt 0
+    if q is it.charAt 1
+      return if q is it.charAt 2 then @doHeredoc it, q else @strnum q+q; 2
     if q is \"
-      str = @balancedString code, q
-      if 0 < str.indexOf \#{ 1
-        @interpolate str.slice(1 -1), unlines
-        return str.length
-    else
-      [str] = SIMPLESTR.exec code or @carp 'unterminated string'
+      parts = @interpolate it, q
+      @addInterpolated parts, unlines
+      return 1 + parts.size
+    [str] = SIMPLESTR.exec it or @carp 'unterminated string'
     @strnum unlines string q, str.slice 1 -1
     @countLines(str)length
 
-  # Matches heredocs, adjusting indentation to the correct level, as heredocs
-  # preserve whitespace, but ignore indentation to the left.
-  doHeredoc: (code, q) ->
-    return 0 unless code.slice(1 3) is q+q and ~end = code.indexOf q+q+q, 3
-    txt = code.slice 3 end
-    lnl = txt is not doc = txt.replace /\n[^\n\S]*$/ ''
-    if ~doc.indexOf \\n
-      tabs = /\n[^\n\S]*(?!$)/mg  # non-empty bol
-      dent = 0/0
-      dent = len unless dent <= len = that.0.length - 1 while tabs.exec doc
-      doc  = detab doc, dent
-      if \\n is doc.charAt 0
-        doc.=slice 1
-        ++@line
-    if q is \" and ~doc.indexOf \#{
-      @interpolate doc, enlines
-    else
-      @strnum enlines string q, doc
-      @countLines doc
-    ++@line if lnl
-    txt.length + 6
+  # Matches heredocs, adjusting indentation to the correct level,
+  # as they ignore indentation to the left.
+  doHeredoc: (it, q) ->
+    if q is \'
+      ~(end = it.indexOf q+q+q, 3) or @carp 'unterminated heredoc'
+      raw = it.slice 3 end
+      # Remove trailing indent.
+      doc = raw.replace LASTDENT, ''
+      @strnum enlines string q, lchomp detab doc, heretabs doc
+      return @countLines(raw)length + 6
+    parts = @interpolate it, q+q+q
+    tabs  = heretabs it.slice(3 parts.size)replace LASTDENT, ''
+    for t, i of parts then if t.0 is \S
+      t.1.=replace LASTDENT, '' if i+1 is parts.length
+      t.1 = detab t.1, tabs
+      t.1 = lchomp t.1 if i is 0
+    @addInterpolated parts, enlines
+    3 + parts.size
 
   # Matches block comments.
   doComment: ->
@@ -236,41 +234,42 @@ exports import
     #     f /re/ 9 /ex/   # f(/re/, 9, /ex/)
     #     a /= b / c / d  # division
     #
-    if (divisable = able @tokens) and @last.spaced
-      return 0 if /^\/[ =]/test it or not match = REGEX.exec it
+    if able @tokens
+      return 0 if not @last.spaced or /^\/[ =]/test it
+               or not match = REGEX.exec it
     else
-      return 0 if divisable
       match = REGEX.exec it or @carp 'unterminated regex'
     @regex match.1, match.2
     match.0.length
 
   # Matches a multiline and extended regex literal.
   doHeregex: ->
-    [heregex, body, flags] = HEREGEX.exec it or @carp 'unterminated heregex'
-    flags = '' if dynaflag = flags is \?
-    if 0 > body.indexOf \#{
-      @regex body.replace(HEREGEX_OMIT, '')replace(/\//g \\\/), flags
-      return @countLines(heregex)length
-    @token \ID \RegExp; @token \CALL( ''
-    {tokens} = this; interp = @interpolate body
-    flags = interp.pop()1 if dynaflag and interp[*-1]0 is \TOKENS
-    for token, i of interp
-      if token.0 is \TOKENS
-        tokens.push ...token.1
-      else
-        val = token.1.replace HEREGEX_OMIT, ''
-        continue if not val and i > 1
-        tokens.push token <<<
-          \STRNUM  string \' val.replace BS||=/\\/g \\\\
-      tokens.push [\+- \+ tokens[*-1]2]
-    tokens.pop()
-    if flags
-      @token \, \,
-      if typeof flags is \string
-      then @token \STRNUM "'#{flags}'"
-      else tokens.push ...flags
-    @token \)CALL ''
-    heregex.length
+    {tokens, last} = this
+    parts = @interpolate it, \//
+    rest  = it.slice 2 + parts.size
+    flag  = /^[imgy]{0,4}/exec(rest)0
+    if parts.1
+      tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
+      if \? is rest.charAt 0
+        ++parts.size
+        for t, i of parts by -1 then if t.0 is \TOKENS
+          dynaflag = parts.splice(i, 1).0.1
+          break
+      for t, i of parts
+        if t.0 is \TOKENS
+          tokens.push ...t.1
+        else
+          val = t.1.replace HEREGEX_OMIT, ''
+          continue if not val and bs
+          tokens.push t <<< [\STRNUM  string \' val.replace bs||=/\\/g \\\\]
+        tokens.push [\+- \+ tokens[*-1]2]
+      tokens.pop()
+      if flag or dynaflag
+        @token \, \,
+        if dynaflag then tokens.push ...dynaflag else @token \STRNUM "'#{flag}'"
+      @token \)CALL ''
+    else @regex parts.0.1.replace(HEREGEX_OMIT, '')replace(/\//g \\\/), flag
+    2 + parts.size + flag.length
 
   # Matches a word literal, or ignores a sequence of whitespaces.
   doBackslash: ->
@@ -319,10 +318,10 @@ exports import
         return length
       cont = LINE_CONTINUER.test it
       if delta then @indent delta, cont else cont or @newline()
-    @<<<{-seenFrom, -seenTo}
+    @seenFrom = @seenTo = false
     length
 
-  # Consumes non-newline whitespaces and a line comment after them if any.
+  # Consumes non-newline whitespaces and/or a line comment.
   doSpace: ->
     # Tag the previous token as being `.spaced`,
     # because there are cases where it makes a difference.
@@ -383,8 +382,15 @@ exports import
       continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ( ]>
       tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
       @token \)PARAM ''
+    case \{
+      @token \CLONE '' if @able()
+      ++@braces
+    case \}
+      break if --@braces >= 0
+      @inter or @carp 'unmatched `}`'
+      @rest = it.slice 1
+      return 9e9
     case \[  then @adi()
-    case \{  then @token \CLONE '' if @able()
     case \@@ then tag = \LITERAL; val = \arguments
     case \:: then i = \prototype; fallthrough
     case \.. then @adi(); tag = \ID; val = i || \constructor
@@ -405,32 +411,13 @@ exports import
   dedent: (debt) ->
     @dent -= debt
     while debt > 0 and dent = @dents.pop()
-      @carp "unmatched dedent (#{debt} for #{dent})" if debt < dent
+      if debt < dent and not @inter
+        @carp "unmatched dedent (#{debt} for #{dent})"
       debt -= if typeof dent is \number then @token \DEDENT dent else dent
     void
 
   # Generates a newline token. Consecutive newlines get merged together.
   newline: -> @token \TERMINATOR \\n unless @last.1 is \\n
-
-  # Matches a balanced group such as a double-quoted string. Pass in
-  # a series of delimiters, all of which must be nested correctly within the
-  # contents of the string. This method allows us to have strings within
-  # interpolations within strings, ad infinitum.
-  balancedString: (str, end) ->
-    stack = [end]; i = 0
-    while chr = str.charAt ++i
-      if chr is \\ then ++i; continue
-      switch end
-      case chr
-        stack.pop()
-        return str.slice 0 i+1 unless end = stack[*-1]
-      case \"
-        stack.push end = \} if \{ is chr and \# is str.charAt i-1
-      case \}
-        switch chr
-        case \" \' then stack.push end = chr
-        case \{    then stack.push end = \}
-    @carp "missing `#{stack.pop()}` in a string"
 
   # Expands variables and expressions inside double-quoted strings or heregexes
   # using Ruby-like notation for substitution of arbitrary expressions.
@@ -439,47 +426,46 @@ exports import
   #
   # Will recursively create a new lexer for each interpolation,
   # tokenizing the contents and merging them into the token stream.
-  interpolate: (str, nlines) ->
-    {line} = this; ts = []; pi = 0; i = -1
-    while str.charAt ++i
-      if that is \\
-        ++i
-        continue
-      continue unless that is \# and \{ is str.charAt i+1
+  interpolate: (str, end) ->
+    parts = []; end0 = end.charAt 0; pos = 0; i = -1
+    str.=slice end.length
+    while ch = str.charAt ++i
+      if ch is \\ then ++i; continue
+      if ch is end0
+        continue unless end is str.slice i, i + end.length
+        parts.push [\S; @countLines str.slice 0 i; @line]
+        return parts <<< size: pos + i + end.length
+      continue unless ch is \# and \{ is str.charAt i+1
       # `"#{0}#{1}"` => `0 + "" + 1`
-      if pi < i or nested and s >= ''
-        ts.push [\S; s = str.slice pi, i; @line]
-        @countLines s
-      code = @balancedString str.slice(i+1), \}
-      pi   = 1 + i += code.length
-      continue unless code.=slice 1 -1
-      nested = @lex code, {@line, +inter, +raw}
-      nested.shift() if nested.0?0 is \TERMINATOR
-      if len = nested.length
-        if len > 1
-          nested.unshift [\( \( nested[ 0 ]2]
-          nested.push    [\) \) nested[len]2]
-        ts.push [\TOKENS nested]
-      @countLines code
-    if pi < str.length
-      ts.push [\S; s = str.slice pi; @line]
-      @countLines s
-    ts.unshift [\S '' line] unless s?
-    return ts unless nlines?
-    {tokens} = this
-    dot = if @able() then tokens.push [\DOT '' line] else @last.0 is \DOT
-    tokens.push [\( \" line]
-    for t, i of ts
+      if i or nested and not s?
+        s = parts.push [\S; @countLines str.slice 0 i; @line]
+      clone  = exports{+inter}
+      nested = clone.tokenize str.slice(i+2), {@line, +raw}
+      nested.shift() while nested.0?0 is \TERMINATOR
+      @countLines str.slice i, delta = str.length - clone.rest.length
+      pos += delta; str = clone.rest; i = -1
+      if nested.length
+        if that > 1
+          nested.unshift [\( \( nested[0]2]
+          nested.push    [\) \) @line]
+        parts.push [\TOKENS nested]
+    @carp "missing `#{end}`"; void
+
+  # Merges `@interpolate`d strings.
+  addInterpolated: (parts, nlines) ->
+    return @strnum nlines string \" parts.0.1 unless parts.1
+    @adi()
+    {tokens, last} = this
+    tokens.push [\( \" last.2]
+    for t, i of parts
       if t.0 is \TOKENS
         tokens.push ...t.1
       else
-        s = nlines string \" t.1
-        continue if i > 1 and s.length < 3
-        tokens.push [\STRNUM s, t.2]
+        continue if i > 1 and not t.1
+        tokens.push [\STRNUM; nlines string \" t.1; t.2]
       tokens.push [\+- \+ tokens[*-1]2]
     tokens.pop()
-    @token \) '' dot
-    void
+    @token \) '' last.0 is \DOT
 
   #### Helpers
 
@@ -497,9 +483,9 @@ exports import
   js: -> @token \LITERAL new String(it) <<< {+js}
 
   # Records a regex token.
-  regex: (body, flags) ->
+  regex: (body, flag) ->
     try RegExp body catch @carp e.message
-    @js "/#{ body or '(?:)' }/#{ flags and flags.replace /(.)(?=.*\1)/g '' }"
+    @js "/#{ body or '(?:)' }/#{ flag and flag.replace /(.)(?=.*\1)/g '' }"
 
   # Increments `@line` by the number of newlines in a string.
   countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
@@ -528,6 +514,13 @@ string = let do
   qs = "'":/'/g '"':/"/g
 then (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
 
+# Detects the minimum indent count for a heredoc, ignoring empty lines.
+function heretabs(doc)
+  dent = 0/0
+  dent = len unless dent <= len = that.0.length - 1 while TABS.exec doc
+  dent
+TABS = /\n[^\n\S]*(?!$)/mg
+
 # Erases all external indentations up to specified length.
 function detab(str, len)
   if len then str.replace detab[len]||=//\n[^\n\S]{1,#{len}}//g \\n else str
@@ -539,6 +532,9 @@ INDENTS = /\n[^\n\S]*/g
 # Keeps newlines by escaping them.
 function enlines -> it.replace LINES, \\\n
 LINES = /\n/g
+
+# Deletes the first character if newline.
+function lchomp -> it.slice 1 + it.lastIndexOf \\n 0
 
 #### Constants
 
@@ -605,8 +601,9 @@ REGEX = //
     ) [^ [ / \n \\ ]*                        # every other thing again
   )* )/ ([imgy]{0,4})
 //
-HEREGEX      = // ^ / / ([\s\S]*?) / / ([imgy]{1,4}|\??) //
-HEREGEX_OMIT = /\s+(?:#.*)?/g
+HEREGEX_OMIT  = /\s+(?:#.*)?/g
+
+LASTDENT = /\n[^\n\S]*$/
 
 LINE_CONTINUER = // ^ \s* (?:
   [,?&|^] | \.(?![.\d]) | (?:and|or)(?![$\w\x7f-\uffff]|[^\n\S]*:(?![:=]))

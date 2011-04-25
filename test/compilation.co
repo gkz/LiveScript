@@ -26,12 +26,11 @@ _ref = o.k, delete o.k, _ref;
 ''' Coco.compile 'delete o.k' {+repl, +bare}
 
 
-throws 'missing `"` in a string on line 2' -> Coco.lex '\n"\n'
+throws 'missing `"` on line 2' -> Coco.lex '\n"\n'
 
 throws 'unterminated JS literal on line 3', -> Coco.lex '\n\n```\n'
 throws 'unterminated string on line 3'    , -> Coco.lex "\n\n'\n"
 throws 'unterminated words on line 3'     , -> Coco.lex '\n\n<[\n'
-throws 'unterminated heregex on line 3'   , -> Coco.lex '\n\n//\n'
 
 throws 'contaminated indent %20 on line 2'    -> Coco.lex '1\n\t 2'
 throws 'unmatched dedent (1 for 2) on line 3' -> Coco.lex '1\n  2\n 3'
@@ -103,20 +102,22 @@ tokens = Coco.lex '''
 ]>
 '''
 eq tokens.join('\n'), '''
-(,",1
-STRNUM,"1 ",1
+(,\",0
+STRNUM,\"1 \",1
 +-,+,1
 (,(,2
-INDENT,2,2
+INDENT,4,2
 STRNUM,2,2
 TERMINATOR,
 ,3
 STRNUM,3,3
-DEDENT,2,4
+DEDENT,4,4
+TERMINATOR,
+,4
 ),),4
 +-,+,4
-STRNUM," 4",4
-),,4
+STRNUM,\" 4\",5
+),,5
 TERMINATOR,
 ,6
 [,[,6

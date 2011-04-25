@@ -71,3 +71,8 @@ ok ////mimi
 
 # Should disallow trailing backslash.
 ok try Coco.lex '//\\//'; 0 catch 1
+
+# Should work nested.
+eq \01234 // 0 #{
+  // 1 #{ //2//source } 3 //source
+} 4 //source

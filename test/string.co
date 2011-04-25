@@ -186,11 +186,15 @@ eq '''  <- keep these spaces ->  ''', '  <- keep these spaces ->  '
 eq 'multiline nested "interpolations" work', """multiline #{
   "nested #{
     ok true
-    "\"interpolations\""
-  }"
+    "\"inter"
+  }" + """polations\""""
 } work"""
 
 
+throws 'unterminated interpolation on line 2' -> Coco.lex '"#{\n'
+
+
+# Character/Word Literal
 eq 'word', \word
 eq \c, 'c'
 eq('+', \+)
@@ -210,9 +214,10 @@ eq o.k, o\k
 eq o.k, o'k'
 eq o.k, o"#{k}"
 
-o\k     true
-o'k'    true
-o"#{k}" true
+o\k      true
+o'k'     true
+o"#{k}"  true
+o"""k""" true
 
 
 # Automatic Comma Insertion
@@ -222,5 +227,4 @@ eq \2 '1'.replace "#{1}" -> 2
 
 # Trailing backslashes are themselves.
 eq '''\''' '\\'
-eq """\""" "\\"
 eq \\\\ \\ + \\
