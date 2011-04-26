@@ -366,11 +366,13 @@ class exports.Chain extends Node
   # __Chain__ can be unwrapped as its inner node, if there are no subnodes.
   unwrap: -> if @tails.length then this else @head
 
-  ::delegate <[ jumps assigns isStatement isString isMatcher ]>
+  ::delegate <[ jumps assigns isStatement isString ]>
            , (it, arg) -> not @tails.length and @head[it] arg
 
   isComplex    : -> @tails.length or @head.isComplex()
   isCallable   : -> if @tails.length then !@isArray() else @head.isCallable()
+  isMatcher    : -> @isString() or
+    @head.value is \RegExp and not @tails.1 and @tails.0 instanceof Call
   isArray      : ->
     if @tails[*-1] then that.key?length else @head.isArray()
   isAssignable : ->
