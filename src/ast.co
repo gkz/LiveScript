@@ -438,14 +438,13 @@ class exports.Chain extends Node
       return that
     for node, i of @tails then if node.soak
       node.soak = ''
-      return if node instanceof Call
+      test = if node instanceof Call
         [test, @head] = Chain(@head, @tails.splice 0 i)cacheReference o
-        If do
-          JS "typeof #{ test.compile o, LEVEL_OP } == 'function'"
-          this, {+soak}
+        JS "typeof #{ test.compile o, LEVEL_OP } == 'function'"
       else
         [test, @head] = Chain(@head, @tails.splice 0 i)unwrap()cache o, true
-        If Existence(test), this, {+soak}
+        Existence test
+      return If(test, this) <<< {+soak}
     void
 
   unfoldAssign: (o) ->
@@ -1599,7 +1598,7 @@ class exports.Case extends Node
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Node
-  (@if, @then, {@soak, name} or {}) ~> @negated = name is \unless
+  (@if, @then, name) ~> @negated = name is \unless
 
   children: <[ if then else ]>
 

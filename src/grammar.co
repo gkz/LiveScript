@@ -171,7 +171,7 @@ bnf =
     # including postfix one-liners.
     o \IfBlock
     o 'IfBlock ELSE Block'            -> $1.addElse $3
-    o 'Expression POST_IF Expression' -> L If $3, $1, name: $2
+    o 'Expression POST_IF Expression' -> If $3, $1, $2
 
     # Loops can either be normal, with a block of expressions
     # to execute, or postfix, with a single expression.
@@ -238,8 +238,8 @@ bnf =
   # The most basic form of `if` is a condition and an action. The following
   # `if`-related rules are broken up along these lines to avoid ambiguity.
   IfBlock:
-    o              'IF Expression Block' -> If $2, $3, name: $1
-    o 'IfBlock ELSE IF Expression Block' -> $1.addElse If $4, $5, name: $3
+    o              'IF Expression Block' -> If $2, $3, $1
+    o 'IfBlock ELSE IF Expression Block' -> $1.addElse If $4, $5, $3
 
   Parenthetical:
     o '(        Body        )' -> Parens $2.unwrap(), false, $1 is \"
