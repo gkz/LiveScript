@@ -123,7 +123,9 @@
   isEmpty      : NO
   isArray      : NO
   isString     : NO
-  isMatcher    : -> @isString()
+  isRegex      : NO
+
+  isMatcher: -> @isString() or @isRegex()
 
   # Do I contain a statement that jumps out of me?
   jumps: NO
@@ -201,7 +203,7 @@ class exports.Block extends Node
 
   isComplex: -> @lines.length > 1 or @lines.0?isComplex()
 
-  ::delegate <[ isCallable isArray isString isMatcher ]> ->
+  ::delegate <[ isCallable isArray isString isRegex ]> ->
     that[it]() if lastNonComment(@lines)0
 
   jumps: -> return that if node.jumps it for node of @lines
@@ -371,12 +373,12 @@ class exports.Chain extends Node
 
   isComplex    : -> @tails.length or @head.isComplex()
   isCallable   : -> if @tails.length then !@isArray() else @head.isCallable()
-  isMatcher    : -> @isString() or
-    @head.value is \RegExp and not @tails.1 and @tails.0 instanceof Call
   isArray      : ->
     if @tails[*-1] then that.key?length else @head.isArray()
   isAssignable : ->
     if @tails[*-1] then that instanceof Index else @head.isAssignable
+  isRegex      : ->
+    @head.value is \RegExp and not @tails.1 and @tails.0 instanceof Call
 
   makeReturn: -> if @tails.length then super ... else @head.makeReturn it
 
@@ -849,7 +851,8 @@ class exports.Assign extends Node
 
   assigns: -> @left.assigns it
 
-  isCallable: -> switch @op case \= \:= then @right.isCallable()
+  ::delegate <[ isCallable isRegex ]> ->
+    switch @op case \= \:= then @right[it]()
 
   isArray: ->
     switch @op
@@ -860,11 +863,6 @@ class exports.Assign extends Node
     switch @op
     case \= \:= \+= \*= then do @right.isString
     case \-=            then do @right.isMatcher
-
-  isMatcher: ->
-    switch @op
-    case \= \:= then @right.isMatcher()
-    default @isString()
 
   unfoldSoak: (o) -> If.unfoldSoak o, this, \left
 
@@ -1281,9 +1279,9 @@ class exports.Parens extends Node
 
   show: -> @string and '""'
 
-  ::delegate <[ isComplex isCallable isArray ]> -> @it[it]()
+  ::delegate <[ isComplex isCallable isArray isRegex ]> -> @it[it]()
 
-  ::delegate <[ isString isMatcher ]> -> @string or @it[it]()
+  isString: -> @string or @it.isString()
 
   compile: (o, level ? o.level) ->
     {it} = this
@@ -1618,7 +1616,7 @@ class exports.If extends Node
     else @chain = (@else = it) instanceof If
     this
 
-  ::delegate <[ isCallable isArray isString isMatcher]> ->
+  ::delegate <[ isCallable isArray isString isRegex ]> ->
     @else?[it]() and @then[it]()
 
   jumps: -> @then.jumps it or @else?jumps it
@@ -1687,7 +1685,7 @@ class exports.JS extends Node
   terminator : ''
 
   isCallable : -> not @comment
-  isMatcher  : -> not @comment and \/ is @code.charAt 0
+  isRegex    : -> not @comment and \/ is @code.charAt 0
 
   compile: -> if @literal then entab @code, it.indent else @code
 
