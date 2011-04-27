@@ -313,8 +313,8 @@ exports import
     else
       if tabs and (@emender ||= //[^#{ tabs.charAt 0 }]//)exec tabs
         @carp "contaminated indent #{ escape that }"
-      if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := ]> or
-         tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]>
+      if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := += ]>
+      or tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]>
         return length
       cont = LINE_CONTINUER.test it
       if delta then @indent delta, cont else cont or @newline()
