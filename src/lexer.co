@@ -67,7 +67,7 @@ exports import
     @tokens.shift()
     # Close up all remaining open blocks.
     @dedent @dent
-    if @inter then @rest or @carp 'unterminated interpolation' else @newline()
+    if @inter then @rest? or @carp 'unterminated interpolation' else @newline()
     # Rewrite the token stream unless explicitly asked not to.
     o.raw or rewrite @tokens
     @tokens
