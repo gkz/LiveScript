@@ -40,10 +40,12 @@ exports import
     @tokens = [@last = [\TERMINATOR \\n 0]]
     # The current line. Starts from -1 to setoff the prepended newline.
     @line = ~-o.line
-    # The current indentation level and curly-brace count.
-    @dent = @braces = 0
+    # The current indentation level.
+    @dent = 0
     # The stack of all current indentation levels.
     @dents = []
+    # The stack for pairing tokens.
+    @closes = []
     # Check the first character of current `code`, then call appropriate
     # tokenizers based on it. Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
@@ -67,6 +69,7 @@ exports import
     @tokens.shift()
     # Close up all remaining open blocks.
     @dedent @dent
+    @carp "missing `#{that}`" if @closes.pop()
     if @inter then @rest? or @carp 'unterminated interpolation' else @newline()
     # Rewrite the token stream unless explicitly asked not to.
     o.raw or rewrite @tokens
@@ -345,9 +348,20 @@ exports import
     case <[ <<<  <<<< ]>               then tag = \IMPORT
     case <[ << >> >>> ]>               then tag = \SHIFT
     case <[  &  |  ^  ]>               then tag = \BITWISE
-    case \(                            then tag = \CALL( if @able true
-    case \?(                           then tag = \CALL(
     case \;                            then tag = \TERMINATOR
+    case \( \?(
+      @closes.push \)
+      tag = \CALL( if val is \?( or @able true
+    case \[    then @closes.push \]; @adi()
+    case \] \) then @pair val
+    case \{
+      @closes.push \}
+      @token \CLONE '' if @able()
+    case \}
+      if @inter and val is not @closes[*-1]
+        @rest = it.slice 1
+        return 9e9
+      @pair val
     case \: then if @last.0 not of <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= **= ]>
@@ -382,15 +396,6 @@ exports import
       continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ( ]>
       tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
       @token \)PARAM ''
-    case \{
-      @token \CLONE '' if @able()
-      ++@braces
-    case \}
-      break if --@braces >= 0
-      @inter or @carp 'unmatched `}`'
-      @rest = it.slice 1
-      return 9e9
-    case \[  then @adi()
     case \@@ then tag = \LITERAL; val = \arguments
     case \:: then i = \prototype; fallthrough
     case \.. then @adi(); tag = \ID; val = i || \constructor
@@ -405,6 +410,7 @@ exports import
   indent: (delta, dummy) ->
     @dent += delta
     @dents.push if dummy then ''+delta else @token \INDENT delta
+    @closes.push \DEDENT
     void
 
   # Records a DEDENT, or DEDENTs if there are multiple matching INDENTs.
@@ -414,6 +420,7 @@ exports import
       if debt < dent and not @inter
         @carp "unmatched dedent (#{debt} for #{dent})"
       debt -= if typeof dent is \number then @token \DEDENT dent else dent
+      @pair \DEDENT
     void
 
   # Generates a newline token. Consecutive newlines get merged together.
@@ -501,6 +508,18 @@ exports import
     not @last.spaced and if @last.0 is \?
     then @last <<< [\DOT \?.]
     else able @tokens and @token \DOT \.
+
+  # Pairs up a closing token.
+  pair: ->
+    unless it is wanted = @closes[*-1]
+      # Auto-close DEDENT to support syntax like:
+      #
+      #     [ a
+      #       b ]
+      #
+      @carp "unmatched `#{it}`" unless \DEDENT is wanted and it is @closes[*-2]
+      @dedent @dents[*-1]
+    @closes.pop()
 
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
