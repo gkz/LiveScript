@@ -8,16 +8,6 @@ eq 'one;\ntwo;', Coco.compile 'one\r\ntwo' bare
 eq '_(_);', Coco.compile '\n\t_\t_\t\n' bare
 
 
-# `{+globals}` removes `var`s
-eq '''
-(function(){
-  __slice = [].slice;
-  f.apply(null, __slice.call(a).concat([b]));
-}).call(this);
-
-''', Coco.compile 'f ...a, b', {+globals}
-
-
 # `{+repl}` forces the last value to be returned.
 eq 1, Function('return ' + Coco.compile 'delete @1' {+repl}).call {1}
 eq '''
@@ -47,8 +37,10 @@ throws '''
 ''' -> Coco.compile '1 to 0' {\filename}
 
 
-eq 'for (k in o) {}'
-, Coco.compile 'for k in o then', {+bare, +globals}
+eq '''
+var k;
+for (k in o) {}
+''' Coco.compile 'for k in o then' {+bare}
 
 
 eq '''

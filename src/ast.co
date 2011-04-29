@@ -1153,7 +1153,6 @@ class exports.Fun extends Node
     scope  = o.scope = @body.scope =
       new Scope (if @wrapper then pscope else sscope), @wrapper && sscope
     scope.fun = this
-    delete o.globals
     scope.assign \prototype @proto.compile(o) + \.prototype if @proto
     o.indent = @tab = '' if @plucked
     o.indent += TAB
@@ -1770,7 +1769,6 @@ Scope::<<<
         (if \_ is name.charAt 0 then tmp else usr)push name
       else if type.value
         asn.push entab name + ' = ' + type.value, o.indent
-    return asn.join ', ' if o.globals
     'var ' + that if usr.concat(tmp, asn)join ', '
 
 ##### Constants
