@@ -172,8 +172,8 @@ function printTokens(tokens)
   say(if l then l.join(' ')replace /\n/g \\\n else '') for l of lines
 
 # A simple Read-Eval-Print-Loop. Compiles one line
-# (or a block of lines if continued using backslash) at a time to JavaScript,
-# and evaluates (or prints if _-c_) it.
+# (or a block of lines if continued using _^J_) at a time to JavaScript,
+# and evaluates (or prints if _--compile_) it.
 # Good for simple tests or poking around the
 # [**node.js** API](http://nodejs.org/api/).
 function repl
@@ -182,6 +182,7 @@ function repl
     module.filename = process.cwd() + \/repl
   {Script} = process.binding \evals
   context  = Script.createContext() <<< {...global, module, require}
+  context.global = context
   code  = ''
   cont  = false
   stdin = process.openStdin()
