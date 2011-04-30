@@ -452,9 +452,8 @@ exports import
       @countLines str.slice i, delta = str.length - clone.rest.length
       pos += delta; str = clone.rest; i = -1
       if nested.length
-        if that > 1
-          nested.unshift [\( \( nested[0]2]
-          nested.push    [\) \) @line]
+        nested.unshift [\( \( nested.0.2]
+        nested.push    [\) \) @line]
         parts.push [\TOKENS nested]
     @carp "missing `#{end}`"; void
 

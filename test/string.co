@@ -193,6 +193,8 @@ eq 'multiline nested "interpolations" work', """multiline #{
 
 throws 'unterminated interpolation on line 2' -> Coco.lex '"#{\n'
 
+throws "Parse error on line 1: Unexpected ')'" -> Coco.compile '"(#{+})"'
+
 
 # Character/Word Literal
 eq 'word', \word
