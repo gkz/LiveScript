@@ -84,7 +84,7 @@ task \build:browser 'build extras/' ->
   co = ''
   for name of <[ rewriter lexer ast coco ]>
     code = slurp("src/#{name}.co")replace /^./mg ' $&'
-    co += "let exports = require'./#{name}' = {}\n#{code}\n void\n"
+    co += "let exports = require'./#{name}' = {}\n#{code}\n"
   slobber \extras/coco.raw.js js = """
     this.Coco = function(){
     function require(path){ return require[path] }
@@ -156,14 +156,14 @@ function runTests(Coco)
     global[name] = -> func ...; ++passedTests
   global import {
     Coco, eq: strictEqual, throws: (msg, fun) ->
-      try do fun catch e then return eq e.message, msg
-      ok false 'should throw: ' + msg
+      try do fun catch return eq e?message, msg
+      ok false "should throw: #{msg}"
   }
   process.on \exit ->
     time = ((Date.now() - startTime) / 1e3)toFixed 2
     message = "passed #{passedTests} tests in #{time} seconds"
     say if failedTests
-    then tint "failed #{failedTests} and #{message}", red
+    then tint "failed #{failedTests} and #{message}" red
     else tint message
   dir(\test)forEach (file) ->
     return unless /\.co$/i.test file

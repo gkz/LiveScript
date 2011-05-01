@@ -1,26 +1,27 @@
-Coco import
-  # Loads a remote script from the current domain via `XMLHttpRequest`.
-  load: (url, options) ->
-    xhr = new (self.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
-    xhr.open \GET, url, true
-    xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
-    xhr.onreadystatechange = ->
-      Coco.run xhr.responseText, options if xhr.readyState is 4
-    xhr.send null
-    xhr
+# `.run`s Coco code and calls back, passing error if any.
+Coco.stab = (code, callback, error) ->
+  try Coco.run code catch then error = e
+  callback error
 
-  # Activates Coco in the browser by having it compile and evaluate
-  # all script tags with `coco` type.
-  invoke: ->
-    type = //^ (?: text/ | application/ )? coco $//i
-    for script of document.getElementsByTagName \script
-      continue unless type.test script.type
-      if script.src
-      then Coco.load script.src
-      else Coco.run  script.innerHTML
+# `.stab`s a remote script via `XMLHttpRequest`.
+Coco.load = (url, callback) ->
+  xhr = new (self.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
+  xhr.open \GET, url, true
+  xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
+  xhr.onreadystatechange = ->
+    if xhr.readyState is 4
+      if xhr.status of [200 0]
+      then Coco.stab xhr.responseText, callback
+      else callback Error "#{url}: #{xhr.status} #{xhr.statusText}"
     void
+  xhr.send null
+  xhr
 
-# Run scripts on page load.
-if @attachEvent
-then attachEvent      \onload           Coco.invoke
-else addEventListener \DOMContentLoaded Coco.invoke, false
+# Execute `<script>`s with _coco_ type.
+type = //^ (?: text/ | application/ )? coco $//i
+sink = (error) -> error and setTimeout -> throw error
+for script of document.getElementsByTagName \script
+  if type.test script.type
+    if script.src
+    then Coco.load that            , sink
+    else Coco.stab script.innerHTML, sink

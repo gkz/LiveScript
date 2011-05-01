@@ -27,43 +27,35 @@
 ]</script
 ><script type=application/coco>
 start   = new Date
-stdout  = document.getElementById 'stdout'
+stdout  = document.getElementById \stdout
 success = total = done = failed = 0
 
-say = (msg, yay) ->
+say = (msg, err) ->
   div = document.createElement 'div'
   div.appendChild document.createTextNode msg
-  div.style.color = if yay then 'green' else 'red'
+  div.style.color = if err then \red else \green
   stdout.appendChild div
-  msg
 
 @ok = (good, msg) ->
   ++total
-  if good then ++success else throw Error say msg
+  if good then ++success else throw Error msg
 
 @eq = (x, y, msg) -> ok x is y, msg ? x + ' !== ' + y
 
 @throws = (msg, fun) ->
-  try do fun catch e then return eq e.message, msg
-  ok false, 'should throw: ' + msg
+  try do fun catch return eq e?message, msg
+  ok false "should throw: #{msg}"
 
-Coco.run = (code, cb) ->
-  try Function(Coco.compile code, bare: true).call self
-  catch e then cb(); throw e
-  cb true
-
-fin = ->
-  yay = success is total and not failed
+for name of sources then let
+  e <- Coco.load name + \.co
+  say "#{ if e then \\uFF38 else \\u2714 } #{name}" e
+  say e, ++failed if e
+  return if ++done < sources.length
   sec = (new Date - start) / 1e3
   msg = "passed #{success} tests in #{ sec.toFixed 2 } seconds"
-  msg = "failed #{ total - success } tests and #{msg}" unless yay
-  say msg, yay
+  msg = "failed #{ total - success } tests and #{msg}" if failed
+  say msg, failed
 
-for name of sources then do ->
-  Coco.load name + \.co, (yay) ->
-    say "#{ if yay then \\u2714 else \\u3000 } #{name}", yay
-    ++failed unless yay
-    fin() if ++done is sources.length
 </script
 ><script src=../extras/coco.js></script
 ><script src=../doc/showdown.js></script
