@@ -32,14 +32,18 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.5.0b
+### 0.5.0
 - Added `**` operator.
 - Overloaded `+`/`-`/`/` (in addition to `*`) for arrays and strings.
 - Revised `let`: `let (a) ~>` => `let a then`
+- Allowed underscores within number literals.
 - Major regex changes:
   - Dieted heregex: `/// re ///` => `// re //`
   - Allowed leading whitespace in normal regex literals when unambiguous.
   - No longer accepts invalid regexes.
+- `->` is now optional when `function` is used.
+- `case` accepts comma-separated tests again.
+- `return`/`throw` can now take a block.
 - REPL now uses _^J_ to continue lines.
 
 ### 0.4.2

@@ -13,11 +13,10 @@ for use in any platform that supports JavaScript.
   [WSH](http://en.wikipedia.org/wiki/Windows_Script_Host).
   Try dropping .co files if you're on Windows.
 
-- Works as a JS Module for XUL Applications. e.g.:
-      Components.utils.import('resource://xqjs/coco.js');
-      Coco.compile(code);
-  ref. <https://developer.mozilla.org/en/Using_JavaScript_code_modules>
+- Works as a [JS Module for XUL Applications](https://developer.mozilla.org/en/Using_JavaScript_code_modules).
 
+        Components.utils.import('resource://xqjs/coco.js')
+        var js = Coco.compile(co)
 
 mode-coco.js
 ------------
