@@ -16,10 +16,10 @@ global import
 
 # Use the [option parser](#optparse).
 o = require(\./optparse) do
+  interactive : 'start REPL; use ^J for multiline input'
   compile     : 'compile to JavaScript and save as .js files'
-  interactive : 'start REPL'
-  output      :['set the directory for compiled JavaScript' \DIR]
-  watch       : 'watch scripts for changes, and recompile'
+  output      :['compile into the specified directory' \DIR]
+  watch       : 'watch scripts for changes, and repeat'
   print       : 'print the compiled JavaScript to stdout'
   stdin       : 'read stdin'
   eval        : 'read command line arguments as script'
@@ -43,9 +43,9 @@ case o.nodejs  then do forkNode
 case o.version then do version
 case o.help    then do help
 default
+  o.compile ||= o.output
   o.run = not (o.compile or o.print)
   o.print   ||= o.eval or o.stdin and o.compile
-  o.compile ||= o.output
   o.bare    ||= o.eval and o.run
   {$args} = o; {argv} = process
   process.execPath = argv.0 = argv.1
@@ -131,8 +131,8 @@ function compileScript(file, input, base)
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**.
 function compileStdin
-  code = ''
   with process.openStdin()
+    code = ''
     @on \data -> code += it
     @on \end  -> compileScript null code
 
@@ -140,20 +140,19 @@ function compileStdin
 # time the file is updated. May be used in combination with other options,
 # such as `--ast` or `--print`.
 function watch(source, base)
-  fs.watchFile source, {+persistent, interval: 500ms} (curr, prev) ->
-    return if curr.size is prev.size and +curr.mtime is +prev.mtime
-    code <- fshoot \readFile source
-    compileScript source, code.toString(), base
+  curr, prev <- fs.watchFile source, {+persistent, interval: 500ms}
+  return if curr.size is prev.size and +curr.mtime is +prev.mtime
+  buf <- fshoot \readFile source
+  compileScript source, buf.toString(), base
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
 function writeJS(source, js, base)
   filename = path.basename(source, path.extname source) + \.js
-  srcDir   = path.dirname source
-  dir      = if o.output
-  then path.join that, srcDir.slice (if base is \. then 0 else base.length)
-  else srcDir
+  dir      = path.dirname source
+  if o.output
+    dir = path.join that, dir.slice if base is \. then 0 else base.length
   jsPath = path.join dir, filename
   function compile
     e <- fs.writeFile jsPath, js || \\n
@@ -181,8 +180,8 @@ function repl
   module.paths = module.._nodeModulePaths \
     module.filename = process.cwd() + \/repl
   {Script} = process.binding \evals
-  context  = Script.createContext() <<< {...global, module, require}
-  context.global = context
+  context  = Script.createContext()
+  context <<< {...global, module, require, global: context}
   code  = ''
   cont  = false
   stdin = process.openStdin()
