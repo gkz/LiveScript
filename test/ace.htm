@@ -11,7 +11,7 @@ body    {overflow:hidden}
 #!/usr/bin/env coco
 
 try
-  throw URIError decodeURI 0xbad - 36rCoco * 123456.7e+8f / .9
+  throw URIError decodeURI 0xbad - 36rCoco_lang * 123456.7e+8f / .9
 catch e
   console.log \word + 'qstring' + "qqstring" + '''
     qdoc
@@ -22,9 +22,9 @@ catch e
 do ->
   switch it
   case <[ quoted words ]>
-    return /regex/imgy.test ///
+    return /regex/imgy.test //
       heregex  # comment
-    ///imgy
+    //imgy
   /* JS Comment */
   this is: not `JS`
   void
@@ -32,7 +32,7 @@ do ->
 var illegal
 </pre
 
-><script src=https://github.com/ajaxorg/ace/raw/master/build/src/ace.js></script
+><script src=http://ajaxorg.github.com/ace/build/src/ace.js></script
 ><script src=../extras/mode-coco.js></script
 ><script>!function(){
   self.editor  = ace.edit('editor')

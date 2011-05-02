@@ -16,8 +16,8 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
   indenter = // (?
     : [({[=:]
     | [-~]>
-    | \b (?: else | d(?:o|efault) | try | finally
-           | catch (?: \s* #{identifier} )? )
+    | \b (?: else | d(?:o|efault) | t(?:ry|hen) | finally | let
+           | (?:catch|function) (?: \s* #{identifier} )? )
   ) \s* $ //
 
   getNextLineIndent: (state, line, tab) ->
@@ -162,9 +162,10 @@ CocoMode.Rules =
       next : \key
 
     * token: \constant.numeric
-      regex: '(?:0[xX][\\da-fA-F]+
-                |(?:[1-9]\\d?)[rR][\\da-zA-Z]+
-                |(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:[eE][+-]?\\d+)?[a-zA-Z_]*)'
+      regex: '(?:0[xX][\\da-fA-F][\\da-fA-F_]*
+                |(?:[2-9]|[12]\\d|3[0-6])[rR][\\da-zA-Z][\\da-zA-Z_]*
+                |(?:\\d[\\d_]*(?:\\.\\d[\\d_]*)?|\\.\\d[\\d_]*)
+                 (?:[eE][+-]?\\d[\\d_]*)?[a-zA-Z_]*)'
 
     * token: \lparen
       regex: '[({[]'
