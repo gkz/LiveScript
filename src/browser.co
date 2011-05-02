@@ -4,7 +4,7 @@ Coco.stab = (code, callback, error) ->
   callback error
 
 # `.stab`s a remote script via `XMLHttpRequest`.
-Coco.load = (url, callback) ->
+Coco.load = (url, callback or ->) ->
   xhr = new (self.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
   xhr.open \GET, url, true
   xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
