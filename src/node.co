@@ -8,16 +8,16 @@ module.exports = (Coco) ->
   path = require \path
 
   Coco.run = (code, options or {}) ->
-    root = module
-    root.=parent while root.parent
-    root.moduleCache &&= {}
+    {main} = require
+    main.moduleCache &&= {}
     # Hack for relative `require`.
-    root.filename = if options.filename
-      root.paths = root.._nodeModulePaths path.dirname that
-      process.argv.1 = path.resolve that
-    else \.
+    filename = \.
+    if options.filename
+      main.paths = main.._nodeModulePaths path.dirname that
+      filename = process.argv.1 = path.resolve that
+    main <<< {filename}
     options.js or code = Coco.compile code, options
-    root._compile code, root.filename
+    main._compile code, filename
 
   Coco import all require(\events)EventEmitter::
 
