@@ -154,6 +154,10 @@ function addImplicitParentheses(tokens)
       (token = tokens[                    i])0 = \(
     continue unless i
     [tag] = token; prev = tokens[i-1]
+    # `f a; .m b` => `f(a).m(b)`
+    if tag is \DOT
+      tokens.splice --i, 1 if prev.0 is \TERMINATOR
+      continue
     if tag is \[
       brackets.push prev.0 is \DOT
     if prev.0 is \]
@@ -216,11 +220,6 @@ function expandLiterals(tokens)
     case \]        then break unless token.index
     case \}        then break if token.1
     case \CREMENT  then break if i and able tokens, i-1
-    # Support `f a; .m b` => `f(a).m(b)`
-    case \DOT
-      # __TODO__: not really literal expansion
-      tokens.splice --i, 1 if i and tokens[i-1]0 is \TERMINATOR
-      continue
     default continue
     if token.spaced and tokens[i+1]0 of ARG
       tokens.splice ++i, 0 [\, \, token.2]
