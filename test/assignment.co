@@ -220,12 +220,16 @@ eq mid , 3
 eq last, 5
 
 
-# Destructuring into properties.
+# Subdestructuring
 a = []
 a[0 [] [2]] = [0 1 [2]]
 eq a.0, 0
 eq a.2, 2
 eq a[[]], void
+
+i = 0; j = 2
+a[i, j] = a[j, i]
+eq '2,,0' ''+a
 
 o = {}; k = \v
 o{k, 0, \1, (2), three: 3, (2*2): 4} =
@@ -253,7 +257,7 @@ eq o.c+'' '1,2'
 eq o.d, 3
 
 
-# Destructuring with default values.
+# Destructuring defaults
 new ->
   [x ? 2, y || 3, @k && 5] = [null, false, true]
   eq x * y * @k, 30

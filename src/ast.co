@@ -761,6 +761,7 @@ class exports.Op extends Node
   compileUnary: (o) ->
     {op, first} = this
     switch op
+    case \new then first.isCallable() or first.carp 'invalid constructor'
     case \delete
       @carp 'invalid deletion' if first instanceof Var or !first.isAssignable()
       return @compileDelete o if o.level
@@ -771,7 +772,6 @@ class exports.Op extends Node
     case \classof
       return "#{ utility \toString }.call(
               #{ first.compile o, LEVEL_LIST }).slice(8, -1)"
-    first.carp 'invalid constructor' if op is \new and not first.isCallable()
     code = first.compile o, LEVEL_OP + PREC.unary
     if @post
       code += op
@@ -1001,12 +1001,13 @@ class exports.Assign extends Node
           val = logic <<< {first: val} if logic
           items[i] = Prop key, val
       return Obj items
-    # `x[k] = a` => `[x[k]] = a`
+    # `a[x, y] = b` => `[a[x], a[y]] = b`
     if left instanceof Chain and
        (tail = left.tails[*-1]) instanceof Index and tail.key.length
       items = left.tails.pop()key; [sub, ref, @temps] = left.cache o
       for item, i of items
         item.=it if splat = item instanceof Splat
+        item = Parens item if item instanceof Var
         item = rechain if i then ref else sub, item
         items[i] = if splat then Splat item else item
       return Arr items
