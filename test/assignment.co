@@ -46,7 +46,7 @@ val ?= 'eulav'
 eq val, 'value'
 
 
-# Accessigns
+# Accessignments
 parent = child: str: 'test'
 
 parent.child.str.=replace /./, 'b'
@@ -58,6 +58,10 @@ eq 'rest', parent
 
 parent.+=slice 1
 eq 'restest', parent
+
+a = b: c: d: \e
+a.b.c?.=d
+eq \e a.b.c
 
 
 for nonref, i of <[ 0 f() this true ]>

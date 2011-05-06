@@ -436,13 +436,17 @@ class exports.Chain extends Node
     if @head.unfoldSoak o
       that.then.tails.push ...@tails
       return that
-    for node, i of @tails then if node.soak
-      node.soak = ''
+    for node, i of @tails then if delete node.soak
+      bust = Chain @head, @tails.splice 0 i
       test = if node instanceof Call
-        [test, @head] = Chain(@head, @tails.splice 0 i)cacheReference o
+        [test, @head] = bust.cacheReference o
         JS "typeof #{ test.compile o, LEVEL_OP } == 'function'"
       else
-        [test, @head] = Chain(@head, @tails.splice 0 i)unwrap()cache o, true
+        if i and node.assign
+          [test, bust] = bust.cacheReference o
+          @{head} = bust; @tails.unshift ...bust.tails
+        else
+          [test, @head] = bust.unwrap()cache o, true
         Existence test
       return If(test, this) <<< {+soak}
     void
@@ -1002,8 +1006,7 @@ class exports.Assign extends Node
           items[i] = Prop key, val
       return Obj items
     # `a[x, y] = b` => `[a[x], a[y]] = b`
-    if left instanceof Chain and
-       (tail = left.tails[*-1]) instanceof Index and tail.key.length
+    if left.=unwrap() instanceof Chain and left.isArray()
       items = left.tails.pop()key; [sub, ref, @temps] = left.cache o
       for item, i of items
         item.=it if splat = item instanceof Splat
@@ -1516,7 +1519,7 @@ class exports.Try extends Node
 
   makeReturn: ->
     @attempt .=makeReturn it
-    @recovery.=makeReturn it if @recovery
+    @recovery?=makeReturn it
     this
 
   compileNode: (o) ->
@@ -1622,7 +1625,7 @@ class exports.If extends Node
 
   makeReturn: ->
     @then.=makeReturn it
-    @else.=makeReturn it if @else
+    @else?=makeReturn it
     this
 
   compileNode: (o) ->
