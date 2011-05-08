@@ -1175,17 +1175,17 @@ class exports.Fun extends Node
       else sscope.assign \_this \this
     {lines} = body; wasEmpty = not lines.length; args = []; asns = []
     for p, i of params
-      if p instanceof Splat then splat = p
+      if p instanceof Splat then splace = i
       # `(a = x) ->` => `(a ? x) ->`
       else if p.op is \= and not p.logic
         params[i] = Op \? p.left, p.right
-    if splat
-      # `(a, ...b) ->` => `-> [a, ...b] = @@`
-      if params.1 or not splat.it.isEmpty()
-        asns.push Assign Arr(params), Literal \arguments
-    else
-      unless params.length or @wrapper
-        params.0 = Var \it if body.traverseChildren(-> it.value is \it or null)
+    # `(a, ...b, c) ->` => `(a) -> [[] ...b, c] = @@`
+    if splace?
+      rest = params.splice splace, 9e9
+      rest = 0 if not rest.1 and rest.0.it.isEmpty()  # ignore trailing `...`
+    else unless params.length or @wrapper
+      params.0 = Var \it if body.traverseChildren(-> it.value is \it or null)
+    if params.length
       dic = {}
       for p of params
         arg = p
@@ -1200,6 +1200,9 @@ class exports.Fun extends Node
           asns.push Assign arg, p.second, \=, p.op
         args.push a = scope.add arg.value, \arg
         arg.carp "duplicate formal argument \"#{a}\"" if dic[0+a] = 0+a in dic
+    if rest
+      rest.unshift Arr() while splace--
+      asns.push Assign Arr(rest), Literal \arguments
     lines.unshift ...asns if asns.length
     body.makeReturn() unless wasEmpty or @ctor or @void
     if @statement
