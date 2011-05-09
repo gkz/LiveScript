@@ -942,24 +942,21 @@ class exports.Assign extends Node
     for node, i of nodes
       continue if node.isEmpty()
       if node instanceof Splat
-        ivar and node.carp 'multiple splat in an assignment'
-        len = nodes.length; empty = (node.=it)isEmpty()
-        if i is len - 1
-          break if empty
+        len and node.carp 'multiple splat in an assignment'
+        skip = (node.=it)isEmpty()
+        if i+1 is len = nodes.length
+          break if skip
           val = Arr.wrap JS \
             utility(\slice) + \.call( + rite + if i then ", #{i})" else \)
         else
-          val = "#{rite}.length - #{ len - i - 1 }"
+          val = ivar = "#{rite}.length - #{ len - i - 1 }"
           # Optimize `[..., a] = b`.
-          if empty and i is len - 2
-            ivar = val
-            continue
-          start = i + 1; @temps = [ivar = o.scope.temporary \i]
-          val = if empty then node = Var ivar; Var val else
-            Arr.wrap JS "
-              #{len} <= #{rite}.length
-              \ ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar} = #{val})
-              \ : (#{ivar} = #{i}, [])"
+          continue if skip and i+2 is len
+          start = i+1; @temps = [ivar = o.scope.temporary \i]
+          val = if skip then node = Var ivar; Var val else
+            Arr.wrap JS "#{i} < (#{ivar} = #{val})
+                       \ ? #{ utility \slice }.call(#{rite}, #{i}, #{ivar})
+                       \ : (#{ivar} = #{i}, [])"
       else
         (inc = ivar) and start < i and inc += " + #{ i - start }"
         val = Chain rcache||=Literal(rite), [Index JS inc || i]
