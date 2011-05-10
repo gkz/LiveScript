@@ -286,14 +286,14 @@ eq '1,2,3', '' + context.arg
 eq 1, new (class then (@do) -> eq @do, $do)(1).do
 
 
-# Destructuring.
+# Parameter destructuring
 ((...[{a: [b], c}]) ->
   eq b, 123
   eq c, 456
 ) {a: [123], c: 456}
 
 
-# Default values.
+# Parameter default values
 obj = f: (q = 123, @p = 456) -> q
 eq obj.f(), 123
 eq obj.p  , 456
@@ -316,31 +316,30 @@ do (a ? I(1)) -> eq a, 1
 eq 1, do []= (a || 0 || 1) -> a
 
 
-(->
-  eq @@  , arguments
-  eq @@0 , 0
-  eq @@1 , void
-  eq @2  , 2
-).call {2}, 0
-
-
 eq arguments,
   switch case 1
-    eq arguments, (arguments for i from 1 to 1)[0]
+    eq arguments, (arguments for i from 1)0
     arguments
 
 
-throws 'duplicate formal argument "a" on line 1', -> Coco.compile '(a, a) ->'
-
-
 ok (@arguments, @eval) ->
+
+
+throws 'duplicate parameter "a" on line 1', -> Coco.compile '(a, a) ->'
+
+
+# Fun with radical parameters.
+obj = {}
+set = (name, obj[name]) ->
+set \key \value
+eq obj.key, \value
 
 
 # Call takes precedence over function parameter.
 eq 0, I(-> it()) -> 0
 
 
-# Invalid call detection.
+### Invalid call detection
 throws 'invalid callee on line 1'      -> Coco.compile '[]()'
 throws 'invalid constructor on line 1' -> Coco.compile 'new 42'
 
@@ -425,3 +424,10 @@ eq o.a + o.b, 3
 eq ok, with ok then this
 ok with ok
   this is ok
+
+
+### `@@`
+let 0
+  eq @@ , arguments
+  eq @@0, 0
+  eq @@1, void

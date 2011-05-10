@@ -1198,7 +1198,7 @@ class exports.Fun extends Node
         else if dfv
           asns.push Assign arg, p.second, \=, p.op
         args.push a = scope.add arg.value, \arg
-        arg.carp "duplicate formal argument \"#{a}\"" if dic[0+a] = 0+a in dic
+        arg.carp "duplicate parameter \"#{a}\"" if dic[0+a] = 0+a in dic
     if rest
       rest.unshift Arr() while splace--
       asns.push Assign Arr(rest), Literal \arguments
