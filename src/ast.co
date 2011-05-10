@@ -343,6 +343,8 @@ class exports.Index extends Node
 
   isComplex: -> @key.isComplex()
 
+  varName: -> @key instanceof [Key, Literal] and @key.varName()
+
   compile: (o) ->
     code = @key.compile o, LEVEL_PAREN
     if @key instanceof Key and \' is not code.charAt 0
@@ -384,7 +386,7 @@ class exports.Chain extends Node
 
   getCall: -> (tail = @tails[*-1]) instanceof Call and tail
 
-  varName: -> @tails[*-1]?key?varName()
+  varName: -> @tails[*-1]?varName()
 
   # A reference has base part (`this` value) and name part.
   # We cache them separately for compiling complex expressions, so that e.g.
