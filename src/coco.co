@@ -46,4 +46,4 @@ else
   # Attach `require` for debugging.
   exports import {require}
   # Support Gecko JS Module.
-  @EXPORTED_SYMBOLS = [\Coco] if "#{this}" is '[object BackstagePass]'
+  @EXPORTED_SYMBOLS = [\Coco] if ''+this is '[object BackstagePass]'
