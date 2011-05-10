@@ -33,8 +33,7 @@ exports import
   lex: -> lex it, {+raw}
 
   # Runs Coco code directly.
-  run: (code, options or {}) ->
-    do Function exports.compile code, options <<< {+bare}
+  run: (code, options) -> do Function exports.compile code, {...options, +bare}
 
 # Builds AST from JSON string/object.
 exports.ast{parse, fromJSON} = ast
