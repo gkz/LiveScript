@@ -32,6 +32,12 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.5.1
+- `a.b.c?.=d.e` now works as expected.
+- `a[b, c] = d` now works as expected.
+- _extras/coco.js_ works again on WSH.
+- `--output` implies `--compile` again.
+
 ### 0.5.0
 - Added `**` operator.
 - Overloaded `+`/`-`/`/` (in addition to `*`) for arrays and strings.
