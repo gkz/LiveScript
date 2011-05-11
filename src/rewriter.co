@@ -161,7 +161,7 @@ function addImplicitParentheses(tokens)
     if tag is \[
       brackets.push prev.0 is \DOT
     if prev.0 is \]
-      if brackets.pop() then token.index = true else continue
+      if brackets.pop() then prev.index = true else continue
     continue unless prev.spaced and able tokens, i, true
     soak = prev.0 is \?
     if doblock
@@ -171,6 +171,8 @@ function addImplicitParentheses(tokens)
         token.1 = \?(
       continue
     continue unless tag of ARG or tag is \+- and not token.spaced
+    if tag is \CREMENT
+      continue if token.spaced or tokens[i+1]?0 not of CHAIN
     skipBlock = seenSwitch = false
     tokens.splice --i, 1 if soak
     tokens.splice i++, 0 [\CALL( if soak then \?( else \(, token.2]
@@ -206,6 +208,7 @@ function expandLiterals(tokens)
       if ~'-+'indexOf sig = (num = '' + token.1)charAt 0
         token.1 = num.slice 1
         tokens.splice i++ 0 [\+- sig, token.2]
+      continue if token.callable
     case \RANGE
       ts = []; lno = token.2
       to = token.to - if token.op is \to then 0 else 1e-15
@@ -215,11 +218,10 @@ function expandLiterals(tokens)
       if ts.length then ts.pop() else carp 'empty range' lno
       tokens.splice i, 1 ...ts
       i += ts.length - 1
-    case \LITERAL  then break
-    case \) \)CALL then break unless token.1
-    case \]        then break unless token.index
-    case \}        then break if token.1
-    case \CREMENT  then break if i and able tokens, i-1
+    case \LITERAL \} then break
+    case \) \)CALL   then continue if token.1
+    case \]          then continue if token.index
+    case \CREMENT    then continue unless i and able tokens, i
     default continue
     if token.spaced and tokens[i+1]0 of ARG
       tokens.splice ++i, 0 [\, \, token.2]
@@ -279,6 +281,9 @@ for [left, rite] of BALANCED_PAIRS
   EXPR_START.push INVERSES[rite] = left
   EXPR_END  .push INVERSES[left] = rite
 
+# Tokens that can start a dot/call chain.
+CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH ]>
+
 # Tokens that can start an argument list.
-ARG = <[ ID STRNUM LITERAL ( [ { -> PARAM( FUNCTION UNARY CREMENT ...
-         IF TRY CLASS SWITCH LET WITH RANGE SUPER LABEL ]>
+ARG = CHAIN.concat <[ -> ... UNARY CREMENT PARAM( FUNCTION
+                      IF SWITCH TRY CLASS SUPER RANGE LABEL ]>

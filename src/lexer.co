@@ -70,7 +70,9 @@ exports import
     # Close up all remaining open blocks.
     @dedent @dent
     @carp "missing `#{that}`" if @closes.pop()
-    if @inter then @rest? or @carp 'unterminated interpolation' else @newline()
+    if @inter
+    then @rest? or @carp 'unterminated interpolation'
+    else @last.spaced = true; @newline()
     # Rewrite the token stream unless explicitly asked not to.
     o.raw or rewrite @tokens
     @tokens

@@ -286,11 +286,6 @@ eq 0 o.d
 eq 3 o.e
 
 
-# ACI on postcrement
-i = 0
-eq '010' [i++ i-- i] * ''
-
-
 # [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
 [void, null, v] = [1 to 3]
 eq v, 3
