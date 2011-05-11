@@ -617,8 +617,7 @@ class exports.Obj extends List
           "#{ key.=compile o }: #{ val.compile o, LEVEL_LIST }"
       else
         "#{ key = node.compile o }: #{key}"
-      dic[0+key] = 0+key in dic and
-        node.carp "duplicate property name \"#{key}\""
+      node.carp "duplicate property name \"#{key}\"" unless dic[0 + key] ^= 1
       logic and code += """ #{
         if logic.op is \? then "!= null ? #{key} :" else logic.op
       } """ + logic.second.compile o, LEVEL_OP
@@ -1216,7 +1215,7 @@ class exports.Fun extends Node
         else if df
           assigns.push Assign vr, p.second, \=, p.op
         names.push name = scope.add vr.value, \arg
-        p.carp "duplicate parameter \"#{name}\"" if dic[0+name] = 0+name in dic
+        p.carp "duplicate parameter \"#{name}\"" unless dic[0 + name] ^= 1
     if rest
       rest.unshift Arr() while splace--
       assigns.push Assign Arr(rest), Literal \arguments
