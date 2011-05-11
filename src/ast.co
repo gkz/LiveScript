@@ -1159,7 +1159,7 @@ class exports.Fun extends Node
     scope.assign \prototype @proto.compile(o) + \.prototype if @proto
     o.indent = @tab = '' if @plucked
     o.indent += TAB
-    {params, body, name, tab} = this
+    {body, name, tab} = this
     code = \function
     if @bound is \_this
       if @ctor
@@ -1172,7 +1172,25 @@ class exports.Fun extends Node
       else if sscope.fun?bound
       then @bound = that
       else sscope.assign \_this \this
-    {lines} = body; wasEmpty = not lines.length; args = []; asns = []
+    if @statement
+      name                    or @carp  'nameless function declaration'
+      pscope is o.block.scope or @carp 'misplaced function declaration'
+      scope .add name, \function
+      pscope.add name, \function unless @returns
+      code += ' ' + name
+    empty = not body.lines.length
+    code += "(#{ @compileParams scope }){"
+    body.makeReturn() unless empty or @ctor or @void
+    code += "\n#{that}\n#{tab}" if body.compileWithDeclarations o
+    code += \}
+    return sscope.assign sscope.temporary(\fn), code if @plucked
+    if @ctor and \_ is not name.charAt 0
+      code += " #{name}.displayName = '#{name}';"
+    code += "\n#{tab}return #{name};" if @returns
+    if @front and not @statement then "(#{code})" else code
+
+  compileParams: (scope) ->
+    {params, body} = this; names = []; assigns = []
     for p, i of params
       if p instanceof Splat then splace = i
       # `(a = x) ->` => `(a ? x) ->`
@@ -1187,37 +1205,23 @@ class exports.Fun extends Node
     if params.length
       dic = {}
       for p of params
-        arg = p
-        arg.=first if dfv = arg.hasDefault()
-        if arg.isEmpty()
-          arg = Var scope.temporary \arg
-        else if arg not instanceof Var
-          ref = Var arg.varName() || scope.temporary \arg
-          asns.push Assign arg, if dfv then Op p.op, ref, p.second else ref
-          arg = ref
-        else if dfv
-          asns.push Assign arg, p.second, \=, p.op
-        args.push a = scope.add arg.value, \arg
-        arg.carp "duplicate parameter \"#{a}\"" if dic[0+a] = 0+a in dic
+        vr = p
+        vr.=first if df = vr.hasDefault()
+        if vr.isEmpty()
+          vr = Var scope.temporary \arg
+        else if vr not instanceof Var
+          v = Var vr.varName() || scope.temporary \arg
+          assigns.push Assign vr, if df then Op p.op, v, p.second else v
+          vr = v
+        else if df
+          assigns.push Assign vr, p.second, \=, p.op
+        names.push name = scope.add vr.value, \arg
+        p.carp "duplicate parameter \"#{name}\"" if dic[0+name] = 0+name in dic
     if rest
       rest.unshift Arr() while splace--
-      asns.push Assign Arr(rest), Literal \arguments
-    lines.unshift ...asns if asns.length
-    body.makeReturn() unless wasEmpty or @ctor or @void
-    if @statement
-      name                    or @carp  'nameless function declaration'
-      pscope is o.block.scope or @carp 'misplaced function declaration'
-      scope .add name, \function
-      pscope.add name, \function unless @returns
-      code += ' ' + name
-    code += "(#{ args.join ', ' }){"
-    code += "\n#{ body.compileWithDeclarations o }\n#{tab}" if lines.length
-    code += \}
-    return sscope.assign sscope.temporary(\fn), code if @plucked
-    if @ctor and \_ is not name.charAt 0
-      code += " #{name}.displayName = '#{name}';"
-    code += "\n#{tab}return #{name};" if @returns
-    if @front and not @statement then "(#{code})" else code
+      assigns.push Assign Arr(rest), Literal \arguments
+    @body.lines.unshift ...assigns if assigns.length
+    names.join ', '
 
 #### Class
 class exports.Class extends Node
