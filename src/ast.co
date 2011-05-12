@@ -1092,14 +1092,18 @@ class exports.Of extends Node
   ::<<<< Negatable
 
   compileNode: (o) ->
-    items = @array.selections()
-    level = if items then LEVEL_OP + PREC\== else LEVEL_LIST
-    [sub, ref] = @item.cache o, false level
-    if items
-      code = ''
+    [sub, ref] = @item.cache o, false, level = LEVEL_LIST
+    if items = @array.selections()
+      code = ''; level = LEVEL_OP + PREC\==
       [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
       for item, i of items
-        code += (if i then cnj + ref else sub) + cmp + item.compile o, level
+        code &&+= cnj
+        if item instanceof Splat
+          code += (new Of(Var ref; item.it) <<< {@negated})compile o, level
+          code  = "(#{sub}, #{code})" unless i or sub is ref
+        else
+          code += (if i or sub is ref then ref else "(#{sub})") +
+                  cmp + item.compile o, level
       level = LEVEL_OP + PREC\||
     else
       code = "#{ utility \indexOf }.call(#{ @array.compile o, level }, #{ref}

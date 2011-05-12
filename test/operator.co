@@ -69,11 +69,13 @@ eq true, []    instanceof [String, Number and Array]
 eq true, 0 not instanceof [String, Array  or Number]
 
 
-eq true, 200 of [0 or 100, 200, 300]
-eq true, 200 of array = [100, 200, 300]
-eq true, 1 not of array
+eq true, 2 of [0 or 1, 2, 3]
+eq true, 2 of array = [1, 2, 3]
+eq true, 4 not of array
 eq true, 1 not of []
-ok array[0]++ of [99, 100], 'should cache testee'
+eq true, [3]pop() of [0, ...array]
+eq true, [4]pop() of [...array, 4]
+ok array[0]++ of [0, 1] 'should cache testee'
 
 
 # Non-spaced values still work.
