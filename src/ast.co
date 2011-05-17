@@ -134,13 +134,16 @@
   # Do I hold a default value in an assignment context?
   hasDefault: NO
 
-  unfoldSoak   : NO
-  unfoldAssign : NO
+  # Picks up name(s) from LHS.
+  ripName: VOID
+
+  unfoldSoak   : VOID
+  unfoldAssign : VOID
   unwrap       : THIS
   maybeKey     : THIS
   varName      : String
-  selections   : NO
-  getCall      : NO
+  selections   : VOID
+  getCall      : VOID
 
   invert: -> Op \! this
 
@@ -613,7 +616,7 @@ class exports.Obj extends List
                  #{ key.compile o }"
           key + val.compile(o, LEVEL_LIST)slice 8
         else
-          val.name = key.varName() if val instanceof [Fun, Class]
+          val.ripName key
           "#{ key.=compile o }: #{ val.compile o, LEVEL_LIST }"
       else
         "#{ key = node.compile o }: #{key}"
@@ -890,25 +893,18 @@ class exports.Assign extends Node
       [left, reft] = Chain(left)cacheReference o
       right = Op op.slice(0 -1), reft, right
       op    = \:=
-    left.=unwrap()
-    # Peek names for `class` and/or `super`.
-    if right instanceof [Fun, Class]
-      {head, tails} = left
-      # `clas::name = ->` or `name = ->`
-      right.name ||= if tails then tails[*-1]?key.compile o else left.value
-      right.clas ||= head instanceof Var and tails.length is 2 and
-                     tails.0.key?name is \prototype and head.value
-    decl = left instanceof Var
+    right.ripName left.=unwrap()
+    lvar = left instanceof Var
     sign = op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
-    code = if decl and not o.level and right instanceof While
+    code = if lvar and not o.level and right instanceof While
       # Optimize `a = while ...`.
       """#{ res = o.scope.temporary \_results } = [];
          #{@tab}#{ right.makeReturn(res)compile o }
          #{@tab}#{name} #{sign} #{ o.scope.free res }"""
     else
       "#{name} #{sign} " + (right <<< {+assigned})compile o, LEVEL_LIST
-    if decl
+    if lvar
       del = right.op is \delete
       if op is \=
         o.scope.declare name
@@ -1153,6 +1149,17 @@ class exports.Fun extends Node
 
   makeReturn: -> if @statement then @<<<{+returns} else super ...
 
+  ripName: ->
+    # `name = ->`
+    @name ||= it.varName()
+    @declared = it instanceof Var
+    # `clas::meth = ->`
+    if it.tails?length
+      @clas ||= it.head instanceof Var and it.tails.0.key?name is \prototype
+            and it.head.value
+      @meth ||= not (tail = it.tails[*-1])isComplex() and tail
+    void
+
   compileNode: (o) ->
     pscope = o.scope
     sscope = pscope.shared or pscope
@@ -1234,6 +1241,8 @@ class exports.Class extends Node
 
   isCallable: YES
 
+  ripName: -> @name = it.varName(); void
+
   compile: (o, level) ->
     {fun, title} = this; {lines} = fun.body
     decl  = title?varName()
@@ -1271,14 +1280,12 @@ class exports.Super extends Node
 
   compile: (o) ->
     {fun or @carp 'stray "super"'} = o.scope.shared or o.scope
-    if name = fun.name
-      if fun.clas
-        return that + \.superclass.prototype +
-               if ID.test name then \. + name else \[ + name + \]
-      else if fun.ctor or fun.statement
-        return name + \.superclass
-    return \_super if o.scope.check \_super
-    @carp '"super" in a nameless function'
+    if fun.clas and /^(?:\.|\[[\'\"\d])/test key = fun.meth?compile o
+      return fun.clas + \.superclass.prototype + key
+    if fun.name and (fun.ctor or fun.statement or fun.declared)
+      return fun.name + \.superclass
+    o.scope.check \_super or @carp '"super" in a nameless function'
+    \_super
 
 #### Parens
 # An extra set of parentheses,
@@ -1789,6 +1796,7 @@ Scope::<<<
 function YES  -> true
 function NO   -> false
 function THIS -> this
+function VOID ->
 
 UTILITIES =
   # Creates an object's prototypal child, ensuring `__proto__`.

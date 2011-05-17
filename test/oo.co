@@ -80,7 +80,13 @@ c.method 1, 2, 3, 4
 eq c.args.join(' '), '1 2 3 4'
 
 
-# Invalid "super"s.
+# `.superclass` injection
+f = -> super()
+f.superclass = -> 0
+eq f(), 0
+
+
+# Invalid `super`s
 throws 'stray "super" on line 1'                  -> Coco.compile 'super'
 throws '"super" in a nameless function on line 1' -> Coco.compile 'f: -> super'
 
