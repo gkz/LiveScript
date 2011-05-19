@@ -344,7 +344,7 @@ exports import
     case <[ + -  ]>                    then tag = \+-
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
     case <[ && || ]>                   then tag = \LOGIC
-    case \?                            then tag = \LOGIC if @last.spaced
+    case <[ ?  !? ]>                   then tag = \LOGIC if @last.spaced
     case <[ / % ** ]>                  then tag = \MATH
     case <[ ++  -- ]>                  then tag = \CREMENT
     case <[ <<<  <<<< ]>               then tag = \IMPORT
@@ -446,7 +446,7 @@ exports import
         return parts <<< size: pos + i + end.length
       continue unless ch is \# and \{ is str.charAt i+1
       # `"#{0}#{1}"` => `0 + "" + 1`
-      if i or nested and not s?
+      if i or nested and s!?
         s = parts.push [\S; @countLines str.slice 0 i; @line]
       clone  = exports{+inter}
       nested = clone.tokenize str.slice(i+2), {@line, +raw}
@@ -595,8 +595,9 @@ SYMBOL = // ^ (?
 | ~[.>]                       # bind access/function
 | <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
 | >>>?=?                      # rite shift
-| \*\*=?                      # pow
+| !\?                         # inexistence
 | @@                          # `arguments`
+| \*\*=?                      # pow
 | [^\s#]
 ) //
 SPACE     = /^(?=.)[^\n\S]*(?:#.*)?/
@@ -625,6 +626,7 @@ HEREGEX_OMIT  = /\s+(?:#.*)?/g
 
 LASTDENT = /\n[^\n\S]*$/
 
-LINE_CONTINUER = // ^ \s* (?:
-  [,?&|^] | \.(?![.\d]) | (?:and|or)(?![$\w\x7f-\uffff]|[^\n\S]*:(?![:=]))
+LINE_CONTINUER = // ^ \s* (?
+: [,&|^] | \.(?![.\d]) | !?\?
+| (?:and|or)(?![$\w\x7f-\uffff]|[^\n\S]*:(?![:=]))
 ) //

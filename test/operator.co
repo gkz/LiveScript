@@ -9,9 +9,10 @@ eq 32,
 if  false
 or  true
 and null
-?   true
+?   false
+!?  true
   and :  'property name'
-  andy?  # nickname
+  andy!?  # nickname
   eq 7 1
      & 2
      | 3
@@ -51,6 +52,12 @@ ok a is not b
 
 ok true is     true
 ok true is not false
+
+
+# (In)existence
+let a = void
+  eq a?, false
+  eq a!? true
 
 
 # `and`/`or` closes implicit calls.
@@ -102,6 +109,14 @@ one  &&= 'one'
 
 eq zero, 0
 eq one , 'one'
+
+n = m = null
+n  ?= void
+n  ?= true
+m !?= true
+eq n, true
+eq m, null
+
 
 # Conditional assignments should be careful about caching variables.
 count = 0

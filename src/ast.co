@@ -731,14 +731,14 @@ class exports.Op extends Node
   compileNode: (o) ->
     return @compileUnary o unless @second
     switch @op
-    case \?          then return @compileExistence o
-    case \**         then return @compilePow o
+    case \? \!?      then return @compileExistence o, @op is \!?
     case \instanceof then return @compileIOS o, that if @second.selections()
     case \*
       return @compileJoin   o if @second.isString()
       return @compileRepeat o if @first.isString() or @first instanceof Arr
-    case \- then return @compileRemove o if @second.isMatcher()
-    case \/ then return @compileSplit  o if @second.isMatcher()
+    case \-  then return @compileRemove o if @second.isMatcher()
+    case \/  then return @compileSplit  o if @second.isMatcher()
+    case \** then return @compilePow o
     default
       return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
     @first <<< {@front}
@@ -760,11 +760,11 @@ class exports.Op extends Node
                      #{ @second.compile o, LEVEL_OP }"
     if o.level <= LEVEL_OP then code else "(#{code})"
 
-  compileExistence: (o) ->
-    if o.level
-      fsts = @first.cache o, true
-      return If(Existence fsts.0; fsts.1)addElse(@second)compileExpression o
-    Op(\&& Existence(@first)invert(), @second)compileNode o
+  compileExistence: (o, inv) ->
+    unless o.level
+      return Op(\&& Existence(@first, not inv), @second)compileNode o
+    fs = @first.cache o, true
+    If(Existence fs.0, inv; fs.1)addElse(@second)compileExpression o
 
   compileUnary: (o) ->
     {op, first} = this
@@ -1112,7 +1112,7 @@ class exports.Of extends Node
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
 class exports.Existence extends Node
-  (@it) ~>
+  (@it, @negated) ~>
 
   children: [\it]
 

@@ -159,7 +159,8 @@ bnf =
     o 'UNARY Expression'  -> []= if $1 is \! then $2.invert() else Op $1, $2
     o '+-    Expression' (-> Op $1, $2), prec: \UNARY
 
-    o 'Chain ?' -> Existence $1.unwrap()
+    o 'Chain  ?' -> Existence $1.unwrap()
+    o 'Chain !?' -> Existence $1.unwrap(), true
 
     # Functions can be either anonymous, or named using `function` keyword.
     o \Function
