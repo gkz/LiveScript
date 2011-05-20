@@ -525,6 +525,8 @@ exports import
   # Throws a syntax error with the current line number.
   carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
 
+exports.lex import {rewrite}
+
 #### String Helpers
 
 # Constructs a string token by (un)escaping quotes and newlines.

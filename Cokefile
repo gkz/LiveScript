@@ -111,8 +111,7 @@ coreSources = ->
   "src/#{src}.co" for src of <[ coco grammar lexer ast rewriter ]>
 
 task \bench 'quick benchmark of compilation time' ->
-  Coco     = require \./lib/coco
-  Rewriter = require \./lib/rewriter
+  Coco   = require \./lib/coco
   co     = coreSources()map(-> slurp it)join \\n
   fmt    = -> "#{bold}#{ "   #{it}"slice -4 }#{reset} ms"
   total  = nc = 0
@@ -120,7 +119,7 @@ task \bench 'quick benchmark of compilation time' ->
   time   = -> total += ms = -(now - now := Date.now()); fmt ms
   tokens = Coco.lex co
   msg    = "Lex     #{time()} (#{tokens.length} tokens)\n"
-  Rewriter.rewrite tokens
+  Coco.tokens.rewrite tokens
   msg   += "Rewrite #{time()} (#{tokens.length} tokens)\n"
   tree   = Coco.ast tokens
   msg   += "Parse   #{time()} (%s nodes)\n"

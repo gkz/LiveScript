@@ -7,7 +7,7 @@
 {lex}    = require \./lexer
 {parser} = require \./parser
 parser import
-  yy    : ast = require \./ast
+  yy    : require \./ast
   lexer :
     lex           : -> [tag, @yytext, @yylineno] = @tokens[++@pos] or ['']; tag
     setInput      : -> @pos = -1; @tokens = it
@@ -35,8 +35,8 @@ exports import
   # Runs Coco code directly.
   run: (code, options) -> do Function exports.compile code, {...options, +bare}
 
-# Builds AST from JSON string/object.
-exports.ast{parse, fromJSON} = ast
+# Export AST constructors.
+exports.ast import all parser.yy
 
 if require.extensions
   # -> [node](#node)
