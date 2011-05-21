@@ -150,20 +150,17 @@ eq Static.static.one, 1
 eq Static.static.two, 2
 
 
-# Nothing classes.
-ok class instanceof Function
-
-
+# Namespaced,
 Namespace = {}
 Class     = null
 
-# Namespaced but undeclared.
-Namespace.Class = class
+# but undeclared.
+Namespace.Class = class then
 eq Namespace.Class.displayName, 'Class'
 eq Class, null
 
-# Namespaced and declared.
-class Namespace.Class
+# and declared.
+class Namespace.Class then
 eq Class, Namespace.Class
 
 
@@ -196,8 +193,8 @@ eq ns.method2(2).length, 2
 # [coffee#1009](https://github.com/jashkenas/coffee-script/issues/1009)
 # Class names are "$"-prefixed when reserved.
 new ->
-  class @in
-  class @eval
+  class @in   then
+  class @eval then
   ok $in?
   ok $eval?
 
@@ -219,11 +216,11 @@ eq oss.$uper(), OddSuper
 eq oss[1234](), OddSuper
 
 
-eq 'declared', (class declared).displayName
+eq \declared (class declared then)displayName
 ok declared?
 
-eq 'named', (new -> @named = class).displayName
-ok !named?, 'should not leak to global when undeclared'
+eq \named  (new -> @named = class then)displayName
+ok named!? 'should not leak to global when undeclared'
 
 
 class Sup

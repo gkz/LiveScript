@@ -199,12 +199,10 @@ bnf =
     o 'TRY Block CATCH Block FINALLY Block' -> new Try $2, $3, $4, $6
     o 'TRY Block             FINALLY Block' -> new Try $2, null null $4
 
-    # A class definition have a title, superreference, or body,
-    # each of which is optional.
-    o 'CLASS OptExtends'                        -> new Class null $2
-    o 'CLASS OptExtends Block'                  -> new Class null $2, $3
-    o 'CLASS SimpleAssignable OptExtends'       -> new Class $2, $3
-    o 'CLASS SimpleAssignable OptExtends Block' -> new Class $2, $3, $4
+    o 'CLASS                                     Block' -> new Class null null $2
+    o 'CLASS                  EXTENDS Expression Block' -> new Class null $3,  $4
+    o 'CLASS SimpleAssignable                    Block' -> new Class $2,  null $3
+    o 'CLASS SimpleAssignable EXTENDS Expression Block' -> new Class $2,  $4,  $5
 
     o 'Chain EXTENDS Expression' -> Util.Extends $1.unwrap(), $3
 
@@ -296,11 +294,6 @@ bnf =
   Exprs:
     o         \Expression  -> [$1]
     o 'Exprs , Expression' -> $1.concat $3
-
-  # Optional `extends` clause for class definition.
-  OptExtends:
-    o ''                   -> null
-    o 'EXTENDS Expression' -> $2
 
   # **Root** is the top-level node in the syntax tree.
   # Since we parse bottom-up, all parsing must end here.
