@@ -388,6 +388,12 @@ new ->
   eq 120 f.act 5
 
   ok function ok then throw
+  eq void, do f = function then
+
+  function double(a) then a * 2
+  function triple a  then a * 3
+  eq 4, double 2
+  eq 9, triple 3
 
 
 ### `let`
