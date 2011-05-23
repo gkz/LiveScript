@@ -208,8 +208,8 @@ function addImplicitParentheses tokens
 
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand number ranges.
-# - Enable `new` block.
-# - Insert a comma between each non-callable token facing an argument token.
+# - Insert `->` between each `new`/`function` facing a block.
+# - Insert `,` between each non-callable token facing an argument token.
 function expandLiterals tokens
   i = -1
   while token = tokens[++i]
@@ -229,7 +229,8 @@ function expandLiterals tokens
       tokens.splice i, 1 ...ts
       i += ts.length - 1
     case \INDENT
-      tokens.splice i++ 0 [\-> '' token.2] if tokens[i-1]?1 is \new
+      if (pre = tokens[i-1]) and (pre.1 is \new or pre.0 is \FUNCTION)
+        tokens.splice i++ 0 [\-> '' token.2]
       continue
     case \LITERAL \} \!? then break
     case \) \)CALL then continue if token.1

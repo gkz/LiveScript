@@ -166,7 +166,6 @@ bnf =
     o \Function
     o 'FUNCTION Function' -> $2.named $1
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
-    o 'FUNCTION                              Block' -> L Fun([], $2)named $1
 
     # The full complement of `if` and `unless` expressions,
     # including postfix one-liners.
