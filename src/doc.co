@@ -36,17 +36,17 @@ do @onhashchange = ->
     load page, htms[name] = build name, xhr.responseText if xhr.readyState is 4
   xhr.send null
 
-function lmn(name, attrs)
+function lmn name, attrs
   document.body.appendChild document.createElement(name) <<<< attrs
 
-function load([name, sect], doc.innerHTML)
+function load [name, sect], doc.innerHTML
   document.title = name + (title and ' - ' + title)
   document.getElementById(sect)scrollIntoView() if sect
   # [google-code-prettify](http://code.google.com/p/google-code-prettify/)
   # highlights the code, with the help of our [lang-co](#lang-co) plugin.
   prettyPrint()
 
-function build(name, source)
+function build name, source
   htm = comment = code = i = ''
   re  = /^[^\n\S]*#(?![!{]) ?(.*)/
   for line of source.split \\n
@@ -65,7 +65,7 @@ function build(name, source)
   htm += block name, comment, code, i if comment or code
   "<h1>#{name}</h1>#{htm}<br clear=both>"
 
-function block(name, comment, code, i)
+function block name, comment, code, i
   code &&= """
    <pre class="code prettyprint lang-co"
     >#{ code.replace(/&/g '&amp;')replace(/</g '&lt;') }</pre>

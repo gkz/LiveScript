@@ -29,7 +29,7 @@ function rewrite
 # - Dispatch leading terminators that would introduce ambiguity in the grammar.
 # - Some blocks occur in the middle of expressions.
 #   Remove their trailing terminators here to simplify things.
-function removeTerminators(tokens)
+function removeTerminators tokens
   i = -1
   break unless that.0 is \TERMINATOR while tokens[++i]
   i and tokens.splice 0 i
@@ -45,7 +45,7 @@ function removeTerminators(tokens)
 # - `( ) -> ` => `PARAM( )PARAM ->`
 # - `FUNCTION ( ... )   ` => `FUNCTION CALL( )CALL`
 # - `FUNCTION ( ... ) ->` => `FUNCTION PARAM( )PARAM ->`
-function transformParens(tokens)
+function transformParens tokens
   stack = []
   for token, i of tokens
     switch token.0
@@ -66,7 +66,7 @@ function transformParens(tokens)
 
 # Tag postfix conditionals as such, so that we can parse them with a
 # different precedence.
-function tagPostfixConditionals(tokens)
+function tagPostfixConditionals tokens
   detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
   function ok -> it.0 of <[ TERMINATOR INDENT ]>
   function go -> token.0 = \POST_IF if it.0 is not \INDENT
@@ -76,7 +76,7 @@ function tagPostfixConditionals(tokens)
 # expressions that lack ending delimiters. **Rewriter** adds the implicit
 # blocks, so it doesn't need to. `)` can close a single-line block,
 # but we need to make sure it's balanced.
-function addImplicitIndentation(tokens)
+function addImplicitIndentation tokens
   i = -1
   while token = tokens[++i]
     [tag] = token
@@ -101,7 +101,7 @@ function addImplicitIndentation(tokens)
     default
       seenSwitch = false
       detectEnd tokens, i+1, ok, go
-  function ok(token, i)
+  function ok token, i
     switch token.0
     case \DEDENT        then true
     case \TERMINATOR    then token.1 is not \;
@@ -111,14 +111,14 @@ function addImplicitIndentation(tokens)
     case \FINALLY       then tag of <[ TRY CATCH THEN ]>
     case \SWITCH        then not seenSwitch := true
     case \CASE \DEFAULT then not seenSwitch
-  function go([] i)
+  function go [] i
     tokens.splice if tokens[i-1]0 is \, then i-1 else i,
                   0, dedent <<< {(tokens[i])2}
   void
 
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
-function addImplicitBraces(tokens)
+function addImplicitBraces tokens
   stack = []; i = -1
   while token = tokens[++i]
     unless \: is tag = token.0
@@ -138,7 +138,7 @@ function addImplicitBraces(tokens)
     idx -= 2 while tokens[idx-2]?0 is \COMMENT
     tokens.splice idx, 0 [\{ \{ token.2]
     detectEnd tokens, ++i+1, ok, go
-  function ok(token, i)
+  function ok token, i
     return true if token.1 is \; or \DEDENT is tag = token.0
     switch tag
     case \,          then break
@@ -152,7 +152,7 @@ function addImplicitBraces(tokens)
 
 # Methods may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
-function addImplicitParentheses(tokens)
+function addImplicitParentheses tokens
   i = -1; brackets = []
   while token = tokens[++i]
     if doblock = token.1 is \do and tokens[i+1]?0 is \INDENT
@@ -186,7 +186,7 @@ function addImplicitParentheses(tokens)
     tokens.splice --i, 1 if soak
     tokens.splice i++, 0 [\CALL( if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
-  function ok(token, i)
+  function ok token, i
     return true if token.alias and token.1 of <[ && || ]>
     pre = tokens[i-1]
     switch token.0
@@ -209,7 +209,7 @@ function addImplicitParentheses(tokens)
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand number ranges.
 # - Insert a comma between a primitive argument and a non-primitive one.
-function expandLiterals(tokens)
+function expandLiterals tokens
   i = -1
   while token = tokens[++i]
     switch token.0
@@ -240,7 +240,7 @@ function expandLiterals(tokens)
 
 # Seeks `tokens` from index `i` for a token of the same level matching `ok`,
 # then calls `go`.
-function detectEnd(tokens, i, ok, go)
+function detectEnd tokens, i, ok, go
   levels = 0
   while token = tokens[i]
     if      not levels then return go token, i if ok token, i
@@ -252,13 +252,13 @@ function detectEnd(tokens, i, ok, go)
   void
 
 # Checks whether or not the previous token is {index,`call`}able.
-function able(tokens, i ? tokens.length, call)
+function able tokens, i ? tokens.length, call
   [tag] = token = tokens[i-1]
   tag of <[ ID ] SUPER ]> or if call
   then token.callable or tag of <[ ? LET ]> or tag of <[ ) )CALL ]> and token.1
   else tag of <[ STRNUM LITERAL ) )CALL } ]>
 
-function indexOfPair(tokens, i)
+function indexOfPair tokens, i
   level = 1; end = INVERSES[start = tokens[i]0]
   while tokens[++i]
     switch that.0

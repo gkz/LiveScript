@@ -537,14 +537,14 @@ string = let do
 then (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
 
 # Detects the minimum indent count for a heredoc, ignoring empty lines.
-function heretabs(doc)
+function heretabs doc
   dent = 0/0
   dent = len unless dent <= len = that.0.length - 1 while TABS.exec doc
   dent
 TABS = /\n[^\n\S]*(?!$)/mg
 
 # Erases all external indentations up to specified length.
-function detab(str, len)
+function detab str, len
   if len then str.replace detab[len]||=//\n[^\n\S]{1,#{len}}//g \\n else str
 
 # Erases all newlines and indentations.

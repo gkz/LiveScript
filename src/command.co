@@ -66,7 +66,7 @@ default
   default version(); help(); repl()
 
 # Calls a `fs` method, exiting on error.
-function fshoot(name, arg, callback)
+function fshoot name, arg, callback
   e, result <- fs[name] arg
   die e.stack || e if e
   callback result
@@ -79,7 +79,7 @@ function compileScripts
     <- path.exists source
     it or die "No such file or directory: #{source}"
     walk source, path.normalize(source), true
-  function walk(source, base, top)
+  function walk source, base, top
     stats <- fshoot \stat source
     if stats.isDirectory()
       files <- fshoot \readdir source
@@ -92,7 +92,7 @@ function compileScripts
 
 # Compile a single source script, containing the given code, according to the
 # requested options.
-function compileScript(file, input, base)
+function compileScript file, input, base
   t = {file, input, options: filename: file, bare: !!o.bare}
   try
     Coco.emit \lex t
@@ -141,7 +141,7 @@ function compileStdin
 # Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--ast` or `--print`.
-function watch(source, base)
+function watch source, base
   curr, prev <- fs.watchFile source, {+persistent, interval: 500ms}
   return if curr.size is prev.size and +curr.mtime is +prev.mtime
   buf <- fshoot \readFile source
@@ -150,7 +150,7 @@ function watch(source, base)
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
-function writeJS(source, js, base)
+function writeJS source, js, base
   filename = path.basename(source, path.extname source) + \.js
   dir      = path.dirname source
   if o.output
@@ -166,7 +166,7 @@ function writeJS(source, js, base)
   else require(\child_process)exec "mkdir -p #{dir}" compile
 
 # Pretty-print a stream of tokens.
-function printTokens(tokens)
+function printTokens tokens
   lines = []
   for [tag, val, lno] of tokens
     lines@[lno]push if tag.toLowerCase() is val then tag else "#{tag}:#{val}"
