@@ -192,7 +192,7 @@ eq ns.method2(2).length, 2
 
 # [coffee#1009](https://github.com/jashkenas/coffee-script/issues/1009)
 # Class names are "$"-prefixed when reserved.
-new ->
+new
   class @in   then
   class @eval then
   ok $in?

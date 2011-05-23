@@ -208,6 +208,7 @@ function addImplicitParentheses tokens
 
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand number ranges.
+# - Enable `new` block.
 # - Insert a comma between a primitive argument and a non-primitive one.
 function expandLiterals tokens
   i = -1
@@ -227,6 +228,9 @@ function expandLiterals tokens
       if ts.length then ts.pop() else carp 'empty range' lno
       tokens.splice i, 1 ...ts
       i += ts.length - 1
+    case \INDENT
+      tokens.splice i++ 0 [\-> '' token.2] if tokens[i-1]?1 is \new
+      continue
     case \LITERAL \} \!? then break
     case \) \)CALL then continue if token.1
     case \]        then continue if token.index

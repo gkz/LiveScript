@@ -262,7 +262,7 @@ eq o.d, 3
 
 
 # Destructuring defaults
-new ->
+new
   [x ? 2, y || 3, @k && 5] = [null, false, true]
   eq x * y * @k, 30
 

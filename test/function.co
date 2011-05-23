@@ -181,7 +181,7 @@ eq ++n, 1
 eq --n, 0
 
 
-eq ok, new ->
+eq ok, do ->
   ok
   /* Should `return` implicitly   */
   /* even with trailing comments. */
@@ -344,6 +344,14 @@ throws 'invalid callee on line 1'      -> Coco.compile '[]()'
 throws 'invalid constructor on line 1' -> Coco.compile 'new 42'
 
 
+### `new` block
+o = new
+  @1 = \_
+  @length = 3
+  this
+eq '0_0' o * \0
+
+
 ### Backcalls
 g = (...a, f) -> f ...a
 h = (f, ...a) -> f a
@@ -355,7 +363,7 @@ eq ok, do
   eq d.0.0, \a
   ok
 
-eq \function typeof new ->
+eq \function typeof new
   me = this
   f <~ I
   eq me, this
@@ -373,7 +381,7 @@ eq 6 (a <- g 6; a)
 
 
 ### `function`
-new ->
+new
   function undef1 ->
   function undef2
     void
@@ -397,7 +405,7 @@ new ->
 
 
 ### `let`
-new ->
+new
   x = y = 1; @z = 2
   let x = 0, y, @z
     eq x, 0
