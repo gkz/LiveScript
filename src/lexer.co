@@ -46,25 +46,28 @@ exports import
     @dents = []
     # The stack for pairing tokens.
     @closes = []
-    # Check the first character of current `code`, then call appropriate
-    # tokenizers based on it. Each tokenizing method is responsible for
+    # Call tokenizers based on the character at current `i`ndex.
+    # Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
-    while code.=slice i
-      switch code.charAt 0
-      case ' '   then i = @doSpace     code
-      case \\n   then i = @doLine      code
-      case \\    then i = @doBackslash code
-      case \' \" then i = @doString    code
+    i = 0
+    while c = code.charAt i
+      switch c
+      case ' '   then i += @doSpace     code, i
+      case \\n   then i += @doLine      code, i
+      case \\    then i += @doBackslash code, i
+      case \' \" then i += @doString    code, i, c
       case \<
-        i = if \[ is code.charAt 1 then @doWords code else @doLiteral code
+        i += if \[ is code.charAt i+1
+        then @doWords   code, i
+        else @doLiteral code, i
       case \/
-        switch code.charAt 1
-        case \* then i = @doComment code
-        case \/ then i = @doHeregex code
-        default      i = @doRegex code or @doLiteral code
-      case \` then i = @doJS code
-      default i = @doIdentifier code or @doNumber code or
-                  @doLiteral    code or @doSpace  code
+        switch code.charAt i+1
+        case \* then i += @doComment code, i
+        case \/ then i += @doHeregex code, i
+        default      i += @doRegex code, i or @doLiteral code, i
+      case \` then i += @doJS code, i
+      default i += @doIdentifier code, i or @doNumber code, i
+                or @doLiteral    code, i or @doSpace  code, i
     # Dispose initial TERMINATOR.
     @tokens.shift()
     # Close up all remaining open blocks.
@@ -80,8 +83,8 @@ exports import
   #### Tokenizers
 
   # Matches an identifying literal: variables, keywords, accessors, etc.
-  doIdentifier: ->
-    return 0 unless match = ID.exec it
+  doIdentifier: (code, ID.lastIndex) ->
+    return 0 unless input = (match = ID.exec code)0
     [[] id, colon] = match; {last} = this
     # `id:_` `_.id` `@id`
     if colon or last.0 is \DOT or @adi()
@@ -154,17 +157,17 @@ exports import
           return 2
     @token tag || match.1.toUpperCase(), id
     @token \: \: if colon
-    match.0.length
+    input.length
 
   # Matches a number, including decimal, hex and exponential notation.
-  doNumber: ->
-    return 0 unless match = NUMBER.exec it
-    num = (match.3 or match.0)replace NUMBER_OMIT, ''; {last} = this
+  doNumber: (code, NUMBER.lastIndex) ->
+    return 0 unless input = (match = NUMBER.exec code)0
+    num = (match.3 or input)replace NUMBER_OMIT, ''; {last} = this
     switch num.charAt 0
     # `x.0` => `x[0]`
     case \. then if @adi()
       @token \STRNUM num.slice(1), true
-      return match.0.length
+      return input.length
     case \0 then if num.charAt(1) not of ['' \. \x \X]
       @carp "deprecated octal literal #{num}"
     if radix = match.1
@@ -178,37 +181,39 @@ exports import
         @last = last = @tokens[*-1]
       # `@0.0` => `@[0][0]`
       else if match.3 and ~(dotpos = num.indexOf \.) and able @tokens
-        match.0 = num.=slice 0 dotpos
+        input = num.=slice 0 dotpos
     if last.0 is \RANGE and (not last.to or last.by is true)
     then last[if last.to then \by else \to] = num
     else if sign then @token \STRNUM num else @strnum num
-    match.0.length
+    input.length
 
   # Matches a string literal.
-  doString: ->
-    q = it.charAt 0
-    if q is it.charAt 1
-      return if q is it.charAt 2 then @doHeredoc it, q else @strnum q+q; 2
+  doString: (code, index, q) ->
+    if q is code.charAt index+1
+      return if q is code.charAt index+2
+      then @doHeredoc code, index, q
+      else @strnum q+q; 2
     if q is \"
-      parts = @interpolate it, q
+      parts = @interpolate code, index, q
       @addInterpolated parts, unlines
       return 1 + parts.size
-    [str] = SIMPLESTR.exec it or @carp 'unterminated string'
+    [str] = (SIMPLESTR <<< lastIndex: index)exec code
+    str or @carp 'unterminated string'
     @strnum unlines string q, str.slice 1 -1
     @countLines(str)length
 
   # Matches heredocs, adjusting indentation to the correct level,
   # as they ignore indentation to the left.
-  doHeredoc: (it, q) ->
+  doHeredoc: (code, index, q) ->
     if q is \'
-      ~(end = it.indexOf q+q+q, 3) or @carp 'unterminated heredoc'
-      raw = it.slice 3 end
+      ~(end = code.indexOf q+q+q, index+3) or @carp 'unterminated heredoc'
+      raw = code.slice index+3 end
       # Remove trailing indent.
       doc = raw.replace LASTDENT, ''
       @strnum enlines string q, lchomp detab doc, heretabs doc
       return @countLines(raw)length + 6
-    parts = @interpolate it, q+q+q
-    tabs  = heretabs it.slice(3 parts.size)replace LASTDENT, ''
+    parts = @interpolate code, index, q+q+q
+    tabs  = heretabs code.slice(index+3 index+parts.size)replace LASTDENT, ''
     for t, i of parts then if t.0 is \S
       t.1.=replace LASTDENT, '' if i+1 is parts.length
       t.1 = detab t.1, tabs
@@ -217,41 +222,45 @@ exports import
     3 + parts.size
 
   # Matches block comments.
-  doComment: ->
-    text = if ~end = it.indexOf \*/ 2 then it.slice 0 end+2 else it + \*/
+  doComment: (code, index) ->
+    comment = if ~end = code.indexOf \*/ index+2
+    then code.slice index, end+2
+    else code.slice(index) + \*/
     if @last.0 of <[ TERMINATOR INDENT THEN ]>
-    then @token \COMMENT detab text, @dent; @token \TERMINATOR \\n
+    then @token \COMMENT detab comment, @dent; @token \TERMINATOR \\n
     else @last.spaced = true
-    @countLines(text)length
+    @countLines(comment)length
 
   # Matches embedded JavaScript.
-  doJS: ->
-    [js] = JSTOKEN.exec it or @carp 'unterminated JS literal'
+  doJS: (code, JSTOKEN.lastIndex) ->
+    [js] = JSTOKEN.exec code
+    js or @carp 'unterminated JS literal'
     @js detab js.slice(1 -1), @dent
     @countLines(js)length
 
   # Matches a regular expression literal aka _regex_,
   # disambiguating from division operators.
-  doRegex: ->
+  doRegex: (code, index) ->
     # To coexist with implicit call and ACI,
     # disallow leading space or equal sign when applicable.
     #
     #     f /re/ 9 /ex/   # f(/re/, 9, /ex/)
     #     a /= b / c / d  # division
     #
-    if able @tokens
-      return 0 if not @last.spaced or /^\/[ =]/test it
-               or not match = REGEX.exec it
-    else
-      match = REGEX.exec it or @carp 'unterminated regex'
+    if divisable = able @tokens
+      return 0 if not @last.spaced or code.charAt(index+1) of [' ' \=]
+    match = (REGEX <<< lastIndex: index)exec code
+    unless match.0
+      return 0 if divisable
+      @carp 'unterminated regex'
     @regex match.1, match.2
     match.0.length
 
   # Matches a multiline and extended regex literal.
-  doHeregex: ->
+  doHeregex: (code, index) ->
     {tokens, last} = this
-    parts = @interpolate it, \//
-    rest  = it.slice 2 + parts.size
+    parts = @interpolate code, index, \//
+    rest  = code.slice index + 2 + parts.size
     flag  = /^[imgy]{0,4}/exec(rest)0
     if parts.1
       tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
@@ -277,24 +286,24 @@ exports import
     2 + parts.size + flag.length
 
   # Matches a word literal, or ignores a sequence of whitespaces.
-  doBackslash: ->
-    [input, word] = BSTOKEN.exec it
+  doBackslash: (code, BSTOKEN.lastIndex) ->
+    [input, word] = BSTOKEN.exec code
     if word then @strnum string \' word else @countLines input
     input.length
 
   # Matches a words literal, a syntax sugar for a list of strings.
-  doWords: ->
-    @carp 'unterminated words' unless ~end = it.indexOf \]> 2
+  doWords: (code, index) ->
+    @carp 'unterminated words' unless ~end = code.indexOf \]> index+2
     @adi()
     @token \[ \[
     {tokens, line} = this
-    for row of it.slice(2 end)split \\n
+    for row of code.slice(index+2 end)split \\n
       if row.match WS||=/\S+/g then for word of that
         tokens.push [\STRNUM; string \' word; line] <<< {+spaced}
       ++line
     @line = line - 1
     @token \] \]
-    end + 2
+    end + 2 - index
 
   # Matches newlines and {in,de}dents, determining which is which.
   # If we can detect that the current line is continued onto the next line,
@@ -306,40 +315,38 @@ exports import
   #
   # Keeps track of the level of indentation, because a single dedent
   # can close multiple indents, so we need to know how far in we happen to be.
-  doLine: ->
-    [input, tabs] = MULTIDENT.exec it
-    @countLines input
-    {last} = this; {length} = input
-    last <<< {+eol, +spaced}
-    return length if length >= it.length
+  doLine: (code, index) ->
+    [input, tabs] = (MULTIDENT <<< lastIndex: index)exec code
+    {length} = @countLines input
+    {last} = this; last <<< {+eol, +spaced}
+    return length if index + length >= code.length
     if 0 > delta = tabs.length - @dent
       @dedent -delta
-      LINE_CONTINUER.test it or @newline()
+      LINE_CONTINUER.test code.slice index+1 or @newline()
     else
       if tabs and (@emender ||= //[^#{ tabs.charAt 0 }]//)exec tabs
         @carp "contaminated indent #{ escape that }"
       if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := += ]>
       or tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]>
         return length
-      cont = LINE_CONTINUER.test it
+      cont = LINE_CONTINUER.test code.slice index+1
       if delta then @indent delta, cont else cont or @newline()
     @seenFrom = @seenTo = false
     length
 
   # Consumes non-newline whitespaces and/or a line comment.
-  doSpace: ->
-    # Tag the previous token as being `.spaced`,
-    # because there are cases where it makes a difference.
-    (match = SPACE.exec it) and (@last.spaced = true; match.0.length)
+  doSpace: (code, SPACE.lastIndex) ->
+    @last.spaced = true if input = SPACE.exec(code)0
+    input.length
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
   # here. `;` and newlines are both treated as a TERMINATOR, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
-  doLiteral: ->
-    return 0 unless sym = SYMBOL.exec it
-    switch tag = val = sym.=0
+  doLiteral: (code, index) ->
+    return 0 unless sym = (SYMBOL <<< lastIndex: index)exec(code)0
+    switch tag = val = sym
     case <[ . ?. ]>                    then tag = \DOT
     case <[ + -  ]>                    then tag = \+-
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
@@ -361,7 +368,7 @@ exports import
       @token \CLONE '' if @able()
     case \}
       if @inter and val is not @closes[*-1]
-        @rest = it.slice 1
+        @rest = code.slice index+1
         return 9e9
       @pair val
     case \: then if @last.0 not of <[ ID STRNUM ) ]>
@@ -374,7 +381,8 @@ exports import
         @last.1 += val
         return val.length
     case \*
-      if @last.0 of <[ TERMINATOR INDENT THEN ]> and /^.[^\n\S]*(?=\S)/exec it
+      if @last.0 of <[ TERMINATOR INDENT THEN ]> and
+         /^.[^\n\S]*(?=\S)/exec code.slice index
         @tokens.push [\{ \{ @line] [\} \} @line] [\ASSIGN \= @line]
         @indent val = that.0.length
         return val
@@ -435,9 +443,9 @@ exports import
   #
   # Will recursively create a new lexer for each interpolation,
   # tokenizing the contents and merging them into the token stream.
-  interpolate: (str, end) ->
+  interpolate: (str, idx, end) ->
     parts = []; end0 = end.charAt 0; pos = 0; i = -1
-    str.=slice end.length
+    str.=slice idx + end.length
     while ch = str.charAt ++i
       if ch is \\ then ++i; continue
       if ch is end0
@@ -582,12 +590,12 @@ RESERVED = <[
 
 ##### Regexes
 
-ID = // ^
+ID = //
   ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
-//
-SYMBOL = // ^ (?
-: [-+*/%&|^:<>]=              # compound assign / comparison
+|//g
+SYMBOL = //
+  [-+*/%&|^:<>]=              # compound assign / comparison
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | ([+&|:])\1                  # increment / logic / `prototype`
 | \([^\n\S]*\)                # call
@@ -600,31 +608,31 @@ SYMBOL = // ^ (?
 | !\?                         # inexistence
 | @@                          # `arguments`
 | \*\*=?                      # pow
-| [^\s#]
-) //
-SPACE     = /^(?=.)[^\n\S]*(?:#.*)?/
-MULTIDENT = /^(?:\s*#.*)*(?:\n([^\n\S]*))+/
-SIMPLESTR = /^'[^\\']*(?:\\[\s\S][^\\']*)*'/
-JSTOKEN   = /^`[^\\`]*(?:\\[\s\S][^\\`]*)*`/
-BSTOKEN   = /^\\(?:(\S[^\s,;)}\]]*)|\s+)/
+| [^\s#]?
+//g
+SPACE     = /(?=.)[^\n\S]*(?:#.*)?|/g
+MULTIDENT = /(?:\s*#.*)*(?:\n([^\n\S]*))+/g
+SIMPLESTR = /'[^\\']*(?:\\[\s\S][^\\']*)*'|/g
+JSTOKEN   = /`[^\\`]*(?:\\[\s\S][^\\`]*)*`|/g
+BSTOKEN   = // \\ (?: (\S[^\s,;)}\]]*) | \s* ) //g
 
-NUMBER = // ^ (?
-: 0x[\da-f][\da-f_]*                                              # hex
+NUMBER = //
+  0x[\da-f][\da-f_]*                                              # hex
 | ([2-9]|[12]\d|3[0-6]) r ([\da-z][\da-z_]*)                      # 2-36 base
 | ( (?:\d[\d_]*(?:\.\d[\d_]*)?|\.\d[\d_]*) (?:e[+-]?\d[\d_]*)? )  # decimal
   [a-z_]*  # decimal comment
-) //i
+|//ig
 NUMBER_OMIT = /_+/g
 
 REGEX = //
-  ^ /(
-  [^ [ / \n \\ ]* (?:                        # every other thing
-    (?: \\.                                  # anything escaped
-      | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]  # or character class
-    ) [^ [ / \n \\ ]*                        # every other thing again
-  )* )/ ([imgy]{0,4})
-//
-HEREGEX_OMIT  = /\s+(?:#.*)?/g
+  /( [^ [ / \n \\ ]*                              # every other thing
+     (?: (?: \\.                                  # anything escaped
+           | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]  # or character class
+         ) [^ [ / \n \\ ]*                        # every other thing again
+     )*
+  )/ ([imgy]{0,4})
+|//g
+HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 LASTDENT = /\n[^\n\S]*$/
 
