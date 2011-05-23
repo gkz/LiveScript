@@ -14,8 +14,7 @@ Coco tries to amend them, entwining good parts of both.
 - Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 - Performance over readability.
 - Perl over Ruby.
-- Reserve less keywords.
-- Write less punctuations.
+- Less keywords, punctuations and runtime errors.
 
 ## Differences
 - [Additions](https://github.com/satyr/coco/wiki/additions)
@@ -31,6 +30,14 @@ Coco tries to amend them, entwining good parts of both.
 `npm i coco`
 
 ## Changelog
+
+### 0.5.2
+- Added `!?` (inexistence) operator.
+- `function` no longer requires parens around prameteres.
+- `class` block is now mandatory.
+- Bug fixes:
+  [coffee#1352](https://github.com/jashkenas/coffee-script/issues/1352)
+  [coffee#1354](https://github.com/jashkenas/coffee-script/issues/1354)
 
 ### 0.5.1
 - `a.b.c?.=d.e` now works as expected.
