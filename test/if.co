@@ -119,7 +119,7 @@ eq 2, [if 0 then 1 else 2, 3].0
 
 
 # [coffee#1026](https://github.com/jashkenas/coffee-script/issues/1026)
-throws "Parse error on line 3: Unexpected 'ELSE'", -> Coco.ast '''
+throws "Parse error on line 2: Unexpected 'ELSE'", -> Coco.ast '''
   if a then b
   else then c
   else then d

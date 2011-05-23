@@ -112,8 +112,8 @@ function addImplicitIndentation tokens
     case \SWITCH        then not seenSwitch := true
     case \CASE \DEFAULT then not seenSwitch
   function go [] i
-    tokens.splice if tokens[i-1]0 is \, then i-1 else i,
-                  0, dedent <<< {(tokens[i])2}
+    prev = tokens[i-1]
+    tokens.splice if prev.0 is \, then i-1 else i, 0, dedent <<< {prev.2}
   void
 
 # Object literals may be written without braces for simple cases.
@@ -203,13 +203,13 @@ function addImplicitParentheses tokens
     case <[ TERMINATOR POST_IF FOR WHILE BY TO ]>
       return pre.0 is not \,
     false
-  function go(token, i) -> tokens.splice i, 0 [\)CALL '' token.2]
+  function go(token, i) -> tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
   void
 
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand number ranges.
 # - Enable `new` block.
-# - Insert a comma between a primitive argument and a non-primitive one.
+# - Insert a comma between each non-callable token facing an argument token.
 function expandLiterals tokens
   i = -1
   while token = tokens[++i]
