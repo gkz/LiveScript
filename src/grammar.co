@@ -51,14 +51,13 @@ bnf =
   # The types of things that can be accessed or called into.
   Chain:
     o \Assignable    -> Chain $1
+    o \Parenthetical -> Chain $1
     o \STRNUM        -> Chain L Literal $1
     o \LITERAL       -> Chain L Literal $1
-    o \Parenthetical -> Chain $1
 
     o 'Chain CALL( ArgList OptComma )CALL' -> $1.add Call $3, $2
 
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
-    o 'LET                              Block' -> Chain Call.let [], $2
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 

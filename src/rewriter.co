@@ -229,8 +229,12 @@ function expandLiterals tokens
       tokens.splice i, 1 ...ts
       i += ts.length - 1
     case \INDENT
-      if (pre = tokens[i-1]) and (pre.1 is \new or pre.0 is \FUNCTION)
-        tokens.splice i++ 0 [\-> '' token.2]
+      if tokens[i-1]
+        if that.1 is \new or that.0 is \FUNCTION
+          tokens.splice i++ 0 [\-> '' token.2]
+        else if that.0 is \LET
+          tokens.splice i, 0 [\CALL( '' token.2] [\)CALL '' token.2]
+          i += 2
       continue
     case \LITERAL \} \!? then break
     case \) \)CALL then continue if token.1
