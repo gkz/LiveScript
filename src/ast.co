@@ -900,7 +900,7 @@ class exports.Assign extends Node
     name = (left <<< {+front})compile o, LEVEL_LIST
     code = if lvar and not o.level and right instanceof While
       # Optimize `a = while ...`.
-      """#{ res = o.scope.temporary \_results } = [];
+      """#{ res = o.scope.temporary \res } = [];
          #{@tab}#{ right.makeReturn(res)compile o }
          #{@tab}#{name} #{sign} #{ o.scope.free res }"""
     else
@@ -1767,11 +1767,11 @@ Scope::<<<
   # compiler-generated variable. `_var`, `_var2`, and so on...
   temporary: (name) ->
     i = 0
-    for ever
+    do
       temp = \_ + if name.length > 1
       then name + (if i++ then i else '')
       else (i++ + parseInt name, 36)toString 36
-      break if @type(temp) of [\reuse void]
+    until @type(temp) of [\reuse void]
     @add temp, \var
 
   # Allows a variable to be reused.
