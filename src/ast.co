@@ -1439,11 +1439,12 @@ class exports.While extends Node
 
   pluckDirectCalls: (o) ->
     @body.eachChild dig = ~>
-      unless it.calling
+      unless it.calling or it.op is \new and (fun = it.first) instanceof Fun
         return if it instanceof [Fun, While] then null else it.eachChild dig
-      {head: fun, tails: [call]} = it.it
+      {head: fun, tails: [call]} = it.it unless fun
       return if fun.statement
       if this instanceof For
+        call ||= (it.first = Call.make fun)tails.0  # `new ->`
         return if fun.params.length ^ call.args.length - !!call.method
         @index and fun.params.push call.args.* = Var @index
         if name = @name

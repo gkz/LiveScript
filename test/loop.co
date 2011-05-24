@@ -161,7 +161,22 @@ eq r + '', '1'
 eq (while 1 then break; 1).length, 0
 
 
-# For each dynamic call below a loop,
+copy = {}
+continue for k, copy[k] in [4, 2]
+eq copy.0 * copy.1, 8
+
+
+new -> do ~>
+  me = this
+  [] = for ever
+    eq me, this
+    eq me, do ~> this
+    break
+    1
+
+
+### Scoping
+# For each direct call below a loop,
 # define it outside and pass loop variables to it if any.
 them = []
 until them.1
@@ -181,15 +196,13 @@ eq one.0 * two.0, 21
 eq one.1 , two.1
 
 fs = for x, y in {2, 3, 5} then let z = 7 then -> x * y * z
-eq fs.1(), 63
+eq 63 fs.1()
+
+os = for n of [11 13] then new -> @<<< n: -> n
+eq 11 os.0.n()
 
 
-copy = {}
-continue for k, copy[k] in [4, 2]
-eq copy.0 * copy.1, 8
-
-
-# Post-`for` chains.
+### Post-`for` chains.
 eq "#{
   a * b * c * d         \
   for a in {1}          \
@@ -200,29 +213,21 @@ eq "#{
 }", '40,30,48,36'
 
 
-new -> do ~>
-  me = this
-  [] = for ever
-    eq me, this
-    eq me, do ~> this
-    break
-    1
-
-
+### Anaphoric
 while 1
   break for ever
   eq that, 1
   break
 
 
-# Destructuring `for`-`of`
+### Destructuring `for`-`of`
 r = 0
 r += a * b * i for [a, b] i of [[2 3] [5 7]]
 r += a + b + i for {a, b} i of [{\a \b}]
 eq r, '35ab0'
 
 
-# Labeled.
+### Labeled
 r = ''
 :PLAIN
   :WHILE while r.length < 9
