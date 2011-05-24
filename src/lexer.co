@@ -89,7 +89,7 @@ exports import
     # `id:_` `_.id` `@id`
     if colon or last.0 is \DOT or @adi()
       tag = \ID
-      if id of JS_KEYWORDS or id of RESERVED
+      if id of [...JS_KEYWORDS, ...RESERVED]
         (id = new String id)reserved = true
     # keywords
     else switch id
@@ -583,12 +583,12 @@ COCO_ALIASES  = not: <[ UNARY !  ]>, is: <[ COMPARE === ]>
 
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid runtime errors.
-RESERVED = <[
-  var  const enum export
-  implements interface package private protected public static yield
-]>
+RESERVED = <[ var  const enum export   implements interface
+              package private protected public static yield ]>
 
 ##### Regexes
+# Some of these are given `g` flag and made sure to match empty string
+# so that they can lex from any index by receiving `.lastIndex` beforehand.
 
 ID = //
   ( [$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]* )
