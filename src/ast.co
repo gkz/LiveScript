@@ -1391,7 +1391,7 @@ class exports.Return extends Throw
 # The traditional `while` loop.
 # Returns an array of values collected from the last expression when requested.
 class exports.While extends Node
-  (@test, @negated) ->
+  (@test, @negated, @post) ->
 
   children: <[ test body ]>
 
@@ -1424,19 +1424,22 @@ class exports.While extends Node
     code = unless @test then \true else
       @anaphorize()
       (if @negated then @test.invert() else @test)compile o, LEVEL_PAREN
-    code = if code is \true then 'for (;;' else 'while (' + code
     o.indent += TAB
+    return 'do {' + @compileBody o, code if @post
+    code = if code is \true then 'for (;;' else 'while (' + code
     code + ') {' + @compileBody o
 
-  compileBody: (o) ->
-    {lines} = @body; end = \}
+  compileBody: (o, potest) ->
+    {lines} = @body; code = ret = ''
     if @returns
       [last, i] = lastNonComment lines
       if last and last not instanceof Throw
         lines[i] = last.makeReturn res = o.scope.assign \_results '[]'
-      end = "}\n#{@tab}return #{ res or '[]' };"
-    return end unless lines.length
-    "\n#{ @body.compile o, LEVEL_TOP }\n" + @tab + end
+      ret = "\n#{@tab}return #{ res or '[]' };"
+    code += "\n#{that}\n#{@tab}" if @body.compile o, LEVEL_TOP
+    code += \}
+    code += " while (#{potest});" if potest
+    code + ret
 
   pluckDirectCalls: (o) ->
     @body.eachChild dig = ~>

@@ -237,3 +237,17 @@ r = ''
       continue WHILE
   ok 0
 eq r, \00
+
+
+### Post condition
+i = 0
+do
+  do
+    ++i
+  until true
+while ++i < 2
+eq i, 2
+
+(-> eq '4,2,0' ''+it) do
+  i * 2
+while i--

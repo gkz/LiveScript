@@ -176,6 +176,8 @@ bnf =
     # to execute, or postfix, with a single expression.
     o 'LoopHead   Block'    -> $1.addBody $2
     o 'Expression LoopHead' -> $2.addBody Block $1
+    o 'DO Block WHILE Expression'
+    , -> new While($4, $3 is \until, true)addBody $2
 
     # `return` or `throw`
     o 'HURL Expression'                     -> Jump[$1] $2

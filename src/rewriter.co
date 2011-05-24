@@ -155,10 +155,17 @@ function addImplicitBraces tokens
 function addImplicitParentheses tokens
   i = -1; brackets = []
   while token = tokens[++i]
-    if doblock = token.1 is \do and tokens[i+1]?0 is \INDENT
-      tokens.splice i, 1
-      (tpair = tokens[indexOfPair tokens, i])0 = \)
-      (token = tokens[                    i])0 = \(
+    doblock = false
+    if token.1 is \do and tokens[i+1]?0 is \INDENT
+      endi = indexOfPair tokens, i+1
+      if tokens[endi+1]0 is \TERMINATOR and tokens[endi+2]?0 is \WHILE
+        token.0 = \DO
+        tokens[endi+2]done = true
+        tokens.splice endi+1 1
+      else
+        (token = tokens[1+ i])0 = \(
+        (tpair = tokens[endi])0 = \)
+        doblock = tokens.splice i, 1
     continue unless i
     [tag] = token; prev = tokens[i-1]
     # `f a; .m b` => `f(a).m(b)`
@@ -198,9 +205,13 @@ function addImplicitParentheses tokens
       return true if pre.eol or pre.0 is \DEDENT
     case \INDENT
       return skipBlock := false if skipBlock
-      return pre.0 not of
-      <[ { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY HURL ]>
-    case <[ TERMINATOR POST_IF FOR WHILE BY TO ]>
+      return pre.0 not of <[
+        { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY HURL DO
+      ]>
+    case \WHILE
+      return false if token.done
+      fallthrough
+    case <[ TERMINATOR POST_IF FOR BY TO ]>
       return pre.0 is not \,
     false
   function go(token, i) -> tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
@@ -304,4 +315,4 @@ CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH ]>
 
 # Tokens that can start an argument list.
 ARG = CHAIN.concat <[ -> ... UNARY CREMENT PARAM( FUNCTION
-                      IF SWITCH TRY CLASS SUPER RANGE LABEL ]>
+                      IF SWITCH TRY CLASS SUPER RANGE LABEL DO ]>
