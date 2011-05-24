@@ -739,6 +739,7 @@ class exports.Op extends Node
     case \-  then return @compileRemove o if @second.isMatcher()
     case \/  then return @compileSplit  o if @second.isMatcher()
     case \** then return @compilePow o
+    case \&& \|| then o.level or @second.void = true
     default
       return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
     @first <<< {@front}
@@ -772,7 +773,7 @@ class exports.Op extends Node
     case \new then first.isCallable() or first.carp 'invalid constructor'
     case \delete
       @carp 'invalid deletion' if first instanceof Var or !first.isAssignable()
-      return @compileDelete o if o.level
+      return @compileDelete o if o.level and not @void
     case \++ \--
       if first instanceof Var and not o.scope.check first.value, true
         @carp "modification of undeclared variable \"#{first.value}\""
@@ -1441,7 +1442,7 @@ class exports.While extends Node
     @body.eachChild dig = ~>
       unless it.calling or it.op is \new and (fun = it.first) instanceof Fun
         return if it instanceof [Fun, While] then null else it.eachChild dig
-      {head: fun, tails: [call]} = it.it unless fun
+      fun or {head: fun, tails: [call]} = it.it
       return if fun.statement
       if this instanceof For
         call ||= (it.first = Call.make fun)tails.0  # `new ->`
