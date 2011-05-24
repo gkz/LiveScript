@@ -1175,10 +1175,7 @@ class exports.Fun extends Node
     if @bound is \_this
       if @ctor
         scope.assign \_this 'new _ctor'
-        code += """
-           _ctor(){} _ctor.prototype = prototype;
-          #{tab}function
-        """
+        code += " _ctor(){} _ctor.prototype = prototype;\n#{tab}function"
         body.add Return Literal \_this
       else if sscope.fun?bound
       then @bound = that
@@ -1402,11 +1399,7 @@ class exports.While extends Node
   isStatement : YES
   isArray     : YES
 
-  jumps: ->
-    {lines} = @body
-    return unless lines.length
-    context = {+loop}
-    return node if node.jumps context for node of lines
+  jumps: -> return node if node.jumps context||={+loop} for node of @body.lines
 
   addBody: (@body) ->
     [top] = body.lines
@@ -1622,7 +1615,7 @@ class exports.Case extends Node
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Node
-  (@if, @then, name) ~> @negated = name is \unless
+  (@if, @then, @negated) ~>
 
   children: <[ if then else ]>
 
@@ -1805,20 +1798,16 @@ function VOID ->
 
 UTILITIES =
   # Creates an object's prototypal child, ensuring `__proto__`.
-  clone: '''
-    function(it){
-      function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
-      return fn.prototype = it, new fn;
-    }
-  '''
+  clone: '''function(it){
+    function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
+    return fn.prototype = it, new fn;
+  }'''
   # Sets up `.prototype` between a pair of constructors
   # as well as `.constructor` and `.superclass` references.
-  extends: '''
-    function(sub, sup){
-      function ctor(){} ctor.prototype = (sub.superclass = sup).prototype;
-      return (sub.prototype = new ctor).constructor = sub;
-    }
-  '''
+  extends: '''function(sub, sup){
+    function ctor(){} ctor.prototype = (sub.superclass = sup).prototype;
+    return (sub.prototype = new ctor).constructor = sub;
+  }'''
 
   # Wraps a function to fixate its `this` value.
   bind: '''
@@ -1826,30 +1815,24 @@ UTILITIES =
   '''
 
   # Copies properties from right to left.
-  import: '''
-    function(obj, src){
-      var own = {}.hasOwnProperty;
-      for (var key in src) if (own.call(src, key)) obj[key] = src[key];
-      return obj;
-    }
-  '''
+  import: '''function(obj, src){
+    var own = {}.hasOwnProperty;
+    for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+    return obj;
+  }'''
   importAll: '''
     function(obj, src){ for (var key in src) obj[key] = src[key]; return obj }
   '''
 
-  repeatString: '''
-    function(str, n){
-      for (var r = ''; n > 0; (n >>= 1) && (str += str)) if (n & 1) r += str;
-      return r;
-    }
-  '''
-  repeatArray: '''
-    function(arr, n){
-      for (var r = []; n > 0; (n >>= 1) && (arr = arr.concat(arr)))
-        if (n & 1) r.push.apply(r, arr);
-      return r;
-    }
-  '''
+  repeatString: '''function(str, n){
+    for (var r = ''; n > 0; (n >>= 1) && (str += str)) if (n & 1) r += str;
+    return r;
+  }'''
+  repeatArray: '''function(arr, n){
+    for (var r = []; n > 0; (n >>= 1) && (arr = arr.concat(arr)))
+      if (n & 1) r.push.apply(r, arr);
+    return r;
+  }'''
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"
@@ -1857,11 +1840,9 @@ UTILITIES =
   toString : '{}.toString'
   join     : '[].join'
   slice    : '[].slice'
-  indexOf  : '''
-    [].indexOf || function(x){
-      for (var i = this.length; i-- && this[i] !== x;); return i;
-    }
-  '''
+  indexOf  : '''[].indexOf || function(x){
+    for (var i = this.length; i-- && this[i] !== x;); return i;
+  }'''
 
 # Each level indicates a node's position in the AST.
 LEVEL_TOP    = 0  # ...;
