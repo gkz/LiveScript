@@ -64,9 +64,8 @@ eq /0/['source'], //#{0}//['source']
 eq 0 (/_/ <<< {0})0
 
 
-# Should deduplicate flags.
-ok /^/gggg
-ok ////mimi
+# Should accuse duplicate flag.
+throws 'duplicate regex flag on line 1' -> Coco.lex '/^/gg'
 
 
 # Should disallow trailing backslash.

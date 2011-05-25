@@ -249,19 +249,18 @@ exports import
     #
     if divisable = able @tokens
       return 0 if not @last.spaced or code.charAt(index+1) of [' ' \=]
-    match = (REGEX <<< lastIndex: index)exec code
-    unless match.0
-      return 0 if divisable
-      @carp 'unterminated regex'
-    @regex match.1, match.2
-    match.0.length
+    [input, body, flag] = (REGEX <<< lastIndex: index)exec code
+    if input
+    then @regex body, flag
+    else divisable or @carp 'unterminated regex'
+    input.length
 
-  # Matches a multiline and extended regex literal.
+  # Matches a multiline, extended regex literal.
   doHeregex: (code, index) ->
     {tokens, last} = this
     parts = @interpolate code, index, \//
     rest  = code.slice index + 2 + parts.size
-    flag  = /^[imgy]{0,4}/exec(rest)0
+    flag  = @validate /^[imgy]{0,4}/exec(rest)0
     if parts.1
       tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
       if \? is rest.charAt 0
@@ -275,7 +274,7 @@ exports import
         else
           val = t.1.replace HEREGEX_OMIT, ''
           continue if not val and bs
-          tokens.push t <<< [\STRNUM  string \' val.replace bs||=/\\/g \\\\]
+          tokens.push t <<< [\STRNUM string \' val.replace bs||=/\\/g \\\\]
         tokens.push [\+- \+ tokens[*-1]2]
       tokens.pop()
       if flag or dynaflag
@@ -298,7 +297,7 @@ exports import
     @token \[ \[
     {tokens, line} = this
     for row of code.slice(index+2 end)split \\n
-      if row.match WS||=/\S+/g then for word of that
+      if row.match ws||=/\S+/g then for word of that
         tokens.push [\STRNUM; string \' word; line] <<< {+spaced}
       ++line
     @line = line - 1
@@ -347,17 +346,17 @@ exports import
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL <<< lastIndex: index)exec(code)0
     switch tag = val = sym
-    case <[ . ?. ]>                    then tag = \DOT
-    case <[ + -  ]>                    then tag = \+-
+    case \. \?.       then tag = \DOT
+    case \+ \-        then tag = \+-
+    case \&& \||      then tag = \LOGIC
+    case \?  \!?      then tag = \LOGIC if @last.spaced
+    case \/ \% \**    then tag = \MATH
+    case \++ \--      then tag = \CREMENT
+    case \<<< \<<<<   then tag = \IMPORT
+    case \<< \>> \>>> then tag = \SHIFT
+    case \& \| \^     then tag = \BITWISE
+    case \;           then tag = \TERMINATOR
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
-    case <[ && || ]>                   then tag = \LOGIC
-    case <[ ?  !? ]>                   then tag = \LOGIC if @last.spaced
-    case <[ / % ** ]>                  then tag = \MATH
-    case <[ ++  -- ]>                  then tag = \CREMENT
-    case <[ <<<  <<<< ]>               then tag = \IMPORT
-    case <[ << >> >>> ]>               then tag = \SHIFT
-    case <[  &  |  ^  ]>               then tag = \BITWISE
-    case \;                            then tag = \TERMINATOR
     case \( \?(
       @closes.push \)
       tag = \CALL( if val is \?( or @able true
@@ -501,7 +500,13 @@ exports import
   # Records a regex token.
   regex: (body, flag) ->
     try RegExp body catch @carp e.message
-    @js "/#{ body or '(?:)' }/#{ flag and flag.replace /(.)(?=.*\1)/g '' }"
+    @js "/#{ body or '(?:)' }/#{ @validate flag }"
+
+  # Complains on duplicate flag.
+  validate: (flag) ->
+    if flag and /(.).*\1/exec flag
+      @carp "duplicate regex flag \"#{that.1}\""
+    flag
 
   # Increments `@line` by the number of newlines in a string.
   countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
