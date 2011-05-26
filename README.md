@@ -20,6 +20,7 @@ Coco tries to amend them, entwining good parts of both.
 - [Additions](https://github.com/satyr/coco/wiki/additions)
 - [Improvements](https://github.com/satyr/coco/wiki/improvements)
 - [Incompatibilities](https://github.com/satyr/coco/wiki/incompatibilities)
+- [Side by Side Comparison](https://github.com/satyr/coco/wiki/side-by-side-comparison)
 
 ## Installation
 
