@@ -38,6 +38,8 @@ eq '(?:)' ////source
 
 eq // _ #{if 1 then \g else \m}//? + '', '/_/g'
 
+eq /\//source, //\///source
+
 
 # ACI interaction
 eq \/1/ '0'.replace //#{0}// ''+/1/ \g
@@ -65,7 +67,7 @@ eq 0 (/_/ <<< {0})0
 
 
 # Should accuse duplicate flag.
-throws 'duplicate regex flag on line 1' -> Coco.lex '/^/gg'
+throws 'duplicate regex flag `g` on line 1' -> Coco.lex '/^/gg'
 
 
 # Should disallow trailing backslash.

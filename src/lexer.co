@@ -281,7 +281,7 @@ exports import
         @token \, \,
         if dynaflag then tokens.push ...dynaflag else @token \STRNUM "'#{flag}'"
       @token \)CALL ''
-    else @regex parts.0.1.replace(HEREGEX_OMIT, '')replace(/\//g \\\/), flag
+    else @regex enslashes(parts.0.1.replace HEREGEX_OMIT, ''), flag
     2 + parts.size + flag.length
 
   # Matches a word literal, or ignores a sequence of whitespaces.
@@ -505,7 +505,7 @@ exports import
   # Complains on duplicate flag.
   validate: (flag) ->
     if flag and /(.).*\1/exec flag
-      @carp "duplicate regex flag \"#{that.1}\""
+      @carp "duplicate regex flag `#{that.1}`"
     flag
 
   # Increments `@line` by the number of newlines in a string.
@@ -542,7 +542,7 @@ exports.lex import {rewrite}
 
 #### String Helpers
 
-# Constructs a string token by (un)escaping quotes and newlines.
+# Constructs a string literal by (un)escaping quotes and newlines.
 string = let do
   escaped = /\\(?:[\\0-7bfnrtuvx]|[^\n\S]|([\w\W]))?/g
   descape = ($0, $1) -> $1 or if $0 is \\ then \\\\ else $0
@@ -564,9 +564,13 @@ function detab str, len
 function unlines -> it.replace INDENTS, ''
 INDENTS = /\n[^\n\S]*/g
 
-# Keeps newlines by escaping them.
+# Converts newlines to their escaped form.
 function enlines -> it.replace LINES, \\\n
 LINES = /\n/g
+
+# Quotes slashes unless already quoted.
+enslashes = let re = /(\\.)|\//g, fn = ((_, quoted) -> quoted or \\\/)
+  -> it.replace re, fn
 
 # Deletes the first character if newline.
 function lchomp -> it.slice 1 + it.lastIndexOf \\n 0
