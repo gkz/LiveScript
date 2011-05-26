@@ -83,7 +83,7 @@ task \build:browser 'build extras/' ->
   slobber \extras/mode-coco.js minify js
   co = ''
   for name of <[ rewriter lexer ast coco ]>
-    code = slurp("src/#{name}.co")replace /^./mg ' $&'
+    code = slurp("src/#{name}.co")replace /\n/g '\n '
     co += "let exports = require'./#{name}' = {}\n#{code}\n"
   slobber \extras/coco.raw.js js = """
     this.Coco = function(){

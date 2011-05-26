@@ -1,4 +1,3 @@
-# Regular expression literals.
 ok /x/.test 'x'
 ok 'x'.match /x/
 eq /\\/ + '', '/\\\\/'
@@ -20,7 +19,18 @@ eq \=, /=/ .source
 eq ' ' (/ /)source
 
 
-# Heregexes.
+throws 'unterminated regex on line 1' -> Coco.lex '/1'
+
+
+# Should be cached aptly.
+eq 0 (/_/ <<< {0})0
+
+
+# Should accuse duplicate flag.
+throws 'duplicate regex flag `g` on line 1' -> Coco.lex '/^/gg'
+
+
+### Heregex
 eq /^I'm\s+Heregex?\/\//gim + '', //
   ^ I'm \s+ Heregex? / / # or not
 //gim + ''
@@ -40,6 +50,11 @@ eq // _ #{if 1 then \g else \m}//? + '', '/_/g'
 
 eq /\//source, //\///source
 
+# Should work nested.
+eq \01234 // 0 #{
+  // 1 #{ //2//source } 3 //source
+} 4 //source
+
 
 # ACI interaction
 eq \/1/ '0'.replace //#{0}// ''+/1/ \g
@@ -47,9 +62,6 @@ eq \/1/ '0'.replace //#{0}// ''+/1/ \g
 
 # ADI interaction
 eq true, /a/itest \A
-
-
-throws 'unterminated regex on line 1' -> Coco.lex '/1'
 
 
 # [coffee#584](https://github.com/jashkenas/coffee-script/issues/584)
@@ -62,18 +74,12 @@ ok /:\/[/]goog/.test 'http://google.com'
 eq /0/['source'], //#{0}//['source']
 
 
-# Should be cached aptly.
-eq 0 (/_/ <<< {0})0
+### $ flag
+eq \string typeof /^$/$
+eq \string typeof //^$//$
+eq \string typeof //^#{''}$//$
 
+eq      /\\\//$      /\\\//source
+eq    //\\\///$    //\\\///source
+eq //#{\\}\///$ //#{\\}\///source
 
-# Should accuse duplicate flag.
-throws 'duplicate regex flag `g` on line 1' -> Coco.lex '/^/gg'
-
-
-# Should disallow trailing backslash.
-ok try Coco.lex '//\\//'; 0 catch 1
-
-# Should work nested.
-eq \01234 // 0 #{
-  // 1 #{ //2//source } 3 //source
-} 4 //source

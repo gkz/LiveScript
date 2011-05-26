@@ -4,14 +4,14 @@ tint = (ext, shortcuts, fallthroughs) ->
   rule.splice 2 0 0 if rule.length < 4 for rule of shortcuts
   PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
 
-ident = '(?:[$A-Za-z_\\x7f-\\uffff][$\\w\\x7f-\\uffff]*)'
-kwend = '(?![$\\w\\x7f-\\uffff])'
+ident = /(?:[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*)/$
+kwend = /(?![$\w\x7f-\uffff])/$
 
 ### Main
 tint \co [
   [\str        // ^ '(?: ''[\S\s]*?'' | [^\\']*(?:\\[\S\s][^\\']*)* )'  // \']
   [\lang-co-qq //(^ "(?: ""[\S\s]*?"" | [^\\"]*(?:\\[\S\s][^\\"]*)* )" )// \"]
-  [\lang-co-qr //(^ / / [\S\s]*? / / (?:[imgy]{1,4}|\??) )// \/]
+  [\lang-co-qr //(^ / / [\S\s]*? / / [gimy$?]{0,4} )// \/]
   [\lang-co-at //(^ @@? #{ident}? )// \@]
   [\com /^#.*/ \#]
   [\typ // ^ (?
@@ -62,7 +62,7 @@ tint \co [
       (?: \\.
         | \[ [^\]\n\\]*(?:\\.[^\]\n\\]*)* \]
       ) [^ [ / \n \\ ]*
-    )* / [imgy]{0,4}
+    )* / [gimy$]{0,4}
   ) (?!\d) //]
 ]
 

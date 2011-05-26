@@ -260,28 +260,29 @@ exports import
     {tokens, last} = this
     parts = @interpolate code, index, \//
     rest  = code.slice index + 2 + parts.size
-    flag  = @validate /^[imgy]{0,4}/exec(rest)0
+    flag  = @validate /^(?:[gimy]{1,4}|[?$]?)/exec(rest)0
     if parts.1
-      tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
-      if \? is rest.charAt 0
-        ++parts.size
-        for t, i of parts by -1 then if t.0 is \TOKENS
-          dynaflag = parts.splice(i, 1).0.1
-          break
+      if flag is \$
+      then @adi(); @token \( \"
+      else tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
+        if flag is \?
+          for t, i of parts by -1 then if t.0 is \TOKENS
+            dynaflag = parts.splice(i, 1).0.1
+            break
       for t, i of parts
         if t.0 is \TOKENS
           tokens.push ...t.1
         else
           val = t.1.replace HEREGEX_OMIT, ''
-          continue if not val and bs
-          tokens.push t <<< [\STRNUM string \' val.replace bs||=/\\/g \\\\]
+          continue if one and not val
+          one = tokens.push t <<< [\STRNUM string \' enslash val]
         tokens.push [\+- \+ tokens[*-1]2]
       tokens.pop()
-      if flag or dynaflag
+      if dynaflag or flag >= \g
         @token \, \,
         if dynaflag then tokens.push ...dynaflag else @token \STRNUM "'#{flag}'"
-      @token \)CALL ''
-    else @regex enslashes(parts.0.1.replace HEREGEX_OMIT, ''), flag
+      @token \) ''
+    else @regex reslash(parts.0.1.replace HEREGEX_OMIT, ''), flag
     2 + parts.size + flag.length
 
   # Matches a word literal, or ignores a sequence of whitespaces.
@@ -293,8 +294,7 @@ exports import
   # Matches a words literal, a syntax sugar for a list of strings.
   doWords: (code, index) ->
     @carp 'unterminated words' unless ~end = code.indexOf \]> index+2
-    @adi()
-    @token \[ \[
+    @adi(); @token \[ \[
     {tokens, line} = this
     for row of code.slice(index+2 end)split \\n
       if row.match ws||=/\S+/g then for word of that
@@ -500,6 +500,7 @@ exports import
   # Records a regex token.
   regex: (body, flag) ->
     try RegExp body catch @carp e.message
+    return @strnum string \' enslash body if flag is \$
     @js "/#{ body or '(?:)' }/#{ @validate flag }"
 
   # Complains on duplicate flag.
@@ -564,12 +565,15 @@ function detab str, len
 function unlines -> it.replace INDENTS, ''
 INDENTS = /\n[^\n\S]*/g
 
-# Converts newlines to their escaped form.
+# Converts newlines/backslashes to their quoted form.
 function enlines -> it.replace LINES, \\\n
 LINES = /\n/g
 
+function enslash -> it.replace BACKSLASHES, \\\\
+BACKSLASHES = /\\/g
+
 # Quotes slashes unless already quoted.
-enslashes = let re = /(\\.)|\//g, fn = ((_, quoted) -> quoted or \\\/)
+reslash = let re = /(\\.)|\//g, fn = ((_, quoted) -> quoted or \\\/)
   -> it.replace re, fn
 
 # Deletes the first character if newline.
@@ -639,7 +643,7 @@ REGEX = //
            | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]  # or character class
          ) [^ [ / \n \\ ]*                        # every other thing again
      )*
-  )/ ([imgy]{0,4})
+  )/ ([gimy]{1,4}|\$?)
 |//g
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 

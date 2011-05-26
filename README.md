@@ -31,9 +31,14 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.5.3b
+- Added `do`-`while`/`until` construction.
+- Added `$` flag to regexes. Same as `.source`, but more efficient.
+- Sped up lexer.
+
 ### 0.5.2
 - Added `!?` (inexistence) operator.
-- `function` no longer requires parens around prameteres.
+- `function` no longer requires parens around parameters.
 - `class` block is now mandatory.
 - Bug fixes:
   [coffee#1352](https://github.com/jashkenas/coffee-script/issues/1352)
@@ -83,7 +88,7 @@ Coco tries to amend them, entwining good parts of both.
 - `--interactive` now works with `--compile` and `--bare`.
 - Renamed `--nodes` option and `.nodes` method to `--ast`/`.ast`.
 - Fixed [the performance bug](https://github.com/jashkenas/coffee-script/issues/1033) wrt long method chains.
-- Quit supporting node.js 0.3.* or lower.
+- Quit supporting node.js 0.3.x or lower.
 
 ### 0.3.2
 - Unrestricted ADI for identifiers beyond `@` and `::`.

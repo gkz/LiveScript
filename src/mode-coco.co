@@ -4,19 +4,19 @@
 
 require, exports, module <- define \ace/mode/coco
 
-identifier = '[$A-Za-z_\\x7f-\\uffff][$\\w\\x7f-\\uffff]*'
+identifier = /[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/$
 
 exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
   ->
     @$tokenizer =
       new (require \ace/tokenizer)Tokenizer CocoMode.Rules
-    @$outdent   =
-      new (require \ace/mode/matching_brace_outdent)MatchingBraceOutdent
+    if require \ace/mode/matching_brace_outdent
+      @$outdent = new that.MatchingBraceOutdent
 
   indenter = // (?
     : [({[=:]
     | [-~]>
-    | \b (?: else | d(?:o|efault) | t(?:ry|hen) | finally | let
+    | \b (?: else | d(?:o|efault) | t(?:ry|hen) | finally | let | new
            | (?:catch|function) (?: \s* #{identifier} )? )
   ) \s* $ //
 
@@ -38,24 +38,24 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
       doc.replace range, line
     1 - out * 2
 
-  checkOutdent: (state, line, input) -> @$outdent.checkOutdent line, input
+  checkOutdent: (state, line, input) -> @$outdent?checkOutdent line, input
 
-  autoOutdent: (state, doc, row) -> @$outdent.autoOutdent doc, row
+  autoOutdent: (state, doc, row) -> @$outdent?autoOutdent doc, row
 
 ### Highlight Rules
 
-keywordend = '(?![$\\w]|\\s*:(?![:=]))'
+keywordend = /(?![$\w]|\s*:(?![:=]))/$
 stringfill = token: \string, regex: '.+'
 
 CocoMode.Rules =
   start:
     * token: \keyword
-      regex: '(?
+      regex: //(?
         :t(?:h(?:is|row|en)|ry|ypeof!?)
         |c(?:ontinue|a(?:se|tch)|lass)
-        |i(?:n(?:stanceof)?|mport(?:\\s+all)?|[fs])
+        |i(?:n(?:stanceof)?|mport(?:\s+all)?|[fs])
         |d(?:e(?:fault|lete|bugger)|o)
-        |f(?:or(?:\\s+own)?|inally|unction)
+        |f(?:or(?:\s+own)?|inally|unction)
         |s(?:uper|witch)
         |e(?:lse|xtends|val)
         |a(?:nd|rguments)
@@ -63,7 +63,7 @@ CocoMode.Rules =
         |un(?:less|til)
         |w(?:hile|ith)
         |o[fr]|return|break|let
-      )' + keywordend
+      )//$ + keywordend
 
     * token: \constant.language
       regex: '(?:true|false|null|void)' + keywordend
@@ -96,24 +96,24 @@ CocoMode.Rules =
       regex: '(?:t(?:hat|il|o)|f(?:rom|allthrough)|it|by)' + keywordend
 
     * token: \identifier
-      regex: identifier + '\\s*:(?!:)'
+      regex: identifier + /\s*:(?![:=])/$
 
     * token: \variable
       regex: identifier
 
     * token: \keyword.operator
-      regex: '(?:\\.{3}|\s+\?)'
+      regex: /(?:\.{3}|\s+\?)/$
 
     * token: \keyword.variable
-      regex: '(?:@+|::|\\.\\.)'
+      regex: /(?:@+|::|\.\.)/$
       next : \key
 
     * token: \keyword.operator
-      regex: '(?:\\.|\\?\\.?)\\s*'
+      regex: /\.\s*/$
       next : \key
 
     * token: \string
-      regex: '\\\\\\S[^\\s,;)}\\]]*'
+      regex: /\\\S[^\s,;)}\]]*/$
 
     * token: \string.doc
       regex: \'''
@@ -151,14 +151,14 @@ CocoMode.Rules =
       regex: '#.*'
 
     * token: \string.regex
-      regex: '
-        /(?!\\s)
-        [^[/\\n\\\\]*
-        (?: (?:\\\\.
-              |\\[[^\\]\\n\\\\]*(?:\\\\.[^\\]\\n\\\\]*)*\\]
-            )[^[/\\n\\\\]*
-        )*/[imgy]{0,4}(?!\\d)
-      '
+      regex: //
+        /(?: [^ [ / \n \\ ]*
+          (?: (?: \\.
+                | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]
+              ) [^ [ / \n \\ ]*
+          )*
+        )/ [gimy$]{0,4}
+      //$
       next : \key
 
     * token: \constant.numeric
@@ -182,7 +182,7 @@ CocoMode.Rules =
 
   heregex:
     * token: \string.regex
-      regex: '.*?//(?:[imgy]{1,4}|\\??)'
+      regex: '.*?//[gimy$?]{0,4}'
       next : \start
     * token: \string.regex
       regex: '\\s*#{'
@@ -222,19 +222,19 @@ CocoMode.Rules =
 
   qstring:
     token: \string
-    regex: "[^\\\\']*(?:\\\\.[^\\\\']*)*'"
+    regex: /[^\\']*(?:\\.[^\\']*)*'/$
     next : \key
     stringfill
 
   qqstring:
     token: \string
-    regex: '[^\\\\"]*(?:\\\\.[^\\\\"]*)*"'
+    regex: /[^\\"]*(?:\\.[^\\"]*)*"/$
     next : \key
     stringfill
 
   js:
     token: \string
-    regex: '[^\\\\`]*(?:\\\\.[^\\\\`]*)*`'
+    regex: /[^\\`]*(?:\\.[^\\`]*)*`/$
     next : \key
     stringfill
 
