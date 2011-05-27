@@ -612,8 +612,8 @@ class exports.Obj extends List
       code += idt + if node instanceof Prop
         {key, val} = node
         if node.accessor
-          key = "#{ if val.params.length then \set else \get } \
-                 #{ key.compile o }"
+          key = "#{ if val.params.length then val.void = true; \set else \get }
+               \ #{ key.compile o }"
           key + val.compile(o, LEVEL_LIST)slice 8
         else
           val.ripName key
@@ -1061,9 +1061,9 @@ class exports.Import extends Node
           key = if key instanceof Key
           then "'#{key.name}'"
           else key.compile o, LEVEL_LIST
-          code += "#{ lref.compile o }
-            .__define#{ if val.params.length then \S else \G }etter__
-            (#{key}, #{ val.compile o, LEVEL_LIST })"
+          code += "#{ lref.compile o }.__define#{
+            if val.params.length then val.void = true; \S else \G
+          }etter__(#{key}, #{ val.compile o, LEVEL_LIST })"
           continue
       else
         key = val = node
