@@ -164,10 +164,12 @@ ok new Date().constructor is Date
 ok new (Object C: Number).C instanceof Number
 , '`new` should not unwrap parenthesized operand'
 
-# `new` works against bare function
-eq Date, new ->
-  eq this, new ~> this
-  Date
+
+# `new` against bare function prevents implicit return.
+o = new ->
+  @0 = 1
+  2
+eq o.0, 1
 
 
 # Implicit calls against non-spaced unary plus/minus.
@@ -348,7 +350,6 @@ throws 'invalid constructor on line 1' -> Coco.compile 'new 42'
 o = new
   @1 = \_
   @length = 3
-  this
 eq '0_0' o * \0
 
 
@@ -363,12 +364,12 @@ eq ok, do
   eq d.0.0, \a
   ok
 
-eq \function typeof new
+new
   me = this
   f <~ I
   eq me, this
   <- ->
-  f
+  eq \function typeof f
 
 eq 5 do
   1

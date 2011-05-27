@@ -219,7 +219,7 @@ eq oss[1234](), OddSuper
 eq \declared (class declared then)displayName
 ok declared?
 
-eq \named  (new -> @named = class then)displayName
+eq \named  (new -> return @named = class then)displayName
 ok named!? 'should not leak to global when undeclared'
 
 

@@ -1188,7 +1188,7 @@ class exports.Fun extends Node
       code += ' ' + name
     empty = not body.lines.length
     code += "(#{ @compileParams scope }){"
-    body.makeReturn() unless empty or @ctor or @void
+    body.makeReturn() unless empty or @ctor or @void or @newed
     code += "\n#{that}\n#{tab}" if body.compileWithDeclarations o
     code += \}
     return sscope.assign sscope.temporary(\fn), code if @plucked
