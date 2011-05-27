@@ -32,9 +32,10 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.5.3b
+### 0.5.3
 - Added `do`-`while`/`until` construction.
 - Added `$` flag to regexes. Same as `.source`, but more efficient.
+- Suppressed implicit return on `new`ed/setter functions.
 - Sped up lexer.
 
 ### 0.5.2
