@@ -311,8 +311,8 @@ bnf =
 operators =
   # Listed from lower precedence.
   <[ left     POST_IF FOR WHILE ]>
-  <[ right    IF ELSE SWITCH CASE DEFAULT CLASS FORIN FOROF FROM TO BY ]>
-  <[ right    : ASSIGN HURL EXTENDS INDENT ]>
+  <[ right    SWITCH CASE TO BY ]>
+  <[ right    ASSIGN HURL EXTENDS INDENT ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
