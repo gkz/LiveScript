@@ -55,7 +55,7 @@ names = (prop + '!' for prop in obj)
 odds  = for prop, value in obj then prop + '!' if value & 1
 
 eq names.join(' '), 'one! two! three!'
-eq odds .join(' '), 'one! three!'
+eq odds. join(' '), 'one! three!'
 
 
 # Basic range comprehensions.

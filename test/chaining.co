@@ -16,7 +16,7 @@ ok $.
   end().
 self
 
-# Leading dots introduce dummy blocks and/or close implicit calls/indentations.
+# Leading dots introduce dummy blocks and/or close implicit indentations.
 r = $.self
      .begin()
        .do()
@@ -30,9 +30,9 @@ r = $.self
 eq r, $
 
 
-# Semicolon suppression before dots.
-eq \1,
-  8.toString 8; .charAt 0
+# Paren-free method chains
+eq \23,
+  \4 .replace /\d/ 2 .concat 3
 
 
 # Ensure that indented array literals don't trigger whitespace rewriting.
@@ -94,7 +94,7 @@ parent =
     member: 42
 eq 42, do(0; parent.child.~method)
 eq 42, do(0; parent.child~"me#{'th'}od")
-eq 42, parent.child . ~ [\method] null
+eq 42, parent.child. ~ [\method] null
 
 
 # Dots have to workaround syntax error when accessing a simple number.

@@ -168,10 +168,6 @@ function addImplicitParentheses tokens
         doblock = tokens.splice i, 1
     continue unless i
     [tag] = token; prev = tokens[i-1]
-    # `f a; .m b` => `f(a).m(b)`
-    if tag is \DOT
-      tokens.splice --i, 1 if prev.0 is \TERMINATOR
-      continue
     if tag is \[
       brackets.push prev.0 is \DOT
     if prev.0 is \]
@@ -197,12 +193,11 @@ function addImplicitParentheses tokens
     return true if token.alias and token.1 of <[ && || ]>
     pre = tokens[i-1]
     switch token.0
+    case \DOT then return pre.spaced or pre.0 is \DEDENT
     case \SWITCH                         then seenSwitch := true; fallthrough
     case \IF \CLASS \FUNCTION \LET \WITH then skipBlock  := true
     case \CASE
       if seenSwitch then skipBlock := true else return true
-    case \DOT
-      return true if pre.eol or pre.0 is \DEDENT
     case \INDENT
       return skipBlock := false if skipBlock
       return pre.0 not of <[

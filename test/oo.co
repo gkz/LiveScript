@@ -249,7 +249,7 @@ ok bird.fly()
 ok duck.fly()
 ok not donaldo.fly()
 
-eq dodo   .__proto__, bird
+eq dodo.   __proto__, bird
 eq donaldo.__proto__, duck
 
 ok new Number(){} instanceof  Number
