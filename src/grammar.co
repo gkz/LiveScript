@@ -284,8 +284,10 @@ bnf =
     o 'FOR ID FROM Expression TO Expression BY Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, step : $8
 
-    o 'WHILE Expression' -> new While $2, $1 is \until
-    o 'FOR EVER'         -> L new While
+    o 'WHILE Expression'              -> new While $2, $1 is \until
+    o 'WHILE Expression , Expression' -> new While $2, $1 is \until, $4
+
+    o 'FOR EVER' -> L new While
 
   Cases:
     o       'CASE Exprs Block' -> [new Case $2, $3]
@@ -311,8 +313,7 @@ bnf =
 operators =
   # Listed from lower precedence.
   <[ left     POST_IF FOR WHILE ]>
-  <[ right    SWITCH CASE TO BY ]>
-  <[ right    ASSIGN HURL EXTENDS INDENT ]>
+  <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>

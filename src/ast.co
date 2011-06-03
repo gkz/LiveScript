@@ -1385,16 +1385,17 @@ class exports.Return extends Throw
   Jump.return = this
 
 #### While
-# The traditional `while` loop.
+# The traditional `while`/`for`/`do` loop.
 # Returns an array of values collected from the last expression when requested.
 class exports.While extends Node
-  (@test, @negated, @post) ->
+  (@test, @negated, mode) ->
+    mode and if mode instanceof Node then @update = mode else @post = true
 
-  children: <[ test body ]>
+  children: <[ test body update ]>
 
   aSource: \test, aTarget: \body
 
-  ::{show} = Negatable
+  show: -> ([\! if @negated]) + ([\do if @post])
 
   isStatement : YES
   isArray     : YES
@@ -1414,13 +1415,15 @@ class exports.While extends Node
 
   compileNode: (o) ->
     @pluckDirectCalls o
-    code = unless @test then \true else
+    if @test
       @anaphorize()
-      (if @negated then @test.invert() else @test)compile o, LEVEL_PAREN
-    o.indent += TAB
-    return 'do {' + @compileBody o, code if @post
-    code = if code is \true then 'for (;;' else 'while (' + code
-    code + ') {' + @compileBody o
+      @test.=invert() if @negated
+    return 'do {' + @compileBody (o.indent += TAB; o), @test if @post
+    if test = @test?compile o, LEVEL_PAREN
+      head = if @update
+      then "for (; #{test}; #{ that.compile o, LEVEL_PAREN }"
+      else "while (#{test}"
+    (head or 'for (;;') + ') {' + @compileBody (o.indent += TAB; o)
 
   compileBody: (o, potest) ->
     {lines} = @body; code = ret = ''
@@ -1431,7 +1434,7 @@ class exports.While extends Node
       ret = "\n#{@tab}return #{ res or '[]' };"
     code += "\n#{that}\n#{@tab}" if @body.compile o, LEVEL_TOP
     code += \}
-    code += " while (#{potest});" if potest
+    code += " while (#{ potest.compile o<<<{@tab} LEVEL_PAREN });" if potest
     code + ret
 
   pluckDirectCalls: (o) ->
@@ -1644,7 +1647,7 @@ class exports.If extends Node
 
   compileNode: (o) ->
     @anaphorize()
-    @negated and @if.=invert()
+    @if.=invert() if @negated
     if o.level then @compileExpression o else @compileStatement o
 
   compileStatement: (o) ->

@@ -251,3 +251,13 @@ eq i, 2
 (-> eq '4,2,0' ''+it) do
   i * 2
 while i--
+
+
+### Update clause
+i = 0; evens = (i while i < 9, i += 2)
+eq '0,2,4,6,8' ''+evens
+
+i = 1; odds = until i > 9, ++i
+  continue unless i & 1
+  i
+eq '1,3,5,7,9' ''+odds
