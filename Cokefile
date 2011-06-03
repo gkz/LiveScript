@@ -138,7 +138,7 @@ task \loc 'count the lines of main compiler code' ->
 task \test 'run test/' -> runTests require \./lib/coco
 
 task \test:browser 'run test/ against extras/coco.js' ->
-  runTests new -> eval slurp \extras/coco.js \utf8
+  runTests (new new Function slurp \extras/coco.raw.js)Coco
 
 task \test:json 'test JSON {de,}serialization' ->
   {ast} = require \./lib/coco

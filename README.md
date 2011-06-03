@@ -32,6 +32,11 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.5.4b
+- `while`/`until` can now have update clause after test clause:
+  `while b, c` => `for (; b; c)`
+- `that` no longer triggers anaphoric conversion under `unless`/`until`.
+
 ### 0.5.3
 - Added `do`-`while`/`until` construction.
 - Added `$` flag to regexes. Same as `.source`, but more efficient.
