@@ -261,3 +261,8 @@ i = 1; odds = until i > 9, ++i
   continue unless i & 1
   i
 eq '1,3,5,7,9' ''+odds
+
+a = [1 2 3]
+b = []
+continue while a.pop(), b.push that
+eq '3,2,1' ''+b

@@ -84,9 +84,9 @@
   traverseChildren: (fn, xscope) ->
     @eachChild -> if fn(it)? then that else it.traverseChildren fn, xscope
 
-  # Performs anaphoric conversion if a `that` is found within `@[@aTarget]`.
+  # Performs anaphoric conversion if a `that` is found within `@aTargets`.
   anaphorize: ->
-    @children = [@aTarget]
+    @children = @aTargets
     if @eachChild hasThat
       if (base = this)[name = @aSource] instanceof Existence
         base.=[name]; name = \it
@@ -97,7 +97,7 @@
       then hasThat that if it[that]
       else it.eachChild hasThat
     delete @children
-    void
+    @[@aSource]
 
   # Throws a syntax error, appending `@line` number to the message.
   carp: ->
@@ -1393,7 +1393,7 @@ class exports.While extends Node
 
   children: <[ test body update ]>
 
-  aSource: \test, aTarget: \body
+  aSource: \test, aTargets: <[ body update ]>
 
   show: -> ([\! if @negated]) + ([\do if @post])
 
@@ -1557,7 +1557,7 @@ class exports.Switch extends Node
 
   children: <[ topic cases default ]>
 
-  aSource: \topic, aTarget: \cases
+  aSource: \topic, aTargets: [\cases]
 
   isStatement: YES
 
@@ -1576,7 +1576,7 @@ class exports.Switch extends Node
 
   compileNode: (o) ->
     {tab} = this
-    topic = !!@topic and (@anaphorize(); @topic.compile o, LEVEL_PAREN)
+    topic = !!@topic and @anaphorize()compile o, LEVEL_PAREN
     code  = "switch (#{topic}) {\n"
     stop  = @default or @cases.length - 1
     code += c.compileCase o, tab, i is stop, !topic for c, i of @cases
@@ -1604,8 +1604,7 @@ class exports.Case extends Node
     tests.length or tests.push Literal \void
     if bool
       [t] = tests; i = 0; t = Op \|| t, that while tests[++i]
-      (@<<<{t, aSource: \t, aTarget: \body})anaphorize()
-      tests = [@t.invert()]
+      tests = [(@<<<{t, aSource: \t, aTargets: [\body]})anaphorize()invert()]
     code = ''
     code += tab + "case #{ t.compile o, LEVEL_PAREN }:\n" for t of tests
     [last, i] = lastNonComment @body.lines
@@ -1622,7 +1621,7 @@ class exports.If extends Node
 
   children: <[ if then else ]>
 
-  aSource: \if, aTarget: \then
+  aSource: \if, aTargets: [\then]
 
   ::{show} = Negatable
 
