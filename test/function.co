@@ -121,6 +121,9 @@ eq '102,103,104', '' + o.rest
 args = [1 2]
 eq 3, new (-> fun: (x, y) -> x + y)().fun ...args
 eq 3, new (->      (x, y) -> x + y)()     ...args
+eq 4 (new new Function 'this.p = 4')p
+eq 5  new new Function('this.q = 5')()q
+
 # but not to helper functions.
 eq 1, new [...[-> [1]]].0().0             # __slice
 eq 1, new {f: -> [1]}{}.f().0             # __clone

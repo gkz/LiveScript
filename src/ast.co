@@ -680,7 +680,7 @@ class exports.Op extends Node
       first.newed = true
       if (chain = first.base or first) instanceof Chain
         chain.=head.base while chain.head.base instanceof Chain
-        for node of chain.tails then if node instanceof Call
+        for node of chain.tails then if node instanceof Call and not node.new
           node <<< {\new}
           return first
     case \+
