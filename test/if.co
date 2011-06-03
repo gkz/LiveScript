@@ -98,10 +98,7 @@ if (1) {
     }
   }
 }
-if (!(that = 6)) {
-  that;
-}
-if ((that = 7) != null) {
+if ((that = 6) != null) {
   that;
 }
 ''', Coco.compile '''
@@ -109,8 +106,7 @@ if 1
   if 2
     4 if 3
     5 if that
-that unless 6
-that if 7?
+that if 6?
 ''', {+bare}
 
 

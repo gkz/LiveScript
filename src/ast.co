@@ -1415,9 +1415,7 @@ class exports.While extends Node
 
   compileNode: (o) ->
     @pluckDirectCalls o
-    if @test
-      @anaphorize()
-      @test.=invert() if @negated
+    @test and if @negated then @test.=invert() else @anaphorize()
     return 'do {' + @compileBody (o.indent += TAB; o), @test if @post
     if test = @test?compile o, LEVEL_PAREN
       head = if @update
@@ -1645,8 +1643,7 @@ class exports.If extends Node
     this
 
   compileNode: (o) ->
-    @anaphorize()
-    @if.=invert() if @negated
+    if @negated then @if.=invert() else @anaphorize()
     if o.level then @compileExpression o else @compileStatement o
 
   compileStatement: (o) ->
