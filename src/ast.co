@@ -385,6 +385,10 @@ class exports.Chain extends Node
   isRegex      : ->
     @head.value is \RegExp and not @tails.1 and @tails.0 instanceof Call
 
+  # `@$` `o.0`
+  isSimpleAccess: ->
+    @tails.length is 1 and not @head.isComplex() and not @tails.0.isComplex()
+
   makeReturn: -> if @tails.length then super ... else @head.makeReturn it
 
   getCall: -> (tail = @tails[*-1]) instanceof Call and tail
@@ -899,7 +903,8 @@ class exports.Assign extends Node
     lvar = left instanceof Var
     sign = op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
-    code = if lvar and not o.level and right instanceof While
+    code = if not o.level and right instanceof While and
+              (lvar or left.isSimpleAccess())
       # Optimize `a = while ...`.
       """#{ res = o.scope.temporary \res } = [];
          #{@tab}#{ right.makeReturn(res)compile o }
