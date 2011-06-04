@@ -455,7 +455,7 @@ exports import
       # `"#{0}#{1}"` => `0 + "" + 1`
       if i or nested and s!?
         s = parts.push [\S; @countLines str.slice 0 i; @line]
-      clone  = exports{+inter}
+      clone  = exports{+inter, @emender}
       nested = clone.tokenize str.slice(i+2), {@line, +raw}
       nested.shift() while nested.0?0 is \TERMINATOR
       @countLines str.slice i, delta = str.length - clone.rest.length
