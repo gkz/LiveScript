@@ -138,9 +138,6 @@ exports import
       case \from then if @tokens[*-2]?0 is \FOR
         @<<<{-seenFor, +seenFrom}
         tag = \FROM
-      case \ever then if last.0 is \FOR
-        @<<<{-seenFor}
-        tag = \EVER
       case \to \til
         if @seenFrom
           @<<<{-seenFrom, +seenTo}
@@ -155,6 +152,9 @@ exports import
         else if last.0 is \RANGE and last.to
           last.by = true
           return 2
+      case \ever then if last.0 is \FOR
+        @seenFor = false; last.0 = \WHILE; @token \LITERAL \true
+        return 4
     @token tag || match.1.toUpperCase(), id
     @token \: \: if colon
     input.length

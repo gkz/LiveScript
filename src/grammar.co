@@ -287,8 +287,6 @@ bnf =
     o 'WHILE Expression'              -> new While $2, $1 is \until
     o 'WHILE Expression , Expression' -> new While $2, $1 is \until, $4
 
-    o 'FOR EVER' -> L new While
-
   Cases:
     o       'CASE Exprs Block' -> [new Case $2, $3]
     o 'Cases CASE Exprs Block' -> $1.concat new Case $3, $4

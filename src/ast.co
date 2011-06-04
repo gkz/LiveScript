@@ -298,8 +298,7 @@ class exports.Literal extends Atom
 class exports.Var extends Atom
   (@value) ~>
 
-  isAssignable : YES
-  isCallable   : YES
+  ::isAssignable = ::isCallable = YES
 
   assigns: -> it is @value
 
@@ -1279,8 +1278,7 @@ class exports.Class extends Node
 #### Super
 # Reference to the parent method or constructor.
 class exports.Super extends Node
-  isAssignable : YES
-  isCallable   : YES
+  ::isAssignable = ::isCallable = YES
 
   compile: (o) ->
     {fun or @carp 'stray "super"'} = o.scope.shared or o.scope
@@ -1393,17 +1391,18 @@ class exports.Return extends Throw
 # The traditional `while`/`for`/`do` loop.
 # Returns an array of values collected from the last expression when requested.
 class exports.While extends Node
-  (@test, @negated, mode) ->
+  (test, @negated, mode) ->
     mode and if mode instanceof Node then @update = mode else @post = true
+    # `while true` `until false` => `for (;;)`
+    @<<<{test} if @post or test.value is not ''+!negated
 
   children: <[ test body update ]>
 
   aSource: \test, aTargets: <[ body update ]>
 
-  show: -> ([\! if @negated]) + ([\do if @post])
+  show: -> [\! if @negated; \do if @post] * ''
 
-  isStatement : YES
-  isArray     : YES
+  ::isStatement = ::isArray = YES
 
   jumps: -> return node if node.jumps context||={+loop} for node of @body.lines
 
@@ -1422,11 +1421,11 @@ class exports.While extends Node
     @pluckDirectCalls o
     @test and if @negated then @test.=invert() else @anaphorize()
     return 'do {' + @compileBody (o.indent += TAB; o), @test if @post
-    if test = @test?compile o, LEVEL_PAREN
-      head = if @update
-      then "for (; #{test}; #{ that.compile o, LEVEL_PAREN }"
-      else "while (#{test}"
-    (head or 'for (;;') + ') {' + @compileBody (o.indent += TAB; o)
+    test = @test?compile o, LEVEL_PAREN or ''
+    head = if @update
+    then "for (;#{ test and ' ' + test }; #{ that.compile o, LEVEL_PAREN }"
+    else if test then "while (#{test}" else 'for (;;'
+    head + ') {' + @compileBody (o.indent += TAB; o)
 
   compileBody: (o, potest) ->
     {lines} = @body; code = ret = ''
