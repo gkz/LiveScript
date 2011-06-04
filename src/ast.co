@@ -633,8 +633,9 @@ class exports.Obj extends List
 # `x: y`
 class exports.Prop extends Node
   (@key, @val) ~>
-    if val.op is \~ and val.first.params?length < 2
-      @<<<{\accessor val: val.first}
+    if val.op is \~ and val.first instanceof Fun
+      (val.=first)params.1 and @carp 'excess accessor parameters'
+      @<<<{\accessor val}
 
   children: <[ key val ]>
 

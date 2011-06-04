@@ -180,6 +180,8 @@ new
   eq 1, o.a
 '''
 
+throws 'excess accessor parameters on line 1' -> Coco.compile 'p:~ (a, b) ->'
+
 
 # [coffee#542](https://github.com/jashkenas/coffee-script/issues/542):
 # Objects leading expression statement should be parenthesized.
