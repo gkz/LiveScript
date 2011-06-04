@@ -1391,16 +1391,16 @@ class exports.Return extends Throw
 # The traditional `while`/`for`/`do` loop.
 # Returns an array of values collected from the last expression when requested.
 class exports.While extends Node
-  (test, @negated, mode) ->
+  (test, @un, mode) ->
     mode and if mode instanceof Node then @update = mode else @post = true
     # `while true` `until false` => `for (;;)`
-    @<<<{test} if @post or test.value is not ''+!negated
+    @<<<{test} if @post or test.value is not ''+!un
 
   children: <[ test body update ]>
 
   aSource: \test, aTargets: <[ body update ]>
 
-  show: -> [\! if @negated; \do if @post] * ''
+  show: -> [\! if @un; \do if @post] * ''
 
   ::isStatement = ::isArray = YES
 
@@ -1419,7 +1419,7 @@ class exports.While extends Node
 
   compileNode: (o) ->
     @pluckDirectCalls o
-    @test and if @negated then @test.=invert() else @anaphorize()
+    @test and if @un then @test.=invert() else @anaphorize()
     return 'do {' + @compileBody (o.indent += TAB; o), @test if @post
     test = @test?compile o, LEVEL_PAREN or ''
     head = if @update
@@ -1619,13 +1619,13 @@ class exports.Case extends Node
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
 class exports.If extends Node
-  (@if, @then, @negated) ~>
+  (@if, @then, @un) ~>
 
   children: <[ if then else ]>
 
   aSource: \if, aTargets: [\then]
 
-  ::{show} = Negatable
+  show: -> @un and \!
 
   terminator: ''
 
@@ -1647,7 +1647,7 @@ class exports.If extends Node
     this
 
   compileNode: (o) ->
-    if @negated then @if.=invert() else @anaphorize()
+    if @un then @if.=invert() else @anaphorize()
     if o.level then @compileExpression o else @compileStatement o
 
   compileStatement: (o) ->
