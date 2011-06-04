@@ -34,7 +34,7 @@ Coco tries to amend them, entwining good parts of both.
 
 ### 0.5.4b
 - `while`/`until` can now have update clause after test clause:
-  `while b, c` => `for (; b; c)`
+  `continue while f(), g()` => `for (; f(); g()) {}`
 - `that` no longer triggers anaphoric conversion under `unless`/`until`.
 
 ### 0.5.3
@@ -120,7 +120,7 @@ Coco tries to amend them, entwining good parts of both.
 - `do` block can now work as a pair of normal parentheses.
 - Improved _ACI_ (automatic comma insertion): `f {} [] x` -> `f({}, [], x);`
 - Improved _ADI_ (automatic dot insertion): `@@0'!'` -> `arguments[0]['!'];`
-- Multi-line block on the RHS of object property now works as an implicit array.
+- Multiline block on the RHS of object property now works as an implicit array.
 - Heregexes now support dynamic flags: `/// x #{? y } ///` -> `RegExp('x', y);`
 - Enabled compound _accessigns_: `a.+=b` -> `a += a.b;`
 - `...` in array destructuring (same as `...[]`) now skips items rather than `slice`ing them. ([coffee#870](https://github.com/jashkenas/coffee-script/issues/870))
