@@ -1303,10 +1303,9 @@ class exports.Parens extends Node
   compile: (o, level ? o.level) ->
     {it} = this
     it.head.void = true if not level and @calling
-    unless @keep or @newed
-      if it instanceof [Atom, Chain, Fun, Parens, List]
-      or it instanceof Op and level < LEVEL_OP + (PREC[it.op] or PREC.unary)
-        return (it <<< {@front})compile o, Math.max level, LEVEL_PAREN
+    unless @keep or @newed or
+           it instanceof Op and level >= LEVEL_OP + (PREC[it.op] or PREC.unary)
+      return (it <<< {@front})compile o, level || LEVEL_PAREN
     if it.isStatement()
     then it.compileClosure o
     else "(#{ it.compile o, LEVEL_PAREN })"
