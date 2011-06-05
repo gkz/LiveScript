@@ -528,7 +528,7 @@ class exports.Chain extends Node
 # `x(y)`
 class exports.Call extends Node
   (args or [], sym) ~>
-    if args.length is 1 and args.0 instanceof Splat and args.0.it.isEmpty()
+    if args.length is 1 and args.0.filler
       @thisplat = true; args = [Literal \this; Literal \arguments]
     @<<<{args, soak: sym is \?( and \?}
 
@@ -549,8 +549,8 @@ class exports.Call extends Node
   @back = (params, arrow, node) ->
     (call = node.getCall()) or node = Chain(node)add call = Call()
     {args} = call
-    break if a instanceof Splat and a.it.isEmpty() for a, i of args
-    node import back: (args[i] = Fun params, null, arrow.charAt(1) + \>)body
+    break if arg.filler for arg, idx of args
+    node import back: (args[idx] = Fun params, null, arrow.charAt(1) + \>)body
 
   @let = (args, body) ->
     params = for a, i of args
@@ -1317,7 +1317,7 @@ class exports.Parens extends Node
 # A splat, either as an argument to a call
 # or as part of a destructuring assignment.
 class exports.Splat extends Node
-  (@it) ~>
+  (@it, @filler) ~>
 
   ::{children, isComplex} = Parens::
 
@@ -1331,6 +1331,7 @@ class exports.Splat extends Node
   @compileArray = (o, list, apply) ->
     index = -1
     while node = list[++index] then if node instanceof Splat
+      return '' if apply and node.filler
       break unless node.it.isEmpty()
       list.splice index-- 1
     return '' if index >= list.length

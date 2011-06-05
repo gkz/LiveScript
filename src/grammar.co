@@ -90,7 +90,7 @@ bnf =
   Arg:
     o     \Expression
     o '... Expression' -> Splat $2
-    o \...             -> Splat L Arr()
+    o \...             -> Splat L(Arr()), true
 
   # An optional, trailing comma.
   OptComma:
