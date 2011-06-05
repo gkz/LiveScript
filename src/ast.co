@@ -1329,7 +1329,10 @@ class exports.Splat extends Node
 
   # Compiles a list of nodes mixed with splats to a proper array.
   @compileArray = (o, list, apply) ->
-    break if node instanceof Splat for node, index of list
+    index = -1
+    while node = list[++index] then if node instanceof Splat
+      break unless node.it.isEmpty()
+      list.splice index-- 1
     return '' if index >= list.length
     unless list.1
       return (if apply then Object else ensureArray) list.0.it
