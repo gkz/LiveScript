@@ -636,7 +636,7 @@ class exports.Obj extends List
 # `x: y`
 class exports.Prop extends Node
   (@key, val) ~>
-    (val.=first) <<< {\accessor} if val.op is \~ and val.first instanceof Fun
+    val.=first <<< {\accessor} if val.op is \~ and val.first instanceof Fun
     @<<<{val}
 
   children: <[ key val ]>
@@ -1042,7 +1042,7 @@ class exports.Import extends Node
     return @left.compile o unless items.length
     top = not o.level
     if items.length < 2 and (top or items.0 instanceof Splat)
-    then sub = lref = @left
+    then sub = lref = Parens @left
     else [sub, lref, @temps] = @left.cache o
     [delim, space] = if top then [\; \\n + @tab] else [\, ' ']
     delim += space
