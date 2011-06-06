@@ -46,29 +46,8 @@ val ?= 'eulav'
 eq val, 'value'
 
 
-# Accessignments
-parent = child: str: 'test'
-
-parent.child.str.=replace /./, 'b'
-eq 'best', parent.child.str
-
-parent.child.str.='replace' /./, 'r'
-parent.=child.valueOf().str
-eq 'rest', parent
-
-parent.+=slice 1
-eq 'restest', parent
-
-a = b: c: d: \e
-a.b.c?.=d
-eq \e a.b.c
-
-a.=b <<< {\c}
-eq \c a.c
-
-
 for nonref, i of <[ 0 f() this true ]>
-  throws 'invalid assignee on line ' + (i+1), ->
+  throws 'invalid assign on line ' + (i+1), ->
     x = if i then nonref else \... + nonref
     Coco.compile \\n * i + "[#{x}, y] = z"
 
@@ -76,9 +55,25 @@ for nonref, i of <[ 0 f() this true ]>
 throws 'assignment to undeclared variable "Math" on line 1'
 , -> Coco.compile 'Math ||:= 0'
 
-throws 'modification of undeclared variable "Math" on line 1'
-, -> Coco.compile '++Math'
 
+# Empty assignments
+{} = -> /* will be front and should be wrapped */
+
+eq 1, [] = 1
+eq 9, 3 * [] = 2 + 1
+eq ok, new []=(-> -> ok)()
+
+i = 0
+[{}] = ++i
+eq i, 1
+
+{}p   = 0
+[{}p] = 1
+{}p++
+ok 'LHS should take care frontness'
+
+
+### Destructuring
 
 # Simple variable swapping.
 a = -1
@@ -102,7 +97,7 @@ eq (onetwo = [1, 2]), [a, b] = [c, d] = onetwo
 ok a is c is 1 and b is d is 2
 
 
-# Array destructuring, including splats.
+# With splats.
 [x, ...y, z] = [1, 2, 3, 4, 5]
 eq x, 1
 eq y.length, 3
@@ -115,7 +110,6 @@ eq heads + '', '1,2,3'
 eq tails + '', '5,6'
 
 
-# Object destructuring.
 {a: a, b} = {a: 0, b: 1}
 eq a, 0
 eq b, 1
@@ -146,7 +140,7 @@ a = {\a \b}
 eq a+b, \ab
 
 
-# Destructuring with object shorthand.
+# With object shorthand.
 {name, age, dogs: [first, second]} =
   name: 'Bob'
   age :  26
@@ -157,7 +151,7 @@ eq first  , 'Prince'
 eq second , 'Bowie'
 
 
-# Destructuring on `for`-`in`/`of`.
+# On `for`-`in`/`of`.
 persons =
   George     : {name: 'Bob'  }
   Bob        : {name: 'Alice'}
@@ -185,7 +179,7 @@ eq join2.join(' '), join3.join(' ')
 ok x is y is z, 'destructuring in multiple'
 
 
-# Destructuring into an object.
+# Into properties.
 obj =
   func: (list, object) ->
     [@one, @two] = list
@@ -199,27 +193,9 @@ eq obj.a, 'a'
 eq obj.b, 'b'
 
 
-# Empty assignments
-{} = -> /* will be front and should be wrapped */
-
-eq 1, [] = 1
-eq 9, 3 * [] = 2 + 1
-eq ok, new []=(-> -> ok)()
-
-i = 0
-[{}] = ++i
-eq i, 1
-
-
 x = 'y'
 {(x)} = y: 0xc0c0
 eq x, 49344
-
-
-{}p   = 0
-[{}p] = 1
-{}p++
-ok 'LHS should take care frontness'
 
 
 {(*>>1): mid, (*-1): last} = [1, 2, 3, 4, 5]
@@ -227,7 +203,38 @@ eq mid , 3
 eq last, 5
 
 
-# Subdestructuring
+# [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
+[void, null, v] = [1 to 3]
+eq v, 3
+
+
+# [coffee#1108](https://github.com/jashkenas/coffee-script/issues/1108)
+[z] = [0] ? [1]
+eq 0 z
+
+
+### Accessignments
+parent = child: str: 'test'
+
+parent.child.str.=replace /./, 'b'
+eq 'best', parent.child.str
+
+parent.child.str.='replace' /./, 'r'
+parent.=child.valueOf().str
+eq 'rest', parent
+
+parent.+=slice 1
+eq 'restest', parent
+
+a = b: c: d: \e
+a.b.c?.=d
+eq \e a.b.c
+
+a.=b <<< {\c}
+eq \c a.c
+
+
+### Subdestructuring
 a = []
 a[0 [] [2]] = [0 1 [2]]
 eq a.0, 0
@@ -264,7 +271,7 @@ eq o.c+'' '1,2'
 eq o.d, 3
 
 
-# Destructuring defaults
+### Destructuring defaults
 new
   [x ? 2, y || 3, @k && 5] = [null, false, true]
   eq x * y * @k, 30
@@ -276,7 +283,7 @@ new
   eq @a * @b * @c, 30
 
 
-# Compound/Conditional Destructuring
+### Compound/Conditional Destructuring
 a = b = c = null
 
 [a, b] += [2 3]
@@ -287,13 +294,3 @@ o = d: 0, e: 1
 o{d, e} &&*= d: 2, e: 3
 eq 0 o.d
 eq 3 o.e
-
-
-# [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
-[void, null, v] = [1 to 3]
-eq v, 3
-
-
-# [coffee#1108](https://github.com/jashkenas/coffee-script/issues/1108)
-[z] = [0] ? [1]
-eq 0 z

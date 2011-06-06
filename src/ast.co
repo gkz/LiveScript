@@ -378,12 +378,15 @@ class exports.Chain extends Node
 
   isComplex    : -> @tails.length or @head.isComplex()
   isCallable   : -> if @tails.length then !@isArray() else @head.isCallable()
-  isArray      : ->
-    if @tails[*-1] then that.key?length else @head.isArray()
-  isAssignable : ->
-    if @tails[*-1] then that instanceof Index else @head.isAssignable
+  isArray      : -> if @tails[*-1] then that.key?length else @head.isArray()
   isRegex      : ->
     @head.value is \RegExp and not @tails.1 and @tails.0 instanceof Call
+
+  isAssignable: ->
+    return @head.isAssignable() unless tail = @tails[*-1]
+    return false if tail not instanceof Index
+    return false if tail.assign for tail of @tails
+    true
 
   # `@$` `o.0`
   isSimpleAccess: ->
@@ -770,24 +773,25 @@ class exports.Op extends Node
     fs = @first.cache o, true
     If(Existence fs.0, inv; fs.1)addElse(@second)compileExpression o
 
+  function crement -> {'++':\in '--':\de}[it] + \crement
+
   compileUnary: (o) ->
     {op, first} = this
     switch op
     case \new then first.isCallable() or first.carp 'invalid constructor'
     case \delete
-      @carp 'invalid deletion' if first instanceof Var or !first.isAssignable()
+      @carp 'invalid delete' if first instanceof Var or !first.isAssignable()
       return @compileDelete o if o.level and not @void
     case \++ \--
+      first.isAssignable() or @carp 'invalid ' + crement op
       if first instanceof Var and not o.scope.check first.value, true
-        @carp "modification of undeclared variable \"#{first.value}\""
+        @carp "#{ crement op } of undeclared variable \"#{first.value}\""
       first{front} = this if @post
     case \classof
       return "#{ utility \toString }.call(
               #{ first.compile o, LEVEL_LIST }).slice(8, -1)"
     code = first.compile o, LEVEL_OP + PREC.unary
-    if @post
-      code += op
-    else
+    if @post then code += op else
       op += ' ' if op of <[ new typeof delete ]>
                 or op of <[ + - ]> and first.op is op
       code = op + code
@@ -887,7 +891,7 @@ class exports.Assign extends Node
     if left.hasDefault()
       right = Op left.op, right, left.second
       left.=first
-    (left.unfoldAssign o or left)isAssignable() or left.carp 'invalid assignee'
+    left.isAssignable() or left.carp 'invalid assign'
     right.=it while right instanceof Parens and not right.keep
     if op is \**=
     or op is \+= and right instanceof Arr

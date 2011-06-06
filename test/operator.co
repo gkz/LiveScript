@@ -295,6 +295,10 @@ eq 1 a.0
 eq a.0 ++  -- a.0
 eq 1 i
 
+throws 'increment of undeclared variable "C" on line 1' -> Coco.compile 'C++'
+throws 'invalid increment on line 1' -> Coco.compile '++q.=p'
+throws 'invalid decrement on line 1' -> Coco.compile 'q.=p--'
+
 
 ### `delete`
 i = 0
@@ -306,8 +310,8 @@ O = ->
 eq delete (o = new O)[new O], 7
 eq o[7], void
 
-throws 'invalid deletion on line 1' -> Coco.compile 'delete a'
-throws 'invalid deletion on line 1' -> Coco.compile 'delete 0'
+throws 'invalid delete on line 1' -> Coco.compile 'delete a'
+throws 'invalid delete on line 1' -> Coco.compile 'delete a.=b'
 
 
 ### [[Class]] sniffing
