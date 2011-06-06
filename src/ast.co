@@ -887,8 +887,7 @@ class exports.Assign extends Node
     if left.hasDefault()
       right = Op left.op, right, left.second
       left.=first
-    left.isAssignable() or left.carp \
-      "#{ left.compile o, LEVEL_LIST } // invalid assignee"
+    (left.unfoldAssign o or left)isAssignable() or left.carp 'invalid assignee'
     right.=it while right instanceof Parens and not right.keep
     if op is \**=
     or op is \+= and right instanceof Arr

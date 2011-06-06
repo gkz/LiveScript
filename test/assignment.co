@@ -65,9 +65,9 @@ eq \e a.b.c
 
 
 for nonref, i of <[ 0 f() this true ]>
-  throws nonref + ' // invalid assignee on line ' + (i+1), ->
+  throws 'invalid assignee on line ' + (i+1), ->
     x = if i then nonref else \... + nonref
-    Coco.compile Array(i+1).join(\\n) + "[#{x}, y] = z"
+    Coco.compile \\n * i + "[#{x}, y] = z"
 
 
 throws 'assignment to undeclared variable "Math" on line 1'
