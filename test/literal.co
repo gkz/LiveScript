@@ -353,6 +353,8 @@ obj.val = ok
 {(obj.key)} = obj
 eq ok, obj.key
 
+{(frontness?)}
+
 
 ### JS Literal
 

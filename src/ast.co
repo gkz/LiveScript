@@ -628,9 +628,8 @@ class exports.Obj extends List
         if logic.op is \? then "!= null ? #{key} :" else logic.op
       } """ + logic.second.compile o, LEVEL_OP
     code = "{#{ code and code + \\n + @tab }}"
-    if rest
-    then Import(JS code; Obj rest)compile o <<< indent: @tab
-    else if @front then "(#{code})" else code
+    code = "(#{code})" if @front
+    if rest then Import(JS code; Obj rest)compile o <<< indent: @tab else code
 
 #### Prop
 # `x: y`
