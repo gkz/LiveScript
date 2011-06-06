@@ -614,7 +614,7 @@ class exports.Obj extends List
       if multi then code += \, else multi = true
       code += idt + if node instanceof Prop
         {key, val} = node
-        if node.accessor
+        if val.accessor
           key = "#{ if val.params.length then val.void = true; \set else \get }
                \ #{ key.compile o }"
           key + val.compile(o, LEVEL_LIST)slice 8
@@ -635,14 +635,13 @@ class exports.Obj extends List
 #### Prop
 # `x: y`
 class exports.Prop extends Node
-  (@key, @val) ~>
-    if val.op is \~ and val.first instanceof Fun
-      (val.=first)params.1 and @carp 'excess accessor parameters'
-      @<<<{\accessor val}
+  (@key, val) ~>
+    (val.=first) <<< {\accessor} if val.op is \~ and val.first instanceof Fun
+    @<<<{val}
 
   children: <[ key val ]>
 
-  show: -> @accessor
+  show: -> @val.accessor
 
   assigns: -> @val.assigns it
 
@@ -1062,7 +1061,7 @@ class exports.Import extends Node
         [key, val] = node.it.cache o, true
       else if node instanceof Prop
         {key, val} = node
-        if node.accessor
+        if val.accessor
           key = if key instanceof Key
           then "'#{key.name}'"
           else key.compile o, LEVEL_LIST
@@ -1213,6 +1212,8 @@ class exports.Fun extends Node
     if splace?
       rest = params.splice splace, 9e9
       rest = 0 if not rest.1 and rest.0.it.isEmpty()  # ignore trailing `...`
+    else if @accessor
+      that.carp 'excess accessor parameter' if params.1
     else unless params.length or @wrapper
       params.0 = Var \it if body.traverseChildren(-> it.value is \it or null)
     if params.length
