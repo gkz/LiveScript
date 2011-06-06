@@ -65,10 +65,10 @@ eq "a['in'] = this['in'];", Coco.compile 'a import {@in}' bare
 eq '''
 while (0) {
   while (0) {
-    1, 2;
+    ({}), {};
   }
 }
-''', Coco.compile '(1; 2) while 0 while 0' bare
+''', Coco.compile '({};{}) while 0 while 0' bare
 
 
 throws 'invalid use of null on line 1', -> Coco.compile 'null.po'

@@ -225,6 +225,7 @@ class exports.Block extends Node
     codes = for node of @lines
       if level
         continue if node.comment
+        code or node <<< {@front}
         code = node.compile o, LEVEL_LIST
       else
         node = node.unfoldSoak o or node
