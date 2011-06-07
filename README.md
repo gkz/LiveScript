@@ -32,10 +32,12 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.5.4b
+### 0.5.4
 - `while`/`until` can now have update clause after test clause:
   `continue while f(), g()` => `for (; f(); g()) {}`
 - `that` no longer triggers anaphoric conversion under `unless`/`until`.
+- Disallowed `a.=b = c` `p:~ (a, b) ->` `f ..., a` etc.
+- Fixed [coffee#1416](https://github.com/jashkenas/coffee-script/issues/1416).
 
 ### 0.5.3
 - Added `do`-`while`/`until` construction.
