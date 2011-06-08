@@ -531,10 +531,10 @@ class exports.Chain extends Node
 #### Call
 # `x(y)`
 class exports.Call extends Node
-  (args or [], sym) ~>
+  (args or [], @soak && \?) ~>
     if args.length is 1 and args.0.filler
-      @thisplat = true; args = [Literal \this; Literal \arguments]
-    @<<<{args, soak: sym is \?( and \?}
+      @thisplat = true; args <<< [Literal \this; Literal \arguments]
+    @<<<{args}
 
   children: [\args]
 
@@ -683,6 +683,9 @@ class exports.Op extends Node
       then Call.block first
       else Parens Call.make first
     case \new
+      # `new C?` => `new C?()`
+      if first instanceof Existence and not first.negated
+        first = Chain(first.it)add Call [] true
       first.newed = true
       if (chain = first.base or first) instanceof Chain
         chain.=head.base while chain.head.base instanceof Chain

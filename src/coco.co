@@ -14,7 +14,7 @@ parser import
     upcomingInput : -> ''
 
 exports import
-  VERSION: \0.5.4
+  VERSION: \0.6b
 
   # Compiles a string of Coco code to JavaScript.
   compile: (code, options) ->

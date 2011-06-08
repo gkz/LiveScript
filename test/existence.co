@@ -165,3 +165,11 @@ eq (1 or 0)?, true, 'postfix `?` should unwrap correctly'
 eq x = void, x?.y{}
 x = y: Date::
 ok x?.y{} instanceof Date
+
+
+# [coffee#1424](https://github.com/jashkenas/coffee-script/issues/1424)
+A = -> ok
+eq new A?, ok
+
+A = null
+eq new A?, void
