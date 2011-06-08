@@ -226,9 +226,10 @@ class exports.Block extends Node
 
   compile: (o, level ? o.level) ->
     unless level then o.block = this; tab = o.indent
-    codes = for node of @lines
+    codes = for node, i of @lines
       if level
         continue if node.comment
+        node.void = true if i < lasti ||= @lines.length - 1
         code or node <<< {@front}
         code = node.compile o, LEVEL_LIST
       else
@@ -752,7 +753,7 @@ class exports.Op extends Node
     case \-  then return @compileRemove o if @second.isMatcher()
     case \/  then return @compileSplit  o if @second.isMatcher()
     case \** then return @compilePow o
-    case \&& \|| then o.level or @second.void = true
+    case \&& \|| then @second.void = true if @void or not o.level
     default
       return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
     @first <<< {@front}
@@ -775,8 +776,9 @@ class exports.Op extends Node
     if o.level <= LEVEL_OP then code else "(#{code})"
 
   compileExistence: (o, inv) ->
-    unless o.level
-      return Op(\&& Existence(@first, not inv), @second)compileNode o
+    if @void or not o.level
+      morph = Op \&& Existence(@first, not inv), @second
+      return (morph <<< {+\void})compileNode o
     fs = @first.cache o, true
     If(Existence fs.0, inv; fs.1)addElse(@second)compileExpression o
 
@@ -932,7 +934,8 @@ class exports.Assign extends Node
 
   compileConditional: (o, left) ->
     lefts = Chain(left)cacheReference o
-    Op(@logic, lefts.0, @<<<{-logic, left: lefts.1})compileNode o
+    morph = Op @logic, lefts.0, @<<<{-logic, left: lefts.1}
+    (morph <<< {@void})compileNode o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
@@ -1316,7 +1319,7 @@ class exports.Parens extends Node
 
   compile: (o, level ? o.level) ->
     {it} = this
-    it.head.void = true if not level and @calling
+    it.head.void = true if @calling and (not level or @void)
     unless @keep or @newed or
            it instanceof Op and level >= LEVEL_OP + (PREC[it.op] or PREC.unary)
       return (it <<< {@front})compile o, level || LEVEL_PAREN
