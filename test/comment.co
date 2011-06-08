@@ -133,6 +133,7 @@ obj = {
 };
 if (1) {
   /* no semicolon at end -> */
+  2;
 }
 ''', Coco.compile '''
 /* leading block comments */
@@ -146,7 +147,11 @@ obj = {
     *  ^
     */
 }
-if 1 then /* no semicolon at end -> */
+if 1
+  /* no semicolon at end -> */
+  2
+  /* trailing comments */
+/*   are removed.      */
 ''', {+bare}
 
 

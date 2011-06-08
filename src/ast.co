@@ -204,20 +204,24 @@ class exports.Block extends Node
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this
 
+  # Removes trailing comment nodes.
+  chomp: ->
+    {lines} = this; i = lines.length
+    break unless that.comment while lines[--i]
+    lines.length = i + 1
+    this
+
   isComplex: -> @lines.length > 1 or @lines.0?isComplex()
 
-  ::delegate <[ isCallable isArray isString isRegex ]> ->
-    that[it]() if lastNonComment(@lines)0
+  ::delegate <[ isCallable isArray isString isRegex ]> -> @lines[*-1]?[it]()
 
   jumps: -> return that if node.jumps it for node of @lines
 
   # **Block** does not return its entire body, rather it
   # ensures that the final line is returned.
   makeReturn: ->
-    [node, i] = lastNonComment @lines
-    if node
-      @lines[i] = node.=makeReturn it
-      @lines.splice i, 1 if node instanceof Return and not node.it
+    if @lines[*-1]?=makeReturn it
+      --@lines.length if that instanceof Return and not that.it
     this
 
   compile: (o, level ? o.level) ->
@@ -241,11 +245,11 @@ class exports.Block extends Node
     o = {level: LEVEL_TOP, scope: @scope = Scope.root = new Scope, ...options}
     delete o.filename
     o.indent = if bare = delete o.bare then '' else TAB
+    @chomp()
     prefix = @lines.shift()code if /^(?:#!|javascript:)/test @lines.0?code
     if delete o.repl
       if bare
-        [node, i] = lastNonComment @lines
-        @lines[i] = Parens node if node
+        @lines[i] = Parens node if node = @lines[i = *-1]
       else
         @makeReturn()
     code = @compileWithDeclarations o
@@ -1441,9 +1445,8 @@ class exports.While extends Node
   compileBody: (o, potest) ->
     {lines} = @body; code = ret = ''
     if @returns
-      [last, i] = lastNonComment lines
-      if last and last not instanceof Throw
-        lines[i] = last.makeReturn res = o.scope.assign \_results '[]'
+      if (last = lines[*-1]) and last not instanceof Throw
+        lines[*-1] = last.makeReturn res = o.scope.assign \_results '[]'
       ret = "\n#{@tab}return #{ res or '[]' };"
     code += "\n#{that}\n#{@tab}" if @body.compile o, LEVEL_TOP
     code += \}
@@ -1607,7 +1610,7 @@ class exports.Case extends Node
   isCallable: -> @body.isCallable()
 
   makeReturn: ->
-    lastNonComment(@body.lines)0.value is \fallthrough or @body.makeReturn it
+    @body.makeReturn it unless @body.lines[*-1]?value is \fallthrough
     this
 
   compileCase: (o, tab, nobr, bool) ->
@@ -1620,8 +1623,8 @@ class exports.Case extends Node
       tests = [(@<<<{t, aSource: \t, aTargets: [\body]})anaphorize()invert()]
     code = ''
     code += tab + "case #{ t.compile o, LEVEL_PAREN }:\n" for t of tests
-    [last, i] = lastNonComment @body.lines
-    @body.lines[i] = JS '// fallthrough' if ft = last.value is \fallthrough
+    {lines} = @body; last = lines[*-1]
+    lines[*-1] = JS '// fallthrough' if ft = last?value is \fallthrough
     o.indent = tab += TAB
     code += that + \\n        if @body.compile o, LEVEL_TOP
     code += tab  + 'break;\n' unless nobr or ft or last instanceof Jump
@@ -1886,9 +1889,5 @@ SIMPLENUM = /^\d+$/
 
 # Declares a utility function at the top level.
 function utility -> Scope.root.assign \__ + it, UTILITIES[it]
-
-function lastNonComment nodes
-  break unless node.comment for node, i of nodes by -1
-  [i >= 0 and node, i]
 
 function entab(code, tab) -> code.replace /\n/g \\n + tab

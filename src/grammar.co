@@ -117,7 +117,7 @@ bnf =
   # An indented block of expressions. Note that [Rewriter](#rewriter)
   # converts some single-line forms into blocks for us.
   Block:
-    o 'INDENT Body DEDENT' -> $2
+    o 'INDENT Body DEDENT' -> $2.chomp()
     o 'INDENT      DEDENT' -> Block()
 
   # All the different types of expressions in our language.
@@ -241,8 +241,8 @@ bnf =
     o 'IfBlock ELSE IF Expression Block' -> $1.addElse If $4, $5, $3 is \unless
 
   Parenthetical:
-    o '(        Body        )' -> Parens $2.unwrap(), false, $1 is \"
-    o '( INDENT Body DEDENT )' -> Parens $3.unwrap(), false, $1 is \"
+    o '(        Body        )' -> Parens $2.chomp()unwrap(), false, $1 is \"
+    o '( INDENT Body DEDENT )' -> Parens $3.chomp()unwrap(), false, $1 is \"
 
   # Everything that can be assigned to.
   Assignable:
