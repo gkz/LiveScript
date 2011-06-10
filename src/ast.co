@@ -41,7 +41,7 @@
       fun.params.push Var \_args
     # Flag the function as `wrapper` so that it shares a scope
     # with its parent to preserve the expected lexical scope.
-    Parens(Chain fun<<<{+wrapper} [call]; true)compile o
+    Parens(Chain fun<<<{+wrapper, @void} [call]; true)compile o
 
   # Compiles a child node as a block statement.
   compileBlock: (o, node) ->
