@@ -933,7 +933,7 @@ class exports.Assign extends Node
     code
 
   compileConditional: (o, left) ->
-    if @logic is \? and @op is \= and left instanceof Var
+    if left instanceof Var and @logic of <[ ? !? ]> and @op is \=
       o.scope.declare left.value
     lefts = Chain(left)cacheReference o
     morph = Op @logic, lefts.0, @<<<{-logic, left: lefts.1}
