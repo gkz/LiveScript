@@ -40,16 +40,15 @@ task \install 'install Coco into /usr/local (or --prefix)' (options) ->
     ln -sfv  #{lib}/lib/command.js #{bin}/coco
     ln -sfv  #{lib}/lib/coke.js    #{bin}/coke
     ln -sfnv #{lib}/lib #{nlib}/coco
-  """replace /\n/g \&&
+    """replace /\n/g \&&
   say stdout.trim() if stdout
   say if e then stderr.trim() else tint \done
 
 
 docs = <[ doc.co lang-co.co ]>
-webs = docs.concat \mode-coco.co
 
 task \build 'build lib/ from src/' ->
-  ext = /\.co$/
+  ext = /\.co$/; webs = docs.concat \mode-coco.co
   sources = for file of dir \src
     \src/ + file if ext.test file and file not of webs
   run [\-bco \lib]concat sources
@@ -131,7 +130,7 @@ task \bench 'quick benchmark of compilation time' ->
 
 task \loc 'count the lines of main compiler code' ->
   count = 0; line = /^[^\n\S]*[^#\s]/mg
-  ++count while line.test code for code of coreSources()map(-> slurp it)
+  ++count while line.test code for code of coreSources()map -> slurp it
   console.log count
 
 
@@ -142,22 +141,21 @@ task \test:browser 'run test/ against extras/coco.js' ->
 
 task \test:json 'test JSON {de,}serialization' ->
   {ast} = require \./lib/coco
-  json = ast(slurp \src/ast.co)stringify()
-  code = ast.parse(json)compileRoot {+bare}
-  exec 'diff -u lib/ast.js -' (e, out) ->
-    say out.trim() || tint \ok
+  json = ast slurp \src/ast.co .stringify()
+  code = ast.parse json .compileRoot {+bare}
+  exec 'diff -u lib/ast.js -' (e, out) -> say e || out.trim() || tint \ok
   .stdin.end code
 
-function runTests(Coco)
+function runTests global.Coco
   startTime = Date.now()
   passedTests = failedTests = 0
-  for name, func in require \assert then do ->
+  for name, func in require \assert then let
     global[name] = -> func ...; ++passedTests
-  global import {
-    Coco, eq: strictEqual, throws: (msg, fun) ->
+  global <<<
+    eq: strictEqual
+    throws: (msg, fun) ->
       try do fun catch return eq e?message, msg
       ok false "should throw: #{msg}"
-  }
   process.on \exit ->
     time = ((Date.now() - startTime) / 1e3)toFixed 2
     message = "passed #{passedTests} tests in #{time} seconds"
