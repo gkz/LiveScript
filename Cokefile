@@ -183,5 +183,5 @@ function runTests global.Coco
       else return say stk
       {(row): line} = lines = code.split \\n
       say lines.slice(row-8 row+0)join \\n
-      say line .slice(0 col) + tint line.slice(col), bold
+      say line. slice(0 col) + tint line.slice(col), bold
       say lines.slice(row+1 row+9)join \\n

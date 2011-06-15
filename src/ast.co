@@ -909,7 +909,8 @@ class exports.Assign extends Node
       left.=first
     left.isAssignable() or left.carp 'invalid assign'
     right.=it while right instanceof Parens and not right.keep
-    if op of <[ <?= >?= **= ]>
+    return @compileMinMax o, left, right if op of <[ <?= >?= ]>
+    if op is \**=
     or op is \+= and right instanceof Arr
     or op is \*= and right.isString()
     or op of <[ -= /= ]> and right.isMatcher()
@@ -945,6 +946,17 @@ class exports.Assign extends Node
     lefts = Chain(left)cacheReference o
     morph = Op @logic, lefts.0, @<<<{-logic, left: lefts.1}
     (morph <<< {@void})compileNode o
+
+  compileMinMax: (o, left, right) ->
+    lefts = Chain(left)cacheReference o
+    rites = right.cache o, true
+    test  = Op '<>'charAt(@op is \<?=), lefts.0, rites.0
+    put   = Assign lefts.1, rites.1, \:=
+    # `a <?= b` => `a > b && a = b `
+    return Op(\&& test, put)compileNode o if @void or not o.level
+    # `r = a <?= b` => `r = if a > b then a = b else a`
+    [test.first, left] = test.first.cache o, true
+    If test, put .addElse left .compileNode o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
