@@ -327,11 +327,34 @@ a[i++] **= 3
 eq a.0, 8
 
 
-## Overloaded
+### Min/Max
+eq 0, 0 <? 0
+eq 1, 1 >? 1
+eq 2, 2 <? 3
+eq 3, 4 <? 3
+eq 4, 3 >? 4
+eq 5, 5 >? 4
+
+eq \a, \a <? \b
+eq \b, \a >? \b
+
+u = 42
+eq u, u*1 <? u+2 <? u*3
+eq u, u*1 >? u-2 >? u/3
+
+u <?= 9
+u >?= 0
+eq 9, u
+
+eq 99, u >?= 99
+eq 99, u
+
+
+### Overloaded
 a = [0 1]
 b = ''
 
-### Concat
+#### Concat
 eq '0,1,2' String a + [2]
 eq '3,4,5' String [3 4] + {0: 5, length: 1}
 eq '0,1' ''+ b += [0 1]
@@ -342,7 +365,7 @@ y = [7 to 10]
 [[] ...x, []] += y
 eq '6,8,9' ''+ x
 
-### Join
+#### Join
 eq '0==1' a * \==
 eq '0101' [... a] * 2 * ''
 eq '(01)' <[( )]> * "#{a * ''}"
@@ -350,12 +373,12 @@ eq '0@@1' (-> @@ * \@@) 0 1
 eq '0.1' b *= \.
 eq '0.1' b
 
-### Remove
+#### Remove
 eq '01'  b - \.
 eq \.    b -= /\d/g
 eq '0.1' b = .1 - //#{2}//
 
-### Split
+#### Split
 eq '0,1' String a / \,
 eq 2 (/abc/ / /[^/]+/)length
 eq "#{ x = ''+ Math.random() }"/'.'*'.' x

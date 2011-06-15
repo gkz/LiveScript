@@ -753,6 +753,7 @@ class exports.Op extends Node
     case \-  then return @compileRemove o if @second.isMatcher()
     case \/  then return @compileSplit  o if @second.isMatcher()
     case \** then return @compilePow o
+    case \<? \>? then return @compileMinMax o
     case \&& \|| then @second.void = true if @void or not o.level
     default
       return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
@@ -824,6 +825,12 @@ class exports.Op extends Node
     return code if @assigned
     code += ", #{ o.scope.free ref }"
     if o.level < LEVEL_LIST then code else "(#{code})"
+
+  compileMinMax: (o) ->
+    lefts = @first .cache o, true
+    rites = @second.cache o, true
+    test  = Op @op.charAt(0), lefts.0, rites.0
+    If test, lefts.1 .addElse Block rites.1 .compile o
 
   compileMethod: (o, klass, method, arg) ->
     args = [@second]concat arg || []
@@ -902,7 +909,7 @@ class exports.Assign extends Node
       left.=first
     left.isAssignable() or left.carp 'invalid assign'
     right.=it while right instanceof Parens and not right.keep
-    if op is \**=
+    if op of <[ <?= >?= **= ]>
     or op is \+= and right instanceof Arr
     or op is \*= and right.isString()
     or op of <[ -= /= ]> and right.isMatcher()

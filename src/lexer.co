@@ -353,10 +353,10 @@ exports import
     case \/ \% \**    then tag = \MATH
     case \++ \--      then tag = \CREMENT
     case \<<< \<<<<   then tag = \IMPORT
-    case \<< \>> \>>> then tag = \SHIFT
     case \& \| \^     then tag = \BITWISE
     case \;           then tag = \TERMINATOR
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
+    case <[  <<  >>  >>>    <?  >?  ]> then tag = \SHIFT
     case \( \?(
       @closes.push \)
       tag = \CALL( if val is \?( or @able true
@@ -372,7 +372,7 @@ exports import
       @pair val
     case \: then if @last.0 not of <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
-    case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= **= ]>
+    case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= <?= >?= **= ]>
       tag = \ASSIGN
       if @last.0 is \LOGIC
         (val = new String val)logic = @tokens.pop()1
@@ -618,6 +618,7 @@ SYMBOL = //
 | ~[.>]                       # bind access/function
 | <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
 | >>>?=?                      # rite shift
+| [<>]\?=?                    # min/max
 | !\?                         # inexistence
 | @@                          # `arguments`
 | \*\*=?                      # pow
