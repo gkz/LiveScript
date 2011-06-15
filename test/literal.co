@@ -182,14 +182,14 @@ new
 
 throws 'excess accessor parameter on line 1' -> Coco.compile 'p:~ (a, b) ->'
 
+throws 'named accessor on line 1' -> Coco.compile 'p:~ function f ->'
+
 # No implicit parameter on getter.
-eq '''
-({
+eq '''({
   get p(){
     return it;
   }
-});
-''' Coco.compile 'p:~ -> it' {+bare}
+});''' Coco.compile 'p:~ -> it' {+bare}
 
 
 # [coffee#542](https://github.com/jashkenas/coffee-script/issues/542):

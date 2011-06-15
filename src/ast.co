@@ -1209,6 +1209,7 @@ class exports.Fun extends Node
     if @statement
       name                    or @carp  'nameless function declaration'
       pscope is o.block.scope or @carp 'misplaced function declaration'
+      @accessor              and @carp 'named accessor'
       scope .add name, \function
       pscope.add name, \function unless @returns
       code += ' ' + name
