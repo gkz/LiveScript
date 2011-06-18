@@ -703,6 +703,7 @@ class exports.Op extends Node
         first.items.push Splat second
         return first
       if second instanceof Arr
+      or second instanceof While and second = Arr [Splat second]
         second.items.unshift Splat first
         return second
     @<<<{op, first, second, post}
@@ -908,15 +909,15 @@ class exports.Assign extends Node
       right = Op left.op, right, left.second
       left.=first
     left.isAssignable() or left.carp 'invalid assign'
-    right.=it while right instanceof Parens and not right.keep
     return @compileMinMax o, left, right if op of <[ <?= >?= ]>
     if op is \**=
-    or op is \+= and right instanceof Arr
+    or op is \+= and right instanceof [Arr, While]
     or op is \*= and right.isString()
     or op of <[ -= /= ]> and right.isMatcher()
       [left, reft] = Chain(left)cacheReference o
       right = Op op.slice(0 -1), reft, right
       op    = \:=
+    right.=it while right instanceof Parens and not right.keep
     right.ripName left.=unwrap()
     lvar = left instanceof Var
     sign = op.replace \: ''
