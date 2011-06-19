@@ -151,8 +151,11 @@ function watch source, base
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
 function writeJS source, js, base
-  filename = path.basename(source, path.extname source) + \.js
-  dir      = path.dirname source
+  # foo.co     => foo.js
+  # foo.jsm.co => foo.jsm
+  filename = path.basename(source)replace \
+    /(?:(\.\w+)?\.\w+)?$/ (_, $1) -> $1 or \.js
+  dir = path.dirname source
   if o.output
     dir = path.join that, dir.slice if base is \. then 0 else base.length
   jsPath = path.join dir, filename
