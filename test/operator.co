@@ -371,7 +371,7 @@ y = [7 to 10]
 [[] ...x, []] += y
 eq '6,8,9' ''+ x
 
-x += for i from 2 then i
+x += for i til 2 then i
 eq '6,8,9,0,1' ''+ x
 
 #### Join

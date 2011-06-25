@@ -139,7 +139,7 @@ exports import
         @<<<{-seenFor, +seenFrom}
         tag = \FROM
       case \to \til
-        if @seenFrom
+        if @seenFrom or @tokens[*-2]?0 is \FOR
           @<<<{-seenFrom, +seenTo}
           tag = \TO
         else if last.0 is \STRNUM and not isNaN last.1

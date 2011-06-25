@@ -323,7 +323,7 @@ eq 1, do []= (a || 0 || 1) -> a
 
 eq arguments,
   switch case 1
-    eq arguments, (arguments for i from 1)0
+    eq arguments, (arguments for i to 0)0
     arguments
 
 

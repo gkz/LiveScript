@@ -61,7 +61,7 @@ eq odds. join(' '), 'one! three!'
 # Basic range comprehensions.
 nums = (i * 3 for i from 1 to 3)
 negs = (x for x from -20 to -5*2)
-four = (4 for x from 4)
+four = (4 for x to 3)
 eq '3,6,9,-20,-19,-18,4,4,4,4', '' + nums.concat negs.slice(0, 3), four
 
 eq '123', (i for i from 1 til 4     ).join ''
@@ -87,7 +87,7 @@ odds = (num for num of [0, 1, 2, 3, 4, 5] by -2)
 eq odds + '', '5,3,1'
 
 
-# all/from/to/by aren't reserved.
+# all/from/to/by aren't reserved off-context.
 all = from = to = by = 1
 
 
@@ -232,7 +232,7 @@ r = ''
 :PLAIN
   :WHILE while r.length < 9
     break PLAIN if r.length > 1
-    :FOR for i from 2
+    :FOR for i til 2
       r += i
       continue WHILE
   ok 0

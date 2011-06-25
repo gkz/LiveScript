@@ -4,7 +4,7 @@
 args = WSH.arguments
 fso  = WSH.createObject \Scripting.FileSystemObject
 
-for i from args.length
+for i til args.length
   it = args.item i
   co = fso.openTextFile(it, 1)readAll()
   js = Coco.compile co
