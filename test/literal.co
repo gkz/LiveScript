@@ -178,6 +178,15 @@ new
   eq 2, o.foo
   o <<< a:~ -> 1
   eq 1, o.a
+  :: =
+    p:~      -> @x
+    p:~ (@x) -> 
+  class C extends {::}
+    p:~     -> super
+    p:~ (x) -> super = x
+  c = new C
+  c.p = 3
+  eq c.p, 3
 '''
 
 throws 'excess accessor parameter on line 1' -> Coco.compile 'p:~ (a, b) ->'

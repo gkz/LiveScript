@@ -204,16 +204,22 @@ class OddSuper
   super: me
   $uper: me
   1234 : me
+  .567 : me
+  '""' : me
 
 class OddSuperSub extends OddSuper
   super: -> super()
   $uper: -> super()
   1234 : -> do super
+  .567 : -> super 8
+  '""' : -> super 9
 
 oss = new OddSuperSub
 eq oss.super(), OddSuper
 eq oss.$uper(), OddSuper
 eq oss[1234](), OddSuper
+eq oss[.567](), OddSuper
+eq oss['""'](), OddSuper
 
 
 eq \declared (class declared then)displayName

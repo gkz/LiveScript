@@ -1098,7 +1098,7 @@ class exports.Import extends Node
         {key, val} = node
         if val.accessor
           key = if key instanceof Key
-          then "'#{key.name}'"
+          then val.meth = Index key; "'#{key.name}'"
           else key.compile o, LEVEL_LIST
           code += "#{ lref.compile o }.__define#{
             if val.params.length then val.void = true; \S else \G
@@ -1319,7 +1319,7 @@ class exports.Super extends Node
 
   compile: (o) ->
     {fun or @carp 'stray "super"'} = o.scope.shared or o.scope
-    if fun.clas and /^(?:\.|\[[\'\"\d])/test key = fun.meth?compile o
+    if fun.clas and /^(?:\.|\[[\'\"\d.])/test key = fun.meth?compile o
       return fun.clas + \.superclass.prototype + key
     if fun.name and (fun.ctor or fun.statement or fun.declared)
       return fun.name + \.superclass
