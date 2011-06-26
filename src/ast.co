@@ -620,6 +620,11 @@ class exports.Obj extends List
       if node instanceof Splat or (node.key or node) instanceof Parens
         rest = items.slice i
         break
+      if logic
+        # `{@a or b}` => `{a: @a or b}`
+        if node instanceof Prop
+        then node.val = logic <<< first: node.val
+        else node = Prop node, logic <<< first: node
       if multi then code += \, else multi = true
       code += idt + if node instanceof Prop
         {key, val} = node
@@ -633,9 +638,6 @@ class exports.Obj extends List
       else
         "#{ key = node.compile o }: #{key}"
       node.carp "duplicate property name \"#{key}\"" unless dic[0 + key] ^= 1
-      logic and code += """ #{
-        if logic.op is \? then "!= null ? #{key} :" else logic.op
-      } """ + logic.second.compile o, LEVEL_OP
     code = "{#{ code and code + \\n + @tab }}"
     code = "(#{code})" if @front
     if rest then Import(JS code; Obj rest)compile o <<< indent: @tab else code
@@ -741,7 +743,7 @@ class exports.Op extends Node
   unfoldSoak: (o) ->
     @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, \first
 
-  hasDefault: -> switch @op case \? \|| \&& then this
+  hasDefault: -> switch @op case \? \|| \&& \!? then this
 
   compileNode: (o) ->
     return @compileUnary o unless @second

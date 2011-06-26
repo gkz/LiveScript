@@ -156,10 +156,11 @@ new
   eq x.b, 1
   eq x.2, 2
   eq x.3, \3
-  c = null; y = {a || 1, @b && 2, c ? 3}
+  c = null; d = 0; y = {a || 1, @b && 2, c ? 3, d !? 4}
   eq y.a, 1
   eq y.b, 2
   eq y.c, 3
+  eq y.d, 4
 
 
 # [coffee#542](https://github.com/jashkenas/coffee-script/issues/542):
