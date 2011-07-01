@@ -148,15 +148,12 @@ exports import
           last <<< 0:\RANGE op:id
           return id.length
       case \by
-        if @seenTo
-          @seenTo = false
-          tag = \BY
-        else if last.0 is \RANGE and last.to
+        if last.0 is \RANGE and last.to
           last.by = true
           return 2
+        @seenTo &&= !tag = \BY
       case \ever then if last.0 is \FOR
-        @seenFor = false; last.0 = \WHILE; @token \LITERAL \true
-        return 4
+        @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
     @token tag || match.1.toUpperCase(), id
     @token \: \: if colon
     input.length
@@ -575,8 +572,7 @@ function enslash -> it.replace BACKSLASHES, \\\\
 BACKSLASHES = /\\/g
 
 # Quotes slashes unless already quoted.
-reslash = let re = /(\\.)|\//g, fn = ((_, quoted) -> quoted or \\\/)
-  -> it.replace re, fn
+reslash = let re = /(\\.)|\//g, fn = (-> @@1 or \\\/) then -> it.replace re, fn
 
 # Deletes the first character if newline.
 function lchomp -> it.slice 1 + it.lastIndexOf \\n 0
