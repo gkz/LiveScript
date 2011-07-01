@@ -343,7 +343,7 @@ class exports.Index extends Node
     case \= then @assign = symbol.slice 1
     case \! then @vivify = Obj
     case \@ then @vivify = Arr
-    @<<<{symbol}
+    import {symbol}
 
   children: [\key]
 
@@ -364,7 +364,7 @@ class exports.Index extends Node
 class exports.Chain extends Node
   (head, tails) ~>
     return head if not tails and head instanceof Chain
-    @<<<{head, tails or []}
+    import {head, tails or []}
 
   children: <[ head tails ]>
 
@@ -539,7 +539,7 @@ class exports.Call extends Node
   (args or [], @soak && \?) ~>
     if args.length is 1 and args.0.filler
       @thisplat = true; args <<< [Literal \this; Literal \arguments]
-    @<<<{args}
+    import {args}
 
   children: [\args]
 
@@ -647,7 +647,7 @@ class exports.Obj extends List
 class exports.Prop extends Node
   (@key, val) ~>
     val.=first <<< {\accessor} if val.op is \~ and val.first instanceof Fun
-    @<<<{val}
+    import {val}
 
   children: <[ key val ]>
 
@@ -708,7 +708,7 @@ class exports.Op extends Node
       or second instanceof While and second = Arr [Splat second]
         second.items.unshift Splat first
         return second
-    @<<<{op, first, second, post}
+    import {op, first, second, post}
 
   children: <[ first second ]>
 
@@ -1179,7 +1179,7 @@ class exports.Fun extends Node
 
   show: -> @bound
 
-  named: -> @<<<{name: it, +statement}
+  named: -> import {name: it, +statement}
 
   isCallable: YES
 
@@ -1189,7 +1189,7 @@ class exports.Fun extends Node
   # from crossing scope boundaries by default.
   traverseChildren: ([] xscope) -> super ... if xscope
 
-  makeReturn: -> if @statement then @<<<{+returns} else super ...
+  makeReturn: -> if @statement then import {+returns} else super ...
 
   ripName: ->
     # `name = ->`
@@ -1421,7 +1421,7 @@ class exports.Throw extends Jump
 
 #### Return
 class exports.Return extends Throw
-  ~> @<<<{it} if it and it.value is not \void
+  ~> import {it} if it and it.value is not \void
 
   jumps: THIS
 
@@ -1437,7 +1437,7 @@ class exports.While extends Node
   (test, @un, mode) ->
     mode and if mode instanceof Node then @update = mode else @post = true
     # `while true` `until false` => `for (;;)`
-    @<<<{test} if @post or test.value is not ''+!un
+    import {test} if @post or test.value is not ''+!un
 
   children: <[ test body update ]>
 
@@ -1502,7 +1502,7 @@ class exports.While extends Node
 #### For
 # Coco's replacements for the `for` loop are array, object or range iterators.
 class exports.For extends While
-  -> this import all it
+  -> import all it
 
   children: <[ name source from to step body ]>
 

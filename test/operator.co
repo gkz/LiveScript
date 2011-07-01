@@ -282,6 +282,10 @@ eq '''
 
 ok ok.isPrototypeOf new []= (->) <<< prototype: ok
 
+new
+  import life: 2, universe: 3, everything: 7
+  eq @life * @universe * @everything, 42
+
 
 ### {in,de}crement
 a = [0]
