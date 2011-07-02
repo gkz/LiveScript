@@ -36,9 +36,8 @@ function removeTerminators tokens
   i = 1
   while tokens[++i]
     continue unless tokens[i-1]0 is \TERMINATOR
-    that.=0
-    tokens.splice i-1 1 if that of EXPR_END or
-                           that of <[ ELSE CASE DEFAULT CATCH FINALLY ]>
+    if that.0 of [\ELSE \CASE \DEFAULT \CATCH \FINALLY ...CLOSER]
+      tokens.splice i-1 1
   void
 
 # - `CALL( )` => ` CALL( )CALL`
@@ -123,11 +122,10 @@ function addImplicitBraces tokens
   while token = tokens[++i]
     unless \: is tag = token.0
       switch
-      case tag of EXPR_START
+      case tag of CLOSER then start = stack.pop()
+      case tag of OPENER
         tag = \{ if tag is \INDENT and tokens[i-1]?0 is \{
         stack.push [tag, i]
-      case tag of EXPR_END
-        start = stack.pop()
       continue
     paren   = tokens[i-1]?0 is \)
     oneline = paren and tokens[start.1 - 1]?0 is \: or # a: (..):
@@ -261,8 +259,8 @@ function detectEnd tokens, i, ok, go
     if      not levels then return go token, i if ok token, i
     else if 0 > levels then return go token, i-1
     [tag] = token
-    if      tag of EXPR_START then ++levels
-    else if tag of EXPR_END   then --levels
+    if      tag of OPENER then ++levels
+    else if tag of CLOSER then --levels
     ++i
   void
 
@@ -298,12 +296,12 @@ BALANCED_PAIRS =
 INVERSES = {}
 
 # Tokens that signal the start/end of a balanced pair.
-EXPR_START = []
-EXPR_END   = []
+OPENER = []
+CLOSER = []
 
 for [left, rite] of BALANCED_PAIRS
-  EXPR_START.push INVERSES[rite] = left
-  EXPR_END  .push INVERSES[left] = rite
+  OPENER.push INVERSES[rite] = left
+  CLOSER.push INVERSES[left] = rite
 
 # Tokens that can start a dot/call chain.
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH ]>
