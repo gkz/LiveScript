@@ -151,8 +151,8 @@ function watch source, base
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
 function writeJS source, js, base
-  # foo.co     => foo.js
-  # foo.jsm.co => foo.jsm
+  #     foo.co     => foo.js
+  #     foo.jsm.co => foo.jsm
   filename = path.basename(source)replace \
     /(?:(\.\w+)?\.\w+)?$/ (_, $1) -> $1 or \.js
   dir = path.dirname source
@@ -175,11 +175,14 @@ function printTokens tokens
     lines@[lno]push if tag.toLowerCase() is val then tag else "#{tag}:#{val}"
   say(if l then l.join(' ')replace /\n/g \\\n else '') for l of lines
 
-# A simple Read-Eval-Print-Loop. Compiles one line
-# (or a block of lines if continued using _^J_) at a time to JavaScript,
-# and evaluates (or prints if _--compile_) it.
+# A Read-Eval-Print-Loop.
 # Good for simple tests or poking around the
 # [**node.js** API](http://nodejs.org/api/).
+#
+# - __^M__: Compile input, and prints (if _--compile_) or evaluates it.
+# - __^J__: Insert linefeed.
+# - __^C__: Cancel input if any. Quit otherwise.
+# - __??__: <https://github.com/joyent/node/blob/master/lib/readline.js>
 function repl
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
   module.paths = module.._nodeModulePaths \
@@ -192,9 +195,12 @@ function repl
   stdin = process.openStdin()
   repl  = require(\readline)createInterface stdin, process.stdout,
     require(\repl)REPLServer::{context, commands: []}~complete
+  reset = -> repl.line = code := ''; repl.prompt()
   prompt = \coco
   prompt += " -c#{ if o.bare then \b else '' }" if o.compile
   repl._ttyWrite = (char) -> cont := char is \\n; @[]_ttyWrite ...
+  repl.on \attemptClose ->
+    if repl.line or code then say ''; reset() else repl.close()
   repl.on \close stdin~destroy
   repl.on \line ->
     if cont
@@ -209,8 +215,7 @@ function repl
         _ = Script.runInContext Coco.compile(code, {+bare, +repl}), context
         _ is void or pp context._ = _
     catch then say e
-    code := ''
-    repl.prompt()
+    reset()
   process.on \uncaughtException -> say "\n#{ it?stack or it }"
   repl.setPrompt prompt + '> '
   repl.prompt()
