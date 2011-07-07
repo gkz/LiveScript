@@ -188,17 +188,17 @@ function repl
   code  = ''
   cont  = false
   stdin = process.openStdin()
-  repl  = require(\readline)createInterface stdin, process.stdout,
-    require(\repl)REPLServer::{ctx, commands: []}~complete
+  repl  = require(\readline)createInterface stdin, process.stdout
   reset = -> repl.line = code := ''; repl.prompt()
   prompt = \coco
   prompt += " -c#{ if o.bare then \b else '' }" if o.compile
   unless o.compile
     module.paths = module.._nodeModulePaths \
       module.filename = process.cwd() + \/repl
-    vm  = require \vm
-    ctx = vm.createContext()
-    ctx <<< {...global, module, require, global: ctx}
+    vm      = require \vm
+    context = vm.createContext()
+    context <<< {...global, module, require, global: context}
+    repl.completer = require(\repl)REPLServer::{context, commands: []}~complete
   repl._ttyWrite = (char) -> cont := char is \\n; @[]_ttyWrite ...
   repl.on \attemptClose ->
     if repl.line or code then say ''; reset() else repl.close()
@@ -213,8 +213,8 @@ function repl
       if o.compile
         say Coco.compile code, {o.bare}
       else
-        _  = vm.runInNewContext Coco.compile(code, {+bare, +repl}), ctx, \repl
-        _ is void or pp ctx._ = _
+        _  = vm.runInContext Coco.compile(code, {+bare, +repl}), context, \repl
+        _ is void or pp context._ = _
     catch then say e
     reset()
   process.on \uncaughtException -> say "\n#{ it?stack or it }"
