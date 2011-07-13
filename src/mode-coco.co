@@ -17,7 +17,7 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
     : [({[=:]
     | [-~]>
     | \b (?: else | d(?:o|efault) | t(?:ry|hen) | finally | let | new
-           | (?:catch|function) (?: \s* #{identifier} )? )
+           | (?:catch|function) (?: \s* #identifier )? )
   ) \s* $ //
 
   getNextLineIndent: (state, line, tab) ->

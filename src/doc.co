@@ -9,9 +9,9 @@
 doc = document.getElementById \doc or lmn \div id: \doc
 nav = document.getElementById \nav or do ->
   h  = '<div class=pointee>&#x2935;</div>'
-  h += "<h1>#{title}</h1>" if title
+  h += "<h1>#title</h1>" if title
   for co of sources
-    h += if co then "<li><a href=##{co}>#{co}</a>" else '<p class=spacer>'
+    h += if co then "<li><a href=##co>#co</a>" else '<p class=spacer>'
   h += '<li class=index><a href=#>#</a>'
   lmn \ul id: \nav, innerHTML: h
 
@@ -63,7 +63,7 @@ function build name, source
       code += line + \\n
     br = false
   htm += block name, comment, code, i if comment or code
-  "<h1>#{name}</h1>#{htm}<br clear=both>"
+  "<h1>#name</h1>#htm<br clear=both>"
 
 function block name, comment, code, i
   code &&= """
@@ -71,8 +71,8 @@ function block name, comment, code, i
     >#{ code.replace(/&/g '&amp;')replace(/</g '&lt;') }</pre>
   """
   """
-   <div id=#{i} class=block><div class=comment
-    ><a class=anchor href=##{name}#{i}>##{i}</a
+   <div id=#i class=block><div class=comment
+    ><a class=anchor href=##name#i>##i</a
     >#{ sdcv.makeHtml comment }</div
-    >#{code}</div>
+    >#code</div>
   """

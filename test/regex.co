@@ -30,6 +30,14 @@ eq 0 (/_/ <<< {0})0
 throws 'duplicate regex flag `g` on line 1' -> Coco.lex '/^/gg'
 
 
+# ACI interaction
+eq \/1/ '0'.replace //#{0}// ''+/1/ \g
+
+
+# ADI interaction
+eq true, /a/itest \A
+
+
 ### Heregex
 eq /^I'm\s+Heregex?\/\//gim + '', //
   ^ I'm \s+ Heregex? / / # or not
@@ -55,13 +63,8 @@ eq \01234 // 0 #{
   // 1 #{ //2//source } 3 //source
 } 4 //source
 
-
-# ACI interaction
-eq \/1/ '0'.replace //#{0}// ''+/1/ \g
-
-
-# ADI interaction
-eq true, /a/itest \A
+with \THIS
+  ok //^ \\##this $//test //\#THIS//source
 
 
 # [coffee#584](https://github.com/jashkenas/coffee-script/issues/584)
@@ -82,4 +85,3 @@ eq \string typeof //^#{''}$//$
 eq      /\\\//$      /\\\//source
 eq    //\\\///$    //\\\///source
 eq //#{\\}\///$ //#{\\}\///source
-

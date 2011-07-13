@@ -77,7 +77,7 @@ function fshoot name, arg, callback
 function compileScripts
   $args.forEach (source) ->
     <- path.exists source
-    it or die "No such file or directory: #{source}"
+    it or die "No such file or directory: #source"
     walk source, path.normalize(source), true
   function walk source, base, top
     stats <- fshoot \stat source
@@ -124,7 +124,7 @@ function compileScript file, input, base
     if Coco.listeners(\failure)length
       Coco.emit \failure e, t
     else
-      warn "Failed at: #{file}" if file
+      warn "Failed at: #file" if file
       unless e instanceof SyntaxError or /^Parse error /test e.message
         e = e.stack or e
       (if o.watch then warn else die) e
@@ -162,17 +162,17 @@ function writeJS source, js, base
   function compile
     e <- fs.writeFile jsPath, js || \\n
     return warn e if e
-    util.log "#{source} => #{jsPath}" if o.watch
+    util.log "#source => #jsPath" if o.watch
   <- path.exists dir
   if it
   then do compile
-  else require(\child_process)exec "mkdir -p #{dir}" compile
+  else require(\child_process)exec "mkdir -p #dir" compile
 
 # Pretty-print a stream of tokens.
 function printTokens tokens
   lines = []
   for [tag, val, lno] of tokens
-    lines@[lno]push if tag.toLowerCase() is val then tag else "#{tag}:#{val}"
+    lines@[lno]push if tag.toLowerCase() is val then tag else "#tag:#val"
   say(if l then l.join(' ')replace /\n/g \\\n else '') for l of lines
 
 # A Read-Eval-Print-Loop.
@@ -235,7 +235,7 @@ function help -> say """
   Usage: coco [options] [files] [arguments]
 
   Options:
-  #{o}
+  #o
 """
 
 function version -> say "Coco #{Coco.VERSION}"

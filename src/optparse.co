@@ -65,5 +65,5 @@ function help
   @$flags.map (flag, i) ->
     sf = if flag.short then that + \, else '   '
     lf = (longs[i] + pad)slice 0 width
-    "  #{sf} #{lf}  #{flag.desc}"
+    "  #sf #lf  #{flag.desc}"
   .join \\n

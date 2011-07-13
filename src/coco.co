@@ -19,7 +19,7 @@ exports import
   # Compiles a string of Coco code to JavaScript.
   compile: (code, options) ->
     try parser.parse(lex code)compileRoot options catch
-      e.message += "\nat #{that}" if options?filename
+      e.message += "\nat #that" if options?filename
       throw e
 
   # Parses a string or tokens of Coco code,

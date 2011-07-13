@@ -279,7 +279,7 @@ function indexOfPair tokens, i
     case end   then return i unless --level
   -1
 
-function carp(msg, lno) -> throw SyntaxError "#{msg} on line #{-~lno}"
+function carp(msg, lno) -> throw SyntaxError "#msg on line #{-~lno}"
 
 ### Constants
 

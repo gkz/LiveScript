@@ -30,16 +30,16 @@ option \prefix 'set the installation prefix for `install`' \DIR
 
 task \install 'install Coco into /usr/local (or --prefix)' (options) ->
   base = options.prefix or \/usr/local
-  lib  = "#{base}/lib/coco"
-  bin  = "#{base}/bin"
+  lib  = "#base/lib/coco"
+  bin  = "#base/bin"
   nlib = \~/.node_libraries
   e, stdout, stderr <- exec """
-    echo Installing Coco to #{lib}
-    mkdir -p #{lib} #{bin} #{nlib}
-    cp -rf lib LICENSE README.md package.json #{lib}
-    ln -sfv  #{lib}/lib/command.js #{bin}/coco
-    ln -sfv  #{lib}/lib/coke.js    #{bin}/coke
-    ln -sfnv #{lib}/lib #{nlib}/coco
+    echo Installing Coco to #lib
+    mkdir -p #lib #bin #nlib
+    cp -rf lib LICENSE README.md package.json #lib
+    ln -sfv  #lib/lib/command.js #bin/coco
+    ln -sfv  #lib/lib/coke.js    #bin/coke
+    ln -sfnv #lib/lib #nlib/coco
     """replace /\n/g \&&
   say stdout.trim() if stdout
   say if e then stderr.trim() else tint \done
@@ -72,8 +72,8 @@ task \build:parser 'build lib/parser.js from lib/grammar.js' ->
 task \build:doc 'build doc/' ->
   <- docs.forEach
   name = it.slice 0 -3; js = require(\./lib/coco)compile slurp \src/ + it
-  slobber "doc/#{name}.raw.js"    js
-  slobber "doc/#{name}.js" minify js
+  slobber "doc/#name.raw.js"    js
+  slobber "doc/#name.js" minify js
 
 task \build:browser 'build extras/' ->
   Coco = require \./lib/coco
@@ -82,8 +82,8 @@ task \build:browser 'build extras/' ->
   slobber \extras/mode-coco.js minify js
   co = ''
   for name of <[ rewriter lexer ast coco ]>
-    code = slurp("src/#{name}.co")replace /\n/g '\n '
-    co += "let exports = require'./#{name}' = {}\n#{code}\n"
+    code = slurp("src/#name.co")replace /\n/g '\n '
+    co += "let exports = require'./#name' = {}\n#code\n"
   slobber \extras/coco.raw.js js = """
     this.Coco = function(){
     function require(path){ return require[path] }
@@ -107,12 +107,12 @@ task \build:browser 'build extras/' ->
 
 
 coreSources = ->
-  "src/#{src}.co" for src of <[ coco grammar lexer ast rewriter ]>
+  "src/#src.co" for src of <[ coco grammar lexer ast rewriter ]>
 
 task \bench 'quick benchmark of compilation time' ->
   Coco   = require \./lib/coco
   co     = coreSources()map(-> slurp it)join \\n
-  fmt    = -> "#{bold}#{ "   #{it}"slice -4 }#{reset} ms"
+  fmt    = -> "#bold#{ "   #it"slice -4 }#reset ms"
   total  = nc = 0
   now    = Date.now()
   time   = -> total += ms = -(now - now := Date.now()); fmt ms
@@ -155,12 +155,12 @@ function runTests global.Coco
     eq: strictEqual
     throws: (msg, fun) ->
       try do fun catch return eq e?message, msg
-      ok false "should throw: #{msg}"
+      ok false "should throw: #msg"
   process.on \exit ->
     time = ((Date.now() - startTime) / 1e3)toFixed 2
-    message = "passed #{passedTests} tests in #{time} seconds"
+    message = "passed #passedTests tests in #time seconds"
     say if failedTests
-    then tint "failed #{failedTests} and #{message}" red
+    then tint "failed #failedTests and #message" red
     else tint message
   dir(\test)forEach (file) ->
     return unless /\.co$/i.test file
@@ -172,9 +172,9 @@ function runTests global.Coco
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
         m[i] = tint m[i]replace(/\\n/g \\n), bold for i of [2 4]
         msg  = m.slice(1)join \\n
-      [[] row, col] = //#{filename}:(\d+):(\d+)\)?$//m.exec stk or ''
+      [[] row, col] = //#filename:(\d+):(\d+)\)?$//m.exec stk or ''
       if row and col
-        say tint "#{msg}\n#{red}at #{filename}:#{row--}:#{col--}" red
+        say tint "#msg\n#{red}at #filename:#{row--}:#{col--}" red
         code = Coco.compile code
       else if /\bon line (\d+)\b/exec msg
         say tint msg, red

@@ -12,7 +12,7 @@ tint \co [
   [\str        // ^ '(?: ''[\S\s]*?'' | [^\\']*(?:\\[\S\s][^\\']*)* )'  // \']
   [\lang-co-qq //(^ "(?: ""[\S\s]*?"" | [^\\"]*(?:\\[\S\s][^\\"]*)* )" )// \"]
   [\lang-co-qr //(^ / / [\S\s]*? / / [gimy$?]{0,4} )// \/]
-  [\lang-co-at //(^ @@? #{ident}? )// \@]
+  [\lang-co-at //(^ @@? #ident? )// \@]
   [\com /^#.*/ \#]
   [\typ // ^ (?
   : 0x[\da-f][\da-f_]*
@@ -26,8 +26,8 @@ tint \co [
   [\pln // ^ (?
   : \.{3}
   | (?: \.\s*(?:(?:[-+*/%&|^:]|>>>?|<<)?=|[~!@])?\s* | [)}\]?] | :: )
-    (?: #{ident}[?~!@]? )+
-  | #{ident} [^\n\S]* :(?![:=])
+    (?: #ident[?~!@]? )+
+  | #ident [^\n\S]* :(?![:=])
   ) //]
   # ref. [retrie](https://github.com/satyr/retrie)
   [\kwd // ^ (?
@@ -41,19 +41,19 @@ tint \co [
   | un(?:less|til)
   | w(?:hile|ith)
   | o[fr] | return | break | switch | and | let
-  ) #{kwend} //]
-  [\typ // ^ (?: true | false | null | void ) #{kwend} //]
+  ) #kwend //]
+  [\typ // ^ (?: true | false | null | void ) #kwend //]
   [\ctx // ^ (?
   : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
   | it | arguments | eval | by | super | prototype
-  ) #{kwend} //]
+  ) #kwend //]
   [\glb // ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number
   | Object | RegExp | S(?:tring|yntaxError) | TypeError
   | is(?:NaN|Finite) | parse(?:Int|Float) | (?:en|de)codeURI(?:Component)?
-  ) #{kwend} //]
-  [\var // ^ #{ident} //]
+  ) #kwend //]
+  [\var // ^ #ident //]
   [\str /^<\[[\S\s]*?]>/]
   [\lang-co-r // ^ [^/] (
     / (?![\s/])

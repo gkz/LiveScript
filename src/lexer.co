@@ -72,7 +72,7 @@ exports import
     @tokens.shift()
     # Close up all remaining open blocks.
     @dedent @dent
-    @carp "missing `#{that}`" if @closes.pop()
+    @carp "missing `#that`" if @closes.pop()
     if @inter
     then @rest? or @carp 'unterminated interpolation'
     else @last.spaced = true; @newline()
@@ -89,8 +89,7 @@ exports import
     # `id:_` `_.id` `@id`
     if colon or last.0 is \DOT or @adi()
       tag = \ID
-      if id of [...JS_KEYWORDS, ...RESERVED]
-        (id = new String id)reserved = true
+      (id = new String id)reserved = true if id of KEYWORDS
     # keywords
     else switch id
     case <[ this eval ]> then return @token(\LITERAL id, true)length
@@ -126,8 +125,8 @@ exports import
       id = \<<<
       able @tokens or @token \LITERAL \this
     default
-      break if id of JS_KEYWORDS
-      @carp "reserved word \"#{id}\"" if id of RESERVED
+      break if id of KEYWORDS_SHARED
+      @carp "reserved word \"#id\"" if id of KEYWORDS_UNUSED
       if not last.1 and last.0 of <[ CATCH FUNCTION LABEL ]>
         return (last.1 = id)length
       tag = \ID
@@ -168,11 +167,11 @@ exports import
       @token \STRNUM num.slice(1), true
       return input.length
     case \0 then if num.charAt(1) not of ['' \. \x \X]
-      @carp "deprecated octal literal #{num}"
+      @carp "deprecated octal literal #num"
     if radix = match.1
       num = parseInt rnum = match.2.replace(NUMBER_OMIT, ''), radix
       if isNaN num or num is parseInt rnum.slice(0 -1), radix
-        @carp "invalid number #{rnum} in base #{radix}"
+        @carp "invalid number #rnum in base #radix"
     unless last.spaced
       if sign = last.0 is \+-
         num = last.1 + num
@@ -279,7 +278,7 @@ exports import
       tokens.pop()
       if dynaflag or flag >= \g
         @token \, \,
-        if dynaflag then tokens.push ...dynaflag else @token \STRNUM "'#{flag}'"
+        if dynaflag then tokens.push ...dynaflag else @token \STRNUM "'#flag'"
       @token \) ''
     else @regex reslash(parts.0.1.replace HEREGEX_OMIT, ''), flag
     2 + parts.size + flag.length
@@ -426,7 +425,7 @@ exports import
     @dent -= debt
     while debt > 0 and dent = @dents.pop()
       if debt < dent and not @inter
-        @carp "unmatched dedent (#{debt} for #{dent})"
+        @carp "unmatched dedent (#debt for #dent)"
       debt -= if typeof dent is \number then @token \DEDENT dent else dent
       @pair \DEDENT
     void
@@ -445,25 +444,37 @@ exports import
     parts = []; end0 = end.charAt 0; pos = 0; i = -1
     str.=slice idx + end.length
     while ch = str.charAt ++i
-      if ch is \\ then ++i; continue
-      if ch is end0
+      switch ch
+      case end0
         continue unless end is str.slice i, i + end.length
         parts.push [\S; @countLines str.slice 0 i; @line]
         return parts <<< size: pos + i + end.length
-      continue unless ch is \# and \{ is str.charAt i+1
-      # `"#{0}#{1}"` => `0 + "" + 1`
-      if i or nested and s!?
-        s = parts.push [\S; @countLines str.slice 0 i; @line]
-      clone  = exports{+inter, @emender}
-      nested = clone.tokenize str.slice(i+2), {@line, +raw}
-      nested.shift() while nested.0?0 is \TERMINATOR
-      @countLines str.slice i, delta = str.length - clone.rest.length
-      pos += delta; str = clone.rest; i = -1
-      if nested.length
-        nested.unshift [\( \( nested.0.2]
-        nested.push    [\) \) @line]
-        parts.push [\TOKENS nested]
-    @carp "missing `#{end}`"; void
+      case \#
+        if id = (ID <<< lastIndex: i+1)exec(str)1
+          break if id is \this or id not of KEYWORDS
+          i += id.length
+          continue
+        continue unless \{ is str.charAt i+1
+      case \\ then ++i; fallthrough
+      default continue
+      # `"#a#{b || c}"` => `a + "" + (b || c)`
+      if i or nested and not stringified
+        stringified = parts.push [\S; @countLines str.slice 0 i; @line]
+      if id
+        str.=slice delta = i + 1 + id.length
+        parts.push [\TOKENS nested = [[\ID id, @line]]]
+      else
+        clone  = exports{+inter, @emender}
+        nested = clone.tokenize str.slice(i+2), {@line, +raw}
+        nested.shift() while nested.0?0 is \TERMINATOR
+        @countLines str.slice i, delta = str.length - clone.rest.length
+        str = clone.rest
+        if nested.length
+          nested.unshift [\( \( nested.0.2]
+          nested.push    [\) \) @line]
+          parts.push [\TOKENS nested]
+      pos += delta; i = -1
+    @carp "missing `#end`"; void
 
   # Merges `@interpolate`d strings.
   addInterpolated: (parts, nlines) ->
@@ -531,12 +542,12 @@ exports import
       #     [ a
       #       b ]
       #
-      @carp "unmatched `#{it}`" unless \DEDENT is wanted and it is @closes[*-2]
+      @carp "unmatched `#it`" unless \DEDENT is wanted and it is @closes[*-2]
       @dedent @dents[*-1]
     @closes.pop()
 
   # Throws a syntax error with the current line number.
-  carp: -> throw SyntaxError "#{it} on line #{ @line + 1 }"
+  carp: -> throw SyntaxError "#it on line #{ @line + 1 }"
 
 exports.lex import {rewrite}
 
@@ -558,7 +569,7 @@ TABS = /\n[^\n\S]*(?!$)/mg
 
 # Erases all external indentations up to specified length.
 function detab str, len
-  if len then str.replace detab[len]||=//\n[^\n\S]{1,#{len}}//g \\n else str
+  if len then str.replace detab[len]||=//\n[^\n\S]{1,#len}//g \\n else str
 
 # Erases all newlines and indentations.
 function unlines -> it.replace INDENTS, ''
@@ -582,20 +593,22 @@ function lchomp -> it.slice 1 + it.lastIndexOf \\n 0
 ##### Keywords
 
 # Keywords that Coco shares in common with JavaScript.
-JS_KEYWORDS = <[
+KEYWORDS_SHARED = <[
   true false null this void super return throw break continue
   if else for while switch case default try catch finally class extends
   new do delete typeof in instanceof import function let with debugger
 ]>
 
+# The list of keywords that are reserved by JavaScript, but not used.
+# We throw a syntax error for these to avoid runtime errors.
+KEYWORDS_UNUSED = <[ var  const enum export   implements interface
+                     package private protected public static yield ]>
+
+KEYWORDS = KEYWORDS_SHARED.concat KEYWORDS_UNUSED
+
 # Coco-only alias keywords.
 COCO_ALIASES  = not: <[ UNARY !  ]>, is: <[ COMPARE === ]>
               , and: <[ LOGIC && ]>, or: <[ LOGIC   ||  ]>
-
-# The list of keywords that are reserved by JavaScript, but not used.
-# We throw a syntax error for these to avoid runtime errors.
-RESERVED = <[ var  const enum export   implements interface
-              package private protected public static yield ]>
 
 ##### Regexes
 # Some of these are given `g` flag and made sure to match empty string

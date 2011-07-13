@@ -12,7 +12,7 @@ Coco.load = (url, callback or ->) ->
     if xhr.readyState is 4
       if xhr.status of [200 0]
       then Coco.stab xhr.responseText, callback
-      else callback Error "#{url}: #{xhr.status} #{xhr.statusText}"
+      else callback Error "#url: #{xhr.status} #{xhr.statusText}"
     void
   xhr.send null
   xhr
