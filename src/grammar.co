@@ -263,18 +263,18 @@ bnf =
     # The source of a `for`-loop is an array, object, or range.
     # Unless it's iterating over an object, you can choose to step through
     # in fixed-size increments.
-    o 'FOR Assignable FOROF Expression'
+    o 'FOR Assignable OF Expression'
     , -> new For name: $2, index: $3, source: $4
-    o 'FOR Assignable FOROF Expression BY Expression'
+    o 'FOR Assignable OF Expression BY Expression'
     , -> new For name: $2, index: $3, source: $4, step: $6
 
-    o 'FOR     ID              FORIN Expression'
+    o 'FOR     ID              IN Expression'
     , -> new For {+object, -own, index: $2,           source: $4}
-    o 'FOR     ID , Assignable FORIN Expression'
+    o 'FOR     ID , Assignable IN Expression'
     , -> new For {+object, -own, index: $2, name: $4, source: $6}
-    o 'FOR OWN ID              FORIN Expression'
+    o 'FOR OWN ID              IN Expression'
     , -> new For {+object, +own, index: $3,           source: $5}
-    o 'FOR OWN ID , Assignable FORIN Expression'
+    o 'FOR OWN ID , Assignable IN Expression'
     , -> new For {+object, +own, index: $3, name: $5, source: $7}
 
     o 'FOR ID FROM Expression TO Expression'
