@@ -33,15 +33,12 @@ o = require(\./optparse) do
   version     : 'display version'
   help        : 'display this'
 
-if o.$unknowns.length
-  say "Unrecognized option(s): #{ o.$unknowns * ' ' }\n"
-  help()
-  process.exit 1
+die "Unrecognized option(s): #that\n\n#{help()}" if o.$unknowns * ' '
 
 switch
-case o.nodejs  then do forkNode
-case o.version then do version
-case o.help    then do help
+case o.nodejs  then forkNode()
+case o.version then say version()
+case o.help    then say help()
 default
   o.compile ||= o.output
   o.run = not (o.compile or o.print)
@@ -63,7 +60,7 @@ default
   case o.stdin       then argv.1 = \stdin ; compileStdin()
   case o.eval        then argv.1 = \eval  ; compileScript '' $args * \\n
   case $args.length  then compileScripts()
-  default version(); help(); repl()
+  default say version() + \\n + help() + \\n; repl()
 
 # Calls a `fs` method, exiting on error.
 function fshoot name, arg, callback
@@ -137,6 +134,7 @@ function compileStdin
     code = ''
     @on \data -> code += it
     @on \end  -> compileScript null code
+  void
 
 # Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
@@ -153,8 +151,7 @@ function watch source, base
 function writeJS source, js, base
   #     foo.co     => foo.js
   #     foo.jsm.co => foo.jsm
-  filename = path.basename(source)replace \
-    /(?:(\.\w+)?\.\w+)?$/ (_, $1) -> $1 or \.js
+  filename = path.basename(source)replace /(?:(\.\w+)?\.\w+)?$/ -> @@1 or \.js
   dir = path.dirname source
   if o.output
     dir = path.join that, dir.slice if base is \. then 0 else base.length
@@ -174,6 +171,7 @@ function printTokens tokens
   for [tag, val, lno] of tokens
     lines@[lno]push if tag.toLowerCase() is val then tag else "#tag:#val"
   say(if l then l.join(' ')replace /\n/g \\\n else '') for l of lines
+  void
 
 # A Read-Eval-Print-Loop.
 # Good for simple tests or poking around the
@@ -231,11 +229,11 @@ function forkNode
     o.nodejs.join(' ')trim()split(/\s+/)concat args
     cwd: process.cwd(), env: process.env, customFds: [0 to 2]
 
-function help -> say """
+function help -> """
   Usage: coco [options] [files] [arguments]
 
   Options:
   #o
 """
 
-function version -> say "Coco #{Coco.VERSION}"
+function version -> "Coco #{Coco.VERSION}"
