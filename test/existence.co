@@ -169,10 +169,12 @@ ok x?.y{} instanceof Date
 
 # [coffee#1424](https://github.com/jashkenas/coffee-script/issues/1424)
 A = -> ok
-eq new A?, ok
+eq ok, new A?
+eq ok, do  A?
 
 A = null
-eq new A?, void
+eq void new A?
+eq void do  A?
 
 
 # [coffee#1513](https://github.com/jashkenas/coffee-script/issues/1513)
