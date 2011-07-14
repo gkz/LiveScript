@@ -140,7 +140,8 @@ exports import
         import {-seenFor, +seenFrom}
         tag = \FROM
       case \to \til
-        if @seenFrom or @tokens[*-2]?0 is \FOR
+        if @seenFrom
+        or @tokens[*-2]?0 is \FOR and (@token \FROM ''; @token \STRNUM \0)
           import {-seenFrom, +seenTo}
           tag = \TO
         else if last.0 is \STRNUM and not isNaN last.1
