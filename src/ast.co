@@ -1162,7 +1162,7 @@ class exports.Existence extends Node
   ::<<<< Negatable
 
   compileNode: (o) ->
-    node = @it.unwrap()
+    node = @it.unwrap() <<< {@front}
     code = node.compile o, LEVEL_OP + PREC\==
     if node instanceof Var and not o.scope.check code, true
       [op, eq] = if @negated then <[ || = ]> else <[ && ! ]>

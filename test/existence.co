@@ -173,3 +173,7 @@ eq new A?, ok
 
 A = null
 eq new A?, void
+
+
+# [coffee#1513](https://github.com/jashkenas/coffee-script/issues/1513)
+{}frontness?
