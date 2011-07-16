@@ -902,7 +902,13 @@ class exports.Assign extends Node
     case \= \:= \+= \*= then do @right.isString
     case \-=            then do @right.isMatcher
 
-  unfoldSoak: (o) -> If.unfoldSoak o, this, \left
+  unfoldSoak: (o) ->
+    if @left instanceof Existence
+      # `[a, b]? = c` => `[a, b] = c if c?`
+      @left.=it
+      [rite, @right, temps] = @right.cache o
+      return If(Existence rite; this) <<< {temps}
+    If.unfoldSoak o, this, \left
 
   unfoldAssign: -> @access and this
 

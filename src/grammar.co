@@ -158,7 +158,6 @@ bnf =
     o 'UNARY Expression'  -> []= if $1 is \! then $2.invert() else Op $1, $2
     o '+-    Expression' (-> Op $1, $2), prec: \UNARY
 
-    o 'Chain  ?' -> Existence $1.unwrap()
     o 'Chain !?' -> Existence $1.unwrap(), true
 
     # Functions can be either anonymous, or named using `function` keyword.
@@ -250,6 +249,8 @@ bnf =
 
     o '[ ArgList    OptComma ]' -> L Arr $2
     o '{ Properties OptComma }' -> L Obj $2
+
+    o 'Chain ?' -> Existence $1.unwrap()
 
     o 'Chain CLONE { Properties OptComma }' -> Clone $1.unwrap(), $4
 

@@ -131,11 +131,11 @@ eq new Number?(42) | 0, 42
 eq new Bumper?(42) | 0, 0
 
 
-#726
+# [coffee#726](https://github.com/jashkenas/coffee-script/issues/726)
 eq calendar?.(Date()), void
 
 
-#733
+# [coffee#733](https://github.com/jashkenas/coffee-script/issues/733)
 a = b: {c: null}
 eq a.b?.c?(), void
 
@@ -144,7 +144,7 @@ eq a.b?.c?(1), 1
 eq a.b?.c?(...[2, 3]), 2
 
 
-#756
+# [coffee#756](https://github.com/jashkenas/coffee-script/issues/756)
 a = null
 ok isNaN a?.b.c +  1
 eq void, a?.b.c += 1
@@ -179,3 +179,16 @@ eq void do  A?
 
 # [coffee#1513](https://github.com/jashkenas/coffee-script/issues/1513)
 {}frontness?
+
+
+### Soak Assign
+a = [0 null]
+
+b? = a.0
+b? = a.1
+eq b, 0
+
+let [x, y?]? = a, {z}? = a.1
+  eq x, 0
+  eq y, void
+  eq z, void
