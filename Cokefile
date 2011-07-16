@@ -172,7 +172,7 @@ function runTests global.Coco
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
         m[i] = tint m[i]replace(/\\n/g \\n), bold for i of [2 4]
         msg  = m.slice(1)join \\n
-      [[] row, col] = //#filename:(\d+):(\d+)\)?$//m.exec stk or ''
+      [[] row, col]? = //#filename:(\d+):(\d+)\)?$//m.exec stk
       if row and col
         say tint "#msg\n#{red}at #filename:#{row--}:#{col--}" red
         code = Coco.compile code
@@ -182,6 +182,5 @@ function runTests global.Coco
         col = 0
       else return say stk
       {(row): line} = lines = code.split \\n
-      say lines.slice(row-8 row+0)join \\n
-      say line. slice(0 col) + tint line.slice(col), bold
-      say lines.slice(row+1 row+9)join \\n
+      lines[row] = line.slice(0 col) + tint line.slice(col), bold
+      say lines.slice(row-8 >? 0, row+9)join \\n

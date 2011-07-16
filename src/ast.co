@@ -466,7 +466,7 @@ class exports.Chain extends Node
         else
           [test, @head] = bust.unwrap()cache o, true
         Existence test
-      return If(test, this) <<< {+soak}
+      return If(test, this) <<< {+soak, @void}
     void
 
   unfoldAssign: (o) ->
@@ -1712,6 +1712,9 @@ class exports.If extends Node
     else @compileBlock o, @else
 
   compileExpression: (o) ->
+    if @void
+      @then.void = true
+      return Parens(Op \&& @if, @then)compile o unless @else?void = true
     code = @if.compile o, LEVEL_COND
     pad  = if @else?isComplex() then \\n + o.indent += TAB else ' '
     code += "#pad? #{ @then.compile o, LEVEL_LIST              }
