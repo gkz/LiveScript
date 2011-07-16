@@ -564,7 +564,7 @@ then (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
 # Detects the minimum indent count for a heredoc, ignoring empty lines.
 function heretabs doc
   dent = 0/0
-  dent = len unless dent <= len = that.0.length - 1 while TABS.exec doc
+  dent <?= that.0.length - 1 while TABS.exec doc
   dent
 TABS = /\n[^\n\S]*(?!$)/mg
 

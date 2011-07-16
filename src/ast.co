@@ -963,13 +963,13 @@ class exports.Assign extends Node
   compileMinMax: (o, left, right) ->
     lefts = Chain(left)cacheReference o
     rites = right.cache o, true
-    test  = Op '<>'charAt(@op is \<?=), lefts.0, rites.0
+    test  = Op @op.replace(\? ''), lefts.0, rites.0
     put   = Assign lefts.1, rites.1, \:=
-    # `a <?= b` => `a > b && a = b `
-    return Op(\&& test, put)compileNode o if @void or not o.level
-    # `r = a <?= b` => `r = if a > b then a = b else a`
-    [test.first, left] = test.first.cache o, true
-    If test, put .addElse left .compileNode o
+    # `a <?= b` => `a <= b || a = b `
+    return Parens(Op \|| test, put)compile o if @void or not o.level
+    # `r = a <?= b` => `r = if a <= b then a else a = b`
+    [test.second, left] = test.second.cache o, true
+    If test, left .addElse put .compileNode o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.

@@ -357,7 +357,11 @@ o = a: 9, b: 0
 eq 5, o.a <?= o.b >?= 5
 ok o.a is o.b is 5
 
-eq void, o.c <?= o.d >?= 0
+o.c <?= 2
+o.c <?= 3
+o.d >?= 5
+o.d >?= 7
+eq o.c * o.d, 14
 
 
 ### Overloaded
