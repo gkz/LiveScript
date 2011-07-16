@@ -24,6 +24,9 @@ eq 3 [[2 3]]0y1x
 eq '1,2,3'  String [1 to +3]
 eq '1,0,-1' String Array 1 to -1 by -1
 
+til = String
+eq 2, [Number]0 til 2
+
 throws 'range limit exceeded on line 1' -> Coco.tokens '0 to 1 by 1e-4'
 throws 'empty range on line 3'          -> Coco.tokens '\n\n 1 to 0'
 

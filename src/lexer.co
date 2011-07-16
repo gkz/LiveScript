@@ -144,7 +144,7 @@ exports import
         or @tokens[*-2]?0 is \FOR and (@token \FROM ''; @token \STRNUM \0)
           import {-seenFrom, +seenTo}
           tag = \TO
-        else if last.0 is \STRNUM and not isNaN last.1
+        else if last.0 is \STRNUM and not last.callable and not isNaN last.1
           last <<< 0:\RANGE op:id
           return id.length
       case \by
