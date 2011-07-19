@@ -1197,7 +1197,7 @@ class exports.Fun extends Node
 
   # Short-circuit `traverseChildren` method to prevent it
   # from crossing scope boundaries by default.
-  traverseChildren: ([] xscope) -> super ... if xscope
+  traverseChildren: (, xscope) -> super ... if xscope
 
   makeReturn: -> if @statement then import {+returns} else super ...
 

@@ -214,6 +214,7 @@ function addImplicitParentheses tokens
 # - Expand number ranges.
 # - Insert `->` between each `new`/`function` facing a block.
 # - Insert `,` between each non-callable token facing an argument token.
+# - Insert `void` before empty commas.
 function expandLiterals tokens
   i = -1
   while token = tokens[++i]
@@ -239,6 +240,10 @@ function expandLiterals tokens
         else if that.0 is \LET
           tokens.splice i, 0 [\CALL( '' token.2] [\)CALL '' token.2]
           i += 2
+      continue
+    case \,
+      if i and tokens[i-1]0 of <[ , [ CALL( PARAM( ]>
+        tokens.splice i++ 0 [\LITERAL \void token.2]
       continue
     case \LITERAL \} \!? then break
     case \) \)CALL then continue if token.1
@@ -296,8 +301,7 @@ BALANCED_PAIRS =
 INVERSES = {}
 
 # Tokens that signal the start/end of a balanced pair.
-OPENER = []
-CLOSER = []
+OPENER = []; CLOSER = []
 
 for [left, rite] of BALANCED_PAIRS
   OPENER.push INVERSES[rite] = left

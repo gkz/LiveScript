@@ -30,6 +30,10 @@ eq 2, [Number]0 til 2
 throws 'range limit exceeded on line 1' -> Coco.tokens '0 to 1 by 1e-4'
 throws 'empty range on line 3'          -> Coco.tokens '\n\n 1 to 0'
 
+# [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
+# Boolean/Number should be indexable.
+ok 42['toString']
+ok true['toString']
 
 # [coffee#1168](https://github.com/jashkenas/coffee-script/issues/1168)
 eq .1 do
@@ -331,6 +335,18 @@ eq ok, obj.key
 {(frontness?)}
 
 
+### `void`
+eq void, [][0]
+eq void+'', 'undefined'
+
+eq [,,].length, 2
+
+[, a, , b,] = [2 3 5 7]
+eq a * b, 21
+
+eq 11, ((, a) -> a)(, 11)
+
+
 ### JS Literal
 
 eq '\\`', `
@@ -384,14 +400,4 @@ eq o.5, 5
 
 
 ### Misc
-
-eq void, []0
-
-
 throws \unimplemented -> ...
-
-
-# [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
-# Boolean/Number should be indexable.
-ok 42['toString']
-ok true['toString']

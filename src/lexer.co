@@ -85,7 +85,7 @@ exports import
   # Matches an identifying literal: variables, keywords, accessors, etc.
   doIdentifier: (code, ID.lastIndex) ->
     return 0 unless input = (match = ID.exec code)0
-    [[] id, colon] = match; {last} = this
+    [, id, colon] = match; {last} = this
     # `id:_` `_.id` `@id`
     if colon or last.0 is \DOT or @adi()
       tag = \ID
