@@ -72,19 +72,17 @@ function fshoot name, arg, callback
 # compile them. If a directory is passed, recursively compile all
 # _.co_ files in it and all subdirectories.
 function compileScripts
-  $args.forEach (source) ->
-    <- path.exists source
-    it or die "No such file or directory: #source"
-    walk source, path.normalize(source), true
-  function walk source, base, top
-    stats <- fshoot \stat source
+  $args.forEach -> walk it, null, true
+  function walk source, base ? path.normalize(source), top
+    e, stats <- fs.stat source
+    if e
+      return walk "#source.co" if top
+      die e
     if stats.isDirectory()
-      files <- fshoot \readdir source
-      files.forEach -> walk path.join(source, it), base
+      fshoot \readdir source, -> it.forEach -> walk path.join(source, it), base
     else if top or path.extname(source)toLowerCase() is \.co
       watch source, base if o.watch
-      buf <- fshoot \readFile source
-      compileScript source, buf.toString(), base
+      fshoot \readFile source, -> compileScript source, "#it", base
   void
 
 # Compile a single source script, containing the given code, according to the
