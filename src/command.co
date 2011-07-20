@@ -210,11 +210,13 @@ function repl
         say Coco.compile code, {o.bare}
       else
         _  = vm.runInContext Coco.compile(code, {+bare, +repl}), context, \repl
-        _ is void or pp context._ = _
+        unless _ is void
+          pp context._ = _
+          say _ if typeof _ is \function
     catch then say e
     reset()
   process.on \uncaughtException -> say "\n#{ it?stack or it }"
-  repl.setPrompt prompt + '> '
+  repl.setPrompt "#prompt> "
   repl.prompt()
 
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
