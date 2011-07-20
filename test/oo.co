@@ -238,12 +238,25 @@ ok new Sup.Sub instanceof Sup
 
 # `::`/`prototype` under class body
 new class ProtoTest extends Object
-  eq ::, @prototype
-  eq super, Object
-  eq prototype = 0, ::
+  eq ::, prototype
+  eq ::, @::
+  -> eq ::, @..::
 
 
-#### Clone
+# `extended` hook
+class NameEater
+  @subnames = []
+  @extended = ->
+    eq it.superclass, this
+    @subnames.push it.displayName
+
+class A extends NameEater
+  (class B then) extends NameEater
+
+eq 'A,B' ''+NameEater.subnames
+
+
+### Clone
 bird     = {+wing, fly: -> @wing}
 wingless = {-wing}
 

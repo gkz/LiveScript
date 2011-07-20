@@ -1218,7 +1218,7 @@ class exports.Fun extends Node
     scope  = o.scope = @body.scope =
       new Scope (if @wrapper then pscope else sscope), @wrapper && sscope
     scope.fun = this
-    scope.assign \prototype @proto.compile(o) + \.prototype if @proto
+    scope.assign \prototype "#{ that.compile o }.prototype" if @proto
     o.indent = @tab = '' if @plucked
     o.indent += TAB
     {body, name, tab} = this
@@ -1244,8 +1244,6 @@ class exports.Fun extends Node
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
     return sscope.assign sscope.temporary(\fn), code if @plucked
-    if @ctor and \_ is not name.charAt 0
-      code += " #name.displayName = '#name';"
     code += "\n#{tab}return #name;" if @returns
     if @front and not @statement then "(#code)" else code
 
@@ -1299,26 +1297,24 @@ class exports.Class extends Node
     {fun, title} = this; {lines} = fun.body
     decl  = title?varName()
     name  = decl or @name
-    name  = \_Class unless name and ID.test name
-    vname = Var fun.bound = name
-    proto = null
-    fun.body.traverseChildren ->
-      if   it.value is \prototype then proto  := vname
-      else it instanceof Fun      then it.clas = name
-      void
+    name  = tmp = \_Class unless name and ID.test name
+    proto = Var \prototype
+    fun.body.traverseChildren -> it.clas = name if it instanceof Fun; void
     for node, i of lines
       if node instanceof Obj
-        lines[i] = Import Var(\prototype), node
-        proto = vname
+        lines[i] = Import proto, node
       else if node instanceof Fun and not node.statement
         ctor and node.carp 'redundant constructor'
-        (ctor = node)bound and proto = vname
-    ctor or lines.unshift ctor = Fun()
+        ctor = node
+    ctor or lines.push ctor = Fun()
     ctor <<< {name, +ctor, +statement, -clas}
-    lines.push vname
+    lines.push vname = proto = Var fun.bound = name
     if @sup
-      args  = [@sup]
+      args  = [that]
       proto = Util.Extends vname, fun.params.* = Var \_super
+    unless tmp
+      break unless node.comment or node instanceof Literal for node, i of lines
+      lines.splice i,0 Literal "#name.displayName = '#name'"
     clas = Parens Call.make(fun<<<{proto} args), true
     clas = Assign vname, clas if decl and title.isComplex()
     clas = Assign title, clas if title
@@ -1864,7 +1860,9 @@ UTILITIES =
   # as well as `.constructor` and `.superclass` references.
   extends: '''function(sub, sup){
     function ctor(){} ctor.prototype = (sub.superclass = sup).prototype;
-    return (sub.prototype = new ctor).constructor = sub;
+    (sub.prototype = new ctor).constructor = sub;
+    if (typeof sup.extended == 'function') sup.extended(sub);
+    return sub;
   }'''
 
   # Wraps a function to fixate its `this` value.
