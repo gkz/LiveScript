@@ -32,6 +32,18 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.6b
+- Variable interpolations no longer require braces:
+  `"(#{id})"` => `"(#id)"` => `"(" + id + ")"`
+- Added [soak assign](https://github.com/satyr/coco/issues/71).
+- Added [`<?` and `>?` operators](https://github.com/satyr/coco/issues/66).
+- Spaced dots now close implicit calls.
+  See [coffee#1407](https://github.com/jashkenas/coffee-script/issues/1407).
+- [`extended` hook](https://github.com/jashkenas/coffee-script/issues/516) is back.
+- `from` of `for` is now optional, meaning `from 0`.
+  `til`less `from` is no longer allowed.
+- `import x` is now short for `this <<< x`.
+
 ### 0.5.4
 - `while`/`until` can now have update clause after test clause:
   `continue while f(), g()` => `for (; f(); g()) {}`
