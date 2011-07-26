@@ -188,7 +188,7 @@ function addImplicitParentheses tokens
     tokens.splice i++, 0 [\CALL( if soak then \?( else \(, token.2]
     detectEnd tokens, i, ok, go
   function ok token, i
-    return true if token.alias and token.1 of <[ && || ]>
+    return true if not skipBlock and token.alias and token.1 of <[ && || ]>
     pre = tokens[i-1]
     switch token.0
     case \DOT then return pre.spaced or pre.0 is \DEDENT

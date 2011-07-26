@@ -537,7 +537,7 @@ class exports.Chain extends Node
 #### Call
 # `x(y)`
 class exports.Call extends Node
-  (args or [], @soak && \?) ~>
+  (args || [], @soak && \?) ~>
     if args.length is 1 and args.0.filler
       @thisplat = true; args <<< [Literal \this; Literal \arguments]
     import {args}
@@ -1524,7 +1524,7 @@ class exports.For extends While
     then o.scope.declare idx
     else temps.push idx = o.scope.temporary \i
     unless @object
-      [pvar, step] = (@step || Literal 1)compileLoopReference o, \step
+      [pvar, step] = (@step or Literal 1)compileLoopReference o, \step
       pvar is step or temps.push pvar
     if @from
       [tvar, tail] = @to.compileLoopReference o, \to
@@ -1595,7 +1595,7 @@ class exports.Try extends Node
     o.indent += TAB
     code = "try #{@compileBlock o, @attempt}"
     if @recovery or not @ensure
-      o.scope.check v = @thrown || \e or o.scope.add v, \catch
+      o.scope.check(v = @thrown or \e) or o.scope.add v, \catch
       code += " catch (#v) #{ @compileBlock o, @recovery }"
     if @ensure
       code += " finally #{ @compileBlock o, @ensure }"

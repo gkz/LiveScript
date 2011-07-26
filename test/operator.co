@@ -60,9 +60,11 @@ let a = void
   eq a!? true
 
 
-# `and`/`or` closes implicit calls.
+# `and`/`or` closes implicit calls,
 eq('1', String 0 and String 1)
 eq('0', String 0 or  String 1)
+# unless it's inside block.
+eq 3, if 0 or 1 then 2 and 3
 
 
 ok 'a' in obj = a: true
