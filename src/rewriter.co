@@ -191,7 +191,7 @@ function addImplicitParentheses tokens
     return true if not skipBlock and token.alias and token.1 of <[ && || ]>
     pre = tokens[i-1]
     switch token.0
-    case \DOT then return pre.spaced or pre.0 is \DEDENT
+    case \DOT then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
     case \SWITCH                         then seenSwitch := true; fallthrough
     case \IF \CLASS \FUNCTION \LET \WITH then skipBlock  := true
     case \CASE
