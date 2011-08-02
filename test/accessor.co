@@ -20,11 +20,12 @@ eq 1, o.a
   p:~      -> @z
   p:~ (@z) ->
 class C extends {::}
-  p:~     -> super
-  p:~ (z) -> super = z
+  sup = super::
+  p:~     -> sup.__lookupGetter__(\p)call this
+  p:~ (z) -> sup.__lookupSetter__(\p)call this, z
 c = new C
-c.p = 3
-eq c.p, 3
+eq c.p = 3, c.p
+ok c.hasOwnProperty \z
 
 throws 'excess accessor parameter on line 1' -> Coco.compile 'p:~ (a, b) ->'
 

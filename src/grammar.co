@@ -54,10 +54,11 @@ bnf =
     o \Parenthetical -> Chain $1
     o \STRNUM        -> Chain L Literal $1
     o \LITERAL       -> Chain L Literal $1
+    o \SUPER         -> Chain L new Super
 
     o 'Chain CALL( ArgList OptComma )CALL' -> $1.add Call $3, $2 is \?(
 
-    o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
+    o 'LET   CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 
@@ -67,8 +68,6 @@ bnf =
 
     o 'Chain DOT Key'                  -> $1.add Index $3, $2
     o 'Chain DOT [ ArgList OptComma ]' -> $1.add Index $4, $2
-
-    o \SUPER -> L new Super
 
   # **Key** represents a property name, before `:` or after `.`.
   Key:
