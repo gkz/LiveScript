@@ -200,8 +200,7 @@ new
 
 
 class OddSuper
-  me = ~> this
-  super: me
+  super: me = -> this
   $uper: me
   1234 : me
   .567 : me
@@ -212,14 +211,14 @@ class OddSuperSub extends OddSuper
   $uper: -> super()
   1234 : -> do super
   .567 : -> super 8
-  '""' : -> super 9
+  '""' : -> super ...@@
 
 oss = new OddSuperSub
-eq oss.super(), OddSuper
-eq oss.$uper(), OddSuper
-eq oss[1234](), OddSuper
-eq oss[.567](), OddSuper
-eq oss['""'](), OddSuper
+eq oss.super(), oss
+eq oss.$uper(), oss
+eq oss[1234](), oss
+eq oss[.567](), oss
+eq oss['""'](), oss
 
 
 eq \declared (class declared then)displayName

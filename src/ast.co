@@ -372,10 +372,11 @@ class exports.Chain extends Node
   children: <[ head tails ]>
 
   add: ->
-    @tails.push it
-    if delete it.vivify
-      @head  = Assign Chain(@head, @tails), that(), \= \||
-      @tails = []
+    if @tails.push(it) is 1 and @head instanceof Super and
+       it instanceof Call and not it.method
+      it.method = \.call; it.args.unshift Literal \this
+    else if delete it.vivify
+      @head = Assign Chain(@head, @tails.splice 0, 9e9), that(), \= \||
     this
 
   # __Chain__ can be unwrapped as its inner node, if there are no subnodes.
@@ -440,18 +441,17 @@ class exports.Chain extends Node
     [base.add name; Chain bref || base.head, [nref or name]]
 
   compileNode: (o) ->
-    @head <<< {@front, @newed}
-    return @head.compile o unless @tails.length
-    return that .compile o if @unfoldAssign o
-    if @tails.0 instanceof Call and not @head.isCallable()
-      @carp 'invalid callee'
+    {head} = this; head <<< {@front, @newed}
+    return head.compile o unless @tails.length
+    return that.compile o if @unfoldAssign o
+    @carp 'invalid callee' if @tails.0 instanceof Call and !head.isCallable()
     @expandSlice o; @expandBind o; @expandSplat o; @expandStar o
-    base = @head.compile o, LEVEL_CALL; rest = ''
+    base = @head.compile o, LEVEL_CALL; news = rest = ''
     for t of @tails
-      base = 'new ' + base if t.new
+      news += 'new ' if t.new
       rest += t.compile o
     base += ' ' if \. is rest.charAt 0 and SIMPLENUM.test base
-    base + rest
+    news + base + rest
 
   # Unfolds a soak into an __If__: `a?.b` => `a.b if a?`
   unfoldSoak: (o) ->
@@ -485,17 +485,14 @@ class exports.Chain extends Node
 
   expandSplat: (o) ->
     {tails} = this; i = -1; while call = tails[++i]
-      {thisplat, args} = call
-      continue unless thisplat or args &&= Splat.compileArray o, args, true
+      continue unless args = call.args
+      ctx = call.method is \.call and (args.=concat())shift()
+      continue unless args = Splat.compileArray o, args, true
       @carp 'splatting "new"' if call.new
-      call.method = \.apply
-      if thisplat
-        delete call.thisplat
-        continue
-      if tails[i-1] instanceof Index
-        [@head, ref] = Chain(@head, tails.splice 0 i-1)cache o, true
+      if not ctx and tails[i-1] instanceof Index
+        [@head, ctx] = Chain(@head, tails.splice 0 i-1)cache o, true
         i = 0
-      call.args = [ref or Literal(\null), JS args]
+      call <<< method: \.apply, args: [ctx or Literal \null; JS args]
     void
 
   expandBind: (o) ->
@@ -540,12 +537,12 @@ class exports.Chain extends Node
 class exports.Call extends Node
   (args || [], @soak && \?) ~>
     if args.length is 1 and args.0.filler
-      @thisplat = true; args <<< [Literal \this; Literal \arguments]
+      @method = \.call; args <<< [Literal \this; Splat Literal \arguments]
     import {args}
 
   children: [\args]
 
-  show: -> (@new or '') + (@soak or '') + (@thisplat or '')
+  show: -> ([@new]) + ([@method]) + ([@soak])
 
   compile: (o) ->
     code  = (@method or '') + \(
@@ -729,7 +726,8 @@ class exports.Op extends Node
       first.newed = true
       for node of first.tails or ''
         if node instanceof Call and not node.new
-          node <<< {\new}
+          node.args.shift() if node.method is \.call
+          node <<< {\new, method: ''}
           return first
     case \+
       break unless second
