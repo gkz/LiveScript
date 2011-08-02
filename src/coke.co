@@ -51,7 +51,6 @@ path.exists filename ||= \Cokefile ->
     console.error 'no "%s" in %s' filename, process.cwd()
     process.exit 1
   optparse = require \./optparse
-  require.paths.push process.cwd()
   Coco.run slurp(filename), {filename}
   Options := optparse Flags, args
   if args.length
