@@ -266,3 +266,17 @@ a = [1 2 3]
 b = []
 continue while a.pop(), b.push that
 eq '3,2,1' ''+b
+
+
+### `else` clause
+for cond of [true false]
+  while cond
+    break
+  else
+    ok not cond
+
+r = for i til 1 then i else [9]
+eq 0 r.0
+
+r = for i til 0 then i else [9]
+eq 9 r.0

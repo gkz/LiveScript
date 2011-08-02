@@ -934,7 +934,7 @@ class exports.Assign extends Node
     lvar = left instanceof Var
     sign = op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
-    code = if not o.level and right instanceof While and
+    code = if not o.level and right instanceof While and not right.else and
               (lvar or left.isSimpleAccess())
       # Optimize `a = while ...`.
       """#{ res = o.scope.temporary \res } = [];
@@ -1447,7 +1447,7 @@ class exports.While extends Node
     # `while true` `until false` => `for (;;)`
     import {test} if @post or test.value is not ''+!un
 
-  children: <[ test body update ]>
+  children: <[ test body update else ]>
 
   aSource: \test, aTargets: <[ body update ]>
 
@@ -1461,6 +1461,8 @@ class exports.While extends Node
     [top] = body.lines
     body.lines.length = 0 if top?verb is \continue and not top.label
     this
+
+  addElse: (@else) -> this
 
   makeReturn: ->
     if it
@@ -1484,9 +1486,13 @@ class exports.While extends Node
       if (last = lines[*-1]) and last not instanceof Throw
         lines[*-1] = last.makeReturn res = o.scope.assign \_results '[]'
       ret = "\n#{@tab}return #{ res or '[]' };"
+    lines.unshift JS "#{ run = o.scope.temporary \run } = true;" if @else
     code += "\n#that\n#{@tab}" if @body.compile o, LEVEL_TOP
     code += \}
     code += " while (#{ potest.compile o<<<{@tab} LEVEL_PAREN });" if potest
+    if run
+      @else.makeReturn() if @returns
+      code += " if (!#run) #{ @compileBlock o, @else }"
     code + ret
 
   pluckDirectCalls: (o) ->

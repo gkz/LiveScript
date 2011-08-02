@@ -172,7 +172,8 @@ bnf =
 
     # Loops can either be normal, with a block of expressions
     # to execute, or postfix, with a single expression.
-    o 'LoopHead   Block'    -> $1.addBody $2
+    o 'LoopHead Block'            -> $1.addBody $2
+    o 'LoopHead Block ELSE Block' -> $1.addBody $2 .addElse $4
     o 'Expression LoopHead' -> $2.addBody Block $1
     o 'DO Block WHILE Expression'
     , -> new While($4, $3 is \until, true)addBody $2
