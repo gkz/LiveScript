@@ -288,6 +288,12 @@ new
   import life: 2, universe: 3, everything: 7
   eq @life * @universe * @everything, 42
 
+f = ->
+  import it
+<<< new: -> new this it
+o = f.new {2, 3}
+eq o.2 * o.3, 6
+
 
 ### {in,de}crement
 a = [0]
