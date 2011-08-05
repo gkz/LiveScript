@@ -16,4 +16,8 @@
  {"coco" : "./lib/command.js"
  ,"coke" : "./lib/coke.js"
  }
+,"devDependencies" :
+ {"jison"     : "0.2.1"
+ ,"uglify-js" : "1.0.6"
+ }
 }
