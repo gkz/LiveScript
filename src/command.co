@@ -194,7 +194,8 @@ function repl
     vm      = require \vm
     context = vm.createContext()
     context <<< {...global, module, require, global: context}
-    repl.completer = require(\repl)REPLServer::{context, commands: []}~complete
+    repl.completer =
+      (^require(\repl)REPLServer::<<<{context, commands: []})~complete
   repl._ttyWrite = (char) -> cont := char is \\n; @[]_ttyWrite ...
   repl.on \attemptClose ->
     if repl.line or code then say ''; reset() else repl.close()

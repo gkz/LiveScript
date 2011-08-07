@@ -13,10 +13,9 @@ and null
 !?  true
   and :  'property name'
   andy!?  # nickname
-  eq 7 1
+  eq 3 1
      & 2
      | 3
-     ^ 4
 else ok 0 'leading logical/bitwise operators should continue lines'
 
 

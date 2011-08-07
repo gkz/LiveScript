@@ -142,12 +142,13 @@ bnf =
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
-    o 'Expression +-       Expression' op = -> Op $2, $1, $3
-    o 'Expression COMPARE  Expression' op
-    o 'Expression LOGIC    Expression' op
-    o 'Expression MATH     Expression' op
-    o 'Expression SHIFT    Expression' op
-    o 'Expression BITWISE  Expression' op
+    o 'Expression +-      Expression' op = -> Op $2, $1, $3
+    o 'Expression ^       Expression' op
+    o 'Expression COMPARE Expression' op
+    o 'Expression LOGIC   Expression' op
+    o 'Expression MATH    Expression' op
+    o 'Expression SHIFT   Expression' op
+    o 'Expression BITWISE Expression' op
 
     o 'Expression RELATION Expression' ->
       []= if \! is $2.charAt 0
@@ -156,6 +157,7 @@ bnf =
 
     o 'UNARY Expression'  -> []= if $1 is \! then $2.invert() else Op $1, $2
     o '+-    Expression' (-> Op $1, $2), prec: \UNARY
+    o '^     Expression' (-> Op $1, $2), prec: \UNARY
 
     o 'Chain !?' -> Existence $1.unwrap(), true
 
@@ -312,7 +314,7 @@ operators =
   <[ left     POST_IF FOR WHILE ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY ]>
   <[ right    LOGIC        ]>
-  <[ left     BITWISE      ]>
+  <[ left     ^ BITWISE    ]>
   <[ right    COMPARE      ]>
   <[ left     RELATION     ]>
   <[ left     SHIFT IMPORT ]>

@@ -30,7 +30,7 @@ exports import
   # remaining code, or a custom recursive token-matching method
   # (for interpolations). When the next token has been recorded,
   # we move forward within the code past the token, and begin again.
-  ) -> exports{}tokenize code||'' options||{}
+  ) -> (^exports)tokenize code||'' options||{}
   tokenize: (code, o) ->
     @inter or code.=replace /\r/g ''
     # Prepend a newline to handle leading INDENT.
@@ -173,6 +173,7 @@ exports import
       num = parseInt rnum = match.2.replace(NUMBER_OMIT, ''), radix
       if isNaN num or num is parseInt rnum.slice(0 -1), radix
         @carp "invalid number #rnum in base #radix"
+      num += ''
     unless last.spaced
       if sign = last.0 is \+-
         num = last.1 + num
@@ -352,7 +353,7 @@ exports import
     case \/ \% \**    then tag = \MATH
     case \++ \--      then tag = \CREMENT
     case \<<< \<<<<   then tag = \IMPORT
-    case \& \| \^     then tag = \BITWISE
+    case \& \|        then tag = \BITWISE
     case \;           then tag = \TERMINATOR
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
     case <[  <<  >>  >>>    <?  >?  ]> then tag = \SHIFT
@@ -465,7 +466,7 @@ exports import
         str.=slice delta = i + 1 + id.length
         parts.push [\TOKENS nested = [[\ID id, @line]]]
       else
-        clone  = exports{+inter, @emender}
+        clone  = ^exports <<< {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
         nested.shift() while nested.0?0 is \TERMINATOR
         @countLines str.slice i, delta = str.length - clone.rest.length
@@ -663,6 +664,6 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 LASTDENT = /\n[^\n\S]*$/
 
 LINE_CONTINUER = // ^ \s* (?
-: [,&|^>%] | \.(?![.\d]) | <(?![-~[]) | !?\?
+: [,&|>%] | \.(?![.\d]) | <(?![-~[]) | !?\?
 | (?:and|or)(?![$\w\x7f-\uffff]|[^\n\S]*:(?![:=]))
 ) //

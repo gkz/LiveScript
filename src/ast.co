@@ -171,7 +171,7 @@ exports.parse    = (json) -> exports.fromJSON JSON.parse json
 exports.fromJSON = function
   return it unless it and typeof it is \object
   if it.type
-    node = exports[that]::{}
+    node = ^exports[that]::
     node[key] = fromJSON val for key, val in it
     return node
   if it.length? then fromJSON v for v of it else it
@@ -806,6 +806,8 @@ class exports.Op extends Node
       if first instanceof Var and not o.scope.check first.value, true
         @carp "#{ crement op } of undeclared variable \"#{first.value}\""
       first{front} = this if @post
+    case \^
+      return "#{ utility \clone }(#{ first.compile o, LEVEL_LIST })"
     case \classof
       return "#{ utility \toString }.call(
               #{ first.compile o, LEVEL_LIST }).slice(8, -1)"
@@ -863,7 +865,7 @@ class exports.Op extends Node
     return x.compile o if 1 <= n < 2
     # `[x] * 2` => `[x, x]`
     if items
-      if n < 1 then return Block::{lines: items}add(JS '[]')compile o
+      if n < 1 then return (^Block::<<< lines: items)add(JS '[]')compile o
       refs = []
       [items[i], refs.*] = item.cache o, 1x for item, i of items
       items.push JS() <<<
@@ -1069,7 +1071,7 @@ class exports.Assign extends Node
     return tail if tail.isEmpty()
     if tail instanceof Obj
     then Clone head, tail.items
-    else Chain head, [Index::{key: tail.items || tail.maybeKey()}]
+    else Chain head, [^Index::<<< key: tail.items || tail.maybeKey()]
 
 #### Import
 # Copies properties from right to left.
