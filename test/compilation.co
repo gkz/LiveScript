@@ -140,7 +140,7 @@ eq '''
   } catch (_e) {}
 }).call(this);
 
-''', Coco.compile '''try for k in o then do ~> @{}'''
+''', Coco.compile '''try for k in o then do ~> ^@'''
 
 
 eq 'STRNUM,0,0 STRNUM,1,1', '' + Coco.lex('''

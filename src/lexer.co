@@ -360,16 +360,13 @@ exports import
     case \( \?(
       @closes.push \)
       tag = \CALL( if val is \?( or @able true
-    case \[    then @closes.push \]; @adi()
-    case \] \) then @pair val
-    case \{
-      @closes.push \}
-      @token \CLONE '' if @able()
+    case \[ \{ then @adi(); @closes.push ']}'charAt val is \{
     case \}
       if @inter and val is not @closes[*-1]
         @rest = code.slice index+1
         return 9e9
-      @pair val
+      fallthrough
+    case \] \) then @pair val
     case \: then if @last.0 not of <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= <?= >?= **= ]>

@@ -161,12 +161,6 @@ eq 2, delete a?.b.c
 eq (1 or 0)?, true, 'postfix `?` should unwrap correctly'
 
 
-# soak + clone
-eq x = void, x?.y{}
-x = y: Date::
-ok x?.y{} instanceof Date
-
-
 # [coffee#1424](https://github.com/jashkenas/coffee-script/issues/1424)
 A = -> ok
 eq ok, new A?

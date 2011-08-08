@@ -254,7 +254,7 @@ bnf =
 
     o 'Chain ?' -> Existence $1.unwrap()
 
-    o 'Chain CLONE { Properties OptComma }' -> Clone $1.unwrap(), $4
+    o 'Chain DOT { Properties OptComma }' -> $1.add Index L(Obj $4), $2
 
   # **Function** is the function literal, defined by an indented **Block**
   # preceded by an optional parameter list and a function arrow.

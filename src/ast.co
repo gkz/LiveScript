@@ -333,10 +333,12 @@ class exports.Key extends Atom
 #### Index
 # Dots and brackets to access an object's property.
 class exports.Index extends Node
-  (@key, symbol or \.) ~>
+  (key, symbol or \.) ~>
     switch key.length
-    case 0 then @key = Key \__proto__
-    case 1 then @key = key.0
+    case 0 then key = Key \__proto__
+    case 1 then key.=0
+    case void then break
+    default key = Arr key
     if \? is symbol.charAt 0
       @soak = \?
       symbol.=slice 1
@@ -344,7 +346,7 @@ class exports.Index extends Node
     case \= then @assign = symbol.slice 1
     case \! then @vivify = Obj
     case \@ then @vivify = Arr
-    import {symbol}
+    import {key, symbol}
 
   children: [\key]
 
@@ -382,10 +384,12 @@ class exports.Chain extends Node
   ::delegate <[ jumps assigns isStatement isString ]>
            , (it, arg) -> not @tails.length and @head[it] arg
 
-  isComplex    : -> @tails.length or @head.isComplex()
-  isCallable   : -> if @tails.length then !@isArray() else @head.isCallable()
-  isArray      : -> if @tails[*-1] then that.key?length else @head.isArray()
-  isRegex      : ->
+  isComplex  : -> @tails.length or @head.isComplex()
+  isCallable : ->
+    if @tails[*-1] then not that.key?items else @head.isCallable()
+  isArray    : ->
+    if @tails[*-1] then that.key instanceof Arr else @head.isArray()
+  isRegex    : ->
     @head.value is \RegExp and not @tails.1 and @tails.0 instanceof Call
 
   isAssignable: ->
@@ -441,7 +445,7 @@ class exports.Chain extends Node
     return that .compile o if @unfoldAssign o
     if @tails.0 instanceof Call and not @head.isCallable()
       @carp 'invalid callee'
-    @expandArray o; @expandBind o; @expandSplat o; @expandStar o
+    @expandSlice o; @expandBind o; @expandSplat o; @expandStar o
     base = @head.compile o, LEVEL_CALL; rest = ''
     for t of @tails
       base = 'new ' + base if t.new
@@ -462,7 +466,7 @@ class exports.Chain extends Node
       else
         if i and node.assign
           [test, bust] = bust.cacheReference o
-          @{head} = bust; @tails.unshift ...bust.tails
+          @head = bust.head; @tails.unshift ...bust.tails
         else
           [test, @head] = bust.unwrap()cache o, true
         Existence test
@@ -523,14 +527,11 @@ class exports.Chain extends Node
       void
     void
 
-  expandArray: (o) ->
-    {tails} = this; i = -1; while tail = tails[++i] then if tail.key?length
-      tail.carp 'calling an array' if tails[i+1] instanceof Call
-      [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap()cache o
-      items = for key, j of tails.shift()key
-        Chain if j then ref else sub, [Index key]
-      @head = JS Arr(items)compile o
-      o.scope.free temps.0 if temps
+  expandSlice: (o) ->
+    {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
+      tail.carp 'calling a slice' if tails[i+1] instanceof Call
+      tailz = tails.splice 0 i+1
+      @head = tailz.pop()key.toSlice o, Chain(@head, tailz)unwrap()
       i = -1
     void
 
@@ -570,19 +571,6 @@ class exports.Call extends Node
     args.unshift Literal \this
     @block Fun(params, body), args, \.call
 
-#### Clone
-# An operation that creates a new object with its `__proto__`
-# set to the operand, attaching specified properties.
-class exports.Clone extends Node
-  (@base, @mixins) ~>
-
-  children: <[ base mixins ]>
-
-  unfoldSoak: -> If.unfoldSoak it, this, \base
-
-  compileNode: (o) ->
-    Import(Call.make(Util \clone; [@base]), Obj @mixins)compile o
-
 #### List
 # An abstract node for a list of comma-separated items.
 class List extends Node
@@ -608,6 +596,34 @@ class exports.Obj extends List
   (@items or []) ~>
 
   asObj: THIS
+
+  # `base{x: y}` => `{x: base.y}`
+  toSlice: (o, base, assign) ->
+    {items} = this
+    items.splice i-- 1 if node.comment for node, i of items
+    items.length or @carp 'empty object slice'
+    if items.length > 1 then [base, ref, temps] = base.cache o else ref = base
+    for node, i of items
+      if node instanceof [Prop, Splat]
+        node[name = node.children[*-1]] =
+          chain = Chain base, [Index node[name]maybeKey()]
+      else
+        # `o{k or v}` => `{k: a.k or v}`
+        node.=first if logic = node.hasDefault()
+        if node instanceof Parens
+          # `a{(++i)}` => `{(_ref = ++i): a[_ref]}`
+          [key, node] = node.cache o, true
+          # `a{(++i)} = b` => `{(_ref): a[_ref = ++i]} = b`
+          #                => `a[_ref = ++i] = b[_ref]`
+          [key, node] = [node, key] if assign
+          key = Parens key
+        else key = node
+        val = chain = Chain base, [Index node.maybeKey()]
+        val = logic <<< {first: val} if logic
+        items[i] = Prop key, val
+      base = ref
+    (chain.head = Var temps.0)temp = true if temps
+    this
 
   compileNode: (o) ->
     {items} = this
@@ -667,6 +683,19 @@ class exports.Arr extends List
 
   asObj: -> Obj(Prop Literal(i), item for item, i of @items)
 
+  # `base[x, ...y]` => `[base[x], ...base[y]]`
+  toSlice: (o, base) ->
+    {items} = this
+    if items.length > 1 then [base, ref, temps] = base.cache o else ref = base
+    for item, i of items
+      item.=it if splat = item instanceof Splat
+      continue if item.isEmpty()
+      chain = Chain base, [Index item]
+      items[i] = if splat then Splat chain else chain
+      base = ref
+    (chain.head = Var temps.0)temp = true if chain and temps
+    this
+
   compile: (o) ->
     {items} = this
     return '[]' unless items.length
@@ -698,9 +727,8 @@ class exports.Op extends Node
       if first instanceof Existence and not first.negated
         first = Chain(first.it)add Call [] true
       first.newed = true
-      if (chain = first.base or first) instanceof Chain
-        chain.=head.base while chain.head.base instanceof Chain
-        for node of chain.tails then if node instanceof Call and not node.new
+      for node of first.tails or ''
+        if node instanceof Call and not node.new
           node <<< {\new}
           return first
     case \+
@@ -917,7 +945,7 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
-    {op, right} = this; left = @transleft(o)unwrap()
+    {op, right} = this; left = @transleft o
     return (Parens(right) <<< {@front, @newed})compile o if left.isEmpty()
     return @compileDestructuring o, left if left.items
     return @compileConditional   o, left if @logic
@@ -1013,7 +1041,7 @@ class exports.Assign extends Node
       else
         (inc = ivar) and start < i and inc += " + #{ i - start }"
         val = Chain rcache||=Literal(rite), [Index JS inc || i]
-      @{left: node, right: val, +\void}compile o, LEVEL_PAREN
+      (^@<<<{left: node, right: val, +\void})compile o, LEVEL_PAREN
 
   rendObj: (o, nodes, rite) ->
     for node of nodes
@@ -1029,49 +1057,15 @@ class exports.Assign extends Node
       node = logic <<< {first: node} if logic
       val  = Chain rcache||=Var(rite), [Index key.maybeKey()]
       val  = Import Obj(), val if splat
-      @{left: node, right: val, +\void}compile o, LEVEL_PAREN
+      (^@<<<{left: node, right: val, +\void})compile o, LEVEL_PAREN
 
   # Resolves subdestructuring.
   transleft: (o) ->
-    {left} = this
-    # `x{k} = o` => `{k: x.k} = o`
-    if left instanceof Clone
-      {base, mixins: items} = left
-      if items.length > 1
-      then [sub, ref, @temps] = base.cache o
-      else sub = ref = base
-      for node, i of items
-        base = if i then ref else sub
-        if node instanceof Prop
-          node.val = rechain base, node.val
-        else
-          # `o{k or v} = ..` => `{k: a.k or v} = ..`
-          node.=first if logic = node.hasDefault()
-          if node instanceof Parens
-          # `a{(++i)} = b` => `{(_ref): a[_ref = ++i]} = b`
-          then [node, key] = node.cache o, true; key = Parens key
-          else key = node
-          val = Chain base, [Index node.maybeKey()]
-          val = logic <<< {first: val} if logic
-          items[i] = Prop key, val
-      return Obj items
-    # `a[x, y] = b` => `[a[x], a[y]] = b`
-    if left.=unwrap() instanceof Chain and left.isArray()
-      items = left.tails.pop()key; [sub, ref, @temps] = left.cache o
-      for item, i of items
-        item.=it if splat = item instanceof Splat
-        item = Parens item if item instanceof Var
-        item = rechain if i then ref else sub, item
-        items[i] = if splat then Splat item else item
-      return Arr items
+    left = @left.=unwrap()
+    if left instanceof Chain and left.tails[*-1]?key?items
+      # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
+      return left.tails.pop()key.toSlice o, left.unwrap(), true
     left
-
-  # `o` + `{x}` => `o{x}`
-  function rechain head, tail
-    return tail if tail.isEmpty()
-    if tail instanceof Obj
-    then Clone head, tail.items
-    else Chain head, [^Index::<<< key: tail.items || tail.maybeKey()]
 
 #### Import
 # Copies properties from right to left.
