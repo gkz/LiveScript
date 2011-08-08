@@ -718,8 +718,10 @@ class exports.Op extends Node
 
   show: -> @op
 
-  isCallable: -> switch @op case <[ && || ? new delete ]>
-    @first.isCallable() or @second?isCallable()
+  isCallable: ->
+    switch @op
+    case <[ new delete ]> then @first.isCallable()
+    case <[ && || ? !? ]> then @first.isCallable() and @second.isCallable()
 
   isArray: ->
     switch @op

@@ -59,6 +59,8 @@ let a = void
   eq a?, false
   eq a!? true
 
+(ok !? ok) true
+
 
 # `and`/`or` closes implicit calls,
 eq('1', String 0 and String 1)
