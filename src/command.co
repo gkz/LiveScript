@@ -167,7 +167,7 @@ function writeJS source, js, base
 function printTokens tokens
   lines = []
   for [tag, val, lno] of tokens
-    lines@[lno]push if tag.toLowerCase() is val then tag else "#tag:#val"
+    lines@@[lno]push if tag.toLowerCase() is val then tag else "#tag:#val"
   say(if l then l.join(' ')replace /\n/g \\\n else '') for l of lines
   void
 

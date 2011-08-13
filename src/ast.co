@@ -344,8 +344,7 @@ class exports.Index extends Node
       symbol.=slice 1
     switch symbol.slice -1
     case \= then @assign = symbol.slice 1
-    case \! then @vivify = Obj
-    case \@ then @vivify = Arr
+    case \@ then @vivify = (if symbol.length > 2 then Arr else Obj)
     import {key, symbol}
 
   children: [\key]

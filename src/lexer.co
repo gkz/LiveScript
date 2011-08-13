@@ -383,16 +383,16 @@ exports import
         @indent val = that.0.length
         return val
       tag = if able @tokens then \MATH else \STRNUM
-    case \@
-      if @last.1 of <[ . ?. ]> or @adi()
-      then @last.1 += val
-      else @token \LITERAL \this true
-      return 1
+    case \@ \@@
+      @dotcat val or if val is \@
+      then @token \LITERAL \this true
+      else @token \LITERAL \arguments
+      return val.length
     case \!
       return (@last.1 = \classof; 1) if not @last.spaced and @last.1 is \typeof
-      fallthrough
+      tag = \UNARY
     case \~
-      return (@last.1 += val; 1) if @last.1 of <[ . ?. ]> or @adi()
+      return 1 if @dotcat val
       tag = \UNARY
     case \~> then tag = \->
     case \<~ then tag = \<-; fallthrough
@@ -402,7 +402,6 @@ exports import
       continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ( ]>
       tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
       @token \)PARAM ''
-    case \@@ then tag = \LITERAL; val = \arguments
     case \:: then i = \prototype; fallthrough
     case \.. then @adi(); tag = \ID; val = i || \constructor
     default if \( is val.charAt 0
@@ -532,6 +531,9 @@ exports import
     not @last.spaced and if @last.0 is \?
     then @last <<< [\DOT \?.]
     else able @tokens and @token \DOT \.
+
+  # Resolves `.~` etc.
+  dotcat: -> @last.1 += it if @last.1 of <[ . ?. ]> or @adi()
 
   # Pairs up a closing token.
   pair: ->
