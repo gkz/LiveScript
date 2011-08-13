@@ -389,7 +389,13 @@ exports import
       else @token \LITERAL \arguments
       return val.length
     case \!
-      return (@last.1 = \classof; 1) if not @last.spaced and @last.1 is \typeof
+      unless @last.spaced
+        if able @tokens, null true
+          if @last.0 is \?
+          then @last <<< [\CALL( \?(]
+          else @token \CALL( \!
+          return (@token \)CALL \); 1)
+        return (@last.1 = \classof; 1) if @last.1 is \typeof
       tag = \UNARY
     case \~
       return 1 if @dotcat val
