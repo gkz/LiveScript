@@ -56,7 +56,7 @@ bnf =
     o \LITERAL       -> Chain L Literal $1
     o \SUPER         -> Chain L new Super
 
-    o 'Chain CALL( ArgList OptComma )CALL' -> $1.add Call $3, $2 is \?(
+    o 'Chain CALL( ArgList OptComma )CALL' -> $1.add Call $3
 
     o 'LET   CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 

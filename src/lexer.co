@@ -357,10 +357,12 @@ exports import
     case \;           then tag = \TERMINATOR
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
     case <[  <<  >>  >>>    <?  >?  ]> then tag = \SHIFT
-    case \( \?(
+    case \(
+      tag = \CALL( if @able true
       @closes.push \)
-      tag = \CALL( if val is \?( or @able true
-    case \[ \{ then @adi(); @closes.push ']}'charAt val is \{
+    case \[ \{
+      @adi()
+      @closes.push ']}'charAt val is \{
     case \}
       if @inter and val is not @closes[*-1]
         @rest = code.slice index+1
@@ -389,13 +391,13 @@ exports import
       else @token \LITERAL \arguments
       return val.length
     case \!
-      unless @last.spaced
+      :CONTACT unless @last.spaced
         if able @tokens, null true
-          if @last.0 is \?
-          then @last <<< [\CALL( \?(]
-          else @token \CALL( \!
-          return (@token \)CALL \); 1)
-        return (@last.1 = \classof; 1) if @last.1 is \typeof
+          @token \CALL( ''; @token \)CALL \!
+        else if @last.1 is \typeof
+          @last.1 = \classof
+        else break CONTACT
+        return 1
       tag = \UNARY
     case \~
       return 1 if @dotcat val
@@ -632,7 +634,7 @@ SYMBOL = //
 | \([^\n\S]*\)                # call
 | -[->]                       # decrement / function
 | [!=]==?                     # equality
-| \?[.(]                      # soak access/call
+| \?\.                        # soak access
 | ~[.>]                       # bind access/function
 | <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
 | >>>?=?                      # rite shift

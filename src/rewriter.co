@@ -172,20 +172,15 @@ function addImplicitParentheses tokens
       if brackets.pop() then prev.index = true else continue
     unless postfn = prev.0 is \FUNCTION
       continue unless prev.spaced and able tokens, i, true
-    soak = prev.0 is \?
     if doblock
       token.0 = \CALL(; tpair.0 = \)CALL
-      if soak
-        tokens.splice i-1 1
-        token.1 = \?(
       continue
     continue unless tag of ARG or not token.spaced and tag of <[ +- ^ ]>
     continue if postfn and tag of <[ PARAM( -> ]>
     if tag is \CREMENT
       continue if token.spaced or tokens[i+1]?0 not of CHAIN
     skipBlock = seenSwitch = false
-    tokens.splice --i, 1 if soak
-    tokens.splice i++, 0 [\CALL( if soak then \?( else \(, token.2]
+    tokens.splice i++, 0 [\CALL( '' token.2]
     detectEnd tokens, i, ok, go
   function ok token, i
     return true if not skipBlock and token.alias and token.1 of <[ && || ]>

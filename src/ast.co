@@ -371,9 +371,12 @@ class exports.Chain extends Node
   children: <[ head tails ]>
 
   add: ->
-    if @tails.push(it) is 1 and @head instanceof Super and
-       it instanceof Call and not it.method
-      it.method = \.call; it.args.unshift Literal \this
+    if @tails.push(it) is 1 and it instanceof Call
+      if @head instanceof Existence
+        {@head, @tails} = Chain @head.it
+        @tails.push it <<< {+soak}
+      if not it.method and @head instanceof Super
+        it.method = \.call; it.args.unshift Literal \this
     else if delete it.vivify
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that(), \= \||
     this
@@ -534,14 +537,14 @@ class exports.Chain extends Node
 #### Call
 # `x(y)`
 class exports.Call extends Node
-  (args || [], @soak && \?) ~>
+  (args || []) ~>
     if args.length is 1 and args.0.filler
       @method = \.call; args <<< [Literal \this; Splat Literal \arguments]
     import {args}
 
   children: [\args]
 
-  show: -> ([@new]) + ([@method]) + ([@soak])
+  show: -> ([@new]) + ([@method]) + ([\? if @soak])
 
   compile: (o) ->
     code  = (@method or '') + \(
@@ -716,12 +719,12 @@ class exports.Op extends Node
       return Parens do
         # `do f?` => `f?()`
         if first instanceof Existence and not first.negated
-        then Chain(first.it)add Call [] true
+        then Chain(first)add Call!
         else Call.make first
     case \new
       # `new C?` => `new C?()`
       if first instanceof Existence and not first.negated
-        first = Chain(first.it)add Call [] true
+        first = Chain(first)add Call!
       first.newed = true
       for node of first.tails or ''
         if node instanceof Call and not node.new
