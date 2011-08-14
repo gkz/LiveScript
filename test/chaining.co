@@ -122,6 +122,8 @@ eq 2 a.1.2
 throws     'calling a slice on line 1' -> Coco.compile 'a{0}()'
 throws 'invalid constructor on line 1' -> Coco.compile 'new a[1 2]'
 
+if 0 then @front{ne,ss}
+
 
 # Automatic Dot Insertion
 eq @toString, @\toString

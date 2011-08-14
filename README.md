@@ -48,6 +48,7 @@ Coco tries to amend them, entwining good parts of both.
   `"(#id)"` => `"(" + id + ")"`
 - Spaced dots now close implicit calls.
   See [coffee#1407](https://github.com/jashkenas/coffee-script/issues/1407).
+- Direct calls to `super` now delegate `this`.
 - [`extended` hook](https://github.com/jashkenas/coffee-script/issues/516) is back.
 - `from` of `for` is now optional, meaning `from 0`.
   `til`less `from` is no longer allowed.

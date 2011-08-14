@@ -530,7 +530,7 @@ class exports.Chain extends Node
     {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
       tailz = tails.splice 0 i+1
-      @head = tailz.pop()key.toSlice o, Chain(@head, tailz)unwrap()
+      @head = tailz.pop!key.toSlice(o, Chain(@head, tailz)unwrap!) <<< {@front}
       i = -1
     void
 
