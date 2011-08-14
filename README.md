@@ -33,12 +33,14 @@ Coco tries to amend them, entwining good parts of both.
 ## Changelog
 
 ### 0.6.0
+
 #### Additions
 - Added [soak assign](https://github.com/satyr/coco/issues/71).
 - Added [`<?` and `>?` operators](https://github.com/satyr/coco/issues/66).
 - Loops can now have [`else` clause](https://github.com/satyr/coco/issues/75).
 - `import x` is now short for `this <<< x`.
 - `,` after `(`, `[` or another `,` now implies `void`.
+
 #### Changes
 - Added [object slice](https://github.com/satyr/coco/issues/77).
 - Added bang call: `f!` => `f()`
