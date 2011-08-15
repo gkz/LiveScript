@@ -28,7 +28,7 @@ o = require(\./optparse) do
   lex         : 'print the tokens the lexer produces'
   tokens      : 'print the tokens the rewriter produces'
   ast         : 'print the syntax tree the parser produces'
-  json        : 'print the syntax tree as JSON'
+  json        : 'print/compile as JSON'
   nodejs      :['pass options through to the "node" binary' \ARGS+]
   version     : 'display version'
   help        : 'display this'
@@ -43,7 +43,7 @@ default
   o.compile ||= o.output
   o.run = not (o.compile or o.print)
   o.print   ||= o.eval or o.stdin and o.compile
-  o.bare    ||= o.eval and o.run
+  o.bare    ||= o.eval and o.run or o.json
   {$args} = o; {argv} = process
   process.execPath = argv.0 = argv.1
   argv.splice 2 9e9
@@ -98,19 +98,20 @@ function compileScript file, input, base
     Coco.emit \parse t
     t.ast = Coco.ast t.tokens
     if o.ast
-      say t.ast.toString()trim()
-      throw
-    if o.json
-      say t.ast.stringify 1
+      say if o.json then t.ast.stringify 2 else ''trim.call t.ast
       throw
     Coco.emit \compile t
     t.output = t.ast.compileRoot t.options
     if o.run
       Coco.emit \run t
       if o.eval
-      then global <<< {module, require}; console.log (0; eval) t.output
-      else Coco.run t.output, t.options <<< {+js}
+        global <<< {module, require}
+        console.log (\indirect;eval) t.output
+      else
+        Coco.run t.output, t.options <<< {+js}
     else
+      if o.json
+        t.output = JSON.stringify((\indirect;eval) t.output; null 2) + \\n
       Coco.emit \write t
       if o.print
       then say t.output.trimRight()
@@ -149,7 +150,8 @@ function watch source, base
 function writeJS source, js, base
   #     foo.co     => foo.js
   #     foo.jsm.co => foo.jsm
-  filename = path.basename(source)replace /(?:(\.\w+)?\.\w+)?$/ -> @@1 or \.js
+  filename = path.basename(source)replace do
+    /(?:(\.\w+)?\.\w+)?$/ -> @@1 or if o.json then \.json else \.js
   dir = path.dirname source
   if o.output
     dir = path.join that, dir.slice if base is \. then 0 else base.length
