@@ -92,10 +92,14 @@ function addImplicitIndentation tokens
     else
       tokens.splice ++i, 0 indent
     switch
-    case next of <[ , DOT ]> then --i; fallthrough  # ->,
-    case \, is tokens[i+2]?0 then go 0 i+=2; ++i    # -> 0,
-    case next of <[ ( [ { ]> and                    # -> [0],
-         \, is tokens[idx = 1 + indexOfPair tokens, i+1]?0
+    # ->,
+    case next of <[ , DOT ]> then --i; fallthrough
+    # -> 0,
+    case next of <[ ID STRNUM LITERAL SUPER ]> and \, is tokens[i+2]?0
+      go 0 i+=2; ++i
+    # -> [0],
+    case next of <[ ( [ { ]>
+     and \, is tokens[idx = 1 + indexOfPair tokens, i+1]?0
       go 0 idx; ++i
     default
       seenSwitch = false

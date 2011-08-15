@@ -33,10 +33,6 @@ result = I( ->
 eq result()(), 'Wrapped'
 
 
-funcs  = [(x) -> x, (x) -> x * x]
-eq 25, funcs[0] funcs.1 5
-
-
 eq 'lo', ("hello".slice) 3
 
 
@@ -244,14 +240,12 @@ eq '''
 ''', Coco.compile '-> @it', {+bare}
 
 
-# Bare single line functions are closed by commas.
-fn = (count, ...fns) -> eq count, fns.length
-fn 2, ->, ->
-fn 3, ->, ->, ->
-fn 2, -> value, -> value
-eq 2, [-> value, -> value].length
-numbers = one: -> 1, two: -> 2
-funcs = one: -> [-> 1, three: 3], two: -> 2
+# Simple functions require no parens when comma-listed.
+funs = [->, -> 1, -> it, -> this, null]
+eq 1, +funs.3.call funs.2 funs.1()
+
+# [#81](https://github.com/satyr/coco/issues/81)
+ok I(->), 'be careful when specialcasing `-> X ,`'
 
 
 eq 0, (new do -> Array).length
