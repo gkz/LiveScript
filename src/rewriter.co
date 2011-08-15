@@ -68,7 +68,7 @@ function transformParens tokens
 function tagPostfixConditionals tokens
   detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
   function ok -> it.0 of <[ TERMINATOR INDENT ]>
-  function go -> token.0 = \POST_IF if it.0 is not \INDENT
+  function go -> it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
   void
 
 # Because our grammar is LALR(1), it can't handle some single-line
@@ -88,7 +88,7 @@ function addImplicitIndentation tokens
     indent = [\INDENT 0 token.2]; dedent = [\DEDENT 0]
     if tag is \THEN
       tokens.splice --i, 1 if tokens[i-1]?0 is \TERMINATOR
-      tokens[i] = indent
+      (tokens[i] = indent)then = true
     else
       tokens.splice ++i, 0 indent
     switch

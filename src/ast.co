@@ -1264,7 +1264,7 @@ class exports.Fun extends Node
     else if @accessor
       that.carp 'excess accessor parameter' if params.1
     else unless params.length or @wrapper
-      params.0 = Var \it if body.traverseChildren(-> it.value is \it or null)
+      params.0 = Var \it if body.traverseChildren -> it.value is \it or null
     if params.length
       dic = {}
       for p of params
