@@ -295,6 +295,16 @@ f = ->
 o = f.new {2, 3}
 eq o.2 * o.3, 6
 
+o = q = null
+eq o?p <<< q?r, void
+
+o = p: {}
+eq o?p <<< q?r, o.p
+
+q = r: s: \t
+o?p <<< q?r
+eq o.p.s, \t
+
 
 ### {in,de}crement
 a = [0]

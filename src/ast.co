@@ -1080,7 +1080,10 @@ class exports.Import extends Node
 
   ::delegate <[ isCallable isArray ]> -> @left[it]()
 
-  unfoldSoak: (o) -> (@void or not o.level) and If.unfoldSoak o, this, \right
+  unfoldSoak: (o) ->
+    If.unfoldSoak o, this, \left
+    or (@void or not o.level) and
+    If.unfoldSoak o, this, \right
 
   compileNode: (o) ->
     {right} = this
