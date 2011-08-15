@@ -67,11 +67,11 @@ tint \co [
 ]
 
 ### Subrules
-hashbraces = [\lang-co /^#({[\S\s]*?})/ \#]
-regexes    = [\lit /^[\S\s]+?/]
+interps = [\lang-co // ^# ({[\S\s]*?} | #ident) // \#]
+regexes = [\lit /^[\S\s]+?/]
 
-tint \co-qq [hashbraces] [[\str /^[\S\s]+?/]]
-tint \co-qr [hashbraces] [[\com /^\s#(?!{).*/] regexes]
+tint \co-qq [interps] [[\str /^[\S\s]+?/]]
+tint \co-qr [interps] [[\com /^\s#(?!{).*/] regexes]
 tint \co-r  [] [regexes]
 
 tint \co-at [[\ctx /^@+/ \@]] []
