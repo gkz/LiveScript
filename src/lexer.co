@@ -145,14 +145,13 @@ exports import
         or @tokens[*-2]?0 is \FOR and (@token \FROM ''; @token \STRNUM \0)
           import {-seenFrom, +seenTo}
           tag = \TO
-        else if last.0 is \STRNUM and not last.callable and not isNaN last.1
+        else if last.0 is \STRNUM and not last.callable
           last <<< 0:\RANGE op:id
           return id.length
       case \by
-        if last.0 is \RANGE and last.to
-          last.by = true
-          return 2
-        @seenTo &&= !tag = \BY
+        if last.0 is \STRNUM and @tokens[*-2]0 is \RANGE
+        then tag = \RANGE_BY
+        else @seenTo &&= !tag = \BY
       case \ever then if last.0 is \FOR
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
     @token tag || match.1.toUpperCase(), id
@@ -183,9 +182,7 @@ exports import
       # `@0.0` => `@[0][0]`
       else if match.3 and ~(dotpos = num.indexOf \.) and able @tokens
         input = num.=slice 0 dotpos
-    if last.0 is \RANGE and (not last.to or last.by is true)
-    then last[if last.to then \by else \to] = num
-    else if sign then @token \STRNUM num else @strnum num
+    if sign then @token \STRNUM num else @strnum num
     input.length
 
   # Matches a string literal.
