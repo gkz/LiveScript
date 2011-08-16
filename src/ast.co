@@ -1162,9 +1162,10 @@ class exports.Of extends Node
     else
       code = "#{ utility \indexOf }.call(#{ @array.compile o, level }, #ref
             ) #{ if @negated then \< else \>= } 0"
-      return code if sub is ref
-      code = sub + ', ' + code
-    o.scope.free ref unless sub is ref
+      if sub is ref
+      then level = LEVEL_OP + PREC\<
+      else code  = "#sub, #code"
+    sub is ref or o.scope.free ref
     if o.level < level then code else "(#code)"
 
 #### Existence
