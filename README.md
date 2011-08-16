@@ -32,6 +32,11 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.6.1b
+- `import`ing onto a soaked expression is now safe.
+- `--json` is now a modifier to `--ast` or `--compile`.
+- Fixed [#81](https://github.com/satyr/coco/issues/81).
+
 ### 0.6.0
 
 #### Additions

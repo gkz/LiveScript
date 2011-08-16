@@ -1909,7 +1909,9 @@ UTILITIES =
   join     : '[].join'
   slice    : '[].slice'
   indexOf  : '''[].indexOf || function(x){
-    for (var i = this.length; i-- && this[i] !== x;); return i;
+    var i = -1, l = this.length;
+    while (++i < l) if (this.hasOwnProperty(i) && this[i] === x) return i;
+    return -1;
   }'''
 
 # Each level indicates a node's position in the AST.

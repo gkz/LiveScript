@@ -85,6 +85,9 @@ eq true, 4 not of array
 eq true, 1 not of []
 eq true, [3]pop() of [0, ...array]
 eq true, [4]pop() of [...array, 4]
+
+eq false, void of length: 1
+
 ok array[0]++ of [0, 1] 'should cache testee'
 
 
