@@ -32,11 +32,11 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.6.1b
+### 0.6.1
 - Allowed line folding after `for` prepositions.
 - `import`ing onto a soaked expression is now safe.
 - `--json` now modifies `--ast` or `--compile`.
-- Fixed [#81](https://github.com/satyr/coco/issues/81).
+- Fixed [#81](https://github.com/satyr/coco/issues/81) etc.
 
 ### 0.6.0
 
