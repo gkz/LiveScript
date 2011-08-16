@@ -283,24 +283,13 @@ function carp(msg, lno) -> throw SyntaxError "#msg on line #{-~lno}"
 
 ### Constants
 
-# List of the token pairs that must be balanced.
-BALANCED_PAIRS =
-  <[      ( )      ]>
-  <[      [ ]      ]>
-  <[      { }      ]>
-  <[  CALL( )CALL  ]>
-  <[ PARAM( )PARAM ]>
-  <[ INDENT DEDENT ]>
-
-# The inverse mappings of `BALANCED_PAIRS` to look things up from either end.
-INVERSES = {}
-
 # Tokens that signal the start/end of a balanced pair.
-OPENERS = []; CLOSERS = []
+OPENERS = <[ ( [ { CALL( PARAM( INDENT ]>
+CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
 
-for [left, rite] of BALANCED_PAIRS
-  OPENERS.push INVERSES[rite] = left
-  CLOSERS.push INVERSES[left] = rite
+# The inverse mappings of {OPEN,CLOS}ERS to look things up from either end.
+INVERSES = new
+  import {(c = CLOSERS[i]): o, (o): c} for o, i of OPENERS
 
 # Tokens that can start a dot/call chain.
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH ]>
