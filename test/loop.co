@@ -175,6 +175,18 @@ new -> do ~>
     1
 
 
+### Line folding after `for` prepositions
+for x in
+   {2}
+  for y  of
+     [3] by
+     -1
+    for z from
+        5 til
+        6
+      eq x*y*z, 30
+
+
 ### Scoping
 # For each direct call below a loop,
 # define it outside and pass loop variables to it if any.
@@ -202,7 +214,7 @@ os = for n of [11 13] then new -> @<<< n: -> n
 eq 11 os.0.n()
 
 
-### Post-`for` chains.
+### Post-`for` chains
 eq "#{
   a * b * c * d         \
   for a in {1}          \

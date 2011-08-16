@@ -40,8 +40,6 @@ exports import
     @tokens = [@last = [\TERMINATOR \\n 0]]
     # The current line. Starts from -1 to setoff the prepended newline.
     @line = ~-o.line
-    # The current indentation level.
-    @dent = 0
     # The stack of all current indentation levels.
     @dents = []
     # The stack for pairing tokens.
@@ -79,6 +77,9 @@ exports import
     # Rewrite the token stream unless explicitly asked not to.
     o.raw or rewrite @tokens
     @tokens
+
+  # The current indentation level.
+  dent: 0
 
   #### Tokenizers
 
@@ -326,7 +327,8 @@ exports import
       if tabs and (@emender ||= //[^#{ tabs.charAt 0 }]//)exec tabs
         @carp "contaminated indent #{ escape that }"
       if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := += ]>
-      or tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE ]>
+      or tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
+                   IN OF TO BY FROM ]>
         return length
       cont = LINE_CONTINUER.test code.slice index+1
       if delta then @indent delta, cont else cont or @newline()
