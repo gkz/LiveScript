@@ -17,7 +17,6 @@ exports import {rewrite, able}
 # corrected before implicit parentheses can be wrapped around blocks of code.
 
 function rewrite
-  removeTerminators      it
   transformParens        it
   addImplicitIndentation it
   tagPostfixConditionals it
@@ -25,20 +24,6 @@ function rewrite
   addImplicitBraces      it
   expandLiterals         it
   it
-
-# - Dispatch leading terminators that would introduce ambiguity in the grammar.
-# - Some blocks occur in the middle of expressions.
-#   Remove their trailing terminators here to simplify things.
-function removeTerminators tokens
-  i = -1
-  break unless that.0 is \TERMINATOR while tokens[++i]
-  i and tokens.splice 0 i
-  i = 1
-  while tokens[++i]
-    continue unless tokens[i-1]0 is \TERMINATOR
-    if that.0 of [\ELSE \CASE \DEFAULT \CATCH \FINALLY ...CLOSERS]
-      tokens.splice i-1 1
-  void
 
 # - `CALL( )` => ` CALL( )CALL`
 # - `( ) -> ` => `PARAM( )PARAM ->`

@@ -100,7 +100,9 @@ exports import
     case \break  \continue        then tag = \JUMP
     case \for  then @seenFor = true; fallthrough
     case \then then @seenFrom = @seenTo = false
-    case \catch \function then id = ''
+    case \catch    then @unterminate(); fallthrough
+    case \function then id = ''
+    case \else \case \default \finally then @unterminate()
     case <[ in of instanceof ]>
       if id is not \instanceof and @seenFor
         @seenFor = false
@@ -432,12 +434,15 @@ exports import
     while debt > 0 and dent = @dents.pop()
       if debt < dent and not @inter
         @carp "unmatched dedent (#debt for #dent)"
-      debt -= if typeof dent is \number then @token \DEDENT dent else dent
       @pair \DEDENT
+      debt -= if typeof dent is \number then @token \DEDENT dent else dent
     void
 
   # Generates a newline token. Consecutive newlines get merged together.
-  newline: -> @token \TERMINATOR \\n unless @last.1 is \\n
+  newline: -> @token \TERMINATOR \\n unless @last.1 is \\n; void
+
+  # Removes the last token if TERMINATOR.
+  unterminate: -> @tokens.length -= @last.0 is \TERMINATOR; void
 
   # Expands variables and expressions inside double-quoted strings or heregexes
   # using Ruby-like notation for substitution of arbitrary expressions.
@@ -545,6 +550,7 @@ exports import
 
   # Pairs up a closing token.
   pair: ->
+    @unterminate()
     unless it is wanted = @closes[*-1]
       # Auto-close DEDENT to support syntax like:
       #
