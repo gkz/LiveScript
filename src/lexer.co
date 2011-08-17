@@ -261,8 +261,9 @@ exports import
     flag  = @validate /^(?:[gimy]{1,4}|[?$]?)/exec(rest)0
     if parts.1
       if flag is \$
-      then @adi(); @token \( \"
-      else tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
+        @adi(); @token \( \"
+      else
+        tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
         if flag is \?
           for t, i of parts by -1 then if t.0 is \TOKENS
             dynaflag = parts.splice(i, 1).0.1

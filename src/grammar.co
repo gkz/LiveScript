@@ -17,22 +17,22 @@
 # Jison DSL
 # ---------
 
-# Since we're going to be wrapped in a function by Jison in any case, if our
-# action immediately returns a value, we can optimize by removing the function
-# wrapper and just returning the value directly.
-unwrap = /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
-
 # Our handy DSL for Jison grammar generation, thanks to
 # [Tim Caswell](http://github.com/creationix). For every rule in the grammar,
 # we pass the pattern-defining string, the action to run, and extra options,
 # optionally. If no action is specified, we simply pass the value of the
 # previous nonterminal.
+ditto = {}
+last  = ''
+
 o = (patterns, action, options) ->
   patterns.=trim()split /\s+/
-  action &&= unwrap.exec(action)1
+  action &&= if action is ditto then last else
+    "#action"
+    .replace /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/ '$$$$ = $1;'
     .replace /\b(?!Er)[A-Z][\w.]*/g \yy.$&
     .replace /\.L\(/g '$&yylineno, '
-  [patterns, action or '', options]
+  [patterns, last := action or '', options]
 
 # Grammatical Rules
 # -----------------
@@ -51,9 +51,9 @@ bnf =
   # The types of things that can be accessed or called into.
   Chain:
     o \Assignable    -> Chain $1
-    o \Parenthetical -> Chain $1
+    o \Parenthetical ditto
     o \STRNUM        -> Chain L Literal $1
-    o \LITERAL       -> Chain L Literal $1
+    o \LITERAL       ditto
     o \SUPER         -> Chain L new Super
 
     o 'Chain CALL( ArgList OptComma )CALL' -> $1.add Call $3
@@ -85,7 +85,7 @@ bnf =
     o \Arg                                              -> [$1]
     o 'ArgList , Arg'                                   -> $1.concat $3
     o 'ArgList OptComma TERMINATOR Arg'                 -> $1.concat $4
-    o 'ArgList OptComma INDENT ArgList OptComma DEDENT' -> $1.concat $4
+    o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ditto
   Arg:
     o     \Expression
     o '... Expression' -> Splat $2
@@ -97,11 +97,11 @@ bnf =
     o \,
 
   # A list of lines, separated by newlines or semicolons.
-  Body:
-    o \Line                  -> Block $1
-    o 'Body TERMINATOR Line' -> $1.add $3
-    o 'Body Block'           -> $1.add $2
-    o 'Body TERMINATOR'
+  Lines:
+    o ''                      -> Block!
+    o \Line                   -> Block $1
+    o 'Lines TERMINATOR Line' -> $1.add $3
+    o 'Lines TERMINATOR'
   # A line of Coco can be either a (labeled) expression, backcall, comment or
   # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm).
   Line:
@@ -116,8 +116,8 @@ bnf =
   # An indented block of expressions. Note that [Rewriter](#rewriter)
   # converts some single-line forms into blocks for us.
   Block:
-    o 'INDENT Body DEDENT' -> $2.chomp()
-    o 'INDENT      DEDENT' -> Block()
+    o 'INDENT Lines DEDENT' -> $2.chomp()
+    ...
 
   # All the different types of expressions in our language.
   Expression:
@@ -142,13 +142,13 @@ bnf =
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
-    o 'Expression +-      Expression' op = -> Op $2, $1, $3
-    o 'Expression ^       Expression' op
-    o 'Expression COMPARE Expression' op
-    o 'Expression LOGIC   Expression' op
-    o 'Expression MATH    Expression' op
-    o 'Expression SHIFT   Expression' op
-    o 'Expression BITWISE Expression' op
+    o 'Expression +-      Expression' -> Op $2, $1, $3
+    o 'Expression ^       Expression' ditto
+    o 'Expression COMPARE Expression' ditto
+    o 'Expression LOGIC   Expression' ditto
+    o 'Expression MATH    Expression' ditto
+    o 'Expression SHIFT   Expression' ditto
+    o 'Expression BITWISE Expression' ditto
 
     o 'Expression RELATION Expression' ->
       []= if \! is $2.charAt 0
@@ -157,7 +157,7 @@ bnf =
 
     o 'UNARY Expression'  -> []= if $1 is \! then $2.invert() else Op $1, $2
     o '+-    Expression' (-> Op $1, $2), prec: \UNARY
-    o '^     Expression' (-> Op $1, $2), prec: \UNARY
+    o '^     Expression' ditto         , prec: \UNARY
 
     o 'Chain !?' -> Existence $1.unwrap(), true
 
@@ -233,17 +233,22 @@ bnf =
     o \Property                                               -> [$1]
     o 'Properties , Property'                                 -> $1.concat $3
     o 'Properties OptComma TERMINATOR Property'               -> $1.concat $4
-    o 'Properties OptComma INDENT Properties OptComma DEDENT' -> $1.concat $4
+    o 'Properties OptComma INDENT Properties OptComma DEDENT' ditto
+
+  Parenthetical:
+    o '( Body )' -> Parens $2.chomp!unwrap!, false, $1 is \"
+    ...
+
+  Body:
+    o \Lines
+    o \Block
+    o 'Block TERMINATOR Lines' -> $1.add $3
 
   # The most basic form of `if` is a condition and an action. The following
   # `if`-related rules are broken up along these lines to avoid ambiguity.
   IfBlock:
     o              'IF Expression Block' ->            If $2, $3, $1 is \unless
     o 'IfBlock ELSE IF Expression Block' -> $1.addElse If $4, $5, $3 is \unless
-
-  Parenthetical:
-    o '(        Body        )' -> Parens $2.chomp()unwrap(), false, $1 is \"
-    o '( INDENT Body DEDENT )' -> Parens $3.chomp()unwrap(), false, $1 is \"
 
   # Everything that can be assigned to.
   Assignable:
@@ -296,14 +301,6 @@ bnf =
     o         \Expression  -> [$1]
     o 'Exprs , Expression' -> $1.concat $3
 
-  # **Root** is the top-level node in the syntax tree.
-  # Since we parse bottom-up, all parsing must end here.
-  Root:
-    o \Body
-    o 'Block TERMINATOR'
-    o 'Block TERMINATOR Body' -> $1.add $3
-    o ''                      -> Block()
-
 # Precedence and Associativity
 # ----------------------------
 # Following these rules is what makes
@@ -330,13 +327,12 @@ operators =
 # terminals (every symbol which does not appear as the name of a rule above)
 # as `tokens`.
 tokens = do
-  for name, alternatives in bnf
-    for alt of alternatives
-      if name is \Root
-      then alt.1   = "return #{ alt.1 or \$$ };"
-      else alt.1 &&= "$$ = #{alt.1};"
+  for name, alts in bnf
+    for alt of alts
       token if token not in bnf for token of alt.0
 .join ' '
+
+bnf.Root = [[[\Body] 'return $$']]
 
 # Finally, initialize the `parser` with `bnf`, `operators`, `tokens`,
 # and the name of the root.

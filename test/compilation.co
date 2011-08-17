@@ -167,12 +167,11 @@ eq '''
 ''' Coco.compile '+debugger' bare
 
 
-eq '1;\n2;\n3;\n4;\n5;', Coco.compile '''
+eq '1;\n2;\n3;\n4;', Coco.compile '''
   1
-2
-    3
+  2
+3
 4
- 5
 ''' bare
 
 
