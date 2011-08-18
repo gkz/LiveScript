@@ -28,7 +28,7 @@ throws 'unmatched dedent (1 for 2) on line 3' -> Coco.lex '1\n  2\n 3'
 throws 'unmatched `)` on line 2' -> Coco.lex '()\n)'
 throws 'unmatched `]` on line 3' -> Coco.lex '[{\n\n]}'
 
-throws 'missing `)` on line 1' -> Coco.lex 'f('
+throws 'missing `)CALL` on line 1' -> Coco.lex 'f('
 
 
 throws '''

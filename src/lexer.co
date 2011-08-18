@@ -282,7 +282,7 @@ exports import
       if dynaflag or flag >= \g
         @token \, \,
         if dynaflag then tokens.push ...dynaflag else @token \STRNUM "'#flag'"
-      @token \) ''
+      @token (if flag is \$ then \) else \)CALL), ''
     else @regex reslash(parts.0.1.replace HEREGEX_OMIT, ''), flag
     2 + parts.size + flag.length
 
@@ -360,8 +360,7 @@ exports import
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
     case <[  <<  >>  >>>    <?  >?  ]> then tag = \SHIFT
     case \(
-      tag = \CALL( if @able true
-      @closes.push \)
+      @closes.push if @able true then tag = \CALL(; \)CALL else \)
     case \[ \{
       @adi()
       @closes.push ']}'charAt val is \{
@@ -370,7 +369,7 @@ exports import
         @rest = code.slice index+1
         return 9e9
       fallthrough
-    case \] \) then @pair val
+    case \] \) then tag = @pair val
     case \: then if @last.0 not of <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= <?= >?= **= ]>
@@ -550,15 +549,16 @@ exports import
 
   # Pairs up a closing token.
   pair: ->
-    @unterminate()
-    unless it is wanted = @closes[*-1]
-      # Auto-close DEDENT to support syntax like:
+    unless it is (wanted = @closes[*-1]) or \)CALL is wanted and it is \)
+      @carp "unmatched `#it`" unless \DEDENT is wanted
+      # Auto-close DEDENT to support code like:
       #
       #     [ a
       #       b ]
       #
-      @carp "unmatched `#it`" unless \DEDENT is wanted and it is @closes[*-2]
       @dedent @dents[*-1]
+      return @pair it
+    @unterminate()
     @closes.pop()
 
   # Throws a syntax error with the current line number.

@@ -25,7 +25,6 @@ function rewrite
   expandLiterals         it
   it
 
-# - `CALL( )` => ` CALL( )CALL`
 # - `( ) -> ` => `PARAM( )PARAM ->`
 # - `FUNCTION ( ... )   ` => `FUNCTION CALL( )CALL`
 # - `FUNCTION ( ... ) ->` => `FUNCTION PARAM( )PARAM ->`
@@ -33,13 +32,11 @@ function transformParens tokens
   stack = []
   for token, i of tokens
     switch token.0
-    case \( \CALL(
+    case \(
       token.postfn = true if tokens[i-1]?0 is \FUNCTION
       stack.push token
-    case \) \)CALL then if start = stack.pop()
-      if start.0 is \CALL(
-        token.0 =  \)CALL
-      else if token.1 and tokens[i+1]?0 of <[ -> <- ]>
+    case \) then if start = stack.pop()
+      if token.1 and tokens[i+1]?0 of <[ -> <- ]>
         start.0 = \PARAM(
         token.0 = \)PARAM
         ++i
