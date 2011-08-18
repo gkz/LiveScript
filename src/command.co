@@ -232,11 +232,11 @@ function forkNode
     o.nodejs.join(' ')trim()split(/\s+/)concat args
     cwd: process.cwd(), env: process.env, customFds: [0 to 2]
 
-function help -> """
+function help then """
   Usage: coco [options] [files] [arguments]
 
   Options:
   #o
 """
 
-function version -> "Coco #{Coco.VERSION}"
+function version then "Coco #{Coco.VERSION}"

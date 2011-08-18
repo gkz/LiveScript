@@ -820,7 +820,7 @@ class exports.Op extends Node
     fs = @first.cache o, true
     If(Existence fs.0, inv; fs.1)addElse(@second)compileExpression o
 
-  function crement -> {'++':\in '--':\de}[it] + \crement
+  function crement then {'++':\in '--':\de}[it] + \crement
 
   compileUnary: (o) ->
     {op, first} = this
@@ -1858,10 +1858,10 @@ Scope::<<<
 
 ##### Constants
 
-function YES  -> true
-function NO   -> false
-function THIS -> this
-function VOID ->
+function YES  then true
+function NO   then false
+function THIS then this
+function VOID then void
 
 UTILITIES =
   # Creates an object's prototypal child, ensuring `__proto__`.
@@ -1942,6 +1942,6 @@ SIMPLENUM = /^\d+$/
 ##### Helpers
 
 # Declares a utility function at the top level.
-function utility -> Scope.root.assign \__ + it, UTILITIES[it]
+function utility then Scope.root.assign \__ + it, UTILITIES[it]
 
-function entab(code, tab) -> code.replace /\n/g \\n + tab
+function entab code, tab then code.replace /\n/g \\n + tab

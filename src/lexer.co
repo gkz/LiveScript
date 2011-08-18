@@ -587,21 +587,21 @@ function detab str, len
   if len then str.replace detab[len]||=//\n[^\n\S]{1,#len}//g \\n else str
 
 # Erases all newlines and indentations.
-function unlines -> it.replace INDENTS, ''
+function unlines then it.replace INDENTS, ''
 INDENTS = /\n[^\n\S]*/g
 
 # Converts newlines/backslashes to their quoted form.
-function enlines -> it.replace LINES, \\\n
+function enlines then it.replace LINES, \\\n
 LINES = /\n/g
 
-function enslash -> it.replace BACKSLASHES, \\\\
+function enslash then it.replace BACKSLASHES, \\\\
 BACKSLASHES = /\\/g
 
 # Quotes slashes unless already quoted.
 reslash = let re = /(\\.)|\//g, fn = (-> @@1 or \\\/) then -> it.replace re, fn
 
 # Deletes the first character if newline.
-function lchomp -> it.slice 1 + it.lastIndexOf \\n 0
+function lchomp then it.slice 1 + it.lastIndexOf \\n 0
 
 #### Constants
 
