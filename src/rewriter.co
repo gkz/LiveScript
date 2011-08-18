@@ -216,7 +216,7 @@ function expandLiterals tokens
         carp 'range limit exceeded' lno if 0x10000 < ts.push \
           [\STRNUM, if char then character n else "#n", lno] [\, \, lno]
       if ts.length then ts.pop() else carp 'empty range' lno
-      tokens.splice i, (if by then 4 else 2), ...ts
+      tokens.splice i, if by then 4 else 2, ...ts
       i += ts.length - 1
     case \INDENT
       if tokens[i-1]
@@ -272,9 +272,10 @@ function decode val, lno
   val.length is 1 or carp 'bad string in range' lno
   [val.charCodeAt!, true]
 
-character = if JSON?
-then -> JSON.stringify String.fromCharCode it
-else -> '"\\u' + (\000 + it.toString 16)slice(-4) + \"
+function uxxxx then '"\\u' + (\000 + it.toString 16)slice(-4) + \"
+character = if JSON!? then uxxxx else ->
+  switch it case 0x2028 0x2029 then uxxxx it
+  default JSON.stringify String.fromCharCode it
 
 function carp(msg, lno) -> throw SyntaxError "#msg on line #{-~lno}"
 
