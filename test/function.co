@@ -378,13 +378,13 @@ eq 6 (a <- g 6; a)
 
 ### `function`
 new
-  function undef1 ->
+  function undef1 then
   function undef2
     void
   eq void undef1()
   eq void undef2()
 
-  function bound ~> this
+  ~function bound then this
   eq this, bound.call \this
 
   f = act: function (n)

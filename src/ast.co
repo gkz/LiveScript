@@ -740,6 +740,8 @@ class exports.Op extends Node
       or second instanceof While and second = Arr [Splat second]
         second.items.unshift Splat first
         return second
+    case \~ then if first instanceof Fun and first.statement and !first.bound
+      return first <<< bound: \_this
     import {op, first, second, post}
 
   children: <[ first second ]>

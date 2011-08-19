@@ -29,7 +29,7 @@ ok c.hasOwnProperty \z
 
 throws 'excess accessor parameter on line 1' -> Coco.compile 'p:~ (a, b) ->'
 
-throws 'named accessor on line 1' -> Coco.compile 'p:~ function f ->'
+throws 'named accessor on line 1' -> Coco.compile 'p:~ ~function f ->'
 
 # No implicit parameter on getter.
 eq '''({
