@@ -26,23 +26,16 @@ function rewrite
   it
 
 # - `( ) -> ` => `PARAM( )PARAM ->`
-# - `FUNCTION ( ... )   ` => `FUNCTION CALL( )CALL`
-# - `FUNCTION ( ... ) ->` => `FUNCTION PARAM( )PARAM ->`
 function transformParens tokens
   stack = []
   for token, i of tokens
     switch token.0
-    case \(
-      token.postfn = true if tokens[i-1]?0 is \FUNCTION
-      stack.push token
+    case \( then stack.push token
     case \) then if start = stack.pop()
       if token.1 and tokens[i+1]?0 of <[ -> <- ]>
         start.0 = \PARAM(
         token.0 = \)PARAM
         ++i
-      else if start.postfn
-        start.0 = \CALL(
-        token.0 = \)CALL
   void
 
 # Tag postfix conditionals as such, so that we can parse them with a
@@ -152,17 +145,15 @@ function addImplicitParentheses tokens
         doblock = tokens.splice i, 1
     continue unless i
     [tag] = token; prev = tokens[i-1]
-    if tag is \[
-      brackets.push prev.0 is \DOT
+    brackets.push prev.0 is \DOT if tag is \[
     if prev.0 is \]
       if brackets.pop() then prev.index = true else continue
-    unless postfn = prev.0 is \FUNCTION
+    unless prev.0 of <[ FUNCTION LET ]>
       continue unless prev.spaced and able tokens, i, true
     if doblock
       token.0 = \CALL(; tpair.0 = \)CALL
       continue
     continue unless tag of ARG or not token.spaced and tag of <[ +- ^ ]>
-    continue if postfn and tag of <[ PARAM( -> ]>
     if tag is \CREMENT
       continue if token.spaced or tokens[i+1]?0 not of CHAIN
     skipBlock = seenSwitch = false
@@ -193,9 +184,9 @@ function addImplicitParentheses tokens
 
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand number ranges.
-# - Insert `->` between each `new`/`function` facing a block.
-# - Insert `,` between each non-callable token facing an argument token.
 # - Insert `void` before empty commas.
+# - Insert `()` after each `function`/`let` facing a block.
+# - Insert `, ` after each non-callable token facing an argument token.
 function expandLiterals tokens
   i = -1
   while token = tokens[++i]
@@ -218,17 +209,17 @@ function expandLiterals tokens
       if ts.length then ts.pop() else carp 'empty range' lno
       tokens.splice i, if by then 4 else 2, ...ts
       i += ts.length - 1
-    case \INDENT
-      if tokens[i-1]
-        if that.1 is \new or that.0 is \FUNCTION
-          tokens.splice i++ 0 [\-> '' token.2]
-        else if that.0 is \LET
-          tokens.splice i, 0 [\CALL( '' token.2] [\)CALL '' token.2]
-          i += 2
-      continue
     case \,
       if i and tokens[i-1]0 of <[ , [ CALL( PARAM( ]>
         tokens.splice i++ 0 [\LITERAL \void token.2]
+      continue
+    case \INDENT
+      if tokens[i-1]
+        if that.1 is \new
+          tokens.splice i++ 0 [\-> '' token.2]
+        else if that.0 of <[ FUNCTION LET ]>
+          tokens.splice i, 0 [\CALL( '' token.2] [\)CALL '' token.2]
+          i += 2
       continue
     case \LITERAL \} \!? then break
     case \) \)CALL then continue if token.1

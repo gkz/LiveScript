@@ -188,7 +188,7 @@ eq ok, do ->
 
 
 throws 'misplaced function declaration on line 1', ->
-  Coco.compile 'if 1 then function F ->'
+  Coco.compile 'if 1 then function F then'
 
 
 # Returns with multiple branches.

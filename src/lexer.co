@@ -360,7 +360,8 @@ exports import
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
     case <[  <<  >>  >>>    <?  >?  ]> then tag = \SHIFT
     case \(
-      @closes.push if @able true then tag = \CALL(; \)CALL else \)
+      @closes.push if @last.0 of <[ FUNCTION LET ]> or @able true
+      then tag = \CALL(; \)CALL else \)
     case \[ \{
       @adi()
       @closes.push ']}'charAt val is \{
