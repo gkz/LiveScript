@@ -44,6 +44,8 @@ exports import
     @dents = []
     # The stack for pairing tokens.
     @closes = []
+    # The stack for tagging parameters.
+    @parens = []
     # Call tokenizers based on the character at current `i`ndex.
     # Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
@@ -360,8 +362,13 @@ exports import
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
     case <[  <<  >>  >>>    <?  >?  ]> then tag = \SHIFT
     case \(
-      @closes.push if @last.0 of <[ FUNCTION LET ]> or @able true
-      then tag = \CALL(; \)CALL else \)
+      unless @last.0 of <[ FUNCTION LET ]> or @able true
+        @token \( \(
+        @closes.push \)
+        @parens.push @last
+        return 1
+      tag = \CALL(
+      @closes.push \)CALL
     case \[ \{
       @adi()
       @closes.push ']}'charAt val is \{
@@ -370,7 +377,8 @@ exports import
         @rest = code.slice index+1
         return 9e9
       fallthrough
-    case \] \) then tag = @pair val
+    case \] \)
+      @lpar = @parens.pop! if \) is tag = val = @pair val
     case \: then if @last.0 not of <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= <?= >?= **= ]>
@@ -404,10 +412,11 @@ exports import
     case \~
       return 1 if @dotcat val
       tag = \UNARY
-    case \~> then tag = \->
+    case \~> then tag = \->; fallthrough
+    case \-> then @parameters! or (@token \PARAM( ''; @token \)PARAM '')
     case \<~ then tag = \<-; fallthrough
     case \<-
-      break if @last.1 is \)
+      break if @parameters!
       {tokens} = this; i = tokens.length
       continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ( ]>
       tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
@@ -443,6 +452,9 @@ exports import
 
   # Removes the last token if TERMINATOR.
   unterminate: -> @tokens.length -= @last.0 is \TERMINATOR; void
+
+  # Re-tags function parameters.
+  parameters: -> @last.1 is \) and (@lpar.0 = \PARAM(; @last.0 = \)PARAM)
 
   # Expands variables and expressions inside double-quoted strings or heregexes
   # using Ruby-like notation for substitution of arbitrary expressions.
