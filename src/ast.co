@@ -397,7 +397,7 @@ class exports.Chain extends Node
 
   isAssignable: ->
     return @head.isAssignable() unless tail = @tails[*-1]
-    return false if tail not instanceof Index
+    return false if tail not instanceof Index or tail.key instanceof List
     return false if tail.assign for tail of @tails
     true
 

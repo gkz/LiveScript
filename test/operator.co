@@ -325,7 +325,7 @@ eq a.0 ++  -- a.0
 eq 1 i
 
 throws 'increment of undeclared variable "C" on line 1' -> Coco.compile 'C++'
-throws 'invalid increment on line 1' -> Coco.compile '++q.=p'
+throws 'invalid increment on line 1' -> Coco.compile '++a[b, c]'
 throws 'invalid decrement on line 1' -> Coco.compile 'q.=p--'
 
 
