@@ -333,12 +333,11 @@ class exports.Key extends Atom
 #### Index
 # Dots and brackets to access an object's property.
 class exports.Index extends Node
-  (key, symbol or \.) ~>
-    switch key.length
-    case 0 then key = Key \__proto__
-    case 1 then key.=0
-    case void then break
-    default key = Arr key
+  (key, symbol or \., init) ~>
+    if init and key instanceof Arr
+      switch key.items.length
+      case 0 then key = Key \__proto__
+      case 1 then key = Parens key.items.0
     if \? is symbol.charAt 0
       @soak = \?
       symbol.=slice 1

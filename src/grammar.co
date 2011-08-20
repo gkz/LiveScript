@@ -62,12 +62,20 @@ bnf =
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 
-  # Variables and properties that can be assigned to.
-  SimpleAssignable:
+  # Everything that can be assigned to.
+  Assignable:
     o \ID -> L Var $1
 
-    o 'Chain DOT Key'                  -> $1.add Index $3, $2
-    o 'Chain DOT [ ArgList OptComma ]' -> $1.add Index $4, $2
+    o 'Chain DOT Key'  -> $1.add Index $3, $2, true
+    o 'Chain DOT List' ditto
+
+    o 'Chain ?' -> Existence $1.unwrap()
+
+    o \List
+  # Array/Object
+  List:
+    o '[ ArgList    OptComma ]' -> L Arr $2
+    o '{ Properties OptComma }' -> L Obj $2
 
   # **Key** represents a property name, before `:` or after `.`.
   Key:
@@ -133,8 +141,8 @@ bnf =
     o 'Expression IMPORT INDENT ArgList OptComma DEDENT'
     , -> Import $1, Arr.maybe($4), $2 is \<<<<
 
-    o 'CREMENT SimpleAssignable' -> Op $1, $2
-    o 'SimpleAssignable CREMENT' -> Op $2, $1, null true
+    o 'CREMENT Assignable' -> Op $1, $2
+    o 'Assignable CREMENT' -> Op $2, $1, null true
 
     # Arithmetic and logical operators, working on one or two operands.
     # The precedence rules are defined at the bottom of the page.
@@ -200,10 +208,10 @@ bnf =
     o 'TRY Block CATCH Block FINALLY Block' -> new Try $2, $3, $4, $6
     o 'TRY Block             FINALLY Block' -> new Try $2, null null $4
 
-    o 'CLASS                                     Block' -> new Class null null $2
-    o 'CLASS                  EXTENDS Expression Block' -> new Class null $3,  $4
-    o 'CLASS SimpleAssignable                    Block' -> new Class $2,  null $3
-    o 'CLASS SimpleAssignable EXTENDS Expression Block' -> new Class $2,  $4,  $5
+    o 'CLASS                               Block' -> new Class null null $2
+    o 'CLASS            EXTENDS Expression Block' -> new Class null $3,  $4
+    o 'CLASS Assignable                    Block' -> new Class $2,  null $3
+    o 'CLASS Assignable EXTENDS Expression Block' -> new Class $2,  $4,  $5
 
     o 'Chain EXTENDS Expression' -> Util.Extends $1.unwrap(), $3
 
@@ -249,17 +257,6 @@ bnf =
   IfBlock:
     o              'IF Expression Block' ->            If $2, $3, $1 is \unless
     o 'IfBlock ELSE IF Expression Block' -> $1.addElse If $4, $5, $3 is \unless
-
-  # Everything that can be assigned to.
-  Assignable:
-    o \SimpleAssignable
-
-    o '[ ArgList    OptComma ]' -> L Arr $2
-    o '{ Properties OptComma }' -> L Obj $2
-
-    o 'Chain ?' -> Existence $1.unwrap()
-
-    o 'Chain DOT { Properties OptComma }' -> $1.add Index L(Obj $4), $2
 
   LoopHead:
     # The source of a `for`-loop is an array, object, or range.
