@@ -599,10 +599,9 @@ class exports.Obj extends List
   # `base{x: y}` => `{x: base.y}`
   toSlice: (o, base, assign) ->
     {items} = this
-    items.splice i-- 1 if node.comment for node, i of items
-    items.length or @carp 'empty object slice'
     if items.length > 1 then [base, ref, temps] = base.cache o else ref = base
     for node, i of items
+      continue if node.comment
       if node instanceof [Prop, Splat]
         node[name = node.children[*-1]] =
           chain = Chain base, [Index node[name]maybeKey()]
@@ -621,6 +620,7 @@ class exports.Obj extends List
         val = logic <<< {first: val} if logic
         items[i] = Prop key, val
       base = ref
+    chain or @carp 'empty slice'
     (chain.head = Var temps.0)temp = true if temps
     this
 
@@ -692,7 +692,8 @@ class exports.Arr extends List
       chain = Chain base, [Index item]
       items[i] = if splat then Splat chain else chain
       base = ref
-    (chain.head = Var temps.0)temp = true if chain and temps
+    chain or @carp 'empty slice'
+    (chain.head = Var temps.0)temp = true if temps
     this
 
   compile: (o) ->
