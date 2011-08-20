@@ -572,9 +572,13 @@ class exports.Call extends Node
 #### List
 # An abstract node for a list of comma-separated items.
 class List extends Node
-  children : [\items]
-  isEmpty  : -> not @items.length
-  assigns  : -> return true if node.assigns it for node of @items
+  children: [\items]
+
+  show  : -> @name
+  named : (@name) -> this
+
+  isEmpty : -> not @items.length
+  assigns : -> return true if node.assigns it for node of @items
 
   @compile = (o, items) ->
     switch items.length
@@ -1011,7 +1015,10 @@ class exports.Assign extends Node
   compileDestructuring: (o, left) ->
     {items} = left; len = items.length; ret = o.level and not @void
     rite = @right.compile o, if len is 1 then LEVEL_CALL else LEVEL_LIST
-    if (ret or len > 1) and (not ID.test rite or left.assigns rite)
+    if left.name
+      cache = "#that = #rite"
+      o.scope.declare rite = that
+    else if (ret or len > 1) and (not ID.test rite or left.assigns rite)
       cache = "#{ rref = o.scope.temporary \ref } = #rite"
       rite  = rref
     list = @"rend#{ left..displayName }" o, items, rite
@@ -1279,7 +1286,7 @@ class exports.Fun extends Node
         if vr.isEmpty()
           vr = Var scope.temporary \arg
         else if vr not instanceof Var
-          v = Var vr.varName() || scope.temporary \arg
+          v = Var delete vr.name || vr.varName() || scope.temporary \arg
           assigns.push Assign vr, if df then Op p.op, v, p.second else v
           vr = v
         else if df

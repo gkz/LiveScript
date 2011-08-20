@@ -76,6 +76,9 @@ bnf =
   List:
     o '[ ArgList    OptComma ]' -> L Arr $2
     o '{ Properties OptComma }' -> L Obj $2
+    # Can be labeled to perform named destructuring.
+    o '[ ArgList    OptComma ] LABEL' -> L Arr $2 .named $5
+    o '{ Properties OptComma } LABEL' -> L Obj $2 .named $5
 
   # **Key** represents a property name, before `:` or after `.`.
   Key:

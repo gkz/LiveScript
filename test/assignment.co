@@ -293,3 +293,13 @@ o = d: 0, e: 1
 o{d, e} &&*= d: 2, e: 3
 eq 0 o.d
 eq 3 o.e
+
+
+### Named Destructuring
+[b, c]:a = [0 1]
+eq b, a.0
+eq c, a.1
+
+let {p, q}:o = {2 3}
+  eq p, o.p
+  eq q, o.q
