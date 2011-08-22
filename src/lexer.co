@@ -165,28 +165,24 @@ exports import
   # Matches a number, including decimal, hex and exponential notation.
   doNumber: (code, NUMBER.lastIndex) ->
     return 0 unless input = (match = NUMBER.exec code)0
-    num = (match.3 or input)replace NUMBER_OMIT, ''; {last} = this
-    switch num.charAt 0
-    # `x.0` => `x[0]`
-    case \. then if @adi()
-      @token \STRNUM num.slice(1), true
-      return input.length
-    case \0 then if num.charAt(1) not of ['' \. \x \X]
-      @carp "deprecated octal literal #num"
+    {last} = this
+    # `. 0.0` => `. 0 . 0`
+    if match.5 and (last.0 is \DOT or @adi!)
+      @token \STRNUM match.4.replace NUMBER_OMIT, ''
+      return match.4.length
     if radix = match.1
       num = parseInt rnum = match.2.replace(NUMBER_OMIT, ''), radix
       if isNaN num or num is parseInt rnum.slice(0 -1), radix
         @carp "invalid number #rnum in base #radix"
       num += ''
-    unless last.spaced
-      if sign = last.0 is \+-
-        num = last.1 + num
-        @tokens.pop()
-        @last = last = @tokens[*-1]
-      # `@0.0` => `@[0][0]`
-      else if match.3 and ~(dotpos = num.indexOf \.) and able @tokens
-        input = num.=slice 0 dotpos
-    if sign then @token \STRNUM num else @strnum num
+    else
+      num = (match.3 or input)replace NUMBER_OMIT, ''
+      if match.3 and num.charAt! is \0 and num.charAt(1) not of ['' \.]
+        @carp "deprecated octal literal #{match.4}"
+    if not last.spaced and last.0 is \+-
+      last.0 = \STRNUM; last.1 += num
+      return input.length
+    @strnum num
     input.length
 
   # Matches a string literal.
@@ -670,10 +666,9 @@ JSTOKEN   = /`[^\\`]*(?:\\[\s\S][^\\`]*)*`|/g
 BSTOKEN   = // \\ (?: (\S[^\s,;)}\]]*) | \s* ) //g
 
 NUMBER = //
-  0x[\da-f][\da-f_]*                                              # hex
-| ([2-9]|[12]\d|3[0-6]) r ([\da-z][\da-z_]*)                      # 2-36 base
-| ( (?:\d[\d_]*(?:\.\d[\d_]*)?|\.\d[\d_]*) (?:e[+-]?\d[\d_]*)? )  # decimal
-  [a-z_]*  # decimal comment
+  0x[\da-f][\da-f_]*                                      # hex
+| ([2-9]|[12]\d|3[0-6]) r ([\da-z][\da-z_]*)              # 2-36 base
+| ( (\d[\d_]*)(\.\d[\d_]*)? (?:e[+-]?\d[\d_]*)? ) [a-z_]* # decimal
 |//ig
 NUMBER_OMIT = /_+/g
 
@@ -690,6 +685,6 @@ HEREGEX_OMIT = /\s+(?:#.*)?/g
 LASTDENT = /\n[^\n\S]*$/
 
 LINE_CONTINUER = // ^ \s* (?
-: [,&|>%] | \.(?![.\d]) | <(?![-~[]) | !?\?
+: [,&|>%] | \.(?!\.) | <(?![-~[]) | !?\?
 | (?:and|or)(?![$\w\x7f-\uffff]|[^\n\S]*:(?![:=]))
 ) //

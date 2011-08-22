@@ -203,21 +203,21 @@ class OddSuper
   super: me = -> this
   $uper: me
   1234 : me
-  .567 : me
+  5.67 : me
   '""' : me
 
 class OddSuperSub extends OddSuper
   super: -> super()
   $uper: -> super()
   1234 : -> do super
-  .567 : -> super 8
+  5.67 : -> super 8
   '""' : -> super ...@@
 
 oss = new OddSuperSub
 eq oss.super(), oss
 eq oss.$uper(), oss
 eq oss[1234](), oss
-eq oss[.567](), oss
+eq oss[5.67](), oss
 eq oss['""'](), oss
 
 

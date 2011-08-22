@@ -3,8 +3,7 @@
 eq 3-4, -1
 
 # Decimal
-eq 1.0, .25 + .75
-eq 0.5, 0.0 + -.25 - -.75 + 0.0
+eq 1.0, 0.0 + -0.25 - -0.75 + 0.5
 eq 2011_04_24, 20110424
 
 # Hex
@@ -34,11 +33,6 @@ throws 'empty range on line 3'          -> Coco.tokens '\n\n 1 to 0'
 # Boolean/Number should be indexable.
 ok 42['toString']
 ok true['toString']
-
-# [coffee#1168](https://github.com/jashkenas/coffee-script/issues/1168)
-eq .1 do
-  'leading floating point should not suppress newline'
-  .1
 
 
 ### Arrays
