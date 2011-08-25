@@ -1236,7 +1236,7 @@ class exports.Fun extends Node
       new Scope (if @wrapper then pscope else sscope), @wrapper && sscope
     scope.fun = this
     scope.assign \prototype "#{ that.compile o }.prototype" if @proto
-    o.indent = @tab = '' if @plucked
+    o.indent = @tab = '' if loop = delete o.loop
     o.indent += TAB
     {body, name, tab} = this
     code = \function
@@ -1260,7 +1260,7 @@ class exports.Fun extends Node
     body.makeReturn() unless empty or @ctor or @void or @newed
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
-    return sscope.assign sscope.temporary(\fn), code if @plucked
+    return pscope.assign pscope.temporary(\fn), code if loop
     code += "\n#{tab}return #name;" if @returns
     if @front and not @statement then "(#code)" else code
 
@@ -1487,7 +1487,7 @@ class exports.While extends Node
     this
 
   compileNode: (o) ->
-    @pluckDirectCalls o
+    o.loop = true
     @test and if @un then @test.=invert() else @anaphorize()
     return 'do {' + @compileBody (o.indent += TAB; o), @test if @post
     test = @test?compile o, LEVEL_PAREN or ''
@@ -1511,24 +1511,6 @@ class exports.While extends Node
       code += " if (!#run) #{ @compileBlock o, @else }"
     code + ret
 
-  pluckDirectCalls: (o) ->
-    @body.eachChild dig = ~>
-      unless it.calling or it.op is \new and (fun = it.first) instanceof Fun
-        return if it instanceof [Fun, While] then null else it.eachChild dig
-      fun or {head: fun, tails: [call]} = it.it
-      return if fun.statement
-      if this instanceof For
-        call ||= (it.first = Call.make fun)tails.0  # `new ->`
-        return if fun.params.length ^ call.args.length - !!call.method
-        @index and fun.params.push call.args.* = Var @index
-        if name = @name
-          call.args.push if name.isComplex()
-          then Var @nref ||= @temps.* = o.scope.temporary \ref
-          else name
-          fun.params.push name
-      fun.plucked = true
-      void
-
 #### For
 # Coco's replacements for the `for` loop are array, object or range iterators.
 class exports.For extends While
@@ -1541,6 +1523,7 @@ class exports.For extends While
   show: -> @index
 
   compileNode: (o) ->
+    o.loop = true
     temps = @temps = []
     if idx = @index
     then o.scope.declare idx
@@ -1580,7 +1563,7 @@ class exports.For extends While
     @own and head += ") if (#{ o.scope.assign \_own '{}.hasOwnProperty' }
                             .call(#svar, #idx)"
     head += ') {'
-    @pluckDirectCalls o
+    @hackIIFEs o
     o.indent += TAB
     if @name
       head += \\n + o.indent
@@ -1592,6 +1575,22 @@ class exports.For extends While
     body  = @compileBody o
     head += \\n + @tab if @name and \} is body.charAt 0
     head + body
+
+  # Makes IIFE constructions (such as `let`) capture the loop variables.
+  hackIIFEs: (o) ->
+    @body.traverseChildren ~>
+      return unless it.calling or
+                    it.op is \new and (fun = it.first) instanceof Fun
+      fun or {head: fun, tails: [call]} = it.it
+      call ||= (it.first = Call.make fun)tails.0  # `new ->`
+      return if fun.params.length ^ call.args.length - !!call.method
+      @index and fun.params.push call.args.* = Var @index
+      if name = @name
+        call.args.push if name.isComplex()
+        then Var @nref ||= @temps.* = o.scope.temporary \ref
+        else name
+        fun.params.push name
+      void
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.

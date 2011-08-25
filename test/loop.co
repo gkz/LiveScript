@@ -187,25 +187,22 @@ for x in
       eq x*y*z, 30
 
 
-### Scoping
-# For each direct call below a loop,
-# define it outside and pass loop variables to it if any.
+### Function Plucking
+# Function literals in loops are defined outside.
 them = []
-until them.1
-  with them
-    @push @@callee
+them.push(->) until them.1
 eq ...them
 
-fs = for i, [a, b] in [[], [1, 2], [3, 4]] then if a
-  me = this
-  do ~>
-    return if i < 2
-    eq me, this
-    eq a * b, 12
-  do -> {callee} = @@; -> [a + b, callee]
-[one, two] = (f() for f of fs)
-eq one.0 * two.0, 21
-eq one.1 , two.1
+
+### IIFE Scoping
+# IIFE constructions under `for` auto-capture the loop variables.
+fs = for [a, b] i of [[1 2] [3 4]]
+  for c of [5 6]
+    let
+      -> i + a + b + c
+sums = (f() for f of fs)
+eq sums.1, 9
+eq sums.2, 13
 
 fs = for x, y in {2, 3, 5} then let z = 7 then -> x * y * z
 eq 63 fs.1()
