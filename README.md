@@ -32,6 +32,13 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.6.2
+- Added character ranges: `[\a to \d]` => `[\a \b \c \d]`
+- Added named destructuring: `{p, q}:o = f!` => `o = f!; {p, q} = o`
+- Numbers can no longer start with `.`.
+- `function` can no longer prefix `->`/`~>`.
+  Use `~function` to declare bound functions instead.
+
 ### 0.6.1
 - Allowed line folding after `for` prepositions.
 - `import`ing onto a soaked expression is now safe.
