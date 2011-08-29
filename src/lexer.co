@@ -1,21 +1,14 @@
-# The Coco Lexer. Uses a series of token-matching regexes to attempt
-# matches against the beginning of the source code. When a match is found,
-# a token is produced, we consume the match, and start again.
+# The Lexer Object
+# ----------------
+# Reads a string of Coco code and divvies it up into tagged tokens.
 # Tokens are in the form:
 #
 #     ['TAG', 'value', lineNumber = 0]
 #
 # which is a format that can be fed directly into
 # [Jison](http://github.com/zaach/jison) generated [parser](../lib/parser.js).
-
-# The Lexer Object
-# ----------------
-# Reads a stream of Coco code and divvies it up into tagged tokens.
 # Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into Lexer.
-
-# Depends on [Rewriter](#rewriter).
-{rewrite, able} = require \./rewriter
 
 exports import
   # `lex` is Lexer's one and only public method.
@@ -77,7 +70,7 @@ exports import
     then @rest? or @carp 'unterminated interpolation'
     else @last.spaced = true; @newline()
     # Rewrite the token stream unless explicitly asked not to.
-    o.raw or rewrite @tokens
+    o.raw or @rewrite!
     @tokens
 
   # The current indentation level.
@@ -571,11 +564,32 @@ exports import
     @closes.pop()
 
   # Throws a syntax error with the current line number.
-  carp: -> throw SyntaxError "#it on line #{ @line + 1 }"
+  carp: -> carp it, @line
 
-exports.lex import {rewrite}
+  # Rewrites the token stream in multiple passes, one logical filter at a time.
+  # The order of these passes matters--indentation must be
+  # corrected before implicit parentheses can be wrapped around blocks of code.
+  rewrite: ->
+    it ||= @tokens
+    addImplicitIndentation it
+    tagPostfixConditionals it
+    addImplicitParentheses it
+    addImplicitBraces      it
+    expandLiterals         it
+    it
 
-#### String Helpers
+#### Helpers
+
+function carp msg, lno then throw SyntaxError "#msg on line #{-~lno}"
+
+# Checks whether or not the previous token is {index,`call`}able.
+function able tokens, i ? tokens.length, call
+  [tag] = token = tokens[i-1]
+  tag of <[ ID ] SUPER ]> or if call
+  then token.callable or tag is \? or tag of <[ ) )CALL ]> and token.1
+  else tag of <[ STRNUM LITERAL ) )CALL } ]>
+
+#### String Manipulators
 
 # Constructs a string literal by (un)escaping quotes and newlines.
 string = let do
@@ -611,6 +625,237 @@ reslash = let re = /(\\.)|\//g, fn = (-> @@1 or \\\/) then -> it.replace re, fn
 
 # Deletes the first character if newline.
 function lchomp then it.slice 1 + it.lastIndexOf \\n 0
+
+function decode val, lno
+  return [+val] unless isNaN val
+  val = if val.length > 8 then \ng else do Function \return + val
+  val.length is 1 or carp 'bad string in range' lno
+  [val.charCodeAt!, true]
+
+function uxxxx then \"\\u + (\000 + it.toString 16)slice(-4) + \"
+character = if JSON!? then uxxxx else ->
+  switch it case 0x2028 0x2029 then uxxxx it
+  default JSON.stringify String.fromCharCode it
+
+#### Rewriters
+
+# The Coco language has a good deal of optional syntax, implicit syntax,
+# and shorthand syntax. This can greatly complicate a grammar and bloat
+# the resulting parse table. Instead of making the parser handle it all,
+# we take a series of passes over the token stream, using this **Rewriter**
+# to convert shorthand into the unambiguous long form, add implicit indentation
+# and parentheses, and generally clean things up.
+
+# Tag postfix conditionals as such, so that we can parse them with a
+# different precedence.
+function tagPostfixConditionals tokens
+  detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
+  function ok then it.0 of <[ TERMINATOR INDENT ]>
+  function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
+  void
+
+# Because our grammar is LALR(1), it can't handle some single-line
+# expressions that lack ending delimiters. **Rewriter** adds the implicit
+# blocks, so it doesn't need to. `)` can close a single-line block,
+# but we need to make sure it's balanced.
+function addImplicitIndentation tokens
+  i = -1
+  while token = tokens[++i]
+    [tag] = token
+    continue unless tag of <[ THEN -> ELSE DEFAULT TRY CATCH FINALLY ]>
+    switch next = tokens[i+1]0
+    case \IF then continue if tag is \ELSE
+    case \INDENT \THEN
+      tokens.splice i-- 1 if tag is \THEN
+      continue
+    indent = [\INDENT 0 token.2]; dedent = [\DEDENT 0]
+    if tag is \THEN
+      tokens.splice --i, 1 if tokens[i-1]?0 is \TERMINATOR
+      (tokens[i] = indent)then = true
+    else
+      tokens.splice ++i, 0 indent
+    switch
+    # ->,
+    case next of <[ , DOT ]> then --i; fallthrough
+    # -> 0,
+    case next of <[ ID STRNUM LITERAL SUPER ]> and \, is tokens[i+2]?0
+      go 0 i+=2; ++i
+    # -> [0],
+    case next of <[ ( [ { ]>
+     and \, is tokens[idx = 1 + indexOfPair tokens, i+1]?0
+      go 0 idx; ++i
+    default
+      seenSwitch = false
+      detectEnd tokens, i+1, ok, go
+  function ok token, i
+    switch token.0
+    case \DEDENT        then true
+    case \TERMINATOR    then token.1 is not \;
+    case \, \DOT        then tokens[i-1]eol
+    case \ELSE          then tag is \THEN
+    case \CATCH         then tag is \TRY
+    case \FINALLY       then tag of <[ TRY CATCH THEN ]>
+    case \SWITCH        then not seenSwitch := true
+    case \CASE \DEFAULT then not seenSwitch
+  function go [] i
+    prev = tokens[i-1]
+    tokens.splice if prev.0 is \, then i-1 else i, 0, dedent <<< {prev.2}
+  void
+
+# Methods may be optionally called without parentheses for simple cases.
+# Insert the missing parentheses here to aid the parser.
+function addImplicitParentheses tokens
+  i = -1; brackets = []
+  while token = tokens[++i]
+    doblock = false
+    if token.1 is \do and tokens[i+1]?0 is \INDENT
+      endi = indexOfPair tokens, i+1
+      if tokens[endi+1]0 is \TERMINATOR and tokens[endi+2]?0 is \WHILE
+        token.0 = \DO
+        tokens[endi+2]done = true
+        tokens.splice endi+1 1
+      else
+        (token = tokens[1+ i])0 = \(
+        (tpair = tokens[endi])0 = \)
+        doblock = tokens.splice i, 1
+    continue unless i
+    [tag] = token; prev = tokens[i-1]
+    brackets.push prev.0 is \DOT if tag is \[
+    if prev.0 is \]
+      if brackets.pop() then prev.index = true else continue
+    unless prev.0 of <[ FUNCTION LET ]>
+      continue unless prev.spaced and able tokens, i, true
+    if doblock
+      token.0 = \CALL(; tpair.0 = \)CALL
+      continue
+    continue unless tag of ARG or not token.spaced and tag of <[ +- ^ ]>
+    if tag is \CREMENT
+      continue if token.spaced or tokens[i+1]?0 not of CHAIN
+    skipBlock = seenSwitch = false
+    tokens.splice i++, 0 [\CALL( '' token.2]
+    detectEnd tokens, i, ok, go
+  function ok token, i
+    return true if not skipBlock and token.alias and token.1 of <[ && || ]>
+    pre = tokens[i-1]
+    switch token.0
+    case \DOT then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
+    case \SWITCH                         then seenSwitch := true; fallthrough
+    case \IF \CLASS \FUNCTION \LET \WITH then skipBlock  := true
+    case \CASE
+      if seenSwitch then skipBlock := true else return true
+    case \INDENT
+      return skipBlock := false if skipBlock
+      return pre.0 not of <[
+        { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY HURL DO
+      ]>
+    case \WHILE
+      return false if token.done
+      fallthrough
+    case <[ TERMINATOR POST_IF FOR BY TO ]>
+      return pre.0 is not \,
+    false
+  function go token, i then tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
+  void
+
+# Object literals may be written without braces for simple cases.
+# Insert the missing braces here to aid the parser.
+function addImplicitBraces tokens
+  stack = []; i = -1
+  while token = tokens[++i]
+    unless \: is tag = token.0
+      switch
+      case tag of CLOSERS then start = stack.pop()
+      case tag of OPENERS
+        tag = \{ if tag is \INDENT and tokens[i-1]?0 is \{
+        stack.push [tag, i]
+      continue
+    paren   = tokens[i-1]?0 is \)
+    oneline = paren and tokens[start.1 - 1]?0 is \: or # a: (..):
+              tokens[i-2]?0 is \:                      # a: b:
+    continue unless oneline or stack[*-1]?0 is not \{
+    stack.push [\{]
+    idx  = if paren then start.1 else i-1
+    idx -= 2 while tokens[idx-2]?0 is \COMMENT
+    tokens.splice idx, 0 [\{ \{ token.2]
+    detectEnd tokens, ++i+1, ok, go
+  function ok token, i
+    return true if token.1 is \; or \DEDENT is tag = token.0
+    switch tag
+    case \,          then break
+    case \TERMINATOR then return true if oneline
+    default return false
+    t1 = tokens[i+1]?0
+    t1 is not (if tag is \, then \TERMINATOR else \COMMENT) and
+    \: is not tokens[if t1 is \( then 1 + indexOfPair tokens, i+1 else i+2]?0
+  function go token, i then tokens.splice i, 0 [\} '' token.2]
+  void
+
+# - Slip unary {pl,min}uses off signed numbers.
+# - Expand number ranges.
+# - Insert `void` before empty commas.
+# - Insert `()` after each `function`/`let` facing a block.
+# - Insert `, ` after each non-callable token facing an argument token.
+function expandLiterals tokens
+  i = -1
+  while token = tokens[++i]
+    switch token.0
+    case \STRNUM
+      if ~'-+'indexOf sig = token.1.charAt 0
+        token.1.=slice 1
+        tokens.splice i++ 0 [\+- sig, token.2]
+      continue if token.callable
+    case \RANGE
+      [from, char] = decode token.1, lno = token.2
+      [to, tochar] = decode tokens[i+1]1, lno
+      carp 'bad "to" in range' if char ^ tochar
+      if by = tokens[i+2]?0 is \RANGE_BY
+        carp 'bad "by" in range' if isNaN by = tokens[i+3]?1
+      ts = []; to -= token.op is \til and 1e-15
+      for n from from to to by +by or 1
+        carp 'range limit exceeded' lno if 0x10000 < ts.push \
+          [\STRNUM, if char then character n else "#n", lno] [\, \, lno]
+      if ts.length then ts.pop() else carp 'empty range' lno
+      tokens.splice i, if by then 4 else 2, ...ts
+      i += ts.length - 1
+    case \,
+      if i and tokens[i-1]0 of <[ , [ CALL( PARAM( ]>
+        tokens.splice i++ 0 [\LITERAL \void token.2]
+      continue
+    case \INDENT
+      if tokens[i-1]
+        if that.1 is \new
+          tokens.splice i++ 0 \
+            [\PARAM( '' token.2] [\)PARAM '' token.2] [\-> '' token.2]
+        else if that.0 of <[ FUNCTION LET ]>
+          tokens.splice i, 0 [\CALL( '' token.2] [\)CALL '' token.2]
+          i += 2
+      continue
+    case \LITERAL \} \!? then break
+    case \) \)CALL then continue if token.1
+    case \]        then continue if token.index
+    case \CREMENT  then continue unless i and able tokens, i
+    default continue
+    if token.spaced and tokens[i+1]0 of ARG
+      tokens.splice ++i, 0 [\, \, token.2]
+  void
+
+# Seeks `tokens` from `i`ndex and `go` for a token of the same level
+# that's `ok` or an unmatched closer.
+function detectEnd tokens, i, ok, go
+  levels = 0
+  while token = tokens[i], ++i
+    return go token, i if not levels and ok token, i
+    [tag] = token
+    return go token, i if 0 > levels += tag of OPENERS or -(tag of CLOSERS)
+  void
+
+function indexOfPair tokens, i
+  level = 1; end = INVERSES[start = tokens[i]0]
+  while tokens[++i]
+    switch that.0
+    case start then ++level
+    case end   then return i unless --level
+  -1
 
 #### Constants
 
@@ -688,3 +933,19 @@ LINE_CONTINUER = // ^ \s* (?
 : [,&|>%] | \.(?!\.) | <(?![-~[]) | !?\?
 | (?:and|or)(?![$\w\x7f-\uffff]|[^\n\S]*:(?![:=]))
 ) //
+
+##### Tokens
+
+# Tokens that signal the start/end of a balanced pair.
+OPENERS = <[ ( [ { CALL( PARAM( INDENT ]>
+CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
+
+# The inverse mappings of {OPEN,CLOS}ERS to look things up from either end.
+INVERSES = new -> import {(c = CLOSERS[i]): o, (o): c} for o, i of OPENERS
+
+# Tokens that can start a dot/call chain.
+CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH ]>
+
+# Tokens that can start an argument list.
+ARG = CHAIN.concat <[ ... UNARY CREMENT PARAM( FUNCTION
+                      IF SWITCH TRY CLASS SUPER RANGE LABEL DO ]>

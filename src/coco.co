@@ -2,9 +2,10 @@
 # [tokenizing](#lexer), [parsing](#grammar), and [compiling](#ast)
 # Coco source into JavaScript.
 
+lexer = require \./lexer
+
 # Override Jison's default lexer, so that it can accept
 # the generic stream of tokens our lexer produces.
-{lex}    = require \./lexer
 {parser} = require \./parser
 parser import
   yy    : require \./ast
@@ -14,26 +15,28 @@ parser import
     upcomingInput : -> ''
 
 exports import
-  VERSION: \0.6.2
+  VERSION: \0.6.3b
 
   # Compiles a string of Coco code to JavaScript.
   compile: (code, options) ->
-    try parser.parse(lex code)compileRoot options catch
+    try parser.parse(lexer.lex code)compileRoot options catch
       e.message += "\nat #that" if options?filename
       throw e
 
   # Parses a string or tokens of Coco code,
   # returning the [AST](http://en.wikipedia.org/wiki/Abstract_syntax_tree).
-  ast: -> parser.parse if typeof it is \string then lex it else it
+  ast: -> parser.parse if typeof it is \string then lexer.lex it else it
 
   # Tokenizes a string of Coco code, returning the array of tokens.
-  tokens: lex
+  tokens: lexer.lex
 
-  # Same as `tokens`, except that this skips [rewriting](#rewriter).
-  lex: -> lex it, {+raw}
+  # Same as `tokens`, except that this skips rewriting.
+  lex: -> lexer.lex it, {+raw}
 
   # Runs Coco code directly.
   run: (code, options) -> do Function exports.compile code, {...options, +bare}
+
+exports.tokens{rewrite} = lexer
 
 # Export AST constructors.
 exports.ast import all parser.yy

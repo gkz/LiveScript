@@ -81,7 +81,7 @@ task \build:browser 'build extras/' ->
   slobber \extras/mode-coco.raw.js    js
   slobber \extras/mode-coco.js minify js
   co = ''
-  for name of <[ rewriter lexer ast coco ]>
+  for name of <[ lexer ast coco ]>
     code = slurp("src/#name.co")replace /\n/g '\n '
     co += "let exports = require'./#name' = {}\n#code\n"
   slobber \extras/coco.raw.js js = """
@@ -106,8 +106,7 @@ task \build:browser 'build extras/' ->
   invoke \test:browser
 
 
-coreSources = ->
-  "src/#src.co" for src of <[ coco grammar lexer ast rewriter ]>
+coreSources = -> "src/#src.co" for src of <[ coco grammar lexer ast ]>
 
 task \bench 'quick benchmark of compilation time' ->
   Coco   = require \./lib/coco
