@@ -94,6 +94,8 @@ tokens = Coco.lex '''
 ]>
 '''
 eq tokens.join('\n'), '''
+TERMINATOR,
+,0
 (,\",0
 STRNUM,\"1 \",1
 +-,+,1
@@ -143,10 +145,10 @@ eq '''
 ''', Coco.compile '''try for k in o then do ~> ^@'''
 
 
-eq 'STRNUM,0,0 STRNUM,1,1', '' + Coco.lex('''
+eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' Coco.tokens('''
 0 \\
   1
-''').slice(0 2).join ' '
+''').slice(0 3).join ' '
 
 
 eq '''

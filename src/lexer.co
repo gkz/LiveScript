@@ -61,8 +61,6 @@ exports import
       case \` then i += @doJS code, i
       default i += @doIdentifier code, i or @doNumber code, i
                 or @doLiteral    code, i or @doSpace  code, i
-    # Dispose initial TERMINATOR.
-    @tokens.shift()
     # Close up all remaining open blocks.
     @dedent @dent
     @carp "missing `#that`" if @closes.pop()
@@ -576,6 +574,7 @@ exports import
     addImplicitParentheses it
     addImplicitBraces      it
     expandLiterals         it
+    it.shift! if it.0?0 is \TERMINATOR
     it
 
 #### Helpers
@@ -659,7 +658,7 @@ function tagPostfixConditionals tokens
 # blocks, so it doesn't need to. `)` can close a single-line block,
 # but we need to make sure it's balanced.
 function addImplicitIndentation tokens
-  i = -1
+  i = 0
   while token = tokens[++i]
     [tag] = token
     continue unless tag of <[ THEN -> ELSE DEFAULT TRY CATCH FINALLY ]>
@@ -670,7 +669,7 @@ function addImplicitIndentation tokens
       continue
     indent = [\INDENT 0 token.2]; dedent = [\DEDENT 0]
     if tag is \THEN
-      tokens.splice --i, 1 if tokens[i-1]?0 is \TERMINATOR
+      tokens.splice --i, 1 if tokens[i-1]0 is \TERMINATOR
       (tokens[i] = indent)then = true
     else
       tokens.splice ++i, 0 indent
@@ -702,10 +701,10 @@ function addImplicitIndentation tokens
     tokens.splice if prev.0 is \, then i-1 else i, 0, dedent <<< {prev.2}
   void
 
-# Methods may be optionally called without parentheses for simple cases.
+# Functions may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
 function addImplicitParentheses tokens
-  i = -1; brackets = []
+  i = 0; brackets = []
   while token = tokens[++i]
     doblock = false
     if token.1 is \do and tokens[i+1]?0 is \INDENT
@@ -718,7 +717,6 @@ function addImplicitParentheses tokens
         (token = tokens[1+ i])0 = \(
         (tpair = tokens[endi])0 = \)
         doblock = tokens.splice i, 1
-    continue unless i
     [tag] = token; prev = tokens[i-1]
     brackets.push prev.0 is \DOT if tag is \[
     if prev.0 is \]
@@ -760,16 +758,16 @@ function addImplicitParentheses tokens
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
 function addImplicitBraces tokens
-  stack = []; i = -1
+  stack = []; i = 0
   while token = tokens[++i]
     unless \: is tag = token.0
       switch
       case tag of CLOSERS then start = stack.pop()
       case tag of OPENERS
-        tag = \{ if tag is \INDENT and tokens[i-1]?0 is \{
+        tag = \{ if tag is \INDENT and tokens[i-1]0 is \{
         stack.push [tag, i]
       continue
-    paren   = tokens[i-1]?0 is \)
+    paren   = tokens[i-1]0 is \)
     oneline = paren and tokens[start.1 - 1]?0 is \: or # a: (..):
               tokens[i-2]?0 is \:                      # a: b:
     continue unless oneline or stack[*-1]?0 is not \{
@@ -796,7 +794,7 @@ function addImplicitBraces tokens
 # - Insert `()` after each `function`/`let` facing a block.
 # - Insert `, ` after each non-callable token facing an argument token.
 function expandLiterals tokens
-  i = -1
+  i = 0
   while token = tokens[++i]
     switch token.0
     case \STRNUM
@@ -818,7 +816,7 @@ function expandLiterals tokens
       tokens.splice i, if by then 4 else 2, ...ts
       i += ts.length - 1
     case \,
-      if i and tokens[i-1]0 of <[ , [ CALL( PARAM( ]>
+      if tokens[i-1]0 of <[ , [ CALL( PARAM( ]>
         tokens.splice i++ 0 [\LITERAL \void token.2]
       continue
     case \INDENT
@@ -833,7 +831,7 @@ function expandLiterals tokens
     case \LITERAL \} \!? then break
     case \) \)CALL then continue if token.1
     case \]        then continue if token.index
-    case \CREMENT  then continue unless i and able tokens, i
+    case \CREMENT  then continue unless able tokens, i
     default continue
     if token.spaced and tokens[i+1]0 of ARG
       tokens.splice ++i, 0 [\, \, token.2]
