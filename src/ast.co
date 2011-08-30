@@ -192,6 +192,8 @@ class exports.Block extends Node
 
   children: [\lines]
 
+  toJSON: -> delete @back; super!
+
   add: ->
     switch
     case @back    then that.add it
