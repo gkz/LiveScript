@@ -88,10 +88,6 @@ tokens = Coco.lex '''
     3
   } 4
 """
-<[
-  7
-  8
-]>
 '''
 eq tokens.join('\n'), '''
 TERMINATOR,
@@ -113,13 +109,7 @@ TERMINATOR,
 STRNUM,\" 4\",5
 ),,5
 TERMINATOR,
-,6
-[,[,6
-STRNUM,'7',7
-STRNUM,'8',8
-],],9
-TERMINATOR,
-,9
+,5
 '''
 
 

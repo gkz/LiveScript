@@ -49,10 +49,6 @@ exports import
       case \\n   then i += @doLine      code, i
       case \\    then i += @doBackslash code, i
       case \' \" then i += @doString    code, i, c
-      case \<
-        i += if \[ is code.charAt i+1
-        then @doWords   code, i
-        else @doLiteral code, i
       case \/
         switch code.charAt i+1
         case \* then i += @doComment code, i
@@ -281,19 +277,6 @@ exports import
     if word then @strnum string \' word else @countLines input
     input.length
 
-  # Matches a words literal, a syntax sugar for a list of strings.
-  doWords: (code, index) ->
-    @carp 'unterminated words' unless ~end = code.indexOf \]> index+2
-    @adi(); @token \[ \[
-    {tokens, line} = this
-    for row of code.slice(index+2 end)split \\n
-      if row.match ws||=/\S+/g then for word of that
-        tokens.push [\STRNUM; string \' word; line] <<< {+spaced}
-      ++line
-    @line = line - 1
-    @token \] \]
-    end + 2 - index
-
   # Matches newlines and {in,de}dents, determining which is which.
   # If we can detect that the current line is continued onto the next line,
   # then the newline is suppressed:
@@ -410,8 +393,11 @@ exports import
       @token \)PARAM ''
     case \:: then i = \prototype; fallthrough
     case \.. then @adi(); tag = \ID; val = i || \constructor
-    default if \( is val.charAt 0
-      @token \CALL( \(; tag = \)CALL; val = \)
+    default switch val.charAt 0
+    case \( then @token \CALL( \(; tag = \)CALL; val = \)
+    case \<
+      @carp 'unterminated words' if val.length < 4
+      @adi!; tag = \WORDS; val.=slice 2 -2
     @token tag, val
     sym.length
 
@@ -586,7 +572,7 @@ function able tokens, i ? tokens.length, call
   [tag] = token = tokens[i-1]
   tag of <[ ID ] SUPER ]> or if call
   then token.callable or tag is \? or tag of <[ ) )CALL ]> and token.1
-  else tag of <[ STRNUM LITERAL ) )CALL } ]>
+  else tag of <[ } ) )CALL STRNUM LITERAL WORDS ]>
 
 #### String Manipulators
 
@@ -789,7 +775,7 @@ function addImplicitBraces tokens
   void
 
 # - Slip unary {pl,min}uses off signed numbers.
-# - Expand number ranges.
+# - Expand ranges and words.
 # - Insert `void` before empty commas.
 # - Insert `()` after each `function`/`let` facing a block.
 # - Insert `, ` after each non-callable token facing an argument token.
@@ -815,6 +801,12 @@ function expandLiterals tokens
       if ts.length then ts.pop() else carp 'empty range' lno
       tokens.splice i, if by then 4 else 2, ...ts
       i += ts.length - 1
+    case \WORDS
+      ts = [[\[ \[ lno = token.2]]
+      for word of token.1.match /\S+/g or ''
+        ts.push [\STRNUM; string \' word; lno] [\, \, lno]
+      tokens.splice i, 1, ...ts, [\] \] lno]
+      i += ts.length
     case \,
       if tokens[i-1]0 of <[ , [ CALL( PARAM( ]>
         tokens.splice i++ 0 [\LITERAL \void token.2]
@@ -894,11 +886,12 @@ SYMBOL = //
 | [!=]==?                     # equality
 | \?\.                        # soak access
 | ~[.>]                       # bind access/function
+| @@                          # `arguments`
+| <\[(?:[\s\S]*?\]>)?         # words
 | <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
 | >>>?=?                      # rite shift
 | [<>]\?=?                    # min/max
 | !\?                         # inexistence
-| @@                          # `arguments`
 | \*\*=?                      # pow
 | [^\s#]?
 //g
@@ -942,7 +935,7 @@ CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
 INVERSES = new -> import {(c = CLOSERS[i]): o, (o): c} for o, i of OPENERS
 
 # Tokens that can start a dot/call chain.
-CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH ]>
+CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
 ARG = CHAIN.concat <[ ... UNARY CREMENT PARAM( FUNCTION
