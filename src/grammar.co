@@ -119,7 +119,8 @@ bnf =
     o \Expression
     o 'LABEL Expression' -> new Label $1, $2
 
-    o 'PARAM( ArgList OptComma )PARAM <- Expression' -> Call.back $2, $5, $6
+    o 'PARAM( ArgList OptComma )PARAM <- Expression'
+    , -> Call.back $2, $6, $5 is \<~
 
     o \COMMENT -> L JS $1, true true
     o \...     -> L Throw JS "Error('unimplemented')"
@@ -173,7 +174,7 @@ bnf =
     o 'Chain !?' -> Existence $1.unwrap(), true
 
     # The function literal can be either anonymous with `->`,
-    o 'PARAM( ArgList OptComma )PARAM -> Block' -> L Fun $2, $6, $5
+    o 'PARAM( ArgList OptComma )PARAM -> Block' -> L Fun $2, $6, $5 is \~>
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
 

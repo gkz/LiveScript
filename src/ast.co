@@ -193,13 +193,12 @@ class exports.Block extends Node
   children: [\lines]
 
   add: ->
-    if @back
-      that.add it
-    else if it.lines
-      @lines.push ...that
-    else
+    switch
+    case @back    then that.add it
+    case it.lines then @lines.push ...that
+    default
       @lines.push it
-      @back = that if it.back
+      @back = that if delete it.back
     this
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this
@@ -555,11 +554,10 @@ class exports.Call extends Node
   @block = (fun, args, method) ->
     Parens(Chain fun, [Call(args) <<< {method}]; true) <<< {+calling}
 
-  @back = (params, arrow, node) ->
-    (call = node.getCall()) or node = Chain(node)add call = Call()
-    {args} = call
+  @back = (params, node, bound) ->
+    {args} = node.getCall! or (node = Chain node .add Call!)getCall!
     break if arg.filler for arg, idx of args
-    node import back: (args[idx] = Fun params, null, arrow.charAt(1) + \>)body
+    node <<< back: (args[idx] = Fun params, null, bound)body
 
   @let = (args, body) ->
     params = for a, i of args
@@ -1200,7 +1198,7 @@ class exports.Existence extends Node
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Block(), arrow) ~> @bound = \_this if arrow is \~>
+  (@params or [], @body or Block(), @bound and \_this) ~>
 
   children: <[ params body ]>
 
