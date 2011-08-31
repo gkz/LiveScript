@@ -526,9 +526,11 @@ exports import
 
   # Supplies an implicit DOT if applicable.
   adi: ->
-    not @last.spaced and if @last.0 is \?
-    then @last <<< [\DOT \?.]
-    else able @tokens and @token \DOT \.
+    return if @last.spaced
+    switch @last.0
+    case \?  then @last <<< [\DOT  \?.]
+    case \!? then @last <<< [\CALL( '']; @token \)CALL \!; @token \DOT \?.
+    default able @tokens and @token \DOT \.
 
   # Resolves `.~` etc.
   dotcat: -> @last.1 += it if @last.1 of <[ . ?. ]> or @adi()

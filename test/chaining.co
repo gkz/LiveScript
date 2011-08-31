@@ -164,5 +164,7 @@ eq '' String!
 
 f = -> null
 eq null f?!
+eq void f!?p
+
 f = void
 eq void f?!
