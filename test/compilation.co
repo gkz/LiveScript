@@ -119,17 +119,19 @@ eq '1;\n2;', Coco.compile '  1\n  2' bare
 
 eq '''
 (function(){
-  var k, _this = this, __clone = function(it){
-    function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
-    return fn.prototype = it, new fn;
-  }, _fn = function(k){
-    __clone(_this);
-  };
+  var k, _this = this;
   try {
     for (k in o) {
       (_fn(k));
     }
   } catch (_e) {}
+  function __clone(it){
+    function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
+    return fn.prototype = it, new fn;
+  }
+  function _fn(k){
+    __clone(_this);
+  }
 }).call(this);
 
 ''', Coco.compile '''try for k in o then do ~> ^@'''

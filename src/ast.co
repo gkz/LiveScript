@@ -264,15 +264,14 @@ class exports.Block extends Node
   # declarations of all inner variables pushed up to the top.
   compileWithDeclarations: (o) ->
     o.level = LEVEL_TOP
-    code = ''
+    pre = ''
     break unless node.comment or node instanceof Literal for node, i of @lines
     if i
       rest   = @lines.splice i, 9e9
-      code   = @compile o
+      pre    = @compile o
       @lines = rest
-    code &&+= \\n if post = @compile o
-    code += o.indent + that + \;\n if @scope?vars o
-    code + post
+    return pre unless post = @compile o
+    (pre and "#pre\n") + if @scope then that.emit post, o.indent else post
 
 #### Atom
 # An abstract node for simple values.
@@ -1856,15 +1855,18 @@ Scope::<<<
   # Gets the type of a variable from name.
   type: -> @variables[@positions[it]]?type
 
-  # Returns the list of variables declared in this scope.
-  vars: (o) ->
-    usr = []; tmp = []; asn = []
+  # Concatenates the declarations in this scope.
+  emit: (code, tab) ->
+    usr = []; tmp = []; asn = []; fun = []
     for {name, type} of @variables
       if type of <[ var reuse ]>
         (if \_ is name.charAt 0 then tmp else usr)push name
       else if type.value
-        asn.push entab name + ' = ' + type.value, o.indent
-    'var ' + that if usr.concat(tmp, asn)join ', '
+        if ~(val = entab that, tab)lastIndexOf \function( 0
+        then fun.push "function #name#{ val.slice 8 }"
+        else asn.push "#name = #val"
+    code = "#{tab}var #that;\n#code" if usr.concat(tmp, asn)join ', '
+    if fun.join "\n#tab" then "#code\n#tab#that" else code
 
 ##### Constants
 
@@ -1899,9 +1901,10 @@ UTILITIES =
     for (var key in src) if (own.call(src, key)) obj[key] = src[key];
     return obj;
   }'''
-  importAll: '''
-    function(obj, src){ for (var key in src) obj[key] = src[key]; return obj }
-  '''
+  importAll: '''function(obj, src){
+    for (var key in src) obj[key] = src[key];
+    return obj;
+  }'''
 
   repeatString: '''function(str, n){
     for (var r = ''; n > 0; (n >>= 1) && (str += str)) if (n & 1) r += str;
