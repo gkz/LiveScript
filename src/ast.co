@@ -1111,19 +1111,19 @@ class exports.Import extends Node
   compileAssign: (o, items) ->
     return @left.compile o unless items.length
     top = not o.level
-    if items.length < 2 and (top or items.0 instanceof Splat)
-    then left = lref = Parens @left
-    else [left, lref, @temps] = @left.cache o
+    if items.length < 2 and (top or @void or items.0 instanceof Splat)
+    then reft = Parens @left
+    else [left, reft, @temps] = @left.cache o
     [delim, space] = if top then [\; \\n + @tab] else [\, ' ']
     delim += space
-    code = if left is lref then '' else left.compile(o, LEVEL_PAREN) + delim
+    code = if @temps then left.compile(o, LEVEL_PAREN) + delim else ''
     for node, i of items
       i and code += if com then space else delim
       if com = node.comment
         code += node.compile o
         continue
       if node instanceof Splat
-        code += Import(lref, node.it)compile o
+        code += Import(reft, node.it)compile o
         continue
       node.=first if logic = node.hasDefault()
       if dyna = node instanceof Parens
@@ -1131,20 +1131,18 @@ class exports.Import extends Node
       else if node instanceof Prop
         {key, val} = node
         if val.accessor
-          key = if key instanceof Key
-          then val.meth = Index key; "'#{key.name}'"
-          else key.compile o, LEVEL_LIST
-          code += "#{ lref.compile o }.__define#{
-            if val.params.length then val.void = true; \S else \G
-          }etter__(#key, #{ val.compile o, LEVEL_LIST })"
+          key = val.meth = JS "'#{key.name}'" if key instanceof Key
+          code += "#{ reft.compile o, LEVEL_CALL }
+            .__define#{ if val.params.0 then val.void = \S else \G }etter__
+            (#{ key.compile o, LEVEL_LIST }, #{ val.compile o, LEVEL_LIST })"
           continue
       else key = val = node
-      dyna or key.=maybeKey()
-      val = logic <<< {first: val} if logic
-      code += Assign(Chain lref, [Index key]; val)compile o, LEVEL_PAREN
+      dyna  or  key.=maybeKey!
+      logic and val = logic <<< first: val
+      code += Assign(Chain reft, [Index key]; val)compile o, LEVEL_PAREN
     return code if top
-    node instanceof Splat or
-      code += (if com then ' ' else ', ') + lref.compile o, LEVEL_LIST
+    @void or node instanceof Splat or
+      code += (if com then ' ' else ', ') + reft.compile o, LEVEL_PAREN
     if o.level < LEVEL_LIST then code else "(#code)"
 
 #### Of
