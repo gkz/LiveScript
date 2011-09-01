@@ -945,7 +945,7 @@ class exports.Assign extends Node
       if delete (@left.=it)name
       then rite = @right; rite = Assign @right = Var(that), rite
       else [rite, @right, temps] = @right.cache o
-      return If(Existence rite; this) <<< {temps}
+      return If(Existence rite; this) <<< {temps, @void}
     If.unfoldSoak o, this, \left
 
   unfoldAssign: -> @access and this
@@ -1745,7 +1745,7 @@ class exports.If extends Node
   @unfoldSoak = (o, parent, name) ->
     if parent[name]unfoldSoak o
       parent[name] = that.then
-      that import then: Chain parent
+      that <<< {then: Chain parent; parent.void}
 
 #### Label
 # A labeled block or statement.
