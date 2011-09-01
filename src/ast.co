@@ -450,11 +450,12 @@ class exports.Chain extends Node
     [base.add name; Chain bref || base.head, [nref or name]]
 
   compileNode: (o) ->
-    {head} = this; head <<< {@front, @newed}
-    return head.compile o unless @tails.length
+    {head, tails} = this; head <<< {@front, @newed}
+    return head.compile o unless tails.length
     return that.compile o if @unfoldAssign o
-    @carp 'invalid callee' if @tails.0 instanceof Call and !head.isCallable()
+    @carp 'invalid callee' if tails.0 instanceof Call and not head.isCallable!
     @expandSlice o; @expandBind o; @expandSplat o; @expandStar o
+    return @head.compile o unless @tails.length
     base = @head.compile o, LEVEL_CALL; news = rest = ''
     for t of @tails
       news += 'new ' if t.new
@@ -655,7 +656,7 @@ class exports.Obj extends List
       code += idt + if node instanceof Prop
         {key, val} = node
         if val.accessor
-          key = "#{ if val.params.length then val.void = true; \set else \get }
+          key = "#{ if val.params.length then val.void = \set else \get }
                \ #{ key.compile o }"
           key + val.compile(o, LEVEL_LIST)slice 8
         else
@@ -665,8 +666,8 @@ class exports.Obj extends List
         "#{ key = node.compile o }: #key"
       node.carp "duplicate property name \"#key\"" unless dic[0 + key] ^= 1
     code = "{#{ code and code + \\n + @tab }}"
-    code = "(#code)" if @front
-    if rest then Import(JS code; Obj rest)compile o <<< indent: @tab else code
+    rest and code = Import(JS code; Obj rest)compile o <<< indent: @tab
+    if @front and \{ is code.charAt! then "(#code)" else code
 
 #### Prop
 # `x: y`
