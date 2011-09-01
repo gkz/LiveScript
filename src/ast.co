@@ -226,21 +226,13 @@ class exports.Block extends Node
     this
 
   compile: (o, level ? o.level) ->
-    unless level then o.block = this; tab = o.indent
-    codes = for node, i of @lines
-      if level
-        continue if node.comment
-        node.void = true if i < lasti ||= @lines.length - 1
-        code or node <<< {@front}
-        code = node.compile o, LEVEL_LIST
-      else
-        node = node.unfoldSoak o or node
-        code = tab + (node <<< {+front})compile o, level
-        code += node.terminator unless node.isStatement()
-      code
-    return codes.join \\n unless level
-    code = codes.join ', ' or 'void 8'
-    if codes.length > 1 and level >= LEVEL_LIST then "(#code)" else code
+    return @compileExpressions o, level if level
+    o.block = this; tab = o.indent
+    codes = for node of @lines
+      node = node.unfoldSoak o or node
+      code = tab + (node <<< {+front})compile o, level
+      if node.isStatement! then code else code + node.terminator
+    codes.join \\n
 
   # **Block** is the only node that can serve as the root.
   compileRoot: (options) ->
@@ -260,8 +252,7 @@ class exports.Block extends Node
     bare or code = "(function(){\n#code\n}).call(this);\n"
     ([prefix]) + code
 
-  # Compile the expressions body for the contents of a function, with
-  # declarations of all inner variables pushed up to the top.
+  # Compile to a function body.
   compileWithDeclarations: (o) ->
     o.level = LEVEL_TOP
     pre = ''
@@ -272,6 +263,18 @@ class exports.Block extends Node
       @lines = rest
     return pre unless post = @compile o
     (pre and "#pre\n") + if @scope then that.emit post, o.indent else post
+
+  # Compile to a comma-separated list of expressions.
+  compileExpressions: (o, level) ->
+    {lines} = this; i = -1
+    lines.splice i-- 1 if that.comment while lines[++i]
+    lines.push Literal \void unless lines.length
+    lines.0 <<< {@front}; lines[*-1] <<< {@void}
+    return lines.0.compile o, level unless lines.1
+    code = ''; last = lines.pop!
+    code += (node <<< {+\void})compile(o, LEVEL_PAREN) + ', ' for node of lines
+    code += last.compile o, LEVEL_PAREN
+    if level < LEVEL_LIST then code else "(#code)"
 
 #### Atom
 # An abstract node for simple values.
@@ -292,9 +295,9 @@ class exports.Literal extends Atom
 
   compile: (o, level ? o.level) ->
     switch val = "#{@value}"
-    case \this     then return o.scope.fun?bound or val
-    case \void     then val += ' 8'; fallthrough
-    case \null     then @carp 'invalid use of ' + @value if level is LEVEL_CALL
+    case \this then return o.scope.fun?bound or val
+    case \void then val += ' 8'; fallthrough
+    case \null then @carp 'invalid use of ' + @value if level is LEVEL_CALL
     case \debugger then if level
       return "(function(){\n#{ o.indent + TAB }debugger;\n#{o.indent}}())"
     case \* then @carp 'stray star'
