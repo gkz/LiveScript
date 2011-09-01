@@ -345,7 +345,7 @@ class exports.Index extends Node
     if init and key instanceof Arr
       switch key.items.length
       case 0 then key = Key \__proto__
-      case 1 then key = Parens key.items.0
+      case 1 then key = Parens k unless (k = key.items.0) instanceof Splat
     if \? is symbol.charAt 0
       @soak = \?
       symbol.=slice 1

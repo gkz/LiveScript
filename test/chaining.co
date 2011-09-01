@@ -117,6 +117,7 @@ eq \z o.2
 
 a = [0 1 2][[0 1], {2}]
 eq '0,1' ''+a.0
+eq '0,1' ''+a[...0]
 eq 2 a.1.2
 
 throws     'calling a slice on line 1' -> Coco.compile 'a{0}()'
