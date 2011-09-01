@@ -131,8 +131,6 @@
   jumps: NO
   # Do I assign a certain variable?
   assigns: NO
-  # Do I hold a default value in an assignment context?
-  hasDefault: NO
 
   # Picks up name(s) from LHS.
   ripName: VOID
@@ -144,6 +142,7 @@
   varName      : String
   selections   : VOID
   getCall      : VOID
+  getDefault   : VOID
 
   invert: -> Op \! this
 
@@ -618,7 +617,7 @@ class exports.Obj extends List
           chain = Chain base, [Index node[name]maybeKey()]
       else
         # `o{k or v}` => `{k: a.k or v}`
-        node.=first if logic = node.hasDefault()
+        node.=first if logic = node.getDefault!
         if node instanceof Parens
           # `a{(++i)}` => `{(_ref = ++i): a[_ref]}`
           [key, node] = node.cache o, true
@@ -643,7 +642,7 @@ class exports.Obj extends List
       if node.comment
         code += idt + node.compile o
         continue
-      node.=first if logic = node.hasDefault()
+      node.=first if logic = node.getDefault!
       if node instanceof Splat or (node.key or node) instanceof Parens
         rest = items.slice i
         break
@@ -791,7 +790,7 @@ class exports.Op extends Node
   unfoldSoak: (o) ->
     @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, \first
 
-  hasDefault: -> switch @op case \? \|| \&& \!? then this
+  getDefault: -> switch @op case \? \|| \&& \!? then this
 
   compileNode: (o) ->
     return @compileUnary o unless @second
@@ -964,7 +963,7 @@ class exports.Assign extends Node
     return (Parens(right) <<< {@front, @newed})compile o if left.isEmpty()
     return @compileDestructuring o, left if left.items
     return @compileConditional   o, left if @logic
-    if left.hasDefault()
+    if left.getDefault!
       right = Op left.op, right, left.second
       left.=first
     left.isAssignable() or left.carp 'invalid assign'
@@ -1065,7 +1064,7 @@ class exports.Assign extends Node
     for node of nodes
       node.=it if splat = node instanceof Splat
       # `{a or b} = c` => `a = c.a or b`
-      node.=first if logic = node.hasDefault()
+      node.=first if logic = node.getDefault!
       if node instanceof Parens
         [node, key] = Chain(node.it)cacheReference o
       else if node instanceof Prop
@@ -1131,7 +1130,7 @@ class exports.Import extends Node
       if node instanceof Splat
         code += Import(reft, node.it)compile o
         continue
-      node.=first if logic = node.hasDefault()
+      node.=first if logic = node.getDefault!
       if dyna = node instanceof Parens
         [key, val] = node.it.cache o, true
       else if node instanceof Prop
@@ -1288,7 +1287,7 @@ class exports.Fun extends Node
       dic = {}
       for p of params
         vr = p
-        vr.=first if df = vr.hasDefault()
+        vr.=first if df = vr.getDefault!
         if vr.isEmpty()
           vr = Var scope.temporary \arg
         else if vr not instanceof Var
