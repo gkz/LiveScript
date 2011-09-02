@@ -887,7 +887,7 @@ SYMBOL = //
 | -[->]                       # decrement / function
 | [!=]==?                     # equality
 | \?\.                        # soak access
-| ~[.>]                       # bind access/function
+| ~>                          # bound function
 | @@                          # `arguments`
 | <\[(?:[\s\S]*?\]>)?         # words
 | <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
