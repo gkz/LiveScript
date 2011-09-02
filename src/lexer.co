@@ -59,18 +59,18 @@ exports import
     i = 0
     while c = code.charAt i
       switch c
-      case ' '   then i += @doSpace     code, i
-      case \\n   then i += @doLine      code, i
-      case \\    then i += @doBackslash code, i
-      case \' \" then i += @doString    code, i, c
+      case ' '      then i += @doSpace     code, i
+      case \\n      then i += @doLine      code, i
+      case \\       then i += @doBackslash code, i
+      case \' \"    then i += @doString    code, i, c
+      case \0 to \9 then i += @doNumber    code, i
       case \/
         switch code.charAt i+1
         case \* then i += @doComment code, i
         case \/ then i += @doHeregex code, i
         default      i += @doRegex code, i or @doLiteral code, i
       case \` then i += @doJS code, i
-      default i += @doIdentifier code, i or @doNumber code, i
-                or @doLiteral    code, i or @doSpace  code, i
+      default i += @doID code, i or @doLiteral code, i or @doSpace code, i
     # Close up all remaining open blocks.
     @dedent @dent
     @carp "missing `#that`" if @closes.pop()
@@ -87,7 +87,7 @@ exports import
   #### Tokenizers
 
   # Matches an identifying literal: variables, keywords, accessors, etc.
-  doIdentifier: (code, ID.lastIndex) ->
+  doID: (code, ID.lastIndex) ->
     return 0 unless input = (match = ID.exec code)0
     [, id, colon] = match; {last} = this
     # `id:_` `_.id` `@id`
@@ -385,12 +385,12 @@ exports import
       else @token \LITERAL \arguments
       return val.length
     case \!
-      :CONTACT unless @last.spaced
+      switch then unless @last.spaced
         if able @tokens, null true
           @token \CALL( ''; @token \)CALL \!
         else if @last.1 is \typeof
           @last.1 = \classof
-        else break CONTACT
+        else break
         return 1
       tag = \UNARY
     case \~
