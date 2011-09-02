@@ -382,17 +382,10 @@ exports import
     case \~
       return 1 if @dotcat val
       tag = \UNARY
-    case \~> then tag = \->; fallthrough
-    case \-> then @parameters! or (@token \PARAM( ''; @token \)PARAM '')
-    case \<~ then tag = \<-; fallthrough
-    case \<-
-      break if @parameters!
-      {tokens} = this; i = tokens.length
-      continue until tokens[--i]0 of <[ TERMINATOR INDENT THEN ( ]>
-      tokens.splice i+1 0 [\PARAM( '' tokens[i]2]
-      @token \)PARAM ''
-    case \:: then i = \prototype; fallthrough
-    case \.. then @adi(); tag = \ID; val = i || \constructor
+    case \-> \~> then up = \->; fallthrough
+    case \<- \<~ then @parameters tag = up || \<-
+    case \::     then up = \prototype; fallthrough
+    case \..     then @adi!; tag = \ID; val = up || \constructor
     default switch val.charAt 0
     case \( then @token \CALL( \(; tag = \)CALL; val = \)
     case \<
@@ -426,8 +419,15 @@ exports import
   # Removes the last token if TERMINATOR.
   unterminate: -> @tokens.length -= @last.0 is \TERMINATOR; void
 
-  # Re-tags function parameters.
-  parameters: -> @last.1 is \) and (@lpar.0 = \PARAM(; @last.0 = \)PARAM)
+  # (Re)tags function parameters.
+  parameters: (arrow) ->
+    if @last.1 is \)
+      @lpar.0 = \PARAM(; @last.0 = \)PARAM
+      return
+    if arrow is \-> then @token \PARAM( '' else
+      break if t.0 of <[ TERMINATOR INDENT THEN ( ]> for t, i of @tokens by -1
+      @tokens.splice i+1 0 [\PARAM( '' t.2]
+    @token \)PARAM ''
 
   # Expands variables and expressions inside double-quoted strings or heregexes
   # using Ruby-like notation for substitution of arbitrary expressions.
