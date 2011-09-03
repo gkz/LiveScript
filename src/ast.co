@@ -1082,7 +1082,7 @@ class exports.Assign extends Node
     left = @left.=unwrap()
     if left instanceof Chain and left.tails[*-1]?key?items
       # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
-      return left.tails.pop()key.toSlice o, left.unwrap(), true
+      return left.tails.pop!key.toSlice o, left.unwrap!, true
     left
 
 #### Import
