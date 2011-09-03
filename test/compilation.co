@@ -90,7 +90,7 @@ tokens = Coco.lex '''
 """
 '''
 eq tokens.join('\n'), '''
-TERMINATOR,
+NEWLINE,
 ,0
 (,\",0
 STRNUM,\"1 \",1
@@ -98,17 +98,17 @@ STRNUM,\"1 \",1
 (,(,2
 INDENT,4,2
 STRNUM,2,2
-TERMINATOR,
+NEWLINE,
 ,3
 STRNUM,3,3
 DEDENT,4,4
-TERMINATOR,
+NEWLINE,
 ,4
 ),),4
 +-,+,4
 STRNUM,\" 4\",5
 ),,5
-TERMINATOR,
+NEWLINE,
 ,5
 '''
 

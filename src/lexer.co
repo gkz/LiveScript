@@ -33,7 +33,7 @@ exports import
     addImplicitParentheses it
     addImplicitBraces      it
     expandLiterals         it
-    it.shift! if it.0?0 is \TERMINATOR
+    it.shift! if it.0?0 is \NEWLINE
     it
 
   #### Main Loop
@@ -43,8 +43,8 @@ exports import
     # Prepend a newline to handle leading INDENT.
     code = \\n + code
     # Stream of parsed tokens,
-    # initialized with a TERMINATOR token to ensure `@last` always exists.
-    @tokens = [@last = [\TERMINATOR \\n 0]]
+    # initialized with a NEWLINE token to ensure `@last` always exists.
+    @tokens = [@last = [\NEWLINE \\n 0]]
     # The current line. Starts from -1 to setoff the prepended newline.
     @line = ~-o.line
     # The stack of all current indentation levels.
@@ -231,8 +231,8 @@ exports import
     comment = if ~end = code.indexOf \*/ index+2
     then code.slice index, end+2
     else code.slice(index) + \*/
-    if @last.0 of <[ TERMINATOR INDENT THEN ]>
-    then @token \COMMENT detab comment, @dent; @token \TERMINATOR \\n
+    if @last.0 of <[ NEWLINE INDENT THEN ]>
+    then @token \COMMENT detab comment, @dent; @token \NEWLINE \\n
     else @last.spaced = true
     @countLines(comment)length
 
@@ -334,7 +334,7 @@ exports import
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the proper order of operations. There are some symbols that we tag specially
-  # here. `;` and newlines are both treated as a TERMINATOR, we distinguish
+  # here. `;` and newlines are both treated as a NEWLINE, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL <<< lastIndex: index)exec(code)0
@@ -347,7 +347,7 @@ exports import
     case \++ \--      then tag = \CREMENT
     case \<<< \<<<<   then tag = \IMPORT
     case \& \|        then tag = \BITWISE
-    case \;           then tag = \TERMINATOR
+    case \;           then tag = \NEWLINE
     case <[ === !== < > <= >= == != ]> then tag = \COMPARE
     case <[  <<  >>  >>>    <?  >?  ]> then tag = \SHIFT
     case \(
@@ -378,7 +378,7 @@ exports import
         @last.1 += val
         return val.length
     case \*
-      if @last.0 of <[ TERMINATOR INDENT THEN ]> and
+      if @last.0 of <[ NEWLINE INDENT THEN ]> and
          /^.[^\n\S]*(?=\S)/exec code.slice index
         @tokens.push [\{ \{ @line] [\} \} @line] [\ASSIGN \= @line]
         @indent val = that.0.length
@@ -430,7 +430,7 @@ exports import
     @closes.push \DEDENT
     void
 
-  # Records a DEDENT, or DEDENTs if there are multiple matching INDENTs.
+  # Records DEDENTs against matching INDENTs.
   dedent: (debt) ->
     @dent -= debt
     while debt > 0 and dent = @dents.pop()
@@ -442,14 +442,14 @@ exports import
 
   # Generates a newline token. Consecutive newlines get merged together.
   newline: -> @last.1 is \\n
-           or @tokens.push @last = [\TERMINATOR \\n @line] <<< {+spaced}
+           or @tokens.push @last = [\NEWLINE \\n @line] <<< {+spaced}
 
   # Cancels an immediate newline.
   unline: ->
     switch @last.0
     # Mark the last indent as dummy.
-    case \INDENT     then @dents[*-1] += ''; fallthrough
-    case \TERMINATOR then @tokens.length--
+    case \INDENT  then @dents[*-1] += ''; fallthrough
+    case \NEWLINE then @tokens.length--
     void
 
   # (Re)tags function parameters.
@@ -458,7 +458,7 @@ exports import
       @lpar.0 = \PARAM(; @last.0 = \)PARAM
       return
     if arrow is \-> then @token \PARAM( '' else
-      break if t.0 of <[ TERMINATOR INDENT THEN ( ]> for t, i of @tokens by -1
+      break if t.0 of <[ NEWLINE INDENT THEN ( ]> for t, i of @tokens by -1
       @tokens.splice i+1 0 [\PARAM( '' t.2]
     @token \)PARAM ''
 
@@ -495,7 +495,7 @@ exports import
       else
         clone  = ^exports <<< {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
-        nested.shift() while nested.0?0 is \TERMINATOR
+        nested.shift() while nested.0?0 is \NEWLINE
         @countLines str.slice i, delta = str.length - clone.rest.length
         str = clone.rest
         if nested.length
@@ -648,7 +648,7 @@ character = if JSON!? then uxxxx else ->
 # different precedence.
 function tagPostfixConditionals tokens
   detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
-  function ok then it.0 of <[ TERMINATOR INDENT ]>
+  function ok then it.0 of <[ NEWLINE INDENT ]>
   function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
   void
 
@@ -685,7 +685,7 @@ function addImplicitIndentation tokens
   function ok token, i
     switch token.0
     case \DEDENT        then true
-    case \TERMINATOR    then token.1 is not \;
+    case \NEWLINE       then token.1 is not \;
     case \, \DOT        then tokens[i-1]eol
     case \ELSE          then tag is \THEN
     case \CATCH         then tag is \TRY
@@ -705,7 +705,7 @@ function addImplicitParentheses tokens
     doblock = false
     if token.1 is \do and tokens[i+1]?0 is \INDENT
       endi = indexOfPair tokens, i+1
-      if tokens[endi+1]0 is \TERMINATOR and tokens[endi+2]?0 is \WHILE
+      if tokens[endi+1]0 is \NEWLINE and tokens[endi+2]?0 is \WHILE
         token.0 = \DO
         tokens[endi+2]done = true
         tokens.splice endi+1 1
@@ -745,7 +745,7 @@ function addImplicitParentheses tokens
     case \WHILE
       return false if token.done
       fallthrough
-    case <[ TERMINATOR POST_IF FOR BY TO ]>
+    case <[ NEWLINE POST_IF FOR BY TO ]>
       return pre.0 is not \,
     false
   function go token, i then tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
@@ -775,11 +775,11 @@ function addImplicitBraces tokens
   function ok token, i
     return true if token.1 is \; or \DEDENT is tag = token.0
     switch tag
-    case \,          then break
-    case \TERMINATOR then return true if oneline
+    case \,       then break
+    case \NEWLINE then return true if oneline
     default return false
     t1 = tokens[i+1]?0
-    t1 is not (if tag is \, then \TERMINATOR else \COMMENT) and
+    t1 is not (if tag is \, then \NEWLINE else \COMMENT) and
     \: is not tokens[if t1 is \( then 1 + indexOfPair tokens, i+1 else i+2]?0
   function go token, i then tokens.splice i, 0 [\} '' token.2]
   void

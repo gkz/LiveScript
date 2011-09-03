@@ -95,7 +95,7 @@ bnf =
     o ''                                                -> []
     o \Arg                                              -> [$1]
     o 'ArgList , Arg'                                   -> $1.concat $3
-    o 'ArgList OptComma TERMINATOR Arg'                 -> $1.concat $4
+    o 'ArgList OptComma NEWLINE Arg'                    -> $1.concat $4
     o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ditto
   Arg:
     o     \Expression
@@ -109,10 +109,10 @@ bnf =
 
   # A list of lines, separated by newlines or semicolons.
   Lines:
-    o ''                      -> Block!
-    o \Line                   -> Block $1
-    o 'Lines TERMINATOR Line' -> $1.add $3
-    o 'Lines TERMINATOR'
+    o ''                   -> Block!
+    o \Line                -> Block $1
+    o 'Lines NEWLINE Line' -> $1.add $3
+    o 'Lines NEWLINE'
   # A line of Coco can be either a (labeled) expression, backcall, comment or
   # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm).
   Line:
@@ -244,7 +244,7 @@ bnf =
     o ''                                                      -> []
     o \Property                                               -> [$1]
     o 'Properties , Property'                                 -> $1.concat $3
-    o 'Properties OptComma TERMINATOR Property'               -> $1.concat $4
+    o 'Properties OptComma NEWLINE Property'                  -> $1.concat $4
     o 'Properties OptComma INDENT Properties OptComma DEDENT' ditto
 
   Parenthetical:
@@ -254,7 +254,7 @@ bnf =
   Body:
     o \Lines
     o \Block
-    o 'Block TERMINATOR Lines' -> $1.add $3
+    o 'Block NEWLINE Lines' -> $1.add $3
 
   # The most basic form of `if` is a condition and an action. The following
   # `if`-related rules are broken up along these lines to avoid ambiguity.
