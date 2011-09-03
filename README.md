@@ -32,6 +32,11 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.6.3b
+- Fixed identifier lexing as per ES5.
+- Helper functions are now declared last.
+  ([coffee#1638](https://github.com/jashkenas/coffee-script/issues/1638))
+
 ### 0.6.2
 - Added character ranges: `[\a to \d]` => `[\a \b \c \d]`
 - Added named destructuring: `{p, q}:o = f!` => `o = f!; {p, q} = o`
