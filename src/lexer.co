@@ -103,9 +103,7 @@ exports import
     case \break  \continue        then tag = \JUMP
     case \for  then @seenFor = true; fallthrough
     case \then then @seenFrom = @seenTo = false
-    case \catch    then @unterminate(); fallthrough
-    case \function then id = ''
-    case \else \case \default \finally then @unterminate()
+    case \catch \function then id = ''
     case <[ in of instanceof ]>
       if id is not \instanceof and @seenFor
         @seenFor = false
@@ -122,8 +120,10 @@ exports import
       tag = \RELATION
     case <[ and or is not ]>
       if id is \not and last.alias and last.1 is \===
-      then last.1 = \!==
-      else @token ...COCO_ALIASES[id]; @last.alias = true
+        last.1 = \!==
+      else
+        @unline! unless id is \not
+        @token ...COCO_ALIASES[id]; @last.alias = true
       return id.length
     case \unless then tag = \IF
     case \until  then tag = \WHILE
@@ -159,7 +159,10 @@ exports import
         else @seenTo &&= !tag = \BY
       case \ever then if last.0 is \FOR
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
-    @token tag || match.1.toUpperCase(), id
+    tag ||= match.1.toUpperCase!
+    @unline! if tag of <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
+                          IN OF FROM TO BY ]>
+    @token tag, id
     @token \: \: if colon
     input.length
 
@@ -308,7 +311,7 @@ exports import
     return length if index + length >= code.length
     if 0 > delta = tabs.length - @dent
       @dedent -delta
-      LINE_CONTINUER.test code.slice index+1 or @newline()
+      @newline!
     else
       if tabs and (@emender ||= //[^#{ tabs.charAt 0 }]//)exec tabs
         @carp "contaminated indent #{ escape that }"
@@ -316,8 +319,7 @@ exports import
       or tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
                    IN OF TO BY FROM ]>
         return length
-      cont = LINE_CONTINUER.test code.slice index+1
-      if delta then @indent delta, cont else cont or @newline()
+      if delta then @indent delta else @newline!
     @seenFrom = @seenTo = false
     length
 
@@ -405,6 +407,7 @@ exports import
     case \<
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
+    @unline! if tag of <[ , DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 
@@ -413,7 +416,7 @@ exports import
   # Records an INDENT.
   indent: (delta, dummy) ->
     @dent += delta
-    @dents.push if dummy then ''+delta else @token \INDENT delta
+    @dents .push @token \INDENT delta
     @closes.push \DEDENT
     void
 
@@ -428,10 +431,16 @@ exports import
     void
 
   # Generates a newline token. Consecutive newlines get merged together.
-  newline: -> @token \TERMINATOR \\n unless @last.1 is \\n; void
+  newline: -> @last.1 is \\n
+           or @tokens.push @last = [\TERMINATOR \\n @line] <<< {+spaced}
 
-  # Removes the last token if TERMINATOR.
-  unterminate: -> @tokens.length -= @last.0 is \TERMINATOR; void
+  # Cancels an immediate newline.
+  unline: ->
+    switch @last.0
+    # Mark the last indent as dummy.
+    case \INDENT     then @dents[*-1] += ''; fallthrough
+    case \TERMINATOR then @tokens.length--
+    void
 
   # (Re)tags function parameters.
   parameters: (arrow) ->
@@ -560,8 +569,8 @@ exports import
       #
       @dedent @dents[*-1]
       return @pair it
-    @unterminate()
-    @closes.pop()
+    @unline!
+    @closes.pop!
 
   # Throws a syntax error with the current line number.
   carp: -> carp it, @line
@@ -655,10 +664,8 @@ function addImplicitIndentation tokens
       continue
     indent = [\INDENT 0 token.2]; dedent = [\DEDENT 0]
     if tag is \THEN
-      tokens.splice --i, 1 if tokens[i-1]0 is \TERMINATOR
-      (tokens[i] = indent)then = true
-    else
-      tokens.splice ++i, 0 indent
+    then (tokens[i] = indent)then = true
+    else tokens.splice ++i, 0 indent
     switch
     # ->,
     case next of <[ , DOT ]> then --i; fallthrough
@@ -933,11 +940,6 @@ REGEX = //
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 LASTDENT = /\n[^\n\S]*$/
-
-LINE_CONTINUER = // ^ \s* (?
-: [,&|>%] | \.(?!\.) | <(?![-~[]) | !?\?
-| (?:and|or)(?![$\w\x7f-\uffff]|[^\n\S]*:(?![:=]))
-) //
 
 ##### Tokens
 
