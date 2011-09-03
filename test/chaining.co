@@ -80,9 +80,11 @@ eq 0 (..:0)..
 
 
 # Length Star
-eq [1, 2, 3][*-1], 3
-eq 0[*], void
-eq [0][*-*], 0
+a = [[1], 2, 3]
+eq 3, a[*-1]
+eq 1, a[0][*-*]
+eq 2, a[--*-1]
+eq 2, a.length
 
 throws 'stray star on line 1' -> Coco.compile '[*-1]'
 
