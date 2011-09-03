@@ -597,19 +597,17 @@ TABS = /\n[^\n\S]*(?!$)/mg
 function detab str, len
   if len then str.replace detab[len]||=//\n[^\n\S]{1,#len}//g \\n else str
 
+function replacer re, to then -> it.replace re, to
+
 # Erases all newlines and indentations.
-function unlines then it.replace INDENTS, ''
-INDENTS = /\n[^\n\S]*/g
+unlines = replacer /\n[^\n\S]*/g ''
 
 # Converts newlines/backslashes to their quoted form.
-function enlines then it.replace LINES, \\\n
-LINES = /\n/g
-
-function enslash then it.replace BACKSLASHES, \\\\
-BACKSLASHES = /\\/g
+enlines = replacer /\n/g \\\n
+enslash = replacer /\\/g \\\\
 
 # Quotes slashes unless already quoted.
-reslash = let re = /(\\.)|\//g, fn = (-> @@1 or \\\/) then -> it.replace re, fn
+reslash = replacer /(\\.)|\//g -> @@1 or \\\/
 
 # Deletes the first character if newline.
 function lchomp then it.slice 1 + it.lastIndexOf \\n 0
