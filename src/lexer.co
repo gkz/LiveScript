@@ -118,12 +118,15 @@ exports import
         @tokens.pop()
         id = \! + id
       tag = \RELATION
-    case <[ and or is not ]>
-      if id is \not and last.alias and last.1 is \===
-        last.1 = \!==
-      else
-        @unline! unless id is \not
-        @token ...COCO_ALIASES[id]; @last.alias = true
+    case \not
+      return (last.1 = \!==; 3) if last.alias and last.1 is \===
+      tag = \UNARY; id = \!
+    case \and \or \is
+      @unline!
+      if id is \is
+      then @token \COMPARE \===
+      else @token \LOGIC if id is \or then \|| else \&&
+      @last.alias = true
       return id.length
     case \unless then tag = \IF
     case \until  then tag = \WHILE
@@ -413,6 +416,13 @@ exports import
 
   #### Token Manipulators
 
+  # Adds a token to the results,
+  # taking note of the line number and returning `value`.
+  token: (tag, value, callable) ->
+    @tokens.push @last = [tag, value, @line]
+    @last.callable = true if callable
+    value
+
   # Records an INDENT.
   indent: (delta, dummy) ->
     @dent += delta
@@ -511,15 +521,6 @@ exports import
     tokens.pop()
     @token \) '' last.0 is \DOT
 
-  #### Helpers
-
-  # Adds a token to the results,
-  # taking note of the line number and returning `value`.
-  token: (tag, value, callable) ->
-    @tokens.push @last = [tag, value, @line]
-    @last.callable = true if callable
-    value
-
   # Records a string/number token, supplying implicit dot if applicable.
   strnum: -> @token \STRNUM it, @adi() || @last.0 is \DOT; void
 
@@ -531,21 +532,6 @@ exports import
     try RegExp body catch @carp e.message
     return @strnum string \' enslash body if flag is \$
     @js "/#{ body or '(?:)' }/#{ @validate flag }"
-
-  # Complains on duplicate flag.
-  validate: (flag) ->
-    if flag and /(.).*\1/exec flag
-      @carp "duplicate regex flag `#{that.1}`"
-    flag
-
-  # Increments `@line` by the number of newlines in a string.
-  countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
-
-  # Checks if the last token is
-  #
-  # - `f()`: `call`able via explicit parentheses
-  # - `x''`: indexable via implicit brackets
-  able: (call) -> not @last.spaced and able @tokens, null call
 
   # Supplies an implicit DOT if applicable.
   adi: ->
@@ -571,6 +557,23 @@ exports import
       return @pair it
     @unline!
     @closes.pop!
+
+  #### Helpers
+
+  # Checks if the last token is
+  #
+  # - `f()`: `call`able via explicit parentheses
+  # - `x''`: indexable via implicit brackets
+  able: (call) -> not @last.spaced and able @tokens, null call
+
+  # Increments `@line` by the number of newlines in a string.
+  countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
+
+  # Complains on duplicate flag.
+  validate: (flag) ->
+    if flag and /(.).*\1/exec flag
+      @carp "duplicate regex flag `#{that.1}`"
+    flag
 
   # Throws a syntax error with the current line number.
   carp: -> carp it, @line
@@ -871,10 +874,6 @@ KEYWORDS_UNUSED = <[ var  const enum export   implements interface
                      package private protected public static yield ]>
 
 KEYWORDS = KEYWORDS_SHARED.concat KEYWORDS_UNUSED
-
-# Coco-only alias keywords.
-COCO_ALIASES  = not: <[ UNARY !  ]>, is: <[ COMPARE === ]>
-              , and: <[ LOGIC && ]>, or: <[ LOGIC   ||  ]>
 
 ##### Regexes
 # Some of these are given `g` flag and made sure to match empty string
