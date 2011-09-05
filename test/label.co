@@ -8,6 +8,11 @@ r = ''
   ok 0
 eq r, \00
 
+eq void, :if 1
+  switch
+    break _
+  true
+
 r = :outer
   :inner break inner
   break outer if false
