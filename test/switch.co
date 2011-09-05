@@ -33,11 +33,10 @@ eq 2   , switch case 1 then continue while 0; 2
 eq 3   , do -> switch -> 0 case 1 then -> 2 default 3
 
 
-throws 'inconvertible statement on line 3'
-, -> Coco.compile '''
-  1 + switch
-  case 2
-    continue
+throws 'inconvertible statement on line 3' -> Coco.compile '''
+  for ever
+    !switch
+      continue
 '''
 
 
@@ -69,32 +68,29 @@ case !1:
 case !2:
   throw me;
 case !3:
-  continue;
-case !4:
   break;
-case !5:
+case !4:
   // fallthrough
-case !(that = 6):
+case !(that = 5):
   that;
   break;
-case !(7 || 8 || 9):
+case !(6 || 7 || 8):
   break;
 case !void 8:
   break;
 default:
-  8;
+  9;
 }
 ''', Coco.compile '''
 switch
 case 1 then return
 case 2 then throw me
-case 3 then continue
-case 4 then break
-case 5 then fallthrough
-case 6 then that
-case 7 [8 9] then
+case 3 then break
+case 4 then fallthrough
+case 5 then that
+case 6 [7 8] then
 case[] then
-default 8
+default 9
 ''', {+bare}
 
 

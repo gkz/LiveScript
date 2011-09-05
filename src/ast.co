@@ -1434,7 +1434,8 @@ class exports.Jump extends Node
 
   compileNode: (o) ->
     if @label
-      that of (o.labels or []) or @carp "undefined label \"#that\""
+    then that of (o.labels or []) or @carp "undefined label \"#that\""
+    else o[@verb] or @carp "stray #{@verb}"
     @show! + \;
 
 #### Throw
@@ -1505,6 +1506,7 @@ class exports.While extends Node
     head + ') {' + @compileBody (o.indent += TAB; o)
 
   compileBody: (o, potest) ->
+    o <<< {+\break, +\continue}
     {lines} = @body; code = ret = ''
     if @returns
       if (last = lines[*-1]) and last not instanceof Throw
@@ -1661,6 +1663,7 @@ class exports.Switch extends Node
     topic = !!@topic and @anaphorize()compile o, LEVEL_PAREN
     code  = "switch (#topic) {\n"
     stop  = @default or @cases.length - 1
+    o.break = true
     code += c.compileCase o, tab, i is stop, !topic for c, i of @cases
     if @default
       o.indent = tab + TAB
