@@ -134,7 +134,8 @@ exports import
       break if id of KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id of KEYWORDS_UNUSED
       if not last.1 and last.0 of <[ CATCH FUNCTION LABEL ]>
-        return (last.1 = id)length
+        last <<< {1: id, -spaced}
+        return id.length
       tag = \ID
       # contextual keywords (reserved only in specific places)
       switch id
