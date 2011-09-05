@@ -26,7 +26,7 @@
   compileClosure: (o) ->
     # A statement that _jumps_ out of current context (like `return`) can't be
     # an expression via closure-wrapping, as its meaning will change.
-    that.carp 'inconvertible statement' if @jumps()
+    that.carp 'inconvertible statement' if @getJump!
     fun = Fun [] Block this; call = Call(); hasThis = hasArgs = false
     @traverseChildren ->
       switch it.value
@@ -127,8 +127,6 @@
 
   isMatcher: -> @isString() or @isRegex()
 
-  # Do I contain a statement that jumps out of me?
-  jumps: NO
   # Do I assign a certain variable?
   assigns: NO
 
@@ -143,6 +141,8 @@
   selections   : VOID
   getCall      : VOID
   getDefault   : VOID
+  # Digs up a statement that jumps out of this node.
+  getJump      : VOID
 
   invert: -> Op \! this
 
@@ -221,7 +221,7 @@ class exports.Block extends Node
 
   ::delegate <[ isCallable isArray isString isRegex ]> -> @lines[*-1]?[it]()
 
-  jumps: -> return that if node.jumps it for node of @lines
+  getJump: -> return that if node.getJump it for node of @lines
 
   # **Block** does not return its entire body, rather it
   # ensures that the final line is returned.
@@ -391,7 +391,7 @@ class exports.Chain extends Node
   # __Chain__ can be unwrapped as its inner node, if there are no subnodes.
   unwrap: -> if @tails.length then this else @head
 
-  ::delegate <[ jumps assigns isStatement isString ]>
+  ::delegate <[ getJump assigns isStatement isString ]>
            , (it, arg) -> not @tails.length and @head[it] arg
 
   isComplex  : -> @tails.length or @head.isComplex()
@@ -1428,7 +1428,7 @@ class exports.Jump extends Node
   isStatement : YES
   makeReturn  : THIS
 
-  jumps: (ctx or {}) ->
+  getJump: (ctx or {}) ->
     return this unless ctx[@verb]
     return that not of (ctx.labels or []) and this if @label
 
@@ -1440,7 +1440,7 @@ class exports.Throw extends Jump
 
   children: [\it]
 
-  jumps: NO
+  getJump: VOID
 
   compileNode: (o) ->
     "throw #{ (@it or Literal \null)compile o, LEVEL_PAREN };"
@@ -1451,7 +1451,7 @@ class exports.Throw extends Jump
 class exports.Return extends Throw
   ~> import {it} if it and it.value is not \void
 
-  jumps: THIS
+  getJump: THIS
 
   compileNode: (o) ->
     "return#{ if @it then ' ' + @it.compile o, LEVEL_PAREN else '' };"
@@ -1475,9 +1475,9 @@ class exports.While extends Node
 
   ::isStatement = ::isArray = YES
 
-  jumps: (ctx or {}) ->
+  getJump: (ctx or {}) ->
     ctx <<< {+\continue, +\break}
-    return node if node.jumps ctx for node of @body.lines
+    return node if node.getJump ctx for node of @body.lines
 
   addBody: (@body) ->
     [top] = body.lines
@@ -1489,7 +1489,7 @@ class exports.While extends Node
   makeReturn: ->
     if it
     then @body.makeReturn it
-    else @jumps() or @returns = true
+    else @getJump! or @returns = true
     this
 
   compileNode: (o) ->
@@ -1611,7 +1611,7 @@ class exports.Try extends Node
 
   isCallable: -> @attempt.isCallable() or @recovery?isCallable()
 
-  jumps: -> @attempt.jumps it or @recovery?jumps it
+  getJump: -> @attempt.getJump it or @recovery?getJump it
 
   makeReturn: ->
     @attempt .=makeReturn it
@@ -1644,10 +1644,10 @@ class exports.Switch extends Node
     return true if c.isCallable() for c of @cases
     @default?isCallable()
 
-  jumps: (ctx or {}) ->
+  getJump: (ctx or {}) ->
     ctx.break = true
-    return that if c.body.jumps ctx for c of @cases
-    @default?jumps ctx
+    return that if c.body.getJump ctx for c of @cases
+    @default?getJump ctx
 
   makeReturn: ->
     c.makeReturn it for c of @cases
@@ -1717,7 +1717,7 @@ class exports.If extends Node
   ::delegate <[ isCallable isArray isString isRegex ]> ->
     @else?[it]() and @then[it]()
 
-  jumps: -> @then.jumps it or @else?jumps it
+  getJump: -> @then.getJump it or @else?getJump it
 
   makeReturn: ->
     @then.=makeReturn it
@@ -1764,11 +1764,11 @@ class exports.Label extends Node
 
   show: -> @label
 
-  isStatement : YES
+  isStatement: YES
 
-  jumps: (ctx or {}) ->
+  getJump: (ctx or {}) ->
     ctx@@labels.push @label
-    @it.jumps ctx <<< {+\break}
+    @it.getJump ctx <<< {+\break}
 
   makeReturn: -> @it.=makeReturn it; this
 
