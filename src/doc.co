@@ -48,7 +48,7 @@ function load [name, sect], doc.innerHTML
 
 function build name, source
   htm = comment = code = i = ''
-  re  = /^[^\n\S]*#(?![!{]) ?(.*)/
+  re  = /^[^\n\S]*#(?![!{$A-Za-z_]) ?(.*)/
   for line of source.split \\n
     unless line
       br = true
