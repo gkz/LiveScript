@@ -236,24 +236,6 @@ r += a + b + i for {a, b} i of [{\a \b}]
 eq r, '35ab0'
 
 
-### Labeled
-r = ''
-:PLAIN
-  :WHILE while r.length < 9
-    break PLAIN if r.length > 1
-    :FOR for i til 2
-      r += i
-      continue WHILE
-  ok 0
-eq r, \00
-
-r = :outer
-  :inner break inner
-  break outer if false
-  1
-eq r, 1
-
-
 ### Post condition
 i = 0
 do

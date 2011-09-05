@@ -1432,7 +1432,10 @@ class exports.Jump extends Node
     return this unless ctx[@verb]
     return that not of (ctx.labels or []) and this if @label
 
-  compileNode: -> @show() + \;
+  compileNode: (o) ->
+    if @label
+      that of (o.labels or []) or @carp "undefined label \"#that\""
+    @show! + \;
 
 #### Throw
 class exports.Throw extends Jump
@@ -1442,8 +1445,7 @@ class exports.Throw extends Jump
 
   getJump: VOID
 
-  compileNode: (o) ->
-    "throw #{ (@it or Literal \null)compile o, LEVEL_PAREN };"
+  compileNode: (o) -> "throw #{ @it?compile o, LEVEL_PAREN or \null };"
 
   Jump.throw = this
 
@@ -1454,7 +1456,7 @@ class exports.Return extends Throw
   getJump: THIS
 
   compileNode: (o) ->
-    "return#{ if @it then ' ' + @it.compile o, LEVEL_PAREN else '' };"
+    "return#{ if @it then ' ' + that.compile o, LEVEL_PAREN else '' };"
 
   Jump.return = this
 
@@ -1758,7 +1760,7 @@ class exports.If extends Node
 #### Label
 # A labeled block or statement.
 class exports.Label extends Node
-  (@label, @it) ->
+  (@label or \_, @it) ->
 
   ::{children, isCallable, isArray} = Parens::
 
@@ -1773,11 +1775,14 @@ class exports.Label extends Node
   makeReturn: -> @it.=makeReturn it; this
 
   compileNode: (o) ->
-    {it} = this
-    it.isStatement() or it = Block it
-    "#{ @label or \$ }: " + if it instanceof Block
-    then o.indent += TAB; @compileBlock o, it
-    else it.compile o
+    {label, it} = this
+    labels = o.labels = [...o.labels or []]
+    @carp "duplicate label \"#label\"" if label of labels
+    labels.push label
+    it.isStatement! or it = Block it
+    "#label: " + if it instanceof Block
+      then o.indent += TAB; @compileBlock o, it
+      else it.compile o
 
 #### JS
 # Embedded JavaScript snippets.
