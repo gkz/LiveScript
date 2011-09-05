@@ -301,10 +301,11 @@ eq b, a.0
 eq c, a.1
 
 f = ({p, q}: o?) ->
-  if o
+  if o?
     eq p, o.p
     eq q, o.q
   else
-    ok p is q is o is void
+    eq p, void
+    eq q, void
 f {2 3}
 f (   )

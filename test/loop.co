@@ -247,6 +247,12 @@ r = ''
   ok 0
 eq r, \00
 
+r = :outer
+  :inner break inner
+  break outer if false
+  1
+eq r, 1
+
 
 ### Post condition
 i = 0

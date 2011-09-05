@@ -1428,8 +1428,9 @@ class exports.Jump extends Node
   isStatement : YES
   makeReturn  : THIS
 
-  jumps: ->
-    not (it and (it.loop or it.block and @verb is not \continue)) and this
+  jumps: (ctx or {}) ->
+    return this unless ctx[@verb]
+    return that not of (ctx.labels or []) and this if @label
 
   compileNode: -> @show() + \;
 
@@ -1474,7 +1475,9 @@ class exports.While extends Node
 
   ::isStatement = ::isArray = YES
 
-  jumps: -> return node if node.jumps context||={+loop} for node of @body.lines
+  jumps: (ctx or {}) ->
+    ctx <<< {+\continue, +\break}
+    return node if node.jumps ctx for node of @body.lines
 
   addBody: (@body) ->
     [top] = body.lines
@@ -1641,9 +1644,10 @@ class exports.Switch extends Node
     return true if c.isCallable() for c of @cases
     @default?isCallable()
 
-  jumps: (x or {+block}) ->
-    return that if c.body.jumps x for c of @cases
-    @default?jumps x
+  jumps: (ctx or {}) ->
+    ctx.break = true
+    return that if c.body.jumps ctx for c of @cases
+    @default?jumps ctx
 
   makeReturn: ->
     c.makeReturn it for c of @cases
@@ -1761,8 +1765,12 @@ class exports.Label extends Node
   show: -> @label
 
   isStatement : YES
-  jumps       : -> @it.jumps it
-  makeReturn  : -> @it.=makeReturn it; this
+
+  jumps: (ctx or {}) ->
+    ctx@@labels.push @label
+    @it.jumps ctx <<< {+\break}
+
+  makeReturn: -> @it.=makeReturn it; this
 
   compileNode: (o) ->
     {it} = this
