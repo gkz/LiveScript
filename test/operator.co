@@ -11,8 +11,6 @@ or  true
 and null
 ?   false
 !?  true
-  and :  'property name'
-  andy!?  # nickname
   eq 3 1
      & 2
      | 3
@@ -387,6 +385,12 @@ o.c <?= 3
 o.d >?= 5
 o.d >?= 7
 eq o.c * o.d, 14
+
+
+### Pipe
+Array 0 => _.concat 1, 2
+        => _ <<<   {3: 4}
+        => eq '1,2,,4' "#_"
 
 
 ### Overloaded

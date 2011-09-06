@@ -317,7 +317,7 @@ exports import
       if tabs and (@emender ||= //[^#{ tabs.charAt 0 }]//)exec tabs
         @carp "contaminated indent #{ escape that }"
       if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := += ]>
-      or tag of <[ +- DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
+      or tag of <[ +- => DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
                    IN OF TO BY FROM ]>
         return length
       if delta then @indent delta else @newline!
@@ -408,7 +408,7 @@ exports import
     case \<
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
-    @unline! if tag of <[ , DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
+    @unline! if tag of <[ , => DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 
@@ -728,6 +728,7 @@ function addImplicitParentheses tokens
     detectEnd tokens, i, ok, go
   function ok token, i
     return true if not skipBlock and token.alias and token.1 of <[ && || ]>
+                or token.0 is \=>
     pre = tokens[i-1]
     switch token.0
     case \DOT then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
@@ -896,7 +897,7 @@ ID = let
      ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
   |//g
 SYMBOL = //
-  [-+*/%&|^:<>]=              # compound assign / comparison
+  [-+*/%&|^:]=                # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | ([+&|:])\1                  # increment / logic / `prototype`
 | \([^\n\S]*\)                # call
@@ -908,8 +909,9 @@ SYMBOL = //
 | <\[(?:[\s\S]*?\]>)?         # words
 | <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
 | >>>?=?                      # rite shift
-| [<>]\?=?                    # min/max
+| [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
+| =>                          # pipe
 | \*\*=?                      # pow
 | [^\s#]?
 //g

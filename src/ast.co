@@ -208,6 +208,8 @@ class exports.Block extends Node
     lines.splice i, 0, ...arguments
     this
 
+  pipe: -> @lines.push Assign(Var \_; @lines.pop!), it; this
+
   unwrap: -> if @lines.length is 1 then @lines.0 else this
 
   # Removes trailing comment nodes.
@@ -829,10 +831,10 @@ class exports.Op extends Node
 
   compileExistence: (o, inv) ->
     if @void or not o.level
-      morph = Op \&& Existence(@first, not inv), @second
-      return (morph <<< {+\void})compileNode o
-    fs = @first.cache o, true
-    If(Existence fs.0, inv; fs.1)addElse(@second)compileExpression o
+      Existence @first, not inv => Op \&& _, @second
+      => return (_ <<< {+\void})compileNode o
+    @first.cache o, true
+    => If(Existence _.0, inv; _.1)addElse(@second)compileExpression o
 
   function crement then {'++':\in '--':\de}[it] + \crement
 
@@ -882,8 +884,8 @@ class exports.Op extends Node
   compileMinMax: (o) ->
     lefts = @first .cache o, true
     rites = @second.cache o, true
-    test  = Op @op.charAt(0), lefts.0, rites.0
-    If test, lefts.1 .addElse Block rites.1 .compile o
+    Op @op.charAt!, lefts.0, rites.0
+    => If _, lefts.1 .addElse Block rites.1 .compile o
 
   compileMethod: (o, klass, method, arg) ->
     args = [@second]concat arg || []
