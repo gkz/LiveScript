@@ -32,8 +32,10 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.6.3b
+### 0.6.3
+- Added pipe operator: `f! => g _` => `_ = f!; g _`
 - Fixed identifier lexing as per ES5.
+- Improved label handlings.
 - Helper functions are now declared last.
   ([coffee#1638](https://github.com/jashkenas/coffee-script/issues/1638))
 
