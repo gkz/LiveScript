@@ -682,9 +682,8 @@ function addImplicitIndentation tokens
       detectEnd tokens, i+1, ok, go
   function ok token, i
     switch token.0
-    case \DEDENT        then true
     case \NEWLINE       then token.1 is not \;
-    case \, \DOT        then tokens[i-1]eol
+    case \, \DOT \=>    then tokens[i-1]eol
     case \ELSE          then tag is \THEN
     case \CATCH         then tag is \TRY
     case \FINALLY       then tag of <[ TRY CATCH THEN ]>
@@ -715,8 +714,8 @@ function addImplicitParentheses tokens
     brackets.push prev.0 is \DOT if tag is \[
     if prev.0 is \]
       if brackets.pop! then prev.index = true else continue
-    unless prev.0 of <[ FUNCTION LET ]>
-      continue unless prev.spaced and able tokens, i, true
+    continue unless prev.0 of <[ FUNCTION LET ]>
+                 or prev.spaced and able tokens, i, true
     if doblock
       token.0 = \CALL(; tpair.0 = \)CALL
       continue
