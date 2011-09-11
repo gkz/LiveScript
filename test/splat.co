@@ -15,15 +15,10 @@ a = [0  method: -> this is a.1]
 ok a[++a.0]method(...a), 'should cache base value'
 
 
-quartet = [0 to 3]
-eq '0,1,2,3,42' String [
-  ...quartet
-  42
-]
-eq '42,0,1,2,3' String [
-  42
-  ...quartet
-]
+trio = [1 2 3]
+eq '1234'    [...trio, 4] * ''
+eq '4123'    [4, ...trio] * ''
+eq '1234321' [...trio, 4, ...trio.reverse!] * ''
 
 
 # Splats with `super`.

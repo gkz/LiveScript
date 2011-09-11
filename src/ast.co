@@ -1409,7 +1409,7 @@ class exports.Splat extends Node
     args = []; atoms = []
     for node of list.splice index, 9e9
       if node instanceof Splat
-        atoms.length &&= !args.push Arr atoms
+        args.push Arr atoms.splice 0, 9e9 if atoms.length
         args.push ensureArray node.it
       else atoms.push node
     args.push Arr atoms if atoms.length
