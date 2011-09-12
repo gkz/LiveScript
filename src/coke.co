@@ -45,11 +45,14 @@ global import
   dir   : fs.readdirSync
 
 args     = process.argv.slice 2
-filename = args.splice(0 2)1 if args.0 of <[ -f --cokefile ]>
-path.exists filename ||= \Cokefile ->
-  unless it
-    console.error 'no "%s" in %s' filename, process.cwd()
-    process.exit 1
+filename = args.0 of <[ -f --cokefile ]> and args.splice(0 2)1 or \Cokefile
+path.exists filename, rec = (yes) ->
+  unless yes
+    if process.cwd! is \/
+      console.error 'no "%s"' filename
+      process.exit 1
+    process.chdir \..
+    return path.exists filename, rec
   optparse = require \./optparse
   Coco.run slurp(filename), {filename}
   Options := optparse Flags, args
