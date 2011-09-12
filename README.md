@@ -32,6 +32,11 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.6.4b
+- `..` now points to the constructor under `class`.
+- _coke_ now works from subdirectories.
+  ([coffee#1687](https://github.com/jashkenas/coffee-script/issues/1687))
+
 ### 0.6.3
 - Added pipe operator: `f! => g _` => `_ = f!; g _`
 - Fixed identifier lexing as per ES5.

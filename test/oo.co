@@ -234,12 +234,15 @@ class Sup
 
 ok new Sup.Sub instanceof Sup
 
-
-# `::`/`prototype` under class body
-new class ProtoTest extends Object
+# `::`/`..` under class body
+new class extends Object
   eq ::, prototype
   eq ::, @::
-  -> eq ::, @..::
+  eq .., constructor
+  eq .., @
+  ->
+    eq ::, @..::
+    eq .., @..
 
 
 # `extended` hook
