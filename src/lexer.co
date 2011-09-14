@@ -109,9 +109,9 @@ exports import
         # OF holds the index variable.
         if id is \of
           id = ''; @seenTo = true
-          if last.0 is \ID then switch @tokens[*-2]0
-            case \,    then @tokens.splice -2 1; fallthrough
-            case \} \] then @tokens.pop!; id = last.1
+          if last.0 is \ID and @tokens[*-2]0 is not \FOR
+            id = @tokens.pop!1
+            @tokens.pop! if @tokens[*-1]0 is \,
         break
       id  = @tokens.pop!1 + id if last.1 is \!
       tag = \RELATION
