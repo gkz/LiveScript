@@ -765,8 +765,7 @@ class exports.Op extends Node
 
   show: -> @op
 
-  isCallable: ->
-    switch @op
+  isCallable: -> switch @op
     case <[ new delete ]> then @first.isCallable()
     case <[ && || ? !? ]> then @first.isCallable() and @second.isCallable()
 
@@ -778,8 +777,7 @@ class exports.Op extends Node
       @first instanceof Arr   and @first.items.length or
       @first instanceof Chain and @first.isArray!
 
-  isString: ->
-    switch @op
+  isString: -> switch @op
     case \+ then break unless @second; fallthrough
     case \* then @first.isString() or @second.isString()
     case \- then @second?isMatcher()
@@ -960,13 +958,11 @@ class exports.Assign extends Node
   ::delegate <[ isCallable isRegex ]> ->
     switch @op case \= \:= then @right[it]()
 
-  isArray: ->
-    switch @op
+  isArray: -> switch @op
     case \= \:= \+= then do @right.isArray
     case \/=        then do @right.isMatcher
 
-  isString: ->
-    switch @op
+  isString: -> switch @op
     case \= \:= \+= \*= then do @right.isString
     case \-=            then do @right.isMatcher
 
@@ -1178,7 +1174,7 @@ class exports.Of extends Node
 
   compileNode: (o) ->
     [sub, ref] = @item.cache o, false, level = LEVEL_LIST
-    if items = @array.selections()
+    if items = (arr = @array.expandSlice(o)unwrap!)selections!
       code = ''; level = LEVEL_OP + PREC\==
       [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
       for item, i of items
@@ -1191,7 +1187,7 @@ class exports.Of extends Node
                   cmp + item.compile o, level
       level = LEVEL_OP + PREC\||
     else
-      code = "#{ utility \indexOf }.call(#{ @array.compile o, level }, #ref
+      code = "#{ utility \indexOf }.call(#{ arr.compile o, level }, #ref
             ) #{ if @negated then \< else \>= } 0"
       if sub is ref
       then level = LEVEL_OP + PREC\<
