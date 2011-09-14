@@ -1,5 +1,6 @@
 # Coco
-is a [CoffeeScript](http://coffeescript.org) dialect that aims to be more radical and practical.
+is a [CoffeeScript](http://coffeescript.org) dialect
+that aims to be more radical and practical.
 
 ## Why
 On its way to hide JavaScript's bad parts, CoffeeScript has accumulated own quirks:
@@ -17,10 +18,13 @@ Coco tries to amend them, entwining good parts of both.
 - Less keywords, punctuations and runtime errors.
 
 ## Differences
-- [Additions](https://github.com/satyr/coco/wiki/additions)
 - [Improvements](https://github.com/satyr/coco/wiki/improvements)
 - [Incompatibilities](https://github.com/satyr/coco/wiki/incompatibilities)
 - [Side by Side Comparison](https://github.com/satyr/coco/wiki/side-by-side-comparison)
+
+## Documents
+- [Additions](https://github.com/satyr/coco/wiki/additions)
+- [Annotated Source](http://satyr.github.com/coco/src/)
 
 ## Installation
 
@@ -32,7 +36,8 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.6.4b
+### 0.6.4
+- Unary operators now spread into an array operand: `+[a, b]` => `[+a, +b]`
 - `..` now points to the constructor under `class`.
 - _coke_ now works from subdirectories.
   ([coffee#1687](https://github.com/jashkenas/coffee-script/issues/1687))
