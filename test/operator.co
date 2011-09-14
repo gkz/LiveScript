@@ -323,7 +323,6 @@ eq a.0 ++  -- a.0
 eq 1 i
 
 throws 'increment of undeclared variable "C" on line 1' -> Coco.compile 'C++'
-throws 'invalid increment on line 1' -> Coco.compile '++a[b, c]'
 throws 'invalid decrement on line 1' -> Coco.compile 'q.=p--'
 
 
@@ -395,6 +394,16 @@ Array 0 => _.concat 1, 2
 String 0
 => if _ then _+_ else _*_
 => eq \00 _
+
+
+### Unary spread
+eq 'number,string' ''+ typeof [0 \1]
+
+o = {2: [3 4], 5: 6}
+a = delete o[5 ...2]
+eq '6,3,4' "#a"
+eq 3 a.length
+ok o.2 is o.5 is void
 
 
 ### Overloaded

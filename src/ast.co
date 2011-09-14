@@ -772,8 +772,11 @@ class exports.Op extends Node
 
   isArray: ->
     switch @op
-    case \* then @first instanceof Arr
-    case \/ then @second.isMatcher()
+    case \* then return @first instanceof Arr
+    case \/ then return @second.isMatcher!
+    unless @second
+      @first instanceof Arr   and @first.items.length or
+      @first instanceof Chain and @first.isArray!
 
   isString: ->
     switch @op
@@ -846,27 +849,36 @@ class exports.Op extends Node
   function crement then {'++':\in '--':\de}[it] + \crement
 
   compileUnary: (o) ->
-    {op, first} = this
+    {op} = this
+    if  (it   = @first.expandSlice(o)unwrap!) instanceof Arr
+    and (them = it.items)length
+      for node, i of them
+        if node instanceof Splat
+        then node.it = Op op, node.it, null, @post; splat = true
+        else them[i] = Op op, node   , null, @post
+      if not splat and (@void or not o.level)
+        it = ^Block::<<< {lines: them, @front, +\void}
+      return it.compile o, LEVEL_PAREN
     switch op
-    case \!   then first.cond = true
-    case \new then first.isCallable() or first.carp 'invalid constructor'
+    case \!   then it.cond = true
+    case \new then it.isCallable() or it.carp 'invalid constructor'
     case \delete
-      @carp 'invalid delete' if first instanceof Var or not first.isAssignable!
+      @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compileDelete o if o.level and not @void
     case \++ \--
-      first.isAssignable! or @carp 'invalid ' + crement op
-      if first instanceof Var and not o.scope.check first.value, true
-        @carp "#{ crement op } of undeclared variable \"#{first.value}\""
-      first{front} = this if @post
+      it.isAssignable! or @carp 'invalid ' + crement op
+      if it instanceof Var and not o.scope.check it.value, true
+        @carp "#{ crement op } of undeclared variable \"#{it.value}\""
+      it{front} = this if @post
     case \^
-      return "#{ utility \clone }(#{ first.compile o, LEVEL_LIST })"
+      return "#{ utility \clone }(#{ it.compile o, LEVEL_LIST })"
     case \classof
       return "#{ utility \toString }.call(
-              #{ first.compile o, LEVEL_LIST }).slice(8, -1)"
-    code = first.compile o, LEVEL_OP + PREC.unary
+              #{ it.compile o, LEVEL_LIST }).slice(8, -1)"
+    code = it.compile o, LEVEL_OP + PREC.unary
     if @post then code += op else
       op += ' ' if op of <[ new typeof delete ]>
-                or op of <[ + - ]> and first.op is op
+                or op of <[ + - ]> and it.op is op
       code = op + code
     if o.level < LEVEL_CALL then code else "(#code)"
 
@@ -1111,8 +1123,8 @@ class exports.Import extends Node
     unless @all
       if right instanceof Chain
         right = right.unfoldSoak o or right.unfoldAssign o or
-                (right.expandSlice o; right.unwrap())
-      return @compileAssign o, right.asObj()items if right instanceof List
+                right.expandSlice(o)unwrap!
+      return @compileAssign o, right.asObj!items if right instanceof List
     Call.make Util("import#{ @all or '' }"), [@left, right] .compileNode o
 
   # If the right operand of `<<<` is an object or array literal,

@@ -122,8 +122,7 @@ eq '0,1' ''+a.0
 eq '0,1' ''+a[...0]
 eq 2 a.1.2
 
-throws     'calling a slice on line 1' -> Coco.compile 'a{0}()'
-throws 'invalid constructor on line 1' -> Coco.compile 'new a[1 2]'
+throws 'calling a slice on line 1' -> Coco.compile 'a{0}()'
 
 throws 'empty slice on line 1' -> Coco.compile 'o{}'
 throws 'empty slice on line 1' -> Coco.compile 'o[,,]'
