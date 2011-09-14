@@ -137,6 +137,7 @@
   unfoldAssign : VOID
   unwrap       : THIS
   maybeKey     : THIS
+  expandSlice  : THIS
   varName      : String
   selections   : VOID
   getCall      : VOID
@@ -536,13 +537,15 @@ class exports.Chain extends Node
       void
     void
 
-  expandSlice: (o) ->
+  # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
+  expandSlice: (o, assign) ->
     {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
       tailz = tails.splice 0 i+1
-      @head = tailz.pop!key.toSlice(o, Chain(@head, tailz)unwrap!) <<< {@front}
+      @head = tailz.pop!key.toSlice o, Chain(@head, tailz)unwrap!, assign
+      @head <<< {@front}
       i = -1
-    void
+    this
 
 #### Call
 # `x(y)`
@@ -848,10 +851,10 @@ class exports.Op extends Node
     case \!   then first.cond = true
     case \new then first.isCallable() or first.carp 'invalid constructor'
     case \delete
-      @carp 'invalid delete' if first instanceof Var or !first.isAssignable()
+      @carp 'invalid delete' if first instanceof Var or not first.isAssignable!
       return @compileDelete o if o.level and not @void
     case \++ \--
-      first.isAssignable() or @carp 'invalid ' + crement op
+      first.isAssignable! or @carp 'invalid ' + crement op
       if first instanceof Var and not o.scope.check first.value, true
         @carp "#{ crement op } of undeclared variable \"#{first.value}\""
       first{front} = this if @post
@@ -967,10 +970,11 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
-    {op, right} = this; left = @transleft o
-    return (Parens(right) <<< {@front, @newed})compile o if left.isEmpty()
+    left = @left.unwrap!expandSlice(o, true)unwrap!
+    return (Parens(@right) <<< {@front, @newed})compile o if left.isEmpty!
     return @compileDestructuring o, left if left.items
     return @compileConditional   o, left if @logic
+    {op, right} = this
     if left.getDefault!
       right = Op left.op, right, left.second
       left.=first
@@ -1083,14 +1087,6 @@ class exports.Assign extends Node
       val  = Chain rcache||=Var(rite), [Index key.maybeKey()]
       val  = Import Obj(), val if splat
       (^@<<<{left: node, right: val, +\void})compile o, LEVEL_PAREN
-
-  # Resolves subdestructuring.
-  transleft: (o) ->
-    left = @left.=unwrap()
-    if left instanceof Chain and left.tails[*-1]?key?items
-      # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
-      return left.tails.pop!key.toSlice o, left.unwrap!, true
-    left
 
 #### Import
 # Copies properties from right to left.
