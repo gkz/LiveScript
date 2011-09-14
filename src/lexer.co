@@ -390,7 +390,7 @@ exports import
     case \!
       switch then unless @last.spaced
         if able @tokens, null true
-          @token \CALL( ''; @token \)CALL \!
+          @token \CALL( \!; @token \)CALL \)
         else if @last.1 is \typeof
           @last.1 = \classof
         else break
