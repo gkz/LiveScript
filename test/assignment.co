@@ -213,7 +213,7 @@ eq v, 3
 eq 0 z
 
 
-### Accessignments
+### Accessign
 parent = child: str: 'test'
 
 parent.child.str.=replace /./, 'b'
@@ -270,7 +270,7 @@ eq o.c+'' '1,2'
 eq o.d, 3
 
 
-### Destructuring defaults
+### Destructuring Default
 new
   [x ? 2, y || 3, @p && 5, @q !? 7] = [null, false, true, 0]
   eq x * y * @p * @q, 210
@@ -309,3 +309,13 @@ f = ({p, q}: o?) ->
     eq q, void
 f {2 3}
 f (   )
+
+
+### Unary Assign
+o = {}
+eq 1,  -~=o.0
+eq 1,     o.0
+eq false, !=o
+eq false,   o
+eq 0,     -=o
+eq 0,       o

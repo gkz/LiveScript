@@ -729,6 +729,9 @@ class exports.Arr extends List
 # Simple arithmetic and logical operations, with some special conversions.
 class exports.Op extends Node
   (op, first, second, post) ~>
+    if not second and first.unaries
+      that.push op
+      return first
     switch op
     case \of then return new Of first, second
     case \do
@@ -956,7 +959,9 @@ class exports.Op extends Node
 #### Assign
 # Assignment to a variable/property.
 class exports.Assign extends Node
-  (@left, @right, @op or \=, @logic or @op.logic) ~> @op += ''
+  (@left, rite, @op or \=, @logic or @op.logic) ~>
+    @op += ''
+    @[if rite instanceof Node then \right else \unaries] = rite
 
   children: <[ left right ]>
 
@@ -988,6 +993,10 @@ class exports.Assign extends Node
 
   compileNode: (o) ->
     left = @left.expandSlice(o, true)unwrap!
+    unless @right
+      left.isAssignable! or left.carp 'invalid unary assign'
+      [left, @right] = Chain left .cacheReference o
+      @right = Op op, @right for op of @unaries
     return (Parens(@right) <<< {@front, @newed})compile o if left.isEmpty!
     return @compileDestructuring o, left if left.items
     return @compileConditional   o, left if @logic

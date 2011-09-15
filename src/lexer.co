@@ -346,8 +346,13 @@ exports import
     case \<<< \<<<<   then tag = \IMPORT
     case \& \|        then tag = \BITWISE
     case \;           then tag = \NEWLINE
-    case <[ === !== < > <= >= == != ]> then tag = \COMPARE
-    case <[  <<  >>  >>>    <?  >?  ]> then tag = \SHIFT
+    case \!=
+      unless able @tokens
+        @tokens.push [\UNARY \! @line] [\ASSIGN \= @line]
+        return 2
+      fallthrough
+    case <[ === !== < > <= >= == ]> then tag = \COMPARE
+    case <[ <<  >>  >>>   <?  >? ]> then tag = \SHIFT
     case \(
       unless @last.0 of <[ FUNCTION LET ]> or @able true
         @token \( \(
@@ -369,12 +374,14 @@ exports import
     case \: then if @last.0 not of <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= <?= >?= **= ]>
-      tag = \ASSIGN
-      if @last.0 is \LOGIC
-        (val = new String val)logic = @tokens.pop!1
-      else if @last.1 of <[ . ?. ]> or @last.0 is \? and @adi()
+      if @last.1 of <[ . ?. ]> or @last.0 is \? and @adi!
         @last.1 += val
         return val.length
+      if @last.0 is \LOGIC
+        (val = Object val)logic = @tokens.pop!1
+      else if val of <[ += -= ^= ]> and not able @tokens
+        @token \UNARY val.charAt!; val = \=
+      tag = \ASSIGN
     case \*
       if @last.0 of <[ NEWLINE INDENT THEN ]> and
          /^.[^\n\S]*(?=\S)/exec code.slice index
