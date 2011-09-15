@@ -802,8 +802,7 @@ class exports.Op extends Node
   compileNode: (o) ->
     return @compileUnary o unless @second
     switch @op
-    case \? \!?      then return @compileExistence o, @op is \!?
-    case \instanceof then return @compileIOS o, that if @second.selections()
+    case \? \!? then return @compileExistence o, @op is \!?
     case \*
       return @compileJoin   o if @second.isString()
       return @compileRepeat o if @first.isString() or @first instanceof Arr
@@ -816,6 +815,12 @@ class exports.Op extends Node
       if top or @cond
         @first .cond = true
         @second.cond = true
+    case \instanceof
+      {items}:rite = @second.expandSlice(o)unwrap!
+      if rite instanceof Arr
+        return @compileAnyInstanceOf o, items if items.1
+        @second = items.0 or rite
+      @second.isCallable! or @second.carp 'invalid instanceof operand'
     default
       return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
     @first <<< {@front}
@@ -886,14 +891,12 @@ class exports.Op extends Node
       it = ^Block::<<< {lines: them, @front, +\void}
     it.compile o, LEVEL_PAREN
 
-  # `x instanceof [A, B]`
-  compileIOS: (o, items) ->
-    code = ''; [sub, ref] = @first.cache o, false level = LEVEL_OP + PREC\<
-    for item, i of items
-      code += "#{ if i then ' || ' + ref else sub } instanceof \
-               #{ item.compile o, level }"
-    sub is ref or o.scope.free ref
-    if o.level <= LEVEL_OP then code else "(#code)"
+  # `x instanceof [A, B]` => `x instanceof A || x instanceof B`
+  compileAnyInstanceOf: (o, items) ->
+    [sub, ref, @temps] = @first.cache o
+    test = Op \instanceof sub, items.shift!
+    test = Op \|| test, Op \instanceof ref, item for item of items
+    Parens test .compile o
 
   # `v = delete o.k`
   compileDelete: (o) ->
@@ -984,7 +987,7 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
-    left = @left.unwrap!expandSlice(o, true)unwrap!
+    left = @left.expandSlice(o, true)unwrap!
     return (Parens(@right) <<< {@front, @newed})compile o if left.isEmpty!
     return @compileDestructuring o, left if left.items
     return @compileConditional   o, left if @logic
