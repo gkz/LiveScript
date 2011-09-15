@@ -405,6 +405,8 @@ eq '6,3,4' "#a"
 eq 3 a.length
 ok o.2 is o.5 is void
 
+eq '8,9' ''+ -~[7 8]
+
 
 ### Overloaded
 a = [0 1]

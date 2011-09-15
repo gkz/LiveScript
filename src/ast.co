@@ -847,16 +847,8 @@ class exports.Op extends Node
   function crement then {'++':\in '--':\de}[it] + \crement
 
   compileUnary: (o) ->
-    {op} = this
-    if  (it   = @first.expandSlice(o)unwrap!) instanceof Arr
-    and (them = it.items)length
-      for node, i of them
-        if node instanceof Splat
-        then node.it = Op op, node.it, null, @post; splat = true
-        else them[i] = Op op, node   , null, @post
-      if not splat and (@void or not o.level)
-        it = ^Block::<<< {lines: them, @front, +\void}
-      return it.compile o, LEVEL_PAREN
+    return that if @compileSpread o
+    {op, first: it} = this
     switch op
     case \!   then it.cond = true
     case \new then it.isCallable() or it.carp 'invalid constructor'
@@ -879,6 +871,20 @@ class exports.Op extends Node
                 or op of <[ + - ]> and it.op is op
       code = op + code
     if o.level < LEVEL_CALL then code else "(#code)"
+
+  # `^delete o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
+  compileSpread: (o) ->
+    it = @first; ops = [this]
+    ops.push it while it instanceof Op and not it.second, it.=first
+    return '' unless it.=expandSlice(o)unwrap! instanceof Arr
+                 and (them = it.items)length
+    for node, i of them
+      node.=it if sp = node instanceof Splat
+      node = Op op.op, node, null, op.post for op of ops by -1
+      them[i] = if sp then lat = Splat node else node
+    if not lat and (@void or not o.level)
+      it = ^Block::<<< {lines: them, @front, +\void}
+    it.compile o, LEVEL_PAREN
 
   # `x instanceof [A, B]`
   compileIOS: (o, items) ->
