@@ -67,6 +67,12 @@ eq '3,6,9,-20,-19,-18,4,4,4,4', '' + nums.concat negs.slice(0, 3), four
 eq '123', (i for i from 1 til 4     ).join ''
 eq '036', (i for i from 0 til 9 by 3).join ''
 
+# Never mess with binary `in`/`of`.
+for i to 0
+  ok 0 in [0]
+  ok 0 of [0]
+
+
 # With range comprehensions, you can loop in steps.
 eq "#{ x for x from 0 to 9 by  3 }", '0,3,6,9'
 eq "#{ x for x from 9 to 0 by -3 }", '9,6,3,0'

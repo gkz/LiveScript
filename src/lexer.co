@@ -101,18 +101,20 @@ exports import
     case \return \throw           then tag = \HURL
     case \break  \continue        then tag = \JUMP
     case \for  then @seenFor = true; fallthrough
-    case \then then @seenFrom = @seenTo = false
+    case \then then @seenFrom = @wantBy = false
     case \catch \function then id = ''
-    case \in \of \instanceof
-      if id is not \instanceof and @seenFor
+    case \in \of
+      if @seenFor
         @seenFor = false
         # OF holds the index variable.
         if id is \of
-          id = ''; @seenTo = true
+          id = ''; @wantBy = true
           if last.0 is \ID and @tokens[*-2]0 is not \FOR
             id = @tokens.pop!1
             @tokens.pop! if @tokens[*-1]0 is \,
         break
+      fallthrough
+    case \instanceof
       id  = @tokens.pop!1 + id if last.1 is \!
       tag = \RELATION
     case \not
@@ -143,13 +145,11 @@ exports import
       case \all then if last.1 is \<<<
         last.1 += \<
         return 3
-      case \from then if @tokens[*-2]?0 is \FOR
-        import {-seenFor, +seenFrom}
-        tag = \FROM
+      case \from then @forange! and tag = \FROM
       case \to \til
+        @forange! and @tokens.push [\FROM '' @line] [\STRNUM \0 @line]
         if @seenFrom
-        or @tokens[*-2]?0 is \FOR and (@token \FROM ''; @token \STRNUM \0)
-          import {-seenFrom, +seenTo}
+          import {-seenFrom, +wantBy}
           tag = \TO
         else if last.0 is \STRNUM and not last.callable
           last <<< 0:\RANGE op:id
@@ -157,7 +157,7 @@ exports import
       case \by
         if last.0 is \STRNUM and @tokens[*-2]0 is \RANGE
         then tag = \RANGE_BY
-        else @seenTo &&= !tag = \BY
+        else @wantBy &&= !tag = \BY
       case \ever then if last.0 is \FOR
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
     tag ||= match.1.toUpperCase!
@@ -321,7 +321,7 @@ exports import
                    IN OF TO BY FROM ]>
         return length
       if delta then @indent delta else @newline!
-    @seenFrom = @seenTo = false
+    @seenFrom = @wantBy = false
     length
 
   # Consumes non-newline whitespaces and/or a line comment.
@@ -566,6 +566,9 @@ exports import
 
   # Increments `@line` by the number of newlines in a string.
   countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
+
+  # Checks FOR for FROM/TO.
+  forange: -> @tokens[*-2]?0 is \FOR and import {-seenFor, +seenFrom}
 
   # Complains on duplicate flag.
   validate: (flag) ->
