@@ -1700,9 +1700,9 @@ class exports.Case extends Node
     this
 
   compileCase: (o, tab, nobr, bool) ->
-    tests = []
-    for test of @tests
-      if test instanceof Arr then tests.push ...test.items else tests.push test
+    tests = for test of @tests
+      test.=expandSlice(o)unwrap!
+      if test instanceof Arr then t for t of test.items else test
     tests.length or tests.push Literal \void
     if bool
       [t] = tests; i = 0; t = Op \|| t, that while tests[++i]

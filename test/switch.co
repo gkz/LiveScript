@@ -40,11 +40,12 @@ throws 'inconvertible statement on line 3' -> Coco.compile '''
 '''
 
 
-result = switch 'words'
-case (<[ nonbare words ]>) then false
-case  <[    bare words ]>  then true
-default false
-ok result, '`case`s can take bare arrays'
+ok switch \words
+  case (<[ nonbare words ]>) then false
+  case  <[    bare words ]>
+    switch Function::toString
+    case ok<[valueOf toString]> then true
+, '`case` expands bare arrays'
 
 
 # Sans-topic
