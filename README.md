@@ -36,6 +36,10 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.6.5
+- `case`/`of`/`instanceof` now works better with array slice.
+- `instanceof` now rejects invalid right operands.
+
 ### 0.6.4
 - Unary operators now spread into an array operand: `+[a, b]` => `[+a, +b]`
 - `..` now points to the constructor under `class`.
