@@ -865,7 +865,7 @@ class exports.Binary extends Node
 
   compileNode: (o) ->
     switch @op
-    case \? \!? then return @compileExistence o, @op is \!?
+    case \? \!? then return @compileExistence o
     case \*
       return @compileJoin   o if @second.isString()
       return @compileRepeat o if @first.isString() or @first instanceof Arr
@@ -905,12 +905,15 @@ class exports.Binary extends Node
                      #{ @second.compile o, LEVEL_OP }"
     if o.level <= LEVEL_OP then code else "(#code)"
 
-  compileExistence: (o, inv) ->
+  compileExistence: (o) ->
+    if @op is \!?
+      If(Existence @first; @second) <<< {@cond, @void or not o.level}
+      => return _.compileExpression o
     if @void or not o.level
-      Existence @first, not inv => Binary \&& _, @second
+      Binary \&& Existence(@first, true), @second
       => return (_ <<< {+\void})compileNode o
     @first.cache o, true
-    => If(Existence _.0, inv; _.1)addElse(@second)compileExpression o
+    => If(Existence _.0; _.1)addElse(@second)compileExpression o
 
   # `x instanceof [A, B]` => `x instanceof A || x instanceof B`
   compileAnyInstanceOf: (o, items) ->
