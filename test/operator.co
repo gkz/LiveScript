@@ -310,6 +310,13 @@ q = r: s: \t
 o?p <<< q?r
 eq o.p.s, \t
 
+o = null
+eq o? <<< {4}, void
+
+o = {}
+eq o? <<< {4}, o
+eq 4 o.4
+
 
 ### {in,de}crement
 a = [0]
