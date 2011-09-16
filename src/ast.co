@@ -794,7 +794,7 @@ class exports.Unary extends Node
     code = it.compile o, LEVEL_OP + PREC.unary
     if @post then code += op else
       op += ' ' if op of <[ new typeof delete ]>
-                or op of <[ + - ]> and it.op is op
+                or op of <[ + - ]> and op is code.charAt!
       code = op + code
     if o.level < LEVEL_CALL then code else "(#code)"
 
@@ -1410,9 +1410,7 @@ class exports.Parens extends Node
     {it} = this
     it <<< {@cond, @void}
     it.head.void = true if @calling and (not level or @void)
-    unless @keep or @newed
-    or it instanceof Binary and level >= LEVEL_OP + PREC[it.op]
-    or it instanceof Unary  and level >= LEVEL_OP + PREC.unary
+    unless @keep or @newed or level >= LEVEL_OP + PREC[it.op]
       return (it <<< {@front})compile o, level || LEVEL_PAREN
     if it.isStatement()
     then it.compileClosure o
