@@ -140,8 +140,8 @@ bnf =
     o 'Expression IMPORT INDENT ArgList OptComma DEDENT'
     , -> Import $1, Arr.maybe($4), $2 is \<<<<
 
-    o 'CREMENT Chain' -> Op $1, $2.unwrap!
-    o 'Chain CREMENT' -> Op $2, $1.unwrap!, null true
+    o 'CREMENT Chain' -> Unary $1, $2.unwrap!
+    o 'Chain CREMENT' -> Unary $2, $1.unwrap!, true
 
     o 'UNARY ASSIGN Chain' -> Assign $3.unwrap!, [$1] $2
     o '+-    ASSIGN Chain' ditto
@@ -153,7 +153,7 @@ bnf =
     # a single generic "Operand OpSymbol Operand"-type rule,
     # but in order to make the precedence binding possible, separate
     # rules are necessary.
-    o 'Expression +-      Expression' -> Op $2, $1, $3
+    o 'Expression +-      Expression' -> Binary $2, $1, $3
     o 'Expression ^       Expression' ditto
     o 'Expression COMPARE Expression' ditto
     o 'Expression LOGIC   Expression' ditto
@@ -163,14 +163,14 @@ bnf =
 
     o 'Expression RELATION Expression' ->
       []= if \! is $2.charAt 0
-      then Op($2.slice 1; $1; $3)invert()
-      else Op $2, $1, $3
+      then Binary($2.slice 1; $1; $3)invert()
+      else Binary $2, $1, $3
 
     o 'Expression => Expression' -> Block $1 .pipe $3
 
-    o 'UNARY Expression'  -> []= if $1 is \! then $2.invert() else Op $1, $2
-    o '+-    Expression' (-> Op $1, $2), prec: \UNARY
-    o '^     Expression' ditto         , prec: \UNARY
+    o 'UNARY Expression'  -> []= if $1 is \! then $2.invert! else Unary $1, $2
+    o '+-    Expression' (-> Unary $1, $2), prec: \UNARY
+    o '^     Expression' ditto            , prec: \UNARY
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 
@@ -233,7 +233,7 @@ bnf =
     o 'Key : INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($4)
 
     o \KeyValue
-    o 'KeyValue LOGIC Expression' -> Op $2, $1, $3
+    o 'KeyValue LOGIC Expression' -> Binary $2, $1, $3
 
     o '+- Key' -> Prop $2.maybeKey(), Literal $1 is \+
 
