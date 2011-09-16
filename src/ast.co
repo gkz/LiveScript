@@ -734,13 +734,6 @@ class exports.Op extends Node
       return first
     switch op
     case \of then return new Of first, second
-    case \do
-      return Call.block first if first instanceof Fun
-      return Parens do
-        # `do f?` => `f?()`
-        if first instanceof Existence and not first.negated
-        then Chain(first)add Call!
-        else Call.make first
     case \new
       # `new C?` => `new C?()`
       if first instanceof Existence and not first.negated
@@ -769,8 +762,8 @@ class exports.Op extends Node
   show: -> @op
 
   isCallable: -> switch @op
-    case <[ new delete ]> then @first.isCallable()
-    case <[ && || ? !? ]> then @first.isCallable() and @second.isCallable()
+    case <[ do new delete ]> then @first.isCallable!
+    case <[ &&  ||  ?  !? ]> then @first.isCallable! and @second.isCallable!
 
   isArray: ->
     switch @op
@@ -860,6 +853,11 @@ class exports.Op extends Node
     switch op
     case \!   then it.cond = true
     case \new then it.isCallable() or it.carp 'invalid constructor'
+    case \do
+      # `do f?` => `f?()`
+      if it instanceof Existence and not it.negated
+        then Chain(it)add Call! else Call.make it
+      => return (Parens(_) <<< {@front, @newed})compile o
     case \delete
       @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compileDelete o if o.level and not @void

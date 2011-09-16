@@ -78,9 +78,6 @@ throws 'deprecated octal literal 0666 on line 1' ,-> Coco.tokens '0666'
 throws 'invalid number 8 in base 8 on line 1'    ,-> Coco.tokens '8r8'
 
 
-eq '(function(){}());', Coco.compile 'do->' bare
-
-
 tokens = Coco.lex '''
 """
   1 #{
@@ -119,10 +116,10 @@ eq '1;\n2;', Coco.compile '  1\n  2' bare
 
 eq '''
 (function(){
-  var k, _this = this;
+  var k;
   try {
     for (k in o) {
-      (_fn(k));
+      (_fn.call(this, k));
     }
   } catch (_e) {}
   function __clone(it){
@@ -130,11 +127,11 @@ eq '''
     return fn.prototype = it, new fn;
   }
   function _fn(k){
-    __clone(_this);
+    __clone(this);
   }
 }).call(this);
 
-''', Coco.compile '''try for k in o then do ~> ^@'''
+''', Coco.compile '''try for k in o then let then ^@'''
 
 
 eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' Coco.tokens('''
