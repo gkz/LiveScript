@@ -1144,7 +1144,7 @@ class exports.Import extends Node
     {left} = this
     if left instanceof Existence and not left.negated
       [left.it, @left, temps] = left.it.cache o, true
-      return If(left, this) <<< {temps, @cond, @void}
+      return If(left, this) <<< {temps, +soak, @cond, @void}
     If.unfoldSoak o, this, \left
     or (@void or not o.level) and
     If.unfoldSoak o, this, \right
@@ -1775,7 +1775,7 @@ class exports.If extends Node
     this
 
   compileNode: (o) ->
-    if @un then @if.=invert() else @anaphorize()
+    if @un then @if.=invert! else @soak or @anaphorize!
     if o.level then @compileExpression o else @compileStatement o
 
   compileStatement: (o) ->

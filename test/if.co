@@ -90,6 +90,19 @@ ok true if ->
 ok if true then -> 1
 
 
+# [coffee#1026](https://github.com/jashkenas/coffee-script/issues/1026)
+throws "Parse error on line 2: Unexpected 'ELSE'", -> Coco.ast '''
+  if a then b
+  else then c
+  else then d
+'''
+
+
+eq 2, [if 1 then 2       , 3].0
+eq 2, [if 0 then 1 else 2, 3].0
+
+
+### Anaphoric `if`
 eq '''
 var that;
 if (1) {
@@ -113,14 +126,7 @@ if 1
 that if 6?
 ''', {+bare}
 
-
-eq 2, [if 1 then 2       , 3].0
-eq 2, [if 0 then 1 else 2, 3].0
-
-
-# [coffee#1026](https://github.com/jashkenas/coffee-script/issues/1026)
-throws "Parse error on line 2: Unexpected 'ELSE'", -> Coco.ast '''
-  if a then b
-  else then c
-  else then d
-'''
+# Soaks should not `that`-aware.
+a = [0 1]
+if 1
+  eq 1 a?[that]
