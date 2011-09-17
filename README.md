@@ -36,6 +36,11 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.6.6
+- Added unary assignments: `!! = x` => `x = !!x`
+- Made `a? <<< b` short for `a <<< b if a?`.
+- Improved stack traces from directly run .co files.
+
 ### 0.6.5
 - `case`/`of`/`instanceof` now works better with array slice.
 - `instanceof` now rejects invalid right operands.
