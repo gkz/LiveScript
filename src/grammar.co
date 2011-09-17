@@ -147,12 +147,10 @@ bnf =
     o '+-    ASSIGN Chain' ditto
     o '^     ASSIGN Chain' ditto
 
-    # Arithmetic and logical operators, working on one or two operands.
-    # The precedence rules are defined at the bottom of the page.
-    # It would be shorter if we could combine most of these rules into
-    # a single generic "Operand OpSymbol Operand"-type rule,
-    # but in order to make the precedence binding possible, separate
-    # rules are necessary.
+    o 'UNARY Expression' -> Unary $1, $2
+    o '+-    Expression' ditto, prec: \UNARY
+    o '^     Expression' ditto, prec: \UNARY
+
     o 'Expression +-      Expression' -> Binary $2, $1, $3
     o 'Expression ^       Expression' ditto
     o 'Expression COMPARE Expression' ditto
@@ -162,15 +160,10 @@ bnf =
     o 'Expression BITWISE Expression' ditto
 
     o 'Expression RELATION Expression' ->
-      []= if \! is $2.charAt 0
-      then Binary($2.slice 1; $1; $3)invert()
-      else Binary $2, $1, $3
+      *if \! is $2.charAt 0 then Binary $2.slice(1), $1, $3 .invert!
+                            else Binary $2         , $1, $3
 
     o 'Expression => Expression' -> Block $1 .pipe $3
-
-    o 'UNARY Expression'  -> []= if $1 is \! then $2.invert! else Unary $1, $2
-    o '+-    Expression' (-> Unary $1, $2), prec: \UNARY
-    o '^     Expression' ditto            , prec: \UNARY
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 

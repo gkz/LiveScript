@@ -146,7 +146,7 @@
   # Digs up a statement that jumps out of this node.
   getJump      : VOID
 
-  invert: -> Unary \! this
+  invert: -> Unary \! this, true
 
   # Constructs a node that returns the current node's result.
   makeReturn: (arref) ->
@@ -728,11 +728,14 @@ class exports.Arr extends List
 
 #### Unary operators
 class exports.Unary extends Node
-  (op, it, post) ~>
-    if it.unaries
+  # `flag` denotes inversion or postcrement.
+  (op, it, flag) ~>
+    if not flag and it.unaries
       that.push op
       return it
     switch op
+    case \!      then return it.invert! unless flag
+    case \++ \-- then @post = true if flag
     case \new
       # `new C?` => `new C?()`
       if it instanceof Existence and not it.negated
@@ -745,7 +748,7 @@ class exports.Unary extends Node
           return it
     case \~ then if it instanceof Fun and it.statement and not it.bound
       return it <<< bound: \_this
-    import {op, it, post}
+    import {op, it}
 
   children: [\it]
 
@@ -760,7 +763,7 @@ class exports.Unary extends Node
 
   invert: ->
     return @it if @op is \! and @it.op of <[ ! < > <= >= in instanceof ]>
-    .. \! this
+    .. \! this, true
 
   unfoldSoak: (o) ->
     @op of <[ ++ -- delete ]> and If.unfoldSoak o, this, \it
@@ -859,7 +862,7 @@ class exports.Binary extends Node
     if EQUALITY.test op = @op and not COMPARER.test @second.op
       @op = '!='charAt(op.indexOf \=) + op.slice 1
       return this
-    Unary \! Parens this
+    Unary \! Parens(this), true
 
   getDefault: -> switch @op case \? \|| \&& \!? then this
 
@@ -990,8 +993,6 @@ class exports.Assign extends Node
   isString: -> switch @op
     case \= \:= \+= \*= then do @right.isString
     case \-=            then do @right.isMatcher
-
-  invert: -> Unary \! if @unaries then Parens this else this
 
   unfoldSoak: (o) ->
     if @left instanceof Existence
