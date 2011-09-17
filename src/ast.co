@@ -926,7 +926,7 @@ class exports.Binary extends Node
     lefts = @first .cache o, true
     rites = @second.cache o, true
     Binary @op.charAt!, lefts.0, rites.0
-    => If _, lefts.1 .addElse Block rites.1 .compile o
+    => If _, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
     args = [@second]concat arg || []
@@ -1064,7 +1064,7 @@ class exports.Assign extends Node
     return Parens(Binary \|| test, put)compile o if @void or not o.level
     # `r = a <?= b` => `r = if a <= b then a else a = b`
     [test.second, left] = test.second.cache o, true
-    If test, left .addElse put .compileNode o
+    If test, left .addElse put .compileExpression o
 
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
