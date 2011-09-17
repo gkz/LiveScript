@@ -1589,9 +1589,9 @@ class exports.For extends While
       pvar is step or temps.push pvar
     if @from
       [tvar, tail] = @to.compileLoopReference o, \to
-      vars = idx + ' = ' + @from.compile o
+      vars = "#idx = #{ @from.compile o, LEVEL_LIST }"
       unless tail is tvar
-        vars += ', ' + tail
+        vars += ", #tail"
         temps.push tvar
       eq   = if @op is \til then '' else \=
       cond = if +pvar
