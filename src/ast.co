@@ -991,6 +991,8 @@ class exports.Assign extends Node
     case \= \:= \+= \*= then do @right.isString
     case \-=            then do @right.isMatcher
 
+  invert: -> Unary \! if @unaries then Parens this else this
+
   unfoldSoak: (o) ->
     if @left instanceof Existence
       # `[a, b]? = c` => `[a, b] = c if c?`
