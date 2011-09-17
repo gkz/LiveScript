@@ -17,11 +17,24 @@ module.exports = (Coco) ->
       filename = process.argv.1 = path.resolve that
     main <<< {filename}
     options.js or code = Coco.compile code, options
-    main._compile code, filename
+    try main._compile code, filename catch throw hackTrace e, code, filename
 
   Coco import all require(\events)EventEmitter::
 
   require.extensions\.co = (module, filename) ->
-    module._compile do
-      Coco.compile fs.readFileSync(filename, \utf8), {filename, +bare}
-      filename
+    js = Coco.compile fs.readFileSync(filename, \utf8), {filename, +bare}
+    try module._compile js, filename catch throw hackTrace e, js, filename
+
+# Weave the source into stack trace.
+function hackTrace error, js, filename
+  traces = error?stack / \\n
+  return error unless traces.length > 1
+  for trace, i of traces
+    continue if 0 > index = trace.indexOf filename
+    [, lno]? = /:(\d+):/exec trace.slice index + filename.length
+    continue unless +=lno
+    {length} = '' + end = lno+4; lines ||= js / \\n
+    for n from 1 >? lno-4 to end
+      traces[i] += "\n#{ ('    ' + n)slice -length }
+                      #{ '|+'charAt n is lno } #{[lines[n-1]]}"
+  error <<< stack: traces.join \\n

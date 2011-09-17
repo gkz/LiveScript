@@ -43,7 +43,7 @@ default
   o.compile ||= o.output
   o.run = not (o.compile or o.print)
   o.print   ||= o.eval or o.stdin and o.compile
-  o.bare    ||= o.eval and o.run or o.json
+  o.bare    ||= o.run or o.json
   {$args} = o; {argv} = process
   process.execPath = argv.0 = argv.1
   argv.splice 2 9e9
