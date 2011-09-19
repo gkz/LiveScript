@@ -247,14 +247,10 @@ class exports.Block extends Node
     o = {level: LEVEL_TOP, scope: @scope = Scope.root = new Scope, ...options}
     delete o.filename
     o.indent = if bare = delete o.bare then '' else TAB
-    @chomp()
     if /^\s*(?:[/#]|javascript:)/test @lines.0?code
       prefix = @lines.shift()code + \\n
-    if delete o.repl
-      if bare
-        @lines[i] = Parens that if @lines[i = *-1]
-      else
-        @makeReturn()
+    if delete o.repl and @chomp!lines.length
+      if bare then @lines.push Parens @lines.pop! else @makeReturn!
     code = @compileWithDeclarations o
     # Wrap everything in a safety closure unless requested not to.
     bare or code = "(function(){\n#code\n}).call(this);\n"

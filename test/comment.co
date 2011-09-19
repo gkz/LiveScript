@@ -135,6 +135,7 @@ if (1) {
   /* no semicolon at end -> */
   2;
 }
+/* trailing top level comment */
 ''', Coco.compile '''
 /* leading block comments */
 /* are placed before declarations */
@@ -150,8 +151,9 @@ obj = {
 if 1
   /* no semicolon at end -> */
   2
-  /* trailing comments */
-/*   are removed.      */
+  /* trailing comments in a block */
+  /* are removed */
+/* trailing top level comment */
 ''', {+bare}
 
 
