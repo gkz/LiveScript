@@ -345,9 +345,6 @@ class exports.Index extends Node
       switch key.items.length
       case 0 then key = Key \__proto__
       case 1 then key = Parens k unless (k = key.items.0) instanceof Splat
-    if \? is symbol.charAt 0
-      @soak = \?
-      symbol.=slice 1
     switch symbol.slice -1
     case \= then @assign = symbol.slice 1
     case \@ then @vivify = (if symbol.length > 2 then Arr else Obj)
@@ -377,12 +374,12 @@ class exports.Chain extends Node
   children: <[ head tails ]>
 
   add: ->
-    if @tails.push(it) is 1 and it instanceof Call
-      if @head instanceof Existence
-        {@head, @tails} = Chain @head.it
-        @tails.push it <<< {+soak}
-      if not it.method and @head instanceof Super
-        it.method = \.call; it.args.unshift Literal \this
+    if @head instanceof Existence
+      {@head, @tails} = Chain @head.it
+      it.soak = true
+    @tails.push it
+    if it instanceof Call and not it.method and @head instanceof Super
+      it.method = \.call; it.args.unshift Literal \this
     else if delete it.vivify
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that(), \= \||
     this

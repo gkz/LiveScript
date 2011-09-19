@@ -74,7 +74,7 @@ exports import
     @dedent @dent
     @carp "missing `#that`" if @closes.pop!
     if @inter
-    then @rest? or @carp 'unterminated interpolation'
+    then @rest ? @carp 'unterminated interpolation'
     else @last.spaced = true; @newline()
     # Rewrite the token stream unless explicitly asked not to.
     o.raw or @rewrite!
@@ -92,7 +92,7 @@ exports import
     # `id:_` `_.id` `@id`
     if colon or last.0 is \DOT or @adi()
       tag = \ID
-      (id = new String id)reserved = true if id of KEYWORDS
+      (id = Object id)reserved = true if id of KEYWORDS
     # keywords
     else switch id
     case <[ this eval ]> then return @token(\LITERAL id, true)length
@@ -337,7 +337,6 @@ exports import
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL <<< lastIndex: index)exec(code)0
     switch tag = val = sym
-    case \. \?.       then tag = \DOT
     case \+ \-        then tag = \+-
     case \&& \||      then tag = \LOGIC
     case \?  \!?      then tag = \LOGIC if @last.spaced
@@ -346,6 +345,9 @@ exports import
     case \<<< \<<<<   then tag = \IMPORT
     case \& \|        then tag = \BITWISE
     case \;           then tag = \NEWLINE
+    case \.
+      @last.0 = \? if @last.1 is \?
+      tag = \DOT
     case \!=
       unless able @tokens
         @tokens.push [\UNARY \! @line] [\ASSIGN \= @line]
@@ -374,7 +376,7 @@ exports import
     case \: then if @last.0 not of <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= <?= >?= **= ]>
-      if @last.1 of <[ . ?. ]> or @last.0 is \? and @adi!
+      if @last.1 is \. or @last.0 is \? and @adi!
         @last.1 += val
         return val.length
       if @last.0 is \LOGIC
@@ -542,13 +544,12 @@ exports import
   # Supplies an implicit DOT if applicable.
   adi: ->
     return if @last.spaced
-    switch @last.0
-    case \?  then @last <<< [\DOT  \?.]
-    case \!? then @last <<< [\CALL( '']; @token \)CALL \!; @token \DOT \?.
-    default able @tokens and @token \DOT \.
+    if @last.0 is \!?
+      @last.0 = \CALL(; @tokens.push [\)CALL '' @line] [\? \? @line]
+    @token \DOT \. if able @tokens
 
   # Resolves `.~` etc.
-  dotcat: -> @last.1 += it if @last.1 of <[ . ?. ]> or @adi()
+  dotcat: -> @last.1 += it if @last.1 is \. or @adi!
 
   # Pairs up a closing token.
   pair: ->
@@ -594,9 +595,9 @@ function carp msg, lno then throw SyntaxError "#msg on line #{-~lno}"
 # Checks whether or not the previous token is {index,`call`}able.
 function able tokens, i ? tokens.length, call
   [tag] = token = tokens[i-1]
-  tag of <[ ID ] SUPER ]> or if call
-  then token.callable or tag is \? or tag of <[ ) )CALL ]> and token.1
-  else tag of <[ } ) )CALL STRNUM LITERAL WORDS ]>
+  tag of <[ ID ] ? SUPER ]> or if call
+    then token.callable or tag of <[ ) )CALL ]> and token.1
+    else tag of <[ } ) )CALL STRNUM LITERAL WORDS ]>
 
 #### String Manipulators
 
@@ -913,7 +914,6 @@ SYMBOL = //
 | \([^\n\S]*\)                # call
 | -[->]                       # decrement / function
 | [!=]==?                     # equality
-| \?\.                        # soak access
 | ~>                          # bound function
 | @@                          # `arguments`
 | <\[(?:[\s\S]*?\]>)?         # words
@@ -960,8 +960,8 @@ CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
 INVERSES = new -> import {(c = CLOSERS[i]): o, (o): c} for o, i of OPENERS
 
 # Tokens that can start a dot/call chain.
-CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
+CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS SUPER ]>
 
 # Tokens that can start an argument list.
 ARG = CHAIN.concat <[ ... UNARY CREMENT PARAM( FUNCTION
-                      IF SWITCH TRY CLASS SUPER RANGE LABEL DO ]>
+                      IF SWITCH TRY CLASS RANGE LABEL DO ]>
