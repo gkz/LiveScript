@@ -695,7 +695,7 @@ function addImplicitIndentation tokens
   function ok token, i
     switch token.0
     case \NEWLINE       then token.1 is not \;
-    case \, \DOT \=>    then tokens[i-1]eol
+    case \DOT \? \, \=> then tokens[i-1]eol
     case \ELSE          then tag is \THEN
     case \CATCH         then tag is \TRY
     case \FINALLY       then tag of <[ TRY CATCH THEN ]>
@@ -742,7 +742,7 @@ function addImplicitParentheses tokens
                 or token.0 is \=>
     pre = tokens[i-1]
     switch token.0
-    case \DOT then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
+    case \DOT \? then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
     case \SWITCH                         then seenSwitch := true; fallthrough
     case \IF \CLASS \FUNCTION \LET \WITH then skipBlock  := true
     case \CASE

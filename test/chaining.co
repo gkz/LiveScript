@@ -34,6 +34,9 @@ eq r, $
 eq \56, if \0 is 10.toString 2 .slice 3
   \4 .replace /\d/ 5 .concat 6
 
+eq 1,
+  Array 0, 1 ?.1
+
 
 # Ensure that indented array literals don't trigger whitespace rewriting.
 eq 2 [
