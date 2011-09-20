@@ -1649,7 +1649,7 @@ class exports.Try extends Node
 
   isStatement: YES
 
-  isCallable: -> @attempt.isCallable() or @recovery?isCallable()
+  isCallable: -> @recovery?isCallable! and @attempt.isCallable!
 
   getJump: -> @attempt.getJump it or @recovery?getJump it
 
@@ -1681,8 +1681,8 @@ class exports.Switch extends Node
   isStatement: YES
 
   isCallable: ->
-    return true if c.isCallable() for c of @cases
-    @default?isCallable()
+    return false unless c.isCallable! for c of @cases
+    @default?isCallable!
 
   getJump: (ctx or {}) ->
     ctx.break = true
