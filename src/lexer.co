@@ -38,7 +38,7 @@ exports import
   #### Main Loop
 
   tokenize: (code, o) ->
-    @inter or code.=replace /\r/g ''
+    @inter or code.=replace /[\r\u2028\u2029\uFEFF]/g ''
     # Prepend a newline to handle leading INDENT.
     code = \\n + code
     # Stream of parsed tokens,
