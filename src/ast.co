@@ -767,9 +767,9 @@ class exports.Unary extends Node
     case \new then it.isCallable() or it.carp 'invalid constructor'
     case \do
       # `do f?` => `f?()`
-      if it instanceof Existence and not it.negated
+      Parens if it instanceof Existence and not it.negated
         then Chain(it)add Call! else Call.make it
-      => return (Parens(_) <<< {@front, @newed})compile o
+      => return (_ <<< {@front, @newed})compile o
     case \delete
       @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compilePluck o if o.level and not @void
@@ -778,8 +778,7 @@ class exports.Unary extends Node
       if it instanceof Var and not o.scope.check it.value, true
         @carp "#{ crement op } of undeclared variable \"#{it.value}\""
       it{front} = this if @post
-    case \^
-      return "#{ utility \clone }(#{ it.compile o, LEVEL_LIST })"
+    case \^ then return "#{ utility \clone }(#{ it.compile o, LEVEL_LIST })"
     case \classof
       return "#{ utility \toString }.call(
               #{ it.compile o, LEVEL_LIST }).slice(8, -1)"
@@ -972,8 +971,7 @@ class exports.Assign extends Node
 
   assigns: -> @left.assigns it
 
-  ::delegate <[ isCallable isRegex ]> ->
-    switch @op case \= \:= then @right[it]()
+  ::delegate <[ isCallable isRegex ]> -> @op of <[ = := ]> and @right[it]!
 
   isArray: -> switch @op
     case \= \:= \+= then do @right.isArray
@@ -1750,9 +1748,8 @@ class exports.If extends Node
 
   # Rewrites a chain of **If**s to add a default case as the final `else`.
   addElse: ->
-    if @chain
-    then @else.addElse it
-    else @chain = (@else = it) instanceof If
+    if @else instanceof .. then @else.addElse it
+                           else @else    =    it
     this
 
   ::delegate <[ isCallable isArray isString isRegex ]> ->
@@ -1770,25 +1767,23 @@ class exports.If extends Node
     if o.level then @compileExpression o else @compileStatement o
 
   compileStatement: (o) ->
-    code = 'if (' + @if.compile o, LEVEL_PAREN
+    code = "if (#{ @if.compile o, LEVEL_PAREN }) "
     o.indent += TAB
-    code += ') ' + @compileBlock o, Block @then
-    return code unless @else
-    code + ' else ' + if @chain
-    then @else.compile o <<< indent: @tab, LEVEL_TOP
-    else @compileBlock o, @else
+    code += @compileBlock o, Block @then
+    return code unless els = @else
+    code + ' else ' + if els instanceof ..
+      then els.compile o <<< indent: @tab, LEVEL_TOP
+      else @compileBlock o, els
 
   compileExpression: (o) ->
-    {then: thn, else: lse} = this
-    @void and thn.void = (lse or 0)void = true
-    return Parens(Binary \&& @if, thn)compile o if not lse and (@cond or @void)
+    {then: thn, else: els} = this
+    @void and thn.void = (els or 0)void = true
+    return Parens(Binary \&& @if, thn)compile o if not els and (@cond or @void)
     code = @if.compile o, LEVEL_COND
-    pad  = if lse?isComplex! then \\n + o.indent += TAB else ' '
+    pad  = if els?isComplex! then \\n + o.indent += TAB else ' '
     code += "#pad? #{ thn.compile o, LEVEL_LIST              }
-             #pad: #{ lse?compile o, LEVEL_LIST  or 'void 8' }"
+             #pad: #{ els?compile o, LEVEL_LIST  or 'void 8' }"
     if o.level < LEVEL_COND then code else "(#code)"
-
-  unfoldSoak: -> @soak and this
 
   # Unfolds a node's child if soak, then tuck the node under the created **If**.
   @unfoldSoak = (o, parent, name) ->
