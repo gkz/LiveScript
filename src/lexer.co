@@ -780,7 +780,7 @@ function addImplicitBraces tokens
     stack.push [\{]
     idx  = if paren then start.1 else i-1
     idx -= 2 while tokens[idx-2]?0 is \COMMENT
-    tokens.splice idx, 0 [\{ \{ token.2]
+    tokens.splice idx, 0 [\{ \{ tokens[idx]2]
     detectEnd tokens, ++i+1, ok, go
   function ok token, i
     return true if token.1 is \; or \DEDENT is tag = token.0
