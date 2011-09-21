@@ -41,8 +41,8 @@ task \install 'install Coco into /usr/local (or --prefix)' (options) ->
     ln -sfv  #lib/lib/coke.js    #bin/coke
     ln -sfnv #lib/lib #nlib/coco
     """replace /\n/g \&&
-  say stdout.trim() if stdout
-  say if e then stderr.trim() else tint \done
+  say stdout.trim! if stdout
+  say if e then stderr.trim! else tint \done
 
 
 docs = <[ doc.co lang-co.co ]>
@@ -56,9 +56,9 @@ task \build 'build lib/ from src/' ->
 task \build:full 'build twice and run tests' ->
   exec 'bin/coke build && bin/coke build && bin/coke test'
   , (err, stdout, stderr) ->
-    say stdout.trim() if stdout
-    say stderr.trim() if stderr
-    throw err         if err
+    say stdout.trim! if stdout
+    say stderr.trim! if stderr
+    throw err        if err
 
 task \build:parser 'build lib/parser.js from lib/grammar.js' ->
   spit \lib/parser.js,
@@ -72,19 +72,19 @@ task \build:parser 'build lib/parser.js from lib/grammar.js' ->
 task \build:doc 'build doc/' ->
   <- docs.forEach
   name = it.slice 0 -3; js = require(\./lib/coco)compile slurp \src/ + it
-  slobber "doc/#name.raw.js"    js
-  slobber "doc/#name.js" minify js
+  fs.writeFile "doc/#name.raw.js"    js
+  slobber      "doc/#name.js" minify js
 
 task \build:browser 'build extras/' ->
   Coco = require \./lib/coco
   js = Coco.compile slurp \src/mode-coco.co
-  slobber \extras/mode-coco.raw.js    js
-  slobber \extras/mode-coco.js minify js
+  fs.writeFile \extras/mode-coco.raw.js    js
+  slobber      \extras/mode-coco.js minify js
   co = ''
   for name of <[ lexer ast coco ]>
     code = slurp("src/#name.co")replace /\n/g '\n '
     co += "let exports = require'./#name' = {}\n#code\n"
-  slobber \extras/coco.raw.js js = """
+  fs.writeFile \extras/coco.raw.js js = """
     this.Coco = function(){
     function require(path){ return require[path] }
     var exports = require['./parser'] = {}; #{ slurp \lib/parser.js }
@@ -110,43 +110,43 @@ coreSources = -> "src/#src.co" for src of <[ coco grammar lexer ast ]>
 
 task \bench 'quick benchmark of compilation time' ->
   Coco   = require \./lib/coco
-  co     = coreSources()map(-> slurp it)join \\n
+  co     = coreSources!map(-> slurp it)join \\n
   fmt    = -> "#bold#{ "   #it"slice -4 }#reset ms"
   total  = nc = 0
-  now    = Date.now()
-  time   = -> total += ms = -(now - now := Date.now()); fmt ms
+  now    = Date.now!
+  time   = -> total += ms = -(now - now := Date.now!); fmt ms
   tokens = Coco.lex co
-  msg    = "Lex     #{time()} (#{tokens.length} tokens)\n"
+  msg    = "Lex     #{time!} (#{tokens.length} tokens)\n"
   Coco.tokens.rewrite tokens
-  msg   += "Rewrite #{time()} (#{tokens.length} tokens)\n"
+  msg   += "Rewrite #{time!} (#{tokens.length} tokens)\n"
   tree   = Coco.ast tokens
-  msg   += "Parse   #{time()} (%s nodes)\n"
+  msg   += "Parse   #{time!} (%s nodes)\n"
   js     = tree.compileRoot {+bare}
-  msg   += "Compile #{time()} (#{js.length} chars)\n" +
+  msg   += "Compile #{time!} (#{js.length} chars)\n" +
            "TOTAL   #{ fmt total }"
   tree.traverseChildren (-> ++nc; void), true
   console.log msg, nc
 
 task \loc 'count the lines of main compiler code' ->
   count = 0; line = /^[^\n\S]*[^#\s]/mg
-  ++count while line.test code for code of coreSources()map -> slurp it
+  ++count while line.test code for code of coreSources!map -> slurp it
   console.log count
 
 
 task \test 'run test/' -> runTests require \./lib/coco
 
 task \test:browser 'run test/ against extras/coco.js' ->
-  runTests (new new Function slurp \extras/coco.raw.js)Coco
+  runTests (new new Function slurp \extras/coco.js)Coco
 
 task \test:json 'test JSON {de,}serialization' ->
   {ast} = require \./lib/coco
-  json = ast slurp \src/ast.co .stringify()
+  json = ast slurp \src/ast.co .stringify!
   code = ast.parse json .compileRoot {+bare}
-  exec 'diff -u lib/ast.js -' (e, out) -> say e || out.trim() || tint \ok
+  exec 'diff -u lib/ast.js -' (e, out) -> say e || out.trim! || tint \ok
   .stdin.end code
 
 function runTests global.Coco
-  startTime = Date.now()
+  startTime = Date.now!
   passedTests = failedTests = 0
   for name, func in require \assert then let
     global[name] = -> func ...; ++passedTests
@@ -156,7 +156,7 @@ function runTests global.Coco
       try do fun catch return eq e?message, msg
       ok false "should throw: #msg"
   process.on \exit ->
-    time = ((Date.now() - startTime) / 1e3)toFixed 2
+    time = ((Date.now! - startTime) / 1e3)toFixed 2
     message = "passed #passedTests tests in #time seconds"
     say if failedTests
     then tint "failed #failedTests and #message" red
