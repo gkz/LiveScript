@@ -120,10 +120,10 @@ bnf =
     o \COMMENT -> L JS $1, true true
     o \...     -> L Throw JS "Error('unimplemented')"
 
-  # An indented block of expressions. Note that [Rewriter](#rewriter)
-  # converts some single-line forms into blocks for us.
+  # An indented block of expressions.
+  # Note that [Lexer](#lexer) rewrites some single-line forms into blocks.
   Block:
-    o 'INDENT Lines DEDENT' -> $2.chomp()
+    o 'INDENT Lines DEDENT' -> $2.chomp!
     ...
 
   # All the different types of expressions in our language.
@@ -178,8 +178,8 @@ bnf =
     o 'IfBlock ELSE Block'            -> $1.addElse $3
     o 'Expression POST_IF Expression' -> If $3, $1, $2 is \unless
 
-    # Loops can either be normal, with a block of expressions
-    # to execute, or postfix, with a single expression.
+    # Loops can either be normal with a block of expressions
+    # to execute, postfix with a single expression, or postconditional.
     o 'LoopHead Block'            -> $1.addBody $2
     o 'LoopHead Block ELSE Block' -> $1.addBody $2 .addElse $4
     o 'Expression LoopHead' -> $2.addBody Block $1
@@ -189,7 +189,7 @@ bnf =
     # `return` or `throw`
     o 'HURL Expression'                     -> Jump[$1] $2
     o 'HURL INDENT ArgList OptComma DEDENT' -> Jump[$1] Arr.maybe $3
-    o \HURL                                 -> L Jump[$1]()
+    o \HURL                                 -> L Jump[$1]!
 
     # `break` or `continue`
     o \JUMP     -> L new Jump $1
@@ -266,11 +266,11 @@ bnf =
     o 'FOR Chain OF Expression BY Expression'
     , -> new For name: $2.unwrap!, index: $3, source: $4, step: $6
 
-    o 'FOR     ID              IN Expression'
-    , -> new For {+object, -own, index: $2,                   source: $4}
+    o 'FOR     ID         IN Expression'
+    , -> new For {+object,       index: $2,                   source: $4}
     o 'FOR     ID , Chain IN Expression'
-    , -> new For {+object, -own, index: $2, name: $4.unwrap!, source: $6}
-    o 'FOR OWN ID              IN Expression'
+    , -> new For {+object,       index: $2, name: $4.unwrap!, source: $6}
+    o 'FOR OWN ID         IN Expression'
     , -> new For {+object, +own, index: $3,                   source: $5}
     o 'FOR OWN ID , Chain IN Expression'
     , -> new For {+object, +own, index: $3, name: $5.unwrap!, source: $7}
@@ -324,7 +324,6 @@ tokens = do
 
 bnf.Root = [[[\Body] 'return $$']]
 
-# Finally, initialize the `parser` with `bnf`, `operators`, `tokens`,
-# and the name of the root.
-exports.parser =
+# Finally, initialize the parser with the name of the root.
+module.exports =
   new (require \jison)Parser {bnf, operators, tokens, startSymbol: \Root}

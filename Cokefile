@@ -62,7 +62,7 @@ task \build:full 'build twice and run tests' ->
 
 task \build:parser 'build lib/parser.js from lib/grammar.js' ->
   spit \lib/parser.js,
-    require(\./lib/grammar)parser.generate()
+    require(\./lib/grammar)generate!
       .replace /^[^]+?var (?=parser = {)/ \exports.
       .replace /\ncase \d+:\nbreak;/g ''
       .replace /return parser;[^]+/ ''
