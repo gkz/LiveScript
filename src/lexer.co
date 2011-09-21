@@ -20,7 +20,7 @@ exports import
     #  - `.raw`  <br> Suppresses token rewriting if truthy.
     #  - `.line` <br> Specifies the starting line. Default `0`.
     options
-    # Copy, set, go!
+  # Copy, set, go!
   ) -> (^exports)tokenize code||'' options||{}
 
   # Rewrites the token stream in multiple passes, one logical filter at a time.
@@ -44,7 +44,7 @@ exports import
     # Stream of parsed tokens,
     # initialized with a NEWLINE token to ensure `@last` always exists.
     @tokens = [@last = [\NEWLINE \\n 0]]
-    # The current line. Starts from -1 to setoff the prepended newline.
+    # The current line number. Starts from -1 to setoff the prepended newline.
     @line = ~-o.line
     # The stack of all current indentation levels.
     @dents = []
@@ -75,7 +75,7 @@ exports import
     @carp "missing `#that`" if @closes.pop!
     if @inter
     then @rest ? @carp 'unterminated interpolation'
-    else @last.spaced = true; @newline()
+    else @last.spaced = true; @newline!
     # Rewrite the token stream unless explicitly asked not to.
     o.raw or @rewrite!
     @tokens
@@ -90,7 +90,7 @@ exports import
     return 0 unless input = (match = ID.exec code)0
     [, id, colon] = match; {last} = this
     # `id:_` `_.id` `@id`
-    if colon or last.0 is \DOT or @adi()
+    if colon or last.0 is \DOT or @adi!
       tag = \ID
       (id = Object id)reserved = true if id of KEYWORDS
     # keywords
@@ -194,14 +194,14 @@ exports import
   doString: (code, index, q) ->
     if q is code.charAt index+1
       return if q is code.charAt index+2
-      then @doHeredoc code, index, q
-      else @strnum q+q; 2
+             then @doHeredoc code, index, q
+             else @strnum q+q; 2
     if q is \"
       parts = @interpolate code, index, q
       @addInterpolated parts, unlines
       return 1 + parts.size
-    [str] = (SIMPLESTR <<< lastIndex: index)exec code
-    str or @carp 'unterminated string'
+    str = (SIMPLESTR <<< lastIndex: index)exec code .0
+          or @carp 'unterminated string'
     @strnum unlines string q, str.slice 1 -1
     @countLines(str)length
 
@@ -227,8 +227,8 @@ exports import
   # Matches block comments.
   doComment: (code, index) ->
     comment = if ~end = code.indexOf \*/ index+2
-    then code.slice index, end+2
-    else code.slice(index) + \*/
+              then code.slice index, end+2
+              else code.slice(index) + \*/
     if @last.0 of <[ NEWLINE INDENT THEN ]>
     then @token \COMMENT detab comment, @dent; @token \NEWLINE \\n
     else @last.spaced = true
@@ -236,8 +236,7 @@ exports import
 
   # Matches embedded JavaScript.
   doJS: (code, JSTOKEN.lastIndex) ->
-    [js] = JSTOKEN.exec code
-    js or @carp 'unterminated JS literal'
+    js = JSTOKEN.exec code .0 or @carp 'unterminated JS literal'
     @js detab js.slice(1 -1), @dent
     @countLines(js)length
 
@@ -266,7 +265,7 @@ exports import
     flag  = @validate /^(?:[gimy]{1,4}|[?$]?)/exec(rest)0
     if parts.1
       if flag is \$
-        @adi(); @token \( \"
+        @adi!; @token \( \"
       else
         tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
         if flag is \?
@@ -364,7 +363,7 @@ exports import
       tag = \CALL(
       @closes.push \)CALL
     case \[ \{
-      @adi()
+      @adi!
       @closes.push ']}'charAt val is \{
     case \}
       if @inter and val is not @closes[*-1]
@@ -394,8 +393,8 @@ exports import
       tag = if able @tokens then \MATH else \STRNUM
     case \@ \@@
       @dotcat val or if val is \@
-      then @token \LITERAL \this true
-      else @token \LITERAL \arguments
+        then @token \LITERAL \this true
+        else @token \LITERAL \arguments
       return val.length
     case \!
       switch then unless @last.spaced
@@ -503,7 +502,7 @@ exports import
       else
         clone  = ^exports <<< {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
-        nested.shift() while nested.0?0 is \NEWLINE
+        nested.shift! while nested.0?0 is \NEWLINE
         @countLines str.slice i, delta = str.length - clone.rest.length
         str = clone.rest
         if nested.length
@@ -516,7 +515,7 @@ exports import
   # Merges `@interpolate`d strings.
   addInterpolated: (parts, nlines) ->
     return @strnum nlines string \" parts.0.1 unless parts.1
-    @adi()
+    @adi!
     {tokens, last} = this
     tokens.push [\( \" last.2]
     for t, i of parts
@@ -530,10 +529,10 @@ exports import
     @token \) '' last.0 is \DOT
 
   # Records a string/number token, supplying implicit dot if applicable.
-  strnum: -> @token \STRNUM it, @adi() || @last.0 is \DOT; void
+  strnum: -> @token \STRNUM it, @adi! || @last.0 is \DOT; void
 
   # Records a literal token flagged embedded.
-  js: -> @token \LITERAL new String(it) <<< {+js}
+  js: -> @token \LITERAL Object(it) <<< {+js}
 
   # Records a regex token.
   regex: (body, flag) ->
