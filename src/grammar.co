@@ -55,7 +55,6 @@ bnf =
     o \List          ditto
     o \STRNUM        -> Chain L Literal $1
     o \LITERAL       ditto
-    o \SUPER         -> Chain L new Super
 
     o 'Chain DOT Key'  -> $1.add Index $3, $2, true
     o 'Chain DOT List' ditto

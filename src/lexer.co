@@ -95,7 +95,7 @@ exports import
       (id = Object id)reserved = true if id of KEYWORDS
     # keywords
     else switch id
-    case <[ this eval ]> then return @token(\LITERAL id, true)length
+    case <[ this eval super ]> then return @token(\LITERAL id, true)length
     case <[ true false null void arguments debugger ]> then tag = \LITERAL
     case \new \do \typeof \delete then tag = \UNARY
     case \return \throw           then tag = \HURL
@@ -595,7 +595,7 @@ function carp msg, lno then throw SyntaxError "#msg on line #{-~lno}"
 # Checks whether or not the previous token is {index,`call`}able.
 function able tokens, i ? tokens.length, call
   [tag] = token = tokens[i-1]
-  tag of <[ ID ] ? SUPER ]> or if call
+  tag of <[ ID ] ? ]> or if call
     then token.callable or tag of <[ ) )CALL ]> and token.1
     else tag of <[ } ) )CALL STRNUM LITERAL WORDS ]>
 
@@ -683,7 +683,7 @@ function addImplicitIndentation tokens
     # ->,
     case next of <[ , DOT ]> then --i; fallthrough
     # -> 0,
-    case next of <[ ID STRNUM LITERAL SUPER ]> and \, is tokens[i+2]?0
+    case next of <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
       go 0 i+=2; ++i
     # -> [0],
     case next of <[ ( [ { ]>
@@ -960,7 +960,7 @@ CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
 INVERSES = new -> import {(c = CLOSERS[i]): o, (o): c} for o, i of OPENERS
 
 # Tokens that can start a dot/call chain.
-CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS SUPER ]>
+CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
 ARG = CHAIN.concat <[ ... UNARY CREMENT PARAM( FUNCTION
