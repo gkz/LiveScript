@@ -276,3 +276,11 @@ eq donaldo.__proto__, duck
 
 ok ^new Number instanceof Number
 eq (^new Number)constructor, Number
+
+
+# Line folding around `extends`
+class   Inject
+extends Object
+  class Reject extends
+        Object
+    ok true

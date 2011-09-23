@@ -162,7 +162,7 @@ exports import
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
     tag ||= match.1.toUpperCase!
     @unline! if tag of <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
-                          IN OF FROM TO BY ]>
+                          IN OF FROM TO BY EXTENDS ]>
     @token tag, id
     @token \: \: if colon
     input.length
@@ -317,7 +317,7 @@ exports import
         @carp "contaminated indent #{ escape that }"
       if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := += ]>
       or tag of <[ +- => DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
-                   IN OF TO BY FROM ]>
+                   IN OF TO BY FROM EXTENDS ]>
         return length
       if delta then @indent delta else @newline!
     @wantBy = false
