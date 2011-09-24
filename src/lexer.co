@@ -381,7 +381,7 @@ exports import
       if @last.0 is \LOGIC
         (val = Object val)logic = @tokens.pop!1
       else if val of <[ += -= ^= ]> and not able @tokens and
-              @last.0 not of <[ UNARY +- ^ ]>
+              @last.0 not of <[ +- ^ UNARY LABEL ]>
         @token \UNARY val.charAt!; val = \=
       tag = \ASSIGN
     case \*
