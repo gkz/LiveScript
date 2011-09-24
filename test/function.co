@@ -335,6 +335,7 @@ eq obj.key, \value
 
 # Call takes precedence over function parameter.
 eq 0, I(-> it()) -> 0
+eq void Function() ->
 
 
 ### Invalid call detection

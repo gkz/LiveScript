@@ -461,7 +461,7 @@ exports import
 
   # (Re)tags function parameters.
   parameters: (arrow) ->
-    if @last.1 is \)
+    if @last.0 is \) is @last.1
       @lpar.0 = \PARAM(; @last.0 = \)PARAM
       return
     if arrow is \-> then @token \PARAM( '' else
