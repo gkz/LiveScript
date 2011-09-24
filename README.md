@@ -36,6 +36,10 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.6.7
+- Fixed [coffee#1715](https://github.com/jashkenas/coffee-script/issues/1715) etc.
+- Trivial improvements.
+
 ### 0.6.6
 - Added unary assignments: `!! = x` => `x = !!x`
 - Made `a? <<< b` short for `a <<< b if a?`.
