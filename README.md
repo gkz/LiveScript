@@ -14,7 +14,7 @@ Coco tries to amend them, entwining good parts of both.
 - Respect JavaScript/ECMAScript semantics.
 - Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 - Perl over Ruby.
-- Less keywords, punctuations and runtime errors.
+- Fewer keywords, punctuations and runtime errors.
 
 ## Differences
 - [Improvements](https://github.com/satyr/coco/wiki/improvements)
