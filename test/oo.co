@@ -235,12 +235,13 @@ class Sup
 
 ok new Sup.Sub instanceof Sup
 
-# `::`/`..` under class body
+# `prototype`/`constructor`/`superclass` under class body
 new class extends Object
   eq ::, prototype
   eq ::, @::
   eq .., constructor
   eq .., @
+  ok super is superclass is Object
   ->
     eq ::, @..::
     eq .., @..

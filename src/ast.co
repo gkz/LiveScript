@@ -1371,7 +1371,7 @@ class exports.Class extends Node
     lines.push vname = fun.proto = Var fun.bound = name
     if @sup
       args = [that]
-      fun.proto = Util.Extends vname, fun.params.* = Var \_super
+      fun.proto = Util.Extends vname, fun.params.* = Var \superclass
     fun.cname and fun.body.prepend Literal "#name.displayName = '#name'"
     clas = Parens Call.make(fun, args), true
     clas = Assign vname, clas if decl and title.isComplex()
@@ -1389,8 +1389,8 @@ class exports.Super extends Node
       return fun.clas + \.superclass.prototype + key
     if fun.name and (fun.ctor or fun.statement or fun.declared)
       return fun.name + \.superclass
-    o.scope.check \_super or @carp '"super" in a nameless function'
-    \_super
+    o.scope.check \superclass or @carp '"super" in a nameless function'
+    \superclass
 
 #### Parens
 # An extra set of parentheses,
