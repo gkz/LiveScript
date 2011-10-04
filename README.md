@@ -13,7 +13,6 @@ Coco tries to amend them, entwining good parts of both.
 ## Principles
 - Respect JavaScript/ECMAScript semantics.
 - Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
-- Performance over readability.
 - Perl over Ruby.
 - Less keywords, punctuations and runtime errors.
 
