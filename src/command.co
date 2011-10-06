@@ -49,8 +49,6 @@ default
   argv.splice 2 9e9
   argv.push ...if o.stdin then $args else
     if o.run then $args.splice 1 9e9 else []
-  # Arguments passed after __--__ will be passed verbatim to your script.
-  argv.push ...o.$literals
   if o.require
     ({filename} = module)filename = \.
     that.forEach require

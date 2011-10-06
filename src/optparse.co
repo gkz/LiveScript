@@ -28,11 +28,11 @@ module.exports = (
       multi : !!arg and MULTI.test arg
   # Parse the list of arguments, populating an `options` object with all of the
   # specified options, and returning it. `options.$args` will be an array
-  # containing the remaining non-option arguments, and `options.$literals`
-  # all the arguments after __--__.
+  # containing the remaining non-option arguments.
   FLAG = /^-[-\w]+$/; unknowns = []
   :ARGS for arg, i of args
-    if arg is \-- then literals = args.slice i+1; break
+    # __--__ marks the end of options.
+    if arg is \-- then ++i; break
     :ARG for a of expand arg
       for flag of flags
         continue unless a of flag<[short long]>
@@ -45,7 +45,6 @@ module.exports = (
   options import \
   $flags    : flags
   $args     : args.slice i
-  $literals : literals or []
   $unknowns : unknowns
   # Given `flags` above , the resulting `options` will stringify as:
   #
