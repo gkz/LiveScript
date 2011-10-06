@@ -26,11 +26,6 @@ module.exports = (
       long  : \-- + name
       short : abbr != 0 and "-#{ abbr or name }"slice 0 2
       multi : !!arg and MULTI.test arg
-
-  # Expand merged flags within arguments. e.g.: `-wp` -> `-w -p`
-  args = Array::concat.apply [] args.map ->
-    if /^-\w{2,}/test it then it.slice(1)split('')map(-> \- + it) else it
-
   # Parse the list of arguments, populating an `options` object with all of the
   # specified options, and returning it. `options.$args` will be an array
   # containing the remaining non-option arguments, and `options.$literals`
@@ -38,14 +33,15 @@ module.exports = (
   FLAG = /^-[-\w]+$/; unknowns = []
   :ARGS for arg, i of args
     if arg is \-- then literals = args.slice i+1; break
-    for flag of flags
-      continue unless arg of [flag.short, flag.long]
-      value = if flag.arg then args[++i] else true
-      if flag.multi
-      then options@@[flag.name]push value
-      else options. [flag.name]  =  value
-      continue ARGS
-    if FLAG.test arg then unknowns.push arg else break
+    :ARG for a of expand arg
+      for flag of flags
+        continue unless a of flag<[short long]>
+        value = if flag.arg then args[++i] else true
+        if flag.multi
+        then options@@[flag.name]push value
+        else options. [flag.name]  =  value
+        continue ARG
+      if FLAG.test a then unknowns.push a else break ARGS
   options import \
   $flags    : flags
   $args     : args.slice i
@@ -57,6 +53,10 @@ module.exports = (
   #     -o, --output DIR    set output directory
   #     -N, --nodejs ARGS+  pass options to "node"
   toString: help
+
+# Expands merged flags, e.g.: `-wp` -> `-w -p`
+function expand
+  if /^-\w{2,}/test it then []map.call it.slice(1), -> "-#it" else [it]
 
 function help
   longs = @$flags.map -> it.long + if it.arg then ' ' + that else ''

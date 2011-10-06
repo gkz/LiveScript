@@ -7,22 +7,22 @@ flags =
   output : ['set output directory'   \DIR     ]
   nodejs : ['pass options to "node"' \ARGS+ \N]
 
-result = optparse flags, <[ one two three -ho dir ]>
-
-eq result.$args.length, 6
-eq result.$args.4, \-o
-
-result = optparse result.$flags, <[ --help -o folder one two ]>
+result = optparse flags, <[ --help -o folder one two ]>
 
 eq result.help, true
-eq result.output, 'folder'
+eq result.output, \folder
 eq result.$args + '', 'one,two'
 
-result = optparse result.$flags, <[ -N h --nodejs debug -3 three ]>
+result = optparse result.$flags, <[ -ho dir ]>
+
+eq result.output, \dir
+eq result.$args.length, 0
+
+result = optparse result.$flags, <[ -N h --nodejs debug -3 three -45 ]>
 
 ok result.nodejs instanceof Array
 eq result.nodejs + '' ,'h,debug'
-eq result.$args + ''  ,'three'
+eq result.$args + ''  ,'three,-45'
 eq result.$unknowns.0 ,'-3'
 
 eq \Options:\n + result, '''
