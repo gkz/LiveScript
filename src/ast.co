@@ -1978,8 +1978,8 @@ UTILITIES =
   join     : '[].join'
   slice    : '[].slice'
   indexOf  : '''[].indexOf || function(x){
-    var i = -1, l = this.length;
-    while (++i < l) if (this.hasOwnProperty(i) && this[i] === x) return i;
+    var i = -1, l = this.length >>> 0;
+    while (++i < l) if (i in this && this[i] === x) return i;
     return -1;
   }'''
 
