@@ -104,7 +104,10 @@ function compileScript file, input, base
       Coco.emit \run t
       if o.eval
         global <<< {module, require}
-        console.log (\indirect;eval) t.output
+        r = (\indirect;eval) t.output
+        if o.json
+        then say JSON.stringify r, null 2
+        else console.log r
       else
         Coco.run t.output, t.options <<< {+js}
     else
