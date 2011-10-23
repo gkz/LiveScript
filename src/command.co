@@ -188,18 +188,21 @@ function repl
   cont  = false
   stdin = process.openStdin()
   repl  = require(\readline)createInterface stdin, process.stdout
-  reset = -> repl.line = code := ''; repl.prompt()
+  reset = ->
+    repl.line = code := ''
+    repl.prompt!
+  ({_ttyWrite} = repl)_ttyWrite = (char) ->
+    cont := char is \\n
+    _ttyWrite ...
   prompt = \coco
   prompt += " -c#{ if o.bare then \b else '' }" if o.compile
   unless o.compile
     module.paths = module.._nodeModulePaths \
       module.filename = process.cwd() + \/repl
-    vm      = require \vm
-    context = vm.createContext()
-    context <<< {...global, module, require, global: context}
+    vm = require \vm
+    global <<< {module, exports, require}
     repl.completer =
-      (^require(\repl)REPLServer::<<<{context, commands: []})~complete
-  repl._ttyWrite = (char) -> cont := char is \\n; @[]_ttyWrite ...
+      (^require(\repl)REPLServer:: <<< context:global, commands:[])~complete
   repl.on \attemptClose ->
     if repl.line or code then say ''; reset() else repl.close()
   repl.on \close stdin~destroy
@@ -213,9 +216,9 @@ function repl
       if o.compile
         say Coco.compile code, {o.bare}
       else
-        _  = vm.runInContext Coco.compile(code, {+bare, +repl}), context, \repl
+        _  = vm.runInThisContext Coco.compile(code, {+bare, +repl}), \repl
         unless _ is void
-          pp context._ = _
+          pp global._ = _
           say _ if typeof _ is \function
     catch then say e
     reset()
