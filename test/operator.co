@@ -83,8 +83,7 @@ eq true, 4 not of array
 eq true, 1 not of []
 eq true, [3]pop() of [0, ...array]
 eq true, [4]pop() of [...array, 4]
-
-eq false, void of length: 1
+eq true, void of length: 1
 
 eq 1, +(-0 of [0])
 eq 0, +(10 of [ ])

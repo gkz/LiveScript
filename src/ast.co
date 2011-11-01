@@ -1200,28 +1200,24 @@ class exports.Of extends Node
   ::<<<< Negatable
 
   compileNode: (o) ->
-    [sub, ref] = @item.cache o, false, level = LEVEL_LIST
-    if  (arr = @array.expandSlice(o)unwrap!) instanceof Arr
-    and (tests = arr.items)length > 1
-      code = ''; level = LEVEL_OP + PREC\==
-      [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
-      for test, i of tests
-        code &&+= cnj
-        if test instanceof Splat
-          code += (new Of(Var ref; test.it) <<< {@negated})compile o, level
-          code  = "(#sub, #code)" unless i or sub is ref
-        else
-          code += (if i or sub is ref then ref else "(#sub)") +
-                  cmp + test.compile o, level
-      level = LEVEL_OP + PREC\||
-    else
-      code = "#{ utility \indexOf }.call(#{ arr.compile o, level }, #ref
-            ) #{ if @negated then \< else \>= } 0"
-      if sub is ref
-      then level = LEVEL_OP + PREC\<
-      else code  = "#sub, #code"
+    {items} = array = @array.expandSlice(o)unwrap!
+    if array not instanceof Arr or items.length < 2
+      return "#{ if @negated then \! else '' }#{ utility \of }
+             (#{ @item.compile o, LEVEL_LIST }
+            , #{ array.compile o, LEVEL_LIST })"
+    code = ''
+    [sub, ref] = @item.cache o, false, LEVEL_PAREN
+    [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
+    for test, i of items
+      code &&+= cnj
+      if test instanceof Splat
+        code += (new Of(Var ref; test.it) <<< {@negated})compile o, LEVEL_TOP
+        code  = "(#sub, #code)" unless i or sub is ref
+      else
+        code += (if i or sub is ref then ref else "(#sub)") +
+                cmp + test.compile o, LEVEL_OP + PREC\==
     sub is ref or o.scope.free ref
-    if o.level < level then code else "(#code)"
+    if o.level < LEVEL_OP + PREC\|| then code else "(#code)"
 
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
@@ -1971,17 +1967,18 @@ UTILITIES =
     return r;
   }'''
 
+  of: '''function(x, arr){
+    var i = 0, l = arr.length >>> 0;
+    while (i < l) if (x === arr[i++]) return true;
+    return false;
+  }'''
+
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"
   replace  : "''.replace"
   toString : '{}.toString'
   join     : '[].join'
   slice    : '[].slice'
-  indexOf  : '''[].indexOf || function(x){
-    var i = -1, l = this.length >>> 0;
-    while (++i < l) if (i in this && this[i] === x) return i;
-    return -1;
-  }'''
 
 # Each level indicates a node's position in the AST.
 LEVEL_TOP    = 0  # ...;
