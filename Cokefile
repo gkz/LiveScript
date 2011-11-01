@@ -174,7 +174,7 @@ function runTests global.Coco
       [, row, col]? = //#filename:(\d+):(\d+)\)?$//m.exec stk
       if row and col
         say tint "#msg\n#{red}at #filename:#{row--}:#{col--}" red
-        code = Coco.compile code
+        code = Coco.compile code, {+bare}
       else if /\bon line (\d+)\b/exec msg
         say tint msg, red
         row = that.1 - 1
