@@ -217,9 +217,9 @@ function repl
         say Coco.compile code, {o.bare}
       else
         _  = vm.runInThisContext Coco.compile(code, {+bare, +repl}), \repl
-        unless _ is void
-          pp global._ = _
-          say _ if typeof _ is \function
+        _ !? global <<< {_}
+        pp  _
+        say _ if typeof _ is \function
     catch then say e
     reset()
   process.on \uncaughtException -> say "\n#{ it?stack or it }"
