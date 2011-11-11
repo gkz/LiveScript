@@ -287,7 +287,7 @@ class Atom extends Node
   isComplex : NO
 
 #### Literal
-# `this`, `debugger`, and primitives.
+# `this`, `debugger`, regexes and primitives.
 class exports.Literal extends Atom
   (@value) ~>
     return JS "#value" true if value.js
@@ -295,7 +295,9 @@ class exports.Literal extends Atom
 
   isEmpty    : -> switch @value case \void \null then true
   isCallable : -> switch @value case \this \eval then true
-  isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt()
+  isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt!
+
+  ::isComplex = ::isRegex = -> "#{@value}"charAt! is \/
 
   varName: -> if /^\w+$/test @value then \$ + @value else ''
 
@@ -1825,10 +1827,9 @@ class exports.JS extends Node
 
   show: -> if @comment then @code else "`#{@code}`"
 
-  terminator : ''
+  terminator: ''
 
-  isCallable : -> not @comment
-  isRegex    : -> not @comment and \/ is @code.charAt 0
+  isCallable: -> not @comment
 
   compile: -> if @literal then entab @code, it.indent else @code
 

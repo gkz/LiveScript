@@ -30,6 +30,11 @@ eq 0 (/_/ <<< {0})0
 throws 'duplicate regex flag `g` on line 1' -> Coco.lex '/^/gg'
 
 
+# Should be ASI safe.
+/ /
+[0][0]
+
+
 # ACI interaction
 eq \/1/ '0'.replace //#{0}// ''+/1/ \g
 

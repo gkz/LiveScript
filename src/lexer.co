@@ -538,7 +538,7 @@ exports import
   regex: (body, flag) ->
     try RegExp body catch @carp e.message
     return @strnum string \' enslash body if flag is \$
-    @js "/#{ body or '(?:)' }/#{ @validate flag }"
+    @token \LITERAL "/#{ body or '(?:)' }/#{ @validate flag }"
 
   # Supplies an implicit DOT if applicable.
   adi: ->
