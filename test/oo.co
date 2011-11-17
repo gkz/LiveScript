@@ -10,49 +10,31 @@ class FirstChild extends Base
   func: -> super('one/') + it
 
 SecondChild = class extends FirstChild
-  func: -> super('two/') + it
+  ::func = -> super('two/') + it
 
 thirdCtor = -> @array = [1, 2, 3]
 
 class ThirdChild extends SecondChild
   -> thirdCtor ...
 
-  # Gratuitous comment for testing.
-  func: -> super('three/') + it
+  func: ->
+    let it
+      # `super` from inner function
+      super('three/') + it
 
 eq (new ThirdChild).func('four'), 'zero/one/two/three/four'
 eq Base.static('word'), 'static/word'
 
-FirstChild::func = -> super('one/').length + it
-
-eq (new ThirdChild).func('four'), '9two/three/four'
 eq (new ThirdChild).array.join(' '), '1 2 3'
 
 
-# And now the same tests, but written in the manual style:
-Base = ->
-Base::func = (string) ->
-  'zero/' + string
-Base::['func-func'] = (string) ->
-  "dynamic-#{string}"
+# `extends` operator
+First  = ->
+Second = ->
 
-FirstChild  = ->
-SecondChild = ->
-ThirdChild  = ->
-  @array = [1, 2, 3]
-  this
+Second extends First extends Base
 
-ThirdChild extends SecondChild extends FirstChild extends Base
-
-FirstChild::func = (string) ->
-  super('one/') + string
-SecondChild::func = (string) ->
-  super('two/') + string
-ThirdChild::func = (string) ->
-  super('three/') + string
-
-eq new ThirdChild().func('four'), 'zero/one/two/three/four'
-eq new ThirdChild()['func-func']('thing'), 'dynamic-thing'
+ok new Second(2).func(), 'zero/2'
 
 
 # `@` referring to the current instance, and not being coerced into a call.
@@ -80,15 +62,9 @@ c.method 1, 2, 3, 4
 eq c.args.join(' '), '1 2 3 4'
 
 
-# `.superclass` injection
-f = -> super()
-f.superclass = -> 0
-eq f(), 0
-
-
-# Invalid `super`s
-throws 'stray "super" on line 1'                  -> Coco.compile 'super'
-throws '"super" in a nameless function on line 1' -> Coco.compile 'f: -> super'
+# `superclass` injection
+let superclass = Object
+  eq super, Object
 
 
 # Class with JS-keyword properties.

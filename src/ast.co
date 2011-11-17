@@ -1158,7 +1158,8 @@ class exports.Import extends Node
     return @left.compile o unless items.length
     top = not o.level
     if items.length < 2 and (top or @void or items.0 instanceof Splat)
-    then reft = Parens @left
+      reft = @left
+      reft = Parens reft if reft.isComplex!
     else [left, reft, @temps] = @left.cache o
     [delim, space] = if top then [\; \\n + @tab] else [\, ' ']
     delim += space
@@ -1177,7 +1178,7 @@ class exports.Import extends Node
       else if node instanceof Prop
         {key, val} = node
         if val.accessor
-          key = val.meth = JS "'#{key.name}'" if key instanceof Key
+          key = JS "'#{key.name}'" if key instanceof Key
           code += "#{ reft.compile o, LEVEL_CALL }
             .__define#{ if val.params.0 then val.void = \S else \G }etter__
             (#{ key.compile o, LEVEL_LIST }, #{ val.compile o, LEVEL_LIST })"
@@ -1265,11 +1266,9 @@ class exports.Fun extends Node
     # `name = ->`
     @name ||= it.varName()
     @declared = it instanceof Var
-    # `clas::meth = ->`
-    if it.tails?length
-      @clas ||= it.head instanceof Var and it.tails.0.key?name is \prototype
-            and it.head.value
-      @meth ||= not (tail = it.tails[*-1])isComplex() and tail
+    # `::meth = ->`
+    @meth = it.tails.0 if it.head?value is \prototype and
+                          it.tails.length is 1 and not it.tails.0.isComplex!
     void
 
   compileNode: (o) ->
@@ -1381,15 +1380,14 @@ class exports.Class extends Node
 #### Super
 # Reference to the parent method or constructor.
 class exports.Super extends Node
-  ::isAssignable = ::isCallable = YES
+  isCallable: YES
 
-  compile: (o) ->
-    {fun or @carp 'stray "super"'} = o.scope.shared or o.scope
-    if fun.clas and /^(?:\.|\[[\'\"\d.])/test key = fun.meth?compile o
-      return fun.clas + \.superclass.prototype + key
-    if fun.name and (fun.ctor or fun.statement or fun.declared)
-      return fun.name + \.superclass
-    o.scope.check \superclass or @carp '"super" in a nameless function'
+  simple = /^(?:\.|\[[\'\"\d.])/
+
+  compile: ({scope}:o) ->
+    while scope.fun, scope.=parent
+      if simple.test key = that.meth?compile o
+        return "superclass.prototype#key"
     \superclass
 
 #### Parens
