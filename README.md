@@ -31,7 +31,7 @@ Coco tries to amend them, entwining good parts of both.
 `git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
 ### via [npm](http://npmjs.org)
-`npm i coco`
+`npm i -g coco`
 
 ## Changelog
 
