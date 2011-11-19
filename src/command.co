@@ -201,8 +201,12 @@ function repl
       module.filename = process.cwd() + \/repl
     vm = require \vm
     global <<< {module, exports, require}
-    repl.completer =
-      (^require(\repl)REPLServer:: <<< context:global, commands:[])~complete
+    server = ^require(\repl)REPLServer:: <<<
+      context: global, commands: [], useGlobal: true
+      eval: (code,,, cb) ->
+        try res = vm.runInThisContext code, \repl catch then err = e
+        cb err, res
+    repl.completer = server~complete
   repl.on \attemptClose ->
     if repl.line or code then say ''; reset() else repl.close()
   repl.on \close stdin~destroy
