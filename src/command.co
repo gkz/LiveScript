@@ -20,11 +20,11 @@ o = require(\./optparse) do
   compile     : 'compile to JavaScript and save as .js files'
   output      :['compile into the specified directory' \DIR]
   watch       : 'watch scripts for changes, and repeat'
-  print       : 'print the compiled JavaScript to stdout'
   stdin       : 'read stdin'
   eval        : 'read command line arguments as script'
   require     :['require libraries before executing' \FILE+]
   bare        : 'compile without the top-level function wrapper'
+  print       : 'print the result to stdout'
   lex         : 'print the tokens the lexer produces'
   tokens      : 'print the tokens the rewriter produces'
   ast         : 'print the syntax tree the parser produces'
@@ -41,8 +41,8 @@ case o.version then say version()
 case o.help    then say help()
 default
   o.compile ||= o.output
-  o.run = not (o.compile or o.print)
-  o.print   ||= o.eval or o.stdin and o.compile
+  o.run = not o.compile
+  o.print   ||= o.stdin and o.compile
   o.bare    ||= o.run or o.json
   {$args} = o; {argv} = process
   process.execPath = argv.0 = argv.1
@@ -102,21 +102,21 @@ function compileScript file, input, base
     t.output = t.ast.compileRoot t.options
     if o.run
       Coco.emit \run t
-      if o.eval
-        global <<< {module, require}
-        r = global.eval t.output
-        if o.json
-        then say JSON.stringify r, null 2
-        else console.log r
-      else
+      unless o.json or o.print
         Coco.run t.output, t.options <<< {+js}
-    else
+        throw
+      global <<< {module, require}
+      r = global.eval t.output
       if o.json
-        t.output = JSON.stringify(global.eval t.output; null 2) + \\n
-      Coco.emit \write t
-      if o.print
-      then say t.output.trimRight()
-      else writeJS t.file, t.output, base
+      then say JSON.stringify r, null 2
+      else console.log r
+      throw
+    if o.json
+      t.output = JSON.stringify(global.eval t.output; null 2) + \\n
+    Coco.emit \write t
+    if o.print
+    then say t.output.trimRight()
+    else writeJS t.file, t.output, base
   catch if e?
     if Coco.listeners(\failure)length
       Coco.emit \failure e, t
