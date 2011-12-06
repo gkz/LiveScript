@@ -1845,7 +1845,7 @@ class exports.Util extends Node
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
   # returning the left one.
-  @Extends = -> Call.make Util(\extends), @@[0 1]
+  @Extends = -> Call.make Util(\extend), @@[0 1]
 
 #### Parser Utils
 # Helpers for modifying nodes in [parser](../lib/parser.js).
@@ -1933,7 +1933,7 @@ UTILITIES =
   }'''
   # Sets up `.prototype` between a pair of constructors
   # as well as `.constructor` and `.superclass` references.
-  extends: '''function(sub, sup){
+  extend: '''function(sub, sup){
     function ctor(){} ctor.prototype = (sub.superclass = sup).prototype;
     (sub.prototype = new ctor).constructor = sub;
     if (typeof sup.extended == 'function') sup.extended(sub);
