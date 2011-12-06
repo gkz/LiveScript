@@ -509,10 +509,10 @@ class exports.Chain extends Node
     {tails} = this; i = -1; while tails[++i]
       continue unless that.symbol is \.~
       that.symbol = ''
-      args   = Chain(@head, tails.splice 0 i)unwrap()cache o, true
-      args.1 = Chain args.1, [tails.shift()]
-      call   = Call.make Util(\bind), args
-      @head  = if @newed then Parens call, true else call
+      obj   = Chain(@head, tails.splice 0 i)unwrap!
+      {key} = tails.shift!
+      call  = Call.make Util(\bind), [obj, key <<< {+reserved}]
+      @head = if @newed then Parens call, true else call
       i = -1
     void
 
@@ -1940,10 +1940,10 @@ UTILITIES =
     return sub;
   }'''
 
-  # Wraps a function to fixate its `this` value.
-  bind: '''
-    function(me, fn){ return function(){ return fn.apply(me, arguments) } }
-  '''
+  # Creates a bound method.
+  bind: '''function(obj, key){
+    return function(){ return obj[key].apply(obj, arguments) };
+  }'''
 
   # Copies properties from right to left.
   import: '''function(obj, src){
