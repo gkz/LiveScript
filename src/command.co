@@ -40,10 +40,9 @@ case o.nodejs  then forkNode()
 case o.version then say version()
 case o.help    then say help()
 default
-  o.compile ||= o.output
-  o.run = not o.compile
-  o.print   ||= o.stdin and o.compile
-  o.bare    ||= o.run or o.json
+  o.run = not o.compile ||= o.output
+  o.print ||= o.compile and (o.eval or o.stdin)
+  o.bare  ||= o.run or o.json
   {$args} = o; {argv} = process
   process.execPath = argv.0 = argv.1
   argv.splice 2 9e9
