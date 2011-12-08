@@ -35,6 +35,13 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.7.0b
+- Caught up node.js 0.6.x.
+- `superclass` now points to the function `class extends`.
+- `super` now relies solely on `superclass` rather than requiring special forms like `C::m = ->`.
+- `of` no longer delegates to `Array::indexOf`, making it consistent with `for`-`of` behavior.
+- --print no longer implies --compile.
+
 ### 0.6.7
 - Fixed [coffee#1715](https://github.com/jashkenas/coffee-script/issues/1715) etc.
 - Trivial improvements.
