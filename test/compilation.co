@@ -123,8 +123,8 @@ eq '''
     }
   } catch (_e) {}
   function __clone(it){
-    function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
-    return fn.prototype = it, new fn;
+    function fun(){} fun.prototype = it;
+    return new fun;
   }
   function _fn(k){
     __clone(this);

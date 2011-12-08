@@ -1928,14 +1928,14 @@ function VOID then void
 UTILITIES =
   # Creates an object's prototypal child, ensuring `__proto__`.
   clone: '''function(it){
-    function fn(){ if (this.__proto__ !== it) this.__proto__ = it }
-    return fn.prototype = it, new fn;
+    function fun(){} fun.prototype = it;
+    return new fun;
   }'''
   # Sets up `.prototype` between a pair of constructors
   # as well as `.constructor` and `.superclass` references.
   extend: '''function(sub, sup){
-    function ctor(){} ctor.prototype = (sub.superclass = sup).prototype;
-    (sub.prototype = new ctor).constructor = sub;
+    function fun(){} fun.prototype = (sub.superclass = sup).prototype;
+    (sub.prototype = new fun).constructor = sub;
     if (typeof sup.extended == 'function') sup.extended(sub);
     return sub;
   }'''
