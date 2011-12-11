@@ -431,33 +431,30 @@ exports import
     value
 
   # Records an INDENT.
-  indent: (delta, dummy) ->
+  indent: !(delta, dummy) ->
     @dent += delta
     @dents .push @token \INDENT delta
     @closes.push \DEDENT
-    void
 
   # Records DEDENTs against matching INDENTs.
-  dedent: (debt) ->
+  dedent: !(debt) ->
     @dent -= debt
     while debt > 0 and dent = @dents.pop!
       if debt < dent and not @inter
         @carp "unmatched dedent (#debt for #dent)"
       @pair \DEDENT
       debt -= if typeof dent is \number then @token \DEDENT dent else dent
-    void
 
   # Generates a newline token. Consecutive newlines get merged together.
   newline: -> @last.1 is \\n
            or @tokens.push @last = [\NEWLINE \\n @line] <<< {+spaced}
 
   # Cancels an immediate newline.
-  unline: ->
+  unline: !->
     switch @last.0
     # Mark the last indent as dummy.
     case \INDENT  then @dents[*-1] += ''; fallthrough
     case \NEWLINE then @tokens.length--
-    void
 
   # (Re)tags function parameters.
   parameters: (arrow) ->
@@ -655,16 +652,15 @@ character = if JSON!? then uxxxx else ->
 
 # Tag postfix conditionals as such, so that we can parse them with a
 # different precedence.
-function tagPostfixConditionals tokens
+!function tagPostfixConditionals tokens
   detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
-  function ok then it.0 of <[ NEWLINE INDENT ]>
-  function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
-  void
+  function  ok then it.0 of <[ NEWLINE INDENT ]>
+  !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
 
 # Wrap single-line blocks with regular INDENT/DEDENT pairs.
 # Because our grammar is LALR(1), it can't handle some sequences
 # that lack ending delimiters.
-function addImplicitIndentation tokens
+!function addImplicitIndentation tokens
   i = 0
   while token = tokens[++i]
     [tag] = token
@@ -700,14 +696,13 @@ function addImplicitIndentation tokens
     case \FINALLY       then tag of <[ TRY CATCH THEN ]>
     case \SWITCH        then not seenSwitch := true
     case \CASE \DEFAULT then not seenSwitch
-  function go [] i
+  !function go [] i
     prev = tokens[i-1]
     tokens.splice if prev.0 is \, then i-1 else i, 0, dedent <<< {prev.2}
-  void
 
 # Functions may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
-function addImplicitParentheses tokens
+!function addImplicitParentheses tokens
   i = 0; brackets = []
   while token = tokens[++i]
     doblock = false
@@ -757,12 +752,11 @@ function addImplicitParentheses tokens
     case <[ NEWLINE POST_IF FOR BY TO ]>
       return pre.0 is not \,
     false
-  function go token, i then tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
-  void
+  !function go token, i then tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
 
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
-function addImplicitBraces tokens
+!function addImplicitBraces tokens
   stack = []; i = 0
   while token = tokens[++i]
     unless \: is tag = token.0
@@ -790,15 +784,14 @@ function addImplicitBraces tokens
     t1 = tokens[i+1]?0
     t1 is not (if tag is \, then \NEWLINE else \COMMENT) and
     \: is not tokens[if t1 is \( then 1 + indexOfPair tokens, i+1 else i+2]?0
-  function go token, i then tokens.splice i, 0 [\} '' token.2]
-  void
+  !function go token, i then tokens.splice i, 0 [\} '' token.2]
 
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand ranges and words.
 # - Insert `void` before empty commas.
 # - Insert `()` after each `function`/`let` facing a block.
 # - Insert `, ` after each non-callable token facing an argument token.
-function expandLiterals tokens
+!function expandLiterals tokens
   i = 0
   while token = tokens[++i]
     switch token.0
@@ -846,17 +839,15 @@ function expandLiterals tokens
     default continue
     if token.spaced and tokens[i+1]0 of ARG
       tokens.splice ++i, 0 [\, \, token.2]
-  void
 
 # Seeks `tokens` from `i`ndex and `go` for a token of the same level
 # that's `ok` or an unmatched closer.
-function detectEnd tokens, i, ok, go
+!function detectEnd tokens, i, ok, go
   levels = 0
   while token = tokens[i], ++i
     return go token, i if not levels and ok token, i
     [tag] = token
     return go token, i if 0 > levels += tag of OPENERS or -(tag of CLOSERS)
-  void
 
 function indexOfPair tokens, i
   level = 1; end = INVERSES[start = tokens[i]0]

@@ -28,11 +28,10 @@
     # an expression via closure-wrapping, as its meaning will change.
     that.carp 'inconvertible statement' if @getJump!
     fun = Fun [] Block this; call = Call(); hasThis = hasArgs = false
-    @traverseChildren ->
+    @traverseChildren !->
       switch it.value
       case \this      then hasThis := true
       case \arguments then hasArgs := it.value = \_args
-      void
     if hasThis
       call.args.push Literal \this
       call.method = \.call
@@ -73,12 +72,11 @@
     [tmp; asn.compile o, if ret then LEVEL_CALL else LEVEL_PAREN]
 
   # Passes each child to a function, returning its return value if exists.
-  eachChild: (fn) ->
+  eachChild: !(fn) ->
     for name of @children then if child = @[name]
       if \length in child
       then return that if fn(node )? for node of child
       else return that if fn(child)?
-    void
 
   # Performs `eachChild` on every descendant.
   # Overridden by __Fun__ not to cross scope by default.
@@ -105,10 +103,9 @@
     throw SyntaxError "#it on line #{ @line or @traverseChildren -> it.line }"
 
   # Defines delegaters.
-  delegate: (names, fn) ->
+  delegate: !(names, fn) ->
     for name of names then let
       @[name] = -> fn.call this, name, it
-    void
 
   # Default implementations of the common node properties and methods. Nodes
   # will override these with custom logic, if needed.
@@ -464,7 +461,7 @@ class exports.Chain extends Node
     news + base + rest
 
   # Unfolds a soak into an __If__: `a?.b` => `a.b if a?`
-  unfoldSoak: (o) ->
+  unfoldSoak: !(o) ->
     if @head.unfoldSoak o
       that.then.tails.push ...@tails
       return that
@@ -481,9 +478,8 @@ class exports.Chain extends Node
           [test, @head] = bust.unwrap()cache o, true
         Existence test
       return If(test, this) <<< {+soak, @cond, @void}
-    void
 
-  unfoldAssign: (o) ->
+  unfoldAssign: !(o) ->
     if @head.unfoldAssign o
       that.right.tails.push ...@tails
       return that
@@ -491,9 +487,8 @@ class exports.Chain extends Node
       index.assign = ''
       [left, @head] = Chain(@head, @tails.splice 0 i)cacheReference o
       return Assign(left, this, that) <<< {+access}
-    void
 
-  expandSplat: (o) ->
+  expandSplat: !(o) ->
     {tails} = this; i = -1; while call = tails[++i]
       continue unless args = call.args
       ctx = call.method is \.call and (args.=concat())shift()
@@ -503,9 +498,8 @@ class exports.Chain extends Node
         [@head, ctx] = Chain(@head, tails.splice 0 i-1)cache o, true
         i = 0
       call <<< method: \.apply, args: [ctx or Literal \null; JS args]
-    void
 
-  expandBind: (o) ->
+  expandBind: !(o) ->
     {tails} = this; i = -1; while tails[++i]
       continue unless that.symbol is \.~
       that.symbol = ''
@@ -514,9 +508,8 @@ class exports.Chain extends Node
       call  = Call.make Util(\bind), [obj, key <<< {+reserved}]
       @head = if @newed then Parens call, true else call
       i = -1
-    void
 
-  expandStar: (o) ->
+  expandStar: !(o) ->
     {tails} = this; i = -1; while tails[++i]
       continue if that.args or that.stars or that.key instanceof Key
       stars = that.stars = []
@@ -528,11 +521,9 @@ class exports.Chain extends Node
       @head = JS sub.compile(o, LEVEL_CALL) + tails.shift!compile o
       o.scope.free temps.0 if temps
       i = -1
-    function seek
+    !function seek
       if it.value is \*               then stars.push it
       else unless it instanceof Index then it.eachChild seek
-      void
-    void
 
   # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
   expandSlice: (o, assign) ->
@@ -1265,14 +1256,13 @@ class exports.Fun extends Node
 
   makeReturn: -> if @statement then import {+returns} else super ...
 
-  ripName: ->
+  ripName: !->
     # `name = ->`
     @name ||= it.varName()
     @declared = it instanceof Var
     # `::meth = ->`
     @meth = it.tails.0 if it.head?value is \prototype and
                           it.tails.length is 1 and not it.tails.0.isComplex!
-    void
 
   compileNode: (o) ->
     pscope = o.scope
@@ -1625,8 +1615,8 @@ class exports.For extends While
     head + body
 
   # Makes IIFE constructions (such as `let`) capture the loop variables.
-  infuseIIFE: (o) ->
-    <~ @body.traverseChildren
+  infuseIIFE: !(o) ->
+    <~! @body.traverseChildren
     return unless it.calling or it.op is \new and (fun = it.it)params
     if fun
     then {tails: [call]} = it.it = Call.make fun <<< {+\void}
@@ -1637,7 +1627,6 @@ class exports.For extends While
       call.args.push if name.isComplex!
         then Var @nref ||= @temps.* = o.scope.temporary \ref else name
       fun.params.push name
-    void
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
@@ -1860,10 +1849,9 @@ exports.L = (yylineno, node) -> node import line: yylineno + 1
 # generate code, you create a tree of scopes in the same shape as the nested
 # functions. Each scope knows about the function parameters and the variables
 # declared within it, and has references to its parent/shared enclosing scopes.
-function Scope @parent, @shared
+!function Scope @parent, @shared
   @variables = []
   @positions = {}
-  void
 Scope::<<<
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->

@@ -60,18 +60,18 @@ default
   default say version() + \\n + help() + \\n; repl()
 
 # Calls a `fs` method, exiting on error.
-function fshoot name, arg, callback
-  e, result <- fs[name] arg
+!function fshoot name, arg, callback
+  e, result <-! fs[name] arg
   die e.stack || e if e
   callback result
 
 # Asynchronously read in each Coco script in a list of source files and
 # compile them. If a directory is passed, recursively compile all
 # _.co_ files in it and all subdirectories.
-function compileScripts
+!function compileScripts
   $args.forEach -> walk it, , true
-  function walk source, base ? path.normalize(source), top
-    e, stats <- fs.stat source
+  !function walk source, base ? path.normalize(source), top
+    e, stats <-! fs.stat source
     if e
       return walk "#source.co" if top
       die e
@@ -80,11 +80,10 @@ function compileScripts
     else if top or path.extname(source)toLowerCase() is \.co
       watch source, base if o.watch
       fshoot \readFile source, -> compileScript source, "#it", base
-  void
 
 # Compile a single source script, containing the given code, according to the
 # requested options.
-function compileScript file, input, base
+!function compileScript file, input, base
   t = {file, input, options: filename: file, bare: !!o.bare}
   try
     Coco.emit \lex t
@@ -128,17 +127,16 @@ function compileScript file, input, base
   Coco.emit \success t
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**.
-function compileStdin
+!function compileStdin
   with process.openStdin()
     code = ''
     @on \data -> code += it
     @on \end  -> compileScript null code
-  void
 
 # Watch a source Coco file using `fs.watchFile`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--ast` or `--print`.
-function watch source, base
+!function watch source, base
   curr, prev <- fs.watchFile source, {+persistent, interval: 500ms}
   return if curr.size is prev.size and +curr.mtime is +prev.mtime
   buf <- fshoot \readFile source
@@ -147,7 +145,7 @@ function watch source, base
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
-function writeJS source, js, base
+!function writeJS source, js, base
   #     foo.co     => foo.js
   #     foo.jsm.co => foo.jsm
   filename = path.basename(source)replace do
@@ -156,22 +154,21 @@ function writeJS source, js, base
   if o.output
     dir = path.join that, dir.slice if base is \. then 0 else base.length
   jsPath = path.join dir, filename
-  function compile
-    e <- fs.writeFile jsPath, js || \\n
+  !function compile
+    e <-! fs.writeFile jsPath, js || \\n
     return warn e if e
     util.log "#source => #jsPath" if o.watch
-  <- path.exists dir
+  <-! path.exists dir
   if it
   then do compile
   else require(\child_process)exec "mkdir -p #dir" compile
 
 # Pretty-print a stream of tokens.
-function printTokens tokens
+!function printTokens tokens
   lines = []
   for [tag, val, lno] of tokens
     lines@@[lno]push if tag.toLowerCase() is val then tag else "#tag:#val"
   say(if l then l.join(' ')replace /\n/g \\\n else '') for l of lines
-  void
 
 # A Read-Eval-Print-Loop.
 # Good for simple tests or poking around the
@@ -181,7 +178,7 @@ function printTokens tokens
 # - __^J__: Insert linefeed.
 # - __^C__: Cancel input if any. Quit otherwise.
 # - __??__: <https://github.com/joyent/node/blob/master/lib/readline.js>
-function repl
+!function repl
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
   code  = ''
   cont  = false
@@ -231,7 +228,7 @@ function repl
 
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
 # to it, preserving the other options.
-function forkNode
+!function forkNode
   args = process.argv.slice 1; i = 0
   args.splice i-- 2 if that of <[ -n --nodejs ]> while args[++i]
   require(\child_process)spawn do

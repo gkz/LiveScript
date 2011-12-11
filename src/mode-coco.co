@@ -2,7 +2,7 @@
 #
 # Open [test/ace.htm](../test/ace.htm) to test.
 
-require, exports, module <- define \ace/mode/coco
+require, exports, module <-! define \ace/mode/coco
 
 identifier = /[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/$
 
@@ -243,5 +243,3 @@ CocoMode.Rules =
     regex: '.*?\\]>'
     next : \key
     stringfill
-
-void
