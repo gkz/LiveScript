@@ -450,3 +450,14 @@ with 0 then let x = 1, y = 2
   eq '0,1,2' ''+ f ...
   eq ','     ''+ f(...[])slice 1
 throws 'invalid splat on line 1' -> Coco.compile 'f ..., a'
+
+
+### do-`not`-return
+eq void do !-> true
+eq void do !~> true
+eq void do
+  <-! run = -> it!
+  <~! run ...
+  !function C then C
+  ok new C instanceof C
+  true

@@ -566,9 +566,10 @@ class exports.Call extends Node
     Parens(Chain fun, [Call(args) <<< {method}]; true) <<< {+calling}
 
   @back = (params, node, bound) ->
+    node.=it if noret = node.op is \!
     {args} = node.getCall! or (node = Chain node .add Call!)getCall!
-    break if arg.filler for arg, idx of args
-    node <<< back: (args[idx] = Fun params, null, bound)body
+    break if a.filler for a, index of args
+    node <<< back: (args[index] = Fun(params,, bound) <<< void: noret)body
 
   @let = (args, body) ->
     params = for a, i of args
@@ -727,7 +728,9 @@ class exports.Unary extends Node
       that.push op
       return it
     switch op
-    case \!      then return it.invert! unless flag
+    case \!      then
+      return it.invert!  unless flag
+      return it <<< {+\void} if it instanceof Fun
     case \++ \-- then @post = true if flag
     case \new
       # `new C?` => `new C?()`
@@ -1406,7 +1409,7 @@ class exports.Parens extends Node
 
   compile: (o, level ? o.level) ->
     {it} = this
-    it <<< {@cond, @void}
+    it{cond, \void} ||= this
     it.head.void = true if @calling and (not level or @void)
     unless @keep or @newed or level >= LEVEL_OP + PREC[it.op]
       return (it <<< {@front})compile o, level || LEVEL_PAREN
