@@ -22,10 +22,10 @@ module.exports = (
     MULTI = /[*+]/
     flags = for name in flags
       [desc, arg, abbr] = []concat flags[name]
-      {name, desc, arg, abbr} <<< \
-      long  : \-- + name
-      short : abbr != 0 and "-#{ abbr or name }"slice 0 2
-      multi : !!arg and MULTI.test arg
+      {name, desc, arg, abbr} <<<
+        long  : \-- + name
+        short : abbr != 0 and "-#{ abbr or name }"slice 0 2
+        multi : !!arg and MULTI.test arg
   # Parse the list of arguments, populating an `options` object with all of the
   # specified options, and returning it. `options.$args` will be an array
   # containing the remaining non-option arguments.
@@ -42,16 +42,16 @@ module.exports = (
         else options. [flag.name]  =  value
         continue ARG
       if FLAG.test a then unknowns.push a else break ARGS
-  options import \
-  $flags    : flags
-  $args     : args.slice i
-  $unknowns : unknowns
-  # Given `flags` above , the resulting `options` will stringify as:
-  #
-  #     -h, --help          display help
-  #     -o, --output DIR    set output directory
-  #     -N, --nodejs ARGS+  pass options to "node"
-  toString: help
+  options import
+    $flags    : flags
+    $args     : args.slice i
+    $unknowns : unknowns
+    # Given `flags` above , the resulting `options` will stringify as:
+    #
+    #     -h, --help          display help
+    #     -o, --output DIR    set output directory
+    #     -N, --nodejs ARGS+  pass options to "node"
+    toString: help
 
 # Expands merged flags, e.g.: `-wp` -> `-w -p`
 function expand

@@ -265,7 +265,7 @@ pick = -> it.$
 eq 9, pick pick pick $: $: $: 9
 
 
-# [coffee#618](https://github.com/satyr/coco/issues/618):
+# [coffee#618](https://github.com/jashkenas/coffee-script/issues/618):
 # Should not consume shorthand properties.
 a = Array do
   1: 2
@@ -282,6 +282,11 @@ obj =
   fun: -> [zero: 0; three: @one + @two][1]
 
 eq obj.fun().three, 3
+
+# [coffee#1903](https://github.com/jashkenas/coffee-script/issues/1903)
+o = p: 0
+q: 1
+ok \q not in o
 
 
 #### Dynamic Keys
