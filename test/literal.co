@@ -283,9 +283,12 @@ obj =
 
 eq obj.fun().three, 3
 
-# [coffee#1903](https://github.com/jashkenas/coffee-script/issues/1903)
+# [coffee#1871](https://github.com/jashkenas/coffee-script/issues/1871),
+# [coffee#1903](https://github.com/jashkenas/coffee-script/issues/1903):
+# Should close early when inline.
 o = p: 0
 q: 1
+o = q: 1 if false
 ok \q not in o
 
 

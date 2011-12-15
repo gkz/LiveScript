@@ -621,7 +621,7 @@ class exports.Obj extends List
           key = Parens key
         else key = node
         val = chain = Chain base, [Index node.maybeKey()]
-        val = logic <<< {first: val} if logic
+        val = logic <<< first: val if logic
         items[i] = Prop key, val
       base = ref
     chain or @carp 'empty slice'
@@ -1108,7 +1108,7 @@ class exports.Assign extends Node
       then node = ({key} = node)val
       else key  = node
       node = Var node.name if node instanceof Key
-      node = logic <<< {first: node} if logic
+      node = logic <<< first: node if logic
       val  = Chain rcache||=Var(rite), [Index key.maybeKey()]
       val  = Import Obj(), val if splat
       (^@<<<{left: node, right: val, +\void})compile o, LEVEL_PAREN

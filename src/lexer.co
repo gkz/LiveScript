@@ -767,20 +767,22 @@ character = if JSON!? then uxxxx else ->
         tag = \{ if tag is \INDENT and tokens[i-1]0 is \{
         stack.push [tag, i]
       continue
-    paren  = tokens[i-1]0 is \)
-    index  = if paren then start.1 else i-1
-    pre    = tokens[index-1]
+    paren = tokens[i-1]0 is \)
+    index = if paren then start.1 else i-1
+    pre   = tokens[index-1]
     continue unless pre.0 is \: or stack[*-1]?0 is not \{
     stack.push [\{]
-    lead = pre.doblock or pre.0 of <[ NEWLINE INDENT ]>
+    inline = not pre.doblock and pre.0 not of <[ NEWLINE INDENT ]>
     index -= 2 while tokens[index-2]?0 is \COMMENT
     tokens.splice index, 0 [\{ \{ tokens[index]2]
     detectEnd tokens, ++i+1, ok, go
   function ok token, i
-    return true if token.1 is \; or \DEDENT is tag = token.0
-    switch tag
-    case \,       then break
-    case \NEWLINE then return true unless lead
+    return true if token.1 is \;
+    switch tag = token.0
+    case \,                   then break
+    case \NEWLINE             then return true if inline
+    case \DEDENT              then return true
+    case \POST_IF \FOR \WHILE then return inline
     default return false
     t1 = tokens[i+1]?0
     t1 is not (if tag is \, then \NEWLINE else \COMMENT) and
