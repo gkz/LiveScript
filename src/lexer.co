@@ -457,7 +457,7 @@ exports import
     case \NEWLINE then @tokens.length--
 
   # (Re)tags function parameters.
-  parameters: (arrow) ->
+  parameters: !(arrow) ->
     if @last.0 is \) is @last.1
       @lpar.0 = \PARAM(; @last.0 = \)PARAM
       return
@@ -473,7 +473,7 @@ exports import
   #
   # Will recursively create a new lexer for each interpolation,
   # tokenizing the contents and merging them into the token stream.
-  interpolate: (str, idx, end) ->
+  interpolate: !(str, idx, end) ->
     parts = []; end0 = end.charAt 0; pos = 0; i = -1
     str.=slice idx + end.length
     while ch = str.charAt ++i
@@ -507,10 +507,10 @@ exports import
           nested.push    [\) \) @line]
           parts.push [\TOKENS nested]
       pos += delta; i = -1
-    @carp "missing `#end`"; void
+    @carp "missing `#end`"
 
   # Merges `@interpolate`d strings.
-  addInterpolated: (parts, nlines) ->
+  addInterpolated: !(parts, nlines) ->
     return @strnum nlines string \" parts.0.1 unless parts.1
     @adi!
     {tokens, last} = this
@@ -582,7 +582,7 @@ exports import
     flag
 
   # Throws a syntax error with the current line number.
-  carp: -> carp it, @line
+  carp: !-> carp it, @line
 
 #### Helpers
 
