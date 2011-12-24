@@ -483,10 +483,17 @@ class exports.Chain extends Node
     if @head.unfoldAssign o
       that.right.tails.push ...@tails
       return that
-    for index, i of @tails then if index.assign
+    for index, i of @tails then if op = index.assign
       index.assign = ''
-      [left, @head] = Chain(@head, @tails.splice 0 i)cacheReference o
-      return Assign(left, this, that) <<< {+access}
+      left = Chain @head, @tails.splice 0 i .expandSlice o .unwrap!
+      if left instanceof Arr
+        # `[a, b].=reverse()` => `[a, b] = [a, b].reverse()`
+        lefts = left.items; {items: rites} = @head = Arr!
+        for node, i of lefts
+          [rites[i], lefts[i]] = Chain node .cacheReference o
+      else
+        [left, @head] = Chain left .cacheReference o
+      return Assign(left, this, op) <<< {+access}
 
   expandSplat: !(o) ->
     {tails} = this; i = -1; while call = tails[++i]
@@ -529,7 +536,8 @@ class exports.Chain extends Node
   expandSlice: (o, assign) ->
     {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
-      tails.splice 0 i+1 => _.pop!key.toSlice o, Chain(@head, _)unwrap!, assign
+      tails.splice 0 i+1
+      => _.pop!key.toSlice o, Chain(@head, _)unwrap!, assign
       => @head = _ <<< {@front}
       i = -1
     this
@@ -687,7 +695,7 @@ class exports.Arr extends List
   # `base[x, ...y]` => `[base[x], ...base[y]]`
   toSlice: (o, base) ->
     {items} = this
-    if items.length > 1 then [base, ref, temps] = base.cache o else ref = base
+    if items.length > 1 then [base, ref] = base.cache o else ref = base
     for item, i of items
       item.=it if splat = item instanceof Splat
       continue if item.isEmpty()
@@ -695,7 +703,6 @@ class exports.Arr extends List
       items[i] = if splat then Splat chain else chain
       base = ref
     chain or @carp 'empty slice'
-    (chain.head = Var temps.0)temp = true if temps
     this
 
   compile: (o) ->

@@ -10,7 +10,7 @@ x = if getX() then 100
 eq x, 100
 
 
-# _thisprop_ assignment.
+# _thisprop_ assignment
 tester = ->
   @example = ok
   this
@@ -75,7 +75,7 @@ ok 'LHS should take care frontness'
 
 ### Destructuring
 
-# Simple variable swapping.
+# simple variable swapping
 a = -1
 b = -2
 [a, b] = [b, a]
@@ -91,13 +91,18 @@ a = [0 1]
 eq a, 0
 eq b, 1
 
-
-#713
 eq (onetwo = [1, 2]), [a, b] = [c, d] = onetwo
 ok a is c is 1 and b is d is 2
 
 
-# With splats.
+# fancy swapping
+a = [0 1]; i = 2
+[a[--i], a[--i]].=reverse!
+eq 1 a.0
+eq 0 a.1
+
+
+# with splats
 [x, ...y, z] = [1, 2, 3, 4, 5]
 eq x, 1
 eq y.length, 3
@@ -110,6 +115,7 @@ eq heads + '', '1,2,3'
 eq tails + '', '5,6'
 
 
+# objects
 {a: a, b} = {a: 0, b: 1}
 eq a, 0
 eq b, 1
@@ -140,7 +146,7 @@ a = {\a \b}
 eq a+b, \ab
 
 
-# With object shorthand.
+# with object shorthand
 {name, age, dogs: [first, second]} =
   name: 'Bob'
   age :  26
@@ -151,7 +157,7 @@ eq first  , 'Prince'
 eq second , 'Bowie'
 
 
-# On `for`-`in`/`of`.
+# on `for`
 persons =
   George     : {name: 'Bob'  }
   Bob        : {name: 'Alice'}
@@ -179,7 +185,7 @@ eq join2.join(' '), join3.join(' ')
 ok x is y is z, 'destructuring in multiple'
 
 
-# Into properties.
+# into properties
 obj =
   func: (list, object) ->
     [@one, @two] = list
@@ -268,6 +274,11 @@ o[\b, ...\c, \d] = [0 to 3]
 eq o.b, 0
 eq o.c+'' '1,2'
 eq o.d, 3
+
+a = [0 1]; i = 2
+a.reverse![--i, --i].=reverse!
+eq 0 a.0
+eq 1 a.1
 
 
 ### Destructuring Default
