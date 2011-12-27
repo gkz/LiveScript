@@ -6,7 +6,10 @@ that aims to be more radical and practical.
 On its way to hide JavaScript's bad parts, CoffeeScript has accumulated own quirks:
 [horrible variable scope](https://github.com/jashkenas/coffee-script/issues/712),
 [awkward ranges](https://github.com/jashkenas/coffee-script/issues/746),
-confusing/pointless keywords, long extension,
+[confusing](https://github.com/jashkenas/coffee-script/issues/702)
+and/or
+[pointless](https://github.com/jashkenas/coffee-script/issues/813)
+keywords, verbose file extension,
 [and so on](https://github.com/satyr/coco/wiki/wtfcs).
 Coco tries to amend them, entwining good parts of both.
 
@@ -35,12 +38,15 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
-### 0.7.0b
+### 0.7.0
 - Caught up node.js 0.6.x.
+- `!` against function/backcall now suppresses its auto-return.
 - `superclass` now points to the function `class extends`.
 - `super` now relies solely on `superclass` rather than requiring special forms like `C::m = ->`.
 - `of` no longer delegates to `Array::indexOf`, making it consistent with `for`-`of` behavior.
+- Inline implicit objects now close at newline or `if`/`for`/`while`/`until`.
 - --print no longer implies --compile.
+- --watch now works on Windows.
 
 ### 0.6.7
 - Fixed [coffee#1715](https://github.com/jashkenas/coffee-script/issues/1715) etc.

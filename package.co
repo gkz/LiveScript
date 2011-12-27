@@ -1,5 +1,5 @@
 name    : \coco
-version : \0.6.8b
+version : \0.7.0
 
 description : 'Unfancy CoffeeScript'
 keywords    :
@@ -26,4 +26,4 @@ repository: type: \git, url: \git://github.com/satyr/coco.git
 
 devDependencies:
   jison      : \0.2.1
-  \uglify-js : \1.1.1
+  \uglify-js : \1.2.3

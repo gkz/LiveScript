@@ -1,6 +1,6 @@
 {
   "name": "coco",
-  "version": "0.6.7",
+  "version": "0.7.0",
   "description": "Unfancy CoffeeScript",
   "keywords": [
     "language",
@@ -17,7 +17,7 @@
     }
   ],
   "engines": {
-    "node": ">= 0.4.0"
+    "node": ">= 0.6.2"
   },
   "directories": {
     "lib": "./lib"
@@ -33,6 +33,6 @@
   },
   "devDependencies": {
     "jison": "0.2.1",
-    "uglify-js": "1.0.6"
+    "uglify-js": "1.2.3"
   }
 }
