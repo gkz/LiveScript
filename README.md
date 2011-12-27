@@ -30,7 +30,7 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Installation
 
-### on [node.js](http://nodejs.org)
+### on [Node.js](http://nodejs.org)
 `git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
 ### via [npm](http://npmjs.org)
@@ -39,14 +39,14 @@ Coco tries to amend them, entwining good parts of both.
 ## Changelog
 
 ### 0.7.0
-- Caught up node.js 0.6.x.
+- Caught up Node.js 0.6.x.
 - `!` against function/backcall now suppresses its auto-return.
-- `superclass` now points to the function `class extends`.
+- `superclass` now points to the constructor that the `class extends`.
 - `super` now relies solely on `superclass` rather than requiring special forms like `C::m = ->`.
 - `of` no longer delegates to `Array::indexOf`, making it consistent with `for`-`of` behavior.
 - Inline implicit objects now close at newline or `if`/`for`/`while`/`until`.
-- --print no longer implies --compile.
-- --watch now works on Windows.
+- `--print` no longer implies `--compile`.
+- `--watch` now works on Windows.
 
 ### 0.6.7
 - Fixed [coffee#1715](https://github.com/jashkenas/coffee-script/issues/1715) etc.
@@ -175,7 +175,7 @@ Coco tries to amend them, entwining good parts of both.
 - `--interactive` now works with `--compile` and `--bare`.
 - Renamed `--nodes` option and `.nodes` method to `--ast`/`.ast`.
 - Fixed [the performance bug](https://github.com/jashkenas/coffee-script/issues/1033) wrt long method chains.
-- Quit supporting node.js 0.3.x or lower.
+- Quit supporting Node.js 0.3.x or lower.
 
 ### 0.3.2
 - Unrestricted ADI for identifiers beyond `@` and `::`.
