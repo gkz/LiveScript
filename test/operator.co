@@ -402,6 +402,9 @@ String 0
 => if _ then _+_ else _*_
 => eq \00 _
 
+eq void,
+  -> => _ _ => _
+
 
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]

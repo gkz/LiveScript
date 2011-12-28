@@ -676,7 +676,7 @@ character = if JSON!? then uxxxx else ->
     else tokens.splice ++i, 0 indent
     switch
     # ->,
-    case next of <[ , DOT ]> then --i; fallthrough
+    case next of <[ DOT \? \, \=> ]> then --i; fallthrough
     # -> 0,
     case next of <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
       go 0 i+=2; ++i
