@@ -72,7 +72,7 @@
     [tmp; asn.compile o, if ret then LEVEL_CALL else LEVEL_PAREN]
 
   # Passes each child to a function, returning its return value if exists.
-  eachChild: !(fn) ->
+  eachChild: (fn) ->
     for name of @children then if child = @[name]
       if \length in child
       then return that if fn(node )? for node of child
@@ -461,7 +461,7 @@ class exports.Chain extends Node
     news + base + rest
 
   # Unfolds a soak into an __If__: `a?.b` => `a.b if a?`
-  unfoldSoak: !(o) ->
+  unfoldSoak: (o) ->
     if @head.unfoldSoak o
       that.then.tails.push ...@tails
       return that
@@ -479,7 +479,7 @@ class exports.Chain extends Node
         Existence test
       return If(test, this) <<< {+soak, @cond, @void}
 
-  unfoldAssign: !(o) ->
+  unfoldAssign: (o) ->
     if @head.unfoldAssign o
       that.right.tails.push ...@tails
       return that
@@ -1351,7 +1351,7 @@ class exports.Class extends Node
 
   isCallable: YES
 
-  ripName: -> @name = it.varName(); void
+  ripName: !-> @name = it.varName!
 
   compile: (o, level) ->
     {fun, title} = this; {lines} = fun.body
@@ -1473,28 +1473,26 @@ class exports.Jump extends Node
     else o[@verb] or @carp "stray #{@verb}"
     @show! + \;
 
+  @extended = !(sub) ->
+    sub::children = [\it]
+    @[sub.displayName.toLowerCase!] = sub
+
 #### Throw
 class exports.Throw extends Jump
   (@it) ~>
-
-  children: [\it]
 
   getJump: VOID
 
   compileNode: (o) -> "throw #{ @it?compile o, LEVEL_PAREN or \null };"
 
-  Jump.throw = this
-
 #### Return
-class exports.Return extends Throw
+class exports.Return extends Jump
   ~> import {it} if it and it.value is not \void
 
   getJump: THIS
 
   compileNode: (o) ->
     "return#{ if @it then ' ' + that.compile o, LEVEL_PAREN else '' };"
-
-  Jump.return = this
 
 #### While
 # The traditional `while`/`for`/`do` loop.
@@ -1544,8 +1542,8 @@ class exports.While extends Node
     o <<< {+\break, +\continue}
     {lines} = @body; code = ret = ''
     if @returns
-      if (last = lines[*-1]) and last not instanceof Throw
-        lines[*-1] = last.makeReturn res = o.scope.assign \_results '[]'
+      if lines[*-1]
+        lines[*-1] = that.makeReturn res = o.scope.assign \_results '[]'
       ret = "\n#{@tab}return #{ res or '[]' };"
     lines.unshift JS "#{ run = o.scope.temporary \run } = true;" if @else
     code += "\n#that\n#{@tab}" if @body.compile o, LEVEL_TOP

@@ -7,7 +7,7 @@
 {title} = document
 
 doc = document.getElementById \doc or lmn \div id: \doc
-nav = document.getElementById \nav or do ->
+nav = document.getElementById \nav or let
   h  = '<div class=pointee>&#x2935;</div>'
   h += "<h1>#title</h1>" if title
   for co of sources
@@ -20,7 +20,7 @@ htms = __proto__: null
 # [showdown](http://attacklab.net/showdown/) converts the Markdown comments.
 sdcv = new Showdown.converter
 
-do @onhashchange = ->
+do @onhashchange = !->
   unless page = /^\D+(?=(\d*)$)/exec location.hash.slice 1
     document <<< {title}
     nav.className = doc.innerHTML = ''
@@ -32,19 +32,19 @@ do @onhashchange = ->
   xhr = new XMLHttpRequest
   xhr.open \GET if name is not \Cokefile then name + \.co else name, true
   xhr.overrideMimeType? \text/plain
-  xhr.onreadystatechange = ->
+  xhr.onreadystatechange = !->
     load page, htms[name] = build name, xhr.responseText if xhr.readyState is 4
   xhr.send null
 
 function lmn name, attrs
   document.body.appendChild document.createElement(name) <<<< attrs
 
-function load [name, sect], doc.innerHTML
+!function load [name, sect], doc.innerHTML
   document.title = name + (title and ' - ' + title)
-  document.getElementById(sect)scrollIntoView() if sect
+  document.getElementById(sect)scrollIntoView! if sect
   # [google-code-prettify](http://code.google.com/p/google-code-prettify/)
   # highlights the code, with the help of our [lang-co](#lang-co) plugin.
-  prettyPrint()
+  prettyPrint!
 
 function build name, source
   htm = comment = code = i = ''
