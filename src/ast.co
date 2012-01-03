@@ -1285,7 +1285,7 @@ class exports.Fun extends Node
     code = \function
     if @bound is \_this
       if @ctor
-        scope.assign \_this 'new _ctor'
+        scope.assign \_this 'this instanceof _ctor ? this : new _ctor'
         code += " _ctor(){} _ctor.prototype = prototype;\n#{tab}function"
         body.add Return Literal \_this
       else if sscope.fun?bound

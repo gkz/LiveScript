@@ -147,9 +147,12 @@ class BoundCtor extends (-> {@attr})
     eq super(...).attr, @attr
     @method = ~> this
 
-tbc = BoundCtor 'attr'
-eq tbc.attr, 'attr'
-eq [tbc.method][0](), tbc
+class BoundChild extends BoundCtor then ~> super ...
+
+for C of [BoundCtor, BoundChild]
+  bc = C 'attr'
+  eq bc.attr, 'attr'
+  eq [bc.method][0](), bc
 eq BoundCtor(8, true).attr, 8
 
 
