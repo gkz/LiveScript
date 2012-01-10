@@ -1,15 +1,15 @@
 `#!/usr/bin/env node`
 # The `coco` utility.
 
-{argv, stdin, stdout} = process
+{argv} = process
 
 global import
   Coco : require \./coco
   fs   : require \fs
   path : require \path
   util : require \util
-  say  : -> stdout.write it + \\n
-  warn : -> stderr.write it + \\n
+  say  : -> process.stdout.write it + \\n
+  warn : -> process.stderr.write it + \\n
   die  : -> warn it; process.exit 1
   p    : -> []forEach.call @@, console.dir
   pp   : (x, showHidden, depth) ->
@@ -17,7 +17,7 @@ global import
   ppp  : -> pp it, true null
 
 # Use the [option parser](#optparse).
-o = require(\./optparse) do
+{$args} = o = require(\./optparse) do
   interactive : 'start REPL; use ^J for multiline input'
   compile     : 'compile to JavaScript and save as .js files'
   output      :['compile into the specified directory' \DIR]
@@ -45,8 +45,6 @@ default
   o.run = not o.compile ||= o.output
   o.print ||= o.compile and (o.eval or o.stdin)
   o.bare  ||= o.run or o.json
-  o.stdin ||= stdin.readable
-  {$args} = o
   process.execPath = argv.0 = argv.1
   argv.splice 2 9e9
   argv.push ...if o.stdin then $args else
@@ -56,12 +54,14 @@ default
     that.forEach require
     module <<< {filename}
   switch
-  case o.stdin       then argv.1 = \stdin ; compileStdin!
-  case o.eval        then argv.1 = \eval  ; compileScript '' $args * \\n
-  case o.interactive then repl!
-  case $args.length  then compileScripts!
+  case o.eval
+    argv.1 = \eval
+    compileScript '' $args * \\n
+  case o.stdin                then compileStdin!
+  case $args.length           then compileScripts!
+  case process.stdin.readable then compileStdin!
   default
-    say version! + \\n + help! + \\n
+    o.interactive or say version! + \\n + help! + \\n
     repl!
 
 # Calls a `fs` method, exiting on error.
@@ -74,17 +74,18 @@ default
 # compile them. If a directory is passed, recursively compile all
 # _.co_ files in it and all subdirectories.
 !function compileScripts
-  $args.forEach -> walk it, , true
+  $args.forEach !-> walk it, , true
   !function walk source, base ? path.normalize(source), top
     e, stats <-! fs.stat source
     if e
       return walk "#source.co" if top
       die e
     if stats.isDirectory!
-      fshoot \readdir source, -> it.forEach -> walk path.join(source, it), base
+      <-! fshoot \readdir source
+      it.forEach !-> walk path.join(source, it), base
     else if top or path.extname(source)toLowerCase! is \.co
       watch source, base if o.watch
-      fshoot \readFile source, -> compileScript source, "#it", base
+      fshoot \readFile source, !-> compileScript source, "#it", base
 
 # Compile a single source script, containing the given code, according to the
 # requested options.
@@ -133,11 +134,11 @@ default
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**.
 !function compileStdin
-  with stdin
+  argv.1 = \stdin
+  with process.openStdin!
     code = ''
     @on \data !-> code += it
     @on \end  !-> compileScript null code
-    @resume!
 
 # Watch a source Coco file using `setTimeout`, recompiling it every
 # time the file is updated. May be used in combination with other options,
@@ -191,7 +192,7 @@ default
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
   code  = ''
   cont  = false
-  repl  = require(\readline)createInterface stdin, stdout
+  repl  = require(\readline)createInterface process.stdin, process.stdout
   reset = ->
     repl.line = code := ''
     repl.prompt!
@@ -207,14 +208,14 @@ default
     global <<< {module, exports, require}
     server = ^require(\repl)REPLServer:: <<<
       context: global, commands: [], useGlobal: true
-      eval: (code,,, cb) ->
+      eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
         cb err, res
     repl.completer = server~complete
-  repl.on \attemptClose ->
+  repl.on \attemptClose !->
     if repl.line or code then say ''; reset! else repl.close!
-  repl.on \close stdin~destroy
-  repl.on \line ->
+  repl.on \close process.stdin~destroy
+  repl.on \line !->
     if cont
       code += it + \\n
       repl.output.write \. * prompt.length + '. '
@@ -230,14 +231,14 @@ default
         say _ if typeof _ is \function
     catch then say e
     reset!
-  process.on \uncaughtException -> say "\n#{ it?stack or it }"
+  process.on \uncaughtException !-> say "\n#{ it?stack or it }"
   repl.setPrompt "#prompt> "
   repl.prompt!
 
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
 # to it, preserving the other options.
 !function forkNode
-  args = process.argv.slice 1; i = 0
+  args = argv.slice 1; i = 0
   args.splice i-- 2 if that of <[ -n --nodejs ]> while args[++i]
   require(\child_process)spawn do
     process.execPath
