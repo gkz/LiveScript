@@ -7,7 +7,7 @@ On its way to hide JavaScript's bad parts, CoffeeScript has accumulated own quir
 [horrible variable scope](https://github.com/jashkenas/coffee-script/issues/712),
 [awkward ranges](https://github.com/jashkenas/coffee-script/issues/746),
 [confusing](https://github.com/jashkenas/coffee-script/issues/702)
-and/or
+[and/or](https://github.com/jashkenas/coffee-script/issues/785)
 [pointless](https://github.com/jashkenas/coffee-script/issues/813)
 keywords, verbose file extension,
 [and so on](https://github.com/satyr/coco/wiki/wtfcs).
