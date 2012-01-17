@@ -128,7 +128,8 @@ default
       warn "Failed at: #file" if file
       unless e instanceof SyntaxError or /^Parse error /test e.message
         e = e.stack or e
-      (if o.watch then warn else die) e
+      if o.watch then warn e + \\7
+                 else die  e
     return
   Coco.emit \success t
 
