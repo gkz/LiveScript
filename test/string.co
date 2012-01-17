@@ -240,3 +240,11 @@ eq \2 '1'.replace "#{1}" -> 2
 # Trailing backslashes are themselves.
 eq '''\''' '\\'
 eq \\\\ \\ + \\
+
+# Safe octals.
+let
+  'use strict'
+  '\1'
+  '\02'
+  '\377'
+
