@@ -213,16 +213,16 @@ eq ...them
 # IIFE constructions under `for` auto-capture the loop variables.
 fs = for [a, b] i of [[1 2] [3 4]]
   for c of [5 6]
-    let
+    let i = i+1
       -> i + a + b + c
 sums = (f() for f of fs)
-eq sums.1, 9
-eq sums.2, 13
+eq sums.1, 10
+eq sums.2, 14
 
-fs = for x, y in {2, 3, 5} then let z = 7 then -> x * y * z
+fs = for x, y in {2 3 5} then let z = 7 then -> x * y * z
 eq 63 fs.1()
 
-os = for n of [11 13] then new -> @<<< n: -> n
+os = for n of [11 13] then new -> import n: -> n
 eq 11 os.0.n()
 
 

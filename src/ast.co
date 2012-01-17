@@ -1622,17 +1622,24 @@ class exports.For extends While
 
   # Makes IIFE constructions (such as `let`) capture the loop variables.
   infuseIIFE: !(o) ->
+    function dup fun, name
+      return true if name is p.value for p of fun.params if name
     <~! @body.traverseChildren
     return unless it.calling or it.op is \new and (fun = it.it)params
     if fun
-    then {tails: [call]} = it.it = Call.make fun <<< {+\void}
-    else {tails: [call], head: fun} = it.it
+    then it.it = Call.make fun <<< void: true
+    else fun = it.it.head
+    call = it.it.tails.0
     return if fun.params.length ^ call.args.length - !!call.method
-    @index and fun.params.push call.args.* = Var @index
+    if @index and not dup fun, @index
+      fun.params.push call.args.* = Var @index
     if name = @name
-      call.args.push if name.isComplex!
-        then Var @nref ||= @temps.* = o.scope.temporary \ref else name
-      fun.params.push name
+      if name.isComplex!
+        name = Var @nref ||= @temps.* = o.scope.temporary \ref
+      else if dup fun, name.value
+        return
+      fun.params.push @name
+      call.args.push name
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
