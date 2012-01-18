@@ -1607,39 +1607,31 @@ class exports.For extends While
     @own and head += ") if (#{ o.scope.assign \_own '{}.hasOwnProperty' }
                             .call(#svar, #idx)"
     head += ') {'
-    @infuseIIFE o
+    @infuseIIFE!
     o.indent += TAB
     if @name and not @name.isEmpty!
-      head += \\n + o.indent
-      item  = "#svar[#idx]"
-      if @nref
-        head += "#that = #item, "
-        item  = that
-      head += Assign(@name, Literal item)compile(o, LEVEL_TOP) + \;
+      head += \\n + o.indent +
+        Assign(@name, JS "#svar[#idx]")compile(o, LEVEL_TOP) + \;
     body  = @compileBody o
     head += \\n + @tab if @name and \} is body.charAt 0
     head + body
 
   # Makes IIFE constructions (such as `let`) capture the loop variables.
-  infuseIIFE: !(o) ->
-    function dup fun, name
-      return true if name is p.value for p of fun.params if name
+  infuseIIFE: !->
+    function dup params, name
+      return true if name is p.value for p of params if name
     <~! @body.traverseChildren
     return unless it.calling or it.op is \new and (fun = it.it)params
     if fun
     then it.it = Call.make fun <<< void: true
     else fun = it.it.head
-    call = it.it.tails.0
-    return if fun.params.length ^ call.args.length - !!call.method
-    if @index and not dup fun, @index
-      fun.params.push call.args.* = Var @index
-    if name = @name
-      if name.isComplex!
-        name = Var @nref ||= @temps.* = o.scope.temporary \ref
-      else if dup fun, name.value
-        return
-      fun.params.push @name
-      call.args.push name
+    {params} = fun; call = it.it.tails.0
+    return if params.length ^ call.args.length - !!call.method
+    {index, name} = this
+    if index and not dup params, index
+      call.args.push params.* = Var index
+    if name and not name.isComplex! and not dup params, name.value
+      call.args.push params.* = name
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
