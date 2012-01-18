@@ -261,18 +261,18 @@ bnf =
     # Unless it's iterating over an object, you can choose to step through
     # in fixed-size increments.
     o 'FOR Chain OF Expression'
-    , -> new For name: $2.unwrap!, index: $3, source: $4
+    , -> new For item: $2.unwrap!, index: $3, source: $4
     o 'FOR Chain OF Expression BY Expression'
-    , -> new For name: $2.unwrap!, index: $3, source: $4, step: $6
+    , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6
 
     o 'FOR     ID         IN Expression'
     , -> new For {+object,       index: $2,                   source: $4}
     o 'FOR     ID , Chain IN Expression'
-    , -> new For {+object,       index: $2, name: $4.unwrap!, source: $6}
+    , -> new For {+object,       index: $2, item: $4.unwrap!, source: $6}
     o 'FOR OWN ID         IN Expression'
     , -> new For {+object, +own, index: $3,                   source: $5}
     o 'FOR OWN ID , Chain IN Expression'
-    , -> new For {+object, +own, index: $3, name: $5.unwrap!, source: $7}
+    , -> new For {+object, +own, index: $3, item: $5.unwrap!, source: $7}
 
     o 'FOR ID FROM Expression TO Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6

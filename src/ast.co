@@ -1560,7 +1560,7 @@ class exports.While extends Node
 class exports.For extends While
   -> import all it
 
-  children: <[ name source from to step body ]>
+  children: <[ item source from to step body ]>
 
   aSource: null
 
@@ -1586,7 +1586,7 @@ class exports.For extends While
       then "#idx #{ if pvar < 0 then \> else \< }#eq #tvar"
       else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
     else
-      if @name or @object and @own
+      if @item or @object and @own
         [svar, srcPart] = @source.compileLoopReference o, \ref, not @object
         svar is srcPart or temps.push svar
       else
@@ -1609,11 +1609,11 @@ class exports.For extends While
     head += ') {'
     @infuseIIFE!
     o.indent += TAB
-    if @name and not @name.isEmpty!
+    if @item and not @item.isEmpty!
       head += \\n + o.indent +
-        Assign(@name, JS "#svar[#idx]")compile(o, LEVEL_TOP) + \;
+        Assign(@item, JS "#svar[#idx]")compile(o, LEVEL_TOP) + \;
     body  = @compileBody o
-    head += \\n + @tab if @name and \} is body.charAt 0
+    head += \\n + @tab if @item and \} is body.charAt 0
     head + body
 
   # Makes IIFE constructions (such as `let`) capture the loop variables.
@@ -1627,11 +1627,11 @@ class exports.For extends While
     else fun = it.it.head
     {params} = fun; call = it.it.tails.0
     return if params.length ^ call.args.length - !!call.method
-    {index, name} = this
+    {index, item} = this
     if index and not dup params, index
       call.args.push params.* = Var index
-    if name and not name.isComplex! and not dup params, name.value
-      call.args.push params.* = name
+    if item and not item.isComplex! and not dup params, item.value
+      call.args.push params.* = item
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
