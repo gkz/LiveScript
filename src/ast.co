@@ -1609,7 +1609,7 @@ class exports.For extends While
     head += ') {'
     @infuseIIFE o
     o.indent += TAB
-    if @name
+    if @name and not @name.isEmpty!
       head += \\n + o.indent
       item  = "#svar[#idx]"
       if @nref
