@@ -1630,7 +1630,7 @@ class exports.For extends While
     {index, item} = this
     if index and not dup params, index
       call.args.push params.* = Var index
-    if item and not item.isComplex! and not dup params, item.value
+    if item instanceof Var and not dup params, item.value
       call.args.push params.* = item
 
 #### Try
