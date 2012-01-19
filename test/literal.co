@@ -212,19 +212,6 @@ obj: 1
 /* doesn't break things. */
 
 
-# Nested.
-obj =
-  options:
-    value: true
-
-  fn: ->
-    {}
-    null
-
-eq true, obj.options.value
-eq null, obj.fn()
-
-
 # With number arguments.
 k: eq 1, 1
 
@@ -290,6 +277,11 @@ o = p: 0
 q: 1
 o = q: 1 if false
 ok \q not in o
+
+
+# Inline with assignment.
+p: o = q: 0
+eq o.q, 0
 
 
 #### Dynamic Keys
