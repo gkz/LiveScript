@@ -16,8 +16,9 @@ eq 36rO_o, 888
 
 # With comment
 eq 1year * 365.25days * 24hours, 8766_total_hours
-eq 3 [[2 3]]0y1x
 eq 36, 0XF + 36RT
+eq 100m2, 10m ** 2
+eq 3000c, 30$ * 100
 
 # [#31](https://github.com/satyr/coco/issues/31): Numeric Ranges
 eq '1,2,3'  String [1 to +3]
