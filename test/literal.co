@@ -8,16 +8,16 @@ eq 2011_04_24, 20110424
 
 # Hex
 eq 255, 0xff
-eq 0XA, 0xa
 eq 0xB_C__D___, 0xBCD
 
 # With radix
-ok 2r101010 == 8R0644/10 == 42
+ok 2r101010 == 8r0644/10 == 42
 eq 36rO_o, 888
 
 # With comment
 eq 1year * 365.25days * 24hours, 8766_total_hours
 eq 3 [[2 3]]0y1x
+eq 36, 0XF + 36RT
 
 # [#31](https://github.com/satyr/coco/issues/31): Numeric Ranges
 eq '1,2,3'  String [1 to +3]
