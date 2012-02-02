@@ -354,7 +354,15 @@ exports import
         @tokens.push [\UNARY \! @line] [\ASSIGN \= @line]
         return 2
       fallthrough
-    case <[ === !== < > <= >= == ]> then tag = \COMPARE
+    case <[ === !== == ]> 
+      switchOps =
+        \=== : \==
+        \!== : \!=
+        \==  : \===
+        \!=  : \!==
+      val = switchOps[val]
+      tag = \COMPARE
+    case <[ < > <= >= ]> then tag = \COMPARE
     case <[ <<  >>  >>>   <?  >? ]> then tag = \SHIFT
     case \(
       unless @last.0 of <[ FUNCTION LET ]> or @able true

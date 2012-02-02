@@ -470,7 +470,7 @@ class exports.Chain extends Node
       bust = Chain @head, @tails.splice 0 i
       test = if node instanceof Call
         [test, @head] = bust.cacheReference o
-        JS "typeof #{ test.compile o, LEVEL_OP } == 'function'"
+        JS "typeof #{ test.compile o, LEVEL_OP } === 'function'"
       else
         if i and node.assign
           [test, bust] = bust.cacheReference o
@@ -891,7 +891,7 @@ class exports.Binary extends Node
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. e.g.:
   #
-  #     $ livescript -e '50 < 65 === 9r72 > 10'
+  #     $ livescript -e '50 < 65 == 9r72 > 10'
   #     true
   #
   # See <http://docs.python.org/reference/expressions.html#notin>.
@@ -1212,7 +1212,7 @@ class exports.Of extends Node
             , #{ array.compile o, LEVEL_LIST })"
     code = ''
     [sub, ref] = @item.cache o, false, LEVEL_PAREN
-    [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
+    [cmp, cnj] = if @negated then [' != ' ' && '] else [' == ' ' || ']
     for test, i of items
       code &&+= cnj
       if test instanceof Splat
@@ -1601,7 +1601,7 @@ class exports.For extends While
           cond = "#idx < #lvar"
     head = 'for (' + if @object then "#idx in #srcPart" else
       step is pvar or vars += ', ' + step
-      "#vars; #cond; " + if 1 == Math.abs pvar
+      "#vars; #cond; " + if 1 === Math.abs pvar
       then (if pvar < 0 then \-- else \++) + idx
       else idx + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
     @own and head += ") if (#{ o.scope.assign \_own '{}.hasOwnProperty' }

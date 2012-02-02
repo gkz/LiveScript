@@ -40,11 +40,11 @@ eq 1, (1 unless 1 < 0 == 0)
 # (In)equality
 a = 1
 b = '1'
-ok a == b
-ok not a != b
-ok not (a === b)
+ok a === b
+ok not a !== b
+ok not (a == b)
 ok not (a is  b)
-ok a !==  b
+ok a !=  b
 ok a is not b
 
 ok true is     true
