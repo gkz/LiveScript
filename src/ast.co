@@ -50,8 +50,8 @@
   # in multiple places, ensure that the expression is only ever evaluated once,
   # by assigning it to a temporary variable.
   cache: (o, once, level) ->
-    unless @isComplex()
-      return [ref = if level? then @compile o, level else this, ref]
+    unless @isComplex!
+      return [if level? then @compile o, level else this] * 2
     sub = Assign ref = Var(o.scope.temporary \ref), this
     # Pass a `level` to precompile.
     if level?
@@ -727,8 +727,8 @@ class exports.Unary extends Node
       that.push op
       return it
     switch op
-    case \!      then
-      return it.invert!  unless flag
+    case \!
+      return it.invert! unless flag
       return it <<< {+\void} if it instanceof Fun
     case \++ \-- then @post = true if flag
     case \new
