@@ -1,5 +1,5 @@
 name    : \LiveScript
-version : \0.1.0
+version : \0.2.0
 
 description : 'Coco derivative.'
 keywords    :
@@ -10,7 +10,7 @@ keywords    :
   \javascript
 
 licenses :
-  type: \MIT, url: \https://github.com/satyr/coco/raw/master/LICENSE
+  type: \MIT, url: \https://raw.github.com/gkz/LiveScript/master/LICENSE
   ...
 
 engines     : node: '>= 0.6.2'
