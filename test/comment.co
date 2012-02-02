@@ -136,7 +136,7 @@ if (1) {
   2;
 }
 /* trailing top level comment */
-''', Coco.compile '''
+''', LiveScript.compile '''
 /* leading block comments */
 /* are placed before declarations */
 obj = {

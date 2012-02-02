@@ -1,6 +1,6 @@
 # The Lexer Object
 # ----------------
-# Reads a string of Coco code and divvies it up into tagged tokens.
+# Reads a string of LiveScript code and divvies it up into tagged tokens.
 # Tokens are in the form:
 #
 #     ['TAG', 'value', lineNumber = 0]
@@ -15,7 +15,7 @@ exports import
 
   # The entry point.
   lex: (
-    # Coco source to be parsed into an array of tokens.
+    # LiveScript source to be parsed into an array of tokens.
     code
     #  - `.raw`  <br> Suppresses token rewriting if truthy.
     #  - `.line` <br> Specifies the starting line. Default `0`.
@@ -646,7 +646,7 @@ character = if JSON!? then uxxxx else ->
 
 #### Rewriters
 
-# The Coco language has a good deal of optional syntax, implicit syntax,
+# The LiveScript language has a good deal of optional syntax, implicit syntax,
 # and shorthand syntax. This can greatly complicate a grammar and bloat
 # the resulting parse table. Instead of making the parser handle it all,
 # we take a series of passes over the token stream,
@@ -866,7 +866,7 @@ function indexOfPair tokens, i
 
 ##### Keywords
 
-# Keywords that Coco shares in common with JavaScript.
+# Keywords that LiveScript shares in common with JavaScript.
 KEYWORDS_SHARED = <[
   true false null this void super return throw break continue
   if else for while switch case default try catch finally class extends

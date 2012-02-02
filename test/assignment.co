@@ -49,11 +49,11 @@ eq val, 'value'
 for nonref, i of <[ 0 f() this true ]>
   throws 'invalid assign on line ' + (i+1), ->
     x = if i then nonref else \... + nonref
-    Coco.compile \\n * i + "[#{x}, y] = z"
+    LiveScript.compile \\n * i + "[#{x}, y] = z"
 
 
 throws 'assignment to undeclared variable "Math" on line 1'
-, -> Coco.compile 'Math ||:= 0'
+, -> LiveScript.compile 'Math ||:= 0'
 
 
 # Empty assignments

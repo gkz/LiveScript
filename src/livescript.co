@@ -1,6 +1,6 @@
 # The main entry functions for
 # [tokenizing](#lexer), [parsing](#grammar), and [compiling](#ast)
-# Coco source into JavaScript.
+# LiveScript source into JavaScript.
 
 lexer = require \./lexer
 
@@ -15,25 +15,25 @@ parser import
     upcomingInput : -> ''
 
 exports import
-  VERSION: \0.7.1b
+  VERSION: \0.1.0
 
-  # Compiles a string of Coco code to JavaScript.
+  # Compiles a string of LiveScript code to JavaScript.
   compile: (code, options) ->
     try parser.parse(lexer.lex code)compileRoot options catch
       e.message += "\nat #that" if options?filename
       throw e
 
-  # Parses a string or tokens of Coco code,
+  # Parses a string or tokens of LiveScript code,
   # returning the [AST](http://en.wikipedia.org/wiki/Abstract_syntax_tree).
   ast: -> parser.parse if typeof it is \string then lexer.lex it else it
 
-  # Tokenizes a string of Coco code, returning the array of tokens.
+  # Tokenizes a string of LiveScript code, returning the array of tokens.
   tokens: lexer.lex
 
   # Same as `tokens`, except that this skips rewriting.
   lex: -> lexer.lex it, {+raw}
 
-  # Runs Coco code directly.
+  # Runs LiveScript code directly.
   run: (code, options) -> do Function exports.compile code, {...options, +bare}
 
 exports.tokens{rewrite} = lexer
@@ -48,4 +48,4 @@ else
   # Attach `require` for debugging.
   exports import {require}
   # Support Gecko JS Module.
-  @EXPORTED_SYMBOLS = [\Coco] if ''+this is '[object BackstagePass]'
+  @EXPORTED_SYMBOLS = [\LiveScript] if ''+this is '[object BackstagePass]'

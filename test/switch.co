@@ -33,7 +33,7 @@ eq 2   , switch case 1 then continue while 0; 2
 eq 3   , do -> switch -> 0 case 1 then -> 2 default 3
 
 
-throws 'inconvertible statement on line 3' -> Coco.compile '''
+throws 'inconvertible statement on line 3' -> LiveScript.compile '''
   for ever
     !switch
       continue
@@ -82,7 +82,7 @@ case !void 8:
 default:
   9;
 }
-''', Coco.compile '''
+''', LiveScript.compile '''
 switch
 case 1 then return
 case 2 then throw me

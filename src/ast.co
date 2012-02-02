@@ -153,7 +153,7 @@
   show: String
 
   # String representation of the node for inspecting the parse tree.
-  # This is what `coco --ast` prints out.
+  # This is what `livescript --ast` prints out.
   toString: (idt or '') ->
     tree  = \\n + idt + @..displayName
     tree += ' ' + that if @show()
@@ -891,7 +891,7 @@ class exports.Binary extends Node
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. e.g.:
   #
-  #     $ coco -e '50 < 65 === 9r72 > 10'
+  #     $ livescript -e '50 < 65 === 9r72 > 10'
   #     true
   #
   # See <http://docs.python.org/reference/expressions.html#notin>.
@@ -1556,7 +1556,7 @@ class exports.While extends Node
     code + ret
 
 #### For
-# Coco's replacements for the `for` loop are array, object or range iterators.
+# LiveScript's replacements for the `for` loop are array, object or range iterators.
 class exports.For extends While
   -> import all it
 
@@ -1850,7 +1850,7 @@ class exports.Util extends Node
 exports.L = (yylineno, node) -> node import line: yylineno + 1
 
 ##### Scope
-# Regulates lexical scoping within Coco. As you
+# Regulates lexical scoping within LiveScript. As you
 # generate code, you create a tree of scopes in the same shape as the nested
 # functions. Each scope knows about the function parameters and the variables
 # declared within it, and has references to its parent/shared enclosing scopes.

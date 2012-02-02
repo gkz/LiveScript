@@ -188,7 +188,7 @@ eq ok, do ->
 
 
 throws 'misplaced function declaration on line 1', ->
-  Coco.compile 'if 1 then function F then'
+  LiveScript.compile 'if 1 then function F then'
 
 
 # Returns with multiple branches.
@@ -217,19 +217,19 @@ eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
 
 
-throws 'inconvertible statement on line 1', -> Coco.compile '(return)'
-throws 'inconvertible statement on line 2', -> Coco.compile '''
+throws 'inconvertible statement on line 1', -> LiveScript.compile '(return)'
+throws 'inconvertible statement on line 2', -> LiveScript.compile '''
   r =
     return
 '''
-throws 'inconvertible statement on line 3', -> Coco.compile '''
+throws 'inconvertible statement on line 3', -> LiveScript.compile '''
   r = if 1
     2 +
     return
 '''
 
 
-eq '(function(){})(function(){});', Coco.compile '(->return)(->void)', {+bare}
+eq '(function(){})(function(){});', LiveScript.compile '(->return)(->void)', {+bare}
 
 
 # `@it` isn't `it`
@@ -237,7 +237,7 @@ eq '''
 (function(){
   return this.it;
 });
-''', Coco.compile '-> @it', {+bare}
+''', LiveScript.compile '-> @it', {+bare}
 
 
 # Simple functions require no parens when comma-listed.
@@ -323,7 +323,7 @@ eq arguments,
 ok (@arguments, @eval) ->
 
 
-throws 'duplicate parameter "a" on line 1', -> Coco.compile '(a, a) ->'
+throws 'duplicate parameter "a" on line 1', -> LiveScript.compile '(a, a) ->'
 
 
 # Fun with radical parameters.
@@ -339,8 +339,8 @@ eq void Function() ->
 
 
 ### Invalid call detection
-throws 'invalid callee on line 1'      -> Coco.compile '[]()'
-throws 'invalid constructor on line 1' -> Coco.compile 'new 42'
+throws 'invalid callee on line 1'      -> LiveScript.compile '[]()'
+throws 'invalid constructor on line 1' -> LiveScript.compile 'new 42'
 
 
 ### `new` block
@@ -421,7 +421,7 @@ eq '''
 (function(){
   this;
 }.call(this));
-''' Coco.compile 'let() then this # top-level and should not return' {+bare}
+''' LiveScript.compile 'let() then this # top-level and should not return' {+bare}
 
 ok let [it] = [ok]
   it is ok
@@ -449,7 +449,7 @@ f = (x, y) -> [this, x, y]
 with 0 then let x = 1, y = 2
   eq '0,1,2' ''+ f ...
   eq ','     ''+ f(...[])slice 1
-throws 'invalid splat on line 1' -> Coco.compile 'f ..., a'
+throws 'invalid splat on line 1' -> LiveScript.compile 'f ..., a'
 
 
 ### do-`not`-return

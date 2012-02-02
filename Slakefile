@@ -8,9 +8,9 @@ reset = '\33[0m'
 
 tint = (text, color ? green) -> color + text + reset
 
-# Run our node/coco interpreter.
+# Run our node/livescript interpreter.
 run = (args) ->
-  proc = spawn \bin/coco args
+  proc = spawn \bin/livescript args
   proc.stderr.on \data say
   proc       .on \exit -> process.exit it if it
 
@@ -28,18 +28,18 @@ minify = ->
 
 option \prefix 'set the installation prefix for `install`' \DIR
 
-task \install 'install Coco into /usr/local (or --prefix)' (options) ->
+task \install 'install LiveScript into /usr/local (or --prefix)' (options) ->
   base = options.prefix or \/usr/local
-  lib  = "#base/lib/coco"
+  lib  = "#base/lib/livescript"
   bin  = "#base/bin"
   nlib = \~/.node_libraries
   e, stdout, stderr <- exec """
-    echo Installing Coco to #lib
+    echo Installing LiveScript to #lib
     mkdir -p #lib #bin #nlib
     cp -rf lib LICENSE README.md package.json #lib
-    ln -sfv  #lib/lib/command.js #bin/coco
-    ln -sfv  #lib/lib/coke.js    #bin/coke
-    ln -sfnv #lib/lib #nlib/coco
+    ln -sfv  #lib/lib/command.js #bin/livescript
+    ln -sfv  #lib/lib/slake.js    #bin/slake
+    ln -sfnv #lib/lib #nlib/livescript
     """replace /\n/g \&&
   say stdout.trim! if stdout
   say if e then stderr.trim! else tint \done
@@ -48,13 +48,13 @@ task \install 'install Coco into /usr/local (or --prefix)' (options) ->
 docs = <[ doc.co lang-co.co ]>
 
 task \build 'build lib/ from src/' ->
-  ext = /\.co$/; webs = docs.concat \mode-coco.co
+  ext = /\.co$/; webs = docs
   sources = for file of dir \src
     \src/ + file if ext.test file and file not of webs
   run [\-bco \lib]concat sources
 
 task \build:full 'build twice and run tests' ->
-  exec 'bin/coke build && bin/coke build && bin/coke test'
+  exec 'bin/slake build && bin/slake build && bin/slake test'
   , (err, stdout, stderr) ->
     say stdout.trim! if stdout
     say stderr.trim! if stderr
@@ -71,32 +71,28 @@ task \build:parser 'build lib/parser.js from lib/grammar.js' ->
 
 task \build:doc 'build doc/' ->
   <- docs.forEach
-  name = it.slice 0 -3; js = require(\./lib/coco)compile slurp \src/ + it
+  name = it.slice 0 -3; js = require(\./lib/livescript)compile slurp \src/ + it
   fs.writeFile "doc/#name.raw.js"    js
   slobber      "doc/#name.js" minify js
 
 task \build:browser 'build extras/' ->
-  Coco = require \./lib/coco
-  js = Coco.compile slurp \src/mode-coco.co
-  fs.writeFile \extras/mode-coco.raw.js    js
-  slobber      \extras/mode-coco.js minify js
+  LiveScript = require \./lib/livescript
   co = ''
-  for name of <[ lexer ast coco ]>
+  for name of <[ lexer ast livescript ]>
     code = slurp("src/#name.co")replace /\n/g '\n '
     co += "let exports = require'./#name' = {}\n#code\n"
-  fs.writeFile \extras/coco.raw.js js = """
-    this.Coco = function(){
+  fs.writeFile \extras/livescript.raw.js js = """
+    this.LiveScript = function(){
     function require(path){ return require[path] }
     var exports = require['./parser'] = {}; #{ slurp \lib/parser.js }
-    #{ Coco.compile co, {+bare} }
-    return require['./coco']
+    #{ LiveScript.compile co, {+bare} }
+    return require['./livescript']
     }()
     this.window && function(){\n#{ slurp \lib/browser.js }\n}()
-    this.WSH    && function(){\n#{ slurp \lib/wsh.js     }\n}()
-    this.Coco
+    this.LiveScript
   """
-  slobber \extras/coco.js """
-    // Coco #{Coco.VERSION}
+  slobber \extras/livescript.js """
+    // LiveScript #{LiveScript.VERSION}
     // Copyright 2011, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
     http://satyr.github.com/coco
@@ -106,20 +102,20 @@ task \build:browser 'build extras/' ->
   invoke \test:browser
 
 
-coreSources = -> "src/#src.co" for src of <[ coco grammar lexer ast ]>
+coreSources = -> "src/#src.co" for src of <[ livescript grammar lexer ast ]>
 
 task \bench 'quick benchmark of compilation time' ->
-  Coco   = require \./lib/coco
+  LiveScript   = require \./lib/livescript
   co     = coreSources!map(-> slurp it)join \\n
   fmt    = -> "#bold#{ "   #it"slice -4 }#reset ms"
   total  = nc = 0
   now    = Date.now!
   time   = -> total += ms = -(now - now := Date.now!); fmt ms
-  tokens = Coco.lex co
+  tokens = LiveScript.lex co
   msg    = "Lex     #{time!} (#{tokens.length} tokens)\n"
-  Coco.tokens.rewrite tokens
+  LiveScript.tokens.rewrite tokens
   msg   += "Rewrite #{time!} (#{tokens.length} tokens)\n"
-  tree   = Coco.ast tokens
+  tree   = LiveScript.ast tokens
   msg   += "Parse   #{time!} (%s nodes)\n"
   js     = tree.compileRoot {+bare}
   msg   += "Compile #{time!} (#{js.length} chars)\n" +
@@ -133,19 +129,19 @@ task \loc 'count the lines of main compiler code' ->
   console.log count
 
 
-task \test 'run test/' -> runTests require \./lib/coco
+task \test 'run test/' -> runTests require \./lib/livescript
 
-task \test:browser 'run test/ against extras/coco.js' ->
-  runTests (new new Function slurp \extras/coco.js)Coco
+task \test:browser 'run test/ against extras/livescript.js' ->
+  runTests (new new Function slurp \extras/livescript.js)LiveScript
 
 task \test:json 'test JSON {de,}serialization' ->
-  {ast} = require \./lib/coco
+  {ast} = require \./lib/livescript
   json = ast slurp \src/ast.co .stringify!
   code = ast.parse json .compileRoot {+bare}
   exec 'diff -u lib/ast.js -' (e, out) -> say e || out.trim! || tint \ok
   .stdin.end code
 
-function runTests global.Coco
+function runTests global.LiveScript
   startTime = Date.now!
   passedTests = failedTests = 0
   for name, func in require \assert then let
@@ -164,7 +160,7 @@ function runTests global.Coco
   dir(\test)forEach (file) ->
     return unless /\.co$/i.test file
     code = slurp filename = path.join \test file
-    try Coco.run code, {filename} catch
+    try LiveScript.run code, {filename} catch
       ++failedTests
       return say e unless stk = e?stack
       msg = e.message or ''+ /^[^]+?(?=\n    at )/exec stk
@@ -174,7 +170,7 @@ function runTests global.Coco
       [, row, col]? = //#filename:(\d+):(\d+)\)?$//m.exec stk
       if row and col
         say tint "#msg\n#{red}at #filename:#{row--}:#{col--}" red
-        code = Coco.compile code, {+bare}
+        code = LiveScript.compile code, {+bare}
       else if /\bon line (\d+)\b/exec msg
         say tint msg, red
         row = that.1 - 1

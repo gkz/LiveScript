@@ -193,9 +193,9 @@ eq 'multiline nested "interpolations" work', """multiline #{
 } work"""
 
 
-throws 'unterminated interpolation on line 2' -> Coco.lex '"#{\n'
+throws 'unterminated interpolation on line 2' -> LiveScript.lex '"#{\n'
 
-throws "Parse error on line 1: Unexpected ')'" -> Coco.compile '"(#{+})"'
+throws "Parse error on line 1: Unexpected ')'" -> LiveScript.compile '"(#{+})"'
 
 
 # Character/Word Literal
@@ -207,9 +207,9 @@ eq '$', {\$}.\$
 
 eq 'AFKPUZ' [\A to \Z by 5]*''
 
-throws 'bad "to" in range on line 1'   -> Coco.tokens '0 to "q"'
-throws 'bad "by" in range on line 1'   -> Coco.tokens '0 to 9 by "2"'
-throws 'bad string in range on line 1' -> Coco.tokens '"a" to "bc"'
+throws 'bad "to" in range on line 1'   -> LiveScript.tokens '0 to "q"'
+throws 'bad "by" in range on line 1'   -> LiveScript.tokens '0 to 9 by "2"'
+throws 'bad string in range on line 1' -> LiveScript.tokens '"a" to "bc"'
 
 ok \\u2028 to \\u2029
 

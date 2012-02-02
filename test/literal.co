@@ -27,8 +27,8 @@ eq '1,0,-1' String Array 1 to -1 by -1
 til = String
 eq 2, [Number]0 til 2
 
-throws 'range limit exceeded on line 1' -> Coco.tokens '0 to 1 by 1e-5'
-throws 'empty range on line 3'          -> Coco.tokens '\n\n 1 to 0'
+throws 'range limit exceeded on line 1' -> LiveScript.tokens '0 to 1 by 1e-5'
+throws 'empty range on line 3'          -> LiveScript.tokens '\n\n 1 to 0'
 
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Boolean/Number should be indexable.
@@ -172,7 +172,7 @@ new
 
 # [#19](https://github.com/satyr/coco/issues/19)
 throws 'duplicate property name "a" on line 1'
-, -> Coco.compile '{a, b, a}'
+, -> LiveScript.compile '{a, b, a}'
 
 
 #### Implicit/Braceless

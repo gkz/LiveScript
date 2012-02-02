@@ -46,11 +46,11 @@ ok x is not o.x , 'should copy o.x'
 ok y is not o[y], 'should copy o[y]'
 
 
-throws 'splatting "new" on line 1' -> Coco.compile 'new C ...a'
-throws 'splatting "new" on line 1' -> Coco.compile 'new C ...'
+throws 'splatting "new" on line 1' -> LiveScript.compile 'new C ...a'
+throws 'splatting "new" on line 1' -> LiveScript.compile 'new C ...'
 
 throws 'multiple splat in an assignment on line 1'
-     , -> Coco.compile '[...a, ...b] = c'
+     , -> LiveScript.compile '[...a, ...b] = c'
 
 
 class Thisplat
@@ -111,8 +111,8 @@ eq '''
   var a;
   a = arguments[arguments.length - 1];
 });
-''', Coco.compile '(..., a) ->', {+bare}
+''', LiveScript.compile '(..., a) ->', {+bare}
 
 
 # Don't call `__slice` on array literals.
-eq '[a, a].concat([b]);' Coco.compile '[...[a]*2 b]' {+bare}
+eq '[a, a].concat([b]);' LiveScript.compile '[...[a]*2 b]' {+bare}

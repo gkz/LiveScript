@@ -30,7 +30,7 @@ do @onhashchange = !->
   [name] = page
   return load page, that if htms[name]
   xhr = new XMLHttpRequest
-  xhr.open \GET if name is not \Cokefile then name + \.co else name, true
+  xhr.open \GET if name is not \Slakefile then name + \.co else name, true
   xhr.overrideMimeType? \text/plain
   xhr.onreadystatechange = !->
     load page, htms[name] = build name, xhr.responseText if xhr.readyState is 4

@@ -285,7 +285,7 @@ eq '''
   b: b,
   c: c
 });
-''', Coco.compile '{a}<<<{b}<<<{c}', {+bare}
+''', LiveScript.compile '{a}<<<{b}<<<{c}', {+bare}
 
 ok ok.isPrototypeOf new []= (->) <<< prototype: ok
 
@@ -329,8 +329,8 @@ eq 1 a.0
 eq a.0 ++  -- a.0
 eq 1 i
 
-throws 'increment of undeclared variable "C" on line 1' -> Coco.compile 'C++'
-throws 'invalid decrement on line 1' -> Coco.compile 'q.=p--'
+throws 'increment of undeclared variable "C" on line 1' -> LiveScript.compile 'C++'
+throws 'invalid decrement on line 1' -> LiveScript.compile 'q.=p--'
 
 
 ### `delete`
@@ -343,8 +343,8 @@ O = ->
 eq delete (o = new O)[new O], 7
 eq o[7], void
 
-throws 'invalid delete on line 1' -> Coco.compile 'delete a'
-throws 'invalid delete on line 1' -> Coco.compile 'delete a.=b'
+throws 'invalid delete on line 1' -> LiveScript.compile 'delete a'
+throws 'invalid delete on line 1' -> LiveScript.compile 'delete a.=b'
 
 
 ### [[Class]] sniffing

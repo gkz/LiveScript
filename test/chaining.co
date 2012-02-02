@@ -89,7 +89,7 @@ eq 1, a[0][*-*]
 eq 2, a[--*-1]
 eq 2, a.length
 
-throws 'stray star on line 1' -> Coco.compile '[*-1]'
+throws 'stray star on line 1' -> LiveScript.compile '[*-1]'
 
 
 # Binding Access
@@ -103,9 +103,9 @@ eq 42, parent.child. ~ [\method] null
 
 
 # Dots have to workaround syntax error when accessing a simple number.
-eq '0 .go;'  , Coco.compile '0.go', {+bare}
+eq '0 .go;'  , LiveScript.compile '0.go', {+bare}
 # Brackets don't.
-eq "0['do'];", Coco.compile '0.do', {+bare}
+eq "0['do'];", LiveScript.compile '0.do', {+bare}
 
 
 # Array/Object Slice
@@ -125,10 +125,10 @@ eq '0,1' ''+a.0
 eq '0,1' ''+a[...0]
 eq 2 a.1.2
 
-throws 'calling a slice on line 1' -> Coco.compile 'a{0}()'
+throws 'calling a slice on line 1' -> LiveScript.compile 'a{0}()'
 
-throws 'empty slice on line 1' -> Coco.compile 'o{}'
-throws 'empty slice on line 1' -> Coco.compile 'o[,,]'
+throws 'empty slice on line 1' -> LiveScript.compile 'o{}'
+throws 'empty slice on line 1' -> LiveScript.compile 'o[,,]'
 
 if 0 then @front{ne,ss}
 

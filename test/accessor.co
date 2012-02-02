@@ -27,13 +27,13 @@ c = new C
 eq c.p = 3, c.p
 ok c.hasOwnProperty \z
 
-throws 'excess accessor parameter on line 1' -> Coco.compile 'p:~ (a, b) ->'
+throws 'excess accessor parameter on line 1' -> LiveScript.compile 'p:~ (a, b) ->'
 
-throws 'named accessor on line 1' -> Coco.compile 'p:~ ~function f then'
+throws 'named accessor on line 1' -> LiveScript.compile 'p:~ ~function f then'
 
 # No implicit parameter on getter.
 eq '''({
   get p(){
     return it;
   }
-});''' Coco.compile 'p:~ -> it' {+bare}
+});''' LiveScript.compile 'p:~ -> it' {+bare}

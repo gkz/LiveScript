@@ -1,10 +1,10 @@
 `#!/usr/bin/env node`
-# The `coco` utility.
+# The `LiveScript` utility.
 
 {argv} = process
 
 global import
-  Coco : require \./coco
+  LiveScript : require \./livescript
   fs   : require \fs
   path : require \path
   util : require \util
@@ -70,7 +70,7 @@ default
   die e.stack || e if e
   callback result
 
-# Asynchronously read in each Coco script in a list of source files and
+# Asynchronously read in each LiveScript script in a list of source files and
 # compile them. If a directory is passed, recursively compile all
 # _.co_ files in it and all subdirectories.
 !function compileScripts
@@ -92,22 +92,22 @@ default
 !function compileScript file, input, base
   t = {file, input, options: filename: file, bare: !!o.bare}
   try
-    Coco.emit \lex t
-    t.tokens = Coco.tokens t.input, raw: o.lex
+    LiveScript.emit \lex t
+    t.tokens = LiveScript.tokens t.input, raw: o.lex
     if o.lex or o.tokens
       printTokens t.tokens
       throw
-    Coco.emit \parse t
-    t.ast = Coco.ast t.tokens
+    LiveScript.emit \parse t
+    t.ast = LiveScript.ast t.tokens
     if o.ast
       say if o.json then t.ast.stringify 2 else ''trim.call t.ast
       throw
-    Coco.emit \compile t
+    LiveScript.emit \compile t
     t.output = t.ast.compileRoot t.options
     if o.run
-      Coco.emit \run t
+      LiveScript.emit \run t
       unless o.json or o.print
-        Coco.run t.output, t.options <<< {+js}
+        LiveScript.run t.output, t.options <<< {+js}
         throw
       global <<< {module, require}
       r = global.eval t.output
@@ -117,13 +117,13 @@ default
       throw
     if o.json
       t.output = JSON.stringify(global.eval t.output; null 2) + \\n
-    Coco.emit \write t
+    LiveScript.emit \write t
     if o.print
     then say t.output.trimRight!
     else writeJS t.file, t.output, base
   catch if e?
-    if Coco.listeners(\failure)length
-      Coco.emit \failure e, t
+    if LiveScript.listeners(\failure)length
+      LiveScript.emit \failure e, t
     else
       warn "Failed at: #file" if file
       unless e instanceof SyntaxError or /^Parse error /test e.message
@@ -131,7 +131,7 @@ default
       if o.watch then warn e + \\7
                  else die  e
     return
-  Coco.emit \success t
+  LiveScript.emit \success t
 
 # Attach the appropriate listeners to compile scripts incoming over **stdin**.
 !function compileStdin
@@ -141,7 +141,7 @@ default
     @on \data !-> code += it
     @on \end  !-> compileScript null code
 
-# Watch a source Coco file using `setTimeout`, recompiling it every
+# Watch a source LiveScript file using `setTimeout`, recompiling it every
 # time the file is updated. May be used in combination with other options,
 # such as `--ast` or `--print`.
 !function watch source, base
@@ -200,7 +200,7 @@ default
   ({_ttyWrite} = repl)_ttyWrite = (char) ->
     cont := char is \\n
     _ttyWrite ...
-  prompt = \coco
+  prompt = \livescript
   prompt += " -c#{ if o.bare then \b else '' }" if o.compile
   unless o.compile
     module.paths = module.._nodeModulePaths \
@@ -224,9 +224,9 @@ default
     code += it
     try
       if o.compile
-        say Coco.compile code, {o.bare}
+        say LiveScript.compile code, {o.bare}
       else
-        _  = vm.runInThisContext Coco.compile(code, {+bare, +repl}), \repl
+        _  = vm.runInThisContext LiveScript.compile(code, {+bare, +repl}), \repl
         _ !? global <<< {_}
         pp  _
         say _ if typeof _ is \function
@@ -247,10 +247,10 @@ default
     cwd: process.cwd!, env: process.env, customFds: [0 to 2]
 
 function help then """
-  Usage: coco [options] [files] [arguments]
+  Usage: livescript [options] [files] [arguments]
 
   Options:
   #o
 """
 
-function version then "Coco #{Coco.VERSION}"
+function version then "LiveScript #{LiveScript.VERSION}"
