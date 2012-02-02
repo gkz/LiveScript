@@ -86,15 +86,18 @@ exports import
   #### Tokenizers
 
   # Matches an identifying literal: variables, keywords, accessors, etc.
-  doID: (code, ID.lastIndex) ->
-    return 0 unless input = (match = ID.exec code)0
-    [, id, colon] = match; {last} = this
+  doID: (code, index) ->
+    [input] = match = (ID <<< lastIndex: index)exec code
+    return 0 unless input
+    [, id] = match
+    {last} = this
     # `id:_` `_.id` `@id`
-    if colon or last.0 is \DOT or @adi!
-      tag = \ID
-      (id = Object id)reserved = true if id of KEYWORDS
+    if match.2 or last.0 is \DOT or @adi!
+      @token \ID if id of KEYWORDS then Object(id) <<< {+reserved} else id
+      @token \: \: if match.2
+      return input.length
     # keywords
-    else switch id
+    switch id
     case <[ this eval super ]> then return @token(\LITERAL id, true)length
     case <[ true false null void arguments debugger ]> then tag = \LITERAL
     case \new \do \typeof \delete then tag = \UNARY
@@ -164,7 +167,6 @@ exports import
     @unline! if tag of <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
                           IN OF FROM TO BY EXTENDS ]>
     @token tag, id
-    @token \: \: if colon
     input.length
 
   # Matches a number, including decimal, hex and exponential notation.
@@ -219,7 +221,7 @@ exports import
     tabs  = heretabs code.slice(index+3 index+parts.size)replace LASTDENT, ''
     for t, i of parts then if t.0 is \S
       t.1.=replace LASTDENT, '' if i+1 is parts.length
-      t.1 = detab t.1, tabs
+      t.1 = detab  t.1, tabs
       t.1 = lchomp t.1 if i is 0
     @addInterpolated parts, enlines
     3 + parts.size
@@ -237,7 +239,7 @@ exports import
   # Matches embedded JavaScript.
   doJS: (code, JSTOKEN.lastIndex) ->
     js = JSTOKEN.exec code .0 or @carp 'unterminated JS literal'
-    @js detab js.slice(1 -1), @dent
+    @token \LITERAL Object(detab js.slice(1 -1), @dent) <<< {+js}
     @countLines(js)length
 
   # Matches a regular expression literal aka _regex_,
@@ -399,7 +401,8 @@ exports import
     case \!
       switch then unless @last.spaced
         if able @tokens, null true
-          @token \CALL( \!; @token \)CALL \)
+          @token \CALL( \!
+          @token \)CALL \)
         else if @last.1 is \typeof
           @last.1 = \classof
         else break
@@ -431,7 +434,7 @@ exports import
     value
 
   # Records an INDENT.
-  indent: !(delta, dummy) ->
+  indent: !(delta) ->
     @dent += delta
     @dents .push @token \INDENT delta
     @closes.push \DEDENT
@@ -446,8 +449,8 @@ exports import
       debt -= if typeof dent is \number then @token \DEDENT dent else dent
 
   # Generates a newline token. Consecutive newlines get merged together.
-  newline: -> @last.1 is \\n
-           or @tokens.push @last = [\NEWLINE \\n @line] <<< {+spaced}
+  newline: !-> @last.1 is \\n or
+               @tokens.push @last = [\NEWLINE \\n @line] <<< {+spaced}
 
   # Cancels an immediate newline.
   unline: !->
@@ -459,7 +462,8 @@ exports import
   # (Re)tags function parameters.
   parameters: !(arrow) ->
     if @last.0 is \) is @last.1
-      @lpar.0 = \PARAM(; @last.0 = \)PARAM
+      @lpar.0 = \PARAM(
+      @last.0 = \)PARAM
       return
     if arrow is \-> then @token \PARAM( '' else
       break if t.0 of <[ NEWLINE INDENT THEN ( ]> for t, i of @tokens by -1
@@ -526,10 +530,7 @@ exports import
     @token \) '' last.0 is \DOT
 
   # Records a string/number token, supplying implicit dot if applicable.
-  strnum: -> @token \STRNUM it, @adi! || @last.0 is \DOT; void
-
-  # Records a literal token flagged embedded.
-  js: -> @token \LITERAL Object(it) <<< {+js}
+  strnum: !-> @token \STRNUM it, @adi! || @last.0 is \DOT
 
   # Records a regex token.
   regex: (body, flag) ->
