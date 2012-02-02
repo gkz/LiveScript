@@ -4,8 +4,8 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 ## Principles
 - Do whatever I want.
 - Haskell is awesome.
-- Compiling to easy to understand JavaScript is less of a priority.
+- Compiling to easy to understand JavaScript is less of a priority if it gets in the way of cool features.
 
-## Differences
+## Changes
 ###0.1.0
-- Renamed everything from Coco and Coke to LiveScript and Slake (have not done file extensions yet). Rational: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rational for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake becuase lake was taken and lsake sounds bad. 
+- Renamed everything from Coco and Coke to LiveScript and Slake (have not done file extensions yet). Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake becuase lake was taken and lsake sounds bad. 
