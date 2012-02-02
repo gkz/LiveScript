@@ -388,10 +388,10 @@ exports import
       tag = \ASSIGN
     case \*
       if @last.0 of <[ NEWLINE INDENT THEN ]> and
-         /^.[^\n\S]*(?=\S)/exec code.slice index
-        @tokens.push [\{ \{ @line] [\} \} @line] [\ASSIGN \= @line]
-        @indent val = that.0.length
-        return val
+         (INLINEDENT <<< lastIndex: index+1)exec code .0.length
+        @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
+        @indent index + that - 1 - @dent - code.lastIndexOf \\n index-1
+        return that
       tag = if able @tokens then \MATH else \STRNUM
     case \@ \@@
       @dotcat val or if val is \@
@@ -945,6 +945,8 @@ REGEX = //
 HEREGEX_OMIT = /\s+(?:#.*)?/g
 
 LASTDENT = /\n[^\n\S]*$/
+
+INLINEDENT = /[^\n\S]*[^#\s]?/g
 
 ##### Tokens
 
