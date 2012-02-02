@@ -45,10 +45,10 @@ task \install 'install LiveScript into /usr/local (or --prefix)' (options) ->
   say if e then stderr.trim! else tint \done
 
 
-docs = <[ doc.co lang-co.co ]>
+docs = <[ doc.ls ]>
 
 task \build 'build lib/ from src/' ->
-  ext = /\.co$/; webs = docs
+  ext = /\.ls$/; webs = docs
   sources = for file of dir \src
     \src/ + file if ext.test file and file not of webs
   run [\-bco \lib]concat sources
@@ -79,7 +79,7 @@ task \build:browser 'build extras/' ->
   LiveScript = require \./lib/livescript
   co = ''
   for name of <[ lexer ast livescript ]>
-    code = slurp("src/#name.co")replace /\n/g '\n '
+    code = slurp("src/#name.ls")replace /\n/g '\n '
     co += "let exports = require'./#name' = {}\n#code\n"
   fs.writeFile \extras/livescript.raw.js js = """
     this.LiveScript = function(){
@@ -102,7 +102,7 @@ task \build:browser 'build extras/' ->
   invoke \test:browser
 
 
-coreSources = -> "src/#src.co" for src of <[ livescript grammar lexer ast ]>
+coreSources = -> "src/#src.ls" for src of <[ livescript grammar lexer ast ]>
 
 task \bench 'quick benchmark of compilation time' ->
   LiveScript   = require \./lib/livescript
@@ -136,7 +136,7 @@ task \test:browser 'run test/ against extras/livescript.js' ->
 
 task \test:json 'test JSON {de,}serialization' ->
   {ast} = require \./lib/livescript
-  json = ast slurp \src/ast.co .stringify!
+  json = ast slurp \src/ast.ls .stringify!
   code = ast.parse json .compileRoot {+bare}
   exec 'diff -u lib/ast.js -' (e, out) -> say e || out.trim! || tint \ok
   .stdin.end code
@@ -158,7 +158,7 @@ function runTests global.LiveScript
     then tint "failed #failedTests and #message" red
     else tint message
   dir(\test)forEach (file) ->
-    return unless /\.co$/i.test file
+    return unless /\.ls$/i.test file
     code = slurp filename = path.join \test file
     try LiveScript.run code, {filename} catch
       ++failedTests

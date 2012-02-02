@@ -72,18 +72,18 @@ default
 
 # Asynchronously read in each LiveScript script in a list of source files and
 # compile them. If a directory is passed, recursively compile all
-# _.co_ files in it and all subdirectories.
+# _.ls_ files in it and all subdirectories.
 !function compileScripts
   $args.forEach !-> walk it, , true
   !function walk source, base ? path.normalize(source), top
     e, stats <-! fs.stat source
     if e
-      return walk "#source.co" if top
+      return walk "#source.ls" if top
       die e
     if stats.isDirectory!
       <-! fshoot \readdir source
       it.forEach !-> walk path.join(source, it), base
-    else if top or path.extname(source)toLowerCase! is \.co
+    else if top or path.extname(source)toLowerCase! is \.ls
       watch source, base if o.watch
       fshoot \readFile source, !-> compileScript source, "#it", base
 
@@ -156,8 +156,8 @@ default
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
 !function writeJS source, js, base
-  #     foo.co     => foo.js
-  #     foo.jsm.co => foo.jsm
+  #     foo.ls     => foo.js
+  #     foo.jsm.ls => foo.jsm
   filename = path.basename(source)replace do
     /(?:(\.\w+)?\.\w+)?$/ -> @@1 or if o.json then \.json else \.js
   dir = path.dirname source

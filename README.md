@@ -8,4 +8,4 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 
 ## Changes
 ###0.1.0
-- Renamed everything from Coco and Coke to LiveScript and Slake (have not done file extensions yet). Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake becuase lake was taken and lsake sounds bad. 
+- Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake becuase lake was taken and lsake sounds bad. 
