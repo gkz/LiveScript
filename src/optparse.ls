@@ -20,7 +20,7 @@ module.exports = (
 ) ->
   unless typeof! flags is \Array
     MULTI = /[*+]/
-    flags = for name in flags
+    flags = for name of flags
       [desc, arg, abbr] = []concat flags[name]
       {name, desc, arg, abbr} <<<
         long  : \-- + name
@@ -30,12 +30,12 @@ module.exports = (
   # specified options, and returning it. `options.$args` will be an array
   # containing the remaining non-option arguments.
   FLAG = /^-[-\w]+$/; unknowns = []
-  :ARGS for arg, i of args
+  :ARGS for arg, i in args
     # __--__ marks the end of options.
     if arg is \-- then ++i; break
-    :ARG for a of expand arg
-      for flag of flags
-        continue unless a of flag<[short long]>
+    :ARG for a in expand arg
+      for flag in flags
+        continue unless a in flag<[short long]>
         value = if flag.arg then args[++i] else true
         if flag.multi
         then options@@[flag.name]push value

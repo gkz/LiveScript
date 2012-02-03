@@ -66,8 +66,8 @@ eq('0', String 0 or  String 1)
 eq 3, if 0 or 1 then 2 and 3
 
 
-ok 'a' in obj = a: true
-ok 'b' not in obj, 'allow `x not in y`'
+ok 'a' of obj = a: true
+ok 'b' not of obj, 'allow `x not of y`'
 
 
 ok new String instanceof String
@@ -77,18 +77,18 @@ eq true, []    instanceof [String, Number and Array]
 eq true, 0 not instanceof [String, Array  or Number]
 
 
-eq true, 2 of [0 or 1, 2, 3]
-eq true, 2 of array = [1, 2, 3]
-eq true, 4 not of array
-eq true, 1 not of []
-eq true, [3]pop() of [0, ...array]
-eq true, [4]pop() of [...array, 4]
-eq true, void of length: 1
+eq true, 2 in [0 or 1, 2, 3]
+eq true, 2 in array = [1, 2, 3]
+eq true, 4 not in array
+eq true, 1 not in []
+eq true, [3]pop() in [0, ...array]
+eq true, [4]pop() in [...array, 4]
+eq true, void in length: 1
 
-eq 1, +(-0 of [0])
-eq 0, +(10 of [ ])
+eq 1, +(-0 in [0])
+eq 0, +(10 in [ ])
 
-ok array[0]++ of [0, 1] 'should cache testee'
+ok array[0]++ in [0, 1] 'should cache testee'
 
 
 # Non-spaced values still work.
@@ -192,17 +192,17 @@ num = 10; eq (num |=   3), 11
 
 
 #coffee-737: `in` should have higher precedence than logical operators.
-eq 1, 1 of [1] && 1
+eq 1, 1 in [1] && 1
 
 #coffee-768: `in` should preserve evaluation order.
 share = 0
 a = -> share++ if share is 0
 b = -> share++ if share is 1
 c = -> share++ if share is 2
-ok a() not of [b(),c()] and share is 3
+ok a() not in [b(),c()] and share is 3
 
 # `in` with cache and `__indexOf` should work in commaed lists.
-eq [Object() of Array()].length, 1
+eq [Object() in Array()].length, 1
 
 
 # Operators should respect new lines as spaced.

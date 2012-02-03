@@ -40,7 +40,7 @@ throws '''
 eq '''
 var k;
 for (k in o) {}
-''' LiveScript.compile 'for k in o then' {+bare}
+''' LiveScript.compile 'for k of o then' {+bare}
 
 
 eq '''
@@ -131,7 +131,7 @@ eq '''
   }
 }).call(this);
 
-''', LiveScript.compile '''try for k in o then let then ^@'''
+''', LiveScript.compile '''try for k of o then let then ^@'''
 
 
 eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' LiveScript.tokens('''

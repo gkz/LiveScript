@@ -10,7 +10,7 @@ doc = document.getElementById \doc or lmn \div id: \doc
 nav = document.getElementById \nav or let
   h  = '<div class=pointee>&#x2935;</div>'
   h += "<h1>#title</h1>" if title
-  for co of sources
+  for co in sources
     h += if co then "<li><a href=##co>#co</a>" else '<p class=spacer>'
   h += '<li class=index><a href=#>#</a>'
   lmn \ul id: \nav, innerHTML: h
@@ -49,7 +49,7 @@ function lmn name, attrs
 function build name, source
   htm = comment = code = i = ''
   re  = /^[^\n\S]*#(?![!{$A-Za-z_]) ?(.*)/
-  for line of source.split \\n
+  for line in source.split \\n
     unless line
       br = true
       code &&+= \\n

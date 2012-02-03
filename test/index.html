@@ -47,7 +47,7 @@ say = (msg, err) ->
   try do fun catch return eq e?message, msg
   ok false "should throw: #{msg}"
 
-for name of sources then let
+for name in sources then let
   e <- Coco.load name + \.co
   say "#{ if e then \\uFF38 else \\u2714 } #{name}" e
   say e, ++failed if e

@@ -260,18 +260,18 @@ bnf =
     # The source of a `for`-loop is an array, object, or range.
     # Unless it's iterating over an object, you can choose to step through
     # in fixed-size increments.
-    o 'FOR Chain OF Expression'
+    o 'FOR Chain IN Expression'
     , -> new For item: $2.unwrap!, index: $3, source: $4
-    o 'FOR Chain OF Expression BY Expression'
+    o 'FOR Chain IN Expression BY Expression'
     , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6
 
-    o 'FOR     ID         IN Expression'
+    o 'FOR     ID         OF Expression'
     , -> new For {+object,       index: $2,                   source: $4}
-    o 'FOR     ID , Chain IN Expression'
+    o 'FOR     ID , Chain OF Expression'
     , -> new For {+object,       index: $2, item: $4.unwrap!, source: $6}
-    o 'FOR OWN ID         IN Expression'
+    o 'FOR OWN ID         OF Expression'
     , -> new For {+object, +own, index: $3,                   source: $5}
-    o 'FOR OWN ID , Chain IN Expression'
+    o 'FOR OWN ID , Chain OF Expression'
     , -> new For {+object, +own, index: $3, item: $5.unwrap!, source: $7}
 
     o 'FOR ID FROM Expression TO Expression'
@@ -316,9 +316,9 @@ operators =
 # terminals (every symbol which does not appear as the name of a rule above)
 # as `tokens`.
 tokens = do
-  for name, alts in bnf
-    for alt of alts
-      token if token not in bnf for token of alt.0
+  for name, alts of bnf
+    for alt in alts
+      token if token not in bnf for token in alt.0
 .join ' '
 
 bnf.Root = [[[\Body] 'return $$']]

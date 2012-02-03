@@ -176,9 +176,9 @@ default
 # Pretty-print a stream of tokens.
 !function printTokens tokens
   lines = []
-  for [tag, val, lno] of tokens
+  for [tag, val, lno] in tokens
     lines@@[lno]push if tag.toLowerCase! is val then tag else "#tag:#val"
-  say(if l then l.join(' ')replace /\n/g \\\n else '') for l of lines
+  say(if l then l.join(' ')replace /\n/g \\\n else '') for l in lines
 
 # A Read-Eval-Print-Loop.
 # Good for simple tests or poking around the
@@ -240,7 +240,7 @@ default
 # to it, preserving the other options.
 !function forkNode
   args = argv.slice 1; i = 0
-  args.splice i-- 2 if that of <[ -n --nodejs ]> while args[++i]
+  args.splice i-- 2 if that in <[ -n --nodejs ]> while args[++i]
   require(\child_process)spawn do
     process.execPath
     o.nodejs.join(' ')trim!split(/\s+/)concat args

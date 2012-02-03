@@ -45,7 +45,7 @@ global import
   dir   : fs.readdirSync
 
 args     = process.argv.slice 2
-filename = args.0 of <[ -f --slakefile ]> and args.splice(0 2)1 or \Slakefile
+filename = args.0 in <[ -f --slakefile ]> and args.splice(0 2)1 or \Slakefile
 path.exists filename, rec = (yes) ->
   unless yes
     if process.cwd! is \/
@@ -71,7 +71,7 @@ function printTasks
   '''
   width = Math.max ...Object.keys(Tasks)map -> it.length
   pad   = ' ' * width
-  for name, task in Tasks
+  for name, task of Tasks
     say "  #{ (name + pad)slice 0 width }  #{task.description}"
   say '\nTask options:\n' + that if Options.toString()
   say '''

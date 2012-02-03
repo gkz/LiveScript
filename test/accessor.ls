@@ -6,10 +6,10 @@ o =
   key: ~ (@x) ->
   (v): ~      -> @y
   (v): ~ (@y) ->
-ok 'key' in o
+ok 'key' of o
 eq 1, o.key = 1
 eq 1, o.key
-ok 'foo' in o
+ok 'foo' of o
 eq 2, o.foo = 2
 eq 2, o.foo
 

@@ -93,7 +93,7 @@ class Mini
         ~> @num * i
   num: 10
 
-eq (func() for func of new Mini().generate()) + '', '10,20,30'
+eq (func() for func in new Mini().generate()) + '', '10,20,30'
 
 
 # Test classes wrapped in decorators.
@@ -149,7 +149,7 @@ class BoundCtor extends (-> {@attr})
 
 class BoundChild extends BoundCtor then ~> super ...
 
-for C of [BoundCtor, BoundChild]
+for C in [BoundCtor, BoundChild]
   bc = C 'attr'
   eq bc.attr, 'attr'
   eq [bc.method][0](), bc

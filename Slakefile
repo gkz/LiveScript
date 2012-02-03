@@ -49,8 +49,8 @@ docs = <[ doc.ls ]>
 
 task \build 'build lib/ from src/' ->
   ext = /\.ls$/; webs = docs
-  sources = for file of dir \src
-    \src/ + file if ext.test file and file not of webs
+  sources = for file in dir \src
+    \src/ + file if ext.test file and file not in webs
   run [\-bco \lib]concat sources
 
 task \build:full 'build twice and run tests' ->
@@ -78,7 +78,7 @@ task \build:doc 'build doc/' ->
 task \build:browser 'build extras/' ->
   LiveScript = require \./lib/livescript
   co = ''
-  for name of <[ lexer ast livescript ]>
+  for name in <[ lexer ast livescript ]>
     code = slurp("src/#name.ls")replace /\n/g '\n '
     co += "let exports = require'./#name' = {}\n#code\n"
   fs.writeFile \extras/livescript.raw.js js = """
@@ -102,9 +102,9 @@ task \build:browser 'build extras/' ->
   invoke \test:browser
 
 
-coreSources = -> "src/#src.ls" for src of <[ livescript grammar lexer ast ]>
+coreSources = -> "src/#src.ls" for src in <[ livescript grammar lexer ast ]>
 
-task \bench 'quick benchmark of compilation time' ->
+task \bench 'quick benchmark in compilation time' ->
   LiveScript   = require \./lib/livescript
   co     = coreSources!map(-> slurp it)join \\n
   fmt    = -> "#bold#{ "   #it"slice -4 }#reset ms"
@@ -123,9 +123,9 @@ task \bench 'quick benchmark of compilation time' ->
   tree.traverseChildren (-> ++nc; void), true
   console.log msg, nc
 
-task \loc 'count the lines of main compiler code' ->
+task \loc 'count the lines in main compiler code' ->
   count = 0; line = /^[^\n\S]*[^#\s]/mg
-  ++count while line.test code for code of coreSources!map -> slurp it
+  ++count while line.test code for code in coreSources!map -> slurp it
   console.log count
 
 
@@ -144,7 +144,7 @@ task \test:json 'test JSON {de,}serialization' ->
 function runTests global.LiveScript
   startTime = Date.now!
   passedTests = failedTests = 0
-  for name, func in require \assert then let
+  for name, func of require \assert then let
     global[name] = -> func ...; ++passedTests
   global <<<
     eq: strictEqual
@@ -165,7 +165,7 @@ function runTests global.LiveScript
       return say e unless stk = e?stack
       msg = e.message or ''+ /^[^]+?(?=\n    at )/exec stk
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
-        m[i] = tint m[i]replace(/\\n/g \\n), bold for i of [2 4]
+        m[i] = tint m[i]replace(/\\n/g \\n), bold for i in [2 4]
         msg  = m.slice(1)join \\n
       [, row, col]? = //#filename:(\d+):(\d+)\)?$//m.exec stk
       if row and col

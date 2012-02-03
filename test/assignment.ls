@@ -46,7 +46,7 @@ val ?= 'eulav'
 eq val, 'value'
 
 
-for nonref, i of <[ 0 f() this true ]>
+for nonref, i in <[ 0 f() this true ]>
   throws 'invalid assign on line ' + (i+1), ->
     x = if i then nonref else \... + nonref
     LiveScript.compile \\n * i + "[#{x}, y] = z"
@@ -162,7 +162,7 @@ persons =
   George     : {name: 'Bob'  }
   Bob        : {name: 'Alice'}
   Christopher: {name: 'Stan' }
-join1 = ("#{key}: #{name}" for key, {name} in persons)
+join1 = ("#{key}: #{name}" for key, {name} of persons)
 
 eq join1.join(' / '), 'George: Bob / Bob: Alice / Christopher: Stan'
 
@@ -171,12 +171,12 @@ persons = [
   {name: 'Alice', parent: {name: 'Bob'        }}
   {name: 'Stan' , parent: {name: 'Christopher'}}
 ]
-join2 = ("#{parent}: #{name}" for {name, parent: {name: parent}} of persons)
+join2 = ("#{parent}: #{name}" for {name, parent: {name: parent}} in persons)
 
 eq join1.join(' '), join2.join(' ')
 
 persons = [['Bob', ['George']], ['Alice', ['Bob']], ['Stan', ['Christopher']]]
-join3 = ("#{parent}: #{name}" for [name, [parent]] of persons)
+join3 = ("#{parent}: #{name}" for [name, [parent]] in persons)
 
 eq join2.join(' '), join3.join(' ')
 

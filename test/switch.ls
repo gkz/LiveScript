@@ -52,12 +52,12 @@ ok switch \words
 eq ok, switch
 case null                    then 0
 case !1                      then 1
-case '' not in {''}          then 2
+case '' not of {''}          then 2
 case [] not instanceof Array then 3
 case true is false           then 4
 case 'x' < 'y' > 'z'         then 5
-case 'a' of  <[ b c ]>       then 6
-case 'd' of (<[ e f ]>)      then 7
+case 'a' in  <[ b c ]>       then 6
+case 'd' in (<[ e f ]>)      then 7
 default ok
 
 

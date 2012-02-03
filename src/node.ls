@@ -30,7 +30,7 @@ module.exports = (LiveScript) ->
 function hackTrace error, js, filename
   traces = error?stack / \\n
   return error unless traces.length > 1
-  for trace, i of traces
+  for trace, i in traces
     continue if 0 > index = trace.indexOf "(#filename:"
     {1: lno} = /:(\d+):/exec trace.slice index + filename.length or ''
     continue unless +=lno

@@ -93,7 +93,7 @@ exports import
     {last} = this
     # `id:_` `_.id` `@id`
     if match.2 or last.0 is \DOT or @adi!
-      @token \ID if id of KEYWORDS then Object(id) <<< {+reserved} else id
+      @token \ID if id in KEYWORDS then Object(id) <<< {+reserved} else id
       @token \: \: if match.2
       return input.length
     # keywords
@@ -110,7 +110,7 @@ exports import
       if @seenFor
         @seenFor = false
         # OF holds the index variable.
-        if id is \of
+        if id is \in
           id = ''; @wantBy = true
           if last.0 is \ID and @tokens[*-2]0 is not \FOR
             id = @tokens.pop!1
@@ -136,9 +136,9 @@ exports import
       id = \<<<
       able @tokens or @token \LITERAL \this
     default
-      break if id of KEYWORDS_SHARED
-      @carp "reserved word \"#id\"" if id of KEYWORDS_UNUSED
-      if not last.1 and last.0 of <[ CATCH FUNCTION LABEL ]>
+      break if id in KEYWORDS_SHARED
+      @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED
+      if not last.1 and last.0 in <[ CATCH FUNCTION LABEL ]>
         last <<< {1: id, -spaced}
         return id.length
       tag = \ID
@@ -164,7 +164,7 @@ exports import
       case \ever then if last.0 is \FOR
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
     tag ||= match.1.toUpperCase!
-    @unline! if tag of <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
+    @unline! if tag in <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
                           IN OF FROM TO BY EXTENDS ]>
     @token tag, id
     input.length
@@ -184,7 +184,7 @@ exports import
       num += ''
     else
       num = (match.3 or input)replace NUMBER_OMIT, ''
-      if match.3 and num.charAt! is \0 and num.charAt(1) not of ['' \.]
+      if match.3 and num.charAt! is \0 and num.charAt(1) not in ['' \.]
         @carp "deprecated octal literal #{match.4}"
     if not last.spaced and last.0 is \+-
       last.0 = \STRNUM; last.1 += num
@@ -219,7 +219,7 @@ exports import
       return @countLines(raw)length + 6
     parts = @interpolate code, index, q+q+q
     tabs  = heretabs code.slice(index+3 index+parts.size)replace LASTDENT, ''
-    for t, i of parts then if t.0 is \S
+    for t, i in parts then if t.0 is \S
       t.1.=replace LASTDENT, '' if i+1 is parts.length
       t.1 = detab  t.1, tabs
       t.1 = lchomp t.1 if i is 0
@@ -231,7 +231,7 @@ exports import
     comment = if ~end = code.indexOf \*/ index+2
               then code.slice index, end+2
               else code.slice(index) + \*/
-    if @last.0 of <[ NEWLINE INDENT THEN ]>
+    if @last.0 in <[ NEWLINE INDENT THEN ]>
     then @token \COMMENT detab comment, @dent; @token \NEWLINE \\n
     else @last.spaced = true
     @countLines(comment)length
@@ -252,7 +252,7 @@ exports import
     #     a /= b / c / d  # division
     #
     if divisable = able @tokens
-      return 0 if not @last.spaced or code.charAt(index+1) of [' ' \=]
+      return 0 if not @last.spaced or code.charAt(index+1) in [' ' \=]
     [input, body, flag] = (REGEX <<< lastIndex: index)exec code
     if input
     then @regex body, flag
@@ -271,10 +271,10 @@ exports import
       else
         tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
         if flag is \?
-          for t, i of parts by -1 then if t.0 is \TOKENS
+          for t, i in parts by -1 then if t.0 is \TOKENS
             dynaflag = parts.splice(i, 1).0.1
             break
-      for t, i of parts
+      for t, i in parts
         if t.0 is \TOKENS
           tokens.push ...t.1
         else
@@ -317,8 +317,8 @@ exports import
     else
       if tabs and (@emender ||= //[^#{ tabs.charAt 0 }]//)exec tabs
         @carp "contaminated indent #{ escape that }"
-      if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := += ]>
-      or tag of <[ +- => DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
+      if (tag = last.0) is \ASSIGN and ''+last.1 not in <[ = := += ]>
+      or tag in <[ +- => DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
                    IN OF TO BY FROM EXTENDS ]>
         return length
       if delta then @indent delta else @newline!
@@ -365,7 +365,7 @@ exports import
     case <[ < > <= >= ]> then tag = \COMPARE
     case <[ <<  >>  >>>   <?  >? ]> then tag = \SHIFT
     case \(
-      unless @last.0 of <[ FUNCTION LET ]> or @able true
+      unless @last.0 in <[ FUNCTION LET ]> or @able true
         @token \( \(
         @closes.push \)
         @parens.push @last
@@ -382,7 +382,7 @@ exports import
       fallthrough
     case \] \)
       @lpar = @parens.pop! if \) is tag = val = @pair val
-    case \: then if @last.0 not of <[ ID STRNUM ) ]>
+    case \: then if @last.0 not in <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= <?= >?= **= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
@@ -390,12 +390,12 @@ exports import
         return val.length
       if @last.0 is \LOGIC
         (val = Object val)logic = @tokens.pop!1
-      else if val of <[ += -= ^= ]> and not able @tokens and
-              @last.0 not of <[ +- ^ UNARY LABEL ]>
+      else if val in <[ += -= ^= ]> and not able @tokens and
+              @last.0 not in <[ +- ^ UNARY LABEL ]>
         @token \UNARY val.charAt!; val = \=
       tag = \ASSIGN
     case \*
-      if @last.0 of <[ NEWLINE INDENT THEN ]> and
+      if @last.0 in <[ NEWLINE INDENT THEN ]> and
          (INLINEDENT <<< lastIndex: index+1)exec code .0.length
         @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
         @indent index + that - 1 - @dent - code.lastIndexOf \\n index-1
@@ -428,7 +428,7 @@ exports import
     case \<
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
-    @unline! if tag of <[ , => DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
+    @unline! if tag in <[ , => DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 
@@ -474,7 +474,7 @@ exports import
       @last.0 = \)PARAM
       return
     if arrow is \-> then @token \PARAM( '' else
-      break if t.0 of <[ NEWLINE INDENT THEN ( ]> for t, i of @tokens by -1
+      break if t.0 in <[ NEWLINE INDENT THEN ( ]> for t, i in @tokens by -1
       @tokens.splice i+1 0 [\PARAM( '' t.2]
     @token \)PARAM ''
 
@@ -496,7 +496,7 @@ exports import
         return parts <<< size: pos + i + end.length
       case \#
         if id = (ID <<< lastIndex: i+1)exec(str)1
-          break if id is \this or id not of KEYWORDS
+          break if id is \this or id not in KEYWORDS
           i += id.length
           continue
         continue unless \{ is str.charAt i+1
@@ -527,7 +527,7 @@ exports import
     @adi!
     {tokens, last} = this
     tokens.push [\( \" last.2]
-    for t, i of parts
+    for t, i in parts
       if t.0 is \TOKENS
         tokens.push ...t.1
       else
@@ -578,7 +578,7 @@ exports import
   # - `x''`: indexable via implicit brackets
   able: (call) -> not @last.spaced and able @tokens, null call
 
-  # Increments `@line` by the number of newlines in a string.
+  # Increments `@line` by the number in newlines in a string.
   countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
 
   # Checks FOR for FROM/TO.
@@ -600,9 +600,9 @@ function carp msg, lno then throw SyntaxError "#msg on line #{-~lno}"
 # Checks whether or not the previous token is {index,`call`}able.
 function able tokens, i ? tokens.length, call
   [tag] = token = tokens[i-1]
-  tag of <[ ID ] ? ]> or if call
-    then token.callable or tag of <[ ) )CALL ]> and token.1
-    else tag of <[ } ) )CALL STRNUM LITERAL WORDS ]>
+  tag in <[ ID ] ? ]> or if call
+    then token.callable or tag in <[ ) )CALL ]> and token.1
+    else tag in <[ } ) )CALL STRNUM LITERAL WORDS ]>
 
 #### String Manipulators
 
@@ -665,8 +665,8 @@ character = if JSON!? then uxxxx else ->
 # Tag postfix conditionals as such, so that we can parse them with a
 # different precedence.
 !function tagPostfixConditionals tokens
-  detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
-  function  ok then it.0 of <[ NEWLINE INDENT ]>
+  detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i in tokens
+  function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
 
 # Wrap single-line blocks with regular INDENT/DEDENT pairs.
@@ -676,7 +676,7 @@ character = if JSON!? then uxxxx else ->
   i = 0
   while token = tokens[++i]
     [tag] = token
-    continue unless tag of <[ THEN -> ELSE DEFAULT TRY CATCH FINALLY ]>
+    continue unless tag in <[ THEN -> ELSE DEFAULT TRY CATCH FINALLY ]>
     switch next = tokens[i+1]0
     case \IF then continue if tag is \ELSE
     case \INDENT \THEN
@@ -688,12 +688,12 @@ character = if JSON!? then uxxxx else ->
     else tokens.splice ++i, 0 indent
     switch
     # ->,
-    case next of <[ DOT \? \, \=> ]> then --i; fallthrough
+    case next in <[ DOT \? \, \=> ]> then --i; fallthrough
     # -> 0,
-    case next of <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
+    case next in <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
       go 0 i+=2; ++i
     # -> [0],
-    case next of <[ ( [ { ]>
+    case next in <[ ( [ { ]>
      and \, is tokens[idx = 1 + indexOfPair tokens, i+1]?0
       go 0 idx; ++i
     default
@@ -705,7 +705,7 @@ character = if JSON!? then uxxxx else ->
     case \DOT \? \, \=> then tokens[i-1]eol
     case \ELSE          then tag is \THEN
     case \CATCH         then tag is \TRY
-    case \FINALLY       then tag of <[ TRY CATCH THEN ]>
+    case \FINALLY       then tag in <[ TRY CATCH THEN ]>
     case \SWITCH        then not seenSwitch := true
     case \CASE \DEFAULT then not seenSwitch
   !function go [] i
@@ -732,20 +732,20 @@ character = if JSON!? then uxxxx else ->
     brackets.push prev.0 is \DOT if tag is \[
     if prev.0 is \]
       if brackets.pop! then prev.index = true else continue
-    continue unless prev.0 of <[ FUNCTION LET ]>
+    continue unless prev.0 in <[ FUNCTION LET ]>
                  or prev.spaced and able tokens, i, true
     if token.doblock
       token.0 = \CALL(
       tpair.0 = \)CALL
       continue
-    continue unless tag of ARG or not token.spaced and tag of <[ +- ^ ]>
+    continue unless tag in ARG or not token.spaced and tag in <[ +- ^ ]>
     if tag is \CREMENT
-      continue if token.spaced or tokens[i+1]?0 not of CHAIN
+      continue if token.spaced or tokens[i+1]?0 not in CHAIN
     skipBlock = seenSwitch = false
     tokens.splice i++, 0 [\CALL( '' token.2]
     detectEnd tokens, i, ok, go
   function ok token, i
-    return true if not skipBlock and token.alias and token.1 of <[ && || ]>
+    return true if not skipBlock and token.alias and token.1 in <[ && || ]>
                 or token.0 is \=>
     pre = tokens[i-1]
     switch token.0
@@ -756,7 +756,7 @@ character = if JSON!? then uxxxx else ->
       if seenSwitch then skipBlock := true else return true
     case \INDENT
       return skipBlock := false if skipBlock
-      return pre.0 not of <[
+      return pre.0 not in <[
         { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY HURL DO
       ]>
     case \WHILE
@@ -774,17 +774,17 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[++i]
     unless \: is tag = token.0
       switch
-      case tag of CLOSERS then start = stack.pop!
-      case tag of OPENERS
+      case tag in CLOSERS then start = stack.pop!
+      case tag in OPENERS
         tag = \{ if tag is \INDENT and tokens[i-1]0 is \{
         stack.push [tag, i]
       continue
     paren = tokens[i-1]0 is \)
     index = if paren then start.1 else i-1
     pre   = tokens[index-1]
-    continue unless pre.0 of <[ : ASSIGN ]> or stack[*-1]?0 is not \{
+    continue unless pre.0 in <[ : ASSIGN ]> or stack[*-1]?0 is not \{
     stack.push [\{]
-    inline = not pre.doblock and pre.0 not of <[ NEWLINE INDENT ]>
+    inline = not pre.doblock and pre.0 not in <[ NEWLINE INDENT ]>
     index -= 2 while tokens[index-2]?0 is \COMMENT
     tokens.splice index, 0 [\{ \{ tokens[index]2]
     detectEnd tokens, ++i+1, ok, go
@@ -829,12 +829,12 @@ character = if JSON!? then uxxxx else ->
       i += ts.length - 1
     case \WORDS
       ts = [[\[ \[ lno = token.2]]
-      for word of token.1.match /\S+/g or ''
+      for word in token.1.match /\S+/g or ''
         ts.push [\STRNUM; string \' word; lno] [\, \, lno]
       tokens.splice i, 1, ...ts, [\] \] lno]
       i += ts.length
     case \,
-      if tokens[i-1]0 of <[ , [ CALL( PARAM( ]>
+      if tokens[i-1]0 in <[ , [ CALL( PARAM( ]>
         tokens.splice i++ 0 [\LITERAL \void token.2]
       continue
     case \INDENT
@@ -842,7 +842,7 @@ character = if JSON!? then uxxxx else ->
         if that.1 is \new
           tokens.splice i++ 0 \
             [\PARAM( '' token.2] [\)PARAM '' token.2] [\-> '' token.2]
-        else if that.0 of <[ FUNCTION LET ]>
+        else if that.0 in <[ FUNCTION LET ]>
           tokens.splice i, 0 [\CALL( '' token.2] [\)CALL '' token.2]
           i += 2
       continue
@@ -851,7 +851,7 @@ character = if JSON!? then uxxxx else ->
     case \]        then continue if token.index
     case \CREMENT  then continue unless able tokens, i
     default continue
-    if token.spaced and tokens[i+1]0 of ARG
+    if token.spaced and tokens[i+1]0 in ARG
       tokens.splice ++i, 0 [\, \, token.2]
 
 # Seeks `tokens` from `i`ndex and `go` for a token of the same level
@@ -861,7 +861,7 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[i], ++i
     return go token, i if not levels and ok token, i
     [tag] = token
-    return go token, i if 0 > levels += tag of OPENERS or -(tag of CLOSERS)
+    return go token, i if 0 > levels += tag in OPENERS or -(tag in CLOSERS)
 
 function indexOfPair tokens, i
   level = 1; end = INVERSES[start = tokens[i]0]
@@ -963,7 +963,7 @@ OPENERS = <[ ( [ { CALL( PARAM( INDENT ]>
 CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
 
 # The inverse mappings of {OPEN,CLOS}ERS to look things up from either end.
-INVERSES = new -> import (c = CLOSERS[i]): o, (o): c for o, i of OPENERS
+INVERSES = new -> import (c = CLOSERS[i]): o, (o): c for o, i in OPENERS
 
 # Tokens that can start a dot/call chain.
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>

@@ -194,7 +194,7 @@ throws 'misplaced function declaration on line 1', ->
 # Returns with multiple branches.
 func = ->
   if it
-    return n for n of [1, 2]
+    return n for n in [1, 2]
   else
     0
 eq func(0), 0
@@ -202,7 +202,7 @@ eq func(1), 1
 
 
 # Don't gather results from a loop that _jumps_ out of a closure.
-findIt = (items) -> return item if item is 'bacon' for item of items
+findIt = (items) -> return item if item is 'bacon' for item in items
 eq 'bacon', findIt [1, 2, 3, 'bacon', 4, 5]
 eq void   , findIt []
 
@@ -265,7 +265,7 @@ eq(area(
 
 sumOfArgs = ->
   sum = 0
-  sum += val for val of arguments
+  sum += val for val in arguments
   sum
 
 eq 15, sumOfArgs(1, 2, 3, 4, 5)
