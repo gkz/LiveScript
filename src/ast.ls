@@ -885,7 +885,7 @@ class exports.Binary extends Node
       return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
     @first <<< {@front}
     displayOp = if @op is \of then \in else @op
-    code = "#{ @first .compile o, level = LEVEL_OP + PREC[displayOp] } #{displayOp} \
+    code = "#{ @first .compile o, level = LEVEL_OP + PREC[@op] } #{displayOp} \
             #{ @second.compile o, level }"
     if o.level <= level then code else "(#code)"
 
@@ -1989,7 +1989,7 @@ PREC = \? : 0.1, unary : 0.9
 PREC\&& = PREC\||                                                  = 0.2
 PREC\&  = PREC\^  = PREC\|                                         = 0.3
 PREC\== = PREC\!= = PREC\=== = PREC\!==                            = 0.4
-PREC\<  = PREC\>  = PREC\<=  = PREC\>= = PREC\in = PREC\instanceof = 0.5
+PREC\<  = PREC\>  = PREC\<=  = PREC\>= = PREC\of = PREC\instanceof = 0.5
 PREC\<< = PREC\>> = PREC\>>>                                       = 0.6
 PREC\+  = PREC\-                                                   = 0.7
 PREC\*  = PREC\/  = PREC\%                                         = 0.8
