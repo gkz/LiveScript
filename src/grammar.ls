@@ -151,7 +151,6 @@ bnf =
     o '^     Expression' ditto, prec: \UNARY
 
     o 'Expression +-      Expression' -> Binary $2, $1, $3
-    o 'Expression ^       Expression' ditto
     o 'Expression COMPARE Expression' ditto
     o 'Expression LOGIC   Expression' ditto
     o 'Expression MATH    Expression' ditto
@@ -300,7 +299,7 @@ operators =
   <[ left     => POST_IF FOR WHILE ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
   <[ right    LOGIC        ]>
-  <[ left     ^ BITWISE    ]>
+  <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
   <[ left     RELATION     ]>
   <[ left     SHIFT IMPORT ]>

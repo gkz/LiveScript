@@ -345,6 +345,7 @@ exports import
     case \++ \--      then tag = \CREMENT
     case \<<< \<<<<   then tag = \IMPORT
     case \&^& \&^|    then tag = \BITWISE
+    case \&^^         then tag = \BITWISE
     case \;           then tag = \NEWLINE; @wantBy = false
     case \.
       @last.0 = \? if @last.1 is \?
@@ -384,14 +385,14 @@ exports import
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case \: then if @last.0 not in <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
-    case <[ = := += -= *= /= %= ^= <?= >?= **= ]>
+    case <[ = := += -= *= /= %= <?= >?= **= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
         @last.1 += val
         return val.length
       if @last.0 is \LOGIC
         (val = Object val)logic = @tokens.pop!1
-      else if val in <[ += -= ^= ]> and not able @tokens and
-              @last.0 not in <[ +- ^ UNARY LABEL ]>
+      else if val in <[ += -= ]> and not able @tokens and
+              @last.0 not in <[ +- UNARY LABEL ]>
         @token \UNARY val.charAt!; val = \=
       tag = \ASSIGN
     case \*
@@ -817,7 +818,7 @@ character = if JSON!? then uxxxx else ->
     case \RANGE
       [from, char] = decode token.1, lno = token.2
       [to, tochar] = decode tokens[i+1]1, lno
-      carp 'bad "to" in range' if char ^ tochar
+      carp 'bad "to" in range' if char &^^ tochar
       if by = tokens[i+2]?0 is \RANGE_BY
         carp 'bad "by" in range' if isNaN by = tokens[i+3]?1
       ts = []; to -= token.op is \til and 1e-15
@@ -922,7 +923,7 @@ SYMBOL = //
 | @@                          # `arguments`
 | <\[(?:[\s\S]*?\]>)?         # words
 | <<<<?                       # import
-| &\^(>>>?|<<|&|\|)           # shifts, bitwise
+| &\^(>>>?|<<|&|\||\^)        # shifts, bitwise
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
 | =>                          # pipe

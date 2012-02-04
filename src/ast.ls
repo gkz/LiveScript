@@ -178,7 +178,7 @@ exports.fromJSON = function
 
 Negatable =
   show   : -> @negated and \!
-  invert : -> @negated ^= 1; this
+  invert : -> @negated = @negated &^^ 1; this
 
 #### Block
 # A list of expressions that forms the body of an indented block of code.
@@ -666,7 +666,8 @@ class exports.Obj extends List
           "#{ key.=compile o }: #{ val.compile o, LEVEL_LIST }"
       else
         "#{ key = node.compile o }: #key"
-      node.carp "duplicate property name \"#key\"" unless dic[0 + key] ^= 1
+      temp = dic[0 + key]
+      node.carp "duplicate property name \"#key\"" unless dic[0 + key] = temp &^^ 1
     code = "{#{ code and code + \\n + @tab }}"
     rest and code = Import(JS code; Obj rest)compile o <<< indent: @tab
     if @front and \{ is code.charAt! then "(#code)" else code
@@ -890,7 +891,7 @@ class exports.Binary extends Node
   
   mapOp: (op) ->
     return \in if op is \of
-    if //&\^(?: >>>? | << | & | \|)//.test op
+    if //&\^(?: >>>? | << | & | \| | \^)//.test op
         op.slice 2
     else
         op
@@ -1344,7 +1345,8 @@ class exports.Fun extends Node
         else if df
           assigns.push Assign vr, p.second, \=, p.op
         names.push name = scope.add vr.value, \arg
-        p.carp "duplicate parameter \"#name\"" unless dic[0 + name] ^= 1
+        temp = dic[0 + name]
+        p.carp "duplicate parameter \"#name\"" unless dic[0 + name] = temp &^^ 1
     if rest
       rest.unshift Arr() while splace--
       assigns.push Assign Arr(rest), Literal \arguments
@@ -1633,7 +1635,7 @@ class exports.For extends While
     then it.it = Call.make fun <<< void: true
     else fun = it.it.head
     {params} = fun; call = it.it.tails.0
-    return if params.length ^ call.args.length - !!call.method
+    return if params.length &^^ call.args.length - !!call.method
     {index, item} = this
     if index and not dup params, index
       call.args.push params.* = Var index
@@ -1993,7 +1995,7 @@ LEVEL_CALL   = 5  # ...()
 # Operator precedances.
 PREC = \? : 0.1, unary : 0.9
 PREC\&& = PREC\||                                                  = 0.2
-PREC\&^&  = PREC\^  = PREC\&^|                                     = 0.3
+PREC\&^&  = PREC\&^^  = PREC\&^|                                   = 0.3
 PREC\== = PREC\!= = PREC\=== = PREC\!==                            = 0.4
 PREC\<  = PREC\>  = PREC\<=  = PREC\>= = PREC\of = PREC\instanceof = 0.5
 PREC\&^<< = PREC\&^>> = PREC\&^>>>                                 = 0.6

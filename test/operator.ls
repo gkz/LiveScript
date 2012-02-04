@@ -178,12 +178,12 @@ eq c, 3
 # Bitwise operators:
 eq (10 &^&   3), 2
 eq (10 &^|   3), 11
-eq (10 ^   3), 9
+eq (10 &^^   3), 9
 eq (10 &^<<  3), 80
 eq (10 &^>>  3), 1
 eq (10 &^>>> 3), 1
 
-num = 10; eq (num ^=   3), 9
+num = 10; eq (num = num &^^ 3), 9
 
 #coffee-737: `in` should have higher precedence than logical operators.
 eq 1, 1 in [1] && 1

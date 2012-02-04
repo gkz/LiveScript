@@ -147,7 +147,7 @@ default
 !function watch source, base
   do loop = !(pre) ->
     cur <-! fshoot \stat source
-    if pre and pre.mtime ^ cur.mtime
+    if pre and pre.mtime &^^ cur.mtime
       fshoot \readFile source, !->
         compileScript source, "#it", base
     setTimeout loop, 500ms, cur
