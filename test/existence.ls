@@ -128,8 +128,8 @@ eq (maybe_close plus1, 41)?(), 42
 eq (maybe_close 'string', 41)?(), void
 
 eq JSON?(3), void
-eq new Number?(42) | 0, 42
-eq new Bumper?(42) | 0, 0
+eq new Number?(42) &^| 0, 42
+eq new Bumper?(42) &^| 0, 0
 
 
 # [coffee#726](https://github.com/jashkenas/coffee-script/issues/726)

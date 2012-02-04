@@ -43,7 +43,7 @@ eq void, do -> return while 0
 
 
 # Basic array comprehensions.
-nums    = for n in [1, 2, 3] then n * n if n & 1
+nums    = for n in [1, 2, 3] then n * n if n &^& 1
 results = (n * 2 for n in nums)
 
 eq results + '', '2,18'
@@ -52,7 +52,7 @@ eq results + '', '2,18'
 # Basic object comprehensions.
 obj   = {one: 1, two: 2, three: 3}
 names = (prop + '!' for prop of obj)
-odds  = for prop, value of obj then prop + '!' if value & 1
+odds  = for prop, value of obj then prop + '!' if value &^& 1
 
 eq names.join(' '), 'one! two! three!'
 eq odds. join(' '), 'one! three!'
@@ -158,7 +158,7 @@ eq func()[0], 3
 
 i = 6
 odds = while i--
-  continue unless i & 1
+  continue unless i &^& 1
   i
 eq '5,3,1', '' + odds
 
@@ -270,7 +270,7 @@ i = 0; evens = (i while i < 9, i += 2)
 eq '0,2,4,6,8' ''+evens
 
 i = 1; odds = until i > 9, ++i
-  continue unless i & 1
+  continue unless i &^& 1
   i
 eq '1,3,5,7,9' ''+odds
 

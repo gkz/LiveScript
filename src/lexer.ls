@@ -344,7 +344,7 @@ exports import
     case \/ \% \**    then tag = \MATH
     case \++ \--      then tag = \CREMENT
     case \<<< \<<<<   then tag = \IMPORT
-    case \& \|        then tag = \BITWISE
+    case \&^& \&^|    then tag = \BITWISE
     case \;           then tag = \NEWLINE; @wantBy = false
     case \.
       @last.0 = \? if @last.1 is \?
@@ -363,7 +363,7 @@ exports import
       val = switchOps[val]
       tag = \COMPARE
     case <[ < > <= >= ]> then tag = \COMPARE
-    case <[ <<  >>  >>>   <?  >? ]> then tag = \SHIFT
+    case <[ &^<<  &^>>  &^>>>  <?  >? ]> then tag = \SHIFT
     case \(
       unless @last.0 in <[ FUNCTION LET ]> or @able true
         @token \( \(
@@ -384,7 +384,7 @@ exports import
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case \: then if @last.0 not in <[ ID STRNUM ) ]>
       tag = \LABEL; val = ''
-    case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= <?= >?= **= ]>
+    case <[ = := += -= *= /= %= ^= <?= >?= **= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
         @last.1 += val
         return val.length
@@ -912,17 +912,17 @@ ID = let
      ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
   |//g
 SYMBOL = //
-  [-+*/%&|^:]=                # compound assign
+  [-+*/%^:]=                  # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
-| ([+&|:])\1                  # increment / logic / `prototype`
+| ([-+&|:])\1                 # crement / logic / `prototype`
 | \([^\n\S]*\)                # call
-| -[->]                       # decrement / function
+| [-~]>                       # function, bound function
+| <[-~]                       # backcall
 | [!=]==?                     # equality
-| ~>                          # bound function
 | @@                          # `arguments`
 | <\[(?:[\s\S]*?\]>)?         # words
-| <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
-| >>>?=?                      # rite shift
+| <<<<?                       # import
+| &\^(>>>?|<<|&|\|)           # shifts, bitwise
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
 | =>                          # pipe
