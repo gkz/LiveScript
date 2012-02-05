@@ -161,7 +161,7 @@ bnf =
       *if \! is $2.charAt 0 then Binary $2.slice(1), $1, $3 .invert!
                             else Binary $2         , $1, $3
 
-    o 'Expression => Expression' -> Block $1 .pipe $3
+    o 'Expression PIPE Expression' -> Block $1 .pipe $3
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 
@@ -296,7 +296,7 @@ bnf =
 # and `x = y = z` `x = (y = z)` (not `(x = y) = z`).
 operators =
   # Listed from lower precedence.
-  <[ left     => POST_IF FOR WHILE ]>
+  <[ left     PIPE POST_IF FOR WHILE ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>

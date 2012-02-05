@@ -388,16 +388,16 @@ eq o.c * o.d, 14
 
 
 ### Pipe
-Array 0 => _.concat 1, 2
-        => _ <<<   {3: 4}
-        => eq '1,2,,4' "#_"
+Array 0 | _.concat 1, 2
+        | _ <<<   {3: 4}
+        | eq '1,2,,4' "#_"
 
 String 0
-=> if _ then _+_ else _*_
-=> eq \00 _
+| if _ then _+_ else _*_
+| eq \00 _
 
 eq void,
-  -> => _ _ => _
+  -> | _ _ | _
 
 
 ### Unary spread
