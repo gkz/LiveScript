@@ -6,6 +6,41 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 - Haskell is awesome.
 - Compiling to easy to understand JavaScript is less of a priority if it gets in the way of cool features.
 
+## Comparison 
+<table>
+  <tr>
+    <th></th><th>CoffeeScript</th><th>Coco</th><th>LiveScript</th>
+  </tr>
+  <tr>
+    <td>Command Line</td><td>coffee</td><td>coco</td><td>livescript</td>
+  </tr>
+  <tr>
+    <td>Build</td><td>cake</td><td>coke</td><td>slake</td>
+  </tr>
+  <tr>
+    <td>File Extension</td><td>.coffee</td><td>.co</td><td>.ls</td>
+  </tr>
+  <tr>
+    <td>Strict Equality</td><td>==</td><td>===</td><td>==</td>
+  </tr>
+  <tr>
+    <td>Pipe Operator</td><td>N/A</td><td>=></td><td>|</td>
+  </tr>
+  <tr>
+    <td>Bitwise</td><td>&</td><td>&</td><td>&^&</td>
+  </tr>
+  <tr>
+    <td>Bitwise</td><td>>>></td><td>>>></td><td>&^>>></td>
+  </tr>
+  <tr>
+    <td>In</td><td>in</td><td>of</td><td>in</td>
+  </tr>
+  <tr>
+    <td>Of</td><td>of</td><td>in</td><td>of</td>
+  </tr>
+</table>
+
+
 ## Changes
 
 ### 0.2.0 - Basic changes
