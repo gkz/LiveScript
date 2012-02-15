@@ -3,6 +3,7 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 
 ## Principles
 - Do whatever I want.
+- Make it easier to port code from CoffeeScript. 
 - Haskell is awesome.
 - Compiling to easy to understand JavaScript is less of a priority if it gets in the way of cool features.
 
@@ -43,7 +44,7 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 
 ## Changes
 
-### 0.2.0 - Basic changes
+### 0.2.0 - Operators renamed/t
 - Switched so that `==` compiles into `===` and the converse, and also for the negatives. Rationale: I want to use the JavaScript `===` more often than `==` and less typing is better, also this makes things more similar to CoffeeScript which compiles `==` to `===` so there is less code for me to change. The compilation of `is` to `===` stays the same.
 - Switched `in` and `of` so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: I don't have to change my CoffeeScript code, I'm used to it, and using `in` for checking if a value is in an array just seems right, using `of` just feels weird.
 - All bitwise operators except `~` are now prefixed with &^, thus `&` is now `&^&`. Bitwise assign equals (eg. `&=`) have been removed. Rationale: I have never used the bitwise operators, I have rarely seen them used by others, they are not efficient since they must convert from floating points to integers and back, and they take up valuable symbols that could be used for other purposes. They are still available, just in a more awkward form. `~` is still there because I haven't gotten around to changing it yet - as it is unary changing it is a different proposition from the others. Note: the unary ^ clone operator is unchanged.
