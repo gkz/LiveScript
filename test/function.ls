@@ -17,10 +17,12 @@ eq I (), I( )
 
 obj = {
   bound   : -> do ~> this
+  bound2  : -> do => this
   unbound : -> do -> this
   nested  : -> do ~> do ~> do ~> this
 }
 eq obj, obj.bound()
+eq obj, obj.bound2()
 ok obj is not obj.unbound()
 eq obj, obj.nested()
 

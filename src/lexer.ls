@@ -421,10 +421,10 @@ exports import
     case \~
       return 1 if @dotcat val
       tag = \UNARY
-    case \-> \~> then up = \->; fallthrough
-    case \<- \<~ then @parameters tag = up || \<-
-    case \::     then up = \prototype; fallthrough
-    case \..     then @adi!; tag = \ID; val = up || \constructor
+    case \-> \~> \=> then up = \->; fallthrough
+    case \<- \<~     then @parameters tag = up || \<-
+    case \::         then up = \prototype; fallthrough
+    case \..         then @adi!; tag = \ID; val = up || \constructor
     default switch val.charAt 0
     case \( then @token \CALL( \(; tag = \)CALL; val = \)
     case \<
@@ -925,7 +925,7 @@ SYMBOL = //
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | ([-+&|:])\1                 # crement / logic / `prototype`
 | \([^\n\S]*\)                # call
-| [-~]>                       # function, bound function
+| [-~=]>                      # function, bound function
 | <[-~]                       # backcall
 | [!=]==?                     # equality
 | @@                          # `arguments`
