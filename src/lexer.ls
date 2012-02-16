@@ -464,6 +464,7 @@ exports import
 
   # Cancels an immediate newline.
   unline: !->
+    return unless @tokens.1
     switch @last.0
     # Mark the last indent as dummy.
     case \INDENT  then @dents[*-1] += ''; fallthrough
@@ -513,9 +514,9 @@ exports import
       else
         clone  = ^exports <<< {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
+        delta  = str.length - clone.rest.length
+        {rest: str, @line} = clone
         nested.shift! while nested.0?0 is \NEWLINE
-        @countLines str.slice i, delta = str.length - clone.rest.length
-        str = clone.rest
         if nested.length
           nested.unshift [\( \( nested.0.2]
           nested.push    [\) \) @line]
@@ -526,18 +527,24 @@ exports import
   # Merges `@interpolate`d strings.
   addInterpolated: !(parts, nlines) ->
     return @strnum nlines string \" parts.0.1 unless parts.1
-    @adi!
     {tokens, last} = this
-    tokens.push [\( \" last.2]
+    [left, right, joint] = if not last.spaced and last.1 is \%
+      --tokens.length
+      @last = last = tokens[*-1]
+      [\[ \] [\,  \,]]
+    else
+      [\( \) [\+- \+]]
+    callable = @adi!
+    tokens.push [left, \", last.2]
     for t, i in parts
       if t.0 is \TOKENS
         tokens.push ...t.1
       else
         continue if i > 1 and not t.1
         tokens.push [\STRNUM; nlines string \" t.1; t.2]
-      tokens.push [\+- \+ tokens[*-1]2]
+      tokens.push joint.concat tokens[*-1]2
     --tokens.length
-    @token \) '' last.0 is \DOT
+    @token right, '', callable
 
   # Records a string/number token, supplying implicit dot if applicable.
   strnum: !-> @token \STRNUM it, @adi! || @last.0 is \DOT

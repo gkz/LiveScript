@@ -237,14 +237,24 @@ eq "#{0}" \0
 eq \2 '1'.replace "#{1}" -> 2
 
 
-# Trailing backslashes are themselves.
-eq '''\''' '\\'
-eq \\\\ \\ + \\
-
-# Safe octals.
+# Safe Octals
 let
   'use strict'
   '\1'
   '\02'
   '\377'
 
+
+# Unjoined
+x = 0
+y = 1
+a = %"#x/#y"
+eq a.0, 0
+eq a.1, \/
+eq a.2, 1
+eq a.length, 3
+
+
+# Trailing backslashes are themselves.
+eq '''\''' '\\'
+eq \\\\ \\ + \\

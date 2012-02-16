@@ -41,7 +41,6 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
   </tr>
 </table>
 
-
 ## Changes
 
 ### 0.2.0 - Operators renamed/modified
