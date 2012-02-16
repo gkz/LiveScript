@@ -503,9 +503,9 @@ exports import
       else
         clone  = ^exports <<< {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
+        delta  = str.length - clone.rest.length
+        {rest: str, @line} = clone
         nested.shift! while nested.0?0 is \NEWLINE
-        @countLines str.slice i, delta = str.length - clone.rest.length
-        str = clone.rest
         if nested.length
           nested.unshift [\( \( nested.0.2]
           nested.push    [\) \) @line]
