@@ -15,7 +15,7 @@
 (Node = -> ...):: =
   compile: (options, level) ->
     o = {}; continue for key, o[key] in options
-    o <<< {level} if level?
+    o.level? = level
     node = @unfoldSoak o or this
     # If a statement appears within an expression, wrap it in a closure.
     return node.compileClosure o if o.level and node.isStatement()
@@ -547,8 +547,12 @@ class exports.Chain extends Node
 # `x(y)`
 class exports.Call extends Node
   (args || []) ~>
-    if args.length is 1 and args.0.filler
-      @method = \.call; args <<< [Literal \this; Splat Literal \arguments]
+    if args.length is 1 and (splat = args.0) instanceof Splat
+      if splat.filler
+        @method = \.call
+        args <<< [Literal \this; Splat Literal \arguments]
+      else if splat.it instanceof Arr
+        args = splat.it.items
     import {args}
 
   children: [\args]
