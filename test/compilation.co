@@ -11,8 +11,8 @@ eq '_(_);', Coco.compile '\n\t_\t_\t\n' bare
 # `{+repl}` forces the last value to be returned.
 eq 1, Function('return ' + Coco.compile 'delete @1' {+repl}).call {1}
 eq '''
-var _ref;
-_ref = o.k, delete o.k, _ref;
+  var __ref;
+  __ref = o.k, delete o.k, __ref;
 ''' Coco.compile 'delete o.k' {+repl, +bare}
 
 
@@ -119,14 +119,14 @@ eq '''
   var k;
   try {
     for (k in o) {
-      (_fn.call(this, k));
+      (__fn.call(this, k));
     }
   } catch (_e) {}
   function __clone(it){
     function fun(){} fun.prototype = it;
     return new fun;
   }
-  function _fn(k){
+  function __fn(k){
     __clone(this);
   }
 }).call(this);
@@ -142,8 +142,8 @@ eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' Coco.tokens('''
 
 eq '''
 (function(){
-  var _ref;
-  throw a < (_ref = +b) && _ref < c;
+  var __ref;
+  throw a < (__ref = +b) && __ref < c;
 }());
 ''', Coco.compile '(throw a < +b < c)' bare
 
