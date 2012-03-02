@@ -97,7 +97,7 @@ task \build:browser 'build extras/' ->
   """
   slobber \extras/coco.js """
     // Coco #{Coco.VERSION}
-    // Copyright 2011, Jeremy Ashkenas + Satoshi Murakami
+    // Copyright 2012, Jeremy Ashkenas + Satoshi Murakami
     // Released under the MIT License
     http://satyr.github.com/coco
     #{ minify js };
