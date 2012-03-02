@@ -538,8 +538,8 @@ class exports.Chain extends Node
     {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
       tails.splice 0 i+1
-      | _.pop!key.toSlice o, Chain(@head, _)unwrap!, assign
-      | @head = _ << {@front}
+      |> _.pop!key.toSlice o, Chain(@head, _)unwrap!, assign
+      |> @head = _ << {@front}
       i = -1
     this
 
@@ -780,7 +780,7 @@ class exports.Unary extends Node
       # `do f?` => `f?()`
       Parens if it instanceof Existence and not it.negated
         then Chain(it)add Call! else Call.make it
-      | return (_ << {@front, @newed})compile o
+      |> return (_ << {@front, @newed})compile o
     case \delete
       @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compilePluck o if o.level and not @void
@@ -917,12 +917,12 @@ class exports.Binary extends Node
   compileExistence: (o) ->
     if @op is \!?
       If(Existence @first; @second) << {@cond, @void or not o.level}
-      | return _.compileExpression o
+      |> return _.compileExpression o
     if @void or not o.level
       Binary \&& Existence(@first, true), @second
-      | return (_ << {+\void})compileNode o
+      |> return (_ << {+\void})compileNode o
     @first.cache o, true
-    | If(Existence _.0; _.1)addElse(@second)compileExpression o
+    |> If(Existence _.0; _.1)addElse(@second)compileExpression o
 
   # `x instanceof [A, B]` => `x instanceof A || x instanceof B`
   compileAnyInstanceOf: (o, items) ->
@@ -935,7 +935,7 @@ class exports.Binary extends Node
     lefts = @first .cache o, true
     rites = @second.cache o, true
     Binary @op.charAt!, lefts.0, rites.0
-    | If _, lefts.1 .addElse rites.1 .compileExpression o
+    |> If _, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
     args = [@second]concat arg || []

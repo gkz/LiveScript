@@ -338,7 +338,7 @@ exports import
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL << lastIndex: index)exec(code)0
     switch tag = val = sym
-    case \|           then tag = \PIPE
+    case \|>          then tag = \PIPE
     case \+ \-        then tag = \+-
     case \&& \||      then tag = \LOGIC
     case \?  \!?      then tag = \LOGIC if @last.spaced
@@ -934,7 +934,7 @@ SYMBOL = //
 | &\^(>>>?|<<|&|\||\^)        # shifts, bitwise
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
-| \|                          # pipe
+| \|>                         # pipe
 | \*\*=?                      # pow
 | [^\s#]?
 //g
