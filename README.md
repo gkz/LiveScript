@@ -42,6 +42,12 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
   <tr>
     <td>Bound Function</td><td>=></td><td>~></td><td>~> OR =></td>
   </tr>
+  <tr>
+    <td>Property Copy</td><td>N/A</td><td><<<</td><td><<</td>
+  </tr>
+  <tr>
+    <td>Property Copy</td><td>N/A</td><td><<<<</td><td><<<</td>
+  </tr>
 </table>
 
 ## Changes
@@ -52,6 +58,7 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 - All bitwise operators except `~` are now prefixed with &^, thus `&` is now `&^&`. Bitwise assign equals (eg. `&=`) have been removed. Rationale: I have never used the bitwise operators, I have rarely seen them used by others, they are not efficient since they must convert from floating points to integers and back, and they take up valuable symbols that could be used for other purposes. They are still available, just in a more awkward form. `~` is still there because I haven't gotten around to changing it yet - as it is unary changing it is a different proposition from the others. Note: the unary ^ clone operator is unchanged.
 - `=>`, the pipe operator, is now `|`, the pipe. Rationale: the pipe character is often used for piping. This is one of the fruits of the bitwise operator changes.
 - `=>` is now an alias for `~>`, and thus the same it is in CoffeeScript. Rationale: make it easier for CoffeeScript code to be ported over (exclusive use of `~>` is recommended though).
+- `<<<` is now `<<`, and `<<<<` is now `<<<`. Rationale: `<<` became available after the bitwise operator changes, and less typing is required with these changes.
 
 ### 0.1.0 - Coco renamed
 - Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake because lake was taken and lsake sounds bad. 
