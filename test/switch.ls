@@ -127,3 +127,12 @@ switch
   ok 0
 | true  => ok 1
 | true  => ok 0
+
+# otherwise
+eq otherwise?, false
+
+switch
+| false     => ok 0
+case otherwise => ok 1; fallthrough
+| otherwise => ok 1
+| true      => ok 0

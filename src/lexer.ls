@@ -145,6 +145,9 @@ exports import
       # contextual keywords (reserved only in specific places)
       switch id
       case \own then tag = \OWN if last.0 is \FOR
+      case \otherwise 
+          if last.0 in <[ CASE | ]>
+              tag = \LITERAL; id = \true
       case \all then if last.1 is \<<
         last.1 += \<
         return 3
