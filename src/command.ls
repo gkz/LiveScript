@@ -52,7 +52,7 @@ default
   if o.require
     ({filename} = module)filename = \.
     that.forEach require
-    module <<< {filename}
+    module << {filename}
   switch
   case o.eval
     argv.1 = \eval
@@ -107,9 +107,9 @@ default
     if o.run
       LiveScript.emit \run t
       unless o.json or o.print
-        LiveScript.run t.output, t.options <<< {+js}
+        LiveScript.run t.output, t.options << {+js}
         throw
-      global <<< {module, require}
+      global << {module, require}
       r = global.eval t.output
       if o.json
       then say JSON.stringify r, null 2
@@ -206,8 +206,8 @@ default
     module.paths = module.._nodeModulePaths \
       module.filename = process.cwd! + \/repl
     vm = require \vm
-    global <<< {module, exports, require}
-    server = ^require(\repl)REPLServer:: <<<
+    global << {module, exports, require}
+    server = ^require(\repl)REPLServer:: <<
       context: global, commands: [], useGlobal: true
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
@@ -227,7 +227,7 @@ default
         say LiveScript.compile code, {o.bare}
       else
         _  = vm.runInThisContext LiveScript.compile(code, {+bare, +repl}), \repl
-        _ !? global <<< {_}
+        _ !? global << {_}
         pp  _
         say _ if typeof _ is \function
     catch then say e

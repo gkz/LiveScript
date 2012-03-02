@@ -236,7 +236,7 @@ a = b: c: d: \e
 a.b.c?.=d
 eq \e a.b.c
 
-a.=b <<< {\c}
+a.=b << {\c}
 eq \c a.c
 
 

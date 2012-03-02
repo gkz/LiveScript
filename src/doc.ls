@@ -22,7 +22,7 @@ sdcv = new Showdown.converter
 
 do @onhashchange = !->
   unless page = /^\D+(?=(\d*)$)/exec location.hash.slice 1
-    document <<< {title}
+    document << {title}
     nav.className = doc.innerHTML = ''
     return
   nav.className = \menu
@@ -37,7 +37,7 @@ do @onhashchange = !->
   xhr.send null
 
 function lmn name, attrs
-  document.body.appendChild document.createElement(name) <<<< attrs
+  document.body.appendChild document.createElement(name) <<< attrs
 
 !function load [name, sect], doc.innerHTML
   document.title = name + (title and ' - ' + title)

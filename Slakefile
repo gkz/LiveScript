@@ -146,7 +146,7 @@ function runTests global.LiveScript
   passedTests = failedTests = 0
   for name, func of require \assert then let
     global[name] = -> func ...; ++passedTests
-  global <<<
+  global <<
     eq: strictEqual
     throws: (msg, fun) ->
       try do fun catch return eq e?message, msg

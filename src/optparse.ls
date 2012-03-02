@@ -22,7 +22,7 @@ module.exports = (
     MULTI = /[*+]/
     flags = for name of flags
       [desc, arg, abbr] = []concat flags[name]
-      {name, desc, arg, abbr} <<<
+      {name, desc, arg, abbr} <<
         long  : \-- + name
         short : abbr != 0 and "-#{ abbr or name }"slice 0 2
         multi : !!arg and MULTI.test arg

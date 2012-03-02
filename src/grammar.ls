@@ -135,9 +135,9 @@ bnf =
     , -> Assign $1.unwrap!, Arr.maybe($4), $2
 
     o 'Expression IMPORT Expression'
-    , -> Import $1, $3           , $2 is \<<<<
+    , -> Import $1, $3           , $2 is \<<<
     o 'Expression IMPORT INDENT ArgList OptComma DEDENT'
-    , -> Import $1, Arr.maybe($4), $2 is \<<<<
+    , -> Import $1, Arr.maybe($4), $2 is \<<<
 
     o 'CREMENT Chain' -> Unary $1, $2.unwrap!
     o 'Chain CREMENT' -> Unary $2, $1.unwrap!, true

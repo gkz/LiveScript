@@ -244,8 +244,8 @@ bird     = {+wing, fly: -> @wing}
 wingless = {-wing}
 
 duck    = ^bird
-dodo    = ^bird <<< {...wingless, +extinct }
-donaldo = ^duck <<< {...wingless, +domestic}
+dodo    = ^bird << {...wingless, +extinct }
+donaldo = ^duck << {...wingless, +domestic}
 
 ok bird.fly()
 ok duck.fly()

@@ -23,7 +23,7 @@ throws 'unterminated regex on line 1' -> LiveScript.lex '/1'
 
 
 # Should be cached aptly.
-eq 0 (/_/ <<< {0})0
+eq 0 (/_/ << {0})0
 
 
 # Should accuse duplicate flag.

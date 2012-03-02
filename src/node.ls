@@ -16,7 +16,7 @@ module.exports = (LiveScript) ->
       try that = fs.readlinkSync that
       main.paths = main.._nodeModulePaths path.dirname that
       filename = process.argv.1 = path.resolve that
-    main <<< {filename}
+    main << {filename}
     options.js or code = LiveScript.compile code, {filename, +bare}
     try main._compile code, filename catch throw hackTrace e, code, filename
 
@@ -38,4 +38,4 @@ function hackTrace error, js, filename
     for n from 1 >? lno-4 to end
       traces[i] += "\n#{ ('    ' + n)slice -length }
                       #{ '|+'charAt n is lno } #{[lines[n-1]]}"
-  error <<< stack: traces.join \\n
+  error << stack: traces.join \\n
