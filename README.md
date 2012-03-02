@@ -25,7 +25,7 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
     <td>Strict Equality</td><td>==</td><td>===</td><td>==</td>
   </tr>
   <tr>
-    <td>Pipe Operator</td><td>N/A</td><td>=></td><td>|</td>
+    <td>Pipe Operator</td><td>N/A</td><td>=></td><td>|></td>
   </tr>
   <tr>
     <td>Bitwise</td><td>&</td><td>&</td><td>&^&</td>
@@ -56,7 +56,7 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 - Switched so that `==` compiles into `===` and the converse, and also for the negatives. Rationale: I want to use the JavaScript `===` more often than `==` and less typing is better, also this makes things more similar to CoffeeScript which compiles `==` to `===` so there is less code for me to change. The compilation of `is` to `===` stays the same.
 - Switched `in` and `of` so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: I don't have to change my CoffeeScript code, I'm used to it, and using `in` for checking if a value is in an array just seems right, using `of` just feels weird.
 - All bitwise operators except `~` are now prefixed with &^, thus `&` is now `&^&`. Bitwise assign equals (eg. `&=`) have been removed. Rationale: I have never used the bitwise operators, I have rarely seen them used by others, they are not efficient since they must convert from floating points to integers and back, and they take up valuable symbols that could be used for other purposes. They are still available, just in a more awkward form. `~` is still there because I haven't gotten around to changing it yet - as it is unary changing it is a different proposition from the others. Note: the unary ^ clone operator is unchanged.
-- `=>`, the pipe operator, is now `|`, the pipe. Rationale: the pipe character is often used for piping. This is one of the fruits of the bitwise operator changes.
+- `=>`, the pipe operator, is now `|>`. Rationale: `|>` is used to signify piping elsewhere (F#), free up => (see next item), `|` will be used for something else in the future.
 - `=>` is now an alias for `~>`, and thus the same it is in CoffeeScript. Rationale: make it easier for CoffeeScript code to be ported over (exclusive use of `~>` is recommended though).
 - `<<<` is now `<<`, and `<<<<` is now `<<<`. Rationale: `<<` became available after the bitwise operator changes, and less typing is required with these changes.
 
