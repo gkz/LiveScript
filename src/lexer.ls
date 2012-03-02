@@ -338,6 +338,7 @@ exports import
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL << lastIndex: index)exec(code)0
     switch tag = val = sym
+    case \|           then tag = \CASE; @unline!
     case \|>          then tag = \PIPE
     case \+ \-        then tag = \+-
     case \&& \||      then tag = \LOGIC
@@ -716,7 +717,7 @@ character = if JSON!? then uxxxx else ->
     case \CATCH         then tag is \TRY
     case \FINALLY       then tag in <[ TRY CATCH THEN ]>
     case \SWITCH        then not seenSwitch := true
-    case \CASE \DEFAULT then not seenSwitch
+    case \CASE \| \DEFAULT then not seenSwitch
   !function go [] i
     prev = tokens[i-1]
     tokens.splice if prev.0 is \, then i-1 else i, 0, dedent << {prev.2}
@@ -761,7 +762,7 @@ character = if JSON!? then uxxxx else ->
     case \DOT \? then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
     case \SWITCH                         then seenSwitch := true; fallthrough
     case \IF \CLASS \FUNCTION \LET \WITH then skipBlock  := true
-    case \CASE
+    case \CASE \|
       if seenSwitch then skipBlock := true else return true
     case \INDENT
       return skipBlock := false if skipBlock
@@ -935,6 +936,7 @@ SYMBOL = //
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
 | \|>                         # pipe
+| \|                          # case
 | \*\*=?                      # pow
 | [^\s#]?
 //g

@@ -110,3 +110,12 @@ switch
   ok 1 'caseless switch is allowed'
   break if true
   ok 0 'for early breaking'
+
+# |
+switch
+| false then ok 0 | false then ok 0
+| false
+  ok 0
+| true 
+  ok 1
+| true  then ok 0
