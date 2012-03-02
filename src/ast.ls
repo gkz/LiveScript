@@ -52,7 +52,7 @@
   cache: (o, once, level) ->
     unless @isComplex!
       return [if level? then @compile o, level else this] * 2
-    sub = Assign ref = Var(o.scope.temporary \ref), this
+    sub = Assign ref = Var(o.scope.temporary!), this
     # Pass a `level` to precompile.
     if level?
       sub.=compile o, level
@@ -435,7 +435,7 @@ class exports.Chain extends Node
     base = Chain @head, @tails.slice 0 -1
     # `a().b`
     if base.isComplex()
-      ref  = o.scope.temporary \ref
+      ref  = o.scope.temporary!
       base = Chain Assign Var(ref), base
       bref = Var(ref) <<< {+temp}
     # `a{}`
@@ -817,7 +817,7 @@ class exports.Unary extends Node
   # `v = delete o.k`
   compilePluck: (o) ->
     [get, del] = Chain @it .cacheReference o
-    code = if @assigned then '' else "#{ ref = o.scope.temporary \ref } = "
+    code = if @assigned then '' else "#{ ref = o.scope.temporary! } = "
     code +=   "#{ get.compile o, LEVEL_LIST }
       , delete #{ del.compile o, LEVEL_LIST }"
     return code if @assigned
@@ -1084,7 +1084,7 @@ class exports.Assign extends Node
       cache = "#that = #rite"
       o.scope.declare rite = that
     else if (ret or len > 1) and (not ID.test rite or left.assigns rite)
-      cache = "#{ rref = o.scope.temporary \ref } = #rite"
+      cache = "#{ rref = o.scope.temporary! } = #rite"
       rite  = rref
     list = @"rend#{ left..displayName }" o, items, rite
     o.scope.free rref  if rref
@@ -1893,12 +1893,12 @@ Scope::<<<
 
   # If we need to store an intermediate result, find an available name for a
   # compiler-generated variable. `_var`, `_var2`, and so on...
-  temporary: (name) ->
+  temporary: (name || \ref) ->
     i = 0
     do
-      temp = \_ + if name.length > 1
-      then name + (if i++ then i else '')
-      else (i++ + parseInt name, 36)toString 36
+      temp = \__ + if name.length > 1
+        then name + (i++ || '')
+        else (i++ + parseInt name, 36)toString 36
     until @type(temp) in [\reuse void]
     @add temp, \var
 
