@@ -130,3 +130,11 @@ that if 6?
 a = [0 1]
 if 1
   eq 1 a?[that]
+
+# then =>
+if false     => ok 0
+else if true => ok 1
+else if true =>
+  ok 0
+else
+  ok 0

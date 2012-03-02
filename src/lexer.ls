@@ -231,7 +231,7 @@ exports import
     comment = if ~end = code.indexOf \*/ index+2
               then code.slice index, end+2
               else code.slice(index) + \*/
-    if @last.0 in <[ NEWLINE INDENT THEN ]>
+    if @last.0 in <[ NEWLINE INDENT THEN => ]>
     then @token \COMMENT detab comment, @dent; @token \NEWLINE \\n
     else @last.spaced = true
     @countLines(comment)length
@@ -338,6 +338,7 @@ exports import
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL << lastIndex: index)exec(code)0
     switch tag = val = sym
+    case \=>          then tag = \THEN; @unline!
     case \|           then tag = \CASE; @unline!
     case \|>          then tag = \PIPE
     case \+ \-        then tag = \+-
@@ -398,7 +399,7 @@ exports import
         @token \UNARY val.charAt!; val = \=
       tag = \ASSIGN
     case \*
-      if @last.0 in <[ NEWLINE INDENT THEN ]> and
+      if @last.0 in <[ NEWLINE INDENT THEN => ]> and
          (INLINEDENT << lastIndex: index+1)exec code .0.length
         @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
         @indent index + that - 1 - @dent - code.lastIndexOf \\n index-1
@@ -478,7 +479,7 @@ exports import
       @last.0 = \)PARAM
       return
     if arrow is \-> then @token \PARAM( '' else
-      break if t.0 in <[ NEWLINE INDENT THEN ( ]> for t, i in @tokens by -1
+      break if t.0 in <[ NEWLINE INDENT THEN => ( ]> for t, i in @tokens by -1
       @tokens.splice i+1 0 [\PARAM( '' t.2]
     @token \)PARAM ''
 
@@ -711,13 +712,13 @@ character = if JSON!? then uxxxx else ->
       detectEnd tokens, i+1, ok, go
   function ok token, i
     switch token.0
-    case \NEWLINE       then token.1 is not \;
+    case \NEWLINE         then token.1 is not \;
     case \DOT \? \, \PIPE then tokens[i-1]eol
-    case \ELSE          then tag is \THEN
-    case \CATCH         then tag is \TRY
-    case \FINALLY       then tag in <[ TRY CATCH THEN ]>
-    case \SWITCH        then not seenSwitch := true
-    case \CASE \| \DEFAULT then not seenSwitch
+    case \ELSE            then tag is \THEN
+    case \CATCH           then tag is \TRY
+    case \FINALLY         then tag in <[ TRY CATCH THEN ]>
+    case \SWITCH          then not seenSwitch := true
+    case \CASE \DEFAULT   then not seenSwitch
   !function go [] i
     prev = tokens[i-1]
     tokens.splice if prev.0 is \, then i-1 else i, 0, dedent << {prev.2}
@@ -762,7 +763,7 @@ character = if JSON!? then uxxxx else ->
     case \DOT \? then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
     case \SWITCH                         then seenSwitch := true; fallthrough
     case \IF \CLASS \FUNCTION \LET \WITH then skipBlock  := true
-    case \CASE \|
+    case \CASE
       if seenSwitch then skipBlock := true else return true
     case \INDENT
       return skipBlock := false if skipBlock
@@ -926,7 +927,7 @@ SYMBOL = //
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | ([-+&|:])\1                 # crement / logic / `prototype`
 | \([^\n\S]*\)                # call
-| [-~=]>                      # function, bound function
+| [-~]>                       # function, bound function
 | <[-~]                       # backcall
 | [!=]==?                     # equality
 | @@                          # `arguments`
@@ -937,6 +938,7 @@ SYMBOL = //
 | !\?                         # inexistence
 | \|>                         # pipe
 | \|                          # case
+| =>                          # then
 | \*\*=?                      # pow
 | [^\s#]?
 //g

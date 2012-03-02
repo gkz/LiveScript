@@ -111,7 +111,7 @@ switch
   break if true
   ok 0 'for early breaking'
 
-# |
+# case |
 switch
 | false then ok 0 | false then ok 0
 | false
@@ -119,3 +119,11 @@ switch
 | true 
   ok 1
 | true  then ok 0
+
+# then =>
+switch 
+| false => ok 0
+| false =>
+  ok 0
+| true  => ok 1
+| true  => ok 0
