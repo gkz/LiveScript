@@ -422,10 +422,10 @@ exports import
     case \~
       return 1 if @dotcat val
       tag = \UNARY
-    case \-> \~> \=> then up = \->; fallthrough
-    case \<- \<~     then @parameters tag = up || \<-
-    case \::         then up = \prototype; fallthrough
-    case \..         then @adi!; tag = \ID; val = up || \constructor
+    case \-> \~> then up = \->; fallthrough
+    case \<- \<~ then @parameters tag = up || \<-
+    case \::     then up = \prototype; fallthrough
+    case \..     then @adi!; tag = \ID; val = up || \constructor
     default switch val.charAt 0
     case \( then @token \CALL( \(; tag = \)CALL; val = \)
     case \<
