@@ -43,10 +43,10 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
     <td>Bound Function</td><td>=></td><td>~></td><td>~> OR =></td>
   </tr>
   <tr>
-    <td>Property Copy</td><td>N/A</td><td><<<</td><td><<</td>
+    <td>Property Copy</td><td>N/A</td><td>&lt;&lt;&lt;</td><td>&lt;&lt;</td>
   </tr>
   <tr>
-    <td>Property Copy</td><td>N/A</td><td><<<<</td><td><<<</td>
+    <td>Property Copy</td><td>N/A</td><td>&lt;&lt;&lt;&lt;</td><td>&lt;&lt;&lt;</td>
   </tr>
 </table>
 
