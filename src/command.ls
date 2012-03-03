@@ -168,10 +168,10 @@ default
     e <-! fs.writeFile jsPath, js || \\n
     return warn e if e
     util.log "#source => #jsPath" if o.watch
-  <-! path.exists dir
-  if it
-  then do compile
-  else require(\child_process)exec "mkdir -p #dir" compile
+  e <-! fs.stat dir
+  return compile! unless e
+  require \child_process .exec do
+    "mkdir #{[\-p unless /^win/test process.platform]} #dir" compile
 
 # Pretty-print a stream of tokens.
 !function printTokens tokens
