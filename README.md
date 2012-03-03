@@ -4,11 +4,16 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 ## Overview
 ### Example
 LiveScript:
+
     take = (n, [x, ...xs]: list) -> switch
                                  | n <= 0       => []
                                  | !list.length => []
                                  | otherwise    => [x].concat take (n - 1), xs
-JavaScript:                                
+                                 
+    take 2, [1 2 3 4 5] # [1, 2]
+                                 
+JavaScript:   
+
     var take, __slice = [].slice;
     take = function(n, list){
       var x, xs;
