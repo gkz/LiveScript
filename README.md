@@ -3,11 +3,27 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 
 ## Overview
 ### Example
-
+LiveScript:
     take = (n, [x, ...xs]: list) -> switch
                                  | n <= 0       => []
                                  | !list.length => []
                                  | otherwise    => [x].concat take (n - 1), xs
+JavaScript:                                
+    var take, __slice = [].slice;
+    take = function(n, list){
+      var x, xs;
+      x = list[0], xs = __slice.call(list, 1);
+      switch (false) {
+      case !(n <= 0):
+        return [];
+      case !!list.length:
+        return [];
+      case !true:
+        return [x].concat(take(n - 1, xs));
+      }
+    };
+    
+    take(2, [1, 2, 3, 4, 5]); // [1, 2]
 
 ### Goals
 - Increase code beauty.
