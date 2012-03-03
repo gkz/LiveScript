@@ -12,7 +12,7 @@ LiveScript:
                                  
     take 2, [1 2 3 4 5] # [1, 2]
                                  
-JavaScript:   
+Compiled JavaScript:   
 
     var take, __slice = [].slice;
     take = function(n, list){
@@ -88,7 +88,7 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
   </tr>
 </table>
 
-### Changes Detail and Rationale
+### Changes: Detail and Rationale
 - Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake because lake was taken and lsake sounds bad. 
 - Switched so that `==` compiles into `===` and the converse, and also for the negatives. Rationale: I want to use the JavaScript `===` more often than `==` and less typing is better, also this makes things more similar to CoffeeScript which compiles `==` to `===` so there is less code for me to change. The compilation of `is` to `===` stays the same.
 - Switched `in` and `of` so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: I don't have to change my CoffeeScript code, I'm used to it, and using `in` for checking if a value is in an array just seems right, using `of` just feels weird.
@@ -97,4 +97,4 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
 - `<<<` is now `<<`, and `<<<<` is now `<<<`. Rationale: `<<` became available after the bitwise operator changes, and less typing is required with these changes.
 - `|` is an alias for `case` (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
 - `=>` is an alias for `then`. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with `|`, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
-- Added `otherwise` as a contextual keyword equal to `true` when used after `case` or `|`. This allows `| otherwise => 4 + 9`, which fits in with the rest of the structure. For use only when not switching over something.
+- Added `otherwise` as a contextual keyword equal to `true` when used after `case` or `|`. Rationale: same as in Haskell. It allows `| otherwise => 4 + 9`, which fits in with the rest of the structure. For use only when not switching over something. 
