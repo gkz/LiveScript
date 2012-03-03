@@ -1,13 +1,27 @@
 # LiveScript
-is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived from [CoffeeScript](http://coffeescript.org/). Like those two it compiles down to JavaScript. It will encompass various changes which may not be acceptable to the maintainers of Coco. I have thus changed the name from Coco to LiveScript (one of JavaScript's original names) as to avoid confusion between this and Coco on my system.
+is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived from [CoffeeScript](http://coffeescript.org/). Like those two it compiles down to JavaScript. It will encompass various changes which may not be acceptable to the maintainers of Coco. LiveScript is not currently ready for production use, as it is still developing and changing often.
 
-## Principles
-- Do whatever I want.
-- Make it easier to port code from CoffeeScript. 
-- Haskell is awesome.
-- Compiling to easy to understand JavaScript is less of a priority if it gets in the way of cool features.
+## Overview
+### Examples
 
-## Comparison 
+    take = (n, [x, ...xs]: list) -> switch
+                                 | n <= 0       => []
+                                 | !list.length => []
+                                 | otherwise    => [x].concat take (n - 1), xs
+
+### Goals
+- Increase code beauty.
+- Make it easier than Coco to port code from CoffeeScript. 
+- Provide succinct ways to accomplish frequent tasks. 
+
+### Inspiration
+- Haskell
+
+### Name
+LiveScript was one of the original names for JavaScript, so it seemed fitting. 
+
+## Changes
+### Comparison Table
 <table>
   <tr>
     <th></th><th>CoffeeScript</th><th>Coco</th><th>LiveScript</th>
@@ -40,9 +54,6 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
     <td>Of</td><td>of</td><td>in</td><td>of</td>
   </tr>
   <tr>
-    <td>Bound Function</td><td>=></td><td>~></td><td>~> OR =></td>
-  </tr>
-  <tr>
     <td>Property Copy</td><td>N/A</td><td>&lt;&lt;&lt;</td><td>&lt;&lt;</td>
   </tr>
   <tr>
@@ -50,15 +61,13 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
   </tr>
 </table>
 
-## Changes
-
-### 0.2.0 - Operators renamed/modified
+### Changes Detail and Rational
+- Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake because lake was taken and lsake sounds bad. 
 - Switched so that `==` compiles into `===` and the converse, and also for the negatives. Rationale: I want to use the JavaScript `===` more often than `==` and less typing is better, also this makes things more similar to CoffeeScript which compiles `==` to `===` so there is less code for me to change. The compilation of `is` to `===` stays the same.
 - Switched `in` and `of` so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: I don't have to change my CoffeeScript code, I'm used to it, and using `in` for checking if a value is in an array just seems right, using `of` just feels weird.
 - All bitwise operators except `~` are now prefixed with &^, thus `&` is now `&^&`. Bitwise assign equals (eg. `&=`) have been removed. Rationale: I have never used the bitwise operators, I have rarely seen them used by others, they are not efficient since they must convert from floating points to integers and back, and they take up valuable symbols that could be used for other purposes. They are still available, just in a more awkward form. `~` is still there because I haven't gotten around to changing it yet - as it is unary changing it is a different proposition from the others. Note: the unary ^ clone operator is unchanged.
-- `=>`, the pipe operator, is now `|>`. Rationale: `|>` is used to signify piping elsewhere (F#), free up => (see next item), `|` will be used for something else in the future.
-- `=>` is now an alias for `~>`, and thus the same it is in CoffeeScript. Rationale: make it easier for CoffeeScript code to be ported over (exclusive use of `~>` is recommended though).
+- `=>`, the pipe operator, is now `|>`. Rationale: `|>` is used to signify piping elsewhere (F#), free up => (for then alias), `|` is used as an alias for case.
 - `<<<` is now `<<`, and `<<<<` is now `<<<`. Rationale: `<<` became available after the bitwise operator changes, and less typing is required with these changes.
-
-### 0.1.0 - Coco renamed
-- Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake because lake was taken and lsake sounds bad. 
+- `|` is an alias for `case` (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
+- `=>` is an alias for `then`. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with `|`, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
+- Added `otherwise` as a contextual keyword equal to `true` when used after `case` or `|`. This allows `| otherwise => 4 + 9`, which fits in with the rest of the structure. For use only when not switching over something.
