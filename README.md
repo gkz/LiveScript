@@ -2,7 +2,7 @@
 is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived from [CoffeeScript](http://coffeescript.org/). Like those two it compiles down to JavaScript. It will encompass various changes which may not be acceptable to the maintainers of Coco. LiveScript is not currently ready for production use, as it is still developing and changing often.
 
 ## Overview
-### Examples
+### Example
 
     take = (n, [x, ...xs]: list) -> switch
                                  | n <= 0       => []
@@ -59,9 +59,15 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
   <tr>
     <td>Property Copy</td><td>N/A</td><td>&lt;&lt;&lt;&lt;</td><td>&lt;&lt;&lt;</td>
   </tr>
+  <tr>
+    <td>Case</td><td>when</td><td>case</td><td>case OR |</td>
+  </tr>
+  <tr>
+    <td>Then</td><td>then</td><td>then</td><td>then OR =></td>
+  </tr>
 </table>
 
-### Changes Detail and Rational
+### Changes Detail and Rationale
 - Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake because lake was taken and lsake sounds bad. 
 - Switched so that `==` compiles into `===` and the converse, and also for the negatives. Rationale: I want to use the JavaScript `===` more often than `==` and less typing is better, also this makes things more similar to CoffeeScript which compiles `==` to `===` so there is less code for me to change. The compilation of `is` to `===` stays the same.
 - Switched `in` and `of` so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: I don't have to change my CoffeeScript code, I'm used to it, and using `in` for checking if a value is in an array just seems right, using `of` just feels weird.
