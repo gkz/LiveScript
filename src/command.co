@@ -105,17 +105,16 @@ default
       say if o.json then t.ast.stringify 2 else ''trim.call t.ast
       throw
     Coco.emit \compile t
+    if o.run and (o.json or o.print)
+      t.options.bare = true
+      t.ast.makeReturn!
     t.output = t.ast.compileRoot t.options
     if o.run
       Coco.emit \run t
-      unless o.json or o.print
-        Coco.run t.output, t.options <<< {+js}
-        throw
-      global <<< {module, require}
-      r = global.eval t.output
-      if o.json
-      then say JSON.stringify r, null 2
-      else console.log r
+      t.result = Coco.run t.output, t.options, true
+      switch
+      case o.json  then say JSON.stringify t.result, null 2
+      case o.print then console.log t.result
       throw
     if o.json
       t.output = JSON.stringify(global.eval t.output; null 2) + \\n
@@ -141,7 +140,7 @@ default
   with process.openStdin!
     code = ''
     @on \data !-> code += it
-    @on \end  !-> compileScript null code
+    @on \end  !-> compileScript '' code
 
 # Watch a source Coco file using `setTimeout`, taking an `action` every
 # time the file is updated.
