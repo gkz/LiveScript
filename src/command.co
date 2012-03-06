@@ -44,7 +44,6 @@ case o.help    then say help!
 default
   o.run = not o.compile ||= o.output
   o.print ||= o.compile and (o.eval or o.stdin)
-  o.bare  ||= o.run or o.json
   process.execPath = argv.0 = argv.1
   argv.splice 2 9e9
   argv.push ...if o.stdin then $args else
@@ -105,19 +104,19 @@ default
       say if o.json then t.ast.stringify 2 else ''trim.call t.ast
       throw
     Coco.emit \compile t
-    if o.run and (o.json or o.print)
-      t.options.bare = true
-      t.ast.makeReturn!
+    t.options.bare = o.json or o.run
+    t.ast.makeReturn! if o.json or o.run and o.print
     t.output = t.ast.compileRoot t.options
-    if o.run
+    if o.json or o.run
       Coco.emit \run t
       t.result = Coco.run t.output, t.options, true
+    if o.json
+      t.output = JSON.stringify(t.result, null, 2) + \\n
+    if o.run
       switch
-      case o.json  then say JSON.stringify t.result, null 2
+      case o.json  then process.stdout.write t.output
       case o.print then console.log t.result
       throw
-    if o.json
-      t.output = JSON.stringify(global.eval t.output; null 2) + \\n
     Coco.emit \write t
     if o.print
     then say t.output.trimRight!
@@ -224,7 +223,7 @@ default
       if o.compile
         say Coco.compile code, {o.bare}
       else
-        _  = vm.runInThisContext Coco.compile(code, {\eval, +bare}), \repl
+        _  = vm.runInThisContext Coco.compile(code, {\eval o.bare}), \repl
         _ !? global <<< {_}
         pp  _
         say _ if typeof _ is \function
