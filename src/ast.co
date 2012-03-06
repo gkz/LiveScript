@@ -31,13 +31,13 @@
     @traverseChildren !->
       switch it.value
       case \this      then hasThis := true
-      case \arguments then hasArgs := it.value = \_args
+      case \arguments then hasArgs := it.value = \__args
     if hasThis
       call.args.push Literal \this
       call.method = \.call
     if hasArgs
       call.args.push Literal \arguments
-      fun.params.push Var \_args
+      fun.params.push Var \__args
     # Flag the function as `wrapper` so that it shares a scope
     # with its parent to preserve the expected lexical scope.
     Parens(Chain fun<<<{+wrapper, @void} [call]; true)compile o
@@ -202,9 +202,7 @@ class exports.Block extends Node
     this
 
   prepend: ->
-    {lines} = this; i = -1
-    break unless that.comment or that instanceof Literal while lines[++i]
-    lines.splice i, 0, ...arguments
+    @lines.splice @neck!, 0, ...arguments
     this
 
   pipe: -> @lines.push Assign(Var \_; @lines.pop!), it; this
@@ -217,6 +215,11 @@ class exports.Block extends Node
     break unless that.comment while lines[--i]
     lines.length = i + 1
     this
+
+  # Finds the right position for inserting variable declarations.
+  neck: ->
+    break unless x.comment or x instanceof Literal for x, pos of @lines
+    pos
 
   isComplex: -> @lines.length > 1 or @lines.0?isComplex()
 
@@ -246,7 +249,7 @@ class exports.Block extends Node
     delete o.filename
     o.indent = if bare = delete o.bare then '' else TAB
     if /^\s*(?:[/#]|javascript:)/test @lines.0?code
-      prefix = @lines.shift()code + \\n
+      prefix = @lines.shift!code + \\n
     if delete o.repl and @chomp!lines.length
       if bare then @lines.push Parens @lines.pop! else @makeReturn!
     code = @compileWithDeclarations o
@@ -258,8 +261,7 @@ class exports.Block extends Node
   compileWithDeclarations: (o) ->
     o.level = LEVEL_TOP
     pre = ''
-    break unless node.comment or node instanceof Literal for node, i of @lines
-    if i
+    if i = @neck!
       rest   = @lines.splice i, 9e9
       pre    = @compile o
       @lines = rest
@@ -423,7 +425,7 @@ class exports.Chain extends Node
   #
   # compiles to
   #
-  #     (_ref = a())[_key = b()] || (_ref[_key] = c);
+  #     (__ref = a())[__key = b()] || (__ref[__key] = c);
   #
   cacheReference: (o) ->
     name = @tails[*-1]
@@ -626,10 +628,10 @@ class exports.Obj extends List
         # `o{k or v}` => `{k: a.k or v}`
         node.=first if logic = node.getDefault!
         if node instanceof Parens
-          # `a{(++i)}` => `{(_ref = ++i): a[_ref]}`
+          # `a{(++i)}` => `{(__ref = ++i): a[__ref]}`
           [key, node] = node.cache o, true
-          # `a{(++i)} = b` => `{(_ref): a[_ref = ++i]} = b`
-          #                => `a[_ref = ++i] = b[_ref]`
+          # `a{(++i)} = b` => `{(__ref): a[__ref = ++i]} = b`
+          #                => `a[__ref = ++i] = b[__ref]`
           [key, node] = [node, key] if assign
           key = Parens key
         else key = node
@@ -746,7 +748,7 @@ class exports.Unary extends Node
           node <<< {\new, method: ''}
           return it
     case \~ then if it instanceof Fun and it.statement and not it.bound
-      return it <<< bound: \_this
+      return it <<< bound: \__this
     import {op, it}
 
   children: [\it]
@@ -960,7 +962,7 @@ class exports.Binary extends Node
     # `'x' * 2` => `'xx'`
     else if x instanceof Literal
       (q = (x.=compile o)charAt()) + "#{ x.slice 1 -1 }" * n + q
-    # `"#{x}" * 2` => `(_ref = "" + x) + _ref`
+    # `"#{x}" * 2` => `(__ref = "" + x) + __ref`
     else
       if n < 1 then return Block(x.it)add(JS "''")compile o
       x = (refs = x.cache o, 1, LEVEL_OP)0 + " + #{refs.1}" * (n-1)
@@ -1250,7 +1252,7 @@ class exports.Existence extends Node
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Block(), @bound and \_this) ~>
+  (@params or [], @body or Block(), @bound and \__this) ~>
 
   children: <[ params body ]>
 
@@ -1288,14 +1290,13 @@ class exports.Fun extends Node
     o.indent += TAB
     {body, name, tab} = this
     code = \function
-    if @bound is \_this
+    if @bound is \__this
       if @ctor
-        scope.assign \_this 'this instanceof _ctor ? this : new _ctor'
-        code += " _ctor(){} _ctor.prototype = prototype;\n#{tab}function"
-        body.add Return Literal \_this
+        scope.assign \__this 'this instanceof __ctor ? this : new __ctor'
+        body.add Return Literal \__this
       else if sscope.fun?bound
       then @bound = that
-      else sscope.assign \_this \this
+      else sscope.assign \__this \this
     if @statement
       name                    or @carp  'nameless function declaration'
       pscope is o.block.scope or @carp 'misplaced function declaration'
@@ -1308,7 +1309,10 @@ class exports.Fun extends Node
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
     return pscope.assign pscope.temporary(\fn), code if loop
-    code += "\n#{tab}return #name;" if @returns
+    if @returns
+      code += "\n#{tab}return #name;"
+    else if @bound and @ctor
+      code += ' function __ctor(){} __ctor.prototype = prototype;'
     if @front and not @statement then "(#code)" else code
 
   compileParams: (scope) ->
@@ -1370,7 +1374,7 @@ class exports.Class extends Node
       else if node instanceof Fun and not node.statement
         ctor and node.carp 'redundant constructor'
         ctor = node
-    ctor or lines.push ctor = Fun!
+    ctor ||= lines.* = Fun!
     ctor <<< {name, +ctor, +statement}
     lines.push vname = fun.proto = Var fun.bound = name
     if @sup
@@ -1547,8 +1551,7 @@ class exports.While extends Node
     o <<< {+\break, +\continue}
     {lines} = @body; code = ret = ''
     if @returns
-      if lines[*-1]
-        lines[*-1] = that.makeReturn res = o.scope.assign \_results '[]'
+      lines[*-1]?=makeReturn res = o.scope.assign \__results '[]'
       ret = "\n#{@tab}return #{ res or '[]' };"
     lines.unshift JS "#{ run = o.scope.temporary \run } = true;" if @else
     code += "\n#that\n#{@tab}" if @body.compile o, LEVEL_TOP
@@ -1608,7 +1611,7 @@ class exports.For extends While
       "#vars; #cond; " + if 1 == Math.abs pvar
       then (if pvar < 0 then \-- else \++) + idx
       else idx + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
-    @own and head += ") if (#{ o.scope.assign \_own '{}.hasOwnProperty' }
+    @own and head += ") if (#{ o.scope.assign \__own '{}.hasOwnProperty' }
                             .call(#svar, #idx)"
     head += ') {'
     @infuseIIFE!
@@ -1640,7 +1643,7 @@ class exports.For extends While
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Node
-  (@attempt, @thrown ? \_e, @recovery, @ensure) ->
+  (@attempt, @thrown ? \__e, @recovery, @ensure) ->
 
   children: <[ attempt recovery ensure ]>
 
@@ -1883,7 +1886,7 @@ Scope::<<<
   assign: (name, value) -> @add name, {value}
 
   # If we need to store an intermediate result, find an available name for a
-  # compiler-generated variable. `_var`, `_var2`, and so on...
+  # compiler-generated variable. `__var`, `__var2`, and so on.
   temporary: (name || \ref) ->
     i = 0
     do
