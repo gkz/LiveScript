@@ -76,16 +76,18 @@ default
 !function compileScripts
   $args.forEach !-> walk it, , true
   !function walk source, base ? path.normalize(source), top
+    !function work
+      fshoot \readFile source, !-> compileScript source, "#it", base
     e, stats <-! fs.stat source
     if e
       return walk "#source.ls" if top
       die e
     if stats.isDirectory!
       <-! fshoot \readdir source
-      it.forEach !-> walk path.join(source, it), base
+      <-! it.forEach
+      walk path.join(source, it), base
     else if top or path.extname(source)toLowerCase! is \.ls
-      watch source, base if o.watch
-      fshoot \readFile source, !-> compileScript source, "#it", base
+      if o.watch then watch source, work else work!
 
 # Compile a single source script, containing the given code, according to the
 # requested options.
@@ -141,16 +143,13 @@ default
     @on \data !-> code += it
     @on \end  !-> compileScript null code
 
-# Watch a source LiveScript file using `setTimeout`, recompiling it every
-# time the file is updated. May be used in combination with other options,
-# such as `--ast` or `--print`.
-!function watch source, base
-  do loop = !(pre) ->
-    cur <-! fshoot \stat source
-    if pre and pre.mtime &^^ cur.mtime
-      fshoot \readFile source, !->
-        compileScript source, "#it", base
-    setTimeout loop, 500ms, cur
+# Watch a source LiveScript file using `setTimeout`, taking an `action` every
+# time the file is updated.
+!function watch source, action
+  :loop let ptime = 0
+    {mtime} <-! fshoot \stat source
+    do action if ptime &^^ mtime
+    setTimeout loop, 500ms, mtime
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
