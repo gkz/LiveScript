@@ -7,17 +7,17 @@ module.exports = (LiveScript) ->
   fs   = require \fs
   path = require \path
 
-  LiveScript.run = (code, options or {}) ->
+  LiveScript.run = (code, {filename}:options?, js) ->
     {main} = require
-    main.moduleCache &&= {}
     # Hack for relative `require`.
-    filename = \.
-    if options.filename
-      try that = fs.readlinkSync that
-      main.paths = main.._nodeModulePaths path.dirname that
-      filename = process.argv.1 = path.resolve that
+    if filename
+      dirname = path.dirname fs.realpathSync \
+        filename = process.argv.1 = path.resolve filename
+    else
+      dirname = filename = \.
+    main.paths = main.._nodeModulePaths dirname
     main << {filename}
-    options.js or code = LiveScript.compile code, {filename, +bare}
+    js or code = LiveScript.compile code, options
     try main._compile code, filename catch throw hackTrace e, code, filename
 
   LiveScript import all require(\events)EventEmitter::
@@ -27,8 +27,9 @@ module.exports = (LiveScript) ->
     try module._compile js, filename catch throw hackTrace e, js, filename
 
 # Weave the source into stack trace.
-function hackTrace error, js, filename
-  traces = error?stack / \\n
+function hackTrace {stack}:error?, js, filename
+  return error unless stack
+  traces = stack / \\n
   return error unless traces.length > 1
   for trace, i in traces
     continue if 0 > index = trace.indexOf "(#filename:"
