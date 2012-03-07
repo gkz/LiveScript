@@ -317,7 +317,7 @@ operators =
 tokens = do
   for name, alts of bnf
     for alt in alts
-      token if token not in bnf for token in alt.0
+      token if token not of bnf for token in alt.0
 .join ' '
 
 bnf.Root = [[[\Body] 'return $$']]
