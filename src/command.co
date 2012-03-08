@@ -90,8 +90,9 @@ default
 
 # Compile a single source script, containing the given code, according to the
 # requested options.
-!function compileScript file, input, base
-  t = {file, input, options: filename: file, bare: !!o.bare}
+!function compileScript filename, input, base
+  options = {filename, o.bare}
+  t       = {input, options}
   try
     Coco.emit \lex t
     t.tokens = Coco.tokens t.input, raw: o.lex
@@ -104,12 +105,12 @@ default
       say if o.json then t.ast.stringify 2 else ''trim.call t.ast
       throw
     Coco.emit \compile t
-    t.options.bare = o.json or o.run
+    options.bare ||= o.json or o.run
     t.ast.makeReturn! if o.json or o.run and o.print
-    t.output = t.ast.compileRoot t.options
+    t.output = t.ast.compileRoot options
     if o.json or o.run
       Coco.emit \run t
-      t.result = Coco.run t.output, t.options, true
+      t.result = Coco.run t.output, options, true
     if o.json
       t.output = JSON.stringify(t.result, null, 2) + \\n
     if o.run
@@ -120,12 +121,12 @@ default
     Coco.emit \write t
     if o.print
     then say t.output.trimRight!
-    else writeJS t.file, t.output, base
+    else writeJS filename, t.output, base
   catch if e?
     if Coco.listeners(\failure)length
       Coco.emit \failure e, t
     else
-      warn "Failed at: #file" if file
+      warn "Failed at: #filename" if filename
       unless e instanceof SyntaxError or /^Parse error /test e.message
         e = e.stack or e
       if o.watch then warn e + \\7
