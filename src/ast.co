@@ -1143,9 +1143,12 @@ class exports.Import extends Node
   unfoldSoak: (o) ->
     {left} = this
     if left instanceof Existence and not left.negated
-      [left.it, @left, temps] = left.it.cache o
-      # Optimize non-var cases.
-      left.=it if temps
+      if left.=it instanceof Var
+        {value} = @left = left
+        unless o.scope.check value, true
+          left = JS "typeof #value != 'undefined' && #value"
+      else
+        [left, @left, temps] = left.cache o
       return If(left, this) <<< {temps, +soak, @cond, @void}
     If.unfoldSoak o, this, \left
     or (@void or not o.level) and
@@ -1155,8 +1158,9 @@ class exports.Import extends Node
     {right} = this
     unless @all
       if right instanceof Chain
-        right = right.unfoldSoak o or right.unfoldAssign o or
-                right.expandSlice(o)unwrap!
+        right = right.unfoldSoak   o
+             or right.unfoldAssign o
+             or right.expandSlice  o .unwrap!
       return @compileAssign o, right.asObj!items if right instanceof List
     Call.make Util("import#{ @all or '' }"), [@left, right] .compileNode o
 
