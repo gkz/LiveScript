@@ -121,7 +121,7 @@ eq '''
     for (k in o) {
       (__fn.call(this, k));
     }
-  } catch (_e) {}
+  } catch (__e) {}
   function __clone(it){
     function fun(){} fun.prototype = it;
     return new fun;
@@ -130,7 +130,6 @@ eq '''
     __clone(this);
   }
 }).call(this);
-
 ''', LiveScript.compile '''try for k of o then let then ^@'''
 
 
