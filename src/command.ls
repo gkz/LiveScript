@@ -111,7 +111,7 @@ default
     t.output = t.ast.compileRoot t.options
     if o.run
       LiveScript.emit \run t
-      t.result = Coco.run t.output, t.options, true
+      t.result = LiveScript.run t.output, t.options, true
       switch
       case o.json  then say JSON.stringify t.result, null 2
       case o.print then console.log t.result
@@ -224,7 +224,7 @@ default
       if o.compile
         say LiveScript.compile code, {o.bare}
       else
-        _  = vm.runInThisContext LiveScript.compile(code, {+bare, +repl}), \repl
+        _  = vm.runInThisContext LiveScript.compile(code, {\eval, +bare}), \repl
         _ !? global << {_}
         pp  _
         say _ if typeof _ is \function

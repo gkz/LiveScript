@@ -8,12 +8,12 @@ eq 'one;\ntwo;', LiveScript.compile 'one\r\ntwo' bare
 eq '_(_);', LiveScript.compile '\n\t_\t_\t\n' bare
 
 
-# `{+repl}` forces the last value to be returned.
-eq 1, Function('return ' + LiveScript.compile 'delete @1' {+repl}).call {1}
+# `{\eval}` forces the last value to be returned.
+eq 1, Function('return ' + LiveScript.compile 'delete @1' {\eval}).call {1}
 eq '''
 var __ref;
 __ref = o.k, delete o.k, __ref;
-''' LiveScript.compile 'delete o.k' {+repl, +bare}
+''' LiveScript.compile 'delete o.k' {\eval, +bare}
 
 
 throws 'missing `"` on line 2' -> LiveScript.lex '\n"\n'

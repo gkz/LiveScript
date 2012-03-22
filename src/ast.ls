@@ -250,7 +250,7 @@ class exports.Block extends Node
     o.indent = if bare = delete o.bare then '' else TAB
     if /^\s*(?:[/#]|javascript:)/test @lines.0?code
       prefix = @lines.shift!code + \\n
-    if delete o.repl and @chomp!lines.length
+    if delete o.eval and @chomp!lines.length
       if bare then @lines.push Parens @lines.pop! else @makeReturn!
     code = @compileWithDeclarations o
     # Wrap everything in a safety closure unless requested not to.
