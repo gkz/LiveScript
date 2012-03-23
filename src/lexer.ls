@@ -27,6 +27,7 @@ exports import
   # The order of these passes matters--indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (it || @tokens) ->
+    addImplicitSwitches    it
     addImplicitIndentation it
     tagPostfixConditionals it
     addImplicitParentheses it
@@ -688,6 +689,13 @@ character = if JSON!? then uxxxx else ->
   detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i in tokens
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
+
+!function addImplicitSwitches tokens
+  i = 0
+  while token = tokens[++i]
+    prev = tokens[i-1]
+    continue unless token.0 is \CASE and prev.0 is \->
+    tokens.splice i, 0, [\SWITCH 0 prev.2] 
 
 # Wrap single-line blocks with regular INDENT/DEDENT pairs.
 # Because our grammar is LALR(1), it can't handle some sequences

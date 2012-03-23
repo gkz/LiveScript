@@ -136,3 +136,13 @@ switch
 case otherwise => ok 1; fallthrough
 | otherwise => ok 1
 | true      => ok 0
+
+# implicit switches
+do ->
+  | false => ok 0
+  | true => ok 1
+
+do ~>
+  | false => ok 0
+  | true => ok 1
+
