@@ -1448,11 +1448,8 @@ class exports.Splat extends Node
 
   # Compiles a list of nodes mixed with splats to a proper array.
   @compileArray = (o, list, apply) ->
-    index = -1
-    while node = list[++index] then if node instanceof Splat
-      return '' if apply and node.filler
-      break unless node.it.isEmpty()
-      list.splice index-- 1
+    expand list
+    break if node instanceof Splat for node, index in list
     return '' if index >= list.length
     unless list.1
       return (if apply then Object else ensureArray) list.0.it
@@ -1466,6 +1463,17 @@ class exports.Splat extends Node
     args.push Arr atoms if atoms.length
     (if index then Arr list else args.shift())compile(o, LEVEL_CALL) +
     ".concat(#{ List.compile o, args })"
+
+  function expand nodes
+    index = -1
+    while node = nodes[++index] then if node instanceof Splat
+      {it} = node
+      if it.isEmpty!
+        nodes.splice index-- 1
+      else if it instanceof Arr
+        nodes.splice index, 1, ...expand it.items
+        index += it.items.length - 1
+    nodes
 
   function ensureArray node
     return node if node.isArray()

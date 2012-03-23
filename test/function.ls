@@ -449,7 +449,6 @@ f = (x, y) -> [this, x, y]
 with 0 then let x = 1, y = 2
   eq '0,1,2' ''+ f ...
   eq ','     ''+ f(...[])slice 1
-throws 'invalid splat on line 1' -> LiveScript.compile 'f ..., a'
 
 
 ### do-`not`-return
