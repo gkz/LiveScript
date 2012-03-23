@@ -348,18 +348,17 @@ exports import
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL << lastIndex: index)exec(code)0
     switch tag = val = sym
-    case \=>          then tag = \THEN; @unline!
-    case \|           then tag = \CASE; @unline!
-    case \|>          then tag = \PIPE
-    case \+ \-        then tag = \+-
-    case \&& \||      then tag = \LOGIC
-    case \?  \!?      then tag = \LOGIC if @last.spaced
-    case \/ \% \**    then tag = \MATH
-    case \++ \--      then tag = \CREMENT
-    case \<< \<<<     then tag = \IMPORT
-    case \&^& \&^|    then tag = \BITWISE
-    case \&^^         then tag = \BITWISE
-    case \;           then tag = \NEWLINE; @wantBy = false
+    case \=>             then tag = \THEN; @unline!
+    case \|              then tag = \CASE; @unline!
+    case \|>             then tag = \PIPE
+    case \+ \-           then tag = \+-
+    case \&& \||         then tag = \LOGIC
+    case \?  \!?         then tag = \LOGIC if @last.spaced
+    case \/ \% \**       then tag = \MATH
+    case \++ \--         then tag = \CREMENT
+    case \<< \<<<        then tag = \IMPORT
+    case \&&& \||| \^^^  then tag = \BITWISE
+    case \;              then tag = \NEWLINE; @wantBy = false
     case \.
       @last.0 = \? if @last.1 is \?
       tag = \DOT
@@ -377,7 +376,7 @@ exports import
       val = switchOps[val]
       tag = \COMPARE
     case <[ < > <= >= ]> then tag = \COMPARE
-    case <[ &^<<  &^>>  &^>>>  <?  >? ]> then tag = \SHIFT
+    case <[ <<<<  >>>>  >>>>>  <?  >? ]> then tag = \SHIFT
     case \(
       unless @last.0 in <[ FUNCTION LET ]> or @able true
         @token \( \(
@@ -950,7 +949,8 @@ SYMBOL = //
 | @@                          # `arguments`
 | <\[(?:[\s\S]*?\]>)?         # words
 | <<<?                        # import
-| &\^(>>>?|<<|&|\||\^)        # shifts, bitwise
+| &&& | \|\|\| | \^\^\^       # bitwise
+| <<<< | >>>>>?               # shifts
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
 | \|>                         # pipe

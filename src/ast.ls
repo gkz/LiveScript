@@ -897,10 +897,12 @@ class exports.Binary extends Node
   
   mapOp: (op) ->
     return \in if op is \of
-    if //&\^(?: >>>? | << | & | \| | \^)//.test op
-        op.slice 2
+    if op in <[&&& ||| ^^^]>
+      op[0]
+    else if //<<<< | >>>>>?//.test op
+      op.slice 2
     else
-        op
+      op
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. e.g.:
@@ -2014,10 +2016,10 @@ LEVEL_CALL   = 5  # ...()
 # Operator precedances.
 PREC = \? : 0.1, unary : 0.9
 PREC\&& = PREC\||                                                  = 0.2
-PREC\&^&  = PREC\&^^  = PREC\&^|                                   = 0.3
+PREC\&&&  = PREC\^^^  = PREC\|||                                   = 0.3
 PREC\== = PREC\!= = PREC\=== = PREC\!==                            = 0.4
 PREC\<  = PREC\>  = PREC\<=  = PREC\>= = PREC\of = PREC\instanceof = 0.5
-PREC\&^<< = PREC\&^>> = PREC\&^>>>                                 = 0.6
+PREC\<<<< = PREC\>>>> = PREC\>>>>>                                 = 0.6
 PREC\+  = PREC\-                                                   = 0.7
 PREC\*  = PREC\/  = PREC\%                                         = 0.8
 
