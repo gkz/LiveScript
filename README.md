@@ -5,7 +5,7 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 ### Example
 LiveScript:
 
-    take = (n, [x, ...xs]: list) -> 
+    take = (n, [x, ...xs]:list) -> 
       | n <= 0       => []
       | !list.length => []
       | otherwise    => [x].concat take (n - 1), xs
