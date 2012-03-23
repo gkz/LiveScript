@@ -130,6 +130,7 @@ eq '''
     __clone(this);
   }
 }).call(this);
+
 ''', LiveScript.compile '''try for k of o then let then ^@'''
 
 
