@@ -66,13 +66,13 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
     <td>Bitwise &</td><td>&</td><td>&</td><td>&&&</td>
   </tr>
   <tr>
-    <td>Bitwise |</td><td>&</td><td>&</td><td>|||td>
+    <td>Bitwise |</td><td>|</td><td>|</td><td>|||</td>
   </tr>
   <tr>
-    <td>Bitwise ^</td><td>&</td><td>&</td><td>^^^td>
+    <td>Bitwise ^</td><td>^</td><td>^</td><td>^^^</td>
   </tr>
   <tr>
-    <td>Bitwise &lt;&lt;</td><td>&lt;&lt;</td><td>&olt;&lt;</td><td>&lt;&lt;&lt;&lt;</td>
+    <td>Bitwise &lt;&lt;</td><td>&lt;&lt;</td><td>&lt;&lt;</td><td>&lt;&lt;&lt;&lt;</td>
   </tr>
   <tr>
     <td>Bitwise >></td><td>>></td><td>>></td><td>>>>></td>
