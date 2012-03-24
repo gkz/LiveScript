@@ -386,7 +386,16 @@ exports import
         \!=  : \!==
       val = switchOps[val]
       tag = \COMPARE
-    case <[ < > <= >= ]> then tag = \COMPARE
+    case <[ < > <= >= ]>
+      if val is \>
+        num = 1; num++ while (code.charAt index + num) is \>
+        if 3 < num < 6 
+          sym = val = \> * num
+          tag = \SHIFT
+        else
+          tag = \COMPARE
+      else
+        tag = \COMPARE
     case <[ <<<<  >>>>  >>>>>  <?  >? ]> then tag = \SHIFT
     case \(
       unless @last.0 in <[ FUNCTION LET ]> or @able true
