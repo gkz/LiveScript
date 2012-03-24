@@ -63,10 +63,22 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
     <td>Pipe Operator</td><td>N/A</td><td>=></td><td>|></td>
   </tr>
   <tr>
-    <td>Bitwise</td><td>&</td><td>&</td><td>&^&</td>
+    <td>Bitwise &</td><td>&</td><td>&</td><td>&&&</td>
   </tr>
   <tr>
-    <td>Bitwise</td><td>>>></td><td>>>></td><td>&^>>></td>
+    <td>Bitwise |</td><td>&</td><td>&</td><td>|||td>
+  </tr>
+  <tr>
+    <td>Bitwise ^</td><td>&</td><td>&</td><td>^^^td>
+  </tr>
+  <tr>
+    <td>Bitwise &lt;&lt;</td><td>&lt;&lt;</td><td>&olt;&lt;</td><td>&lt;&lt;&lt;&lt;</td>
+  </tr>
+  <tr>
+    <td>Bitwise >></td><td>>></td><td>>></td><td>>>>></td>
+  </tr>
+  <tr>
+    <td>Bitwise >>></td><td>>>></td><td>>>></td><td>>>>>></td>
   </tr>
   <tr>
     <td>In</td><td>in</td><td>of</td><td>in</td>
@@ -92,7 +104,7 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
 - Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other project are named LiveScript. Slake because lake was taken and lsake sounds bad. 
 - Switched so that `==` compiles into `===` and the converse, and also for the negatives. Rationale: I want to use the JavaScript `===` more often than `==` and less typing is better, also this makes things more similar to CoffeeScript which compiles `==` to `===` so there is less code for me to change. The compilation of `is` to `===` stays the same.
 - Switched `in` and `of` so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: I don't have to change my CoffeeScript code, I'm used to it, and using `in` for checking if a value is in an array just seems right, using `of` just feels weird.
-- All bitwise operators except `~` are now prefixed with &^, thus `&` is now `&^&`. Bitwise assign equals (eg. `&=`) have been removed. Rationale: I have never used the bitwise operators, I have rarely seen them used by others, they are not efficient since they must convert from floating points to integers and back, and they take up valuable symbols that could be used for other purposes. They are still available, just in a more awkward form. `~` is still there because I haven't gotten around to changing it yet - as it is unary changing it is a different proposition from the others. Note: the unary ^ clone operator is unchanged.
+- All bitwise operators except `~` have changed to triple themselves and shifts have also expanded, eg. `&` is now `&&&` (see comparison table for full changes). Bitwise assign equals (eg. `&=`) have been removed. Rationale: I have never used the bitwise operators, I have rarely seen them used by others, they are not efficient since they must convert from floating points to integers and back, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. `~` is still there because I haven't gotten around to changing it yet - as it is unary changing it is a different proposition from the others. The way the bitwise operators have changed is modelled after how they are done in F#, a functional language which happens to have them unlike most functional languages. Note: the unary ^ clone operator is unchanged.
 - `=>`, the pipe operator, is now `|>`. Rationale: `|>` is used to signify piping elsewhere (F#), free up => (for then alias), `|` is used as an alias for case.
 - `<<<` is now `<<`, and `<<<<` is now `<<<`. Rationale: `<<` became available after the bitwise operator changes, and less typing is required with these changes.
 - `|` is an alias for `case` (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
