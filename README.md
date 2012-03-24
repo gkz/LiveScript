@@ -23,11 +23,11 @@ Compiled JavaScript:
         return [];
       case !!list.length:
         return [];
-      case !true:
+      default:
         return [x].concat(take(n - 1, xs));
       }
     };
-
+    
     take(2, [1, 2, 3, 4, 5]); // [1, 2]
 
 ### Goals
@@ -109,5 +109,5 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
 - `<<<` is now `<<`, and `<<<<` is now `<<<`. Rationale: `<<` became available after the bitwise operator changes, and less typing is required with these changes.
 - `|` is an alias for `case` (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
 - `=>` is an alias for `then`. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with `|`, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
-- Added `otherwise` as a contextual keyword equal to `true` when used after `case` or `|`. Rationale: same as in Haskell. It allows `| otherwise => 4 + 9`, which fits in with the rest of the structure. For use only when not switching over something. 
+- Added `otherwise` as a contextual keyword, when used after `case` or `|`, making that the default statement. Rationale: same as in Haskell. It allows `| otherwise => 4 + 9`, which fits in with the rest of the structure.
 - Added implicit `switch` after `->` and `~>` when they are followed by case tokens (either `case` or `|`). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
