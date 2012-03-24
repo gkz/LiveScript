@@ -342,7 +342,7 @@ exports import
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
-  # the proper order of operations. There are some symbols that we tag specially
+  # the p/nextroper order of operations. There are some symbols that we tag specially
   # here. `;` and newlines are both treated as a NEWLINE, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   doLiteral: (code, index) ->
@@ -352,12 +352,23 @@ exports import
     case \|              then tag = \CASE; @unline!
     case \|>             then tag = \PIPE
     case \+ \-           then tag = \+-
-    case \&& \||         then tag = \LOGIC
+    case \&& \||
+      if (future = code.charAt index + 2) in <[ & | ]> and future is not \=
+        sym = val = val + val[0]
+        tag = \BITWISE 
+      else
+        tag = \LOGIC
+    case \&&& \||| \^^^  then tag = \BITWISE
     case \?  \!?         then tag = \LOGIC if @last.spaced
     case \/ \% \**       then tag = \MATH
     case \++ \--         then tag = \CREMENT
-    case \<< \<<<        then tag = \IMPORT
-    case \&&& \||| \^^^  then tag = \BITWISE
+    case \<< \<<<        
+      if code.charAt index + 3 is \<
+        additional = if code.charAt index + 4 is \< then \< else ''
+        sym = val = val + \< + additional
+        tag = \SHIFT
+      else
+        tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
     case \.
       @last.0 = \? if @last.1 is \?
