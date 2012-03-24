@@ -153,8 +153,9 @@ exports import
       switch id
       case \own then tag = \OWN if last.0 is \FOR
       case \otherwise 
-          if last.0 in <[ CASE | ]>
-              tag = \LITERAL; id = \true
+        if last.0 in <[ CASE | ]>
+          last.0 = \DEFAULT
+          return 9
       case \all then if last.1 is \<<
         last.1 += \<
         return 3

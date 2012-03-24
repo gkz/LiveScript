@@ -133,9 +133,11 @@ eq otherwise?, false
 
 switch
 | false     => ok 0
-case otherwise => ok 1; fallthrough
 | otherwise => ok 1
-| true      => ok 0
+
+switch 2 + 3
+case 6 then ok 0
+case otherwise then ok 1
 
 # implicit switches
 do ->
