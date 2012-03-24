@@ -363,8 +363,8 @@ exports import
     case \/ \% \**       then tag = \MATH
     case \++ \--         then tag = \CREMENT
     case \<< \<<<        
-      if code.charAt index + 3 is \<
-        additional = if code.charAt index + 4 is \< then \< else ''
+      if (code.charAt index + 3) is \<
+        additional = if (code.charAt index + 4) is \< then \< else ''
         sym = val = val + \< + additional
         tag = \SHIFT
       else
@@ -855,7 +855,7 @@ character = if JSON!? then uxxxx else ->
     case \RANGE
       [from, char] = decode token.1, lno = token.2
       [to, tochar] = decode tokens[i+1]1, lno
-      carp 'bad "to" in range' if char &^^ tochar
+      carp 'bad "to" in range' if char ^^^ tochar
       if by = tokens[i+2]?0 is \RANGE_BY
         carp 'bad "by" in range' if isNaN by = tokens[i+3]?1
       ts = []; to -= token.op is \til and 1e-15
@@ -961,8 +961,8 @@ SYMBOL = //
 | <\[(?:[\s\S]*?\]>)?         # words
 | <<<?                        # import
 | &&& | \|\|\| | \^\^\^       # bitwise
-| <<<< | >>>>>?               # shifts
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
+| <<<< | >>>>>?               # shifts
 | !\?                         # inexistence
 | \|>                         # pipe
 | \|                          # case

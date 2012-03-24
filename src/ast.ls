@@ -178,7 +178,7 @@ exports.fromJSON = function
 
 Negatable =
   show   : -> @negated and \!
-  invert : -> @negated = @negated &^^ 1; this
+  invert : -> @negated = @negated ^^^ 1; this
 
 #### Block
 # A list of expressions that forms the body of an indented block of code.
@@ -673,7 +673,7 @@ class exports.Obj extends List
       else
         "#{ key = node.compile o }: #key"
       temp = dic[0 + key]
-      node.carp "duplicate property name \"#key\"" unless dic[0 + key] = temp &^^ 1
+      node.carp "duplicate property name \"#key\"" unless dic[0 + key] = temp ^^^ 1
     code = "{#{ code and code + \\n + @tab }}"
     rest and code = Import(JS code; Obj rest)compile o << indent: @tab
     if @front and \{ is code.charAt! then "(#code)" else code
@@ -1360,7 +1360,7 @@ class exports.Fun extends Node
           assigns.push Assign vr, p.second, \=, p.op
         names.push name = scope.add vr.value, \arg
         temp = dic[0 + name]
-        p.carp "duplicate parameter \"#name\"" unless dic[0 + name] = temp &^^ 1
+        p.carp "duplicate parameter \"#name\"" unless dic[0 + name] = temp ^^^ 1
     if rest
       rest.unshift Arr() while splace--
       assigns.push Assign Arr(rest), Literal \arguments
@@ -1656,7 +1656,7 @@ class exports.For extends While
     then it.it = Call.make fun << void: true
     else fun = it.it.head
     {params} = fun; call = it.it.tails.0
-    return if params.length &^^ call.args.length - !!call.method
+    return if params.length ^^^ call.args.length - !!call.method
     {index, item} = this
     if index and not dup params, index
       call.args.push params.* = Var index
