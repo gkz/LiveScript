@@ -89,8 +89,8 @@ bnf =
   ArgList:
     o ''                                                -> []
     o \Arg                                              -> [$1]
-    o 'ArgList , Arg'                                   -> $1.concat $3
-    o 'ArgList OptComma NEWLINE Arg'                    -> $1.concat $4
+    o 'ArgList , Arg'                                   -> $1 +++ $3
+    o 'ArgList OptComma NEWLINE Arg'                    -> $1 +++ $4
     o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ditto
   Arg:
     o     \Expression
@@ -156,6 +156,7 @@ bnf =
     o 'Expression MATH    Expression' ditto
     o 'Expression SHIFT   Expression' ditto
     o 'Expression BITWISE Expression' ditto
+    o 'Expression CONCAT  Expression' ditto
 
     o 'Expression RELATION Expression' ->
       *if \! is $2.charAt 0 then Binary $2.slice(1), $1, $3 .invert!
@@ -236,8 +237,8 @@ bnf =
   Properties:
     o ''                                                      -> []
     o \Property                                               -> [$1]
-    o 'Properties , Property'                                 -> $1.concat $3
-    o 'Properties OptComma NEWLINE Property'                  -> $1.concat $4
+    o 'Properties , Property'                                 -> $1 +++ $3
+    o 'Properties OptComma NEWLINE Property'                  -> $1 +++ $4
     o 'Properties OptComma INDENT Properties OptComma DEDENT' ditto
 
   Parenthetical:
@@ -283,11 +284,11 @@ bnf =
 
   Cases:
     o       'CASE Exprs Block' -> [new Case $2, $3]
-    o 'Cases CASE Exprs Block' -> $1.concat new Case $3, $4
+    o 'Cases CASE Exprs Block' -> $1 +++ new Case $3, $4
 
   Exprs:
     o         \Expression  -> [$1]
-    o 'Exprs , Expression' -> $1.concat $3
+    o 'Exprs , Expression' -> $1 +++ $3
 
 # Precedence and Associativity
 # ----------------------------
@@ -301,6 +302,7 @@ operators =
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
+  <[ right    CONCAT       ]>
   <[ left     RELATION     ]>
   <[ left     SHIFT IMPORT ]>
   <[ left     +-           ]>

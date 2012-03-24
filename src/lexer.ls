@@ -362,7 +362,12 @@ exports import
     case \&&& \||| \^^^  then tag = \BITWISE
     case \?  \!?         then tag = \LOGIC if @last.spaced
     case \/ \% \**       then tag = \MATH
-    case \++ \--         then tag = \CREMENT
+    case \++ \--         
+      if val is \++ and (code.charAt index + 2) is \+
+        sym = val = \+++
+        tag = \CONCAT
+      else
+        tag = \CREMENT
     case \<< \<<<        
       if (code.charAt index + 3) is \<
         additional = if (code.charAt index + 4) is \< then \< else ''
@@ -963,6 +968,7 @@ SYMBOL = //
   [-+*/%^:]=                  # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | ([-+&|:])\1                 # crement / logic / `prototype`
+| \+\+\+                      # list concat
 | \([^\n\S]*\)                # call
 | [-~]>                       # function, bound function
 | <[-~]                       # backcall

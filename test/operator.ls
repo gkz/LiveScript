@@ -415,6 +415,7 @@ eq '8,9' ''+ -~[7 8]
 ### Overloaded
 a = [0 1]
 b = ''
+c = [2 3]
 
 #### Concat
 eq '0,1,2' String a + [2]
@@ -429,6 +430,10 @@ eq '6,8,9' ''+ x
 
 x += for i til 2 then i
 eq '6,8,9,0,1' ''+ x
+
+##### +++
+eq '0,1,2,3' String a +++ c
+eq '0,1,5'   String a +++ 5
 
 #### Join
 eq '0==1' a * \==
@@ -449,3 +454,4 @@ eq 2 (/abc/ / /[^/]+/)length
 eq "#{ x = ''+ Math.random() }"/'.'*'.' x
 eq '0,1' ''+ b /= /\D/
 eq '0,1' ''+ b
+

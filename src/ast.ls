@@ -877,6 +877,7 @@ class exports.Binary extends Node
     case \/  then return @compileSplit  o if @second.isMatcher()
     case \** then return @compilePow o
     case \<? \>? then return @compileMinMax o
+    case \+++ then return @compileConcat o
     case \&& \||
       @second.void = true if top = @void or not o.level
       if top or @cond
@@ -979,6 +980,10 @@ class exports.Binary extends Node
       if o.level < LEVEL_OP + PREC\+ then x else "(#x)"
 
   compilePow: (o) -> Call.make(JS \Math.pow; [@first, @second])compile o
+
+  compileConcat: (o) -> 
+    "(#{@first.compile o}).concat(#{@second.compile o})"
+    #(Chain @first, Call.make(\pow; [@second])compile o)compile o
 
 #### Assign
 # Assignment to a variable/property.
@@ -2015,13 +2020,17 @@ LEVEL_CALL   = 5  # ...()
 
 # Operator precedances.
 PREC = \? : 0.1, unary : 0.9
-PREC\&& = PREC\||                                                  = 0.2
-PREC\&&&  = PREC\^^^  = PREC\|||                                   = 0.3
-PREC\== = PREC\!= = PREC\=== = PREC\!==                            = 0.4
-PREC\<  = PREC\>  = PREC\<=  = PREC\>= = PREC\of = PREC\instanceof = 0.5
-PREC\<<<< = PREC\>>>> = PREC\>>>>>                                 = 0.6
-PREC\+  = PREC\-                                                   = 0.7
-PREC\*  = PREC\/  = PREC\%                                         = 0.8
+PREC\&& = PREC\||                                     = 0.2
+PREC\&&&  = PREC\^^^  = PREC\|||                      = 0.3
+PREC\== = PREC\!= = PREC\=== = PREC\!==               = 0.4
+
+PREC\<  = PREC\>  = PREC\<=  = PREC\>=                = 0.5 
+PREC\of = PREC\instanceof = PREC\+++                  = 0.5
+
+PREC\<<<< = PREC\>>>> = PREC\>>>>>                    = 0.6
+PREC\+  = PREC\-                                      = 0.7
+PREC\*  = PREC\/  = PREC\%                            = 0.8
+
 
 TAB = ' ' * 2
 
