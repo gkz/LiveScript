@@ -1,5 +1,5 @@
 # LiveScript
-is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived from [CoffeeScript](http://coffeescript.org/). Like those two it compiles down to JavaScript. It will encompass various changes which may not be acceptable to the maintainers of Coco. LiveScript is not currently ready for production use, as it is still developing and changing often.
+is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived from [CoffeeScript](http://coffeescript.org/). Like those two it compiles down to JavaScript, with the goal of having a straightforward mapping to JavaScript. LiveScript aims for increased code beauty, less typing, and an easier transition from CoffeeScript, in comparison to Coco. LiveScript is not currently ready for production use, as it is still developing and changing often.
 
 ## Overview
 ### Example
@@ -57,7 +57,10 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
     <td>File Extension</td><td>.coffee</td><td>.co</td><td>.ls</td>
   </tr>
   <tr>
-    <td>Strict Equality</td><td>==</td><td>===</td><td>==</td>
+    <td>Strict Equality</td><td>== OR is</td><td>=== OR is</td><td>== OR is</td>
+  </tr>
+  <tr>
+    <td>Fuzzy Equality</td><td>N/A</td><td>==</td><td>===</td>
   </tr>
   <tr>
     <td>Pipe Operator</td><td>N/A</td><td>=></td><td>|></td>
@@ -116,6 +119,6 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
 - `|` is an alias for `case` (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
 - `=>` is an alias for `then`. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with `|`, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
 - Added `otherwise` as a contextual keyword, when used after `case` or `|`, making that the default statement. Rationale: same as in Haskell. It allows `| otherwise => 4 + 9`, which fits in with the rest of the structure.
-- Added implicit `switch` after `->` and `~>` when they are followed by case tokens (either `case` or `|`). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
+- Added implicit `switch` after `->` or `~>` when they are followed by case tokens (either `case` or `|`). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
 - Added list concat operator, `+++`. Eg. `xs +++ ys` is `xs.concat(ys)`. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
 - Added cons operator, `&`. It sticks the first item to the start of the second item (a list, or not, making a list). Eg. `x & ys` is `[x].concat(ys)`. Rationale: less typing, beauty, inspired by Haskell's `:` function.
