@@ -8,7 +8,7 @@ LiveScript:
     take = (n, [x, ...xs]:list) -> 
       | n <= 0       => []
       | !list.length => []
-      | otherwise    => [x] +++ take (n - 1), xs
+      | otherwise    => x & take (n - 1), xs
                                  
     take 2, [1 2 3 4 5] # [1, 2]
                                  
@@ -24,7 +24,7 @@ Compiled JavaScript:
       case !!list.length:
         return [];
       default:
-        return ([x]).concat(take(n - 1, xs));
+        return [(x)].concat(take(n - 1, xs));
       }
     };
     
@@ -98,6 +98,12 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
   <tr>
     <td>Then</td><td>then</td><td>then</td><td>then OR =></td>
   </tr>
+  <tr>
+    <td>List Concat</td><td>xs.concat ys</td><td>xs.concat ys</td><td>xs +++ ys</td>
+  </tr>
+  <tr>
+    <td>Cons</td><td>[x].concat ys</td><td>[x].concat ys</td><td>x & ys</td>
+  </tr>
 </table>
 
 ### Changes: Detail and Rationale
@@ -111,4 +117,5 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
 - `=>` is an alias for `then`. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with `|`, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
 - Added `otherwise` as a contextual keyword, when used after `case` or `|`, making that the default statement. Rationale: same as in Haskell. It allows `| otherwise => 4 + 9`, which fits in with the rest of the structure.
 - Added implicit `switch` after `->` and `~>` when they are followed by case tokens (either `case` or `|`). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
-- Added list concat operator, `+++`. Eg. `xs +++ ys` is `xs.concat(ys)`. Rationale: less typing, more beautiful, inspired by ++ operator in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
+- Added list concat operator, `+++`. Eg. `xs +++ ys` is `xs.concat(ys)`. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
+- Added cons operator, `&`. It sticks the first item to the start of the second item (a list, or not, making a list). Eg. `x & ys` is `[x].concat(ys)`. Rationale: less typing, beauty, inspired by Haskell's `:` function.
