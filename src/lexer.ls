@@ -353,6 +353,11 @@ exports import
     case \|              then tag = \CASE; @unline!
     case \|>             then tag = \PIPE
     case \+ \-           then tag = \+-
+    case \&
+      if (code.charAt index + 1) is \&
+        fallthrough
+      else
+        tag = \CONCAT
     case \&& \||
       if (future = code.charAt index + 2) in <[ & | ]> and future is not \=
         sym = val = val + val[0]
@@ -968,7 +973,7 @@ SYMBOL = //
   [-+*/%^:]=                  # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | ([-+&|:])\1                 # crement / logic / `prototype`
-| \+\+\+                      # list concat
+| \+\+\+ | &                  # list concat, cons
 | \([^\n\S]*\)                # call
 | [-~]>                       # function, bound function
 | <[-~]                       # backcall

@@ -869,15 +869,16 @@ class exports.Binary extends Node
 
   compileNode: (o) ->
     switch @op
-    case \? \!? then return @compileExistence o
+    case \? \!?   then return @compileExistence o
     case \*
       return @compileJoin   o if @second.isString()
       return @compileRepeat o if @first.isString() or @first instanceof Arr
-    case \-  then return @compileRemove o if @second.isMatcher()
-    case \/  then return @compileSplit  o if @second.isMatcher()
-    case \** then return @compilePow o
-    case \<? \>? then return @compileMinMax o
-    case \+++ then return @compileConcat o
+    case \-       then return @compileRemove o if @second.isMatcher()
+    case \/       then return @compileSplit  o if @second.isMatcher()
+    case \**      then return @compilePow o
+    case \<? \>?  then return @compileMinMax o
+    case \+++     then return @compileConcat o
+    case \&       then return @compileConcat o, true
     case \&& \||
       @second.void = true if top = @void or not o.level
       if top or @cond
@@ -981,9 +982,10 @@ class exports.Binary extends Node
 
   compilePow: (o) -> Call.make(JS \Math.pow; [@first, @second])compile o
 
-  compileConcat: (o) -> 
-    "(#{@first.compile o}).concat(#{@second.compile o})"
-    #(Chain @first, Call.make(\pow; [@second])compile o)compile o
+  compileConcat: (o, cons = false) -> 
+    firstPart = "(#{@first.compile o})" 
+    firstPart = "[#{firstPart}]" if cons
+    "#{firstPart}.concat(#{@second.compile o})"
 
 #### Assign
 # Assignment to a variable/property.
