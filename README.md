@@ -63,6 +63,9 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
     <td>Fuzzy Equality</td><td>N/A</td><td>==</td><td>===</td>
   </tr>
   <tr>
+    <td>Power Operator</td><td>N/A</td><td>**</td><td>** OR ^</td>
+  </tr>
+  <tr>
     <td>Pipe Operator</td><td>N/A</td><td>=></td><td>|></td>
   </tr>
   <tr>
@@ -122,3 +125,5 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
 - Added implicit `switch` after `->` or `~>` when they are followed by case tokens (either `case` or `|`). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
 - Added list concat operator, `+++`. Eg. `xs +++ ys` is `xs.concat(ys)`. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
 - Added cons operator, `&`. It sticks the first item to the start of the second item (a list, or not, making a list). Eg. `x & ys` is `[x].concat(ys)`. Rationale: less typing, beauty, inspired by Haskell's `:` function.
+- `^` is now an alias to `**`, the power operator. Rationale: it was available, and is used in other languages. 
+- Power precedence is now proper, and the power operator has precedence over multiplication and division. Eg. 2*4^2 == 32, not 64 as in Coco. Rationale: math should work properly.
