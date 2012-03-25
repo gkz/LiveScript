@@ -348,34 +348,40 @@ exports import
   # parentheses that indicate a method call from regular parentheses, and so on.
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL << lastIndex: index)exec(code)0
+    nextSym = (n) -> code.charAt index + n
     switch tag = val = sym
     case \=>             then tag = \THEN; @unline!
     case \|              then tag = \CASE; @unline!
     case \|>             then tag = \PIPE
     case \+ \-           then tag = \+-
     case \&
-      if (code.charAt index + 1) is \&
+      if nextSym(1) is \&
         fallthrough
       else
         tag = \CONCAT
     case \&& \||
-      if (future = code.charAt index + 2) in <[ & | ]> and future is not \=
+      if (future = nextSym(2)) in <[ & | ]> and future is not \=
         sym = val = val + val[0]
         tag = \BITWISE 
       else
         tag = \LOGIC
+    case \^
+      if nextSym(1) is \^ and nextSym(2) is \^
+        sym = val = \^^^
+        tag = \BITWISE
+    case \**             then tag = \POWER
     case \&&& \||| \^^^  then tag = \BITWISE
     case \?  \!?         then tag = \LOGIC if @last.spaced
-    case \/ \% \**       then tag = \MATH
+    case \/ \%           then tag = \MATH
     case \++ \--         
-      if val is \++ and (code.charAt index + 2) is \+
+      if val is \++ and nextSym(2) is \+
         sym = val = \+++
         tag = \CONCAT
       else
         tag = \CREMENT
     case \<< \<<<        
-      if (code.charAt index + 3) is \<
-        additional = if (code.charAt index + 4) is \< then \< else ''
+      if nextSym(3) is \<
+        additional = if nextSym(4) is \< then \< else ''
         sym = val = val + \< + additional
         tag = \SHIFT
       else
@@ -399,7 +405,7 @@ exports import
       tag = \COMPARE
     case <[ < > <= >= ]>
       if val is \>
-        num = 1; num++ while (code.charAt index + num) is \>
+        num = 1; num++ while nextSym(num) is \>
         if 3 < num < 6 
           sym = val = \> * num
           tag = \SHIFT
@@ -472,7 +478,7 @@ exports import
     case \<
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
-    @unline! if tag in <[ , PIPE DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
+    @unline! if tag in <[ , PIPE DOT LOGIC COMPARE MATH POWER IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 
@@ -988,7 +994,7 @@ SYMBOL = //
 | \|>                         # pipe
 | \|                          # case
 | =>                          # then
-| \*\*=?                      # pow
+| \*\*=? | \^                 # pow
 | [^\s#]?
 //g
 SPACE     = /(?=.)[^\n\S]*(?:#.*)?|/g

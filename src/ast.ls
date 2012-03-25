@@ -875,7 +875,7 @@ class exports.Binary extends Node
       return @compileRepeat o if @first.isString() or @first instanceof Arr
     case \-       then return @compileRemove o if @second.isMatcher()
     case \/       then return @compileSplit  o if @second.isMatcher()
-    case \**      then return @compilePow o
+    case \** \^   then return @compilePow o
     case \<? \>?  then return @compileMinMax o
     case \+++     then return @compileConcat o
     case \&       then return @compileConcat o, true

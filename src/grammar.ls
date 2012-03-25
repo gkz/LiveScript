@@ -154,6 +154,8 @@ bnf =
     o 'Expression COMPARE Expression' ditto
     o 'Expression LOGIC   Expression' ditto
     o 'Expression MATH    Expression' ditto
+    o 'Expression ^       Expression' ditto
+    o 'Expression POWER   Expression' ditto
     o 'Expression SHIFT   Expression' ditto
     o 'Expression BITWISE Expression' ditto
     o 'Expression CONCAT  Expression' ditto
@@ -299,14 +301,15 @@ operators =
   # Listed from lower precedence.
   <[ left     PIPE POST_IF FOR WHILE ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
+  <[ right    CONCAT       ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
-  <[ right    CONCAT       ]>
   <[ left     RELATION     ]>
   <[ left     SHIFT IMPORT ]>
   <[ left     +-           ]>
   <[ left     MATH         ]>
+  <[ left     POWER ^      ]>
   <[ right    UNARY        ]>
   <[ nonassoc CREMENT      ]>
 
