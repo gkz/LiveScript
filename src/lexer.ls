@@ -355,8 +355,8 @@ exports import
     case \+ \-           then tag = \+-
     case \&              then tag = \CONCAT
     case \&& \||         then tag = \LOGIC
-    case \**             then tag = \POWER
     case \&&& \||| \^^^  then tag = \BITWISE
+    case \**             then tag = \POWER
     case \?  \!?         then tag = \LOGIC if @last.spaced
     case \/ \%           then tag = \MATH
     case \+++            then tag = \CONCAT
