@@ -348,44 +348,20 @@ exports import
   # parentheses that indicate a method call from regular parentheses, and so on.
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL << lastIndex: index)exec(code)0
-    nextSym = (n) -> code.charAt index + n
     switch tag = val = sym
     case \=>             then tag = \THEN; @unline!
     case \|              then tag = \CASE; @unline!
     case \|>             then tag = \PIPE
     case \+ \-           then tag = \+-
-    case \&
-      if nextSym(1) is \&
-        fallthrough
-      else
-        tag = \CONCAT
-    case \&& \||
-      if (future = nextSym(2)) in <[ & | ]> and future is not \=
-        sym = val = val + val[0]
-        tag = \BITWISE 
-      else
-        tag = \LOGIC
-    case \^
-      if nextSym(1) is \^ and nextSym(2) is \^
-        sym = val = \^^^
-        tag = \BITWISE
+    case \&              then tag = \CONCAT
+    case \&& \||         then tag = \LOGIC
     case \**             then tag = \POWER
     case \&&& \||| \^^^  then tag = \BITWISE
     case \?  \!?         then tag = \LOGIC if @last.spaced
     case \/ \%           then tag = \MATH
-    case \++ \--         
-      if val is \++ and nextSym(2) is \+
-        sym = val = \+++
-        tag = \CONCAT
-      else
-        tag = \CREMENT
-    case \<< \<<<        
-      if nextSym(3) is \<
-        additional = if nextSym(4) is \< then \< else ''
-        sym = val = val + \< + additional
-        tag = \SHIFT
-      else
-        tag = \IMPORT
+    case \+++            then tag = \CONCAT
+    case \++ \--         then tag = \CREMENT
+    case \<< \<<<        then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
     case \.
       @last.0 = \? if @last.1 is \?
@@ -396,23 +372,13 @@ exports import
         return 2
       fallthrough
     case <[ === !== == ]> 
-      switchOps =
-        \=== : \==
-        \!== : \!=
-        \==  : \===
-        \!=  : \!==
-      val = switchOps[val]
+      val = switch val
+        | \=== => \==
+        | \!== => \!=
+        | \==  => \===
+        | \!=  => \!==
       tag = \COMPARE
-    case <[ < > <= >= ]>
-      if val is \>
-        num = 1; num++ while nextSym(num) is \>
-        if 3 < num < 6 
-          sym = val = \> * num
-          tag = \SHIFT
-        else
-          tag = \COMPARE
-      else
-        tag = \COMPARE
+    case <[ < > <= >= ]> then tag = \COMPARE
     case <[ <<<<  >>>>  >>>>>  <?  >? ]> then tag = \SHIFT
     case \(
       unless @last.0 in <[ FUNCTION LET ]> or @able true
@@ -978,18 +944,19 @@ ID = let
 SYMBOL = //
   [-+*/%^:]=                  # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
+| &&& | \|\|\| | \^\^\^       # bitwise
+| \+\+\+                      # list concat 
 | ([-+&|:])\1                 # crement / logic / `prototype`
-| \+\+\+ | &                  # list concat, cons
+| &                           # cons
 | \([^\n\S]*\)                # call
 | [-~]>                       # function, bound function
 | <[-~]                       # backcall
 | [!=]==?                     # equality
 | @@                          # `arguments`
 | <\[(?:[\s\S]*?\]>)?         # words
-| <<<?                        # import
-| &&& | \|\|\| | \^\^\^       # bitwise
-| [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | <<<< | >>>>>?               # shifts
+| <<<?                        # import
+| [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
 | \|>                         # pipe
 | \|                          # case
