@@ -731,13 +731,13 @@ character = if JSON!? then uxxxx else ->
       detectEnd tokens, i+1, ok, go
   function ok token, i
     switch token.0
-    case \NEWLINE         then token.1 is not \;
-    case \DOT \? \, \PIPE then tokens[i-1]eol
-    case \ELSE            then tag is \THEN
-    case \CATCH           then tag is \TRY
-    case \FINALLY         then tag in <[ TRY CATCH THEN ]>
-    case \SWITCH          then not seenSwitch := true
-    case \CASE \DEFAULT   then not seenSwitch
+    | \NEWLINE         => token.1 is not \;
+    | \DOT \? \, \PIPE => tokens[i-1]eol
+    | \ELSE            => tag is \THEN
+    | \CATCH           => tag is \TRY
+    | \FINALLY         => tag in <[ TRY CATCH THEN ]>
+    | \SWITCH          => not seenSwitch := true
+    | \CASE \DEFAULT   => not seenSwitch
   !function go [] i
     prev = tokens[i-1]
     tokens.splice if prev.0 is \, then i-1 else i, 0, dedent << {prev.2}
