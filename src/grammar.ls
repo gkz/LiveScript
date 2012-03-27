@@ -309,8 +309,8 @@ operators =
   <[ left     SHIFT IMPORT ]>
   <[ left     +-           ]>
   <[ left     MATH         ]>
-  <[ right    POWER ^      ]>
   <[ right    UNARY        ]>
+  <[ right    POWER ^      ]>
   <[ nonassoc CREMENT      ]>
 
 # Wrapping Up
