@@ -126,5 +126,5 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
 - Added list concat operator, `+++`. Eg. `xs +++ ys` is `xs.concat(ys)`. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
 - Added cons operator, `&`. It sticks the first item to the start of the second item (a list, or not, making a list). Eg. `x & ys` is `[x].concat(ys)`. Rationale: less typing, beauty, inspired by Haskell's `:` function.
 - `^` is now an alias to `**`, the power operator. Rationale: it was available, and is used in other languages. 
-- Power precedence is now proper, and the power operator has precedence over multiplication and division. Eg. 2*4^2 == 32, not 64 as in Coco. Rationale: math should work properly.
+- Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell. 
 - Power operator is now right associative. eg. 2^2^3 == 2^(2^3) == 256. Rationale: follwing Haskell's and many other languages lead on this one.
