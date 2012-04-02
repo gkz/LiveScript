@@ -460,3 +460,16 @@ eq void do
   !function C then C
   ok new C instanceof C
   true
+
+
+### implicit functions
+area(a, b) = a * b
+eq (area 2, 3), 6
+
+diff(a,
+  b) = 
+  a - b
+eq (diff 2, 3), -1
+
+add(a, b = 3) = a + b
+eq (add 2), 5

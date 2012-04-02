@@ -28,6 +28,7 @@ exports import
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (it || @tokens) ->
     addImplicitSwitches    it
+    addImplicitFunctions   it
     addImplicitIndentation it
     tagPostfixConditionals it
     addImplicitParentheses it
@@ -692,11 +693,29 @@ character = if JSON!? then uxxxx else ->
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
 
+# Turn `area(a,b) = a * b` into `area = (a,b) -> a * b`
+!function addImplicitFunctions tokens
+  i = 0
+  while token = tokens[++i]
+    continue unless token.0 is \ASSIGN
+    prev = tokens[i-1]
+    continue unless prev.0 is \)CALL
+    j = i 
+    t = tokens[j]
+    continue until (t = tokens[--j]).0 is \CALL( or j is 0 
+    continue if t.0 is not \CALL( or (idT = tokens[j-1]).0 is not \ID 
+   
+    tokens.splice i,   1, [\->      \->     token.2]
+    tokens.splice i-1, 1, [\)PARAM  \)PARAM token.2]
+    tokens.splice j,   0, [\ASSIGN  \=      token.2] 
+    tokens.splice j+1, 1, [\PARAM(  \PARAM( token.2] 
+
+# Add switches (over nothing) after -> and =
 !function addImplicitSwitches tokens
   i = 0
   while token = tokens[++i]
     prev = tokens[i-1]
-    continue unless token.0 is \CASE and prev.0 is \->
+    continue unless token.0 is \CASE and prev.0 in <[ -> ASSIGN ]>
     tokens.splice i, 0, [\SWITCH 0 prev.2] 
 
 # Wrap single-line blocks with regular INDENT/DEDENT pairs.
