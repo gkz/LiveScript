@@ -703,7 +703,7 @@ character = if JSON!? then uxxxx else ->
     j = i 
     t = tokens[j]
     continue until (t = tokens[--j]).0 is \CALL( or j is 0 
-    continue if t.0 is not \CALL( or (idT = tokens[j-1]).0 is not \ID 
+    continue if t.0 is not \CALL( or tokens[j-1].0 is not \ID 
    
     tokens.splice i,   1, [\->      \->     token.2]
     tokens.splice i-1, 1, [\)PARAM  \)PARAM token.2]
