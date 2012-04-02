@@ -35,7 +35,9 @@ Compiled JavaScript:
 - Provide succinct ways to accomplish frequent tasks. 
 
 ### Inspiration
+- Functional languages in general
 - Haskell
+- F#
 
 ### Name
 LiveScript was one of the original names for JavaScript, so it seemed fitting. 
