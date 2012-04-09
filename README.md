@@ -130,3 +130,5 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
 - Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell. 
 - Power operator is now right associative. eg. 2^2^3 == 2^(2^3) == 256. Rationale: follwing Haskell's and many other languages lead on this one.
 - Added implicit function definitions, eg. `add(x, y) = x + y` == `add = (x, y) -> x + y`. (Though it's pretty hacked in, definitely needs some cleanup/work on it). Rationale: more beautiful, less typing, more Haskell like.
+- Also added implicit function definitions for object literals, thus `add(x, y): a + y` == `add: (x, y) -> x + y`, this also works in class bodies, and also works with functions with no parameters. Rationale: same as above.
+    
