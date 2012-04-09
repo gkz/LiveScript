@@ -473,3 +473,19 @@ eq (diff 2, 3), -1
 
 add(a, b = 3) = a + b
 eq (add 2), 5
+
+obj = 
+  add(x, y): x + y
+
+eq obj.add(1, 2), 3
+
+class Multiplier
+  (@num) ->
+
+  multiply(x, y): x * y
+  xSix(): @num * 6
+
+multi = new Multiplier 3
+
+eq multi.multiply(3, 2), 6
+eq multi.xSix!, 18

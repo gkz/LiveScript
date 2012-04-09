@@ -399,7 +399,7 @@ exports import
       fallthrough
     case \] \)
       @lpar = @parens.pop! if \) is tag = val = @pair val
-    case \: then if @last.0 not in <[ ID STRNUM ) ]>
+    case \: then if @last.0 not in <[ ID STRNUM ) )CALL ]>
       tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= <?= >?= **= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
@@ -693,11 +693,12 @@ character = if JSON!? then uxxxx else ->
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
 
-# Turn `area(a,b) = a * b` into `area = (a,b) -> a * b`
+# Turn       `area(a, b) = a * b` into `area = (a, b) -> a * b`
+# Also, turn `area(a, b): a * b`  into `area: (a, b) -> a * b`
 !function addImplicitFunctions tokens
   i = 0
   while token = tokens[++i]
-    continue unless token.0 is \ASSIGN
+    continue unless token.0 in <[ ASSIGN :]>
     prev = tokens[i-1]
     continue unless prev.0 is \)CALL
     j = i 
@@ -705,10 +706,14 @@ character = if JSON!? then uxxxx else ->
     continue until (t = tokens[--j]).0 is \CALL( or j is 0 
     continue if t.0 is not \CALL( or tokens[j-1].0 is not \ID 
    
-    tokens.splice i,   1, [\->      \->     token.2]
-    tokens.splice i-1, 1, [\)PARAM  \)PARAM token.2]
-    tokens.splice j,   0, [\ASSIGN  \=      token.2] 
-    tokens.splice j+1, 1, [\PARAM(  \PARAM( token.2] 
+    # replace assign/colon with arrow
+    tokens.splice i,   1, [\->      \->      token.2]
+    # replace )CALL with param
+    tokens.splice i-1, 1, [\)PARAM  \)PARAM  token.2]
+    # insert assign/colon before param and after id  
+    tokens.splice j,   0, [token.0, token.1, token.2] 
+    # replace CALL( with param
+    tokens.splice j+1, 1, [\PARAM(  \PARAM(  token.2] 
 
 # Add switches (over nothing) after -> and =
 !function addImplicitSwitches tokens
