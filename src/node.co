@@ -3,7 +3,7 @@
 # - Inherit `EventEmitter`.
 # - Register _.co_ extension.
 
-module.exports = (Coco) ->
+module.exports = !(Coco) ->
   fs   = require \fs
   path = require \path
 
