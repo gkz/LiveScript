@@ -16,7 +16,7 @@ module.exports = !(LiveScript) ->
     else
       dirname = filename = \.
     main.paths = main.._nodeModulePaths dirname
-    main <<< {filename}
+    main << {filename}
     js or code = LiveScript.compile code, {...options, +bare}
     try main._compile code, filename catch throw hackTrace e, code, filename
 

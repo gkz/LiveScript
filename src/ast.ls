@@ -1899,7 +1899,7 @@ exports.Export = (lines) ->
         Assign Chain(out, [Index Key that]), node
       else
         Import out, node
-  ^Block::<<<{lines}
+  ^Block::<<{lines}
 
 ##### Scope
 # Regulates lexical scoping within LiveScript. As you
