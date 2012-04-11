@@ -933,12 +933,13 @@ function indexOfPair tokens, i
 KEYWORDS_SHARED = <[
   true false null this void super return throw break continue
   if else for while switch case default try catch finally class extends
-  new do delete typeof in instanceof import function let with debugger
+  new do delete typeof in instanceof import function
+  let with debugger export
 ]>
 
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid runtime errors.
-KEYWORDS_UNUSED = <[ var  const enum export   implements interface
+KEYWORDS_UNUSED = <[ var  const enum  implements interface
                      package private protected public static yield ]>
 
 KEYWORDS = KEYWORDS_SHARED.concat KEYWORDS_UNUSED

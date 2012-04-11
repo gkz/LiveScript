@@ -1,6 +1,5 @@
-<!DOCTYPE html><meta charset=utf-8 /><title>Coco Tests</title
+<!DOCTYPE html><meta charset=utf-8 /><title>LiveScript Tests</title
 ><link rel=stylesheet href=../doc/doc.css
-><link rel=icon       href=../coco.png
 ><style>
 #stdout {font:bold medium monospace; margin:2ex 1em 0}
 </style
@@ -13,6 +12,7 @@
 ,'comment'
 ,'compilation'
 ,'existence'
+,'export'
 ,'function'
 ,'if'
 ,'label'
@@ -26,7 +26,7 @@
 ,'switch'
 ,'try'
 ]</script
-><script type=application/coco>
+><script type=application/livescript>
 start   = new Date
 stdout  = document.getElementById \stdout
 success = total = done = failed = 0
@@ -48,7 +48,7 @@ say = (msg, err) ->
   ok false "should throw: #{msg}"
 
 for name in sources then let
-  e <- Coco.load name + \.co
+  e <- LiveScript.load name + \.co
   say "#{ if e then \\uFF38 else \\u2714 } #{name}" e
   say e, ++failed if e
   return if ++done < sources.length
@@ -58,8 +58,7 @@ for name in sources then let
   say msg, failed
 
 </script
-><script src=../extras/coco.js></script
+><script src=../extras/livescript.js></script
 ><script src=../doc/showdown.js></script
 ><script src=../doc/prettify.js></script
-><script src=../doc/lang-co.js></script
 ><script src=../doc/doc.js></script>

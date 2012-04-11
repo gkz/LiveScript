@@ -1886,6 +1886,21 @@ class exports.Util extends Node
 
 exports.L = (yylineno, node) -> node import line: yylineno + 1
 
+exports.Export = (lines) ->
+  i = -1; out = Util \out
+  while node = lines[++i]
+    if node instanceof Fun and node.name
+      lines.splice i++ 0 Assign Chain(out, [Index Key that]), Var that
+      continue
+    lines[i] =
+      if node.varName!
+      or node instanceof Assign and node.left. varName!
+      or node instanceof Class  and node.title?varName!
+        Assign Chain(out, [Index Key that]), node
+      else
+        Import out, node
+  ^Block::<<<{lines}
+
 ##### Scope
 # Regulates lexical scoping within LiveScript. As you
 # generate code, you create a tree of scopes in the same shape as the nested
@@ -2004,6 +2019,8 @@ UTILITIES =
     while (i < l) if (x === arr[i++]) return true;
     return false;
   }'''
+
+  out: '''typeof exports != 'undefined' && exports || this'''
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"

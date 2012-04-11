@@ -8,13 +8,13 @@ global import
   fs   : require \fs
   path : require \path
   util : require \util
-  say  : -> process.stdout.write it + \\n
-  warn : -> process.stderr.write it + \\n
-  die  : -> warn it; process.exit 1
-  p    : -> []forEach.call @@, console.dir
-  pp   : (x, showHidden, depth) ->
+  say  : !-> process.stdout.write it + \\n
+  warn : !-> process.stderr.write it + \\n
+  die  : !-> warn it; process.exit 1
+  p    : !-> []forEach.call @@, console.dir
+  pp   : !(x, showHidden, depth) ->
     say util.inspect x, showHidden, depth, !process.env.NODE_DISABLE_COLORS
-  ppp  : -> pp it, true null
+  ppp  : !-> pp it, true, null
 
 # Use the [option parser](#optparse).
 {$args} = o = require(\./optparse) do
@@ -192,7 +192,7 @@ default
   code  = ''
   cont  = false
   repl  = require(\readline)createInterface process.stdin, process.stdout
-  reset = ->
+  reset = !->
     repl.line = code := ''
     repl.prompt!
   ({_ttyWrite} = repl)_ttyWrite = (char) ->
