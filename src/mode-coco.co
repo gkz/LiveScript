@@ -16,8 +16,8 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
   indenter = // (?
     : [({[=:]
     | [-~]>
-    | \b (?: else | d(?:o|efault) | t(?:ry|hen) | finally | let | new
-           | (?:catch|function) (?: \s* #identifier )? )
+    | \b (?: e(?:lse|xport) | d(?:o|efault) | t(?:ry|hen) | finally |
+             let | new | (?:catch|function) (?: \s* #identifier )? )
   ) \s* $ //
 
   getNextLineIndent: (state, line, tab) ->
@@ -57,7 +57,7 @@ CocoMode.Rules =
         |d(?:e(?:fault|lete|bugger)|o)
         |f(?:or(?:\s+own)?|inally|unction)
         |s(?:uper|witch)
-        |e(?:lse|xtends|val)
+        |e(?:lse|x(?:tends|port)|val)
         |a(?:nd|rguments)
         |n(?:ew|ot)
         |un(?:less|til)

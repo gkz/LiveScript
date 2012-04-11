@@ -116,6 +116,9 @@ bnf =
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
     , -> Call.back $2, $6, $5 is \<~
 
+    o 'EXPORT Exprs'                          -> Export $2
+    o 'EXPORT INDENT ArgList OptComma DEDENT' -> Export $3
+
     o \COMMENT -> L JS $1, true true
     o \...     -> L Throw JS "Error('unimplemented')"
 
