@@ -22,3 +22,13 @@ export
 eq out.f!, g
 eq out.g!, h
 eq out.h!, f
+
+export
+  I: i = random!
+  J: j = random!
+eq out.I, i
+eq out.J, j
+
+o = k: random!
+export do -> o
+eq out.k, o.k
