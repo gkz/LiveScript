@@ -221,8 +221,9 @@ bnf =
   # Keys and values.
   KeyValue:
     o \Key
-    o 'LITERAL DOT KeyBase' -> Prop $3, Chain(Literal $1; [Index $3, $2])
-    o 'Key     DOT KeyBase' -> Prop $3, Chain(        $1; [Index $3, $2])
+    o \LITERAL -> Prop L(Key $1, $1 not of <[ arguments eval ]>), L Literal $1
+    o 'Key     DOT KeyBase' -> Prop $3, Chain(          $1; [Index $3, $2])
+    o 'LITERAL DOT KeyBase' -> Prop $3, Chain(L Literal $1; [Index $3, $2])
   Property:
     o 'Key : Expression'                     -> Prop $1, $3
     o 'Key : INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($4)
