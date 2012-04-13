@@ -152,26 +152,28 @@ eq obj.class + obj.function, 'hotdog'
 
 
 # Property shorthands.
-class extends Object
-  a = 0; @b = 1; x = {a, @b, 2, \3}
+new
+  a = 0; @b = 1; x = {a, @b, 2, \3, +4, -5}
   eq x.a, 0
   eq x.b, 1
   eq x.2, 2
   eq x.3, \3
+  eq x.4, true
+  eq x.5, false
   c = null; d = 0; y = {a || 1, @b && 2, c ? 3, d !? 4}
   eq y.a, 1
   eq y.b, 2
   eq y.c, 3
   eq y.d, 4
-  z = {true, false, null, void, this, arguments, eval, super}
+  z = {true, false, null, void, this, arguments, +eval, -super}
   eq z.true      , true
   eq z.false     , false
   eq z.null      , null
   eq z.void      , void
   eq z.this      , this
   eq z.arguments , arguments
-  eq z.eval      , eval
-  eq z.super     , super
+  eq z.eval      , true
+  eq z.super     , false
 
 
 # [coffee#542](https://github.com/jashkenas/coffee-script/issues/542):
