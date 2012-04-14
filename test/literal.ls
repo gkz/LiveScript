@@ -165,15 +165,16 @@ new
   eq y.b, 2
   eq y.c, 3
   eq y.d, 4
-  z = {true, false, null, void, this, arguments, +eval, -super}
+  z = {true, false, null, void, this, arguments, eval, -super, +debugger}
   eq z.true      , true
   eq z.false     , false
   eq z.null      , null
   eq z.void      , void
   eq z.this      , this
   eq z.arguments , arguments
-  eq z.eval      , true
+  eq z.eval      , eval
   eq z.super     , false
+  eq z.debugger  , true
 
 
 # [coffee#542](https://github.com/jashkenas/coffee-script/issues/542):

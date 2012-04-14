@@ -276,7 +276,7 @@ class exports.Block extends Node
     lines.0 << {@front}; lines[*-1] << {@void}
     return lines.0.compile o, level unless lines.1
     code = ''; last = lines.pop!
-    code += (node << {+\void})compile(o, LEVEL_PAREN) + ', ' for node in lines
+    code += (node << {+void})compile(o, LEVEL_PAREN) + ', ' for node in lines
     code += last.compile o, LEVEL_PAREN
     if level < LEVEL_LIST then code else "(#code)"
 
@@ -736,7 +736,7 @@ class exports.Unary extends Node
     switch op
     case \!
       return it.invert! unless flag
-      return it << {+\void} if it instanceof Fun
+      return it << {+void} if it instanceof Fun
     case \++ \-- then @post = true if flag
     case \new
       # `new C?` => `new C?()`
@@ -813,7 +813,7 @@ class exports.Unary extends Node
       node = .. op.op, node, op.post for op in ops by -1
       them[i] = if sp then lat = Splat node else node
     if not lat and (@void or not o.level)
-      it = ^Block::<< {lines: them, @front, +\void}
+      it = ^Block::<< {lines: them, @front, +void}
     it.compile o, LEVEL_PAREN
 
   # `v = delete o.k`
@@ -926,7 +926,7 @@ class exports.Binary extends Node
       |> return _.compileExpression o
     if @void or not o.level
       Binary \&& Existence(@first, true), @second
-      |> return (_ << {+\void})compileNode o
+      |> return (_ << {+void})compileNode o
     @first.cache o, true
     |> If(Existence _.0; _.1)addElse(@second)compileExpression o
 
@@ -1126,7 +1126,7 @@ class exports.Assign extends Node
       else
         (inc = ivar) and start < i and inc += " + #{ i - start }"
         val = Chain rcache||=Literal(rite), [Index JS inc || i]
-      (^@<<{left: node, right: val, +\void})compile o, LEVEL_PAREN
+      (^@<<{left: node, right: val, +void})compile o, LEVEL_PAREN
 
   rendObj: (o, nodes, rite) ->
     for node in nodes
@@ -1142,7 +1142,7 @@ class exports.Assign extends Node
       node = logic << first: node if logic
       val  = Chain rcache||=Var(rite), [Index key.maybeKey()]
       val  = Import Obj(), val if splat
-      (^@<<{left: node, right: val, +\void})compile o, LEVEL_PAREN
+      (^@<<{left: node, right: val, +void})compile o, LEVEL_PAREN
 
 #### Import
 # Copies properties from right to left.
