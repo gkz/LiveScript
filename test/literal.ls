@@ -366,6 +366,9 @@ i = 3
 while --i then while --i then `break LABEL`
 eq i, 1
 
+`not` = -> !it
+eq false `not` true
+
 
 ### String/Array multiplication
 x = \x

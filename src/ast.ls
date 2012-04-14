@@ -1861,7 +1861,7 @@ class exports.JS extends Node
 
   terminator: ''
 
-  isCallable: -> not @comment
+  ::isAssignable = ::isCallable = -> not @comment
 
   compile: -> if @literal then entab @code, it.indent else @code
 
