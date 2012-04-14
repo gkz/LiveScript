@@ -245,7 +245,7 @@ exports import
   # Matches embedded JavaScript.
   doJS: (code, JSTOKEN.lastIndex) ->
     js = JSTOKEN.exec code .0 or @carp 'unterminated JS literal'
-    @token \LITERAL Object(detab js.slice(1 -1), @dent) <<< {+js}
+    @token \LITERAL Object(detab js.slice(1 -1), @dent) <<< {+js}, true
     @countLines(js)length
 
   # Matches a regular expression literal aka _regex_,
