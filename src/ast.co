@@ -661,18 +661,22 @@ class exports.Obj extends List
         then node.val = logic <<< first: node.val
         else node = Prop node, logic <<< first: node
       if multi then code += \, else multi = true
+      xet = ''
       code += idt + if node instanceof Prop
         {key, val} = node
         if val.accessor
-          key = "#{ if val.params.length then val.void = \set else \get }
-               \ #{ key.compile o }"
-          key + val.compile(o, LEVEL_LIST)slice 8
+          key.=compile o
+          xet = if val.params.length then val.void = \set else \get
+          "#xet #key" + val.compile(o, LEVEL_LIST)slice 8
         else
           val.ripName key
           "#{ key.=compile o }: #{ val.compile o, LEVEL_LIST }"
       else
         "#{ key = node.compile o }: #key"
-      node.carp "duplicate property name \"#key\"" unless dic[0 + key] ^= 1
+      key = Function("return #key")! unless ID.test key
+      if xet then !(dic"#xet #key" ^= 1) or "#key." in dic
+             else !(dic"#key." ^= 1) or "get #key" in dic or "set #key" in dic
+      => _ and node.carp "duplicate property name \"#key\""
     code = "{#{ code and code + \\n + @tab }}"
     rest and code = Import(JS code; Obj rest)compile o <<< indent: @tab
     if @front and \{ is code.charAt! then "(#code)" else code
