@@ -65,7 +65,7 @@
   compileLoopReference: (o, name, ret) ->
     if this instanceof Var   and o.scope.check @value
     or this instanceof Unary and @op of <[ + - ]> and -1/0 < +@it.value < 1/0
-    or this instanceof Literal
+    or this instanceof Literal and not @isComplex!
       return [@compile o] * 2
     asn = Assign Var(tmp = o.scope.temporary name), this
     ret or asn.void = true
@@ -296,8 +296,8 @@ class exports.Literal extends Atom
   isEmpty    : -> switch @value case \void \null then true
   isCallable : -> switch @value case \this \eval then true
   isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt!
-
-  ::isComplex = ::isRegex = -> "#{@value}"charAt! is \/
+  isRegex    : -> "#{@value}"charAt! is \/
+  isComplex  : -> @isRegex! or @value is \debugger
 
   varName: -> if /^\w+$/test @value then \$ + @value else ''
 
