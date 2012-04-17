@@ -65,7 +65,7 @@
   compileLoopReference: (o, name, ret) ->
     if this instanceof Var   and o.scope.check @value
     or this instanceof Unary and @op in <[ + - ]> and -1/0 < +@it.value < 1/0
-    or this instanceof Literal
+    or this instanceof Literal and not @isComplex!
       return [@compile o] * 2
     asn = Assign Var(tmp = o.scope.temporary name), this
     ret or asn.void = true
@@ -296,8 +296,8 @@ class exports.Literal extends Atom
   isEmpty    : -> switch @value case \void \null then true
   isCallable : -> switch @value case \this \eval then true
   isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt!
-
-  ::isComplex = ::isRegex = -> "#{@value}"charAt! is \/
+  isRegex    : -> "#{@value}"charAt! is \/
+  isComplex  : -> @isRegex! or @value is \debugger
 
   varName: -> if /^\w+$/test @value then \$ + @value else ''
 
@@ -661,19 +661,24 @@ class exports.Obj extends List
         then node.val = logic << first: node.val
         else node = Prop node, logic << first: node
       if multi then code += \, else multi = true
+      xet = ''
       code += idt + if node instanceof Prop
         {key, val} = node
         if val.accessor
-          key = "#{ if val.params.length then val.void = \set else \get }
-               \ #{ key.compile o }"
-          key + val.compile(o, LEVEL_LIST)slice 8
+          key.=compile o
+          xet = if val.params.length then val.void = \set else \get
+          "#xet #key" + val.compile(o, LEVEL_LIST)slice 8
         else
           val.ripName key
           "#{ key.=compile o }: #{ val.compile o, LEVEL_LIST }"
       else
         "#{ key = node.compile o }: #key"
-      temp = dic[0 + key]
-      node.carp "duplicate property name \"#key\"" unless dic[0 + key] = temp ^^^ 1
+      key = Function("return #key")! unless ID.test key
+      if xet 
+        !(dic"#xet #key" = dic"#xet #key" ^^^ 1) or "#key." of dic
+      else 
+        !(dic"#key." = dic"#key." ^^^ 1) or "get #key" of dic or "set #key" of dic
+      |> _ and node.carp "duplicate property name \"#key\""
     code = "{#{ code and code + \\n + @tab }}"
     rest and code = Import(JS code; Obj rest)compile o << indent: @tab
     if @front and \{ is code.charAt! then "(#code)" else code

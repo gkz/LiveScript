@@ -1,4 +1,4 @@
-return unless {}__defineGetter__ 
+return unless {}__defineGetter__
 
 v = 'foo'
 o =
@@ -37,3 +37,24 @@ eq '''({
     return it;
   }
 });''' LiveScript.compile 'p:~ -> it' {+bare}
+
+
+throws 'duplicate property name "p" on line 2' -> LiveScript.compile '''
+  p:~ ->
+  p:~ ->
+'''
+
+throws 'duplicate property name "p" on line 2' -> LiveScript.compile '''
+  p:~ (_) ->
+  p:~ (_) ->
+'''
+
+throws 'duplicate property name "p" on line 2' -> LiveScript.compile '''
+  p: 1
+  p:~ ->
+'''
+
+throws 'duplicate property name "p" on line 2' -> LiveScript.compile '''
+  p:~ ->
+  p: 1
+'''

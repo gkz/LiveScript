@@ -186,6 +186,12 @@ new
 throws 'duplicate property name "a" on line 1'
 , -> LiveScript.compile '{a, b, a}'
 
+throws 'duplicate property name "0" on line 1'
+, -> LiveScript.compile '{0, "0"}'
+
+throws 'duplicate property name "1" on line 1'
+, -> LiveScript.compile '{1, 1.0}'
+
 
 #### Implicit/Braceless
 
