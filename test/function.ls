@@ -462,7 +462,7 @@ eq void do
   true
 
 
-### implicit functions
+### new function syntax
 area(a, b) = a * b
 eq (area 2, 3), 6
 
@@ -488,8 +488,16 @@ class Multiplier
   multiply(x, y): x * y
   xSix!: @num * 6
   !zip(x): x
+  bound!:
+    f@! = @num * 2
 
 multi = new Multiplier 3
+
+sometin =
+  num:    7
+  hooloo: multi.bound!
+
+eq 6 sometin.hooloo!
 
 eq 6    multi.multiply(3, 2)
 eq 18   multi.xSix!

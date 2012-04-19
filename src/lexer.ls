@@ -381,7 +381,7 @@ exports import
     case <[ < > <= >= ]> then tag = \COMPARE
     case <[ <<<<  >>>>  >>>>>  <?  >? ]> then tag = \SHIFT
     case \(
-      unless @last.0 in <[ FUNCTION LET ]> or @able true
+      unless @last.0 in <[ FUNCTION LET ]> or @able true or @last.1 is \.@
         @token \( \(
         @closes.push \)
         @parens.push @last
@@ -399,18 +399,28 @@ exports import
     case \] \)
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>
+      # change id@! to calls (id! already makes calls)
+      if @last.0 is \UNARY and @last.1 is \!
+        @tokens.pop!
+        @token \CALL( \(
+        @token \)CALL \)
       if @last.0 is \)CALL
+        tag = \ASSIGN if val is \=
+        arrow = \->
         @tokens.pop! # remove the )CALL
         @token \)PARAM \) # add )PARAM
         break if t.0 is \CALL( for t, i in @tokens by -1 # find opening CALL
         # remove opening call, replace with assign and param
-        tag = \ASSIGN if val is \=
         @tokens.splice i, 1, [tag, val, @line], [\PARAM( \( @line]
+        # if id@(params) = something then id = (params) ~> something
+        if @tokens[i-1].1 is \.@
+          @tokens.splice i-1, 1
+          arrow = \~>
         # if !id(params)= or !id(params): then disable func return
         if @tokens[i-2].1 is \! 
-          @tokens.splice (i-2), 1
+          @tokens.splice i-2, 1
           @tokens.splice i, 0, [\UNARY \! @line]
-        @token \-> \-> # append arrow to end
+        @token \-> arrow # append arrow to end
         return 2 # return early, with length of arrow
       if val is \:
         if @last.0 not in <[ ID STRNUM ) ]> then tag = \LABEL; val = ''
