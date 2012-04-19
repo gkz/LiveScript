@@ -406,6 +406,10 @@ exports import
         # remove opening call, replace with assign and param
         tag = \ASSIGN if val is \=
         @tokens.splice i, 1, [tag, val, @line], [\PARAM( \( @line]
+        # if !id(params)= or !id(params): then disable func return
+        if @tokens[i-2].1 is \! 
+          @tokens.splice (i-2), 1
+          @tokens.splice i, 0, [\UNARY \! @line]
         @token \-> \-> # append arrow to end
         return 2 # return early, with length of arrow
       if val is \:

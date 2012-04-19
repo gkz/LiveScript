@@ -479,13 +479,18 @@ obj =
 
 eq obj.add(1, 2), 3
 
+!nothing(x) = x
+eq void, nothing true
+
 class Multiplier
   (@num) ->
 
   multiply(x, y): x * y
-  xSix(): @num * 6
+  xSix!: @num * 6
+  !zip(x): x
 
 multi = new Multiplier 3
 
-eq multi.multiply(3, 2), 6
-eq multi.xSix!, 18
+eq 6    multi.multiply(3, 2)
+eq 18   multi.xSix!
+eq void multi.zip true
