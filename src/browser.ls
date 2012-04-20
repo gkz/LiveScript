@@ -17,7 +17,7 @@ LiveScript.load = (url, callback or ->) ->
   xhr
 
 # Execute `<script>`s with _livescript_ type.
-type = //^ (?: text/ | application/ )? livescript $//i
+type = //^ (?: text/ | application/ )? ls $//i
 sink = (error) -> error and setTimeout -> throw error
 for script in document.getElementsByTagName \script
   if type.test script.type
