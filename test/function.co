@@ -460,3 +460,4 @@ eq void do
   !function C then C
   ok new C instanceof C
   true
+eq false !!->
