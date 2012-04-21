@@ -1,0 +1,90 @@
+<!doctype html>
+<title>LiveScript</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script src="https://raw.github.com/gkz/LiveScript/master/extras/livescript.js" async=true ></script>
+
+<link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
+
+<style>
+  .site {
+    margin-top: 20px;
+  }
+  .description { 
+    font-size: 14pt; 
+    line-height: 24pt;
+  }
+  .compiler textarea {
+    width: 98%;
+    height: 300px;
+  }
+</style>
+
+<div class="site container-fluid">
+  <div class="row-fluid">
+    <div class="span2">
+      <h1>LiveScript</h1>
+    </div>
+    <div class="span5">
+      <p class="well description">LiveScript is a fork of <a href="//satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="//coffeescript.org/">CoffeeScript</a>. For more information please see the <a href="https://github.com/gkz/LiveScript/blob/master/README.md">README</a> and the <a href="https://github.com/gkz/LiveScript">github project</a>.</p>
+      <h3>An Example</h3>
+      <h4>LiveScript</h4>
+<pre>take(n, [x, ...xs]:list) =
+  | n <= 0       => []
+  | !list.length => []
+  | otherwise    => x & take n - 1, xs
+
+take 2, [1 2 3 4 5] # [1, 2]</pre>
+      <h4>Compiled JavaScript</h4>
+<pre>var take, __slice = [].slice;
+take = function(n, list){
+  var x, xs;
+  x = list[0], xs = __slice.call(list, 1);
+  switch (false) {
+  case !(n <= 0):
+    return [];
+  case !!list.length:
+    return [];
+  default:
+    return [(x)].concat(take(n - 1, xs));
+  }
+};
+take(2, [1, 2, 3, 4, 5]); // [1, 2]</pre>
+
+    </div>
+    <div class="span5 compiler">
+      <div class="well">
+        <textarea placeholder="Enter LiveScript here"></textarea>
+        <div class="actions">
+          <button class="btn btn-primary" data-action="compile">Compile</button>
+          <button class="btn" data-action="run">Run</button>
+          <button class="btn" data-action="ast">AST</button>
+          <button class="btn" data-action="lex">Lex</button>
+          <button class="btn" data-action="tokens">Tokens</button>
+        </div>
+      </div>
+      <div class="compiler-output">
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/ls">
+$ !->
+  
+  !boom(action) = 
+    result = try 
+      func = if action is \run then \compile else action
+      LiveScript[func]($ '.compiler textarea' .val!, {+bare})
+    catch e
+      e.message
+    if action is \run
+      result = eval result
+    if result
+      console?.log result
+      result = JSON.stringify result if action in <[ lex tokens ]>
+      $ '.compiler-output' .prepend "<pre>#result</pre>"
+
+  $ '.actions button' .on 'click', ->
+    boom($ @ .data 'action')
+</script>
