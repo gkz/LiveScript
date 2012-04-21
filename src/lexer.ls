@@ -658,7 +658,8 @@ function able tokens, i ? tokens.length, call
 
 # Constructs a string literal by (un)escaping quotes and newlines.
 string = let do
-  escaped = /\\(?:([0-3]?[0-7]{2}|[1-7])|[\\0bfnrtuvx]|[^\n\S]|([\w\W]))?/g
+  escaped = // \\ (?: ([0-3]?[0-7]{2} | [1-7] | 0(?=[89]))
+                    | [\\0bfnrtuvx] | [^\n\S] | ([\w\W])   )? //g
   descape = (it, oct, rest) ->
     # Convert octal to hex for strict mode.
     return \\\x + (0x100 + parseInt oct, 8)toString 16 .slice 1 if oct

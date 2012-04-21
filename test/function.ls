@@ -461,6 +461,7 @@ eq void do
   ok new C instanceof C
   true
 
+eq false !!->
 
 ### new function syntax
 area(a, b) = a * b

@@ -740,8 +740,9 @@ class exports.Unary extends Node
       return it
     switch op
     case \!
-      return it.invert! unless flag
-      return it << {+void} if it instanceof Fun
+      break if flag
+      return it << {+void} if it instanceof Fun and not it.void
+      return it.invert!
     case \++ \-- then @post = true if flag
     case \new
       # `new C?` => `new C?()`
