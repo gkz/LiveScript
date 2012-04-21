@@ -1,6 +1,7 @@
 # LiveScript
 is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived from [CoffeeScript](http://coffeescript.org/). Like those two it compiles down to JavaScript, with the goal of having a straightforward mapping to JavaScript. LiveScript aims for increased code beauty, less typing, and an easier transition from CoffeeScript, in comparison to Coco. LiveScript is not currently ready for production use, as it is still developing and changing often.
 
+Checkout [gkz.github.com/LiveScript](http://gkz.github.com/LiveScript/).
 ## Overview
 ### Example
 LiveScript:
