@@ -421,6 +421,13 @@ exports import
         if @tokens[i-2].1 is \! 
           @tokens.splice i-2, 1
           @tokens.splice i, 0, [\UNARY \! @line]
+        else if @tokens[i-2].1 is \.
+        and     @tokens[i-3].1 is \) 
+        and     @tokens[i-4].1 is \! 
+        and     @tokens[i-5].1 is \this
+          @tokens.splice i-4, 2
+          @tokens.splice i-1, 0, [\UNARY \! @line]
+
         @token \-> arrow # append arrow to end
         return 2 # return early, with length of arrow
       if val is \:

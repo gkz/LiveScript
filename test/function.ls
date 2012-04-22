@@ -493,6 +493,10 @@ class Multiplier
   bound!:
     f@! = @num * 2
 
+  @!zip3@! = true
+
+eq void Multiplier.zip3!
+
 multi = new Multiplier 3
 
 sometin =
