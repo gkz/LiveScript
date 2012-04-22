@@ -577,13 +577,13 @@ class exports.Call extends Node
     break if a.filler for a, index of args
     node <<< back: (args[index] = Fun(params,, bound) <<< void: noret)body
 
-  @let = (name, args, body) ->
+  @let = (args, body) ->
     params = for a, i of args
       if a.op is \= and not a.logic
       then args[i] = a.right; a.left
       else Var a.varName() || a.carp 'invalid "let" argument'
     args.unshift Literal \this
-    @block Fun(params, body) <<< {name, +\let}, args, \.call
+    @block Fun(params, body), args, \.call
 
 #### List
 # An abstract node for a list of comma-separated items.
@@ -1311,7 +1311,7 @@ class exports.Fun extends Node
       pscope is o.block.scope or @carp 'misplaced function declaration'
       @accessor              and @carp 'named accessor'
       pscope.add name, \function
-    if @statement or name and @let
+    if @statement or name and @labeled
       code += ' ' + scope.add name, \function
     @void or @ctor or @newed or body.makeReturn!
     code += "(#{ @compileParams scope }){"
@@ -1816,6 +1816,10 @@ class exports.If extends Node
 # A labeled block or statement.
 class exports.Label extends Node
   (@label or \_, @it) ->
+    if fun = it instanceof [Fun, Class] and it or
+             it.calling and it.it.head
+      fun.name or fun <<< {name: @label, +labeled}
+      return it
 
   ::{children, isCallable, isArray} = Parens::
 

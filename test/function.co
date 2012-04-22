@@ -461,3 +461,10 @@ eq void do
   ok new C instanceof C
   true
 eq false !!->
+
+
+### explicit naming
+let
+  do f = :a ->
+    a.b = \c
+  eq f.b, \c
