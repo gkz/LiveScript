@@ -489,6 +489,7 @@ class Multiplier
   multiply(x, y): x * y
   xSix!: @num * 6
   !zip(x): x
+  !zip2@!: true
   bound!:
     f@! = @num * 2
 
@@ -503,3 +504,4 @@ eq 6 sometin.hooloo!
 eq 6    multi.multiply(3, 2)
 eq 18   multi.xSix!
 eq void multi.zip true
+eq void multi.zip2!

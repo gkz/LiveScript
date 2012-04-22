@@ -416,6 +416,7 @@ exports import
         if @tokens[i-1].1 is \.@
           @tokens.splice i-1, 1
           arrow = \~>
+          i-- # we have one less token now
         # if !id(params)= or !id(params): then disable func return
         if @tokens[i-2].1 is \! 
           @tokens.splice i-2, 1
