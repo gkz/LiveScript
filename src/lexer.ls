@@ -464,7 +464,7 @@ exports import
     case \~
       return 1 if @dotcat val
       tag = \UNARY
-    case \-> \~> then up = \->; fallthrough
+    case \-> \~> \--> \~~> then up = \->; fallthrough
     case \<- \<~ then @parameters tag = up || \<-
     case \::     then up = \prototype; fallthrough
     case \..     then @adi!; tag = \ID; val = up || \constructor
@@ -978,6 +978,7 @@ SYMBOL = //
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | &&& | \|\|\| | \^\^\^       # bitwise
 | \+\+\+                      # list concat 
+| --> | ~~>                   # curry
 | ([-+&|:])\1                 # crement / logic / `prototype`
 | &                           # cons
 | \([^\n\S]*\)                # call

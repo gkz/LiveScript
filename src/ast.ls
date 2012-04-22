@@ -1279,7 +1279,7 @@ class exports.Existence extends Node
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Block(), @bound and \__this) ~>
+  (@params or [], @body or Block(), @bound and \__this, @curried or false) ~>
 
   children: <[ params body ]>
 
@@ -1340,6 +1340,7 @@ class exports.Fun extends Node
       code += "\n#{tab}return #name;"
     else if @bound and @ctor
       code += ' function __ctor(){} __ctor.prototype = prototype;'
+    code = "#{utility \curry}(#code)" if @curried
     if @front and not @statement then "(#code)" else code
 
   compileParams: (scope) ->
@@ -2031,6 +2032,23 @@ UTILITIES =
   }'''
 
   out: '''typeof exports != 'undefined' && exports || this'''
+
+  curry: '''function(func){
+    __slice = [].slice
+    return function(){
+      var params;
+      params = __slice.call(arguments);
+      if (params.length === func.length) {
+        return func.apply(null, params);
+      } else {
+        return function(){
+          var ps;
+          ps = __slice.call(arguments);
+          return func.apply(null, __slice.call(params).concat(__slice.call(ps)));
+        };
+      }
+    };
+  }'''
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"

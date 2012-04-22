@@ -510,6 +510,28 @@ eq 18   multi.xSix!
 eq void multi.zip true
 eq void multi.zip2!
 
+### auto currying magic
+times = (x, y) --> x * y
+timesTwo = times 2
+
+eq 12 times 2 6
+eq 8 timesTwo 4
+
+boundAdd = (x, y) ~~> x + y
+addThree = boundAdd 3
+
+eq 12 boundAdd 6 6
+eq 7 addThree 4
+
+threeParams = (x, y, z) --> x * y + z
+multByTwo = threeParams 2
+
+eq 7 multByTwo 3 1
+
+addNine = threeParams 3 3 
+
+eq 16 addNine 7
+
 ### explicit naming
 let
   do f = :a ->
