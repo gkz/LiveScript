@@ -3,7 +3,8 @@ is a fork of [Coco](http://satyr.github.com/coco/), which is in turn derived fro
 
 Checkout [gkz.github.com/LiveScript](http://gkz.github.com/LiveScript/).
 ## Overview
-### Example
+### Examples
+#### Example 1
 LiveScript:
 
     take(n, [x, ...xs]:list) =
@@ -11,7 +12,7 @@ LiveScript:
       | !list.length => []
       | otherwise    => x & take n - 1, xs
 
-    take 2, [1 2 3 4 5] # [1, 2]
+    take 2, [1 2 3 4 5] #=> [1, 2]
 
 Compiled JavaScript:   
 
@@ -28,7 +29,42 @@ Compiled JavaScript:
         return [(x)].concat(take(n - 1, xs));
       }
     };
-    take(2, [1, 2, 3, 4, 5]); // [1, 2]
+    take(2, [1, 2, 3, 4, 5]); //=> [1, 2]
+
+#### Example 2
+LiveScript:
+
+    times = (x, y) --> x * y
+    
+    timesTwo = times 2
+    
+    timesTwo 4 #=> 8
+
+Compiled JavaScript:
+
+    var times, timesTwo;
+    times = __curry(function(x, y){
+      return x * y;
+    });
+    timesTwo = times(2);
+    timesTwo(4); //=> 8
+    
+    function __curry(func){
+      __slice = [].slice
+      return function(){
+        var params;
+        params = __slice.call(arguments);
+        if (params.length === func.length) {
+          return func.apply(null, params);
+        } else {
+          return function(){
+            var ps;
+            ps = __slice.call(arguments);
+            return func.apply(null, __slice.call(params).concat(__slice.call(ps)));
+          };
+        }
+      };
+    }
 
 ### Goals
 - Increase code beauty.
@@ -131,5 +167,4 @@ LiveScript was one of the original names for JavaScript, so it seemed fitting.
 - Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell. 
 - Power operator is now right associative. eg. 2^2^3 == 2^(2^3) == 256. Rationale: follwing Haskell's and many other languages lead on this one.
 - Added new function definition syntax, eg. `add(x, y) = x + y` == `add = (x, y) -> x + y`. You can also use it in object literals and class definitions eg. `add(x, y): x + y` == `add: (x, y) -> x + y`. You can also suppress return on both by starting with a bang, eg. `!nothingness(params) = true` will not return anything. As well you can have lexically bound this using `id@(param) = something` which is suger for `id = (param) ~> something` (notice the wavy arrow) - sort of ugly though, looking for a better syntax. You can go crazy and do something like this if you wish: `@!func@! = something` which is a function assigned to this, which takes no parameters and returns nothing, while being lexically bound to this. Rationale: more beautiful, less typing, more Haskell like.
-
-    
+- Added magic auto curried functions, defined using `-->` and `~~>`. With this you can do `times = (x, y) --> x * y`, `timesTwo = times 2`, `timesTwo 4 #=> 8`. Rationale: more Haskell like, more beautiful. 
