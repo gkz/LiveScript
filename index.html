@@ -33,7 +33,7 @@
       <h1>LiveScript</h1>
     </div>
     <div class="span5">
-      <p class="well description">LiveScript is a fork of <a href="//satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="//coffeescript.org/">CoffeeScript</a>. For more information please see the <a href="https://github.com/gkz/LiveScript/blob/master/README.md">README</a> and the <a href="https://github.com/gkz/LiveScript">github project</a>.</p>
+      <p class="well description">LiveScript is a fork of <a href="//satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="//coffeescript.org/">CoffeeScript</a>. It is a language that compiles down to JavaScript. For more information please see the <a href="https://github.com/gkz/LiveScript/blob/master/README.md">README</a> and the <a href="https://github.com/gkz/LiveScript">github project</a>.</p>
       <h3>An Example</h3>
       <h4>LiveScript</h4>
 <pre id="example">take(n, [x, ...xs]:list) =
@@ -66,8 +66,8 @@ take(2, [1, 2, 3, 4, 5]); // [1, 2]</pre>
           <button class="btn btn-primary" data-action="compile" title="Convert LiveScript to Javascript">Compile</button>
           <button class="btn" data-action="run" title="Run compiled Javascript">Run</button>
           <button class="btn" data-action="ast" title="Abstract Syntax Tree">AST</button>
-          <button class="btn" data-action="lex" title="Lexical analysis">Lex</button>
           <button class="btn" data-action="tokens" title="Tokenization of input">Tokens</button>
+          <button class="btn" data-action="lex" title="Same as tokens, but skipping rewriting">Lex</button>
         </div>
       </div>
       <div class="compiler-output">
