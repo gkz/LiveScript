@@ -136,12 +136,6 @@ exports import
     case \import
       id = \<<
       able @tokens or @token \LITERAL \this
-    case \let
-      # `:named let`
-      if @last.0 is \LABEL
-        @last.0 = \LET
-        return 3
-      id = ''
     default
       break if id in KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED

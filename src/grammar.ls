@@ -63,7 +63,7 @@ bnf =
 
     o 'Chain ?' -> Chain Existence $1.unwrap!
 
-    o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $1, $3, $6
+    o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 

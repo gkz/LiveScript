@@ -509,3 +509,9 @@ eq 6    multi.multiply(3, 2)
 eq 18   multi.xSix!
 eq void multi.zip true
 eq void multi.zip2!
+
+### explicit naming
+let
+  do f = :a ->
+    a.b = \c
+  eq f.b, \c
