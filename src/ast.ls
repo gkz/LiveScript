@@ -2034,17 +2034,19 @@ UTILITIES =
   out: '''typeof exports != 'undefined' && exports || this'''
 
   curry: '''function(func){
-    __slice = [].slice
+    var __slice = [].slice;
     return function(){
-      var params;
-      params = __slice.call(arguments);
-      if (params.length === func.length) {
+      var params = __slice.call(arguments);
+      if (params.length >= func.length) {
         return func.apply(null, params);
       } else {
-        return function(){
-          var ps;
-          ps = __slice.call(arguments);
-          return func.apply(null, __slice.call(params).concat(__slice.call(ps)));
+        return f = function(){
+          params = params.concat(__slice.call(arguments));
+          if (params.length >= func.length) {
+            return func.apply(null, params);
+          } else {
+            return f;
+          }    
         };
       }
     };

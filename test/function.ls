@@ -524,12 +524,12 @@ eq 12 boundAdd 6 6
 eq 7 addThree 4
 
 threeParams = (x, y, z) --> x * y + z
-multByTwo = threeParams 2
+eq 10 threeParams 2 3 4 5
 
-eq 7 multByTwo 3 1
+multByTwo = threeParams 2
+eq 7 multByTwo(3)(1)
 
 addNine = threeParams 3 3 
-
 eq 16 addNine 7
 
 &minus(x, y) = y - x
