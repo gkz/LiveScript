@@ -34,14 +34,16 @@
     </div>
     <div class="span5">
       <p class="well description">LiveScript is a fork of <a href="//satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="//coffeescript.org/">CoffeeScript</a>. It is a language that compiles down to JavaScript. For more information please see the <a href="https://github.com/gkz/LiveScript/blob/master/README.md">README</a> and the <a href="https://github.com/gkz/LiveScript">github project</a>.</p>
-      <h3>An Example</h3>
+      <h2>Examples</h2>
+      <p>Double-click the example LiveScript to load it into the compiler.
+      <h3>Example 1</h3>
       <h4>LiveScript</h4>
-<pre id="example">take(n, [x, ...xs]:list) =
+<pre class="example">take(n, [x, ...xs]:list) =
   | n <= 0       => []
   | !list.length => []
   | otherwise    => x & take n - 1, xs
 
-take 2, [1 2 3 4 5] # [1, 2]</pre>
+take 2, [1 2 3 4 5] #=> [1, 2]</pre>
       <h4>Compiled JavaScript</h4>
 <pre>var take, __slice = [].slice;
 take = function(n, list){
@@ -56,15 +58,42 @@ take = function(n, list){
     return [(x)].concat(take(n - 1, xs));
   }
 };
-take(2, [1, 2, 3, 4, 5]); // [1, 2]</pre>
+take(2, [1, 2, 3, 4, 5]); //=> [1, 2]</pre>
+      <h3>Example 2</h3>
+      <h4>LiveScript</h4>
+<pre class="example">times = (x, y) --> x * y
+
+timesTwo = times 2
+
+timesTwo 4 #=> 8</pre>
+      <h4>Compiled JavaScript</h4>
+<pre>var times, timesTwo;
+times = __curry(function(x, y){
+  return x * y;
+});
+timesTwo = times(2);
+timesTwo(4); //=> 8
+
+function __curry(func) {
+  var __slice = [].slice, f,
+      args    = __slice.call(arguments, 1);
+  if (!func.length) { return func; }
+  f = function(){
+    var params = args;
+    !!arguments.length && (params = params.concat(__slice.call(arguments)));
+    return params.length >= func.length ? 
+      func.apply(this, params) : __curry.apply(this,[].concat(func, params));
+  };
+  return args.length >= func.length ? f() : f;
+};</pre>
 
     </div>
     <div class="span5 compiler">
       <div class="well">
         <textarea placeholder="Enter LiveScript here"></textarea>
         <div class="actions">
-          <button class="btn btn-primary" data-action="compile" title="Convert LiveScript to Javascript">Compile</button>
-          <button class="btn" data-action="run" title="Run compiled Javascript">Run</button>
+          <button class="btn btn-primary" data-action="compile" title="Convert LiveScript to JavaScript">Compile</button>
+          <button class="btn" data-action="run" title="Run compiled JavaScript">Run</button>
           <button class="btn" data-action="ast" title="Abstract Syntax Tree">AST</button>
           <button class="btn" data-action="tokens" title="Tokenization of input">Tokens</button>
           <button class="btn" data-action="lex" title="Same as tokens, but skipping rewriting">Lex</button>
@@ -109,11 +138,10 @@ $ !->
   $ '.actions button' .on 'click', ->
     boom($ @ .data 'action')
 
-  $ '#example' .dblclick ->
+  $ '.example' .dblclick ->
     example = $ this .text!
     curValue = $ '.compiler textarea' .val!
-    defaultValue = $('.compiler textarea').attr('placeholder')
-    $ '.compiler textarea' .val example if curValue in ["", defaultValue]
+    $ '.compiler textarea' .val example
     
 </script>
 </body>
