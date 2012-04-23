@@ -2036,7 +2036,6 @@ UTILITIES =
   curry: '''function(func) {
     var __slice = [].slice, f,
         args    = __slice.call(arguments, 1);
-    
     if (!func.length) { return func; }
     f = function(){
       var params = args;
