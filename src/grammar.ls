@@ -172,7 +172,7 @@ bnf =
     o 'Chain !?' -> Existence $1.unwrap!, true
 
     # The function literal can be either anonymous with `->`,
-    o 'PARAM( ArgList OptComma )PARAM -> Block' -> L Fun $2, $6, $5.0 is \~, $5 in <[ --> ~~> ]>
+    o 'PARAM( ArgList OptComma )PARAM -> Block' -> L Fun $2, $6, $5.charAt(0) is \~, $5 in <[ --> ~~> ]>
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
 
