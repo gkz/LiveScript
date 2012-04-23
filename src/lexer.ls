@@ -406,12 +406,12 @@ exports import
         break if t.0 is \CALL( for t, i in @tokens by -1 # find opening CALL
         # remove opening call, replace with assign and param
         @tokens.splice i, 1, [tag, val, @line], [\PARAM( \( @line]
-        # if id@(params) = something then id = (params) ~> something
-        if @tokens[i-1].1 is \.@
+        # if 'id@(params) = something' then 'id = (params) ~> something'
+        if @tokens[i-1].1 in <[ .@ this ]>
           @tokens.splice i-1, 1
           arrow = \~>
           i-- # we have one less token now
-        # if !id(params)= or !id(params): then disable func return
+        # if '!id(params)=' or '!id(params):' then disable func return
         if @tokens[i-2].1 is \! 
           @tokens.splice i-2, 1
           @tokens.splice i, 0, [\UNARY \! @line]
@@ -421,7 +421,16 @@ exports import
         and     @tokens[i-5].1 is \this
           @tokens.splice i-4, 2
           @tokens.splice i-1, 0, [\UNARY \! @line]
-
+        # find if & is at the start
+        # if '&id(params) = something' then 'id = (params) --> something'
+        # when combined with the above the '&' goes before the '!'
+        curried = if @tokens[i-1].0 is \ID and @tokens[i-2].1 is \&
+          @tokens.splice i-2, 1
+          true
+        else if      @tokens[i].1 is \!    and @tokens[i-3].1 is \&
+          @tokens.splice i-3, 1
+          true
+        arrow = (arrow.charAt 0) + arrow if curried
         @token \-> arrow # append arrow to end
         return 2 # return early, with length of arrow
       if val is \:

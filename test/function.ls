@@ -532,6 +532,13 @@ addNine = threeParams 3 3
 
 eq 16 addNine 7
 
+&minus(x, y) = y - x
+minusTwo = minus 2
+eq 5 minusTwo 7 
+
+&!plus! = true
+eq void plus!
+
 ### explicit naming
 let
   do f = :a ->
