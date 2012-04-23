@@ -49,25 +49,18 @@ Compiled JavaScript:
     timesTwo = times(2);
     timesTwo(4); //=> 8
     
-    function __curry(func){
-      var __slice = [].slice;
-      return function(){
-        var params = __slice.call(arguments),
-            f;
-        if (params.length >= func.length) {
-          return func.apply(null, params);
-        } else {
-          return f = function(){
-            params = params.concat(__slice.call(arguments));
-            if (params.length >= func.length) {
-              return func.apply(null, params);
-            } else {
-              return f;
-            }    
-          };
-        }
+    function __curry(func) {
+      var __slice = [].slice, f,
+          args    = __slice.call(arguments, 1);
+      if (!func.length) { return func; }
+      f = function(){
+        var params = args;
+        !!arguments.length && (params = params.concat(__slice.call(arguments)));
+        return params.length >= func.length ? 
+          func.apply(this, params) : __curry.apply(this,[].concat(func, params));
       };
-    }
+      return args.length >= func.length ? f() : f;
+    };
 
 ### Goals
 - Increase code beauty.
