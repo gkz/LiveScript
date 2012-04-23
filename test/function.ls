@@ -539,6 +539,14 @@ eq 5 minusTwo 7
 &!plus! = true
 eq void plus!
 
+class Divider
+  ->
+
+  @&divide1(x, y) = x / y
+  @&!divide2(x, y) = x / y
+
+eq 2    Divider.divide1 6 3
+eq void Divider.divide2 2 4
 ### explicit naming
 let
   do f = :a ->
