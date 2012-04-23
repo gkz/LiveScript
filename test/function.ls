@@ -547,6 +547,14 @@ class Divider
 
 eq 2    Divider.divide1 6 3
 eq void Divider.divide2 2 4
+
+f4 = ((a, b, c, d) --> a * b * c * d)(2)(3)
+g = f4 5
+h = f4 7
+
+eq 330 g 11
+eq 546 h 13
+
 ### explicit naming
 let
   do f = :a ->
