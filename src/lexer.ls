@@ -425,7 +425,7 @@ exports import
         if @tokens[i-2].1 is \& and @tokens[i-3].1 is \this
           @tokens.splice i-2, 0, [\DOT \. @line]
           i++ # added a token
-        else if @tokens[i-3].1 is \& and @tokens[i-4].1 is \this
+        else if @tokens[i-3]?.1 is \& and @tokens[i-4].1 is \this
           @tokens.splice i-3, 0, [\DOT \. @line]
           i++ # added a token
         # find if & is at the start
