@@ -124,11 +124,11 @@ function __curry(func) {
       console?.log result
       result = JSON.stringify result if action in <[ lex tokens ]>
       result = websafe result
-      close = ' href="#close" class="closer" title="Close" '
+      close = ' href="#close" class="close" title="Close" '
       $ '.compiler-output'
-        .prepend "<div><h3>#action<a #close >x</a></h3><pre>#result</pre></div>"
+        .prepend "<div><h3>#action<a #close >&times;</a></h3><pre>#result</pre></div>"
 
-  $ '.compiler-output' .on \click \.closer ->
+  $ '.compiler-output' .on \click \.close ->
     $(this) .parent! .parent! .hide!   # or remove()
     return false
 
@@ -137,10 +137,6 @@ function __curry(func) {
 
   $ '.example' .on \dblclick ->
     $ '.compiler textarea' .val($ this .text!)
-
-  $ '.sidebar .nav-list' .on \click \a ->
-    $ '.sidebar .nav-list li' .removeClass \active
-    $ this .parent \li .addClass \active
 
   $ '.sidebar .navlist' .scrollspy!
 
