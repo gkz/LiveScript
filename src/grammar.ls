@@ -238,6 +238,8 @@ bnf =
 
     o '... Expression' -> Splat $2
 
+    o '{ Properties OptComma } LABEL' -> Prop L(Key $5), L(Obj $2 .named $5)
+
     o \COMMENT -> L JS $1, true true
   # Properties within an object literal can be separated by
   # commas, as in JavaScript, or simply by newlines.
