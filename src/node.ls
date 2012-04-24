@@ -1,7 +1,7 @@
 #### [node.js](http://nodejs.org) setups
 # - Override `.run`.
 # - Inherit `EventEmitter`.
-# - Register _.co_ extension.
+# - Register _.ls extension.
 
 module.exports = !(LiveScript) ->
   fs   = require \fs
@@ -22,7 +22,7 @@ module.exports = !(LiveScript) ->
 
   LiveScript import all require(\events)EventEmitter::
 
-  require.extensions\.co = (module, filename) ->
+  require.extensions\.ls = (module, filename) ->
     js = LiveScript.compile fs.readFileSync(filename, \utf8), {filename, +bare}
     try module._compile js, filename catch throw hackTrace e, js, filename
 
