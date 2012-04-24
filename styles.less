@@ -67,6 +67,7 @@ body {
     height: 50%;
     pre {
       margin-right: 5px;
+      border: 1px solid #ccc;
     }
     .close {
       margin-right: 6px;
@@ -84,5 +85,43 @@ body {
     font-size: 14pt; 
     line-height: 24pt;
     margin-top: @top-margin;
+  }
+  .example {
+    height: 100%;
+    overflow: auto;
+    border: 1px solid #ccc;
+    -webkit-border-radius: 3px; 
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    background-color: #f7f7f9;
+
+    .source {
+      display: none;
+    }
+    .example-ls, .example-js {
+      width: 50%;
+      box-sizing: padding-box;
+      height: 100%;
+      border: none;
+      h5 {
+        padding-top: 12px;
+        padding-left: 10px;
+      }
+      & > pre {
+        padding: 10px;
+        height: 100%;
+        border: none;
+        margin-bottom: 0;
+      }
+    }
+    .example-ls {
+      float: left; 
+    }
+    .example-js {
+      float: right;
+      box-sizing: border-box;
+      border-left: 1px dotted #ccc;
+    }
   }
 }

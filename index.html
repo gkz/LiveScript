@@ -10,6 +10,9 @@
 <script src="bootstrap/js/bootstrap.js"></script>
 <script src="bootstrap/js/bootstrap-scrollspy.js"></script>
 
+<script src="google-code-prettify/prettify.js"></script>
+<link href="google-code-prettify/prettify.css" rel="stylesheet">
+
 <link href="styles.less" rel="stylesheet/less" type="text/css">
 <script src="less-1.3.0.min.js#!watch"></script>
 
@@ -47,17 +50,27 @@
       <p class="well description">LiveScript is a fork of <a href="//satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="//coffeescript.org/">CoffeeScript</a>. It is a language that compiles down to JavaScript. For more information please see the <a href="https://github.com/gkz/LiveScript/blob/master/README.md">README</a> and the <a href="https://github.com/gkz/LiveScript">github project</a>.</p>
       <a id="examples" name="examples"></a>
       <h2>Examples</h2>
-      <p>Double-click the example LiveScript to load it into the compiler.
+      <p>Double-click an example to load it into the compiler.
       <h3>Example 1</h3>
-      <h4>LiveScript</h4>
-<pre class="example">take(n, [x, ...xs]:list) =
+      <div class="example">
+        <div class="example-ls">
+        <h5>LiveScript</h5>
+<pre class="source">take(n, [x, ...xs]:list) =
   | n <= 0       => []
   | !list.length => []
   | otherwise    => x & take n - 1, xs
 
 take 2, [1 2 3 4 5] #=> [1, 2]</pre>
-      <h4>Compiled JavaScript</h4>
-<pre>var take, __slice = [].slice;
+<pre class="prettyprint lang-ls">take(n, [x, ...xs]:list) =
+  | n <= 0       => []
+  | !list.length => []
+  | otherwise    => x & take n - 1, xs
+
+take 2, [1 2 3 4 5] #=> [1, 2]</pre>
+        </div>
+        <div class="example-js">
+        <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">var take, __slice = [].slice;
 take = function(n, list){
   var x, xs;
   x = list[0], xs = __slice.call(list, 1);
@@ -71,40 +84,50 @@ take = function(n, list){
   }
 };
 take(2, [1, 2, 3, 4, 5]); //=> [1, 2]</pre>
+        </div>
+      </div>
       <h3>Example 2</h3>
-      <h4>LiveScript</h4>
-<pre class="example">times = (x, y) --> x * y
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="source">times = (x, y) --> x * y
 
 timesTwo = times 2
 
 timesTwo 4 #=> 8</pre>
-      <h4>Compiled JavaScript</h4>
-<pre>var times, timesTwo;
+<pre class="prettyprint lang-ls">times = (x, y) --> x * y
+
+timesTwo = times 2
+
+timesTwo 4 #=> 8</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">var times, timesTwo;
 times = __curry(function(x, y){
-  return x * y;
+ return x * y;
 });
 timesTwo = times(2);
 timesTwo(4); //=> 8
 
-function __curry(func) {
-  var __slice = [].slice, f,
-      args    = __slice.call(arguments, 1);
-  if (!func.length) { return func; }
-  f = function(){
-    var params = args;
-    !!arguments.length && (params = params.concat(__slice.call(arguments)));
-    return params.length >= func.length ? 
-      func.apply(this, params) : __curry.apply(this,[].concat(func, params));
-  };
-  return args.length >= func.length ? f() : f;
-};</pre>
-
+function __curry(func, args){
+ return func.length ? function(){
+ var params = args ? args.concat() : [];
+ return params.push.apply(params, arguments) < func.length ?
+ __curry.call(this, func, params) : func.apply(this, params);
+ } : func;
+}</pre>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script type="text/ls">
   console?.log 'LiveScript up'
+
+  prettyPrint!
+
   websafe = (txt) ->
      if "string" is typeof txt
         # works better than replace, though perhaps not as fast
@@ -123,10 +146,14 @@ function __curry(func) {
     if result
       console?.log result
       result = JSON.stringify result if action in <[ lex tokens ]>
-      result = websafe result
-      close = ' href="#close" class="close" title="Close" '
-      $ '.compiler-output'
-        .prepend "<div><h3>#action<a #close >&times;</a></h3><pre>#result</pre></div>"
+      result = String websafe result
+      result = result.replace /\n/g, '<br>' .replace /\ /g, \&nbsp;
+      if action is \compile
+        result = prettyPrintOne result, 'lang-js', false
+      $ '.compiler-output' .prepend """<div>
+        <h3>#action<a href="#close" class="close" title="Close" >&times;</a></h3>
+        <pre class="prettyprint lang-js">#result</pre>
+        </div>"""
 
   $ '.compiler-output' .on \click \.close ->
     $(this) .parent! .parent! .hide!   # or remove()
@@ -136,7 +163,7 @@ function __curry(func) {
     boom($ @ .data \action)
 
   $ '.example' .on \dblclick ->
-    $ '.compiler textarea' .val($ this .text!)
+    $ '.compiler textarea' .val($ this .find '.source' .text!)
 
   $ '.sidebar .navlist' .scrollspy!
 
