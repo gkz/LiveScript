@@ -1034,13 +1034,13 @@ class exports.Assign extends Node
       [left, @right] = Chain left .cacheReference o
       @right = Unary op, @right for op in @unaries
     return (Parens(@right) << {@front, @newed})compile o if left.isEmpty!
+    if left.getDefault!
+      @right = Binary left.op, @right, left.second
+      left.=first
     return @compileDestructuring o, left if left.items
     return @compileConditional   o, left if @logic
+    left.isAssignable! or left.carp 'invalid assign'
     {op, right} = this
-    if left.getDefault!
-      right = Binary left.op, right, left.second
-      left.=first
-    left.isAssignable() or left.carp 'invalid assign'
     return @compileMinMax o, left, right if op in <[ <?= >?= ]>
     if op is \**=
     or op is \+= and right instanceof [Arr, While]
