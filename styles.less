@@ -1,19 +1,81 @@
+html {
+  height: 100%;
+}
 body {
-  background-image: url(images/groovepaper.png);
+  height: 100%;
 }
 .site {
-  margin-top: 20px;
+  height: 100%;
 }
-.description { 
-  font-size: 14pt; 
-  line-height: 24pt;
+.container-fluid {
+  padding: 0;
 }
-.compiler textarea {
-  width: 98%;
-  height: 300px;
-  font-family: monospace;
+
+@top-margin: 25px;
+@dividing-border: 1px solid #ccc;
+
+.sidebar {
+  background-image: url(images/groovepaper.png);
+  background-attachment: static;
+  padding-left: 20px;
+  position: fixed;
+  height: 100%;
+  border-right: @dividing-border;
+
+  h1 {
+    font-size: 40px;
+    line-height: 48px;
+    margin-top: @top-margin;
+    margin-bottom: 20px;
+  }
 }
-.closer {
-  float:right;
-  color:red;
+.compiler {
+  background-image: url(images/groovepaper.png);
+  background-attachment: static;
+  border-left: @dividing-border;
+  box-sizing: border-box;
+  padding-left: 20px;
+  padding-right: 20px;
+  height: 100%;
+  right: 0;
+  position: fixed;
+
+  .compiler-box {
+    height: 50%;
+    box-sizing: border-box;
+    padding-top: @top-margin;
+    padding-bottom: 38px;
+    textarea {
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      font-family: monospace;
+    }
+    .actions {
+    }
+  }
+  .compiler-output {
+    box-sizing: border-box;
+    padding-top: 5px;
+    overflow-y: scroll;
+    height: 50%;
+    pre {
+      margin-right: 5px;
+    }
+    .closer {
+      margin-right: 10px;
+      float:right;
+      color:red;
+    }
+  }
+}
+.content-row {
+  background-image: url(images/groovepaper.png);
+}
+.content {
+  .description { 
+    font-size: 14pt; 
+    line-height: 24pt;
+    margin-top: @top-margin;
+  }
 }

@@ -3,7 +3,6 @@
 <head>
 <title>LiveScript</title>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-<script src="https://raw.github.com/gkz/LiveScript/master/extras/livescript.js" async=true ></script>
 
 <link href="bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
 <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
@@ -16,12 +15,36 @@
 </head>
 <body>
 <div class="site container-fluid">
-  <div class="row-fluid">
-    <div class="span2">
+  <div class="row-fluid side-row">
+    <div class="span2 sidebar">
       <h1>LiveScript</h1>
+      <ul class="nav nav-list">
+        <li class="active"><a href="#overview">Overview</a></li> 
+        <li class=""><a href="#examples">Examples</a></li> 
+      </ul>
     </div>
-    <div class="span6">
+    <div class="span4 compiler">
+      <div class="compiler-box">
+        <textarea placeholder="Enter LiveScript here"></textarea>
+        <div class="actions">
+          <button class="btn btn-primary" data-action="compile" title="Convert LiveScript to JavaScript">Compile</button>
+          <button class="btn" data-action="run" title="Run compiled JavaScript">Run</button>
+          <button class="btn" data-action="ast" title="Abstract Syntax Tree">AST</button>
+          <button class="btn" data-action="tokens" title="Tokenization of input">Tokens</button>
+          <button class="btn" data-action="lex" title="Same as tokens, but skipping rewriting">Lex</button>
+        </div>
+      </div>
+      <div class="compiler-output">
+
+      </div>
+    </div>
+  </div>
+  <div class="row-fluid content-row">
+    <div class="span2">&nbsp;</div>
+    <div class="span6 content">
+      <a name="overview"></a>
       <p class="well description">LiveScript is a fork of <a href="//satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="//coffeescript.org/">CoffeeScript</a>. It is a language that compiles down to JavaScript. For more information please see the <a href="https://github.com/gkz/LiveScript/blob/master/README.md">README</a> and the <a href="https://github.com/gkz/LiveScript">github project</a>.</p>
+      <a name="examples"></a>
       <h2>Examples</h2>
       <p>Double-click the example LiveScript to load it into the compiler.
       <h3>Example 1</h3>
@@ -76,27 +99,11 @@ function __curry(func) {
 };</pre>
 
     </div>
-    <div class="span4 compiler">
-      <div class="well">
-        <textarea placeholder="Enter LiveScript here"></textarea>
-        <div class="actions">
-          <button class="btn btn-primary" data-action="compile" title="Convert LiveScript to JavaScript">Compile</button>
-          <button class="btn" data-action="run" title="Run compiled JavaScript">Run</button>
-          <button class="btn" data-action="ast" title="Abstract Syntax Tree">AST</button>
-          <button class="btn" data-action="tokens" title="Tokenization of input">Tokens</button>
-          <button class="btn" data-action="lex" title="Same as tokens, but skipping rewriting">Lex</button>
-        </div>
-      </div>
-      <div class="compiler-output">
-
-      </div>
-    </div>
   </div>
 </div>
 
 <script type="text/ls">
-$ !->
-
+  console?.log 'LiveScript up'
   websafe = (txt) ->
      if "string" is typeof txt
         # works better than replace, though perhaps not as fast
@@ -117,20 +124,24 @@ $ !->
       result = JSON.stringify result if action in <[ lex tokens ]>
       result = websafe result
       close = ' href="#close" class="closer" title="Close" '
-      $ '.compiler-output' .prepend "<div><h3>#action<a #close >x</a></h3><pre>#result</pre></div>"
+      $ '.compiler-output'
+        .prepend "<div><h3>#action<a #close >x</a></h3><pre>#result</pre></div>"
 
-  $('.compiler-output').on 'click', '.closer' ->
-      $(this) .parent! .parent! .hide!   # or remove()
-      return false
+  $ '.compiler-output' .on \click \.closer ->
+    $(this) .parent! .parent! .hide!   # or remove()
+    return false
 
-  $ '.actions button' .on 'click', ->
-    boom($ @ .data 'action')
+  $ '.actions button' .on \click ->
+    boom($ @ .data \action)
 
-  $ '.example' .dblclick ->
-    example = $ this .text!
-    curValue = $ '.compiler textarea' .val!
-    $ '.compiler textarea' .val example
-    
+  $ '.example' .on \dblclick ->
+    $ '.compiler textarea' .val($ this .text!)
+
+  $ '.sidebar .nav-list' .on \click \a ->
+    $ '.sidebar .nav-list li' .removeClass \active
+    $ this .parent \li .addClass \active
+
 </script>
+<script src="https://raw.github.com/gkz/LiveScript/master/extras/livescript.js" async=true ></script>
 </body>
 </html>
