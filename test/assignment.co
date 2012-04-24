@@ -321,6 +321,12 @@ f = ({p, q}: o?) ->
 f {2 3}
 f (   )
 
+o = {a: {\b \c}}
+{{b, c}:a} = o
+eq a, o.a
+eq b, \b
+eq c, \c
+
 
 ### Unary Assign
 o = {}
