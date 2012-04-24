@@ -322,10 +322,11 @@ f {2 3}
 f (   )
 
 o = {a: {\b \c}}
-{{b, c}:a} = o
+{{b, c}:a, {d}:e ? {d: {}}} = o
 eq a, o.a
 eq b, \b
 eq c, \c
+eq d, e.d
 
 
 ### Unary Assign
