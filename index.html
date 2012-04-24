@@ -8,18 +8,19 @@
 <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 
 <script src="bootstrap/js/bootstrap.js"></script>
+<script src="bootstrap/js/bootstrap-scrollspy.js"></script>
 
 <link href="styles.less" rel="stylesheet/less" type="text/css">
 <script src="less-1.3.0.min.js#!watch"></script>
 
 </head>
-<body>
+<body data-spy="scroll">
 <div class="site container-fluid">
   <div class="row-fluid side-row">
     <div class="span2 sidebar">
       <h1>LiveScript</h1>
       <ul class="nav nav-list">
-        <li class="active"><a href="#overview">Overview</a></li> 
+        <li class=""><a href="#overview">Overview</a></li> 
         <li class=""><a href="#examples">Examples</a></li> 
       </ul>
     </div>
@@ -42,9 +43,9 @@
   <div class="row-fluid content-row">
     <div class="span2">&nbsp;</div>
     <div class="span6 content">
-      <a name="overview"></a>
+      <a id="overview" name="overview"></a>
       <p class="well description">LiveScript is a fork of <a href="//satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="//coffeescript.org/">CoffeeScript</a>. It is a language that compiles down to JavaScript. For more information please see the <a href="https://github.com/gkz/LiveScript/blob/master/README.md">README</a> and the <a href="https://github.com/gkz/LiveScript">github project</a>.</p>
-      <a name="examples"></a>
+      <a id="examples" name="examples"></a>
       <h2>Examples</h2>
       <p>Double-click the example LiveScript to load it into the compiler.
       <h3>Example 1</h3>
@@ -140,6 +141,8 @@ function __curry(func) {
   $ '.sidebar .nav-list' .on \click \a ->
     $ '.sidebar .nav-list li' .removeClass \active
     $ this .parent \li .addClass \active
+
+  $ '.sidebar .navlist' .scrollspy!
 
 </script>
 <script src="https://raw.github.com/gkz/LiveScript/master/extras/livescript.js" async=true ></script>
