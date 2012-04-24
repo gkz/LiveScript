@@ -38,10 +38,10 @@ global import
 die "Unrecognized option(s): #that\n\n#{help!}" if o.$unknowns * ' '
 
 switch
-case o.nodejs  then forkNode!
-case o.version then say version!
-case o.help    then say help!
-default
+| o.nodejs  => forkNode!
+| o.version => say version!
+| o.help    => say help!
+| otherwise =>
   o.run = not o.compile ||= o.output
   o.print ||= o.compile and (o.eval or o.stdin)
   process.execPath = argv.0 = argv.1
@@ -115,8 +115,8 @@ default
       t.output = JSON.stringify(t.result, null, 2) + \\n
     if o.run
       switch
-      case o.json  then process.stdout.write t.output
-      case o.print then console.log t.result
+      | o.json  => process.stdout.write t.output
+      | o.print => console.log t.result
       throw
     LiveScript.emit \write t
     if o.print

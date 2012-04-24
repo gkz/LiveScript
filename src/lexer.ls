@@ -59,18 +59,18 @@ exports import
     i = 0
     while c = code.charAt i
       switch c
-      case ' '      then i += @doSpace     code, i
-      case \\n      then i += @doLine      code, i
-      case \\       then i += @doBackslash code, i
-      case \' \"    then i += @doString    code, i, c
-      case \0 to \9 then i += @doNumber    code, i
-      case \/
+      | ' '       => i += @doSpace     code, i
+      | \\n       => i += @doLine      code, i
+      | \\        => i += @doBackslash code, i
+      | \' \"     => i += @doString    code, i, c
+      | \0 to \9  => i += @doNumber    code, i
+      | \/        =>
         switch code.charAt i+1
-        case \* then i += @doComment code, i
-        case \/ then i += @doHeregex code, i
-        default      i += @doRegex code, i or @doLiteral code, i
-      case \` then i += @doJS code, i
-      default i += @doID code, i or @doLiteral code, i or @doSpace code, i
+        | \*        => i += @doComment code, i
+        | \/        => i += @doHeregex code, i
+        | otherwise =>      i += @doRegex code, i or @doLiteral code, i
+      | \`        => i += @doJS code, i
+      | otherwise => i += @doID code, i or @doLiteral code, i or @doSpace code, i
     # Close up all remaining open blocks.
     @dedent @dent
     @carp "missing `#that`" if @closes.pop!
@@ -527,8 +527,8 @@ exports import
     return unless @tokens.1
     switch @last.0
     # Mark the last indent as dummy.
-    case \INDENT  then @dents[*-1] += ''; fallthrough
-    case \NEWLINE then @tokens.length--
+    | \INDENT  => @dents[*-1] += ''; fallthrough
+    | \NEWLINE => @tokens.length--
 
   # (Re)tags function parameters.
   parameters: !(arrow) ->
@@ -720,7 +720,7 @@ function decode val, lno
 
 function uxxxx then \"\\u + (\000 + it.toString 16)slice(-4) + \"
 character = if JSON!? then uxxxx else ->
-  switch it case 0x2028 0x2029 then uxxxx it
+  switch it | 0x2028 0x2029 => uxxxx it
   default JSON.stringify String.fromCharCode it
 
 #### Rewriters
@@ -868,11 +868,11 @@ character = if JSON!? then uxxxx else ->
     detectEnd tokens, ++i+1, ok, go
   function ok token, i
     switch tag = token.0
-    case \,                   then break
-    case \NEWLINE             then return true if inline
-    case \DEDENT              then return true
-    case \POST_IF \FOR \WHILE then return inline
-    default return false
+    | \,                   => break
+    | \NEWLINE             => return true if inline
+    | \DEDENT              => return true
+    | \POST_IF \FOR \WHILE => return inline
+    | otherwise            => return false
     t1 = tokens[i+1]?0
     t1 is not (if tag is \, then \NEWLINE else \COMMENT) and
     \: is not tokens[if t1 is \( then 1 + indexOfPair tokens, i+1 else i+2]?0
@@ -945,8 +945,8 @@ function indexOfPair tokens, i
   level = 1; end = INVERSES[start = tokens[i]0]
   while tokens[++i]
     switch that.0
-    case start then ++level
-    case end   then return i unless --level
+    | start => ++level
+    | end   => return i unless --level
   -1
 
 #### Constants

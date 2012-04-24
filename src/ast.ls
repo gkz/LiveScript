@@ -30,8 +30,8 @@
     fun = Fun [] Block this; call = Call(); hasThis = hasArgs = false
     @traverseChildren !->
       switch it.value
-      case \this      then hasThis := true
-      case \arguments then hasArgs := it.value = \__args
+      | \this      => hasThis := true
+      | \arguments => hasArgs := it.value = \__args
     if hasThis
       call.args.push Literal \this
       call.method = \.call
@@ -194,9 +194,9 @@ class exports.Block extends Node
 
   add: ->
     switch
-    case @back    then that.add it
-    case it.lines then @lines.push ...that
-    default
+    | @back     => that.add it
+    | it.lines  => @lines.push ...that
+    | otherwise =>
       @lines.push it
       @back = that if delete it.back
     this
@@ -293,8 +293,8 @@ class exports.Literal extends Atom
     return JS "#value" true if value.js
     return new Super        if value is \super
 
-  isEmpty    : -> switch @value case \void \null then true
-  isCallable : -> switch @value case \this \eval then true
+  isEmpty    : -> switch @value | \void \null => true
+  isCallable : -> switch @value | \this \eval => true
   isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt!
   isRegex    : -> "#{@value}"charAt! is \/
   isComplex  : -> @isRegex! or @value is \debugger
@@ -303,12 +303,12 @@ class exports.Literal extends Atom
 
   compile: (o, level ? o.level) ->
     switch val = "#{@value}"
-    case \this then return o.scope.fun?bound or val
-    case \void then val += ' 8'; fallthrough
-    case \null then @carp 'invalid use of ' + @value if level is LEVEL_CALL
-    case \debugger then if level
+    | \this     => return o.scope.fun?bound or val
+    | \void     => val += ' 8'; fallthrough
+    | \null     => @carp 'invalid use of ' + @value if level is LEVEL_CALL
+    | \debugger => if level
       return "(function(){\n#{ o.indent + TAB }debugger;\n#{o.indent}}())"
-    case \* then @carp 'stray star'
+    | \*        => @carp 'stray star'
     val
 
 #### Var
@@ -347,11 +347,11 @@ class exports.Index extends Node
   (key, symbol or \., init) ~>
     if init and key instanceof Arr
       switch key.items.length
-      case 0 then key = Key \__proto__
-      case 1 then key = Parens k unless (k = key.items.0) instanceof Splat
+      | 0 => key = Key \__proto__
+      | 1 => key = Parens k unless (k = key.items.0) instanceof Splat
     switch symbol.slice -1
-    case \= then @assign = symbol.slice 1
-    case \@ then @vivify = (if symbol.length > 2 then Arr else Obj)
+    | \= => @assign = symbol.slice 1
+    | \@ => @vivify = (if symbol.length > 2 then Arr else Obj)
     import {key, symbol}
 
   children: [\key]
@@ -598,8 +598,8 @@ class List extends Node
 
   @compile = (o, items) ->
     switch items.length
-    case 0 then return ''
-    case 1 then return items.0.compile o, LEVEL_LIST
+    | 0 => return ''
+    | 1 => return items.0.compile o, LEVEL_LIST
     {indent, level} = o
     o << indent: indent + TAB, level: LEVEL_LIST
     code  = items[i = 0]compile o
@@ -836,8 +836,8 @@ class exports.Unary extends Node
 class exports.Binary extends Node
   (op, first, second) ~>
     switch op
-    case \in then return new In first, second
-    case \+
+    | \in => return new In first, second
+    | \+  =>
       if first instanceof Arr
         first.items.push Splat second
         return first
@@ -855,12 +855,12 @@ class exports.Binary extends Node
     @op in <[ && || ? !? ]> and @first.isCallable! and @second.isCallable!
 
   isArray: -> switch @op
-    case \* then return @first instanceof Arr
-    case \/ then return @second.isMatcher!
+    | \* => return @first instanceof Arr
+    | \/ => return @second.isMatcher!
 
   isString: -> switch @op
-    case \+ \* then @first.isString! or @second.isString!
-    case \-    then @second.isMatcher!
+    | \+ \* => @first.isString! or @second.isString!
+    | \-    => @second.isMatcher!
 
   EQUALITY = /^[!=]==?$/
   COMPARER = /^(?:[!=]=|[<>])=?$/
@@ -871,7 +871,7 @@ class exports.Binary extends Node
       return this
     Unary \! Parens(this), true
 
-  getDefault: -> switch @op case \? \|| \&& \!? then this
+  getDefault: -> switch @op | \? \|| \&& \!? => this
 
   compileNode: (o) ->
     switch @op
@@ -1009,12 +1009,12 @@ class exports.Assign extends Node
   ::delegate <[ isCallable isRegex ]> -> @op in <[ = := ]> and @right[it]!
 
   isArray: -> switch @op
-    case \= \:= \+= then do @right.isArray
-    case \/=        then do @right.isMatcher
+    | \= \:= \+= => do @right.isArray
+    | \/=        => do @right.isMatcher
 
   isString: -> switch @op
-    case \= \:= \+= \*= then do @right.isString
-    case \-=            then do @right.isMatcher
+    | \= \:= \+= \*= => do @right.isString
+    | \-=            => do @right.isMatcher
 
   unfoldSoak: (o) ->
     if @left instanceof Existence
