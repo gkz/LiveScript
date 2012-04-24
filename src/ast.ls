@@ -2033,18 +2033,13 @@ UTILITIES =
 
   out: '''typeof exports != 'undefined' && exports || this'''
 
-  curry: '''function(func) {
-    var __slice = [].slice, f,
-        args    = __slice.call(arguments, 1);
-    if (!func.length) { return func; }
-    f = function(){
-      var params = args;
-      !!arguments.length && (params = params.concat(__slice.call(arguments)));
-      return params.length >= func.length ? 
-        func.apply(this, params) : __curry.apply(this,[].concat(func, params));
-    };
-    return args.length >= func.length ? f() : f;
-  };'''
+  curry: '''function(func, args){
+    return func.length ? function(){
+      var params = args ? args.concat() : [];
+      return params.push.apply(params, arguments) < func.length ?
+        __curry.call(this, func, params) : func.apply(this, params);
+    } : func;
+  }'''
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"
