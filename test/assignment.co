@@ -283,7 +283,7 @@ eq 1 a.1
 
 ### Destructuring Default
 new
-  [x ? 2, y || 3, @p && 5, @q !? 7] = [null, false, true, 0]
+  [x ? 2, [y] || [3], @p && 5, @q !? 7] = [null, false, true, 0]
   eq x * y * @p * @q, 210
 
   {a or 2, _: b or 3, @p or 5} = {}
