@@ -21,7 +21,7 @@ module.exports = (
   unless typeof! flags is \Array
     MULTI = /[*+]/
     flags = for name of flags
-      [desc, arg, abbr] = []concat flags[name]
+      [desc, arg, abbr] = [] +++ flags[name]
       {name, desc, arg, abbr} <<
         long  : \-- + name
         short : abbr != 0 and "-#{ abbr or name }"slice 0 2

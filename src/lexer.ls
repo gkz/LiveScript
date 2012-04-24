@@ -602,7 +602,7 @@ exports import
       else
         continue if i > 1 and not t.1
         tokens.push [\STRNUM; nlines string \" t.1; t.2]
-      tokens.push joint.concat tokens[*-1]2
+      tokens.push joint +++ tokens[*-1]2
     --tokens.length
     @token right, '', callable
 
@@ -966,7 +966,7 @@ KEYWORDS_SHARED = <[
 KEYWORDS_UNUSED = <[ var  const enum  implements interface
                      package private protected public static yield ]>
 
-KEYWORDS = KEYWORDS_SHARED.concat KEYWORDS_UNUSED
+KEYWORDS = KEYWORDS_SHARED +++ KEYWORDS_UNUSED
 
 ##### Regexes
 # Some of these are given `g` flag and made sure to match empty string
@@ -1054,5 +1054,5 @@ INVERSES = new -> import (c = CLOSERS[i]): o, (o): c for o, i in OPENERS
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
-ARG = CHAIN.concat <[ ... UNARY CREMENT PARAM( FUNCTION
+ARG = CHAIN +++ <[ ... UNARY CREMENT PARAM( FUNCTION
                       IF SWITCH TRY CLASS RANGE LABEL DO ]>

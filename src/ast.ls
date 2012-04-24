@@ -950,7 +950,7 @@ class exports.Binary extends Node
     |> If _, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
-    args = [@second]concat arg || []
+    args = @second & arg || []
     if @first"is#klass"()
       Chain(@first, [Index Key method; Call args])compile o
     else
@@ -1155,7 +1155,7 @@ class exports.Assign extends Node
 class exports.Import extends Node
   (@left, @right, @all and \All) ~>
     if not all and left instanceof Obj and right.items
-      return Obj left.items.concat right.asObj()items
+      return Obj left.items +++ right.asObj()items
 
   children: <[ left right ]>
 
