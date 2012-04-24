@@ -10,24 +10,9 @@
 
 <script src="bootstrap/js/bootstrap.js"></script>
 
-<style>
-  .site {
-    margin-top: 20px;
-  }
-  .description { 
-    font-size: 14pt; 
-    line-height: 24pt;
-  }
-  .compiler textarea {
-    width: 98%;
-    height: 300px;
-    font-family: monospace;
-  }
-  .closer {
-    float:right;
-    color:red;
-  }
-</style>
+<link href="styles.less" rel="stylesheet/less" type="text/css">
+<script src="less-1.3.0.min.js"></script>
+
 </head>
 <body>
 <div class="site container-fluid">
@@ -35,7 +20,7 @@
     <div class="span2">
       <h1>LiveScript</h1>
     </div>
-    <div class="span5">
+    <div class="span6">
       <p class="well description">LiveScript is a fork of <a href="//satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="//coffeescript.org/">CoffeeScript</a>. It is a language that compiles down to JavaScript. For more information please see the <a href="https://github.com/gkz/LiveScript/blob/master/README.md">README</a> and the <a href="https://github.com/gkz/LiveScript">github project</a>.</p>
       <h2>Examples</h2>
       <p>Double-click the example LiveScript to load it into the compiler.
@@ -91,7 +76,7 @@ function __curry(func) {
 };</pre>
 
     </div>
-    <div class="span5 compiler">
+    <div class="span4 compiler">
       <div class="well">
         <textarea placeholder="Enter LiveScript here"></textarea>
         <div class="actions">
