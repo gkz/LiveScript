@@ -352,7 +352,7 @@ exports import
     case \,
       switch @last.0
       case \, \[ \( \CALL( then @token \LITERAL \void
-      case \FOR            then @token \ID ''
+      case \FOR \OWN       then @token \ID ''
     case \!=
       unless able @tokens
         @tokens.push [\UNARY \! @line] [\ASSIGN \= @line]

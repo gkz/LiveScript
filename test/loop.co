@@ -294,5 +294,6 @@ eq 9 r.0
 
 
 ### Omission of `for`'s first assignment
-eq i, 0 for, i of [0]
-eq v, 0 for, v in {0}
+eq i, 0 for    , i of [0]
+eq v, 1 for    , v in {1}
+eq v, 2 for own, v in {2}
