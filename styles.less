@@ -17,22 +17,28 @@ body {
 .sidebar {
   background-image: url(images/groovepaper.png);
   background-attachment: static;
-  padding-left: 20px;
   position: fixed;
   height: 100%;
   border-right: @dividing-border;
+  @margin-left: 20px;
 
   h1 {
-    font-size: 36px;
-    line-height: 48px;
+    font-size: 34px;
+    line-height: 40px;
     margin-top: @top-margin;
     margin-bottom: 20px;
+    margin-left: @margin-left;
+    text-shadow: #1A3A4D 0 1px 0;
     a {
       color: #317EAC;
       &:hover {
         text-decoration: none; 
       }
     }
+  }
+
+  .nav {
+    margin-left: @margin-left;
   }
 }
 .compiler {
@@ -78,7 +84,7 @@ body {
   }
 }
 .content-row {
-  background-image: url(images/groovepaper.png);
+  background-color: #fff;
 }
 .content {
   .description { 
