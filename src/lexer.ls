@@ -360,6 +360,10 @@ exports import
     case \.
       @last.0 = \? if @last.1 is \?
       tag = \DOT
+    case \,
+      switch @last.0
+      | \, \[ \( \CALL( => @token \LITERAL \void
+      | \FOR \OWN       => @token \ID ''
     case \!=
       unless able @tokens
         @tokens.push [\UNARY \! @line] [\ASSIGN \= @line]
@@ -880,7 +884,6 @@ character = if JSON!? then uxxxx else ->
 
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand ranges and words.
-# - Insert `void` before empty commas.
 # - Insert `()` after each `function`/`let` facing a block.
 # - Insert `, ` after each non-callable token facing an argument token.
 !function expandLiterals tokens
@@ -911,10 +914,6 @@ character = if JSON!? then uxxxx else ->
         ts.push [\STRNUM; string \' word; lno] [\, \, lno]
       tokens.splice i, 1, ...ts, [\] \] lno]
       i += ts.length
-    case \,
-      if tokens[i-1]0 in <[ , [ CALL( PARAM( ]>
-        tokens.splice i++ 0 [\LITERAL \void token.2]
-      continue
     case \INDENT
       if tokens[i-1]
         if that.1 is \new

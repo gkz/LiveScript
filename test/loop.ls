@@ -148,8 +148,7 @@ f = -> [-> ok false, 'should cache source']
 ok true for k of [f] = f()
 
 
-# Comprehensions only closure-wrap their very last lines, allowing other lines
-# to have `continue` or `break` in them.
+# Allow non-last lines to have `continue` or `break`.
 func = ->
   for i from 1 to 2
     break if i is 2
@@ -292,3 +291,9 @@ eq 0 r.0
 
 r = for i til 0 then i else [9]
 eq 9 r.0
+
+
+### Omission of `for`'s first assignment
+eq i, 0 for    , i in [0]
+eq v, 1 for    , v of {1}
+eq v, 2 for own, v of {2}

@@ -1602,7 +1602,9 @@ class exports.While extends Node
 #### For
 # LiveScript's replacements for the `for` loop are array, object or range iterators.
 class exports.For extends While
-  -> import all it
+  ->
+    import all it
+    @item = null if @item instanceof Var and not @item.value
 
   children: <[ item source from to step body ]>
 
