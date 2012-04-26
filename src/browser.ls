@@ -1,10 +1,10 @@
 # `.run`s LiveScript code and calls back, passing error if any.
-LiveScript.stab = (code, callback, error) ->
+LiveScript.stab(code, callback, error) =
   try LiveScript.run code catch then error = e
   callback error
 
 # `.stab`s a remote script via `XMLHttpRequest`.
-LiveScript.load = (url, callback or ->) ->
+LiveScript.load(url, callback or ->) =
   xhr = new (self.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
   xhr.open \GET, url, true
   xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
@@ -18,7 +18,7 @@ LiveScript.load = (url, callback or ->) ->
 
 # Execute `<script>`s with _livescript_ type.
 type = //^ (?: text/ | application/ )? ls $//i
-sink = (error) -> error and setTimeout -> throw error
+sink(error) = error and setTimeout -> throw error
 for script in document.getElementsByTagName \script
   if type.test script.type
     if script.src
