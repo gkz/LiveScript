@@ -140,6 +140,14 @@ case 6 then ok 0
 case otherwise then ok 1
 
 # implicit switches
+boom1 = ->
+  case false => 1
+  case otherwise => 2
+
+  3
+
+eq 3 boom1!
+
 do ->
   | false => ok 0
   | true => ok 1
@@ -148,3 +156,10 @@ do ~>
   | false => ok 0
   | true => ok 1
 
+boom2 = ->
+  | false => 1
+  | otherwise => 2
+
+  3
+
+eq 3 boom2!

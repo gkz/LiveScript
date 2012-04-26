@@ -27,7 +27,6 @@ exports import
   # The order of these passes matters--indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (it || @tokens) ->
-    addImplicitSwitches    it
     addImplicitIndentation it
     tagPostfixConditionals it
     addImplicitParentheses it
@@ -136,6 +135,8 @@ exports import
     case \import
       id = \<<
       able @tokens or @token \LITERAL \this
+    case \case
+        return input.length if @doCase!
     default
       break if id in KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED
@@ -335,6 +336,14 @@ exports import
     @last.spaced = true if input = SPACE.exec(code)0
     input.length
 
+  # Used from both doLiteral (|) and doID (case): adds swtich if required
+  doCase: ->
+    if @last.0 in <[ ASSIGN -> : ]>
+    or (@last.0 is \INDENT and @tokens[*-2].0 in <[ ASSIGN -> : ]>)
+      @token \SWITCH \switch
+      @line++
+      @token \CASE   \case
+
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
   # the p/nextroper order of operations. There are some symbols that we tag specially
@@ -344,7 +353,9 @@ exports import
     return 0 unless sym = (SYMBOL << lastIndex: index)exec(code)0
     switch tag = val = sym
     case \=>             then tag = \THEN; @unline!
-    case \|              then tag = \CASE; @unline!
+    case \|              
+      tag = \CASE
+      return sym.length if @doCase! 
     case \|>             then tag = \PIPE
     case \+ \-           then tag = \+-
     case \&              then tag = \CONCAT
@@ -494,7 +505,7 @@ exports import
     case \<
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
-    @unline! if tag in <[ , PIPE DOT LOGIC COMPARE MATH POWER IMPORT SHIFT BITWISE ]>
+    @unline! if tag in <[ , CASE PIPE DOT LOGIC COMPARE MATH POWER IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 
@@ -742,14 +753,6 @@ character = if JSON!? then uxxxx else ->
   detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i in tokens
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
-
-# Add switches (over nothing) after -> and =
-!function addImplicitSwitches tokens
-  i = 0
-  while token = tokens[++i]
-    prev = tokens[i-1]
-    continue unless token.0 is \CASE and prev.0 in <[ -> ASSIGN ]>
-    tokens.splice i, 0, [\SWITCH 0 prev.2] 
 
 # Wrap single-line blocks with regular INDENT/DEDENT pairs.
 # Because our grammar is LALR(1), it can't handle some sequences
