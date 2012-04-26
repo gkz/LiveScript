@@ -555,6 +555,13 @@ h = f4 7
 eq 330 g 11
 eq 546 h 13
 
+multiLine(x) =
+  4
+
+  x
+
+eq 1 multiLine 1
+
 ### explicit naming
 let
   do f = :a ->

@@ -455,7 +455,7 @@ exports import
         arrow = (arrow.charAt 0) + arrow if curried
 
         @token \-> arrow # append arrow to end
-        return 2 # return early, with length of arrow
+        return sym.length
       if val is \:
         if @last.0 not in <[ ID STRNUM ) ]> then tag = \LABEL; val = ''
         @token tag, val
