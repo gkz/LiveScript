@@ -37,8 +37,11 @@
     <div class="span2 sidebar">
       <h1><a href="#">LiveScript</a><img src="images/icon.png"></h1>
       <ul class="nav nav-list">
-        <li class=""><a href="#overview">Overview</a></li> 
-        <li class=""><a href="#examples">Examples</a></li> 
+        <li><a href="#overview">Overview</a></li> 
+        <li><a href="#installation">Installation</a></li> 
+        <li><a href="#usage">Usage</a></li> 
+        <li><a href="#reference">Reference</a></li> 
+        <li><a href="#literals">Literals</a></li> 
       </ul>
     </div>
     <div class="span4 compiler">
@@ -60,31 +63,42 @@
   <div class="row-fluid content-row">
     <div class="span2">&nbsp;</div>
     <div class="span6 content">
-      <a id="overview" name="overview"></a>
-      <p class="well description">LiveScript is a fork of <a href="//satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="//coffeescript.org/">CoffeeScript</a>. It is a language that compiles down to JavaScript. For more information please see the <a href="https://github.com/gkz/LiveScript/blob/master/README.md">README</a> and the <a href="https://github.com/gkz/LiveScript">github project</a>.</p>
-      <a id="examples" name="examples"></a>
-      <h2>Examples</h2>
+      <div class="section">
+        <a id="overview" name="overview"></a>
+        <h2>Overview</h2>
+        <p>
+        LiveScript is a language which compiles down to JavaScript. It is a fork of <a href="http://satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="http://coffeescript.org/">CoffeeScript</a>. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript aims for increased expressiveness and code beauty. LiveScript also allows for an easier transition from CoffeeScript to it in comparison to the transition from CoffeeScript to Coco.
+        <!--<div class="btn btn-large btn-primary">Download LiveScript 0.9</div>-->
+        <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large">View LiveScript on GitHub</div></a>
       <p>Double-click an example to load it into the compiler.
-      <h3>Example 1</h3>
+      <h3>An Example</h3>
       <div class="example">
         <div class="example-ls">
         <h5>LiveScript</h5>
-<pre class="source">take(n, [x, ...xs]:list) =
-  | n <= 0       => []
-  | !list.length => []
-  | otherwise    => x & take n - 1, xs
-
-take 2, [1 2 3 4 5] #=> [1, 2]</pre>
 <pre class="prettyprint lang-ls">take(n, [x, ...xs]:list) =
   | n <= 0       => []
   | !list.length => []
   | otherwise    => x & take n - 1, xs
 
-take 2, [1 2 3 4 5] #=> [1, 2]</pre>
+take 2, [1 2 3 4 5] #=> [1, 2]
+
+
+
+
+
+
+
+
+
+
+times = (x, y) --> x * y
+timesTwo = times 2
+
+timesTwo 4 #=> 8</pre>
         </div>
         <div class="example-js">
         <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">var take, __slice = [].slice;
+<pre class="prettyprint lang-js">var take, times, timesTwo, __slice = [].slice;
 take = function(n, list){
   var x, xs;
   x = list[0], xs = __slice.call(list, 1);
@@ -97,40 +111,226 @@ take = function(n, list){
     return [(x)].concat(take(n - 1, xs));
   }
 };
-take(2, [1, 2, 3, 4, 5]); //=> [1, 2]</pre>
-        </div>
-      </div>
-      <h3>Example 2</h3>
-      <div class="example">
-        <div class="example-ls">
-          <h5>LiveScript</h5>
-<pre class="source">times = (x, y) --> x * y
+take(2, [1, 2, 3, 4, 5]); //=> [1, 2]
 
-timesTwo = times 2
 
-timesTwo 4 #=> 8</pre>
-<pre class="prettyprint lang-ls">times = (x, y) --> x * y
-
-timesTwo = times 2
-
-timesTwo 4 #=> 8</pre>
-        </div>
-        <div class="example-js">
-          <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">var times, timesTwo;
 times = __curry(function(x, y){
- return x * y;
+  return x * y;
 });
 timesTwo = times(2);
 timesTwo(4); //=> 8
 
 function __curry(func, args){
- return func.length ? function(){
- var params = args ? args.concat() : [];
- return params.push.apply(params, arguments) < func.length ?
- __curry.call(this, func, params) : func.apply(this, params);
- } : func;
-}</pre>
+  return func.length ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < func.length ?
+      __curry.call(this, func, params) : func.apply(this, params);
+  } : func;
+} </pre>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+        <a id="installation" name="installation"></a>
+        <h2>Installation</h2>
+        <p>To install LiveScript on your system, download it, enter its directory, and run <code>sudo bin/slake install</code>. You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
+    </div>
+    <div class="section">
+      <a id="usage" name="usage"></a>
+      <h2>Usage</h2>
+      <p>Usage: <code>livescript [options] [files] [arguments]</code></p>
+      <h4>Options</h4>
+      <table class="usage-options">
+        <tr><td>-i, --interactive</td><td>start REPL; use ^J for multiline input</td></tr>
+        <tr><td>-c, --compile</td><td>compile to JavaScript and save as .js files</td></tr>
+        <tr><td>-o, --output DIR</td><td>compile into the specified directory</td></tr>
+        <tr><td>-w, --watch</td><td>watch scripts for changes, and repeat</td></tr>
+        <tr><td>-s, --stdin</td><td>read stdin</td></tr>
+        <tr><td>-e, --eval</td><td>read command line arguments as script</td></tr>
+        <tr><td>-r, --require FILE+</td><td>require libraries before executing</td></tr>
+        <tr><td>-b, --bare</td><td>compile without the top-level function wrapper</td></tr>
+        <tr><td>-p, --print</td><td>print the result to stdout</td></tr>
+        <tr><td>-l, --lex</td><td>print the tokens the lexer produces</td></tr>
+        <tr><td>-t, --tokens</td><td>print the tokens the rewriter produces</td></tr>
+        <tr><td>-a, --ast</td><td>print the syntax tree the parser produces</td></tr>
+        <tr><td>-j, --json</td><td>print/compile as JSON</td></tr>
+        <tr><td>-n, --nodejs ARGS+</td><td>pass options through to the "node" binary</td></tr>
+        <tr><td>-v, --version</td><td>display version</td></tr>
+        <tr><td>-h, --help</td><td>display this</td></tr>
+      </table>
+    </div>
+    <div class="section">
+      <a id="reference" name="reference"></a>
+      <h2>Reference</h2>
+      <p>LiveScript uses whitespace to delimit blocks of code. Semicolons are not required to terminate expressions if you have a newline at the end. You also don't need to use parentheses when calling functions. You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript.</p>
+    </div>
+    <div class="section">
+      <a id="literals" name="literal"></a>
+        <h2>Literals</h2>
+        <div class="example">
+          <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">## Numbers
+42
+17.34
+
+# Underscores and letters are ignored
+64_000km
+
+# Any base can be used between 2 and 36
+6r12
+
+## Boolean
+true
+false
+
+## Undefined
+void
+
+## Strings
+'a string'
+
+# Strings without whitespace can be written with 
+# a preceding backslash instead of quotes
+\word
+
+# Double quoted strings are interpolated
+"The answer is #{2 + 2}"
+
+# Variables can be interpolated without the braces
+"Hello #variable"
+
+## Objects - braces are optional
+person = 
+  age:      23
+  eyeColor: \green
+  height:   180cm
+
+# Dynamic keys
+obj =
+  "#variable": 234
+  (person.eyeColor): false
+
+# Flagging shorthand
+{+debug, -live}
+
+## Lists
+[1, person.age, 'French Fries']
+
+# Commas are not needed if the item
+# preceding is non callable
+[1 2 3 true void \word 'hello there']
+
+# Implicit list
+myList = 
+  32 + 1
+  person.height
+  \beautiful
+
+# Listing using asterisks
+tree =
+  * * 1 
+    * * 2
+      * 3
+    * 4
+  * * 5
+    * 6
+    * * 7
+      * 8
+      * * 9
+        * 10
+    * 11
+ 
+# List of strings
+<[ list of words ]>
+
+# Ranges 
+[2 to 20 by 3]
+[4 til 6]
+[\A to \D] </pre>
+        </div>
+        <div class="example-js">
+        <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+
+42;
+17.34;
+
+
+64000;
+
+
+8;
+
+
+true;
+false;
+
+
+void 8;
+
+
+'a string';
+
+
+
+'word';
+
+var person, obj, myList, tree, __ref;
+"The answer is " + (2 + 2);
+
+
+"Hello " + variable;
+
+
+person = {
+  age: 23,
+  eyeColor: 'green',
+  height: 180
+};
+
+obj = (__ref = {}, __ref[variable + ""] = 234,
+  __ref[person.eyeColor] = false, __ref);
+
+({
+  debug: true,
+  live: false
+});
+
+[1, person.age, 'French Fries'];
+
+
+
+[1, 2, 3, true, void 8, 'word', 'hello there'];
+
+
+myList = [32 + 1, person.height, 'beautiful'];
+
+
+
+
+
+tree = [[1, [2, 3], 4], 
+  [5, 6, [7, 8, [9, 10]], 11]];
+
+
+
+
+
+
+
+
+
+
+
+
+['list', 'of', 'words'];
+
+
+
+[2, 5, 8, 11, 14, 17, 20];
+[4, 5];
+["A", "B", "C", "D"];</pre>
         </div>
       </div>
     </div>
@@ -139,6 +339,10 @@ function __curry(func, args){
 
 <script type="text/ls">
   console?.log 'LiveScript up'
+
+  for example in $ '.example .example-ls'
+    src = $ example .find \.lang-ls .html!
+    $ '<pre class="source"></pre>' .html src .appendTo example
 
   prettyPrint!
 
@@ -179,7 +383,11 @@ function __curry(func, args){
   $ '.example' .on \dblclick ->
     $ '.compiler textarea' .val($ this .find '.source' .text!)
 
-  $ '.sidebar .navlist' .scrollspy!
+  $ '.sidebar .nav'  .on \click \a ->
+    $ this .closest \.nav .find \li .removeClass \active
+    $ this .closest \li .addClass \active
+
+  $ '.sidebar .nav' .scrollspy!
 
 </script>
 <script src="https://raw.github.com/gkz/LiveScript/master/extras/livescript.js" async=true ></script>

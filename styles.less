@@ -1,3 +1,6 @@
+code {
+  color: #317EAC;
+}
 html {
   height: 100%;
 }
@@ -11,7 +14,6 @@ body {
   padding: 0;
 }
 
-@top-margin: 25px;
 @dividing-border: 1px solid #ccc;
 
 .sidebar {
@@ -20,10 +22,10 @@ body {
   position: fixed;
   height: 100%;
   border-right: @dividing-border;
+  padding-top: 25px;
   @margin-left: 20px;
 
   h1 {
-    margin-top: @top-margin;
     margin-bottom: 20px;
     margin-left: @margin-left;
     
@@ -53,6 +55,7 @@ body {
   box-sizing: border-box;
   padding-left: 20px;
   padding-right: 20px;
+  padding-top: 32px;
   height: 100%;
   right: 0;
   position: fixed;
@@ -60,7 +63,6 @@ body {
   .compiler-box {
     height: 50%;
     box-sizing: border-box;
-    padding-top: @top-margin;
     padding-bottom: 38px;
     textarea {
       box-sizing: border-box;
@@ -92,10 +94,16 @@ body {
   background-color: #fff;
 }
 .content {
-  .description { 
+  padding-top: 32px;
+
+  .section {
+    margin-bottom: 20px;
+  }
+  p { 
+    margin-top: 5px;
+    margin-bottom: 5px;
     font-size: 14pt; 
     line-height: 24pt;
-    margin-top: @top-margin;
   }
   .example {
     height: 100%;
@@ -135,4 +143,11 @@ body {
       border-left: 1px dotted #ccc;
     }
   }
+  .usage-options {
+    td {
+      padding: 5px;
+    }
+  }
+    
 }
+
