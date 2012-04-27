@@ -38,6 +38,7 @@
       <h1><a href="#">LiveScript</a><img src="images/icon.png"></h1>
       <ul class="nav nav-list">
         <li class="active"><a href="#overview">Overview</a></li> 
+        <li class="divider">
         <li><a href="#installation">Installation</a></li> 
         <li><a href="#usage">Usage</a></li> 
         <li class="divider">
@@ -47,6 +48,7 @@
         <li><a href="#inspiration">Inspiration</a></li> 
         <li><a href="#name">Name</a></li> 
         <li><a href="#comparison-table">Comparison Table</a></li> 
+        <li class="divider">
         <li><a href="#changes">Changes</a></li> 
       </ul>
     </div>
@@ -462,11 +464,8 @@ tree = [[1, [2, 3], 4],
   prettyPrint!
 
   websafe = (txt) ->
-     if "string" is typeof txt
-        # works better than replace, though perhaps not as fast
-        txt.split("&").join("&amp;").split("<").join("&lt;") 
-     else 
-        txt
+      # works better than replace, though perhaps not as fast
+      String(txt).split("&").join("&amp;").split("<").join("&lt;") 
 
   !boom(action) = 
     result = try 
@@ -482,7 +481,7 @@ tree = [[1, [2, 3], 4],
     if result
       console?.log result
       result = JSON.stringify result if action in <[ lex tokens ]>
-      result = String websafe result
+      result = websafe result
       result = result.replace /\n/g, '<br>' .replace /\ /g, \&nbsp;
       if action is \compile
         result = prettyPrintOne result, 'lang-js', false
