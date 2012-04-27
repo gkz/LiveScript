@@ -186,6 +186,8 @@ function __curry(func, args){
 
 # Any base can be used between 2 and 36
 6r12
+2r1000
+16rFf
 
 ## Boolean
 true
@@ -269,6 +271,8 @@ tree =
 
 
 8;
+8;
+255;
 
 
 true;
@@ -478,7 +482,7 @@ tree = [[1, [2, 3], 4],
         result = eval result
       catch e
         result = e
-    if result
+    if result?
       console?.log result
       result = JSON.stringify result if action in <[ lex tokens ]>
       result = websafe result
