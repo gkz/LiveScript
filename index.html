@@ -203,6 +203,7 @@ void
 "The answer is #{2 + 2}"
 
 # Variables can be interpolated without the braces
+variable = "world"
 "Hello #variable"
 
 ## Objects - braces are optional
@@ -473,7 +474,10 @@ tree = [[1, [2, 3], 4],
     catch e
       e.message
     if action is \run
-      result = eval result
+      try
+        result = eval result
+      catch e
+        result = e
     if result
       console?.log result
       result = JSON.stringify result if action in <[ lex tokens ]>
@@ -482,7 +486,7 @@ tree = [[1, [2, 3], 4],
       if action is \compile
         result = prettyPrintOne result, 'lang-js', false
       $ '.compiler-output' .prepend """<div>
-        <h3>#action<a href="#close" class="close" title="Close" >&times;</a></h3>
+        <h3>#action<a href="\#close" class="close" title="Close" >&times;</a></h3>
         <pre class="prettyprint lang-js">#result</pre>
         </div>"""
 
