@@ -99,11 +99,14 @@ body {
   .section {
     margin-bottom: 20px;
   }
-  p { 
+  p, ul { 
     margin-top: 5px;
     margin-bottom: 5px;
-    font-size: 14pt; 
-    line-height: 24pt;
+    font-size: 18px; 
+    line-height: 32px;
+  }
+  ul li {
+    margin-bottom: 10px;
   }
   .example {
     height: 100%;
@@ -143,11 +146,18 @@ body {
       border-left: 1px dotted #ccc;
     }
   }
-  .usage-options {
-    td {
-      padding: 5px;
+  #overview {
+    a {
+      .btn {
+        color: #333;
+        &:hover {
+          text-decoration: none;
+        }
+        &.btn-primary {
+          color: #fff;
+        }
+      }
     }
   }
-    
 }
 

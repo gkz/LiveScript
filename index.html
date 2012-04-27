@@ -37,11 +37,17 @@
     <div class="span2 sidebar">
       <h1><a href="#">LiveScript</a><img src="images/icon.png"></h1>
       <ul class="nav nav-list">
-        <li><a href="#overview">Overview</a></li> 
+        <li class="active"><a href="#overview">Overview</a></li> 
         <li><a href="#installation">Installation</a></li> 
         <li><a href="#usage">Usage</a></li> 
+        <li class="divider">
         <li><a href="#reference">Reference</a></li> 
         <li><a href="#literals">Literals</a></li> 
+        <li class="divider">
+        <li><a href="#inspiration">Inspiration</a></li> 
+        <li><a href="#name">Name</a></li> 
+        <li><a href="#comparison-table">Comparison Table</a></li> 
+        <li><a href="#changes">Changes</a></li> 
       </ul>
     </div>
     <div class="span4 compiler">
@@ -63,12 +69,11 @@
   <div class="row-fluid content-row">
     <div class="span2">&nbsp;</div>
     <div class="span6 content">
-      <div class="section">
-        <a id="overview" name="overview"></a>
+      <div id="overview" class="section">
+        <a name="overview"></a>
         <h2>Overview</h2>
-        <p>
-        LiveScript is a language which compiles down to JavaScript. It is a fork of <a href="http://satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="http://coffeescript.org/">CoffeeScript</a>. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript aims for increased expressiveness and code beauty. LiveScript also allows for an easier transition from CoffeeScript to it in comparison to the transition from CoffeeScript to Coco.
-        <!--<div class="btn btn-large btn-primary">Download LiveScript 0.9</div>-->
+        <p> LiveScript is a language which compiles down to JavaScript. It is a fork of <a href="http://satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="http://coffeescript.org/">CoffeeScript</a>. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript aims for increased expressiveness and code beauty. LiveScript also allows for an easier transition from CoffeeScript to it in comparison to the transition from CoffeeScript to Coco.</p>
+        <a href="https://github.com/gkz/LiveScript/zipball/master"><div class="btn btn-large btn-primary">Download LiveScript</div></a>
         <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large">View LiveScript on GitHub</div></a>
       <p>Double-click an example to load it into the compiler.
       <h3>An Example</h3>
@@ -130,17 +135,17 @@ function __curry(func, args){
         </div>
       </div>
     </div>
-    <div class="section">
-        <a id="installation" name="installation"></a>
+    <div id="installation" class="section">
+        <a name="installation"></a>
         <h2>Installation</h2>
         <p>To install LiveScript on your system, download it, enter its directory, and run <code>sudo bin/slake install</code>. You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
     </div>
-    <div class="section">
-      <a id="usage" name="usage"></a>
+    <div id="usage" class="section">
+      <a name="usage"></a>
       <h2>Usage</h2>
       <p>Usage: <code>livescript [options] [files] [arguments]</code></p>
-      <h4>Options</h4>
-      <table class="usage-options">
+      <h3>Options</h3>
+      <table class="usage-options table table-bordered">
         <tr><td>-i, --interactive</td><td>start REPL; use ^J for multiline input</td></tr>
         <tr><td>-c, --compile</td><td>compile to JavaScript and save as .js files</td></tr>
         <tr><td>-o, --output DIR</td><td>compile into the specified directory</td></tr>
@@ -159,13 +164,13 @@ function __curry(func, args){
         <tr><td>-h, --help</td><td>display this</td></tr>
       </table>
     </div>
-    <div class="section">
-      <a id="reference" name="reference"></a>
+    <div id="reference" class="section">
+      <a name="reference"></a>
       <h2>Reference</h2>
       <p>LiveScript uses whitespace to delimit blocks of code. Semicolons are not required to terminate expressions if you have a newline at the end. You also don't need to use parentheses when calling functions. You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript.</p>
     </div>
-    <div class="section">
-      <a id="literals" name="literal"></a>
+    <div id="literals" class="section">
+      <a name="literal"></a>
         <h2>Literals</h2>
         <div class="example">
           <div class="example-ls">
@@ -334,6 +339,115 @@ tree = [[1, [2, 3], 4],
         </div>
       </div>
     </div>
+    <div id="inspiration" class="section">
+      <a name="inspiration"></a>
+      <h2>Inspiration</h2>
+        <ul>
+          <li>Functional languages in general
+          <li>Haskell
+          <li>F#
+        </ul>
+    </div>
+    <div id="name" class="section">
+      <a name="name"></a>
+      <h2>Name</h2>
+        <p>LiveScript was one of the original names for JavaScript, so it seemed fitting. 
+    </div>
+    <div id="comparison-table" class="section">
+      <a name="comparison-table"></a>
+      <h2>Comparison Table</h2>
+      <table class="table table-bordered table-striped">
+        <tr>
+          <th></th><th>CoffeeScript</th><th>Coco</th><th>LiveScript</th>
+        </tr>
+        <tr>
+          <td>Command Line</td><td>coffee</td><td>coco</td><td>livescript</td>
+        </tr>
+        <tr>
+          <td>Build</td><td>cake</td><td>coke</td><td>slake</td>
+        </tr>
+        <tr>
+          <td>File Extension</td><td>.coffee</td><td>.co</td><td>.ls</td>
+        </tr>
+        <tr>
+          <td>Strict Equality</td><td>== OR is</td><td>=== OR is</td><td>== OR is</td>
+        </tr>
+        <tr>
+          <td>Fuzzy Equality</td><td>N/A</td><td>==</td><td>===</td>
+        </tr>
+        <tr>
+          <td>Power Operator</td><td>N/A</td><td>**</td><td>** OR ^</td>
+        </tr>
+        <tr>
+          <td>Pipe Operator</td><td>N/A</td><td>=></td><td>|></td>
+        </tr>
+        <tr>
+          <td>Bitwise &</td><td>&</td><td>&</td><td>&&&</td>
+        </tr>
+        <tr>
+          <td>Bitwise |</td><td>|</td><td>|</td><td>|||</td>
+        </tr>
+        <tr>
+          <td>Bitwise ^</td><td>^</td><td>^</td><td>^^^</td>
+        </tr>
+        <tr>
+          <td>Bitwise &lt;&lt;</td><td>&lt;&lt;</td><td>&lt;&lt;</td><td>&lt;&lt;&lt;&lt;</td>
+        </tr>
+        <tr>
+          <td>Bitwise >></td><td>>></td><td>>></td><td>>>>></td>
+        </tr>
+        <tr>
+          <td>Bitwise >>></td><td>>>></td><td>>>></td><td>>>>>></td>
+        </tr>
+        <tr>
+          <td>In</td><td>in</td><td>of</td><td>in</td>
+        </tr>
+        <tr>
+          <td>Of</td><td>of</td><td>in</td><td>of</td>
+        </tr>
+        <tr>
+          <td>Property Copy</td><td>N/A</td><td>&lt;&lt;&lt;</td><td>&lt;&lt;</td>
+        </tr>
+        <tr>
+          <td>Property Copy</td><td>N/A</td><td>&lt;&lt;&lt;&lt;</td><td>&lt;&lt;&lt;</td>
+        </tr>
+        <tr>
+          <td>Case</td><td>when</td><td>case</td><td>case OR |</td>
+        </tr>
+        <tr>
+          <td>Then</td><td>then</td><td>then</td><td>then OR =></td>
+        </tr>
+        <tr>
+          <td>List Concat</td><td>xs.concat ys</td><td>xs.concat ys</td><td>xs +++ ys</td>
+        </tr>
+        <tr>
+          <td>Cons</td><td>[x].concat ys</td><td>[x].concat ys</td><td>x & ys</td>
+        </tr>
+      </table>
+    </div>
+    <div class="section" id="changes">
+      <a name="changes"></a>
+      <h2>Changes from Coco: Detail and Rationale</h2>
+      <ul>
+      <li>Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale: I want to use both Coco and this on my system. In order for there to be minimal confusion for me, I have renamed this project. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other projects are named LiveScript. Slake because lake was taken and lsake sounds bad. 
+      <li>Switched so that <code>==</code> compiles into <code>===</code> and the converse, and also for the negatives. Rationale: I want to use the JavaScript <code>===</code> more often than <code>==</code> and less typing is better, also this makes things more similar to CoffeeScript which compiles <code>==</code> to <code>===</code> so there is less code for me to change. The compilation of <code>is</code> to <code>===</code> stays the same.
+      <li>Switched <code>in</code> and <code>of</code> so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: I don't have to change my CoffeeScript code, I'm used to it, and using <code>in</code> for checking if a value is in an array just seems right, using <code>of</code> just feels weird.
+      <li>All bitwise operators except <code>~</code> have changed to triple themselves and shifts have also expanded, eg. <code>&</code> is now <code>&&&</code> (see comparison table for full changes). Bitwise assign equals (eg. <code>&=</code>) have been removed. Rationale: I have never used the bitwise operators, I have rarely seen them used by others, they are not efficient since they must convert from floating points to integers and back, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there because I haven't gotten around to changing it yet - as it is unary changing it is a different proposition from the others. The way the bitwise operators have changed is modelled after how they are done in F#, a functional language which happens to have them unlike most functional languages. Note: the unary ^ clone operator is unchanged.
+      <li><code>=></code>, the pipe operator, is now <code>|></code>. Rationale: <code>|></code> is used to signify piping elsewhere (F#), free up => (for then alias), <code>|</code> is used as an alias for case.
+      <li><code><<<</code> is now <code><<</code>, and <code><<<<</code> is now <code><<<</code>. Rationale: <code><<</code> became available after the bitwise operator changes, and less typing is required with these changes.
+      <li><code>|</code> is an alias for <code>case</code> (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
+      <li><code>=></code> is an alias for <code>then</code>. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with <code>|</code>, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
+      <li>Added <code>otherwise</code> as a contextual keyword, when used after <code>case</code> or <code>|</code>, making that the default statement. Rationale: same as in Haskell. It allows <code>| otherwise => 4 + 9</code>, which fits in with the rest of the structure.
+      <li>Added implicit <code>switch</code> after <code>-></code>, <code>~></code>, or an assign when they are followed by case tokens (either <code>case</code> or <code>|</code>). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
+      <li>Added list concat operator, <code>+++</code>. Eg. <code>xs +++ ys</code> is <code>xs.concat(ys)</code>. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
+      <li>Added cons operator, <code>&</code>. It sticks the first item to the start of the second item (a list, or not, making a list). Eg. <code>x & ys</code> is <code>[x].concat(ys)</code>. Rationale: less typing, beauty, inspired by Haskell's <code>:</code> function.
+      <li><code>^</code> is now an alias to <code>**</code>, the power operator. Rationale: it was available, and is used in other languages. 
+      <li>Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell. 
+      <li>Power operator is now right associative. eg. 2^2^3 == 2^(2^3) == 256. Rationale: follwing Haskell's and many other languages lead on this one.
+      <li>Added new function definition syntax, eg. <code>add(x, y) = x + y</code> == <code>add = (x, y) -> x + y</code>. You can also use it in object literals and class definitions eg. <code>add(x, y): x + y</code> == <code>add: (x, y) -> x + y</code>. You can also suppress return on both by starting with a bang, eg. <code>!nothingness(params) = true</code> will not return anything. As well you can have lexically bound this using <code>id@(param) = something</code> which is suger for <code>id = (param) ~> something</code> (notice the wavy arrow) - sort of ugly though, looking for a better syntax. You can go crazy and do something like this if you wish: <code>@!func@! = something</code> which is a function assigned to this, which takes no parameters and returns nothing, while being lexically bound to this. Rationale: more beautiful, less typing, more Haskell like.
+      <li>Added magic auto curried functions, defined using <code>--></code> and <code>~~></code>. With this you can do <code>times = (x, y) --> x * y</code>, <code>timesTwo = times 2</code>, <code>timesTwo 4 #=> 8</code>. To use with the new function syntax, prepend the definition with an <code>&</code>, eg. <code>&times(x, y) = x * y</code>. Rationale: more Haskell like, useful functionality. 
+      </ul>
+    </div>
   </div>
 </div>
 
@@ -387,7 +501,7 @@ tree = [[1, [2, 3], 4],
     $ this .closest \.nav .find \li .removeClass \active
     $ this .closest \li .addClass \active
 
-  $ '.sidebar .nav' .scrollspy!
+  $ '.sidebar .nav' .scrollspy offset: 30
 
 </script>
 <script src="https://raw.github.com/gkz/LiveScript/master/extras/livescript.js" async=true ></script>
