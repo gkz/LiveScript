@@ -469,7 +469,7 @@ tree = [[1, [2, 3], 4],
 
   websafe = (txt) ->
       # works better than replace, though perhaps not as fast
-      String(txt).split("&").join("&amp;").split("<").join("&lt;") 
+      String txt .split '&' .join '&amp;' .split '<' .join '&lt;'
 
   !boom(action) = 
     result = try 
