@@ -36,7 +36,7 @@ tint \ls [
   | n(?:ew|ot)
   | c(?:ontinue|a(?:se|tch)|lass)
   | i(?:[fs]|n(?:stanceof)?|mport(?:[^\n\S]+all)?)
-  | e(?:lse|xtends)
+  | e(?:lse|x(?:tends|port))
   | d(?:e(?:fault|lete|bugger)|o)
   | un(?:less|til)
   | w(?:hile|ith)
