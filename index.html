@@ -167,7 +167,7 @@ function __curry(func, args){
     <div id="reference" class="section">
       <a name="reference"></a>
       <h2>Reference</h2>
-      <p>LiveScript uses whitespace to delimit blocks of code. Semicolons are not required to terminate expressions if you have a newline at the end. You also don't need to use parentheses when calling functions. You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript.</p>
+      <p>LiveScript uses whitespace to delimit blocks of code. Semicolons are not required to terminate expressions if you have a newline at the end. You also don't need to use parentheses when calling functions. Basic assignment is as you would expect, <code>variable = value</code>, and there is not need for variable declarations. You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript.</p>
     </div>
     <div id="literals" class="section">
       <a name="literal"></a>
@@ -282,10 +282,11 @@ void 8; // evaluates to undefined
 
 'word';
 
-var person, obj, myList, tree, __ref;
+var variable, person, obj, myList, tree, __ref;
 "The answer is " + (2 + 2);
 
 
+variable = "world";
 "Hello " + variable;
 
 
@@ -472,12 +473,14 @@ tree = [[1, [2, 3], 4],
       func = if action is \run then \compile else action
       LiveScript[func]($ '.compiler textarea' .val!, {+bare})
     catch e
+      error = true
       e.message
     if action is \run
-      try
-        result = eval result
+      result = try
+        eval result
       catch e
-        result = e
+        error = true
+        e.message
     if result
       console?.log result
       result = JSON.stringify result if action in <[ lex tokens ]>
@@ -485,10 +488,19 @@ tree = [[1, [2, 3], 4],
       result = result.replace /\n/g, '<br>' .replace /\ /g, \&nbsp;
       if action is \compile
         result = prettyPrintOne result, 'lang-js', false
-      $ '.compiler-output' .prepend """<div>
-        <h3>#action<a href="\#close" class="close" title="Close" >&times;</a></h3>
+
+      toPrepend = if error
+        """<div>
+        <h3>#action - error<span class="close" title="Close" >&times;</span></h3>
+        <div class="alert alert-error">#result</div>
+        </div>"""
+      else
+        """<div>
+        <h3>#action<span class="close" title="Close" >&times;</span></h3>
         <pre class="prettyprint lang-js">#result</pre>
         </div>"""
+
+      $ '.compiler-output' .prepend toPrepend
 
   $ '.compiler-output' .on \click \.close ->
     $(this) .parent! .parent! .hide!   # or remove()
