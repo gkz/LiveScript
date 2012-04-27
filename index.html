@@ -475,7 +475,10 @@ tree = [[1, [2, 3], 4],
     catch e
       e.message
     if action is \run
-      result = eval result
+      try
+        result = eval result
+      catch e
+        result = e
     if result
       console?.log result
       result = JSON.stringify result if action in <[ lex tokens ]>
