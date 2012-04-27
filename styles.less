@@ -56,6 +56,7 @@ body {
   background-attachment: static;
   border-left: @dividing-border;
   box-sizing: border-box;
+  -moz-box-sizing: border-box;
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 32px;
@@ -66,9 +67,11 @@ body {
   .compiler-box {
     height: 50%;
     box-sizing: border-box;
+    -moz-box-sizing: border-box;
     padding-bottom: 38px;
     textarea {
       box-sizing: border-box;
+      -moz-box-sizing: border-box;
       width: 100%;
       height: 100%;
       font-family: monospace;
@@ -78,6 +81,7 @@ body {
   }
   .compiler-output {
     box-sizing: border-box;
+    -moz-box-sizing: border-box;
     padding-top: 5px;
     overflow-y: scroll;
     height: 50%;
@@ -131,7 +135,6 @@ body {
     }
     .example-ls, .example-js {
       width: 50%;
-      box-sizing: padding-box;
       height: 100%;
       border: none;
       h5 {
@@ -151,6 +154,7 @@ body {
     .example-js {
       float: right;
       box-sizing: border-box;
+      -moz-box-sizing: border-box;
       border-left: 1px dotted #ccc;
     }
   }
