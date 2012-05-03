@@ -43,7 +43,6 @@ case o.version then say version!
 case o.help    then say help!
 default
   o.run = not o.compile ||= o.output
-  o.print ||= o.compile and (o.eval or o.stdin)
   process.execPath = argv.0 = argv.1
   argv.splice 2 9e9
   argv.push ...if o.stdin then $args else
@@ -119,7 +118,7 @@ default
       case o.print then console.log t.result
       throw
     Coco.emit \write t
-    if o.print
+    if o.print or not filename
     then say t.output.trimRight!
     else writeJS filename, t.output, base
   catch if e?
