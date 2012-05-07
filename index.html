@@ -501,7 +501,7 @@ tree = [[1, [2, 3], 4],
       result = JSON.stringify result if action in <[ lex tokens ]>
       result = websafe result
       result = result.replace /\n/g, '<br>' .replace /\ /g, \&nbsp;
-      if action is \compile
+      if action is \compile and not error
         result = prettyPrintOne result, 'lang-js', false
 
       toPrepend = if error
