@@ -55,6 +55,22 @@ for nonref, i in <[ 0 f() this true ]>
 throws 'assignment to undeclared variable "Math" on line 1'
 , -> LiveScript.compile 'Math ||:= 0'
 
+# obj ::= obj2 as alias to obj::<<obj2
+lala = ->
+lala ::= prop: true
+
+fafa = new lala
+
+ok lala::prop
+ok !lala::other
+
+ok fafa.prop
+ok !fafa.other
+
+lala ::= other: true
+
+ok lala::other
+ok fafa.other
 
 # Empty assignments
 {} = -> /* will be front and should be wrapped */

@@ -471,6 +471,11 @@ exports import
               @last.0 not in <[ +- UNARY LABEL ]>
         @token \UNARY val.charAt!; val = \=
       tag = \ASSIGN
+    case \::=
+      @token \DOT \.
+      @token \ID \prototype
+      @token \IMPORT \<<
+      return sym.length
     case \*
       if @last.0 in <[ NEWLINE INDENT THEN => ]> and
          (INLINEDENT << lastIndex: index+1)exec code .0.length
@@ -993,7 +998,7 @@ ID = let
      ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
   |//g
 SYMBOL = //
-  [-+*/%^:]=                  # compound assign
+  [-+*/%^:]= | ::?=           # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | &&& | \|\|\| | \^\^\^       # bitwise
 | \+\+\+                      # list concat 
