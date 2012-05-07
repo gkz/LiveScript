@@ -45,6 +45,7 @@
         <li class="divider">
         <li><a href="#reference">Reference</a></li> 
         <li><a href="#literals">Literals</a></li> 
+        <li><a href="#conditions">Conditions</a></li> 
         <li><a href="#wip">WIP</a></li> 
         <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
@@ -143,7 +144,9 @@ function __curry(func, args){
     <div id="installation" class="section">
         <a name="installation"></a>
         <h2>Installation</h2>
-        <p>To install LiveScript on your system, download it, enter its directory, and run <code>sudo bin/slake install</code>. You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
+        <!--<p>node.js npm</p>-->
+        <p>To install LiveScript on your system, download it, enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && bin/slake install</code></p>
+        <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
     </div>
     <div id="usage" class="section">
       <a name="usage"></a>
@@ -349,6 +352,109 @@ tree = [[1, [2, 3], 4],
 ["A", "B", "C", "D"];</pre>
         </div>
       </div>
+    </div>
+    <div id="conditions" class="section">
+      <a name="conditions"></a>
+        <h2>Conditions</h2>
+        <div class="example">
+          <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">## A bit of setup
+months = 12
+week   = <[ sun mon tues wed thurs fri sat sun ]>
+time   =
+  days:  365
+  hours: 8760
+
+
+
+# Functions defined so that the example can run
+doSomething = -> 'do nothing actually'
+doOtherThing = -> 'do other thing'
+doThirdThing = -> 'do third thing'
+
+
+
+# As expected - 'else if' and 'else' are optional
+# Meanings of == and === are reveresed from JS
+if months == 12 
+  doSomething()
+else if time.hours === '8760'
+  doOtherThing()
+else 
+  doThirdThing()
+
+# Post 'if'
+doSomething() if months is 12
+  
+# Chained comprehension
+if time.hours < 500 < time.hours then doSomething()
+
+# Formatting, 'if not', and 'in'
+if not \sun in week 
+then doSomething()
+else doOtherThing()
+
+# 'unless' is the same as 'if not', use of 'of'
+doOtherThing() unless \hours of time
+
+# 'that' implicitly refers to 
+# the value of the condition
+halfYear = that / 2 if time.days</pre>
+          </div>
+          <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">var months, week, time, doSomething, doOtherThing, 
+    doThirdThing, that, halfYear;
+months = 12;
+week = ['sun', 'mon', 'tues', 'wed', 
+        'thurs', 'fri', 'sat', 'sun'];
+time = {
+  days: 365,
+  hours: 8760
+};
+doSomething = function(){
+  return 'do nothing actually';
+};
+doOtherThing = function(){
+  return 'do other thing';
+};
+doThirdThing = function(){
+  return 'do third thing';
+};
+if (months === 12) {
+  doSomething();
+} else if (time.hours == '8760') {
+  doOtherThing();
+} else {
+  doThirdThing();
+}
+
+if (months === 12) {
+  doSomething();
+}
+if (time.hours < 500 && 500 < time.hours) {
+  doSomething();
+}
+if (__in(!'sun', week)) {
+  doSomething();
+} else {
+  doOtherThing();
+}
+if (!('hours' in time)) {
+  doOtherThing();
+}
+
+if (that = time.days) {
+  halfYear = that / 2;
+}
+function __in(x, arr){
+  var i = 0, l = arr.length >>> 0;
+  while (i < l) if (x === arr[i++]) return true;
+  return false;
+}</pre>
+          </div>
+        </div>
     </div>
     <div id="wip" class="section">
       <a name="wip"></a>
