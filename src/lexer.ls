@@ -998,7 +998,7 @@ ID = let
      ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
   |//g
 SYMBOL = //
-  [-+*/%^:]= | ::?=           # compound assign
+  [-+*/%^]= | ::?=            # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | &&& | \|\|\| | \^\^\^       # bitwise
 | \+\+\+                      # list concat 
