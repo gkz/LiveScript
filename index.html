@@ -46,6 +46,7 @@
         <li><a href="#reference">Reference</a></li> 
         <li><a href="#literals">Literals</a></li> 
         <li><a href="#conditions">Conditions</a></li> 
+        <li><a href="#functions">Functions</a></li> 
         <li><a href="#wip">WIP</a></li> 
         <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
@@ -476,6 +477,159 @@ function __in(x, arr){
   while (i < l) if (x === arr[i++]) return true;
   return false;
 }</pre>
+          </div>
+        </div>
+    </div>
+    <div id="functions" class="section">
+      <a name="functions"></a>
+        <h2>Functions</h2>
+        <div class="example">
+          <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls"># Functions auto return
+
+
+# Defining functions
+square = (x) -> x * x
+
+
+cube(x) = x * x * x
+
+cube 2 #=> 8
+
+# Extended parameters
+setPersonParams = (
+  person # target object to set params
+  person.age
+  person.height
+) -> person
+
+person = setPersonParams {}, 21, 180cm 
+#=> {age: 12, height: 180}
+
+# Implicit argument using 'it'
+length = -> it.length
+
+# Bang call
+util! #=> 'available above declaration'
+
+# Creates named function
+function util()
+  'available above declaration'
+
+# Do call, calls function with no arguments
+do -> 42
+
+# Suppress auto return
+returnNothing = !(param) -> param
+returnNothing \hello # returns nothing
+
+!alsoReturnsNothing(param) = param
+
+
+# Curried functions
+times = (x, y) --> x * y
+times 2, 3 #=> 6
+timesTwo = times 2
+timesTwo 4 #=> 8
+
+&alsoCurriedTimes(x, y) = x * y
+
+
+# Short for (function(a){...}.call(this, b))
+let $ = jQuery
+  $.isArray [] #=> true
+
+# Short for (function(){...}.call(x))
+with person
+  @age = 22
+
+# With new context
+dog = new
+  @name = \spot
+  @mutt = true
+
+# Parentheses free chaining
+$ \h1 .find \a .text! #=> LiveScript</pre>
+          </div>
+          <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">var square, cube, setPersonParams, 
+    person, length, returnNothing,
+    alsoReturnsNothing, times, timesTwo, 
+    alsoCurriedTimes, dog;
+square = function(x){
+  return x * x;
+};
+cube = function(x){
+  return x * x * x;
+};
+cube(2);
+
+setPersonParams = function(person, age, height){
+  person.age = age;
+  person.height = height;
+  return person;
+};
+
+person = setPersonParams({}, 21, 180);
+
+
+
+length = function(it){
+  return it.length;
+};
+
+
+util();
+function util(){
+  return 'available above declaration';
+}
+(function(){
+  return 42;
+})();
+
+returnNothing = function(param){
+  param;
+};
+returnNothing('hello');
+alsoReturnsNothing = function(param){
+  param;
+};
+times = __curry(function(x, y){
+  return x * y;
+});
+times(2, 3);
+timesTwo = times(2);
+timesTwo(4);
+alsoCurriedTimes = __curry(function(x, y){
+  return x * y;
+});
+(function($){
+  $.isArray([]);
+}.call(this, jQuery));
+
+(function(){
+  this.age = 22;
+}.call(person));
+
+dog = new function(){
+  this.name = 'spot';
+  this.mutt = true;
+};
+
+$('h1').find('a').text();
+
+
+function __curry(func, args){
+  return func.length ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < func.length ?
+      __curry.call(this, func, params) : func.apply(this, params);
+  } : func;
+}
+
+</pre>
           </div>
         </div>
     </div>
