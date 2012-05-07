@@ -904,13 +904,10 @@ class exports.Binary extends Node
     if o.level <= level then code else "(#code)"
   
   mapOp: (op) ->
-    return \in if op is \of
-    if op in <[&&& ||| ^^^]>
-      op[0]
-    else if //<<<< | >>>>>?//.test op
-      op.slice 2
-    else
-      op
+    | op is \of                 => \in
+    | op in <[&&& ||| ^^^]>     => op[0]
+    | //<<<< | >>>>>?//.test op => op.slice 2
+    | otherwise                 => op
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. e.g.:
