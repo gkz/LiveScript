@@ -1919,7 +1919,7 @@ exports.Export = (lines) ->
 !function Scope @parent, @shared
   @variables = []
   @positions = {}
-Scope::<<
+Scope ::=
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
     if @variables[@positions[name]]
