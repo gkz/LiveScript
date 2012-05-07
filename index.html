@@ -217,6 +217,18 @@ void
 variable = "world"
 "Hello #variable"
 
+# Multiline strings
+multiline = "string can be multiline 
+            and go on and on 
+            beginning whitespace is 
+            ignored"
+## Comments
+# a single line comment starts with a #
+/* multiline comments
+   use this format and are preserved
+   in the output unlike single line ones
+*/
+
 ## Objects - braces are optional
 person = 
   age:      23
@@ -294,13 +306,24 @@ void 8; // evaluates to undefined
 
 
 'word';
-
-var variable, person, obj, myList, tree, __ref;
+var variable, multiline, person, 
+    obj, myList, tree, __ref;
 "The answer is " + (2 + 2);
 
 
 variable = "world";
 "Hello " + variable;
+
+
+multiline = "string can be multiline and go on and on beginning whitespace is ignored";
+
+
+
+
+/* multiline comments
+   use this format and are preserved
+   in the output unlike single line ones
+*/
 
 
 person = {
