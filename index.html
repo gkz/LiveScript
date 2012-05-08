@@ -956,9 +956,10 @@ func('hello');
       String txt .split '&' .join '&amp;' .split '<' .join '&lt;'
 
   !boom(action) = 
+    source = $ '.compiler textarea' .val!
     result = try 
       func = if action is \run then \compile else action
-      LiveScript[func]($ '.compiler textarea' .val!, {+bare})
+      LiveScript[func](source, {+bare})
     catch e
       error = true
       e.message
@@ -979,12 +980,12 @@ func('hello');
       toPrepend = if error
         """<div>
         <h3>#action - error<span class="close" title="Close" >&times;</span></h3>
-        <div class="alert alert-error">#result</div>
+        <div class="alert alert-error" title="#source">#result</div>
         </div>"""
       else
         """<div>
         <h3>#action<span class="close" title="Close" >&times;</span></h3>
-        <pre class="prettyprint lang-js">#result</pre>
+        <pre class="prettyprint lang-js" title="#source">#result</pre>
         </div>"""
 
       $ '.compiler-output' .prepend toPrepend
