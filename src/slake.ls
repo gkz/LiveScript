@@ -46,8 +46,8 @@ global import
 
 args     = process.argv.slice 2
 filename = args.0 in <[ -f --slakefile ]> and args.splice(0 2)1 or \Slakefile
-path.exists filename, rec = (yes) ->
-  unless yes
+path.exists filename, rec = (affirmative) ->
+  unless affirmative
     if process.cwd! is \/
       console.error 'no "%s"' filename
       process.exit 1

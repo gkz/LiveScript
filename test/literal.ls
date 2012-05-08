@@ -1,3 +1,13 @@
+### Boolean
+ok true
+ok !false
+ok yes
+ok on
+ok !off
+ok !no
+
+throws 'invalid assign on line 1' -> LiveScript.compile 'yes = 6'
+
 ### Numbers
 
 eq 3-4, -1
@@ -165,9 +175,13 @@ new
   eq y.b, 2
   eq y.c, 3
   eq y.d, 4
-  z = {true, false, null, void, this, arguments, eval, -super, +debugger}
+  z = {true, false, on, off, yes, no, null, void, this, arguments, eval, -super, +debugger}
   eq z.true      , true
   eq z.false     , false
+  eq z.on        , on
+  eq z.off       , off
+  eq z.yes       , yes
+  eq z.no        , no
   eq z.null      , null
   eq z.void      , void
   eq z.this      , this

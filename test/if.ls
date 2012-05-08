@@ -1,8 +1,4 @@
-if yes = on = t = true
-  no = false
-else
-  ok 0
-
+t = true
 
 # As implicit argument, nested, and/or one-liner.
 eq 1, if yes
