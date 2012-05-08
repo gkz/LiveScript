@@ -470,6 +470,11 @@ else if time.hours === '8760'
 else 
   doThirdThing()
 
+# 'is not' and 'isnt'
+if time.days is not 366
+and months isnt 13
+then 'both not true!'
+
 # Post 'if'
 doSomething() if months is 12
   
@@ -477,7 +482,7 @@ doSomething() if months is 12
 if time.hours < 500 < time.hours then doSomething()
 
 # Formatting, 'if not', and 'in'
-if not \sun in week 
+if \sun not in week 
 then doSomething()
 else doOtherThing()
 
@@ -518,13 +523,18 @@ if (months === 12) {
   doThirdThing();
 }
 
+if (time.days !== 366 && months !== 13) {
+  'both not true!';
+}
+
+
 if (months === 12) {
   doSomething();
 }
 if (time.hours < 500 && 500 < time.hours) {
   doSomething();
 }
-if (__in(!'sun', week)) {
+if (!__in('sun', week)) {
   doSomething();
 } else {
   doOtherThing();
