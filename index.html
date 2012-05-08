@@ -278,6 +278,13 @@ obj =
 # Flagging shorthand
 {+debug, -live}
 
+## Regex
+//
+| [!=]==?             # equality
+| @@                  # arguments
+| <\[(?:[\s\S]*?\]>)? # words
+//g
+
 ## Lists
 [1, person.age, 'French Fries']
 
@@ -375,6 +382,13 @@ obj = (__ref = {}, __ref[variable + ""] = 234,
   debug: true,
   live: false
 });
+
+/|[!=]==?|@@|<\[(?:[\s\S]*?\]>)?/g;
+
+
+
+
+
 
 [1, person.age, 'French Fries'];
 
@@ -982,15 +996,15 @@ func('hello');
       toPrepend = if error
         """<div>
         <h3>#action - error<span class="close" title="Close" >&times;</span></h3>
-        <div class="alert alert-error" title="#source">#result</div>
+        <div class="alert alert-error">#result</div>
         </div>"""
       else
         """<div>
         <h3>#action<span class="close" title="Close" >&times;</span></h3>
-        <pre class="prettyprint lang-js" title="#source">#result</pre>
+        <pre class="prettyprint lang-js">#result</pre>
         </div>"""
 
-      $ '.compiler-output' .prepend toPrepend
+      $ toPrepend .prependTo '.compiler-output' .attr \title, source
 
   $ '.compiler-output' .on \click \.close ->
     $(this) .parent! .parent! .hide!   # or remove()
