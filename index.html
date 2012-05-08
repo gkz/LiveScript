@@ -14,7 +14,6 @@
 
 <script src="google-code-prettify/prettify.js"></script>
 <link href="google-code-prettify/prettify.css" rel="stylesheet">
-<script src="https://raw.github.com/gkz/LiveScript/master/lib/lang-ls.js"></script>
 
 <link href="styles.less" rel="stylesheet/less" type="text/css">
 <script src="less-1.3.0.min.js#!watch"></script>
@@ -235,9 +234,14 @@ function __curry(f, args){
 ## Boolean
 true
 false
+on
+off
+yes
+no
 
 ## Undefined
 void
+undefined
 
 ## Strings
 'a string'
@@ -340,9 +344,14 @@ tree =
 
 true;
 false;
+true;
+false;
+true;
+false;
 
 
 void 8; // evaluates to undefined
+void 8;
 
 
 'a string';
@@ -986,6 +995,7 @@ func('hello');
       <li>Added new function definition syntax, eg. <code>add(x, y) = x + y</code> == <code>add = (x, y) -> x + y</code>. You can also use it in object literals and class definitions eg. <code>add(x, y): x + y</code> == <code>add: (x, y) -> x + y</code>. You can also suppress return on both by starting with a bang, eg. <code>!nothingness(params) = true</code> will not return anything. As well you can have lexically bound this using <code>id@(param) = something</code> which is suger for <code>id = (param) ~> something</code> (notice the wavy arrow) - sort of ugly though, looking for a better syntax. You can go crazy and do something like this if you wish: <code>@!func@! = something</code> which is a function assigned to this, which takes no parameters and returns nothing, while being lexically bound to this. Rationale: more beautiful, less typing, more Haskell like.
       <li>Added magic auto curried functions, defined using <code>--></code> and <code>~~></code>. With this you can do <code>times = (x, y) --> x * y</code>, <code>timesTwo = times 2</code>, <code>timesTwo 4 #=> 8</code>. To use with the new function syntax, prepend the definition with an <code>&amp;</code>, eg. <code>&amp;times(x, y) = x * y</code>. Rationale: more Haskell like, useful functionality. 
       <li>Added <code>obj ::= obj2</code> as alias to <code>obj::&lt;&lt;obj2</code>. Rationale: seems to be the intuitive behavior expected, looks cleaner.
+      <li>Added <code>yes / on</code> as aliases to <code>true</code> and <code>no / off</code> as aliases to <code>false</code>. Added <code>undefined</code> as an alias to <code>void</code>, and aliased <code>isnt</code> to <code>is not</code>. Rationale: ease transition from CoffeeScript, which has all these features, to LiveScript. 
       </ul>
     </div>
   </div>
