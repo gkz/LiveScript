@@ -909,7 +909,7 @@ class exports.Binary extends Node
     case \===
       if (@first instanceof Literal and @second instanceof Literal)
       and @first.isWhat! isnt @second.isWhat!
-        console?.error 'WARNING: strict comparison of two different types will always be false' 
+        console?.warn 'WARNING: strict comparison of two different types will always be false' 
       fallthrough
     default
       return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
