@@ -2032,12 +2032,12 @@ UTILITIES =
 
   out: '''typeof exports != 'undefined' && exports || this'''
 
-  curry: '''function(func, args){
-    return func.length ? function(){
+  curry: '''function(f, args){
+    return f.length ? function(){
       var params = args ? args.concat() : [];
-      return params.push.apply(params, arguments) < func.length ?
-        __curry.call(this, func, params) : func.apply(this, params);
-    } : func;
+      return params.push.apply(params, arguments) < f.length ?
+        __curry.call(this, f, params) : f.apply(this, params);
+    } : f;
   }'''
 
   # Shortcuts to speed up the lookup time for native methods.
