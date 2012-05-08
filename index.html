@@ -84,34 +84,23 @@
         <a href="https://github.com/gkz/LiveScript/zipball/master"><div class="btn btn-large btn-primary">Download LiveScript</div></a>
         <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large">View LiveScript on GitHub</div></a>
       <p>Double-click an example to load it into the compiler.
-      <h3>An Example</h3>
+      <h3>Some Examples</h3>
       <div class="example">
         <div class="example-ls">
-        <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">take(n, [x, ...xs]:list) =
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+take(n, [x, ...xs]:list) =
   | n <= 0       => []
   | !list.length => []
   | otherwise    => x & take n - 1, xs
 
 take 2, [1 2 3 4 5] #=> [1, 2]
-
-
-
-
-
-
-
-
-
-
-times = (x, y) --> x * y
-timesTwo = times 2
-
-timesTwo 4 #=> 8</pre>
+</pre>
         </div>
         <div class="example-js">
-        <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">var take, times, timesTwo, __slice = [].slice;
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+var take, __slice = [].slice;
 take = function(n, list){
   var x, xs;
   x = list[0], xs = __slice.call(list, 1);
@@ -125,8 +114,24 @@ take = function(n, list){
   }
 };
 take(2, [1, 2, 3, 4, 5]); //=> [1, 2]
+</pre>
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+# Curried functions
+times = (x, y) --> x * y
+timesTwo = times 2
 
-
+timesTwo 4 #=> 8
+</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+var times, timesTwo;
 times = __curry(function(x, y){
   return x * y;
 });
@@ -139,7 +144,31 @@ function __curry(func, args){
     return params.push.apply(params, arguments) < func.length ?
       __curry.call(this, func, params) : func.apply(this, params);
   } : func;
-} </pre>
+} 
+</pre>
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+# Unnested callbacks
+<- $ \h1 .on \click
+alert \boom!
+# Double click to load, then hit 
+# Run and click the LiveScript logo
+</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+
+$('h1').on('click', function(){
+  return alert('boom!');
+});
+
+
+</pre>
         </div>
       </div>
     </div>
@@ -187,7 +216,8 @@ function __curry(func, args){
       <div class="example">
         <div class="example-ls">
         <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">## Numbers
+<pre class="prettyprint lang-ls">
+## Numbers
 42
 17.34
 
@@ -279,7 +309,8 @@ tree =
 # Ranges 
 [2 to 20 by 3]
 [4 til 6]
-[\A to \D] </pre>
+[\A to \D]
+</pre>
         </div>
         <div class="example-js">
         <h5>JavaScript</h5>
@@ -375,7 +406,8 @@ tree = [[1, [2, 3], 4],
 
 [2, 5, 8, 11, 14, 17, 20];
 [4, 5];
-["A", "B", "C", "D"];</pre>
+["A", "B", "C", "D"];
+</pre>
         </div>
       </div>
     </div>
@@ -385,7 +417,8 @@ tree = [[1, [2, 3], 4],
       <div class="example">
         <div class="example-ls">
         <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">## A bit of setup
+<pre class="prettyprint lang-ls">
+# A bit of setup
 months = 12
 week   = <[ sun mon tues wed thurs fri sat sun ]>
 time   =
@@ -426,11 +459,13 @@ doOtherThing() unless \hours of time
 
 # 'that' implicitly refers to 
 # the value of the condition
-halfYear = that / 2 if time.days</pre>
+halfYear = that / 2 if time.days
+</pre>
           </div>
           <div class="example-js">
           <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">var months, week, time, doSomething, doOtherThing, 
+<pre class="prettyprint lang-js">
+var months, week, time, doSomething, doOtherThing, 
     doThirdThing, that, halfYear;
 months = 12;
 week = ['sun', 'mon', 'tues', 'wed', 
@@ -478,7 +513,8 @@ function __in(x, arr){
   var i = 0, l = arr.length >>> 0;
   while (i < l) if (x === arr[i++]) return true;
   return false;
-}</pre>
+}
+</pre>
           </div>
         </div>
     </div>
@@ -488,7 +524,8 @@ function __in(x, arr){
       <div class="example">
         <div class="example-ls">
         <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls"># Functions auto return
+<pre class="prettyprint lang-ls">
+# Functions auto return
 
 
 # Defining functions
@@ -552,11 +589,13 @@ with person
 # With new context
 dog = new
   @name = \spot
-  @mutt = true</pre>
+  @mutt = true
+</pre>
           </div>
           <div class="example-js">
           <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">var square, cube, setPersonParams, 
+<pre class="prettyprint lang-js">
+var square, cube, setPersonParams, 
     person, length, returnNothing,
     alsoReturnsNothing, times, timesTwo, 
     alsoCurriedTimes, dog;
@@ -630,7 +669,8 @@ function __curry(func, args){
     return params.push.apply(params, arguments) < func.length ?
       __curry.call(this, func, params) : func.apply(this, params);
   } : func;
-}</pre>
+}
+</pre>
           </div>
         </div>
     </div>
@@ -658,7 +698,8 @@ function __curry(func, args){
       <div class="example">
         <div class="example-ls">
           <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls"># Auto breaks, multiple conditions
+<pre class="prettyprint lang-ls">
+# Auto breaks, multiple conditions
 switch 6
 case 1   then \hello
 case 2 4 then \boom
@@ -712,11 +753,13 @@ func = (param) ->
   | param.length < 5 => param.length
   | otherwise        => param.slice 3
 
-func 'hello' #=> lo</pre>
+func 'hello' #=> lo
+</pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">var something, result, func;
+<pre class="prettyprint lang-js">
+var something, result, func;
 switch (6) {
 case 1:
   'hello';
@@ -774,7 +817,8 @@ func = function(param){
     return param.slice(3);
   }
 };
-func('hello');</pre>
+func('hello');
+</pre>
         </div>
       </div>
     </div>
