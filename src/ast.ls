@@ -298,6 +298,13 @@ class exports.Literal extends Atom
   isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt!
   isRegex    : -> "#{@value}"charAt! is \/
   isComplex  : -> @isRegex! or @value is \debugger
+  isWhat     : -> 
+    | @isEmpty!    => \empty
+    | @isCallable! => \callable
+    | @isString!   => \string
+    | @isRegex!    => \regex
+    | @isComplex!  => \complex
+    | otherwise    => void
 
   varName: -> if /^\w+$/test @value then \$ + @value else ''
 
@@ -899,6 +906,11 @@ class exports.Binary extends Node
         return @compileAnyInstanceOf o, items if items.1
         @second = items.0 or rite
       @second.isCallable! or @second.carp 'invalid instanceof operand'
+    case \===
+      if (@first instanceof Literal and @second instanceof Literal)
+      and @first.isWhat! isnt @second.isWhat!
+        console?.error 'WARNING: strict comparison of two different types will always be false' 
+      fallthrough
     default
       return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
     @first << {@front}
