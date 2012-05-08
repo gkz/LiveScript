@@ -99,7 +99,8 @@ exports import
     # keywords
     switch id
     case <[ this eval super ]> then return @token(\LITERAL id, true)length
-    case <[ true false on off yes no null void arguments debugger ]> then tag = \LITERAL
+    case <[ true false on off yes no null void undefined arguments debugger ]> 
+      tag = \LITERAL
     case \new \do \typeof \delete then tag = \UNARY
     case \return \throw           then tag = \HURL
     case \break  \continue        then tag = \JUMP

@@ -303,12 +303,13 @@ class exports.Literal extends Atom
 
   compile: (o, level ? o.level) ->
     switch val = "#{@value}"
-    | \this     => return o.scope.fun?bound or val
-    | \void     => val += ' 8'; fallthrough
-    | \null     => @carp 'invalid use of ' + @value if level is LEVEL_CALL
-    | \on \yes  => val = 'true'
-    | \off \no  => val = 'false'
-    | \debugger => if level
+    | \this      => return o.scope.fun?bound or val
+    | \undefined => val = 'void'; fallthrough
+    | \void      => val += ' 8'; fallthrough
+    | \null      => @carp 'invalid use of ' + @value if level is LEVEL_CALL
+    | \on \yes   => val = 'true'
+    | \off \no   => val = 'false'
+    | \debugger  => if level
       return "(function(){\n#{ o.indent + TAB }debugger;\n#{o.indent}}())"
     | \*        => @carp 'stray star'
     val

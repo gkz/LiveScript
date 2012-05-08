@@ -175,7 +175,7 @@ new
   eq y.b, 2
   eq y.c, 3
   eq y.d, 4
-  z = {true, false, on, off, yes, no, null, void, this, arguments, eval, -super, +debugger}
+  z = {true, false, on, off, yes, no, null, void, undefined, this, arguments, eval, -super, +debugger}
   eq z.true      , true
   eq z.false     , false
   eq z.on        , on
@@ -184,6 +184,7 @@ new
   eq z.no        , no
   eq z.null      , null
   eq z.void      , void
+  eq z.undefined , undefined
   eq z.this      , this
   eq z.arguments , arguments
   eq z.eval      , eval
@@ -364,6 +365,7 @@ eq ok, obj.key
 
 ### `void`
 eq void, [][0]
+eq undefined, [][0]
 eq void+'', 'undefined'
 
 eq [,,].length, 2
@@ -372,7 +374,6 @@ eq [,,].length, 2
 eq a * b, 21
 
 eq 11, ((, a) -> a)(, 11)
-
 
 ### JS Literal
 
