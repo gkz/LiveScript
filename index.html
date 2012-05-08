@@ -47,6 +47,8 @@
         <li><a href="#literals">Literals</a></li> 
         <li><a href="#conditions">Conditions</a></li> 
         <li><a href="#functions">Functions</a></li> 
+        <li><a href="#loops">Loops and Comprehensions</a></li> 
+        <li><a href="#switch">Switch</a></li> 
         <li><a href="#wip">WIP</a></li> 
         <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
@@ -143,11 +145,11 @@ function __curry(func, args){
     </div>
     <hr>
     <div id="installation" class="section">
-        <a name="installation"></a>
-        <h2>Installation</h2>
-        <!--<p>node.js npm</p>-->
-        <p>To install LiveScript on your system, download it, enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && bin/slake install</code></p>
-        <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
+      <a name="installation"></a>
+      <h2>Installation</h2>
+      <!--<p>node.js npm</p>-->
+      <p>To install LiveScript on your system, download it, enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && bin/slake install</code></p>
+      <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
     </div>
     <div id="usage" class="section">
       <a name="usage"></a>
@@ -181,10 +183,10 @@ function __curry(func, args){
     </div>
     <div id="literals" class="section">
       <a name="literal"></a>
-        <h2>Literals</h2>
-        <div class="example">
-          <div class="example-ls">
-          <h5>LiveScript</h5>
+      <h2>Literals</h2>
+      <div class="example">
+        <div class="example-ls">
+        <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">## Numbers
 42
 17.34
@@ -379,10 +381,10 @@ tree = [[1, [2, 3], 4],
     </div>
     <div id="conditions" class="section">
       <a name="conditions"></a>
-        <h2>Conditions</h2>
-        <div class="example">
-          <div class="example-ls">
-          <h5>LiveScript</h5>
+      <h2>Conditions</h2>
+      <div class="example">
+        <div class="example-ls">
+        <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">## A bit of setup
 months = 12
 week   = <[ sun mon tues wed thurs fri sat sun ]>
@@ -482,10 +484,10 @@ function __in(x, arr){
     </div>
     <div id="functions" class="section">
       <a name="functions"></a>
-        <h2>Functions</h2>
-        <div class="example">
-          <div class="example-ls">
-          <h5>LiveScript</h5>
+      <h2>Functions</h2>
+      <div class="example">
+        <div class="example-ls">
+        <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls"># Functions auto return
 
 
@@ -507,15 +509,18 @@ setPersonParams = (
 person = setPersonParams {}, 21, 180cm 
 #=> {age: 12, height: 180}
 
-# Implicit argument using 'it'
-length = -> it.length
-
 # Bang call
 util! #=> 'available above declaration'
 
 # Creates named function
 function util()
   'available above declaration'
+
+# Parentheses free chaining
+$ \h1 .find \a .text! #=> LiveScript
+
+# Implicit argument using 'it'
+length = -> it.length
 
 # Do call, calls function with no arguments
 do -> 42
@@ -547,10 +552,7 @@ with person
 # With new context
 dog = new
   @name = \spot
-  @mutt = true
-
-# Parentheses free chaining
-$ \h1 .find \a .text! #=> LiveScript</pre>
+  @mutt = true</pre>
           </div>
           <div class="example-js">
           <h5>JavaScript</h5>
@@ -576,15 +578,18 @@ person = setPersonParams({}, 21, 180);
 
 
 
-length = function(it){
-  return it.length;
-};
-
-
 util();
+
+
 function util(){
   return 'available above declaration';
 }
+
+$('h1').find('a').text();
+
+length = function(it){
+  return it.length;
+};
 (function(){
   return 42;
 })();
@@ -618,8 +623,6 @@ dog = new function(){
   this.mutt = true;
 };
 
-$('h1').find('a').text();
-
 
 function __curry(func, args){
   return func.length ? function(){
@@ -627,16 +630,158 @@ function __curry(func, args){
     return params.push.apply(params, arguments) < func.length ?
       __curry.call(this, func, params) : func.apply(this, params);
   } : func;
-}
-
-</pre>
+}</pre>
           </div>
         </div>
     </div>
+    <div id="loops" class="section">
+      <a name="loops"></a>
+      <h2>Loops and Comprehensions</h2>
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+
+</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+    </div>
+    <div id="switch" class="section">
+      <a name="switch"></a>
+      <h2>Switch</h2>
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls"># Auto breaks, multiple conditions
+switch 6
+case 1   then \hello
+case 2 4 then \boom
+case 6   
+  'here it is'
+default \something
+
+
+
+
+
+
+
+# Switch on nothing switchs on true
+switch
+case 5 == 6 
+  \never
+case false
+  'also never'
+case 6 / 2 is 3
+  'here'
+
+# Fallthrough
+# works if last expression of case block
+# is 'fallthrough'
+result = switch 6
+case 6 
+  something = 5
+  fallthrough
+case 4
+  'this is it'
+
+result is 'this is it' #=> true
+
+# Alternate syntax
+switch 6 
+| 1         => \hello
+| 2 4       => \boom
+| 6         => 'here it is'
+| otherwise => \something
+
+
+
+
+
+
+
+
+# Implicit switch after ->, ~>, :, =
+func = (param) ->
+  | param.length < 5 => param.length
+  | otherwise        => param.slice 3
+
+func 'hello' #=> lo</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">var something, result, func;
+switch (6) {
+case 1:
+  'hello';
+  break;
+case 2:
+case 4:
+  'boom';
+  break;
+case 6:
+  'here it is';
+  break;
+default:
+  'something';
+}
+switch (false) {
+case 5 !== 6:
+  'never';
+  break;
+case !false:
+  'also never';
+  break;
+case 6 / 2 !== 3:
+  'here';
+}
+result = (function(){
+  switch (6) {
+  case 6:
+    something = 5;
+    // fallthrough
+  case 4:
+    return 'this is it';
+  }
+}());
+result === 'this is it';
+
+switch (6) {
+case 1:
+  'hello';
+  break;
+case 2:
+case 4:
+  'boom';
+  break;
+case 6:
+  'here it is';
+  break;
+default:
+  'something';
+}
+func = function(param){
+  switch (false) {
+  case !(param.length < 5):
+    return param.length;
+  default:
+    return param.slice(3);
+  }
+};
+func('hello');</pre>
+        </div>
+      </div>
+    </div>
     <div id="wip" class="section">
       <a name="wip"></a>
-        <h2>WIP</h2>
-        <p>This language reference is a work in progress and currently incomplete. 
+      <h2>WIP</h2>
+      <p>This language reference is a work in progress and currently incomplete. 
     </div>
     <hr>
     <div id="inspiration" class="section">
