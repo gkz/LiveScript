@@ -46,9 +46,11 @@ ok not (a == b)
 ok not (a is  b)
 ok a !=  b
 ok a is not b
+ok a isnt b
 
 ok true is     true
 ok true is not false
+ok true isnt false
 
 
 # (In)existence

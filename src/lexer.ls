@@ -124,11 +124,14 @@ exports import
     case \not
       return (last.1 = \!==; 3) if last.alias and last.1 is \===
       tag = \UNARY; id = \!
-    case \and \or \is
+    case \and \or \is \isnt
       @unline!
-      if id is \is
-      then @token \COMPARE \===
-      else @token \LOGIC if id is \or then \|| else \&&
+      tag = if id in <[  is isnt ]> then \COMPARE else \LOGIC
+      @token tag, switch id
+      | \is     => \===   
+      | \isnt   => \!==
+      | \or     => \||
+      | \and    => \&&
       @last.alias = true
       return id.length
     case \unless then tag = \IF
