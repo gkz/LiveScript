@@ -55,6 +55,7 @@
         <li><a href="#name">Name</a></li> 
         <li class="divider">
         <li><a href="#comparison-table">Comparison Table</a></li> 
+        <li><a href="#incompatibilities">CoffeeScript Incompatibilities</a></li> 
         <li><a href="#changes">Changes from Coco</a></li> 
       </ul>
     </div>
@@ -931,6 +932,38 @@ func('hello');
         </tr>
       </table>
     </div>
+    <div id="incompatibilities" class="section">
+      <a name="incompatibilities"></a>
+      <h2>Incompatibilities with CoffeeScript</h2>
+      <p>Modified (and significantly reduced) from <a href="https://github.com/satyr/coco/wiki/incompatibilities">Coco's list of incompatibilities</a>. 
+      <h3>Behavior</h3>
+      <ul> 
+      <li>Use <code>:=</code> to modify variables in upper scopes.
+      <li><code>super</code> represents a direct reference to the parent function rather than being a call itself. Use <code>super ...</code> (just <code>super</code> in Coffee) for full delegation.
+      <li>Nested comprehensions return flattened results.
+      <li>Indentations after newlines are ignored within non-triple quoted strings (<code>'' / ""</code>).
+      <li><code>do</code> does not specialcase function literals. Use <code>let</code> instead.
+      </ul>
+      <h3>Keyword</h3>
+      <ul>
+      <li><code>switch</code>-<code>case</code>-<code>default</code> or <code>switch</code>-<code>|</code>-<code>| otherwise</code> replaces <code>switch</code>-<code>when</code>-<code>else</code>.
+      <li><code>for ever</code> replaces <em>loop</em>.
+      <li><code>~></code> (wavy arrow) replaces => (fat arrow).
+      <li><em>when</em> is removed. Use <code>a if b while c</code> instead of <em>a while c when b</em>
+      <li><code>it / that / fallthrough / otherwise</code> are semi-reserved. They get special meanings depending on context.
+      </ul>
+      <h3>Grammar</h3>
+      <ul>
+      <li><code>()</code> is always a call; allowing <code>f ()</code>, disallowing <code>() -></code>.
+      <li><code>...</code> is a prefix, as in <code>(f, ...args) -> something</code>.
+      <li><code>and / or</code> and spaced <code>. / ?.</code> close implicit calls. <code>f a .g b or h c</code> means <code>f(a).g(b) || h(c)</code>.
+      <li>Range syntax is <code>[x to y]</code> or <code>[x til y]</code> instead of <em>[x..y]</em> and <em>[x...y]</em>.
+      <li>Block comment is <code>/* */</code> rather than <code>### ###</code>.
+      <li>Heregex is <code>// //</code> rather than <code>/// ///</code>.
+      <li>Bitwise operators have changed to triple themselves, eg. <code>&&&</code> instead of <em>&</em>. See <a href="#comparison-table">comparison table</a> for full details.
+      <li>No implicit call against blocks starting with an implicit object. (Use <code>do</code> instead).
+      </ul>
+    </div>
     <div class="section" id="changes">
       <a name="changes"></a>
       <h2>Changes from Coco: Detail and Rationale</h2>
@@ -1020,12 +1053,11 @@ func('hello');
     $ '.nav li' .removeClass \active
     $ this .closest \li .addClass \active
 
-  $ '.sidebar .nav' .scrollspy offset: 30
-
   $ 'h1 a' .click ->
     $ '.nav li' .removeClass \active
     $ '.nav li' .first!.addClass \active
 
+  $ '.sidebar .nav' .scrollspy offset: 30
 </script>
 <script src="https://raw.github.com/gkz/LiveScript/master/extras/livescript.js" async=true ></script>
 </body>
