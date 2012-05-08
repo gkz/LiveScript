@@ -672,7 +672,7 @@ default \something
 
 
 
-# Switch on nothing switchs on true
+# Switch on nothing switches on true
 switch
 case 5 == 6 
   \never
@@ -956,10 +956,14 @@ func('hello');</pre>
     $ '.compiler textarea' .val($ this .find '.source' .text!)
 
   $ '.sidebar .nav'  .on \click \a ->
-    $ this .closest \.nav .find \li .removeClass \active
+    $ '.nav li' .removeClass \active
     $ this .closest \li .addClass \active
 
   $ '.sidebar .nav' .scrollspy offset: 30
+
+  $ 'h1 a' .click ->
+    $ '.nav li' .removeClass \active
+    $ '.nav li' .first!.addClass \active
 
 </script>
 <script src="https://raw.github.com/gkz/LiveScript/master/extras/livescript.js" async=true ></script>
