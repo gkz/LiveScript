@@ -136,15 +136,15 @@ times = __curry(function(x, y){
   return x * y;
 });
 timesTwo = times(2);
-timesTwo(4); //=> 8
+timesTwo(4);
 
-function __curry(func, args){
-  return func.length ? function(){
+function __curry(f, args){
+  return f.length ? function(){
     var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < func.length ?
-      __curry.call(this, func, params) : func.apply(this, params);
-  } : func;
-} 
+    return params.push.apply(params, arguments) < f.length ?
+      __curry.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
 </pre>
         </div>
       </div>
@@ -663,12 +663,12 @@ dog = new function(){
 };
 
 
-function __curry(func, args){
-  return func.length ? function(){
+function __curry(f, args){
+  return f.length ? function(){
     var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < func.length ?
-      __curry.call(this, func, params) : func.apply(this, params);
-  } : func;
+    return params.push.apply(params, arguments) < f.length ?
+      __curry.call(this, f, params) : f.apply(this, params);
+  } : f;
 }
 </pre>
           </div>
