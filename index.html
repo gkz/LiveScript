@@ -121,38 +121,7 @@ take(2, [1, 2, 3, 4, 5]); //=> [1, 2]
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# Curried functions
-times = (x, y) --> x * y
-timesTwo = times 2
-
-timesTwo 4 #=> 8
-</pre>
-        </div>
-        <div class="example-js">
-          <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">
-var times, timesTwo;
-times = __curry(function(x, y){
-  return x * y;
-});
-timesTwo = times(2);
-timesTwo(4);
-
-function __curry(f, args){
-  return f.length ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
-  } : f;
-}
-</pre>
-        </div>
-      </div>
-      <div class="example">
-        <div class="example-ls">
-          <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">
-# Unnested callbacks
+# Unnested callbacks and paren free chaining
 <- $ \h1 .on \click
 alert \boom!
 # Double click to load, then hit 
@@ -168,6 +137,39 @@ $('h1').on('click', function(){
 });
 
 
+</pre>
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+# Curried functions
+times = (x, y) --> x * y
+timesTwo = times 2
+
+times 3 4  #=> 12
+timesTwo 4 #=> 8
+</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+var times, timesTwo;
+times = __curry(function(x, y){
+  return x * y;
+});
+timesTwo = times(2);
+times(3, 4); //=> 12
+timesTwo(4); //=> 8
+
+function __curry(f, args){
+  return f.length ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length ?
+      __curry.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
 </pre>
         </div>
       </div>
