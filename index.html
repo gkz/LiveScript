@@ -771,12 +771,14 @@ case 4
 
 result is 'this is it' #=> true
 
-# Alternate syntax
-switch 6 
-| 1         => \hello
-| 2 4       => \boom
-| 6         => 'here it is'
-| otherwise => \something
+# Alternate syntax using | and =>
+switch 'moto' 
+| "some thing"     => \hello
+| \explosion \bomb => \boom
+| <[ the moto ? ]> => 'here it is'
+| otherwise        => \something
+
+
 
 
 
@@ -832,15 +834,17 @@ result = (function(){
 }());
 result === 'this is it';
 
-switch (6) {
-case 1:
+switch ('moto') {
+case "some thing":
   'hello';
   break;
-case 2:
-case 4:
+case 'explosion':
+case 'bomb':
   'boom';
   break;
-case 6:
+case 'the':
+case 'moto':
+case '?':
   'here it is';
   break;
 default:
