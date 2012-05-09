@@ -140,7 +140,9 @@ exports import
       id = \<<
       able @tokens or @token \LITERAL \this
     case \case
-        return input.length if @doCase!
+      return input.length if @doCase!
+    case \when
+      tag = \WHEN
     default
       break if id in KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED

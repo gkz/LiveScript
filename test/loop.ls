@@ -297,3 +297,14 @@ eq 9 r.0
 eq i, 0 for    , i in [0]
 eq v, 1 for    , v of {1}
 eq v, 2 for own, v of {2}
+
+### When
+evens = (x for x from 1 to 10 when x % 2 is 0)
+eq 5 evens.length
+eq 4 evens.1
+
+for x in <[ amy bibs ashley charlie danny alex ]> when x.charAt(0) is \a
+  ok x in <[ amy ashley alex ]>
+
+while i < evens.length, ++i when evens[i] * 2 is 8
+  eq 4 evens[i] 

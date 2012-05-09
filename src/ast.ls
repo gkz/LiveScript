@@ -1574,11 +1574,13 @@ class exports.While extends Node
     return node if node.getJump ctx for node in @body.lines
 
   addBody: (@body) ->
-    [top] = body.lines
-    body.lines.length = 0 if top?verb is \continue and not top.label
+    @body = Block If @guard, body if @guard
+    [top] = @body.lines
+    @body.lines.length = 0 if top?verb is \continue and not top.label
     this
 
   addElse: (@else) -> this
+  addGuard: (@guard) -> this
 
   makeReturn: ->
     if it
