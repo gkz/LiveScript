@@ -17,7 +17,7 @@
 <script src="https://raw.github.com/gkz/LiveScript/master/lib/lang-ls.js"></script>
 
 <link href="styles.less" rel="stylesheet/less" type="text/css">
-<script src="less-1.3.0.min.js#!watch"></script>
+<script src="less-1.3.0.min.js"></script>
 <script>
   if(window.location.host === "gkz.github.com") {
     var _gaq = _gaq || [];
@@ -1028,7 +1028,7 @@ func('hello');
       <li>Added <code>obj ::= obj2</code> as alias to <code>obj::&lt;&lt;obj2</code>. Rationale: seems to be the intuitive behavior expected, looks cleaner.
       <li>Added <code>yes / on</code> as aliases to <code>true</code> and <code>no / off</code> as aliases to <code>false</code>. Added <code>undefined</code> as an alias to <code>void</code>, and aliased <code>isnt</code> to <code>is not</code>. Rationale: ease transition from CoffeeScript, which has all these features, to LiveScript. 
       <li>Added <code>when</code> as alias to <code>case</code> (and <code>|</code>). Rationale: ease transition from CoffeeScript. 
-      <li>Allowed guards in loops using case statement, eg. <code>x for x from 1 to 10 when x % 2 is 0</code>.
+      <li>Allowed guards in loops using case statement, eg. <code>x for x from 1 to 10 when x % 2 is 0</code>. Rationale: ease transition from CoffeeScript and have guards in comprehensions like other languages (Haskell).
       </ul>
     </div>
   </div>
