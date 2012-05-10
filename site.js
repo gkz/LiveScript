@@ -70,8 +70,9 @@
       $('.nav li').removeClass('active');
       return $('.nav li').first().addClass('active');
     });
+    $('body').scrollspy('refresh');
     return $('.sidebar .nav').scrollspy({
-      offset: 30
+      offset: 0
     });
   });
 }).call(this);

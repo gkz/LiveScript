@@ -62,4 +62,5 @@ $ ->
     $ '.nav li' .removeClass \active
     $ '.nav li' .first!.addClass \active
 
-  $ '.sidebar .nav' .scrollspy offset: 30
+  $ 'body' .scrollspy \refresh 
+  $ '.sidebar .nav' .scrollspy offset: 0
