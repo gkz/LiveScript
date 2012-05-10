@@ -39,7 +39,7 @@ tint \ls [
   | e(?:lse|x(?:tends|port))
   | d(?:e(?:fault|lete|bugger)|o)
   | un(?:less|til)
-  | w(?:hile|ith)
+  | w(?:hile|ith|hen)
   | o[fr] | return | break | switch | and | let
   ) #kwend //]
   [\typ // ^ (?: true | false | null | void ) #kwend //]
