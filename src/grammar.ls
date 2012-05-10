@@ -270,43 +270,43 @@ bnf =
     # in fixed-size increments.
     o 'FOR Chain IN Expression'
     , -> new For item: $2.unwrap!, index: $3, source: $4
-    o 'FOR Chain IN Expression WHEN Expression'
+    o 'FOR Chain IN Expression CASE Expression'
     , -> new For item: $2.unwrap!, index: $3, source: $4, guard: $6
     o 'FOR Chain IN Expression BY Expression'
     , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6
-    o 'FOR Chain IN Expression BY Expression WHEN Expression'
+    o 'FOR Chain IN Expression BY Expression CASE Expression'
     , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6, guard: $8
 
     o 'FOR     ID         OF Expression'
     , -> new For {+object,       index: $2,                   source: $4}
-    o 'FOR     ID         OF Expression WHEN Expression'
+    o 'FOR     ID         OF Expression CASE Expression'
     , -> new For {+object,       index: $2,                   source: $4, guard: $6}
     o 'FOR     ID , Chain OF Expression'
     , -> new For {+object,       index: $2, item: $4.unwrap!, source: $6}
-    o 'FOR     ID , Chain OF Expression WHEN Expression'
+    o 'FOR     ID , Chain OF Expression CASE Expression'
     , -> new For {+object,       index: $2, item: $4.unwrap!, source: $6, guard: $8}
     o 'FOR OWN ID         OF Expression'
     , -> new For {+object, +own, index: $3,                   source: $5}
-    o 'FOR OWN ID         OF Expression WHEN Expression'
+    o 'FOR OWN ID         OF Expression CASE Expression'
     , -> new For {+object, +own, index: $3,                   source: $5, guard: $8}
     o 'FOR OWN ID , Chain OF Expression'
     , -> new For {+object, +own, index: $3, item: $5.unwrap!, source: $7}
-    o 'FOR OWN ID , Chain OF Expression WHEN Expression'
+    o 'FOR OWN ID , Chain OF Expression CASE Expression'
     , -> new For {+object, +own, index: $3, item: $5.unwrap!, source: $7, guard: $8}
 
     o 'FOR ID FROM Expression TO Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6
-    o 'FOR ID FROM Expression TO Expression WHEN Expression'
+    o 'FOR ID FROM Expression TO Expression CASE Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, guard: $8
     o 'FOR ID FROM Expression TO Expression BY Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, step: $8
-    o 'FOR ID FROM Expression TO Expression BY Expression WHEN Expression'
+    o 'FOR ID FROM Expression TO Expression BY Expression CASE Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, step: $8, guard: $10
 
     o 'WHILE Expression'                 -> new While $2, $1 is \until
-    o 'WHILE Expression WHEN Expression' -> new While $2, $1 is \until .addGuard $4
+    o 'WHILE Expression CASE Expression' -> new While $2, $1 is \until .addGuard $4
     o 'WHILE Expression , Expression'    -> new While $2, $1 is \until, $4
-    o 'WHILE Expression , Expression WHEN Expression'
+    o 'WHILE Expression , Expression CASE Expression'
     , -> new While $2, $1 is \until, $4 .addGuard $6
 
   Cases:
@@ -325,7 +325,7 @@ bnf =
 operators =
   # Listed from lower precedence.
   <[ left     PIPE POST_IF FOR WHILE ]>
-  <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY WHEN LABEL ]>
+  <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
   <[ right    CONCAT       ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>

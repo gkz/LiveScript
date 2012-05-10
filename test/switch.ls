@@ -163,3 +163,8 @@ boom2 = ->
   3
 
 eq 3 boom2!
+
+# when
+switch 
+when false then ok 0
+when true  then ok 1

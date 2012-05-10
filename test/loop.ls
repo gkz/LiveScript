@@ -299,7 +299,7 @@ eq v, 1 for    , v of {1}
 eq v, 2 for own, v of {2}
 
 ### When
-evens = (x for x from 1 to 10 when x % 2 is 0)
+evens = (x for x from 1 to 10 | x % 2 is 0)
 eq 5 evens.length
 eq 4 evens.1
 
