@@ -51,7 +51,9 @@
         <li><a href="#functions">Functions</a></li> 
         <li><a href="#loops">Loops and Comprehensions</a></li> 
         <li><a href="#switch">Switch</a></li> 
+        <li class="divider">
         <li><a href="#more-examples">More Examples</a></li> 
+        <li><a href="#speed">Speed</a></li> 
         <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
         <li><a href="#name">Name</a></li> 
@@ -902,6 +904,7 @@ default:
         </div>
       </div>
     </div>
+    <hr>
     <div id="more-examples" class="section">
       <a name="more-examples"></a>
       <h2>More Examples</h2>
@@ -982,6 +985,28 @@ JSON.stringify(result);
 </pre>
         </div>
       </div>
+    </div>
+    <div id="speed" class="section">
+      <a name="speed"></a>
+      <h2>Speed</h2>
+      <p>Harder, better, <strong>faster</strong>, stronger. (CoffeeScript v1.3.1)
+<pre>
+$ cake bench
+Lex     1365 ms (24146 tokens)
+Rewrite  120 ms (26886 tokens)
+Parse    277 ms
+Compile  189 ms (149436 chars)
+total   1951 ms
+</pre>
+<pre>
+$ slake bench
+Lex      241 ms (27289 tokens)
+Rewrite   98 ms (32717 tokens)
+Parse    266 ms (27910 nodes)
+Compile  246 ms (181132 chars)
+TOTAL    851 ms
+</pre>
+      <p>For more improvements see <a href="https://github.com/satyr/coco/wiki/improvements">Coco's list of improvements</a>.
     </div>
     <hr>
     <div id="inspiration" class="section">
