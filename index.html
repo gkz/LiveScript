@@ -1010,7 +1010,6 @@ default:
       </ul>
       <h3>Keyword</h3>
       <ul>
-      <li><code>for ever</code> replaces <em>loop</em>.
       <li><code>~></code> (wavy arrow) replaces => (fat arrow).
       <li><code>it / that / fallthrough / otherwise</code> are semi-reserved. They get special meanings depending on context.
       </ul>
@@ -1052,6 +1051,7 @@ default:
       <li>Added <code>when</code> as alias to <code>case</code> (and <code>|</code>). Rationale: ease transition from CoffeeScript. 
       <li>Allowed guards in loops using case statement, eg. <code>x for x from 1 to 10 when x % 2 is 0</code>. Rationale: ease transition from CoffeeScript and have guards in comprehensions like other languages (Haskell).
       <li>Added the use of <code>else</code> for default in switch. Rationale: ease transition from CoffeeScript.
+      <li>Added <code>loop</code> as alias for <code>while true</code>. Rationale: ease transition from CoffeeScript. 
       </ul>
     </div>
   </div>
