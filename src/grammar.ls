@@ -201,8 +201,10 @@ bnf =
 
     o 'SWITCH Expression Cases'               -> new Switch $2, $3
     o 'SWITCH Expression Cases DEFAULT Block' -> new Switch $2, $3, $5
+    o 'SWITCH Expression Cases ELSE    Block' -> new Switch $2, $3, $5
     o 'SWITCH            Cases'               -> new Switch null $2
     o 'SWITCH            Cases DEFAULT Block' -> new Switch null $2, $4
+    o 'SWITCH            Cases ELSE    Block' -> new Switch null $2, $4
     o 'SWITCH                          Block' -> new Switch null [], $2
 
     o 'TRY Block'                           -> new Try $2

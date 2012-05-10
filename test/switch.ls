@@ -168,3 +168,8 @@ eq 3 boom2!
 switch 
 when false then ok 0
 when true  then ok 1
+
+# else
+switch
+| false => ok 0
+else ok 1
