@@ -51,7 +51,7 @@
         <li><a href="#functions">Functions</a></li> 
         <li><a href="#loops">Loops and Comprehensions</a></li> 
         <li><a href="#switch">Switch</a></li> 
-        <li><a href="#wip">WIP</a></li> 
+        <li><a href="#more-examples">More Examples</a></li> 
         <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
         <li><a href="#name">Name</a></li> 
@@ -902,10 +902,86 @@ default:
         </div>
       </div>
     </div>
-    <div id="wip" class="section">
-      <a name="wip"></a>
-      <h2>WIP</h2>
-      <p>This language reference is a work in progress and currently incomplete. 
+    <div id="more-examples" class="section">
+      <a name="more-examples"></a>
+      <h2>More Examples</h2>
+      <p>Basic SQL in LiveScript using list comprehensions. (note that the <code>when</code> has to come after the first <code>for</code> as it is the most inner <code>for</code>, due to the way postfix fors work.)
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+table1 =
+  * id: 1
+    name: \george
+  * id: 2
+    name: \mike
+  * id: 3
+    name: \donald
+
+table2 =
+  * id: 2
+    age: 21
+  * id: 1
+    age: 20
+  * id: 3
+    age: 26
+
+result = ({id:id1, name, age} for {id:id1, name} in table1 when id1 is id2 for {id:id2, age} in table2)
+
+JSON.stringify result
+#=>
+# [{"id":2,"name":"mike","age":21},
+# {"id":1,"name":"george","age":20},
+# {"id":3,"name":"donald","age":26}]
+</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+var table1, table2, id2, age, id1, name, result, __res, __i, __len, __ref, __j, __len1;
+table1 = [
+  {
+    id: 1,
+    name: 'george'
+  }, {
+    id: 2,
+    name: 'mike'
+  }, {
+    id: 3,
+    name: 'donald'
+  }
+];
+table2 = [
+  {
+    id: 2,
+    age: 21
+  }, {
+    id: 1,
+    age: 20
+  }, {
+    id: 3,
+    age: 26
+  }
+];
+__res = [];
+for (__i = 0, __len = table2.length; __i < __len; ++__i) {
+  __ref = table2[__i], id2 = __ref.id, age = __ref.age;
+  for (__j = 0, __len1 = table1.length; __j < __len1; ++__j) {
+    __ref = table1[__j], id1 = __ref.id, name = __ref.name;
+    if (id1 === id2) {
+      __res.push({
+        id: id1,
+        name: name,
+        age: age
+      });
+    }
+  }
+}
+result = __res;
+JSON.stringify(result);
+</pre>
+        </div>
+      </div>
     </div>
     <hr>
     <div id="inspiration" class="section">
