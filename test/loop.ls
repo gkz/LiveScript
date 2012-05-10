@@ -33,6 +33,14 @@ for ever
 
 ok list.join(' ') is '8 6 4 2'
 
+j = 5
+list2 = []
+loop
+  j -= 1
+  break if j is 0
+  list2.push j * 2
+
+ok list2.join(' ') is '8 6 4 2'
 
 #759: `if` within `while` condition
 2 while if 1 then 0

@@ -144,10 +144,10 @@ switch
 # Watch a source LiveScript file using `setTimeout`, taking an `action` every
 # time the file is updated.
 !function watch source, action
-  :loop let ptime = 0
+  :repeat let ptime = 0
     {mtime} <-! fshoot \stat source
     do action if ptime ^^^ mtime
-    setTimeout loop, 500ms, mtime
+    setTimeout repeat, 500ms, mtime
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output

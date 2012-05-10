@@ -1325,7 +1325,7 @@ class exports.Fun extends Node
     scope.fun = this
     scope.assign \prototype "#{ that.compile o }.prototype" if @proto
     scope.assign \constructor that                          if @cname
-    o.indent = @tab = '' if loop = delete o.loop
+    o.indent = @tab = '' if inLoop = delete o.loop
     o.indent += TAB
     {body, name, tab} = this
     code = \function
@@ -1347,7 +1347,7 @@ class exports.Fun extends Node
     code += "(#{ @compileParams scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
-    return pscope.assign pscope.temporary(\fn), code if loop
+    return pscope.assign pscope.temporary(\fn), code if inLoop
     if @returns
       code += "\n#{tab}return #name;"
     else if @bound and @ctor

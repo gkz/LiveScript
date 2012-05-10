@@ -143,6 +143,10 @@ exports import
       tag = \CASE; fallthrough
     case \case
       return input.length if @doCase!
+    case \loop
+      @token \WHILE   id
+      @token \LITERAL \true
+      return input.length
     default
       break if id in KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED

@@ -40,7 +40,7 @@ tint \ls [
   | d(?:e(?:fault|lete|bugger)|o)
   | un(?:less|til)
   | w(?:hile|ith|hen)
-  | o[fr] | return | break | switch | and | let
+  | o[fr] | return | break | switch | and | let | loop
   ) #kwend //]
   [\typ // ^ (?: true | false | null | void ) #kwend //]
   [\ctx // ^ (?
