@@ -787,6 +787,13 @@ switch 'moto'
 
 
 
+# When - alias to case
+switch
+when false then ':('
+when true  then \yay
+
+
+
 # Implicit switch after ->, ~>, :, =
 func = (param) ->
   | param.length < 5 => param.length
@@ -849,6 +856,13 @@ case '?':
   break;
 default:
   'something';
+}
+switch (false) {
+case !false:
+  ':(';
+  break;
+case !true:
+  'yay';
 }
 func = function(param){
   switch (false) {
