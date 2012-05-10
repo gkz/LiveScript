@@ -1191,10 +1191,10 @@ TOTAL    851 ms
       <li><code>()</code> is always a call; allowing <code>f ()</code>, disallowing <code>() -></code>.
       <li><code>...</code> is a prefix, as in <code>(f, ...args) -> something</code>.
       <li><code>and / or</code> and spaced <code>. / ?.</code> close implicit calls. <code>f a .g b or h c</code> means <code>f(a).g(b) || h(c)</code>.
-      <li>Range syntax is <code>[x to y]</code> or <code>[x til y]</code> instead of <em>[x..y]</em> and <em>[x...y]</em>.
+      <li>Range syntax is <code>[x to y]</code> or <code>[x til y]</code> instead of <code>[x..y]</code> and <code>[x...y]</code>.
       <li>Block comment is <code>/* */</code> rather than <code>### ###</code>.
       <li>Heregex is <code>// //</code> rather than <code>/// ///</code>.
-      <li>Bitwise operators have changed to triple themselves, eg. <code>&&&</code> instead of <em>&</em>. See <a href="#comparison-table">comparison table</a> for full details.
+      <li>Bitwise operators have changed, eg. <code>&&&</code> instead of <code>&</code>. See <a href="#comparison-table">comparison table</a> for full details. This is the only new incompatibility. 
       <li>No implicit call against blocks starting with an implicit object. (Use <code>do</code> instead).
       </ul>
     </div>
