@@ -787,25 +787,32 @@ switch 'moto'
 
 
 
-# When - alias to case
-switch
-when false then ':('
-when true  then \yay
-
-
-
 # Implicit switch after ->, ~>, :, =
 func = (param) ->
   | param.length < 5 => param.length
   | otherwise        => param.slice 3
 
 func 'hello' #=> lo
+
+
+
+
+# CoffeeScript style switches work fine too
+day = \Sun
+switch day
+  when "Mon" then 'go to work'
+  when "Tue" then 'go to a movie'
+  when "Thu" then 'go drinking'
+  when "Fri", "Sat"
+      'go dancing'
+  when "Sun" then 'drink more'
+  else 'go to work'
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var something, result, func;
+var something, result, func, day;
 switch (6) {
 case 1:
   'hello';
@@ -857,13 +864,6 @@ case '?':
 default:
   'something';
 }
-switch (false) {
-case !false:
-  ':(';
-  break;
-case !true:
-  'yay';
-}
 func = function(param){
   switch (false) {
   case !(param.length < 5):
@@ -873,6 +873,29 @@ func = function(param){
   }
 };
 func('hello');
+
+day = 'Sun';
+switch (day) {
+case "Mon":
+  'go to work';
+  break;
+case "Tue":
+  'go to a movie';
+  break;
+case "Thu":
+  'go drinking';
+  break;
+case "Fri":
+case "Sat":
+  'go dancing';
+  break;
+case "Sun":
+  'drink more';
+  break;
+default:
+  'go to work';
+}
+
 </pre>
         </div>
       </div>
@@ -987,7 +1010,6 @@ func('hello');
       </ul>
       <h3>Keyword</h3>
       <ul>
-      <li><em>else</em> in switch statements is replaced with <code>default</code> or <code>| otherwise</code>.
       <li><code>for ever</code> replaces <em>loop</em>.
       <li><code>~></code> (wavy arrow) replaces => (fat arrow).
       <li><code>it / that / fallthrough / otherwise</code> are semi-reserved. They get special meanings depending on context.
@@ -1029,6 +1051,7 @@ func('hello');
       <li>Added <code>yes / on</code> as aliases to <code>true</code> and <code>no / off</code> as aliases to <code>false</code>. Added <code>undefined</code> as an alias to <code>void</code>, and aliased <code>isnt</code> to <code>is not</code>. Rationale: ease transition from CoffeeScript, which has all these features, to LiveScript. 
       <li>Added <code>when</code> as alias to <code>case</code> (and <code>|</code>). Rationale: ease transition from CoffeeScript. 
       <li>Allowed guards in loops using case statement, eg. <code>x for x from 1 to 10 when x % 2 is 0</code>. Rationale: ease transition from CoffeeScript and have guards in comprehensions like other languages (Haskell).
+      <li>Added the use of <code>else</code> for default in switch. Rationale: ease transition from CoffeeScript.
       </ul>
     </div>
   </div>
