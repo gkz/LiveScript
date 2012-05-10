@@ -304,6 +304,8 @@ bnf =
     , -> new For index: $2, from: $4, op: $5, to: $6, step: $8
     o 'FOR ID FROM Expression TO Expression BY Expression CASE Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, step: $8, guard: $10
+    o 'FOR ID FROM Expression TO Expression CASE Expression BY Expression'
+    , -> new For index: $2, from: $4, op: $5, to: $6, guard: $8, step: $10
 
     o 'WHILE Expression'                 -> new While $2, $1 is \until
     o 'WHILE Expression CASE Expression' -> new While $2, $1 is \until .addGuard $4

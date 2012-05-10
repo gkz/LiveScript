@@ -316,3 +316,6 @@ for x in <[ amy bibs ashley charlie danny alex ]> when x.charAt(0) is \a
 
 while i < evens.length, ++i when evens[i] * 2 is 8
   eq 4 evens[i] 
+
+eq '1 3 7 9' (y for y from 1 to 10 when y isnt 5 by 2).join ' '
+
