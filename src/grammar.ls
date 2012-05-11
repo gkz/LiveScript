@@ -167,7 +167,7 @@ bnf =
       *if \! is $2.charAt 0 then Binary $2.slice(1), $1, $3 .invert!
                             else Binary $2         , $1, $3
 
-    o 'Expression PIPE Expression' -> Block $1 .pipe $3
+    o 'Expression PIPE Expression' -> Block $1 .pipe $3, $2 is \|>
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 

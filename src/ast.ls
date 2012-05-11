@@ -205,7 +205,11 @@ class exports.Block extends Node
     @lines.splice @neck!, 0, ...arguments
     this
 
-  pipe: -> @lines.push Assign(Var \_; @lines.pop!), it; this
+  # target: piping to, funcPipe: whether piping to function (|>)
+  pipe: (target, funcPipe) -> 
+    | funcPipe  => @lines.push Call.make(target, [@lines.pop!])
+    | otherwise => @lines.push Assign(Var \_; @lines.pop!), target
+    this
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this
 
@@ -550,8 +554,8 @@ class exports.Chain extends Node
     {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
       tails.splice 0 i+1
-      |> _.pop!key.toSlice o, Chain(@head, _)unwrap!, assign
-      |> @head = _ << {@front}
+      |>> _.pop!key.toSlice o, Chain(@head, _)unwrap!, assign
+      |>> @head = _ << {@front}
       i = -1
     this
 
@@ -688,7 +692,7 @@ class exports.Obj extends List
         !(dic"#xet #key" = dic"#xet #key" ^^^ 1) or "#key." of dic
       else 
         !(dic"#key." = dic"#key." ^^^ 1) or "get #key" of dic or "set #key" of dic
-      |> _ and node.carp "duplicate property name \"#key\""
+      |>> _ and node.carp "duplicate property name \"#key\""
     code = "{#{ code and code + \\n + @tab }}"
     rest and code = Import(JS code; Obj rest)compile o << indent: @tab
     if @front and \{ is code.charAt! then "(#code)" else code
@@ -798,7 +802,7 @@ class exports.Unary extends Node
       # `do f?` => `f?()`
       Parens if it instanceof Existence and not it.negated
         then Chain(it)add Call! else Call.make it
-      |> return (_ << {@front, @newed})compile o
+      |>> return (_ << {@front, @newed})compile o
     case \delete
       @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compilePluck o if o.level and not @void
@@ -941,12 +945,12 @@ class exports.Binary extends Node
   compileExistence: (o) ->
     if @op is \!?
       If(Existence @first; @second) << {@cond, @void or not o.level}
-      |> return _.compileExpression o
+      |>> return _.compileExpression o
     if @void or not o.level
       Binary \&& Existence(@first, true), @second
-      |> return (_ << {+void})compileNode o
+      |>> return (_ << {+void})compileNode o
     @first.cache o, true
-    |> If(Existence _.0; _.1)addElse(@second)compileExpression o
+    |>> If(Existence _.0; _.1)addElse(@second)compileExpression o
 
   # `x instanceof [A, B]` => `x instanceof A || x instanceof B`
   compileAnyInstanceOf: (o, items) ->
@@ -959,7 +963,7 @@ class exports.Binary extends Node
     lefts = @first .cache o, true
     rites = @second.cache o, true
     Binary @op.charAt!, lefts.0, rites.0
-    |> If _, lefts.1 .addElse rites.1 .compileExpression o
+    |>> If _, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
     args = @second & arg || []

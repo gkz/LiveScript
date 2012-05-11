@@ -366,7 +366,7 @@ exports import
     case \|              
       tag = \CASE
       return sym.length if @doCase! 
-    case \|>             then tag = \PIPE
+    case \|> \|>>        then tag = \PIPE
     case \+ \-           then tag = \+-
     case \&              then tag = \CONCAT
     case \&& \||         then tag = \LOGIC
@@ -1025,7 +1025,7 @@ SYMBOL = //
 | <<<?                        # import
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
-| \|>                         # pipe
+| \|>>?                       # pipe
 | \|                          # case
 | =>                          # then
 | \*\*=? | \^                 # pow
