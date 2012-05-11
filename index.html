@@ -1105,9 +1105,13 @@ not false      #=> true
 \id of {id: 23, name: \rogers} #=> true
 
 
-## Pipe - pipes left result to the right
-# using _
-+'2' |> _ ^ 2 |> _.toString! #=> '4'
+## Pipe
+# |> turns 'val |> func' into 'func(val)'
+reverse = -> it.reverse!
+[1 2 3] |> reverse #=> [3, 2, 1]
+
+# |>> pipes left result to the right using _
++'2' |>> _ ^ 2 |>> _.toString! #=> '4'
 
 
 ## List 
@@ -1194,8 +1198,8 @@ child.length #=> 0
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var n, list1, list2, neg, string, obj, one, 
-  child, __ref, _, __slice = [].slice, 
+var n, reverse, list1, list2, neg, string, obj,
+  one, child, __ref, _, __slice = [].slice, 
   __join = [].join, __replace = ''.replace, 
   __split = ''.split, __toString = {}.toString;
 n = 0;
@@ -1271,6 +1275,10 @@ true || false;
   id: 23,
   name: 'rogers'
 };
+reverse = function(it){
+  return it.reverse();
+};
+reverse([1, 2, 3]);
 
 _ = +'2';
 _ = Math.pow(_, 2);
