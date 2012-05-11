@@ -419,7 +419,7 @@ exports import
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>
       # change id@! to calls (id! already makes calls)
-      if @last.0 is \UNARY and @last.1 is \!
+      if @last.0 is \UNARY and (@last.1 is \! and @tokens[*-2].0 isnt \UNARY)
         @tokens.pop!
         @token \CALL( \(
         @token \)CALL \)
