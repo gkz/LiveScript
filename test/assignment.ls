@@ -55,6 +55,13 @@ for nonref, i in <[ 0 f() this true ]>
 throws 'assignment to undeclared variable "Math" on line 1'
 , -> LiveScript.compile 'Math ||:= 0'
 
+# Power
+x = 2
+x **= 2
+eq 4 x
+x ^= 2
+eq 16 x
+
 # obj ::= obj2 as alias to obj::<<obj2
 lala = ->
 lala ::= prop: true

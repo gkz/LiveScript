@@ -471,7 +471,7 @@ exports import
         @token tag, val
         return sym.length
       fallthrough
-    case <[ := += -= *= /= %= <?= >?= **= ]>
+    case <[ := += -= *= /= %= <?= >?= **= ^= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
         @last.1 += val
         return val.length
