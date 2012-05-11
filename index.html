@@ -16,6 +16,8 @@
 <link href="google-code-prettify/prettify.css" rel="stylesheet">
 <script src="https://raw.github.com/gkz/LiveScript/master/lib/lang-ls.js"></script>
 
+<script src="underscore-min.js"></script>
+
 <link href="styles.css" rel="stylesheet">
 
 <script src="site.js"></script>
@@ -56,9 +58,7 @@
         <li><a href="#property-access">Property Access</a></li> 
         <li><a href="#oop">OOP</a></li> 
         <li class="divider">
-        <li><a href="#more-examples">More Examples</a></li> 
         <li><a href="#speed">Speed</a></li> 
-        <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
         <li><a href="#name">Name</a></li> 
         <li class="divider">
@@ -153,24 +153,137 @@ $('h1').on('click', function(){
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# Curried functions
-times = (x, y) --> x * y
-timesTwo = times 2
+# Easy listing of implicit objects using astericks
+table1 =
+  * id: 1
+    name: \george
+  * id: 2
+    name: \mike
+  * id: 3
+    name: \donald
 
-times 3 4  #=> 12
-timesTwo 4 #=> 8
+
+
+
+
+
+table2 =
+  * id: 2
+    age: 21
+  * id: 1
+    age: 20
+  * id: 3
+    age: 26
+
+
+
+
+# Implicit arg, accessignment
+upCaseName = -> it.name .= toUpperCase!
+
+# Curried functions using -->
+each = (f, list) -->
+  f x for x in list
+  list
+
+
+
+
+
+
+sortBy = (prop, list) --> list.sort (a, b) -> 
+  | a[prop] < b[prop] => -1
+  | a[prop] > b[prop] => 1
+  | otherwise         => 0
+
+
+
+
+
+
+
+# List comprehensions, destructuring, piping
+({id:id1, name, age} for {id:id1, name} in table1 when id1 is id2 for {id:id2, age} in table2) 
+|> sortBy \id
+|> each upCaseName
+|> JSON.stringify
+
+#=>
+#[{"id":1,"name":"GEORGE","age":20},
+# {"id":2,"name":"MIKE",  "age":21},
+# {"id":3,"name":"DONALD","age":26}]
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var times, timesTwo;
-times = __curry(function(x, y){
-  return x * y;
+var table1, table2, upCaseName, each, 
+  sortBy, id2, age, id1, name;
+table1 = [
+  {
+    id: 1,
+    name: 'george'
+  }, {
+    id: 2,
+    name: 'mike'
+  }, {
+    id: 3,
+    name: 'donald'
+  }
+];
+table2 = [
+  {
+    id: 2,
+    age: 21
+  }, {
+    id: 1,
+    age: 20
+  }, {
+    id: 3,
+    age: 26
+  }
+];
+upCaseName = function(it){
+  return it.name = it.name.toUpperCase();
+};
+each = __curry(function(f, list){
+  var x, __i, __len;
+  for (__i = 0, __len = list.length;
+       __i < __len; ++__i) {
+    x = list[__i];
+    f(x);
+  }
+  return list;
 });
-timesTwo = times(2);
-times(3, 4); //=> 12
-timesTwo(4); //=> 8
+sortBy = __curry(function(prop, list){
+  return list.sort(function(a, b){
+    switch (false) {
+    case !(a[prop] < b[prop]):
+      return -1;
+    case !(a[prop] > b[prop]):
+      return 1;
+    default:
+      return 0;
+    }
+  });
+});
+JSON.stringify(each(upCaseName)(sortBy('id')((function(){
+  var __i, __ref, __len, __ref1, __j, __len1, __ref2, __results = [];
+  for (__i = 0, __len = (__ref = table2).length; __i < __len; ++__i) {
+    __ref1 = __ref[__i], id2 = __ref1.id, age = __ref1.age;
+    for (__j = 0, __len1 = (__ref1 = table1).length; __j < __len1; ++__j) {
+      __ref2 = __ref1[__j], id1 = __ref2.id, name = __ref2.name;
+      if (id1 === id2) {
+        __results.push({
+          id: id1,
+          name: name,
+          age: age
+        });
+      }
+    }
+  }
+  return __results;
+}()))));
 
 function __curry(f, args){
   return f.length ? function(){
@@ -1503,87 +1616,6 @@ x;
       </div>
     </div>
     <hr>
-    <div id="more-examples" class="section">
-      <a name="more-examples"></a>
-      <h2>More Examples</h2>
-      <p>Basic SQL in LiveScript using list comprehensions. (note that the <code>when</code> has to come after the first <code>for</code> as it is the most inner <code>for</code>, due to the way postfix fors work.)
-      <div class="example">
-        <div class="example-ls">
-          <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">
-table1 =
-  * id: 1
-    name: \george
-  * id: 2
-    name: \mike
-  * id: 3
-    name: \donald
-
-table2 =
-  * id: 2
-    age: 21
-  * id: 1
-    age: 20
-  * id: 3
-    age: 26
-
-result = ({id:id1, name, age} for {id:id1, name} in table1 when id1 is id2 for {id:id2, age} in table2)
-
-JSON.stringify result
-#=>
-# [{"id":2,"name":"mike","age":21},
-# {"id":1,"name":"george","age":20},
-# {"id":3,"name":"donald","age":26}]
-</pre>
-        </div>
-        <div class="example-js">
-          <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">
-var table1, table2, id2, age, id1, name, result, __res, __i, __len, __ref, __j, __len1;
-table1 = [
-  {
-    id: 1,
-    name: 'george'
-  }, {
-    id: 2,
-    name: 'mike'
-  }, {
-    id: 3,
-    name: 'donald'
-  }
-];
-table2 = [
-  {
-    id: 2,
-    age: 21
-  }, {
-    id: 1,
-    age: 20
-  }, {
-    id: 3,
-    age: 26
-  }
-];
-__res = [];
-for (__i = 0, __len = table2.length; __i < __len; ++__i) {
-  __ref = table2[__i], id2 = __ref.id, age = __ref.age;
-  for (__j = 0, __len1 = table1.length; __j < __len1; ++__j) {
-    __ref = table1[__j], id1 = __ref.id, name = __ref.name;
-    if (id1 === id2) {
-      __res.push({
-        id: id1,
-        name: name,
-        age: age
-      });
-    }
-  }
-}
-result = __res;
-JSON.stringify(result);
-</pre>
-        </div>
-      </div>
-    </div>
     <div id="speed" class="section">
       <a name="speed"></a>
       <h2>Speed</h2>
@@ -1608,7 +1640,6 @@ TOTAL    851 ms
 </pre>
       <p>For more improvements see <a href="https://github.com/satyr/coco/wiki/improvements">Coco's list of improvements</a>.
     </div>
-    <hr>
     <div id="inspiration" class="section">
       <a name="inspiration"></a>
       <h2>Inspiration</h2>

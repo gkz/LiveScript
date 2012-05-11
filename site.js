@@ -1,15 +1,12 @@
 (function(){
   $(function(){
-    var example, src, websafe, boom, __i, __ref, __len;
+    var example, src, boom, __i, __ref, __len;
     for (__i = 0, __len = (__ref = $('.example .example-ls')).length; __i < __len; ++__i) {
       example = __ref[__i];
       src = $(example).find('.lang-ls').html();
       $('<pre class="source"></pre>').html(src).appendTo(example);
     }
     prettyPrint();
-    websafe = function(txt){
-      return String(txt).split('&').join('&amp;').split('<').join('&lt;');
-    };
     boom = function(action){
       var source, func, error, result, toPrepend;
       source = $('.compiler textarea').val();
@@ -41,7 +38,7 @@
         if (action == 'lex' || action == 'tokens') {
           result = JSON.stringify(result);
         }
-        result = websafe(result);
+        result = _.escape(result);
         result = result.replace(/\n/g, '<br>').replace(/\ /g, '&nbsp');
         if (action === 'compile' && !error) {
           result = prettyPrintOne(result, 'lang-js', false);

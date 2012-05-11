@@ -5,10 +5,6 @@ $ ->
 
   prettyPrint!
 
-  websafe = (txt) ->
-      # works better than replace, though perhaps not as fast
-      String txt .split '&' .join '&amp;' .split '<' .join '&lt;'
-
   !boom(action) = 
     source = $ '.compiler textarea' .val!
     result = try 
@@ -26,7 +22,7 @@ $ ->
     if result?
       console?.log result
       result = JSON.stringify result if action in <[ lex tokens ]>
-      result = websafe result
+      result = _.escape result
       result = result.replace /\n/g, '<br>' .replace /\ /g, \&nbsp;
       if action is \compile and not error
         result = prettyPrintOne result, 'lang-js', false
