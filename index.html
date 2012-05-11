@@ -406,6 +406,11 @@ obj =
 # Flagging shorthand
 {+debug, -live}
 
+# This
+this 
+@
+@location
+
 ## Regex
 //
 | [!=]==?             # equality
@@ -515,6 +520,11 @@ obj = (__ref = {}, __ref[variable + ""] = 234,
   debug: true,
   live: false
 });
+
+this;
+this;
+this.location;
+
 
 /|[!=]==?|@@|<\[(?:[\s\S]*?\]>)?/g;
 
