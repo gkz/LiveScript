@@ -219,7 +219,8 @@ function __curry(f, args){
     <div id="reference" class="section">
       <a name="reference"></a>
       <h2>Reference</h2>
-      <p>LiveScript uses whitespace to delimit blocks of code. Semicolons are not required to terminate expressions if you have a newline at the end. You also don't need to use parentheses when calling functions. Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. Almost everything is an expression. You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript.</p>
+      <p>LiveScript uses whitespace to delimit blocks of code. Semicolons are not required to terminate expressions if you have a newline at the end. You also don't need to use parentheses when calling functions. Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. Almost everything is an expression. 
+      <p>You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript. Note that LiveScript wraps compiled JS in a safety wrapper <code>(function(){...contents...}).call(this);</code> - this wrapper has been omitted in all examples and compiler output for conciseness.
     </div>
     <div id="literals" class="section">
       <a name="literal"></a>
@@ -1265,11 +1266,206 @@ function __clone(it){
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
+# Basic
+x = 10
+
+# Nondeclaring assignment using :=
+# := must be used to modify variables
+# in upper scopes unlike in CoffeeScript
+do ->
+  x = 5
+x #=> 10
+
+do ->
+  x := 2
+x #=> 2
+
+# Compound assign
+# (no compound assign for bitwise ops)
+x += 2   #=> 4
+x -= 1   #=> 3
+x *= 3   #=> 9
+x /= 3   #=> 3
+x %= 3   #=> 0
+x <?= -1 #=> -1
+x >?= 2  #=> 2
+x **= 2  #=> 4
+x ^= 2   #=> 16
+
+x ?= 10
+x        #=> 16
+x !?= 8
+x        #=> 8
+
+x ||= 5  #=> 8
+x &&= 5  #=> 5
+
+# ?, !?, ||, or && can prefix any 
+# compound assign
+x &&+= 3 #=> 8
+x ?*= 2
+x        #=> 8
+
+# Unary assignment
+y = \45
++  = y   #=> 45   (make into number)
+!! = y   #=> true (make into boolean)
+-~-~ = y #=> 3    (int-coercing double crement)
+
+# Assignment defaults
+# can use || && ? !?
+x ? y = 10
+y        #=> 10
+
+# Can use = isntead of ? in function parameters
+f = (z = 7) -> z
+f 9      #=> 9
+f!       #=> 7
+
+
+
+f = (z && 5) -> z
+f!       #=> (nothing)
+z 3      #=> 5
+
+# Destructering
+one = \boom
+two = \lala
+list = [one, two] #=> ['boom', 'lala']
+[two, one] = list #=> ['lala', 'boom']
+
+[first, ...middle, last] = [1 to 5]
+first  #=> 1
+middle #=> [2, 3, 4]
+last   #=> 5
+
+mitch =
+  age:    21
+  height: 180cm
+  pets:    [\dog, \goldfish]
+  fam:
+    bro: \phile
+
+{age, height, pets: [pet1, pet2], fam: {bro}} = mitch
+height #=> 180
+bro    #=> 'phile'
+pet1   #=> 'dog'
+
+# You can also rename things via :label
+{height:tallness} = mitch
+tallness #=> 180
+
+# Subdestructering - works with lists and objects
+phile = {}
+phile{height, pets} = mitch
+phile.height #=> 180
+phile.pets   #=> ['dog', 'goldfish']
+
+# Soak assign - performs assign only 
+# if right side value exists
+x? = age     
+x #=> 21
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
+var x, y, f, one, two, list, first, middle, last, 
+  mitch, age, height, pet1, pet2, bro, tallness,
+  phile, __ref, __i, __slice = [].slice;
+
+x = 10;
+
+(function(){
+  var x;
+  return x = 5;
+})();
+x;
+(function(){
+  return x = 2;
+})();
+x;
+
+x += 2;
+x -= 1;
+x *= 3;
+x /= 3;
+x %= 3;
+x <= (__ref = -1) || (x = __ref);
+x >= 2 || (x = 2);
+x = Math.pow(x, 2);
+x = Math.pow(x, 2);
+
+x == null && (x = 10);
+x;
+x != null && (x = 8);
+x;
+
+x || (x = 5);
+x && (x = 5);
+
+
+
+x && (x += 3);
+x == null && (x *= 2);
+x;
+
+
+y = '45';
+y = +y;
+y = !!y;
+y = -~-~y;
+
+
+
+x == null && (y = 10);
+y;
+
+f = function(z){
+  z == null && (z = 7);
+  return z;
+};
+f(9);
+f();
+f = function(z){
+  z && (z = 5);
+  return z;
+};
+f();
+z(3);
+one = 'boom';
+two = 'lala';
+list = [one, two];
+two = list[0], one = list[1];
+__ref = [1, 2, 3, 4, 5], first = __ref[0], middle = 1 < (__i = __ref.length - 1) ? __slice.call(__ref, 1, __i) : (__i = 1, []), last = __ref[__i];
+first;
+middle;
+last;
+mitch = {
+  age: 21,
+  height: 180,
+  pets: ['dog', 'goldfish'],
+  fam: {
+    bro: 'phile'
+  }
+};
+age = mitch.age, height = mitch.height, __ref = mitch.pets, pet1 = __ref[0], pet2 = __ref[1], bro = mitch.fam.bro;
+height;
+bro;
+pet1;
+tallness = mitch.height;
+tallness;
+
+phile = {};
+phile.height = mitch.height, phile.pets = mitch.pets;
+phile.height;
+phile.pets;
+
+
+if (age != null) {
+  x = age;
+}
+x;
 </pre>
         </div>
       </div>
