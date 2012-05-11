@@ -915,11 +915,345 @@ default:
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
+n = 0
+
+
+## Math
+# The standard
+1 + 2 #=> 3
+3 - 4 #=> -1
+6 * 2 #=> 12
+8 / 4 #=> 2
+9 % 6 #=> 3
+
+n++    #=> 1
+++n    #=> 2
+n = -n #=> -2
+n = +n #=> 2
+n--    #=> 1
+--n    #=> 0
+
++'23'  #=> 23
+
+# Power - right associative,
+# higher precedence than unary ops
+2 ** 4     #=> 16
+3 ^ 4      #=> 81
+-2 ^ 2 ^ 3 #=> -256
+
+## Bitwise and shifts
+14 &&& 9   #=> 8
+14 ||| 9   #=> 15
+14 ^^^ 9   #=> 7
+~9         #=> -10
+9 <<<< 2   #=> 36
+-9 >>>> 2  #=> -3
+-9 >>>>> 2 #=> 1073741821
+
+## Comparison
+# Strict equals
+2 + 4 == 6      #=> true
+\boom is 'boom' #=> true
+
+# Fuzzy Equals
+2 === '2'       #=> true
+
+# Strict not equals
+\boom != null   #=> true
+2 + 2 is not 4  #=> false
+n + 1 isnt 1    #=> false
+
+# Fuzzy not equals
+\1 !== 1        #=> false
+
+# Greater/less than
+2 < 4           #=> true
+9 > 7           #=> true
+8 <= 8          #=> true
+7 >= 8          #=> false
+
+# Chained comparison
+1 < 2 < 4        #=> true
+1 < 2 == 4/2 > 0 #=> true
+
+## Logic
+true and false #=> false
+true && false  #=> false
+
+true or false  #=> true
+true || false  #=> true
+
+not false      #=> true
+!false         #=> true
+
+## In/Of
+2 in [1 2 3 4 5] #=> true
+\id of {id: 23, name: \rogers} #=> true
+
+
+## Pipe - pipes left result to the right
+# using _
++'2' |> _ ^ 2 |> _.toString! #=> '4'
+
+
+## List 
+list1 = <[ one two three ]>
+list2 = [\four]
+
+# Concat
+list1 +++ list2 #=> ['one', 'two', 'three', 'four']
+
+# Cons
+\zero & list1   #=> ['zero', 'one', 'two', 'three']
+
+# Concat when first is list literal
+[1] + list2     #=> [1, 'four']
+
+# List repetition when first is list literal
+[\ha] * 3       #=> ['ha', 'ha', 'ha']
+
+# Join when right operand is a string literal
+list1 * \,      #=> 'one,two,three'
+
+# Unary spread
+# when right is list literal, apply to each item
+neg = -[4 5 6]  #=> [-4, -5, -6]
+
+## String
+'hello' + ' ' + 'world' #=> 'hello world'
+string = 'say '         #=> 'say '
+string += \yeah         #=> 'say yeah'
+
+# String repetition when first is string literal
+'X' * 3      #=> 'XXX'
+
+# String subtraction/division when
+# right is string or regex literal
+string - /h/ #=> 'say yea'
+string / \y  #=> ['sa', ' ', 'eah']
+
+## Min/max - return greater or lesser value
+4 >? 8     #=> 8
+9 - 5 &lt;? 6 #=> 4
+
+## Existence/Inexistence 
+bigfoot ? 'grizzly bear'         #=> 'grizzly bear'
+string = \boom if n?             #=> 'boom'
+string = 'say yeah' if bigfoot!? #=> 'say yeah'
+
+document?.title                  #=> 'LiveScript'
+
+
+
+
+
+
+
+## instanceof - list literal to right gets expanded
+new Date() instanceof Date           #=> true
+new Date() instanceof [Date, Object] #=> true
+
+## typeof
+typeof /^/  #=> object
+typeof! /^/ #=> RegEx
+
+## delete - returns original value
+obj = {one: 1, two: 2} 
+one = delete obj.one
+one #=> 1
+
+## Property copy
+# copy enumerable properties from right to left,
+# return left value
+# <<<< for own properties
+# import and importAll are aliases
+obj << three: 3
+obj #=> {two: 2, three: 3}
+{go: true} <<< window
+document import obj
+
+## Clone - unary, creates prototypical child value
+child = ^(new String)
+child.length #=> 0
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
+var n, list1, list2, neg, string, obj, one, 
+  child, __ref, _, __slice = [].slice, 
+  __join = [].join, __replace = ''.replace, 
+  __split = ''.split, __toString = {}.toString;
+n = 0;
+1 + 2;
+3 - 4;
+6 * 2;
+8 / 4;
+9 % 6;
+
+n++;
+++n;
+n = -n;
+n = +n;
+n--;
+--n;
+
++'23';
+
+
+
+Math.pow(2, 4);
+Math.pow(3, 4);
+-Math.pow(2, Math.pow(2, 3));
+
+
+14 & 9;
+14 | 9;
+14 ^ 9;
+~9;
+9 << 2;
+-9 >> 2;
+-9 >>> 2;
+
+
+
+2 + 4 === 6;
+'boom' === 'boom';
+
+
+2 == '2';
+
+
+'boom' !== null;
+2 + 2 !== 4;
+n + 1 !== 1;
+
+
+'1' != 1;
+
+
+2 < 4;
+9 > 7;
+8 <= 8;
+7 >= 8;
+
+
+1 < 2 && 2 < 4;
+1 < 2 && 2 === (__ref = 4 / 2) && __ref > 0;
+
+
+true && false;
+true && false;
+
+true || false;
+true || false;
+
+!false;
+!false;
+
+
+2 == 1 || 2 == 2 || 2 == 3 || 2 == 4 || 2 == 5;
+'id' in {
+  id: 23,
+  name: 'rogers'
+};
+
+_ = +'2';
+_ = Math.pow(_, 2);
+_.toString();
+
+list1 = ['one', 'two', 'three'];
+list2 = ['four'];
+
+
+(list1).concat(list2);
+
+
+[('zero')].concat(list1);
+
+
+[1].concat(__slice.call(list2));
+
+
+['ha', 'ha', 'ha'];
+
+
+__join.call(list1, ',');
+
+
+
+neg = [-4, -5, -6];
+
+
+'hello' + ' ' + 'world';
+string = 'say ';
+string += 'yeah';
+
+
+'XXX';
+
+
+
+__replace.call(string, /h/, '');
+__split.call(string, 'y');
+
+
+4 > 8 ? 4 : 8;
+(__ref = 9 - 5) < 6 ? __ref : 6;
+
+(typeof bigfoot == 'undefined' || 
+bigfoot === null) && 'grizzly bear';
+if (n != null) {
+  string = 'boom';
+}
+if (typeof bigfoot == 'undefined' || 
+bigfoot === null) {
+  string = 'say yeah';
+}
+if (typeof document != 'undefined' &&
+document !== null) {
+  document.title;
+}
+
+new Date() instanceof Date;
+(__ref = new Date()) instanceof Date || 
+__ref instanceof Object;
+
+typeof /^/;
+__toString.call(/^/).slice(8, -1);
+
+obj = {
+  one: 1,
+  two: 2
+};
+one = obj.one, delete obj.one;
+one;
+
+
+
+
+obj.three = 3;
+obj;
+__importAll({
+  go: true
+}, window);
+__import(document, obj);
+child = __clone(new String);
+child.length;
+
+function __importAll(obj, src){
+  for (var key in src) obj[key] = src[key];
+  return obj;
+}
+function __import(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}
+function __clone(it){
+  function fun(){} fun.prototype = it;
+  return new fun;
+}
 </pre>
         </div>
       </div>
