@@ -1608,11 +1608,96 @@ x;
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
+# Standard
+[1 2 3][1]     #=> 2
+{a: 1, b: 2}.b #=> 2
+
+# Dot Access - dot operators can accept many
+# more things other than identifiers as their
+# right operand, including numbers, strings,
+# parentheses, brackets, and braces
+x = "hello world": [4 [5 boom: 6]]
+x.'hello world'.1.[0] #=> 5
+
+
+
+
+
+
+# Accessignment using .=
+document.title .= toUpperCase! #=> LIVESCRIPT
+
+# Array slice
+list = [1 2 3 4 5]
+list[2, 4]    #=> [3, 5]
+list[1 to 3]  #=> [2, 3, 4]
+list[1 til 3] #=> [2, 3]
+list[1 til 3] = [7, 8]
+list          #=> [1, 7, 8, 4, 5]
+
+
+
+
+# Object slice
+obj = one: 1, two: 2
+obj{first: one, two} #=> {first: 1, two: 2}
+
+# Length star [*]
+list[*] = 6
+list        #=> [1, 2, 3, 4, 5, 6]
+list[*-1]   #=> 6
+
+# Semiautovivification .@ .@@
+# ensures that the property exists 
+# as an object or as an array
+x.@@'hello world'.1.@1.boom #=> 6
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
+var x, list, obj, __ref;
+[1, 2, 3][1];
+({
+  a: 1,
+  b: 2
+}).b;
+x = {
+  "hello world": [
+    4, [
+      5, {
+        boom: 6
+      }
+    ]
+  ]
+};
+x['hello world'][1][0];
+
+document.title = document.title.toUpperCase();
+
+
+list = [1, 2, 3, 4, 5];
+[list[2], list[4]];
+[list[1], list[2], list[3]];
+[list[1], list[2]];
+__ref = [7, 8], list[1]=__ref[0], list[2]=__ref[1];
+list;
+
+obj = {
+  one: 1,
+  two: 2
+};
+({
+  first: obj.one,
+  two: obj.two
+});
+list[list.length] = 6;
+list;
+list[list.length - 1];
+
+
+
+((__ref = (x['hello world'] || (x['hello world'] = []))[1])[1] || (__ref[1] = {})).boom;
 </pre>
         </div>
       </div>
