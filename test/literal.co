@@ -298,9 +298,13 @@ o = q: 1 if false
 ok \q not in o
 
 
-# Inline with assignment.
-p: o = q: 0
-eq o.q, 0
+# Inline with assignment/import.
+o =
+  p: t =   q: 0
+  r: t <<< s: 1
+eq o.p, o.r
+eq o.p.q, 0
+eq o.r.s, 1
 
 
 #### Dynamic Keys
