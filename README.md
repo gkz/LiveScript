@@ -38,6 +38,20 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.7.1
+- Added `export` statement. ([#121](https://github.com/satyr/coco/issues/81))
+- Made `{{q}:p}` short for `{p: {q}:p}`.
+- Allowed keyword literals as object shorthand: `{true}` => `{true: true}`
+- Allowed decimals and `$` in number comments.
+- Removed uppercase radix prefixes and exponential notation as per
+  [coffee#2061](https://github.com/jashkenas/coffee-script/issues/2061).
+- Labelling a function (literal or IIFE sugar) now names it.
+  E.g. `:f ->` compiles to `(function f(){})`.
+- `super` call to a bound class now works as expected.
+- All compiler-generated variables are now double-underscore prefixed.
+- `--interactive` no longer implies `--bare`.
+  Use `-bi` when you want top-level variables to persist.
+
 ### 0.7.0
 - Caught up Node.js 0.6.x.
 - `!` against function/backcall now suppresses its auto-return.
