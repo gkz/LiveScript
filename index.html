@@ -1233,9 +1233,9 @@ one #=> 1
 # return left value
 # <<<< for own properties
 # import and importAll are aliases
-obj << three: 3
+obj <<< three: 3
 obj #=> {two: 2, three: 3}
-{go: true} <<< window
+{go: true} <<<< window
 document import obj
 
 ## Clone - unary, creates prototypical child value
