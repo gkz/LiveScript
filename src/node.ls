@@ -16,7 +16,7 @@ module.exports = !(LiveScript) ->
     else
       dirname = filename = \.
     main.paths = main.._nodeModulePaths dirname
-    main << {filename}
+    main <<< {filename}
     js or code = LiveScript.compile code, {...options, +bare}
     try main._compile code, filename catch throw hackTrace e, code, filename
 
@@ -39,4 +39,4 @@ function hackTrace {stack}:error?, js, filename
     for n from 1 >? lno-4 to end
       traces[i] += "\n#{ ('    ' + n)slice -length }
                       #{ '|+'charAt n is lno } #{[lines[n-1]]}"
-  error << stack: traces.join \\n
+  error <<< stack: traces.join \\n

@@ -50,7 +50,7 @@ switch
   if o.require
     ({filename} = module)filename = \.
     that.forEach require
-    module << {filename}
+    module <<< {filename}
   switch
   case o.eval
     argv.1 = \eval
@@ -203,8 +203,8 @@ switch
     module.paths = module.._nodeModulePaths \
       module.filename = process.cwd! + \/repl
     vm = require \vm
-    global << {module, exports, require}
-    server = ^require(\repl)REPLServer:: <<
+    global <<< {module, exports, require}
+    server = ^require(\repl)REPLServer:: <<<
       context: global, commands: [], useGlobal: true
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
@@ -224,7 +224,7 @@ switch
         say LiveScript.compile code, {o.bare}
       else
         _  = vm.runInThisContext LiveScript.compile(code, {\eval o.bare}), \repl
-        _ !? global << {_}
+        _ !? global <<< {_}
         pp  _
         say _ if typeof _ is \function
     catch then say e

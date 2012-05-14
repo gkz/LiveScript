@@ -87,13 +87,13 @@ exports import
 
   # Matches an identifying literal: variables, keywords, accessors, etc.
   doID: (code, index) ->
-    [input] = match = (ID << lastIndex: index)exec code
+    [input] = match = (ID <<< lastIndex: index)exec code
     return 0 unless input
     [, id] = match
     {last} = this
     # `id:_` `_.id` `@id`
     if match.2 or last.0 is \DOT or @adi!
-      @token \ID if id in KEYWORDS then Object(id) << {+reserved} else id
+      @token \ID if id in KEYWORDS then Object(id) <<< {+reserved} else id
       @token \: \: if match.2
       return input.length
     # keywords
@@ -151,7 +151,7 @@ exports import
       break if id in KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED
       if not last.1 and last.0 in <[ CATCH FUNCTION LABEL ]>
-        last << {1: id, -spaced}
+        last <<< {1: id, -spaced}
         return id.length
       tag = \ID
       # contextual keywords (reserved only in specific places)
@@ -171,7 +171,7 @@ exports import
           import {-seenFrom, +wantBy}
           tag = \TO
         else if last.0 is \STRNUM and not last.callable
-          last << 0:\RANGE op:id
+          last <<< 0:\RANGE op:id
           return id.length
       case \by
         if last.0 is \STRNUM and @tokens[*-2]0 is \RANGE
@@ -218,7 +218,7 @@ exports import
       parts = @interpolate code, index, q
       @addInterpolated parts, unlines
       return 1 + parts.size
-    str = (SIMPLESTR << lastIndex: index)exec code .0
+    str = (SIMPLESTR <<< lastIndex: index)exec code .0
           or @carp 'unterminated string'
     @strnum unlines string q, str.slice 1 -1
     @countLines(str)length
@@ -255,7 +255,7 @@ exports import
   # Matches embedded JavaScript.
   doJS: (code, JSTOKEN.lastIndex) ->
     js = JSTOKEN.exec code .0 or @carp 'unterminated JS literal'
-    @token \LITERAL Object(detab js.slice(1 -1), @dent) << {+js}, true
+    @token \LITERAL Object(detab js.slice(1 -1), @dent) <<< {+js}, true
     @countLines(js)length
 
   # Matches a regular expression literal aka _regex_,
@@ -269,7 +269,7 @@ exports import
     #
     if divisable = able @tokens
       return 0 if not @last.spaced or code.charAt(index+1) in [' ' \=]
-    [input, body, flag] = (REGEX << lastIndex: index)exec code
+    [input, body, flag] = (REGEX <<< lastIndex: index)exec code
     if input
     then @regex body, flag
     else divisable or @carp 'unterminated regex'
@@ -296,7 +296,7 @@ exports import
         else
           val = t.1.replace HEREGEX_OMIT, ''
           continue if one and not val
-          one = tokens.push t << [\STRNUM string \' enslash val]
+          one = tokens.push t <<< [\STRNUM string \' enslash val]
         tokens.push [\+- \+ tokens[*-1]2]
       --tokens.length
       if dynaflag or flag >= \g
@@ -323,9 +323,9 @@ exports import
   # Keeps track of the level of indentation, because a single dedent
   # can close multiple indents, so we need to know how far in we happen to be.
   doLine: (code, index) ->
-    [input, tabs] = (MULTIDENT << lastIndex: index)exec code
+    [input, tabs] = (MULTIDENT <<< lastIndex: index)exec code
     {length} = @countLines input
-    {last} = this; last << {+eol, +spaced}
+    {last} = this; last <<< {+eol, +spaced}
     return length if index + length >= code.length
     if 0 > delta = tabs.length - @dent
       @dedent -delta
@@ -360,7 +360,7 @@ exports import
   # here. `;` and newlines are both treated as a NEWLINE, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   doLiteral: (code, index) ->
-    return 0 unless sym = (SYMBOL << lastIndex: index)exec(code)0
+    return 0 unless sym = (SYMBOL <<< lastIndex: index)exec(code)0
     switch tag = val = sym
     case \=>             then tag = \THEN; @unline!
     case \|              
@@ -490,7 +490,7 @@ exports import
       return sym.length
     case \*
       if @last.0 in <[ NEWLINE INDENT THEN => ]> and
-         (INLINEDENT << lastIndex: index+1)exec code .0.length
+         (INLINEDENT <<< lastIndex: index+1)exec code .0.length
         @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
         @indent index + that - 1 - @dent - code.lastIndexOf \\n index-1
         return that
@@ -552,7 +552,7 @@ exports import
 
   # Generates a newline token. Consecutive newlines get merged together.
   newline: !-> @last.1 is \\n or
-               @tokens.push @last = [\NEWLINE \\n @line] << {+spaced}
+               @tokens.push @last = [\NEWLINE \\n @line] <<< {+spaced}
 
   # Cancels an immediate newline.
   unline: !->
@@ -588,9 +588,9 @@ exports import
       case end0
         continue unless end is str.slice i, i + end.length
         parts.push [\S; @countLines str.slice 0 i; @line]
-        return parts << size: pos + i + end.length
+        return parts <<< size: pos + i + end.length
       case \#
-        if id = (ID << lastIndex: i+1)exec(str)1
+        if id = (ID <<< lastIndex: i+1)exec(str)1
           break if id is \this or id not in KEYWORDS
           i += id.length
           continue
@@ -604,7 +604,7 @@ exports import
         str.=slice delta = i + 1 + id.length
         parts.push [\TOKENS nested = [[\ID id, @line]]]
       else
-        clone  = ^exports << {+inter, @emender}
+        clone  = ^exports <<< {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
         delta  = str.length - clone.rest.length
         {rest: str, @line} = clone
@@ -812,7 +812,7 @@ character = if JSON!? then uxxxx else ->
     | \CASE \DEFAULT   => not seenSwitch
   !function go [] i
     prev = tokens[i-1]
-    tokens.splice if prev.0 is \, then i-1 else i, 0, dedent << {prev.2}
+    tokens.splice if prev.0 is \, then i-1 else i, 0, dedent <<< {prev.2}
 
 # Functions may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
