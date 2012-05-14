@@ -776,7 +776,7 @@ times 2, 3 #=> 6
 timesTwo = times 2
 timesTwo 4 #=> 8
 
-&alsoCurriedTimes(x, y) = x * y
+alsoCurriedTimes(x, y) = x * y
 
 
 # Short for (function(a){...}.call(this, b))
@@ -1919,7 +1919,6 @@ TOTAL    851 ms
       <li>Switched <code>in</code> and <code>of</code> so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: People have to change less of their CoffeeScript code, they're used to it, and using <code>in</code> for checking if a value is in an array just seems right, using <code>of</code> just feels weird.
       <li>All bitwise operators except <code>~</code> have changed to triple themselves and shifts have also expanded, eg. <code>&amp;</code> is now <code>&amp;&amp;&amp;</code> (see comparison table for full changes). Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, they are not efficient since they must convert from floating points to integers and back, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. The way the bitwise operators have changed is modelled after how they are done in F#, a functional language which happens to have them unlike most functional languages. Note: the unary ^ clone operator is unchanged.
       <li><code>=></code>, the pipe operator using _, is now <code>|>></code>. Free up => (for then alias), (<code>|</code> is used as an alias for case).
-      <li><code><<<</code> is now <code><<</code>, and <code><<<<</code> is now <code><<<</code>. Rationale: <code><<</code> became available after the bitwise operator changes, and less typing is required with these changes.
       <li><code>|</code> is an alias for <code>case</code> (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
       <li><code>=></code> is an alias for <code>then</code>. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with <code>|</code>, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
       <li>Added <code>otherwise</code> as a contextual keyword, when used after <code>case</code> or <code>|</code>, making that the default statement. Rationale: same as in Haskell. It allows <code>| otherwise => 4 + 9</code>, which fits in with the rest of the structure.
