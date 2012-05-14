@@ -98,6 +98,31 @@
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
+# Unnested callbacks and paren free chaining
+<- $ \h1 .on \click
+alert \boom!
+# Double click to load, then hit 
+# Run and click the LiveScript logo
+</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+
+$('h1').on('click', function(){
+  return alert('boom!');
+});
+
+
+</pre>
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+# Curried functions, implicit switch, and
+# cons operator
 take(n, [x, ...xs]:list) =
   | n <= 0       => []
   | !list.length => []
@@ -108,8 +133,10 @@ take 2, [1 2 3 4 5] #=> [1, 2]
 takeThree = take 3
 takeThree [3 to 8] #=> [3, 4, 5]
 
+# Implicit argument
 reverse = -> it.reverse!
 
+# Function compisition
 lastThree = reverse >> takeThree >> reverse
 lastThree [1 to 8] #=> [6, 7, 8]
 </pre>
@@ -138,6 +165,7 @@ reverse = function(it){
 };
 lastThree = __compose((__compose((reverse),(takeThree))),(reverse));
 lastThree([1, 2, 3, 4, 5, 6, 7, 8]);
+
 function __curry(f, args){
   return f.length ? function(){
     var params = args ? args.concat() : [];
@@ -150,29 +178,6 @@ function __compose(f, g){
     return f(g.apply(this, arguments)); 
   }
 }
-</pre>
-        </div>
-      </div>
-      <div class="example">
-        <div class="example-ls">
-          <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">
-# Unnested callbacks and paren free chaining
-<- $ \h1 .on \click
-alert \boom!
-# Double click to load, then hit 
-# Run and click the LiveScript logo
-</pre>
-        </div>
-        <div class="example-js">
-          <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">
-
-$('h1').on('click', function(){
-  return alert('boom!');
-});
-
-
 </pre>
         </div>
       </div>
