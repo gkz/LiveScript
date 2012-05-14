@@ -1082,7 +1082,9 @@ n = 0
 3 - 4 #=> -1
 6 * 2 #=> 12
 8 / 4 #=> 2
-9 % 6 #=> 3
+
+-3 % 4  #=> -3
+-3 %% 4 #=> 1
 
 n++    #=> 1
 ++n    #=> 2
@@ -1270,7 +1272,9 @@ n = 0;
 3 - 4;
 6 * 2;
 8 / 4;
-9 % 6;
+
+-3 % 4;
+((-3) % (__ref = 4) + __ref) % __ref;
 
 n++;
 ++n;
@@ -1965,6 +1969,7 @@ TOTAL    851 ms
       <li>Added pipe operator <code>|></code> ala F#, <code>val |> func</code> is the same as <code>func(val)</code>. Very useful in combination with curried functions. Rationale: useful, as in F#.
       <li>Added backwards pipe operator <code><|</code> ala F#: <code>f <| x</code> is the same as <code>f x</code>. This is more useful than it looks, and can help you avoid parens. For instance for a definition of toCase that returns a function that either uppercases or lowercases a word, <code>toCase \up <| \hello</code> rather than <code>toCase(\up) \hello</code>. Rationale: useful as per above, as in F#.
       <li>Added function composition operators ala F#. <code>&gt;&gt;</code> and <code>&lt;&lt;</code>. <code>(f &gt;&gt; g) x</code> is <code>g(f(x))</code> and <code>(f &lt;&lt; g) x</code> is <code>f(g(x))</code>. Rationale: very useful, especially with curried functions. As in F# (and Haskell, there it's the dot operator).
+      <li>Added <code>%%</code> operator, <code>x %% y</code> is <code>(x % y + y) % y</code>. Eg. <code>-3 % 4 == -3; -3 %% 4 == 1</code>. Rationale: this is how the <code>%</code> op behaves in other languages such as Python and Ruby.
       </ul>
     </div>
   </div>
