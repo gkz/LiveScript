@@ -1836,12 +1836,6 @@ TOTAL    851 ms
           <td>Of</td><td>of</td><td>in</td><td>of</td>
         </tr>
         <tr>
-          <td>Property Copy</td><td>N/A</td><td>&lt;&lt;&lt;</td><td>&lt;&lt;</td>
-        </tr>
-        <tr>
-          <td>Property Copy</td><td>N/A</td><td>&lt;&lt;&lt;&lt;</td><td>&lt;&lt;&lt;</td>
-        </tr>
-        <tr>
           <td>Case</td><td>when</td><td>case</td><td>case OR | OR when</td>
         </tr>
         <tr>
@@ -1912,7 +1906,8 @@ TOTAL    851 ms
       <li>Added the use of <code>else</code> for default in switch. Rationale: ease transition from CoffeeScript.
       <li>Added <code>loop</code> as alias for <code>while true</code>. Rationale: ease transition from CoffeeScript. 
       <li>Added pipe operator <code>|></code> ala F#, <code>val |> func</code> is the same as <code>func(val)</code>. Very useful in combination with curried functions. Rationale: useful, as in F#.
-      <li>Added backwards pipe operator <code><|</code> ala F#: <code>f <| x</code> is the same as <code>f x</code>. This is more useful than it looks, and can help you avoid parens. For instance for a definition of toCase that returns a function that either uppercases or lowercases a word, <code>toCase \up <| \hello</code> rather than <code>toCase(\up) \hello</code>.
+      <li>Added backwards pipe operator <code><|</code> ala F#: <code>f <| x</code> is the same as <code>f x</code>. This is more useful than it looks, and can help you avoid parens. For instance for a definition of toCase that returns a function that either uppercases or lowercases a word, <code>toCase \up <| \hello</code> rather than <code>toCase(\up) \hello</code>. Rationale: useful as per above, as in F#.
+      <li>Added function composition operators ala F#. <code>&gt;&gt;</code> and <code>&lt;&lt;</code>. <code>(f &gt;&gt; g) x</code> is <code>g(f(x))</code> and <code>(f &lt;&lt; g) x</code> is <code>f(g(x))</code>. Rationale: very useful, especially with curried functions. As in F# (and Haskell, there it's the dot operator).
       </ul>
     </div>
   </div>
