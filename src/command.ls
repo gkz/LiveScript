@@ -198,7 +198,7 @@ switch
     cont := char is \\n
     _ttyWrite ...
   prompt = \livescript
-  prompt += " -c#{ if o.bare then \b else '' }" if o.compile
+  prompt += " -#that" if [\b if o.bare; \c if o.compile]join ''
   unless o.compile
     module.paths = module.._nodeModulePaths \
       module.filename = process.cwd! + \/repl

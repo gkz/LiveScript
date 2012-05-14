@@ -9,6 +9,9 @@ keywords    :
   \coco
   \javascript
 
+author   : 'George Zahariev <z@georgezahariev.com>'
+homepage : \http://gkz.github.com/LiveScript/
+bugs     : \https://github.com/gkz/LiveScript/issues 
 licenses :
   type: \MIT, url: \https://raw.github.com/gkz/LiveScript/master/LICENSE
   ...
@@ -21,6 +24,8 @@ main : \./lib/livescript
 bin  :
   livescript: \./lib/command.js
   slake: \./lib/slake.js
+
+preferGlobal: true
 
 repository: type: \git, url: \git://github.com/gkz/LiveScript.git
 
