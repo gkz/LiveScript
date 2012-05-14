@@ -14,7 +14,7 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/satyr/coco/raw/master/LICENSE"
+      "url": "https://raw.github.com/satyr/coco/master/LICENSE"
     }
   ],
   "engines": {
@@ -31,6 +31,7 @@
     "coco": "./lib/command.js",
     "coke": "./lib/coke.js"
   },
+  "preferGlobal": true,
   "repository": {
     "type": "git",
     "url": "git://github.com/satyr/coco.git"
