@@ -168,7 +168,7 @@ bnf =
                             else Binary $2         , $1, $3
 
     o 'Expression PIPE     Expression' -> Block $1 .pipe $3, $2
-    o 'Expression BACKPIPE Expression' -> Block $1 .pipe $3, $2
+    o 'Expression BACKPIPE Expression' ditto 
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 
