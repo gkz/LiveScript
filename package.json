@@ -1,7 +1,7 @@
 {
-  "name": "livescript",
+  "name": "LiveScript",
   "version": "0.2.5",
-  "description": "Coco derivative",
+  "description": "Coco derivative.",
   "keywords": [
     "language",
     "compiler",
@@ -16,11 +16,14 @@
     }
   ],
   "engines": {
-    "node": ">= 0.6.2"
+    "node": ">= 0.6.15"
   },
   "directories": {
     "lib": "./lib"
   },
+  "files": [
+    "lib"
+  ],
   "main": "./lib/livescript",
   "bin": {
     "livescript": "./lib/command.js",
@@ -32,6 +35,6 @@
   },
   "devDependencies": {
     "jison": "0.2.1",
-    "uglify-js": "1.2.3"
+    "uglify-js": "1.2.6"
   }
 }
