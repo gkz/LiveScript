@@ -249,7 +249,7 @@ bnf =
     o \Property                                               -> [$1]
     o 'Properties , Property'                                 -> $1 +++ $3
     o 'Properties OptComma NEWLINE Property'                  -> $1 +++ $4
-    o 'Properties OptComma INDENT Properties OptComma DEDENT' ditto
+    o 'INDENT Properties OptComma DEDENT'                     -> $2
 
   Parenthetical:
     o '( Body )' -> Parens $2.chomp!unwrap!, false, $1 is \"
