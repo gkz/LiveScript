@@ -1120,6 +1120,12 @@ not false      #=> true
 reverse = -> it.reverse!
 [1 2 3] |> reverse #=> [3, 2, 1]
 
+
+# <| turns 'func <| val' into 'func(val)'
+# useful for avoiding parens
+add = (x, y) --> x + y
+add 4 <| 5 #=> 9 - instead of add(4) 5
+
 # |>> pipes left result to the right using _
 +'2' |>> _ ^ 2 |>> _.toString! #=> '4'
 
@@ -1208,8 +1214,8 @@ child.length #=> 0
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var n, reverse, list1, list2, neg, string, obj,
-  one, child, __ref, _, __slice = [].slice, 
+var n, reverse, add, list1, list2, neg, string,
+  obj, one, child, __ref, _, __slice = [].slice, 
   __join = [].join, __replace = ''.replace, 
   __split = ''.split, __toString = {}.toString;
 n = 0;
@@ -1290,9 +1296,15 @@ reverse = function(it){
 };
 reverse([1, 2, 3]);
 
+add = __curry(function(x, y){
+  return x + y;
+});
+add(4)(5);
+
 _ = +'2';
 _ = Math.pow(_, 2);
 _.toString();
+
 
 list1 = ['one', 'two', 'three'];
 list2 = ['four'];
@@ -1373,6 +1385,13 @@ __import(document, obj);
 child = __clone(new String);
 child.length;
 
+function __curry(f, args){
+  return f.length ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length ?
+      __curry.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
 function __importAll(obj, src){
   for (var key in src) obj[key] = src[key];
   return obj;
@@ -1893,6 +1912,7 @@ TOTAL    851 ms
       <li>Added the use of <code>else</code> for default in switch. Rationale: ease transition from CoffeeScript.
       <li>Added <code>loop</code> as alias for <code>while true</code>. Rationale: ease transition from CoffeeScript. 
       <li>Added pipe operator <code>|></code> ala F#, <code>val |> func</code> is the same as <code>func(val)</code>. Very useful in combination with curried functions. Rationale: useful, as in F#.
+      <li>Added backwards pipe operator <code><|</code> ala F#: <code>f <| x</code> is the same as <code>f x</code>. This is more useful than it looks, and can help you avoid parens. For instance for a definition of toCase that returns a function that either uppercases or lowercases a word, <code>toCase \up <| \hello</code> rather than <code>toCase(\up) \hello</code>.
       </ul>
     </div>
   </div>
