@@ -1018,7 +1018,7 @@ class exports.Binary extends Node
       | forward   => [@second, @first]
       | otherwise => [@first, @second]
 
-    "#{utility \compose}((#{first.compile o}),(#{second.compile o}))"
+    "#{ utility \compose }((#{first.compile o}),(#{second.compile o}))"
     
 
 #### Assign
@@ -1368,7 +1368,7 @@ class exports.Fun extends Node
       code += "\n#{tab}return #name;"
     else if @bound and @ctor
       code += ' function __ctor(){} __ctor.prototype = prototype;'
-    code = "#{  utility \curry}(#code)" if @curried
+    code = "#{ utility \curry }(#code)" if @curried
     if @front and not @statement then "(#code)" else code
 
   compileParams: (scope) ->
