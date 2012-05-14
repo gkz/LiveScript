@@ -8,5 +8,7 @@ Have Node.js installed, then `sudo bin/slake install`
 
 From then run `livescript` for more information. 
 
+Via npm: `sudo npm install -g LiveScript`
+
 ### Source
 [git://github.com/gkz/LiveScript.git](git://github.com/gkz/LiveScript.git)
