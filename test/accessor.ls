@@ -13,7 +13,7 @@ ok 'foo' of o
 eq 2, o.foo = 2
 eq 2, o.foo
 
-o << a:~ -> 1
+o <<< a:~ -> 1
 eq 1, o.a
 
 :: =

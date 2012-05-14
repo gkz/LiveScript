@@ -62,7 +62,7 @@ eq 4 x
 x ^= 2
 eq 16 x
 
-# obj ::= obj2 as alias to obj::<<obj2
+# obj ::= obj2 as alias to obj::<<<obj2
 lala = ->
 lala ::= prop: true
 
@@ -259,7 +259,7 @@ a = b: c: d: \e
 a.b.c?.=d
 eq \e a.b.c
 
-a.=b << {\c}
+a.=b <<< {\c}
 eq \c a.c
 
 

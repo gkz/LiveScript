@@ -137,7 +137,7 @@ exports import
     case \unless then tag = \IF
     case \until  then tag = \WHILE
     case \import
-      id = \<<
+      id = \<<<
       able @tokens or @token \LITERAL \this
     case \when
       tag = \CASE; fallthrough
@@ -161,9 +161,9 @@ exports import
         if last.0 in <[ CASE | ]>
           last.0 = \DEFAULT
           return 9
-      case \all then if last.1 is \<<
+      case \all then if last.1 is \<<<
         last.1 += \<
-        return 3
+        return 4
       case \from then @forange! and tag = \FROM
       case \to \til
         @forange! and @tokens.push [\FROM '' @line] [\STRNUM \0 @line]
@@ -367,7 +367,7 @@ exports import
       tag = \CASE
       return sym.length if @doCase! 
     case \|> \|>>        then tag = \PIPE
-    case \<<<<< \>>      then tag = \COMPOSE
+    case \<< \>>         then tag = \COMPOSE
     case \<|             then tag = \BACKPIPE
     case \+ \-           then tag = \+-
     case \&              then tag = \CONCAT
@@ -378,7 +378,7 @@ exports import
     case \/ \%           then tag = \MATH
     case \+++            then tag = \CONCAT
     case \++ \--         then tag = \CREMENT
-    case \<< \<<<        then tag = \IMPORT
+    case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
     case \.
       @last.0 = \? if @last.1 is \?
@@ -400,7 +400,7 @@ exports import
         | \!=  => \!==
       tag = \COMPARE
     case <[ < > <= >= ]> then tag = \COMPARE
-    case <[ <<<<  >>>>  >>>>>  <?  >? ]> then tag = \SHIFT
+    case <[ <<<<<  >>>>  >>>>>  <?  >? ]> then tag = \SHIFT
     case \(
       unless @last.0 in <[ FUNCTION LET ]> or @able true or @last.1 is \.@
         @token \( \(
@@ -1023,11 +1023,10 @@ SYMBOL = //
 | [!=]==?                     # equality
 | @@                          # `arguments`
 | <\[(?:[\s\S]*?\]>)?         # words
-| <<<<<                       # compose temp
-| <<<< | >>>>>?               # shifts
-| <<<?                        # import
+| <<<<< | >>>>>?              # shifts
+| <<<<?                       # import
 | <\|                         # backpipe
-| <<<<< | >>                  # compose
+| << | >>                     # compose
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
 | \|>>?                       # pipe

@@ -3,7 +3,7 @@ eq 32,
   1 *
   2 +
   3 -
-  4 <<<<
+  4 <<<<<
   5
 
 if  false
@@ -181,7 +181,7 @@ eq c, 3
 eq (10 &&&   3), 2
 eq (10 |||   3), 11
 eq (10 ^^^   3), 9
-eq (10 <<<<  3), 80
+eq (10 <<<<< 3), 80
 eq (10 >>>>  3), 1
 eq (10 >>>>> 3), 1
 
@@ -266,14 +266,14 @@ i = 0
 eq i, 1
 
 x = {}; a = 0; b = 1; c = null; i = 0
-x << {a || 1, b && 2, c ? 3, (i++) or 4}
+x <<< {a || 1, b && 2, c ? 3, (i++) or 4}
 eq x.a, 1
 eq x.b, 2
 eq x.c, 3
 eq x.0, 4
 
-eq ',1,2,3' "#{ [] << [void 1 2 3] }"
-eq ',1,2,3' "#{ [] << (^{0}<<{1}) <<< (^{2}<<{3}) }"
+eq ',1,2,3' "#{ [] <<< [void 1 2 3] }"
+eq ',1,2,3' "#{ [] <<< (^{0}<<<{1}) <<<< (^{2}<<<{3}) }"
 
 eq '''
 ({
@@ -281,9 +281,9 @@ eq '''
   b: b,
   c: c
 });
-''', LiveScript.compile '{a}<<{b}<<{c}', {+bare}
+''', LiveScript.compile '{a}<<<{b}<<<{c}', {+bare}
 
-ok ok.isPrototypeOf new []= (->) << prototype: ok
+ok ok.isPrototypeOf new []= (->) <<< prototype: ok
 
 new
   import life: 2, universe: 3, everything: 7
@@ -291,25 +291,25 @@ new
 
 f = ->
   import it
-<< new: -> new this it
+<<< new: -> new this it
 o = f.new {2, 3}
 eq o.2 * o.3, 6
 
 o = q = null
-eq o?p << q?r, void
+eq o?p <<< q?r, void
 
 o = p: {}
-eq o?p << q?r, o.p
+eq o?p <<< q?r, o.p
 
 q = r: s: \t
-o?p << q?r
+o?p <<< q?r
 eq o.p.s, \t
 
 o = null
-eq o? << {4}, void
+eq o? <<< {4}, void
 
 o = {}
-eq o? << {4}, o
+eq o? <<< {4}, o
 eq 4 o.4
 
 
@@ -394,7 +394,7 @@ eq o.c * o.d, 14
 
 ### Pipe
 Array 0 |>> _.concat 1, 2
-        |>> _ <<   {3: 4}
+        |>> _ <<<   {3: 4}
         |>> eq '1,2,,4' "#_"
 
 String 0

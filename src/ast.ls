@@ -898,7 +898,7 @@ class exports.Binary extends Node
     case \/       then return @compileSplit  o if @second.isMatcher()
     case \** \^   then return @compilePow o
     case \<? \>?  then return @compileMinMax o
-    case \<<<<< \>> then return @compileCompose o, @op is \>>
+    case \<< \>>  then return @compileCompose o, @op is \>>
     case \+++     then return @compileConcat o
     case \&       then return @compileConcat o, true
     case \&& \||
@@ -925,10 +925,12 @@ class exports.Binary extends Node
     if o.level <= level then code else "(#code)"
   
   mapOp: (op) ->
-    | op is \of                 => \in
-    | op in <[&&& ||| ^^^]>     => op[0]
-    | //<<<< | >>>>>?//.test op => op.slice 2
-    | otherwise                 => op
+    switch op
+    | \of               => \in
+    | \&&& \||| \^^^    => op[0]
+    | \<<<<<            => \<<
+    | \>>>> \>>>>>      => op.slice 2
+    | otherwise         => op
 
   # Mimic Python's chained comparisons when multiple comparison operators are
   # used sequentially. e.g.:
@@ -2101,7 +2103,7 @@ PREC\== = PREC\!= = PREC\=== = PREC\!==               = 0.4
 PREC\<  = PREC\>  = PREC\<=  = PREC\>=                = 0.5 
 PREC\of = PREC\instanceof = PREC\+++                  = 0.5
 
-PREC\<<<< = PREC\>>>> = PREC\>>>>>                    = 0.6
+PREC\<<<<< = PREC\>>>> = PREC\>>>>>                   = 0.6
 PREC\+  = PREC\-                                      = 0.7
 PREC\*  = PREC\/  = PREC\%                            = 0.8
 

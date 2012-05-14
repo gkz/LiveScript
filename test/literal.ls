@@ -109,7 +109,7 @@ I2 =
 eq I2.0.0, I2.1.1
 eq I2.0.1, I2.1.0
 
-a = [] <<
+a = [] <<<
   0, 1
   2; 3
 a +=
@@ -315,8 +315,8 @@ ok \q not of o
 
 # Inline with assignment/import.
 o =
-  p: t =  q: 0
-  r: t << s: 1
+  p: t =   q: 0
+  r: t <<< s: 1
 eq o.p, o.r
 eq o.p.q, 0
 eq o.r.s, 1
