@@ -901,6 +901,7 @@ class exports.Binary extends Node
     case \<< \>>  then return @compileCompose o, @op is \>>
     case \+++     then return @compileConcat o
     case \&       then return @compileConcat o, true
+    case \%%      then return @compileMod o
     case \&& \||
       @second.void = true if top = @void or not o.level
       if top or @cond
@@ -1019,7 +1020,12 @@ class exports.Binary extends Node
       | otherwise => [@first, @second]
 
     "#{ utility \compose }((#{first.compile o}),(#{second.compile o}))"
-    
+  
+  compileMod: (o) ->
+    ref = o.scope.temporary!
+    code = "((#{@first.compile o}) % (#ref = #{@second.compile o}) + #ref) % #ref"
+    o.scope.free ref
+    code
 
 #### Assign
 # Assignment to a variable/property.

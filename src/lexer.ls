@@ -375,7 +375,7 @@ exports import
     case \&&& \||| \^^^  then tag = \BITWISE
     case \**             then tag = \POWER
     case \?  \!?         then tag = \LOGIC if @last.spaced
-    case \/ \%           then tag = \MATH
+    case \/ \% \%%       then tag = \MATH
     case \+++            then tag = \CONCAT
     case \++ \--         then tag = \CREMENT
     case \<<< \<<<<      then tag = \IMPORT
@@ -998,6 +998,7 @@ SYMBOL = //
 | \+\+\+                      # list concat 
 | --> | ~~>                   # curry
 | ([-+&|:])\1                 # crement / logic / `prototype`
+| %%                          # mod
 | &                           # cons
 | \([^\n\S]*\)                # call
 | [-~]>                       # function, bound function
