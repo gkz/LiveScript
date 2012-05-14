@@ -205,10 +205,11 @@ class exports.Block extends Node
     @lines.splice @neck!, 0, ...arguments
     this
 
-  # target: piping to, funcPipe: whether piping to function (|>)
-  pipe: (target, funcPipe) -> 
-    | funcPipe  => @lines.push Call.make(target, [@lines.pop!])
-    | otherwise => @lines.push Assign(Var \_; @lines.pop!), target
+  pipe: (target, type) -> 
+    switch type
+    | \|>  => @lines.push Call.make(target, [@lines.pop!])
+    | \<|  => @lines.push Call.make(@lines.pop!, [target])
+    | \|>> => @lines.push Assign(Var \_; @lines.pop!), target
     this
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this

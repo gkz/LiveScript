@@ -167,7 +167,8 @@ bnf =
       *if \! is $2.charAt 0 then Binary $2.slice(1), $1, $3 .invert!
                             else Binary $2         , $1, $3
 
-    o 'Expression PIPE Expression' -> Block $1 .pipe $3, $2 is \|>
+    o 'Expression PIPE     Expression' -> Block $1 .pipe $3, $2
+    o 'Expression BACKPIPE Expression' -> Block $1 .pipe $3, $2
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 
@@ -329,6 +330,7 @@ bnf =
 operators =
   # Listed from lower precedence.
   <[ left     PIPE POST_IF FOR WHILE ]>
+  <[ right    BACKPIPE     ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
   <[ right    CONCAT       ]>
   <[ right    LOGIC        ]>

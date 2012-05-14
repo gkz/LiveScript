@@ -334,7 +334,7 @@ exports import
       if tabs and (@emender ||= //[^#{ tabs.charAt 0 }]//)exec tabs
         @carp "contaminated indent #{ escape that }"
       if (tag = last.0) is \ASSIGN and ''+last.1 not in <[ = := += ]>
-      or tag in <[ +- PIPE DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
+      or tag in <[ +- PIPE BACKPIPE DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
                    IN OF TO BY FROM EXTENDS ]>
         return length
       if delta then @indent delta else @newline!
@@ -367,6 +367,7 @@ exports import
       tag = \CASE
       return sym.length if @doCase! 
     case \|> \|>>        then tag = \PIPE
+    case \<|             then tag = \BACKPIPE
     case \+ \-           then tag = \+-
     case \&              then tag = \CONCAT
     case \&& \||         then tag = \LOGIC
@@ -520,7 +521,7 @@ exports import
     case \<
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
-    @unline! if tag in <[ , CASE PIPE DOT LOGIC COMPARE MATH POWER IMPORT SHIFT BITWISE ]>
+    @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE MATH POWER IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 
@@ -788,7 +789,7 @@ character = if JSON!? then uxxxx else ->
     else tokens.splice ++i, 0 indent
     switch
     # ->,
-    case next in <[ DOT \? \, \PIPE ]> then --i; fallthrough
+    case next in <[ DOT \? \, \PIPE \BACKPIPE]> then --i; fallthrough
     # -> 0,
     case next in <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
       go 0 i+=2; ++i
@@ -802,7 +803,7 @@ character = if JSON!? then uxxxx else ->
   function ok token, i
     switch token.0
     | \NEWLINE         => token.1 is not \;
-    | \DOT \? \, \PIPE => tokens[i-1]eol
+    | \DOT \? \, \PIPE \BACKPIPE => tokens[i-1]eol
     | \ELSE            => tag is \THEN
     | \CATCH           => tag is \TRY
     | \FINALLY         => tag in <[ TRY CATCH THEN ]>
@@ -846,7 +847,7 @@ character = if JSON!? then uxxxx else ->
     detectEnd tokens, i, ok, go
   function ok token, i
     return true if not skipBlock and token.alias and token.1 in <[ && || ]>
-                or token.0 is \PIPE
+                or token.0 in [\PIPE \BACKPIPE]
     pre = tokens[i-1]
     switch token.0
     case \DOT \? then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
@@ -1023,6 +1024,7 @@ SYMBOL = //
 | <\[(?:[\s\S]*?\]>)?         # words
 | <<<< | >>>>>?               # shifts
 | <<<?                        # import
+| <\|                         # backpipe
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
 | \|>>?                       # pipe

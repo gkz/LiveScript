@@ -409,6 +409,7 @@ upCase  = -> it.toUpperCase!
 
 eq \OLLEH ('hello' |> reverse |> upCase)
 
+eq \OLLEH (upCase <| reverse <| \hello)
 
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
