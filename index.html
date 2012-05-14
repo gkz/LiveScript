@@ -732,9 +732,9 @@ function __in(x, arr){
 # Defining functions
 square = (x) -> x * x
 
-
+# Functions defined this way are curried 
+# by default
 cube(x) = x * x * x
-
 cube 2 #=> 8
 
 # Extended parameters
@@ -803,9 +803,9 @@ var square, cube, setPersonParams,
 square = function(x){
   return x * x;
 };
-cube = function(x){
+cube = __curry(function(x){
   return x * x * x;
-};
+});
 cube(2);
 
 setPersonParams = function(person, age, height){
@@ -838,9 +838,9 @@ returnNothing = function(param){
   param;
 };
 returnNothing('hello');
-alsoReturnsNothing = function(param){
+alsoReturnsNothing = __curry(function(param){
   param;
-};
+});
 times = __curry(function(x, y){
   return x * y;
 });
@@ -1074,6 +1074,8 @@ default:
 n = 0
 
 
+
+
 ## Math
 # The standard
 1 + 2 #=> 3
@@ -1161,6 +1163,17 @@ add 4 <| 5 #=> 9 - instead of add(4) 5
 # |>> pipes left result to the right using _
 +'2' |>> _ ^ 2 |>> _.toString! #=> '4'
 
+## Function composition
+# '(f >> g) x' is 'g(f(x))' 
+# '(f << g) x' is 'f(g(x))'
+addTwo   = add 2
+timesTwo = -> it * 2
+
+addTwoTimesTwo = addTwo >> timesTwo
+timesTwoAddTwo = addTwo << timesTwo
+
+addTwoTimesTwo 3 #=> 10
+timesTwoAddTwo 3 #=> 8
 
 ## List 
 list1 = <[ one two three ]>
@@ -1246,10 +1259,12 @@ child.length #=> 0
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var n, reverse, add, list1, list2, neg, string,
-  obj, one, child, __ref, _, __slice = [].slice, 
-  __join = [].join, __replace = ''.replace, 
-  __split = ''.split, __toString = {}.toString;
+var n, reverse, add, addTwo, timesTwo, 
+  addTwoTimesTwo, timesTwoAddTwo, list1, list2,
+  neg, string, obj, one, child, __ref, _, 
+  __slice = [].slice, __join = [].join, 
+  __replace = ''.replace, __split = ''.split,
+  __toString = {}.toString;
 n = 0;
 1 + 2;
 3 - 4;
@@ -1336,6 +1351,17 @@ add(4)(5);
 _ = +'2';
 _ = Math.pow(_, 2);
 _.toString();
+
+
+addTwo = add(2);
+timesTwo = function(it){
+  return it * 2;
+};
+addTwoTimesTwo = __compose((timesTwo),(addTwo));
+timesTwoAddTwo = __compose((addTwo),(timesTwo));
+
+addTwoTimesTwo(3);
+timesTwoAddTwo(3);
 
 
 list1 = ['one', 'two', 'three'];
