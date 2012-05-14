@@ -108,6 +108,9 @@ body {
   font-size: 18px;
   line-height: 32px;
 }
+.content code {
+  font-size: 14px;
+}
 .content ul li {
   margin-bottom: 10px;
   line-height: 32px;
@@ -164,4 +167,9 @@ body {
 }
 .content #overview a .btn.btn-primary {
   color: #fff;
+}
+.content #overview .download {
+  float: left;
+  margin-right: 5px;
+  margin-top: 7px;
 }
