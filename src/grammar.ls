@@ -162,6 +162,7 @@ bnf =
     o 'Expression SHIFT   Expression' ditto
     o 'Expression BITWISE Expression' ditto
     o 'Expression CONCAT  Expression' ditto
+    o 'Expression COMPOSE Expression' ditto
 
     o 'Expression RELATION Expression' ->
       *if \! is $2.charAt 0 then Binary $2.slice(1), $1, $3 .invert!
@@ -342,6 +343,7 @@ operators =
   <[ left     MATH         ]>
   <[ right    UNARY        ]>
   <[ right    POWER ^      ]>
+  <[ right    COMPOSE      ]>
   <[ nonassoc CREMENT      ]>
 
 # Wrapping Up

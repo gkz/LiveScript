@@ -898,6 +898,7 @@ class exports.Binary extends Node
     case \/       then return @compileSplit  o if @second.isMatcher()
     case \** \^   then return @compilePow o
     case \<? \>?  then return @compileMinMax o
+    case \<<<<< \>> then return @compileCompose o, @op is \>>
     case \+++     then return @compileConcat o
     case \&       then return @compileConcat o, true
     case \&& \||
@@ -1009,6 +1010,14 @@ class exports.Binary extends Node
     firstPart = "(#{@first.compile o})" 
     firstPart = "[#{firstPart}]" if cons
     "#{firstPart}.concat(#{@second.compile o})"
+
+  compileCompose: (o, forward) ->
+    [first, second] = 
+      | forward   => [@second, @first]
+      | otherwise => [@first, @second]
+
+    "#{utility \compose}((#{first.compile o}),(#{second.compile o}))"
+    
 
 #### Assign
 # Assignment to a variable/property.
@@ -1357,7 +1366,7 @@ class exports.Fun extends Node
       code += "\n#{tab}return #name;"
     else if @bound and @ctor
       code += ' function __ctor(){} __ctor.prototype = prototype;'
-    code = "#{utility \curry}(#code)" if @curried
+    code = "#{  utility \curry}(#code)" if @curried
     if @front and not @statement then "(#code)" else code
 
   compileParams: (scope) ->
@@ -2060,6 +2069,12 @@ UTILITIES =
       return params.push.apply(params, arguments) < f.length ?
         __curry.call(this, f, params) : f.apply(this, params);
     } : f;
+  }'''
+
+  compose: '''function(f, g){
+    return function(){
+      return f(g.apply(this, arguments)); 
+    }
   }'''
 
   # Shortcuts to speed up the lookup time for native methods.

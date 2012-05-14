@@ -367,6 +367,7 @@ exports import
       tag = \CASE
       return sym.length if @doCase! 
     case \|> \|>>        then tag = \PIPE
+    case \<<<<< \>>      then tag = \COMPOSE
     case \<|             then tag = \BACKPIPE
     case \+ \-           then tag = \+-
     case \&              then tag = \CONCAT
@@ -1022,9 +1023,11 @@ SYMBOL = //
 | [!=]==?                     # equality
 | @@                          # `arguments`
 | <\[(?:[\s\S]*?\]>)?         # words
+| <<<<<                       # compose temp
 | <<<< | >>>>>?               # shifts
 | <<<?                        # import
 | <\|                         # backpipe
+| <<<<< | >>                  # compose
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
 | \|>>?                       # pipe

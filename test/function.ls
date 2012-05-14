@@ -567,3 +567,13 @@ let
   do f = :a ->
     a.b = \c
   eq f.b, \c
+
+### composing
+timesTwo = -> it * 2
+plusOne = -> it + 1
+
+timesTwoPlusOne = timesTwo >> plusOne
+plusOneTimesTwo = timesTwo <<<<< plusOne
+
+eq 5 timesTwoPlusOne 2
+eq 6 plusOneTimesTwo 2
