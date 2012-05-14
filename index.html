@@ -136,7 +136,7 @@ takeThree [3 to 8] #=> [3, 4, 5]
 # Implicit argument
 reverse = -> it.reverse!
 
-# Function compisition
+# Function composition
 lastThree = reverse >> takeThree >> reverse
 lastThree [1 to 8] #=> [6, 7, 8]
 </pre>
