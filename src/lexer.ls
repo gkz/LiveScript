@@ -448,25 +448,7 @@ exports import
         and     @tokens[i-5].1 is \this
           @tokens.splice i-4, 2
           @tokens.splice i-1, 0, [\UNARY \! @line]
-        # add dot access when & suppresses it
-        if @tokens[i-2].1 is \& and @tokens[i-3].1 is \this
-          @tokens.splice i-2, 0, [\DOT \. @line]
-          i++ # added a token
-        else if @tokens[i-3]?.1 is \& and @tokens[i-4].1 is \this
-          @tokens.splice i-3, 0, [\DOT \. @line]
-          i++ # added a token
-        # find if & is at the start
-        # if '&id(params) = something' then 'id = (params) --> something'
-        # when combined with the above the '&' goes before the '!'
-        curried = if @tokens[i-1].0 is \ID and @tokens[i-2].1 is \&
-          @tokens.splice i-2, 1
-          true
-        else if      @tokens[i].1 is \!    and @tokens[i-3].1 is \&
-          @tokens.splice i-3, 1
-          true
-        arrow = (arrow.charAt 0) + arrow if curried
-
-        @token \-> arrow # append arrow to end
+        @token \-> (arrow.charAt 0) + arrow
         return sym.length
       if val is \:
         if @last.0 not in <[ ID STRNUM ) ]> then tag = \LABEL; val = ''

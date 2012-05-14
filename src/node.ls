@@ -7,7 +7,7 @@ module.exports = !(LiveScript) ->
   fs   = require \fs
   path = require \path
 
-  LiveScript.run(code, {filename}:options?, js) =
+  LiveScript.run = (code, {filename}:options?, js) ->
     {main} = require
     # Hack for relative `require`.
     if filename

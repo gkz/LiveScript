@@ -465,15 +465,12 @@ eq false !!->
 
 ### new function syntax
 area(a, b) = a * b
-eq (area 2, 3), 6
+eq 6 area 2 3
 
 diff(a,
   b) = 
   a - b
-eq (diff 2, 3), -1
-
-add(a, b = 3) = a + b
-eq (add 2), 5
+eq -1 diff 2, 3
 
 obj = 
   add(x, y): x + y
@@ -532,18 +529,18 @@ eq 7 multByTwo(3)(1)
 addNine = threeParams 3 3 
 eq 16 addNine 7
 
-&minus(x, y) = y - x
+minus(x, y) = y - x
 minusTwo = minus 2
 eq 5 minusTwo 7 
 
-&!plus! = true
+!plus! = true
 eq void plus!
 
 class Divider
   ->
 
-  @&divide1(x, y) = x / y
-  @&!divide2(x, y) = x / y
+  @divide1(x, y) = x / y
+  @!divide2(x, y) = x / y
 
 eq 2    Divider.divide1 6 3
 eq void Divider.divide2 2 4
