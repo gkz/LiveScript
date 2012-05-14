@@ -791,15 +791,25 @@ with person
 dog = new
   @name = \spot
   @mutt = true
+
+# Bound functions using ~> (wavy arrow)
+thisParam = (param) ~> this[param]
+# Bound functions have 'this' lexically bound,
+# not dynamically bound as normally.
+# Notice the __this = this at the top
+# variable declarations in the JS. 
+# Use ~~> for bound and curried functions
+# or thisParam@(param) = this[param]
+# using the alternate definition syntax.
 </pre>
           </div>
           <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var square, cube, setPersonParams, 
-    person, length, returnNothing,
-    alsoReturnsNothing, times, timesTwo, 
-    alsoCurriedTimes, dog;
+var square, cube, setPersonParams, person,
+  length, returnNothing, alsoReturnsNothing,
+  times, timesTwo, alsoCurriedTimes, dog,
+  thisParam, __this = this;
 square = function(x){
   return x * x;
 };
@@ -863,6 +873,9 @@ dog = new function(){
   this.mutt = true;
 };
 
+thisParam = function(param){
+  return __this[param];
+};
 
 function __curry(f, args){
   return f.length ? function(){
@@ -1106,7 +1119,7 @@ n--    #=> 1
 14 ||| 9   #=> 15
 14 ^^^ 9   #=> 7
 ~9         #=> -10
-9 <<<<< 2   #=> 36
+9 <<<<< 2  #=> 36
 -9 >>>> 2  #=> -3
 -9 >>>>> 2 #=> 1073741821
 
