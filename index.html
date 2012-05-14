@@ -1921,11 +1921,83 @@ list[list.length - 1];
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
+class Item
+  # constructor
+  ->
+    @id = Math.random!
+
+  # properties and methods
+  type   : \unkown
+  getName: -> @name ? @id
+ 
+class Box extends Item
+  (@name) ->
+    super ...
+
+  type: \cube
+ 
+  # any code
+  priv    = \secret
+  @static = -> priv
+
+thing = new Box \boxy
+thing.getName! #=> \boxy
+thing.id       #=> (some random number)
+thing.type     #=> 'cube'
+thing.priv     #=> (nothing)
+Box.static!    #=> 'secret'
+Box::type = \block 
+thing.type     #=> 'block' 
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
+var Item, Box, thing;
+Item = (function(){
+  Item.displayName = 'Item';
+  var prototype = Item.prototype, constructor = Item;
+  function Item(){
+    this.id = Math.random();
+  }
+  prototype.type = 'unkown';
+  prototype.getName = function(){
+    var __ref;
+    return (__ref = this.name) != null
+      ? __ref
+      : this.id;
+  };
+  return Item;
+}());
+Box = (function(superclass){
+  Box.displayName = 'Box';
+  var priv, prototype = __extend(Box, superclass).prototype, constructor = Box;
+  function Box(name){
+    this.name = name;
+    superclass.apply(this, arguments);
+  }
+  prototype.type = 'cube';
+  priv = 'secret';
+  Box['static'] = function(){
+    return priv;
+  };
+  return Box;
+}(Item));
+thing = new Box('boxy');
+thing.getName();
+thing.id;
+thing.type;
+thing.priv;
+Box['static']();
+Box.prototype.type = 'block';
+thing.type;
+
+function __extend(sub, sup){
+  function fun(){} fun.prototype = (sub.superclass = sup).prototype;
+  (sub.prototype = new fun).constructor = sub;
+  if (typeof sup.extended == 'function') sup.extended(sub);
+  return sub;
+}
 </pre>
         </div>
       </div>
