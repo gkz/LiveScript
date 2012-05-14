@@ -10,6 +10,7 @@
   ],
   "author": "satyr <murky.satyr@gmail.com> (http://satyr.github.com)",
   "homepage": "http://satyr.github.com/coco/",
+  "bugs": "https://github.com/satyr/coco/issues",
   "licenses": [
     {
       "type": "MIT",
