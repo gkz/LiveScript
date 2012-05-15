@@ -152,6 +152,7 @@ bnf =
     o 'UNARY Expression' -> Unary $1, $2
     o '+-    Expression' ditto, prec: \UNARY
     o '^     Expression' ditto, prec: \UNARY
+    o 'UNARY INDENT ArgList OptComma DEDENT' -> Unary $1, Arr.maybe $3
 
     o 'Expression +-      Expression' -> Binary $2, $1, $3
     o 'Expression ^       Expression' ditto
