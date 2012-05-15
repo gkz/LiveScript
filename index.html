@@ -395,9 +395,9 @@ function __curry(f, args){
 64_000km
 
 # Any base can be used from 2 to 36
-6@12
-2@1000
-16@ff
+6~12
+2~1000
+16~ff
 
 ## Boolean
 true
@@ -2189,7 +2189,7 @@ TOTAL    851 ms
       <li>Added backwards pipe operator <code><|</code> ala F#: <code>f <| x</code> is the same as <code>f x</code>. This is more useful than it looks, and can help you avoid parens. For instance for a definition of toCase that returns a function that either uppercases or lowercases a word, <code>toCase \up <| \hello</code> rather than <code>toCase(\up) \hello</code>. Rationale: useful as per above, as in F#.
       <li>Added function composition operators ala F#. <code>&gt;&gt;</code> and <code>&lt;&lt;</code>. <code>(f &gt;&gt; g) x</code> is <code>g(f(x))</code> and <code>(f &lt;&lt; g) x</code> is <code>f(g(x))</code>. Rationale: very useful, especially with curried functions. As in F# (and Haskell, there it's the dot operator).
       <li>Added <code>%%</code> operator (and corresponding <code>%%=</code> operator), <code>x %% y</code> is <code>(x % y + y) % y</code>. Eg. <code>-3 % 4 == -3; -3 %% 4 == 1</code>. Rationale: this is how the <code>%</code> op behaves in other languages such as Python and Ruby.
-      <li>Changed number base format from <code>7r4</code> to <code>7@4</code>. This is because using <code>r</code> causes ambiguity with number comments. For instance, <code>36rpm</code> - is that the number <code>36</code> with the number comment <code>rpm</code> or is it <code>pm</code> base <code>36</code> (922). Also now accept any number as radix, so that a better error can be thrown when that radix is not 2-36. Rationale: fixes ambiguity.
+      <li>Changed number base format from <code>7r4</code> to <code>7~4</code>. This is because using <code>r</code> causes ambiguity with number comments. For instance, <code>36rpm</code> - is that the number <code>36</code> with the number comment <code>rpm</code> or is it <code>pm</code> base <code>36</code> (922). Also now accept any number as radix, so that a better error can be thrown when that radix is not 2-36. Rationale: fixes ambiguity.
       </ul>
     </div>
   </div>
