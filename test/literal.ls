@@ -21,14 +21,15 @@ eq 255, 0xff
 eq 0xB_C__D___, 0xBCD
 
 # With radix
-ok 2r101010 == 8r0644/10 == 42
-eq 36rO_o, 888
+ok 2@101010 == 8@0644/10 == 42
+eq 36@O_o, 888
 
 # With comment
 eq 1year * 365.25days * 24hours, 8766_total_hours
 eq 36, 0XF + 36RT
 eq 100m2, 10m ** 2
 eq 3000c, 30$ * 100
+eq 36rpm 36
 
 # [#31](https://github.com/satyr/coco/issues/31): Numeric Ranges
 eq '1,2,3'  String [1 to +3]

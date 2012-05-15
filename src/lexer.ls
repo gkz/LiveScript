@@ -195,6 +195,9 @@ exports import
       return match.4.length
     if radix = match.1
       num = parseInt rnum = match.2.replace(NUMBER_OMIT, ''), radix
+      if radix > 36 or radix < 2
+        @carp "invalid number base #radix (with number #rnum),
+               base must be from 2 to 36"
       if isNaN num or num is parseInt rnum.slice(0 -1), radix
         @carp "invalid number #rnum in base #radix"
       num += ''
@@ -1026,7 +1029,7 @@ BSTOKEN   = // \\ (?: (\S[^\s,;)}\]]*) | \s* ) //g
 
 NUMBER = //
   0x[\dA-Fa-f][\dA-Fa-f_]*                 # hex
-| ([2-9]|[12]\d|3[0-6]) r ([\dA-Za-z]\w*)  # 2~36 base
+| (\d*) \@ ([\dA-Za-z]\w*)                 # number with base
 | ( (\d[\d_]*)(\.\d[\d_]*)? (?:e[+-]?\d[\d_]*)? ) [$\w]*
 |//g
 NUMBER_OMIT = /_+/g
