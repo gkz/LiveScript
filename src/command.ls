@@ -38,12 +38,11 @@ global import
 die "Unrecognized option(s): #that\n\n#{help!}" if o.$unknowns * ' '
 
 switch
-case o.nodejs  then forkNode!
-case o.version then say version!
-case o.help    then say help!
-default
+| o.nodejs  => forkNode!
+| o.version => say version!
+| o.help    => say help!
+| otherwise =>
   o.run = not o.compile ||= o.output
-  o.print ||= o.compile and (o.eval or o.stdin)
   process.execPath = argv.0 = argv.1
   argv.splice 2 9e9
   argv.push ...if o.stdin then $args else
@@ -51,7 +50,7 @@ default
   if o.require
     ({filename} = module)filename = \.
     that.forEach require
-    module << {filename}
+    module <<< {filename}
   switch
   case o.eval
     argv.1 = \eval
@@ -115,11 +114,11 @@ default
       t.output = JSON.stringify(t.result, null, 2) + \\n
     if o.run
       switch
-      case o.json  then process.stdout.write t.output
-      case o.print then console.log t.result
+      | o.json  => process.stdout.write t.output
+      | o.print => console.log t.result
       throw
     LiveScript.emit \write t
-    if o.print
+    if o.print or not filename
     then say t.output.trimRight!
     else writeJS filename, t.output, base
   catch if e?
@@ -145,10 +144,10 @@ default
 # Watch a source LiveScript file using `setTimeout`, taking an `action` every
 # time the file is updated.
 !function watch source, action
-  :loop let ptime = 0
+  :repeat let ptime = 0
     {mtime} <-! fshoot \stat source
     do action if ptime ^^^ mtime
-    setTimeout loop, 500ms, mtime
+    setTimeout repeat, 500ms, mtime
 
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
@@ -189,35 +188,39 @@ default
 !function repl
   argv.1 = \repl
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
-  code  = ''
+  repl.infunc = false unless repl.infunc?
+  code  = if repl.infunc then '  ' else ''
   cont  = false
-  repl  = require(\readline)createInterface process.stdin, process.stdout
+  readline  = require(\readline)createInterface process.stdin, process.stdout
   reset = !->
-    repl.line = code := ''
-    repl.prompt!
-  ({_ttyWrite} = repl)_ttyWrite = (char) ->
-    cont := char is \\n
+    readline.line = code := ''
+    readline.prompt!
+  ({_ttyWrite} = readline)_ttyWrite = (chr) ->
+    cont := chr in [ \\n, \> ]
     _ttyWrite ...
   prompt = \livescript
-  prompt += " -c#{ if o.bare then \b else '' }" if o.compile
+  prompt += " -#that" if [\b if o.bare; \c if o.compile]join ''
+  LiveScript.history = readline.history if LiveScript?
   unless o.compile
     module.paths = module.._nodeModulePaths \
       module.filename = process.cwd! + \/repl
     vm = require \vm
-    global << {module, exports, require}
-    server = ^require(\repl)REPLServer:: <<
+    global <<< {module, exports, require}
+    server = ^require(\repl)REPLServer:: <<<
       context: global, commands: [], useGlobal: true
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
         cb err, res
     repl.completer = server~complete
-  repl.on \attemptClose !->
-    if repl.line or code then say ''; reset! else repl.close!
-  repl.on \close process.stdin~destroy
-  repl.on \line !->
-    if cont
+  readline.on \attemptClose !->
+    if readline.line or code then say ''; reset! else readline.close!
+  readline.on \close process.stdin~destroy
+  readline.on \line !->
+    repl.infunc = false if it.match(/^\s*$/) # close with a blank line
+    cont = repl.infunc = true if it.match(/(\=|\~>|->|\{|\[)\s*$/) or it.match(/^!?function /)
+    if cont or repl.infunc
       code += it + \\n
-      repl.output.write \. * prompt.length + '. '
+      readline.output.write \. * prompt.length + '. '
       return
     code += it
     try
@@ -225,14 +228,14 @@ default
         say LiveScript.compile code, {o.bare}
       else
         _  = vm.runInThisContext LiveScript.compile(code, {\eval o.bare}), \repl
-        _ !? global << {_}
+        _ !? global <<< {_}
         pp  _
         say _ if typeof _ is \function
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"
-  repl.setPrompt "#prompt> "
-  repl.prompt!
+  readline.setPrompt "#prompt> "
+  readline.prompt!
 
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
 # to it, preserving the other options.
