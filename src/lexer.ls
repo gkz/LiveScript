@@ -196,7 +196,7 @@ exports import
     if radix = match.1
       num = parseInt rnum = match.2.replace(NUMBER_OMIT, ''), radix
       if radix > 36 or radix < 2
-        @carp "invalid number base #radix (with number #rnum),
+        @carp "invalid number base #radix (with number #rnum), 
                base must be from 2 to 36"
       if isNaN num or num is parseInt rnum.slice(0 -1), radix
         @carp "invalid number #rnum in base #radix"
