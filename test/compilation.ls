@@ -75,7 +75,7 @@ throws 'invalid use of null on line 1', -> LiveScript.compile 'null.po'
 
 
 throws 'deprecated octal literal 0666 on line 1' ,-> LiveScript.tokens '0666'
-throws 'invalid number 8 in base 8 on line 1'    ,-> LiveScript.tokens '8@8'
+throws 'invalid number 8 in base 8 on line 1'    ,-> LiveScript.tokens '8~8'
 
 
 tokens = LiveScript.lex '''

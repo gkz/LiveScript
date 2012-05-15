@@ -1029,7 +1029,7 @@ BSTOKEN   = // \\ (?: (\S[^\s,;)}\]]*) | \s* ) //g
 
 NUMBER = //
   0x[\dA-Fa-f][\dA-Fa-f_]*                 # hex
-| (\d*) \@ ([\dA-Za-z]\w*)                 # number with base
+| (\d*) ~ ([\dA-Za-z]\w*)                 # number with base
 | ( (\d[\d_]*)(\.\d[\d_]*)? (?:e[+-]?\d[\d_]*)? ) [$\w]*
 |//g
 NUMBER_OMIT = /_+/g

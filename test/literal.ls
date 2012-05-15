@@ -21,8 +21,8 @@ eq 255, 0xff
 eq 0xB_C__D___, 0xBCD
 
 # With radix
-ok 2@101010 == 8@0644/10 == 42
-eq 36@O_o, 888
+ok 2~101010 == 8~0644/10 == 42
+eq 36~O_o, 888
 
 # With comment
 eq 1year * 365.25days * 24hours, 8766_total_hours
