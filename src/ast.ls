@@ -1076,7 +1076,7 @@ class exports.Assign extends Node
     left.isAssignable! or left.carp 'invalid assign'
     {op, right} = this
     return @compileMinMax o, left, right if op in <[ <?= >?= ]>
-    if op in <[ **= ^= ]>
+    if op in <[ **= ^= %%= ]>
     or op is \+= and right instanceof [Arr, While]
     or op is \*= and right.isString()
     or op in <[ -= /= ]> and right.isMatcher()

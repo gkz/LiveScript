@@ -455,7 +455,7 @@ exports import
         @token tag, val
         return sym.length
       fallthrough
-    case <[ := += -= *= /= %= <?= >?= **= ^= ]>
+    case <[ := += -= *= /= %= %%= <?= >?= **= ^= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
         @last.1 += val
         return val.length
@@ -992,7 +992,7 @@ ID = let
      ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
   |//g
 SYMBOL = //
-  [-+*/%^]= | ::?=            # compound assign
+  [-+*/^]= | %%?= | ::?=      # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | &&& | \|\|\| | \^\^\^       # bitwise
 | \+\+\+                      # list concat 
