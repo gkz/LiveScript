@@ -1023,7 +1023,7 @@ class exports.Binary extends Node
   
   compileMod: (o) ->
     ref = o.scope.temporary!
-    code = "((#{@first.compile o}) % (#ref = #{@second.compile o}) + #ref) % #ref"
+    code = "((#{@first.compile o}) + (#ref = #{@second.compile o})) % #ref"
     o.scope.free ref
     code
 
