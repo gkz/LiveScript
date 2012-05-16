@@ -67,6 +67,7 @@
         <li><a href="#name">Name</a></li> 
         <li class="divider">
         <li><a href="#comparison-table">Comparison Table</a></li> 
+        <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li> 
         <li><a href="#incompatibilities">CoffeeScript Incompatibilities</a></li> 
         <li><a href="#changes">Changes from Coco</a></li> 
       </ul>
@@ -99,7 +100,7 @@
         <a href="https://github.com/gkz/LiveScript/tarball/0.9.1"><div class="btn btn-large btn-primary">tar.gz</div></a>
         <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large">View LiveScript on GitHub</div></a>
         <p>Install via <a href="http://npmjs.org">npm</a>: <strong><code>sudo npm install -g LiveScript</code></strong>
-        <p>Double-click an example to load it into the compiler.
+        <p>Double-click an example to load it into the compiler. CoffeeScript users check out the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
       <h3>Some Examples</h3>
       <div class="example">
         <div class="example-ls">
@@ -377,7 +378,7 @@ function __curry(f, args){
     <div id="reference" class="section">
       <a name="reference"></a>
       <h2>Reference</h2>
-      <p>LiveScript uses whitespace to delimit blocks of code. Semicolons are not required to terminate expressions if you have a newline at the end. You also don't need to use parentheses when calling functions. Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. Almost everything is an expression. The extension for LiveScript files is <code>.ls</code>. For differences from CoffeeScript, see <a href="#incompatibilities">Incompatibilities with CoffeeScript</a>.
+      <p>LiveScript uses whitespace to delimit blocks of code. Semicolons are not required to terminate expressions if you have a newline at the end. You also don't need to use parentheses when calling functions. Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. Almost everything is an expression. The extension for LiveScript files is <code>.ls</code>. For differences from CoffeeScript, see the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
       <p>You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript. Note that LiveScript wraps compiled JS in a safety wrapper <code>(function(){...contents...}).call(this);</code> - this wrapper has been omitted in all examples and this page's compiler output for conciseness.
     </div>
     <div id="literals" class="section">
@@ -2128,6 +2129,50 @@ TOTAL    851 ms
           <td>Cons</td><td>[x].concat ys</td><td>[x].concat ys</td><td>x & ys</td>
         </tr>
       </table>
+    </div>
+    <div class="section" id="coffee-to-ls">
+      <a name="changes"></a>
+      <h2>CoffeeScript to LiveScript Conversion Guide</h2>
+      <p>See the <a href="#incompatibilities">incompatibilities section</a> for more details.
+      <ul>
+        <li>Change all your fat arrows <code>=></code> to wavy arrows <code>~></code>
+        <li>Change all your block comments <code>### ###</code> to <code>/* */</code>
+        <li>Change any range syntax creating lists from <code>[x..y]</code> to <code>[x to y]</code> and change <code>[x...y]</code> to <code>[x til y]</code>
+        <li>Similarly, change any range syntax in for loops from <code>for x in [1..10]</code> to <code>for x from 1 to 10</code> and change <code>for x in [1...10]</code> to <code>for x from 1 til 10</code>
+        <li>Change any regular expression literals from <code>/// ///</code> to <code>// //</code>
+        <li>Change any splats you are using from <code>(args...) -></code> to be prefixed like <code>(...args) -></code>
+        <li>Remove the parentheses from function definitions with no parameters, <code>() -></code> simply becomes <code>-></code>
+        <li>Change your constructor functions in your classes from being defined as 
+<pre>
+class Item
+  constructor: ->
+</pre> to simply being functions at the top level of your class body, eg.
+<pre>
+class Item
+  -> 
+</pre>
+        <li>Change any calls to super from <code>super</code> to <code>super ...</code>
+        <li>Change any bitwise operators you are using according to the <a href="#comparison-table">comparison table</a> (eg. & changes to &&&)
+        <li>If you are modifying variables in upper scopes at any time, eg.
+<pre>
+x = 10
+do ->
+  x = 5
+</pre> you must use <code>:=</code> instead of just <code>=</code> as that will declare a new (shadowing) variable in LiveScript. Thus, the above code would need to be
+<pre>
+x = 10
+do ->
+  x := 5
+</pre> if you wanted to modify <code>x</code>
+      <li>If you are using nested list comprehensions (eg. <code>(x + y for x in [1, 2] for y in [3, 4])</code>, you will need to change how you handle the result as instead of being a lists within a list as in CoffeScript (the result of the example would be <code>[[4,5],[5,6]]</code>, the result is flattened (the result of the example in LiveScript would be <code>[4,5,5,6]</code>) 
+      <li>Change the name of any of your variables named <code>it</code>, <code>that</code>, <code>fallthrough</code>, or <code>otherwise</code>. Those are terrible names for variables so you should change them anyway. This technically isn't required in all cases, but will be less confusing if you do so in all cases. <code>it</code> is used as the implicit argument of functions defined with no parameters, eg. <code>reverse = -> it.reverse!</code>. <code>that</code> refers to the value of the condition, for instance <code>that + 2 if (x + 10)/(y - 18)</code>, <code>that == (x + 10)/(y-18)</code>. <code>fallthrough</code>, if used at the end of a case block makes that block fallthrough to the next case. <code>otherwise</code>, if used directly after case, turns that case into default.
+      <li>If you have any multiline strings, eg.
+<pre>
+text = "hi 
+        there"
+</pre> you will have to change them as in CoffeeScript this would be <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> while LiveScript ignores indentation after newlines so it would be <code>"hi there"</code>
+      <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript.
+      </ul>
     </div>
     <div id="incompatibilities" class="section">
       <a name="incompatibilities"></a>
