@@ -413,6 +413,9 @@ eq \OLLEH (upCase <| reverse <| \hello)
 
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
+eq 'number,string' ''+ typeof
+  0
+  \1
 
 o = {2: [3 4], 5: 6}
 a = delete o[5 ...2]
