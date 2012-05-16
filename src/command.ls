@@ -223,7 +223,7 @@ switch
       if o.compile
         say LiveScript.compile code, {o.bare}
       else
-        _  = vm.runInThisContext LiveScript.compile(code, {\eval o.bare}), \repl
+        _  = vm.runInThisContext LiveScript.compile(code, {\eval, +bare}), \repl
         _ !? global <<< {_}
         pp  _
         say _ if typeof _ is \function
