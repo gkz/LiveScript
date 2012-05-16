@@ -1926,14 +1926,12 @@ exports.Export = (lines) ->
 # functions. Each scope knows about the function parameters and the variables
 # declared within it, and has references to its parent/shared enclosing scopes.
 !function Scope @parent, @shared
-  @variables = []
-  @positions = {}
+  @variables = {}
 Scope::<<<
   # Adds a new variable or overrides an existing one.
   add: (name, type) ->
-    if @variables[@positions[name]]
-    then that <<< {type}
-    else @positions[name] = ~-@variables.push {name, type}
+    # Dot-suffix to bypass `Object::` members.
+    @variables"#name." = type
     name
 
   # Declares a variable unless declared already.
@@ -1943,7 +1941,7 @@ Scope::<<<
       scope = that
     else
       scope = this
-    unless (type = scope.type name) and (type of <[ var arg ]> or type.value)
+    unless (type = @variables"#name.") and (type of <[ var arg ]> or type.value)
       scope.add name, \var
 
   # Ensures that an assignment is made at the top of this scope.
@@ -1957,7 +1955,7 @@ Scope::<<<
       temp = \__ + if name.length > 1
         then name + (i++ || '')
         else (i++ + parseInt name, 36)toString 36
-    until @type(temp) of [\reuse void]
+    until @variables"#temp." of [\reuse void]
     @add temp, \var
 
   # Allows a variable to be reused.
@@ -1966,16 +1964,14 @@ Scope::<<<
   # Checks to see if a variable has already been declared.
   # Walks up the scope if `above` flag is specified.
   check: (name, above) ->
-    return found if (found = @positions[name] in @variables) or not above
+    return found if (found = "#name." in @variables) or not above
     @parent?check name, above
-
-  # Gets the type of a variable from name.
-  type: -> @variables[@positions[it]]?type
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->
     usr = []; tmp = []; asn = []; fun = []
-    for {name, type} of @variables
+    for name, type in @variables
+      name.=slice 0 -1
       if type of <[ var reuse ]>
         (if \_ is name.charAt 0 then tmp else usr)push name
       else if type.value
