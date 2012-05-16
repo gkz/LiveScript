@@ -138,6 +138,7 @@
   maybeKey     : THIS
   expandSlice  : THIS
   varName      : String
+  getAccessors : VOID
   getCall      : VOID
   getDefault   : VOID
   # Digs up a statement that jumps out of this node.
@@ -676,24 +677,18 @@ class exports.Obj extends List
         then node.val = logic <<< first: node.val
         else node = Prop node, logic <<< first: node
       if multi then code += \, else multi = true
-      xet = ''
       code += idt + if node instanceof Prop
         {key, val} = node
-        if val.accessor
-          key.=compile o
-          xet = if val.params.length then val.void = \set else \get
-          "#xet #key" + val.compile(o, LEVEL_LIST)slice 8
+        if node.accessor
+          node.compileAccessor o, key.=compile o
         else
           val.ripName key
           "#{ key.=compile o }: #{ val.compile o, LEVEL_LIST }"
       else
         "#{ key = node.compile o }: #key"
-      key = Function("return #key")! unless ID.test key
-      if xet 
-        !(dic"#xet #key" = dic"#xet #key" ^^^ 1) or "#key." of dic
-      else 
-        !(dic"#key." = dic"#key." ^^^ 1) or "get #key" of dic or "set #key" of dic
-      |>> _ and node.carp "duplicate property name \"#key\""
+      # Canonicalize the key, e.g.: `0.0` => `0`
+      ID.test key or key = do Function "return #key"
+      node.carp "duplicate property \"#key\"" unless dic"#key." = dic"#key." ^^^ 1
     code = "{#{ code and code + \\n + @tab }}"
     rest and code = Import(JS code; Obj rest)compile o <<< indent: @tab
     if @front and \{ is code.charAt! then "(#code)" else code
@@ -701,15 +696,35 @@ class exports.Obj extends List
 #### Prop
 # `x: y`
 class exports.Prop extends Node
-  (@key, val) ~>
-    val.=it <<< {\accessor} if val.op is \~ and val.it instanceof Fun
-    import {val}
+  (@key, @val) ~>
+    if val.getAccessors!
+      @val = that
+      for fun in that
+        fun.x = if fun.void = fun.params.length then \s else \g
+      import {\accessor}
 
   children: <[ key val ]>
 
-  show: -> @val.accessor
+  show: -> @accessor
 
-  assigns: -> @val.assigns it
+  assigns: -> @val.assigns? it
+
+  compileAccessor: (o, key) ->
+    funs = @val
+    if funs.1 and funs.0.params.length + funs.1.params.length is not 1
+      funs.0.carp 'invalid accessor parameter'
+    do
+      for fun in funs
+        fun.accessor = true
+        "#{fun.x}et #key#{ fun.compile o, LEVEL_LIST .slice 8 }"
+    .join ',\n' + o.indent
+
+  compileDescriptor: (o) ->
+    obj = Obj!
+    obj.items.push Prop Key(fun.x + \et  ), fun for fun in @val
+    obj.items.push Prop Key(\configurable), Literal true
+    obj.items.push Prop Key(\enumerable  ), Literal true
+    obj.compile o
 
 #### Arr
 # `[x, y]`
@@ -790,6 +805,15 @@ class exports.Unary extends Node
 
   unfoldSoak: (o) ->
     @op in <[ ++ -- delete ]> and If.unfoldSoak o, this, \it
+
+  getAccessors: ->
+    return unless @op is \~
+    return [@it] if @it instanceof Fun
+    if @it instanceof Arr
+      {items} = @it
+      return items if not items.2
+                   and items.0 instanceof Fun
+                   and items.1 instanceof Fun
 
   function crement then {'++':\in '--':\de}[it] + \crement
 
@@ -1246,11 +1270,11 @@ class exports.Import extends Node
         [key, val] = node.it.cache o, true
       else if node instanceof Prop
         {key, val} = node
-        if val.accessor
+        if node.accessor
           key = JS "'#{key.name}'" if key instanceof Key
-          code += "#{ reft.compile o, LEVEL_CALL }
-            .__define#{ if val.params.0 then val.void = \S else \G }etter__
-            (#{ key.compile o, LEVEL_LIST }, #{ val.compile o, LEVEL_LIST })"
+          code += "Object.defineProperty(#{ reft.compile o, LEVEL_LIST }
+                                       , #{ key .compile o, LEVEL_LIST }
+                                       , #{ node.compileDescriptor o })"
           continue
       else key = val = node
       dyna  or  key.=maybeKey!
