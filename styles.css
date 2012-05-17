@@ -52,16 +52,19 @@ body {
   -moz-box-sizing: border-box;
   padding-left: 20px;
   padding-right: 20px;
-  padding-top: 32px;
+  padding-top: 12px;
   height: 100%;
   right: 0;
   position: fixed;
 }
+.compiler .github-buttons {
+  float: right;
+}
 .compiler .compiler-box {
-  height: 50%;
+  height: 52%;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
-  padding-bottom: 38px;
+  padding-bottom: 62px;
 }
 .compiler .compiler-box textarea {
   box-sizing: border-box;
@@ -75,7 +78,7 @@ body {
   -moz-box-sizing: border-box;
   padding-top: 5px;
   overflow-y: scroll;
-  height: 50%;
+  height: 48%;
 }
 .compiler .compiler-output pre,
 .compiler .compiler-output .alert {
@@ -97,6 +100,7 @@ body {
 }
 .content {
   padding-top: 32px;
+  padding-bottom: 40px;
 }
 .content .section {
   margin-bottom: 20px;
