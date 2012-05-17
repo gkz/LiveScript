@@ -821,9 +821,9 @@ class exports.Unary extends Node
       if it instanceof Var and not o.scope.check it.value, true
         @carp "#{ crement op } of undeclared variable \"#{it.value}\""
       it{front} = this if @post
-    case \^ then return "#{ utility \clone }(#{ it.compile o, LEVEL_LIST })"
+    case \^ then return "#{ util \clone }(#{ it.compile o, LEVEL_LIST })"
     case \classof
-      return "#{ utility \toString }.call(
+      return "#{ util \toString }.call(
               #{ it.compile o, LEVEL_LIST }).slice(8, -1)"
     code = it.compile o, LEVEL_OP + PREC.unary
     if @post then code += op else
@@ -968,7 +968,7 @@ class exports.Binary extends Node
       Chain(@first, [Index Key method; Call args])compile o
     else
       args.unshift @first
-      Call.make(JS utility(method) + \.call; args)compile o
+      Call.make(JS util(method) + \.call; args)compile o
 
   compileJoin   : -> @compileMethod it, \Array  \join
   compileRemove : -> @compileMethod it, \String \replace JS "''"
@@ -1127,7 +1127,7 @@ class exports.Assign extends Node
         if i+1 is len = nodes.length
           break if skip
           val = Arr.wrap JS \
-            utility(\slice) + \.call( + rite + if i then ", #i)" else \)
+            util(\slice) + \.call( + rite + if i then ", #i)" else \)
         else
           val = ivar = "#rite.length - #{ len - i - 1 }"
           # Optimize `[..., a] = b`.
@@ -1135,7 +1135,7 @@ class exports.Assign extends Node
           start = i+1; @temps = [ivar = o.scope.temporary \i]
           val = if skip then node = Var ivar; Var val else
             Arr.wrap JS "#i < (#ivar = #val)
-                       \ ? #{ utility \slice }.call(#rite, #i, #ivar)
+                       \ ? #{ util \slice }.call(#rite, #i, #ivar)
                        \ : (#ivar = #i, [])"
       else
         (inc = ivar) and start < i and inc += " + #{ i - start }"
@@ -1248,7 +1248,7 @@ class exports.Of extends Node
   compileNode: (o) ->
     {items} = array = @array.expandSlice(o)unwrap!
     if array not instanceof Arr or items.length < 2
-      return "#{ if @negated then \! else '' }#{ utility \of }
+      return "#{ if @negated then \! else '' }#{ util \of }
              (#{ @item.compile o, LEVEL_LIST }
             , #{ array.compile o, LEVEL_LIST })"
     code = ''
@@ -1503,7 +1503,7 @@ class exports.Splat extends Node
 
   function ensureArray node
     return node if node.isArray!
-    Call.make JS(utility(\slice) + \.call), [node]
+    Call.make JS(util(\slice) + \.call), [node]
 
 #### Jump
 # `break` `continue`
@@ -1893,7 +1893,7 @@ class exports.Util extends Node
 
   isCallable: YES
 
-  compile: -> utility @verb
+  compile: -> util @verb
 
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
@@ -1988,7 +1988,7 @@ function NO   then false
 function THIS then this
 function VOID then void
 
-UTILITIES =
+UTILS =
   # Creates an object's prototypal child, ensuring `__proto__`.
   clone: '''function(it){
     function fun(){} fun.prototype = it;
@@ -2071,6 +2071,6 @@ SIMPLENUM = /^\d+$/
 ##### Helpers
 
 # Declares a utility function at the top level.
-function utility then Scope.root.assign \__ + it, UTILITIES[it]
+function util then Scope.root.assign \__ + it, UTILS[it]
 
 function entab code, tab then code.replace /\n/g \\n + tab
