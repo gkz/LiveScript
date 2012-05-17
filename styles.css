@@ -97,6 +97,7 @@ body {
 }
 .content {
   padding-top: 32px;
+  padding-bottom: 40px;
 }
 .content .section {
   margin-bottom: 20px;

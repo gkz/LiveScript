@@ -62,13 +62,13 @@
         <li><a href="#property-access">Property Access</a></li> 
         <li><a href="#oop">OOP</a></li> 
         <li class="divider">
+        <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li> 
+        <li><a href="#comparison-table">Comparison Table</a></li> 
         <li><a href="#speed">Speed</a></li> 
+        <li><a href="#changes">Changes from Coco</a></li> 
+        <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
         <li><a href="#name">Name</a></li> 
-        <li class="divider">
-        <li><a href="#comparison-table">Comparison Table</a></li> 
-        <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li> 
-        <li><a href="#changes">Changes from Coco</a></li> 
       </ul>
     </div>
     <div class="span4 compiler">
@@ -2018,45 +2018,52 @@ function __extend(sub, sup){
       </div>
     </div>
     <hr>
-    <div id="speed" class="section">
-      <a name="speed"></a>
-      <h2>Speed</h2>
-      <p>Harder, better, <strong>faster</strong>, stronger.
-      <h5>CoffeeScript (1.3.1)</h5>
+    <div class="section" id="coffee-to-ls">
+      <a name="changes"></a>
+      <h2>CoffeeScript to LiveScript Conversion Guide</h2>
+      <ul>
+        <li>Change all your fat arrows <code>=></code> to wavy arrows <code>~></code>
+        <li>Change all your block comments <code>### ###</code> to <code>/* */</code>
+        <li>Change any range syntax creating lists from <code>[x..y]</code> to <code>[x to y]</code> and change <code>[x...y]</code> to <code>[x til y]</code>. Using variables for x and y only currently works in loops. This will be fixed for the next release of LiveScript.
+        <li>Similarly, change any range syntax in for loops from <code>for x in [1..10]</code> to <code>for x from 1 to 10</code> and change <code>for x in [1...10]</code> to <code>for x from 1 til 10</code>
+        <li>Change any number literals starting with a dot, eg. <code>.5</code> to start with a zero <code>0.5</code>
+        <li>Change any regular expression literals from <code>/// ///</code> to <code>// //</code>
+        <li>Change any splats you are using from <code>(args...) -></code> to be prefixed like <code>(...args) -></code>
+        <li>Remove the parentheses from function definitions with no parameters, <code>() -></code> simply becomes <code>-></code> - this is because <code>()</code> is always a call.
+        <li>Change your constructor functions in your classes from being defined as 
 <pre>
-$ cake bench
-Lex     1365 ms (24146 tokens)
-Rewrite  120 ms (26886 tokens)
-Parse    277 ms
-Compile  189 ms (149436 chars)
-total   1951 ms
-</pre>
-      <h5>LiveScript</h5>
+class Item
+  constructor: ->
+</pre> to simply being functions at the top level of your class body, eg.
 <pre>
-$ slake bench
-Lex      241 ms (27289 tokens)
-Rewrite   98 ms (32717 tokens)
-Parse    266 ms (27910 nodes)
-Compile  246 ms (181132 chars)
-TOTAL    851 ms
+class Item
+  -> 
 </pre>
-      <p>For more improvements see <a href="https://github.com/satyr/coco/wiki/improvements">Coco's list of improvements</a>.
+        <li>Change any calls to super from <code>super</code> to <code>super ...</code> - this is because <code>super</code> is a direct reference to the parent function rather than a call itself.
+        <li>Change any bitwise operators you are using according to the <a href="#comparison-table">comparison table</a> (eg. <code>&</code> changes to <code>&&&</code>)
+        <li>If you are modifying variables in upper scopes at any time, eg.
+<pre>
+x = 10
+do ->
+  x = 5
+</pre> you must use <code>:=</code> instead of just <code>=</code> as that will declare a new (shadowing) variable in LiveScript. Thus, the above code would need to be
+<pre>
+x = 10
+do ->
+  x := 5
+</pre> if you wanted to modify <code>x</code>
+      <li>If you are using nested list comprehensions (eg. <code>(x + y for x in [1, 2] for y in [3, 4])</code>, you will need to change how you handle the result as instead of being a lists within a list as in CoffeScript (the result of the example would be <code>[[4,5],[5,6]]</code>), the result is flattened (the result of the example in LiveScript would be <code>[4,5,5,6]</code>) 
+      <li>Change the name of any of your variables named <code>it</code>, <code>that</code>, <code>fallthrough</code>, or <code>otherwise</code>. Those are terrible names for variables so you should change them anyway. This technically isn't required in all cases, but will be less confusing if you do so in all cases. <code>it</code> is used as the implicit argument of functions defined with no parameters, eg. <code>reverse = -> it.reverse!</code>. <code>that</code> refers to the value of the condition, for instance <code>that + 2 if (x + 10)/(y - 18)</code>, <code>that == (x + 10)/(y-18)</code>. <code>fallthrough</code>, if used at the end of a case block makes that block fallthrough to the next case. <code>otherwise</code>, if used directly after case, turns that case into default.
+      <li>If you have any multiline strings non tripe quoted strings (using <code>"string"</code> or <code>'string'</code>), eg.
+<pre>
+text = "hi 
+        there"
+</pre> you will have to change them as in CoffeeScript this would be <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> while LiveScript ignores indentation after newlines so it would be <code>"hi there"</code>
+      <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript.
+      <li><code>do</code> does not special case function literals, use <code>let</code> instead.
+      <li>No implicit calls against blocks starting with an implicit object. Use <code>do</code> instead.
+      </ul>
     </div>
-    <div id="inspiration" class="section">
-      <a name="inspiration"></a>
-      <h2>Inspiration</h2>
-        <ul>
-          <li>Functional languages in general
-          <li>Haskell
-          <li>F#
-        </ul>
-    </div>
-    <div id="name" class="section">
-      <a name="name"></a>
-      <h2>Name</h2>
-        <p>LiveScript was one of the original names for JavaScript, so it seemed fitting. 
-    </div>
-    <hr>
     <div id="comparison-table" class="section">
       <a name="comparison-table"></a>
       <h2>Comparison Table</h2>
@@ -2129,51 +2136,29 @@ TOTAL    851 ms
         </tr>
       </table>
     </div>
-    <div class="section" id="coffee-to-ls">
-      <a name="changes"></a>
-      <h2>CoffeeScript to LiveScript Conversion Guide</h2>
-      <ul>
-        <li>Change all your fat arrows <code>=></code> to wavy arrows <code>~></code>
-        <li>Change all your block comments <code>### ###</code> to <code>/* */</code>
-        <li>Change any range syntax creating lists from <code>[x..y]</code> to <code>[x to y]</code> and change <code>[x...y]</code> to <code>[x til y]</code>. Using variables for x and y only currently works in loops. This will be fixed for the next release of LiveScript.
-        <li>Similarly, change any range syntax in for loops from <code>for x in [1..10]</code> to <code>for x from 1 to 10</code> and change <code>for x in [1...10]</code> to <code>for x from 1 til 10</code>
-        <li>Change any number literals starting with a dot, eg. <code>.5</code> to start with a zero <code>0.5</code>
-        <li>Change any regular expression literals from <code>/// ///</code> to <code>// //</code>
-        <li>Change any splats you are using from <code>(args...) -></code> to be prefixed like <code>(...args) -></code>
-        <li>Remove the parentheses from function definitions with no parameters, <code>() -></code> simply becomes <code>-></code> - this is because <code>()</code> is always a call.
-        <li>Change your constructor functions in your classes from being defined as 
+    <div id="speed" class="section">
+      <a name="speed"></a>
+      <h2>Speed</h2>
+      <p>Harder, better, <strong>faster</strong>, stronger.
+      <h5>CoffeeScript (1.3.1)</h5>
 <pre>
-class Item
-  constructor: ->
-</pre> to simply being functions at the top level of your class body, eg.
-<pre>
-class Item
-  -> 
+$ cake bench
+Lex     1365 ms (24146 tokens)
+Rewrite  120 ms (26886 tokens)
+Parse    277 ms
+Compile  189 ms (149436 chars)
+total   1951 ms
 </pre>
-        <li>Change any calls to super from <code>super</code> to <code>super ...</code> - this is because <code>super</code> is a direct reference to the parent function rather than a call itself.
-        <li>Change any bitwise operators you are using according to the <a href="#comparison-table">comparison table</a> (eg. <code>&</code> changes to <code>&&&</code>)
-        <li>If you are modifying variables in upper scopes at any time, eg.
+      <h5>LiveScript</h5>
 <pre>
-x = 10
-do ->
-  x = 5
-</pre> you must use <code>:=</code> instead of just <code>=</code> as that will declare a new (shadowing) variable in LiveScript. Thus, the above code would need to be
-<pre>
-x = 10
-do ->
-  x := 5
-</pre> if you wanted to modify <code>x</code>
-      <li>If you are using nested list comprehensions (eg. <code>(x + y for x in [1, 2] for y in [3, 4])</code>, you will need to change how you handle the result as instead of being a lists within a list as in CoffeScript (the result of the example would be <code>[[4,5],[5,6]]</code>), the result is flattened (the result of the example in LiveScript would be <code>[4,5,5,6]</code>) 
-      <li>Change the name of any of your variables named <code>it</code>, <code>that</code>, <code>fallthrough</code>, or <code>otherwise</code>. Those are terrible names for variables so you should change them anyway. This technically isn't required in all cases, but will be less confusing if you do so in all cases. <code>it</code> is used as the implicit argument of functions defined with no parameters, eg. <code>reverse = -> it.reverse!</code>. <code>that</code> refers to the value of the condition, for instance <code>that + 2 if (x + 10)/(y - 18)</code>, <code>that == (x + 10)/(y-18)</code>. <code>fallthrough</code>, if used at the end of a case block makes that block fallthrough to the next case. <code>otherwise</code>, if used directly after case, turns that case into default.
-      <li>If you have any multiline strings non tripe quoted strings (using <code>"string"</code> or <code>'string'</code>), eg.
-<pre>
-text = "hi 
-        there"
-</pre> you will have to change them as in CoffeeScript this would be <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> while LiveScript ignores indentation after newlines so it would be <code>"hi there"</code>
-      <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript.
-      <li><code>do</code> does not special case function literals, use <code>let</code> instead.
-      <li>No implicit calls against blocks starting with an implicit object. Use <code>do</code> instead.
-      </ul>
+$ slake bench
+Lex      241 ms (27289 tokens)
+Rewrite   98 ms (32717 tokens)
+Parse    266 ms (27910 nodes)
+Compile  246 ms (181132 chars)
+TOTAL    851 ms
+</pre>
+      <p>For more improvements see <a href="https://github.com/satyr/coco/wiki/improvements">Coco's list of improvements</a>.
     </div>
     <div class="section" id="changes">
       <a name="changes"></a>
@@ -2207,6 +2192,21 @@ text = "hi
       <li>Added <code>%%</code> operator (and corresponding <code>%%=</code> operator), <code>x %% y</code> is <code>(x % y + y) % y</code>. Eg. <code>-3 % 4 == -3; -3 %% 4 == 1</code>. Rationale: this is how the <code>%</code> op behaves in other languages such as Python and Ruby.
       <li>Changed number base format from <code>7r4</code> to <code>7~4</code>. This is because using <code>r</code> causes ambiguity with number comments. For instance, <code>36rpm</code> - is that the number <code>36</code> with the number comment <code>rpm</code> or is it <code>pm</code> base <code>36</code> (922). Also now accept any number as radix, so that a better error can be thrown when that radix is not 2-36. Rationale: fixes ambiguity.
       </ul>
+    </div>
+    <hr>
+    <div id="inspiration" class="section">
+      <a name="inspiration"></a>
+      <h2>Inspiration</h2>
+        <ul>
+          <li>Functional languages in general
+          <li>Haskell
+          <li>F#
+        </ul>
+    </div>
+    <div id="name" class="section">
+      <a name="name"></a>
+      <h2>Name</h2>
+        <p>LiveScript was one of the original names for JavaScript, so it seemed fitting. 
     </div>
   </div>
 </div>
