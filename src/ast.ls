@@ -1617,7 +1617,7 @@ class exports.While extends Node
 
   getJump: (ctx or {}) ->
     ctx <<< {+\continue, +\break}
-    return node if node.getJump ctx for node in @body.lines
+    return node if node.getJump ctx for node in @body?.lines or []
 
   addBody: (@body) ->
     @body = Block If @guard, body if @guard
@@ -1670,7 +1670,7 @@ class exports.For extends While
 
   aSource: null
 
-  show: -> @index
+  show: -> @index or 'implicit index'
 
   compileNode: (o) ->
     o.loop = true
@@ -1678,6 +1678,7 @@ class exports.For extends While
     if idx = @index
     then o.scope.declare idx
     else temps.push idx = o.scope.temporary \i
+    @addBody Block Var idx if not @body
     unless @object
       [pvar, step] = (@step or Literal 1)compileLoopReference o, \step
       pvar is step or temps.push pvar
