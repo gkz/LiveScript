@@ -2057,14 +2057,26 @@ do ->
 </pre> if you wanted to modify <code>x</code>
       <li>If you are using nested list comprehensions (eg. <code>(x + y for x in [1, 2] for y in [3, 4])</code>, you will need to change how you handle the result as instead of being a lists within a list as in CoffeScript (the result of the example would be <code>[[4,5],[5,6]]</code>), the result is flattened (the result of the example in LiveScript would be <code>[4,5,5,6]</code>) 
       <li>Change the name of any of your variables named <code>it</code>, <code>that</code>, <code>fallthrough</code>, or <code>otherwise</code>. Those are terrible names for variables so you should change them anyway. This technically isn't required in all cases, but will be less confusing if you do so in all cases. <code>it</code> is used as the implicit argument of functions defined with no parameters, eg. <code>reverse = -> it.reverse!</code>. <code>that</code> refers to the value of the condition, for instance <code>that + 2 if (x + 10)/(y - 18)</code>, <code>that == (x + 10)/(y-18)</code>. <code>fallthrough</code>, if used at the end of a case block makes that block fallthrough to the next case. <code>otherwise</code>, if used directly after case, turns that case into default.
-      <li>If you have any multiline strings non tripe quoted strings (using <code>"string"</code> or <code>'string'</code>), eg.
+      <li>If you have any multiline strings non triple quoted strings (using <code>"string"</code> or <code>'string'</code>), eg.
 <pre>
 text = "hi 
         there"
 </pre> you will have to change them as in CoffeeScript this would be <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> while LiveScript ignores indentation after newlines so it would be <code>"hi there"</code>
       <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript.
-      <li><code>do</code> does not special case function literals, use <code>let</code> instead.
-      <li>No implicit calls against blocks starting with an implicit object. Use <code>do</code> instead.
+      <li>Change any <code>do</code>s special casing function literals to using <code>let</code>. Eg. in CoffeScript <code>do ($ = jQuery) -> $</code> change to
+<pre>
+let $ = jQuery
+  $
+</pre>
+      <li>Change any implicit calls against blocks starting with an implicit objects to use <code>do</code>. Eg. change 
+<pre>
+f
+  a: b
+</pre> into
+<pre>
+f do
+  a: b
+</pre>
       </ul>
     </div>
     <div id="comparison-table" class="section">
