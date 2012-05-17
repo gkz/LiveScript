@@ -253,7 +253,7 @@ class exports.Block extends Node
   compileRoot: (options) ->
     o = {level: LEVEL_TOP, scope: @scope = Scope.root = new Scope, ...options}
     if saveTo = delete o.saveScope
-       o.scope = saveTo['savedScope'] or= o.scope # use savedScope as your scope
+       o.scope = saveTo.savedScope or= o.scope # use savedScope as your scope
     delete o.filename
     o.indent = if bare = delete o.bare then '' else TAB
     if /^\s*(?:[/#]|javascript:)/test @lines.0?code
