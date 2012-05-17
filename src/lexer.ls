@@ -58,12 +58,12 @@ exports import
     i = 0
     while c = code.charAt i
       switch c
-      | ' '       => i += @doSpace     code, i
-      | \\n       => i += @doLine      code, i
-      | \\        => i += @doBackslash code, i
-      | \' \"     => i += @doString    code, i, c
-      | \0 to \9  => i += @doNumber    code, i
-      | \/        =>
+      | ' '         => i += @doSpace     code, i
+      | \\n         => i += @doLine      code, i
+      | \\          => i += @doBackslash code, i
+      | \' \"       => i += @doString    code, i, c
+      | [\0 to \9]  => i += @doNumber    code, i
+      | \/          =>
         switch code.charAt i+1
         | \*        => i += @doComment code, i
         | \/        => i += @doHeregex code, i
@@ -170,12 +170,18 @@ exports import
         if @seenFrom
           import {-seenFrom, +wantBy}
           tag = \TO
-        else if last.0 is \STRNUM and not last.callable
-          last <<< 0:\RANGE op:id
+        else if not last.callable and last.0 is \STRNUM and @tokens[*-2]0 is \[
+          last <<< 0:\RANGE op: id
+          return id.length
+        else if \] in @closes
+          @token \TO id
           return id.length
       case \by
-        if last.0 is \STRNUM and @tokens[*-2]0 is \RANGE
+        if last.0 is \STRNUM 
+        and @tokens[*-2]0 is \RANGE 
+        and @tokens[*-3]0 is \[
         then tag = \RANGE_BY
+        else if \] in @closes then tag = \BY
         else @wantBy &&= !tag = \BY
       case \ever then if last.0 is \FOR
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
@@ -901,18 +907,30 @@ character = if JSON!? then uxxxx else ->
         tokens.splice i++ 0 [\+- sig, token.2]
       continue if token.callable
     case \RANGE
-      [from, char] = decode token.1, lno = token.2
-      [to, tochar] = decode tokens[i+1]1, lno
-      carp 'bad "to" in range' if char ^^^ tochar
-      if by = tokens[i+2]?0 is \RANGE_BY
-        carp 'bad "by" in range' if isNaN by = tokens[i+3]?1
-      ts = []; to -= token.op is \til and 1e-15
-      for n from from to to by +by or 1
-        carp 'range limit exceeded' lno if 0x10000 < ts.push \
-          [\STRNUM, if char then character n else "#n", lno] [\, \, lno]
-      ts.pop! or carp 'empty range' lno
-      tokens.splice i, if by then 4 else 2, ...ts
-      i += ts.length - 1
+      lno = token.2
+      if   tokens[i-1]0 is \[
+      and  tokens[i+1]0 is \STRNUM
+      and (tokens[i+2]0 is \] 
+      or  (tokens[i+2]0 is \RANGE_BY
+      and  tokens[i+3]?0 is \STRNUM
+      and  tokens[i+4]?0 is \]))
+        [fromNum, char] = decode token.1, lno
+        [toNum, tochar] = decode tokens[i+1].1, lno
+        carp 'bad "to" in range' if char ^^^ tochar
+        if byNum = tokens[i+2]?0 is \RANGE_BY
+          carp 'bad "by" in range' if isNaN byNum = tokens[i+3]?1
+        ts = []; toNum -= token.op is \til and 1e-15
+        for n from fromNum to toNum by +byNum or 1
+          carp 'range limit exceeded' lno if 0x10000 < ts.push \
+            [\STRNUM, if char then character n else "#n", lno] [\, \, lno]
+        ts.pop! or carp 'empty range' lno
+        tokens.splice i, if byNum then 4 else 2, ...ts
+        i += ts.length - 1
+      else
+        token.0 = \STRNUM
+        if tokens[i+2]?0 is \RANGE_BY
+          tokens.splice i+2, 1, [\BY \by lno]
+        tokens.splice i+1, 0, [\TO, token.op, lno]
     case \WORDS
       ts = [[\[ \[ lno = token.2]]
       for word in token.1.match /\S+/g or ''

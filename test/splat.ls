@@ -1,14 +1,14 @@
 fn = (first, ...rest) -> '' + rest
-eq fn(1 to 5), '2,3,4,5'
-eq fn(6 to 7), '7'
+eq fn(1,2,3,4,5), '2,3,4,5'
+eq fn(6,7), '7'
 
 fn = (...heads, last) -> '' + heads
-eq fn(1 to 5), '1,2,3,4'
-eq fn(6 to 7), '6'
+eq fn(1,2,3,4,5), '1,2,3,4'
+eq fn(6,7), '6'
 
 fn = (first, second, ...middles, last) -> '' + middles
-eq fn(1 to 5), '3,4'
-eq fn(6 to 7), ''
+eq fn(1,2,3,4,5), '3,4'
+eq fn(6,7), ''
 
 
 a = [0  method: -> this is a.1]

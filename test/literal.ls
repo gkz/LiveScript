@@ -33,13 +33,31 @@ eq 36rpm 36
 
 # [#31](https://github.com/satyr/coco/issues/31): Numeric Ranges
 eq '1,2,3'  String [1 to +3]
-eq '1,0,-1' String Array 1 to -1 by -1
+eq '1,0,-1' String [1 to -1 by -1]
 
 til = String
 eq 2, [Number]0 til 2
 
-throws 'range limit exceeded on line 1' -> LiveScript.tokens '0 to 1 by 1e-5'
-throws 'empty range on line 3'          -> LiveScript.tokens '\n\n 1 to 0'
+throws 'range limit exceeded on line 1' -> LiveScript.tokens '[0 to 1 by 1e-5]'
+throws 'empty range on line 3'          -> LiveScript.tokens '\n\n [1 to 0]'
+
+start = 1
+end   = 5
+step  = 2
+eq '1,2,3,4,5' String [start to  end]
+eq '1,2,3,4'   String [start til end]
+eq '2,3,4,5'   String [3 - 1 to  end]
+eq '3,4'       String [3     til end]
+eq '3,5'       String [start + 2 to  end by step ]
+eq '1,3,5'     String [1     to  end by step ]
+eq '1,3'       String [start til 5   by step ]
+eq '1,5'       String [start to  end by 4    ]
+eq '5,3'       String [5     til 1   by -step]
+eq '1,3,5'     String [start to  5   by 2    ]
+eq '1,3,5'     String [1     to  5   by 2    ]
+
+to = 3
+eq 3 to
 
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Boolean/Number should be indexable.

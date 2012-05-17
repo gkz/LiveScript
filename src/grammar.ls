@@ -225,6 +225,13 @@ bnf =
     o 'LABEL Expression' -> new Label $1, $2
     o 'LABEL Block'      ditto
 
+    o '[ Expression TO Expression ]'
+    , -> new Parens(new For index: \__rangeRef, from: $2, op: $3, to: $4 
+                     .addBody Block Var \__rangeRef)
+    o '[ Expression TO Expression BY Expression ]'
+    , -> new Parens(new For index: \__rangeRef, from: $2, op: $3, to: $4, step: $6 
+                     .addBody Block Var \__rangeRef)
+
   # Keys and values.
   KeyValue:
     o \Key
