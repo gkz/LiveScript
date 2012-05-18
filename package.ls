@@ -16,7 +16,7 @@ licenses :
   type: \MIT, url: \https://raw.github.com/gkz/LiveScript/master/LICENSE
   ...
 
-engines     : node: '>= 0.6.15'
+engines     : node: '>= 0.6.14 < 0.9.0'
 directories : lib: \./lib
 files       : [\lib]
 
