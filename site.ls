@@ -21,7 +21,14 @@ $ ->
         e.message
     if result?
       console?.log result
-      result = JSON.stringify result if action in <[ lex tokens ]>
+      if action in <[ lex tokens ]>
+        lns = []
+        for [tag, val, line]  in result
+          lns[line] ?= [] 
+          lns[line].push if val is tag.toLowerCase! then tag else "#tag:#val"
+        for line, i in lns 
+          lns[i] = line?join(' ')replace /\n/g \\\n or ''
+        result = lns * \\n
       result = _.escape result
       result = result.replace /\n/g, '<br>' .replace /\ /g, \&nbsp;
       if action is \compile and not error
