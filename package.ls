@@ -1,5 +1,5 @@
 name    : \LiveScript
-version : \0.9.1
+version : \0.9.2
 
 description : 'LiveScript is a language the compiles down to JavaScript, it is Coco but much more compatible with CoffeeScript, more functional, and more feature rich.'
 keywords    :
