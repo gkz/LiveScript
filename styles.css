@@ -102,6 +102,20 @@ body {
   padding-top: 32px;
   padding-bottom: 40px;
 }
+.content .major-actions {
+  width: 100%;
+  overflow: auto;
+}
+.content .major-actions  > h1,
+.content .major-actions a,
+.content .major-actions iframe {
+  display: block;
+  float: left;
+  margin-right: 10px;
+}
+.content .major-actions iframe {
+  margin-top: 4px;
+}
 .content .section {
   margin-bottom: 20px;
 }
