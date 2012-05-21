@@ -2085,6 +2085,8 @@ function __extend(sub, sup){
         <li>Change all your block comments <code>### ###</code> to <code>/* */</code>
         <li>Change any range syntax creating lists from <code>[x..y]</code> to <code>[x to y]</code> and change <code>[x...y]</code> to <code>[x til y]</code>
         <li>Similarly, change any range syntax in for loops from <code>for i in [x..y]</code> to <code>for i from x to y</code> and change <code>for i in [x...y]</code> to <code>for i from x til y</code>
+        <li>Change any list comprehensions from <code>(x for x in list)</code> to <code>[x for x in list]</code>. Any postfix loops which you do not want returning a list change to not postfixed, eg. change <code>increase x for x in list</code> to <code>for x in list then increase x</code>. 
+        <li>Change any list comprehensions from <code>(x for x in list)</code> to <code>[x for x in list]</code>. Any postfix loops which you do not want returning a list, change to not postfixed, eg. change <code>increase x for x in list</code> to <code>for x in list then increase x</code>. You can shave characters if you wish by using the alias to <code>then</code>, the fat arrow <code>=></code>
         <li>Change any number literals starting with a dot, eg. <code>.5</code> to start with a zero <code>0.5</code>
         <li>Change any regular expression literals from <code>/// ///</code> to <code>// //</code>
         <li>Change any splats you are using from <code>(args...) -></code> to be prefixed like <code>(...args) -></code>
