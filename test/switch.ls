@@ -29,7 +29,7 @@ eq func(8), void
 # One-liner
 eq void, switch case 1 then break
 eq 1   , switch case 0 then break default 1
-eq 2   , switch case 1 then continue while 0; 2
+eq 2   , switch case 1 then (while 0 then continue); 2
 eq 3   , do -> switch -> 0 case 1 then -> 2 default 3
 
 

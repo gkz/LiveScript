@@ -71,11 +71,11 @@ a = [((x) -> x), ((x) -> x * x)]
 eq a.length, 2
 
 sum  = 0
-sum += n for n in [
+for n in [
   1, 2, 3,
   4  5  6
   7, 8  9
-]
+] then sum += n
 eq sum, 45
 
 
@@ -297,7 +297,7 @@ eq obj.one[2].a     ,'b'
 eq obj.red.indigo   ,'violet'
 eq obj.oddent + '' ,',,,'
 eq obj.red.orange.yellow.green, 'blue'
-eq 2, (key for key of obj.red).length
+eq 2, [key for key of obj.red].length
 
 
 # As part of chained calls.
@@ -371,7 +371,7 @@ eq obj.splatMe, 'too'
 ok obj.key is obj.s is obj[1/2]
 
 eq 'braceless dynamic key',
-  (key for key of """braceless #{ 0 of ((0):(0)) and 'dynamic' } key""": 0)[0]
+  [key for key of """braceless #{ 0 of ((0):(0)) and 'dynamic' } key""": 0][0]
 
 obj =
   one: 1

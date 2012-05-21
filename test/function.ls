@@ -7,7 +7,7 @@ eq I (), I( )
 
 # The empty function should not cause a syntax error.
 ->
-(0 while 0).pop()
+(while 0 then 0).pop()
 
 
 # Multiple nested function declarations mixed with implicit calls should not
@@ -194,7 +194,7 @@ throws 'misplaced function declaration on line 1', ->
 # Returns with multiple branches.
 func = ->
   if it
-    return n for n in [1, 2]
+    for n in [1, 2] then return n
   else
     0
 eq func(0), 0
@@ -202,7 +202,7 @@ eq func(1), 1
 
 
 # Don't gather results from a loop that _jumps_ out of a closure.
-findIt = (items) -> return item if item is 'bacon' for item in items
+findIt = (items) -> for item in items then return item if item is 'bacon' 
 eq 'bacon', findIt [1, 2, 3, 'bacon', 4, 5]
 eq void   , findIt []
 
@@ -265,7 +265,7 @@ eq(area(
 
 sumOfArgs = ->
   sum = 0
-  sum += val for val in arguments
+  for val in arguments then sum += val
   sum
 
 eq 15, sumOfArgs(1, 2, 3, 4, 5)
@@ -316,7 +316,7 @@ eq 1, do []= (a || 0 || 1) -> a
 
 eq arguments,
   switch case 1
-    eq arguments, (arguments for i to 0)0
+    eq arguments, (for i to 0 then arguments)0
     arguments
 
 

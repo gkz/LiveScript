@@ -66,6 +66,7 @@ bnf =
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
+    o '[ Expression LoopHeads ]'  -> Chain new Parens $3.0.makeComprehension $2, $3.slice 1 
 
   # Array/Object
   List:
@@ -175,7 +176,8 @@ bnf =
     o 'Chain !?' -> Existence $1.unwrap!, true
 
     # The function literal can be either anonymous with `->`,
-    o 'PARAM( ArgList OptComma )PARAM -> Block' -> L Fun $2, $6, $5.charAt(0) is \~, $5 in <[ --> ~~> ]>
+    o 'PARAM( ArgList OptComma )PARAM -> Block' 
+    , -> L Fun $2, $6, $5.charAt(0) is \~, $5 in <[ --> ~~> ]>
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
 
@@ -189,7 +191,6 @@ bnf =
     # to execute, postfix with a single expression, or postconditional.
     o 'LoopHead Block'            -> $1.addBody $2
     o 'LoopHead Block ELSE Block' -> $1.addBody $2 .addElse $4
-    o 'Expression LoopHead' -> $2.addBody Block $1
     o 'DO Block WHILE Expression'
     , -> new While($4, $3 is \until, true)addBody $2
 
@@ -321,6 +322,10 @@ bnf =
     o 'WHILE Expression , Expression CASE Expression'
     , -> new While $2, $1 is \until, $4 .addGuard $6
 
+  LoopHeads:
+    o 'LoopHead'           -> [$1]
+    o 'LoopHeads LoopHead' -> $1 +++ $2
+
   Cases:
     o       'CASE Exprs Block' -> [new Case $2, $3]
     o 'Cases CASE Exprs Block' -> $1 +++ new Case $3, $4
@@ -361,7 +366,7 @@ operators =
 tokens = do
   for name, alts of bnf
     for alt in alts
-      token if token not of bnf for token in alt.0
+      (token for token in alt.0 when token not of bnf)
 .join ' '
 
 bnf.Root = [[[\Body] 'return $$']]

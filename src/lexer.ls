@@ -439,7 +439,7 @@ exports import
         arrow = \->
         @tokens.pop! # remove the )CALL
         @token \)PARAM \) # add )PARAM
-        break if t.0 is \CALL( for t, i in @tokens by -1 # find opening CALL
+        for t, i in @tokens by -1 when t.0 is \CALL( then break # find opening CALL
         # remove opening call, replace with assign and param
         @tokens.splice i, 1, [tag, val, @line], [\PARAM( \( @line]
         # if 'id@(params) = something' then 'id = (params) ~> something'
@@ -560,7 +560,7 @@ exports import
       @last.0 = \)PARAM
       return
     if arrow is \-> then @token \PARAM( '' else
-      break if t.0 in <[ NEWLINE INDENT THEN => ( ]> for t, i in @tokens by -1
+      for t, i in @tokens by -1 when t.0 in <[ NEWLINE INDENT THEN => ( ]> then break
       @tokens.splice i+1 0 [\PARAM( '' t.2]
     @token \)PARAM ''
 
@@ -599,7 +599,7 @@ exports import
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
         delta  = str.length - clone.rest.length
         {rest: str, @line} = clone
-        nested.shift! while nested.0?0 is \NEWLINE
+        while nested.0?0 is \NEWLINE then nested.shift! 
         if nested.length
           nested.unshift [\( \( nested.0.2]
           nested.push    [\) \) @line]
@@ -671,7 +671,7 @@ exports import
   able: (call) -> not @last.spaced and able @tokens, null call
 
   # Increments `@line` by the number in newlines in a string.
-  countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
+  countLines: -> (while pos = 1 + it.indexOf \\n pos then ++@line); it
 
   # Checks FOR for FROM/TO.
   forange: -> @tokens[*-2]?0 is \FOR and import {-seenFor, +seenFrom}
@@ -712,7 +712,7 @@ then (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
 # Detects the minimum indent count for a heredoc, ignoring empty lines.
 function heretabs doc
   dent = 0/0
-  dent <?= that.0.length - 1 while TABS.exec doc
+  while TABS.exec doc then dent <?= that.0.length - 1 
   dent
 TABS = /\n[^\n\S]*(?!$)/mg
 
@@ -758,7 +758,7 @@ character = if JSON!? then uxxxx else ->
 # Tag postfix conditionals as such, so that we can parse them with a
 # different precedence.
 !function tagPostfixConditionals tokens
-  detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i in tokens
+  for token, i in tokens when token.0 is \IF then detectEnd tokens, i+1, ok, go 
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
 
@@ -878,7 +878,7 @@ character = if JSON!? then uxxxx else ->
     continue unless pre.0 in <[ : ASSIGN IMPORT ]> or stack[*-1]?0 is not \{
     stack.push [\{]
     inline = not pre.doblock and pre.0 not in <[ NEWLINE INDENT ]>
-    index -= 2 while tokens[index-2]?0 is \COMMENT
+    while tokens[index-2]?0 is \COMMENT then index -= 2 
     tokens.splice index, 0 [\{ \{ tokens[index]2]
     detectEnd tokens, ++i+1, ok, go
   function ok token, i

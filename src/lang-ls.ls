@@ -1,7 +1,7 @@
 # LiveScript language plugin for
 # [google-code-prettify](http://code.google.com/p/google-code-prettify/).
 tint = (ext, shortcuts, fallthroughs) ->
-  rule.splice 2 0 0 if rule.length < 4 for rule in shortcuts
+  for rule in shortcuts when rule.length < 4 then rule.splice 2 0 0
   PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
 
 ident = /(?:[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*)/$

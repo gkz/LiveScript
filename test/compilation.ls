@@ -68,7 +68,7 @@ while (0) {
     ({}), {};
   }
 }
-''', LiveScript.compile '({};{}) while 0 while 0' bare
+''', LiveScript.compile 'while 0 then while 0 then ({};{})' bare
 
 
 throws 'invalid use of null on line 1', -> LiveScript.compile 'null.po'

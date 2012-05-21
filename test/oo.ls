@@ -93,7 +93,7 @@ class Mini
         ~> @num * i
   num: 10
 
-eq (func() for func in new Mini().generate()) + '', '10,20,30'
+eq [func() for func in new Mini().generate()] + '', '10,20,30'
 
 # A bound function in a bound method with secondary function syntax
 class Mini2
@@ -103,7 +103,7 @@ class Mini2
         ~> @num * i
   num: 10
 
-eq (func() for func in new Mini2().generate()) + '', '10,20,30'
+eq [func() for func in new Mini2().generate()] + '', '10,20,30'
 
 # Test classes wrapped in decorators.
 func = (klass) ->
