@@ -126,6 +126,9 @@ eq 25, singleLiner[*-1]
 comp = ["#x#y" for x in [1 2 3] for y in [\a \b \c]] 
 eq "#comp", '1a,1b,1c,2a,2b,2c,3a,3b,3c'
 
+pythagoreanTriples = [[x,y,z] for x in [1 to 20] for y in [x to 20] for z in [y to 20] when x^2 + y^2 == z^2]
+eq "#{ pythagoreanTriples * \_ }", '3,4,5_5,12,13_6,8,10_8,15,17_9,12,15_12,16,20'
+
 # Comprehensions within parentheses.
 result = null
 store = -> result := it
