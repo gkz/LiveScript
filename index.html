@@ -934,6 +934,7 @@ for val, i in [7 8 9]
   val 
 
 
+
 for key, val of {one: 1, two: 2}
   key
 
@@ -941,8 +942,27 @@ for key, val of {one: 1, two: 2}
 
 
 # Comprehension
-list = (x + 1 for x to 10 by 2 when x isnt 4)
+[x + 1 for x to 10 by 2 when x isnt 4]
 #=> [1, 3, 7, 9, 11]
+
+
+
+
+
+
+
+["#x#y" for x in [\a \b] for y in [1 2]]
+#=> [ 'a1', 'a2', 'b1', 'b2' ]
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -960,6 +980,8 @@ until n > 7 when n isnt 3
 else
   10
 
+
+
 # do while loop
 i = 0
 do
@@ -969,7 +991,7 @@ while list[i] isnt 9
 # while accepts an updated clause
 # can be postfix too
 i = 0
-i while list[i] isnt 9, i++
+while list[i] isnt 9, i++ then i
 
 # while true
 loop
@@ -985,11 +1007,12 @@ for ever
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var i, val, key, x, list, n, __ref, __len, 
-  __res, __run;
+var i, val, key, x, y, n, __ref, __len, __run;
+
 for (i = 1; i <= 10; i += 3) {
   i;
 }
+
 
 
 
@@ -1005,17 +1028,38 @@ for (key in __ref = {
   val = __ref[key];
   key;
 }
-__res = [];
-for (x = 0; x <= 10; x += 2) {
-  if (x !== 4) {
-    __res.push(x + 1);
+(function(){
+  var __results = [];
+  for (x = 0; x <= 10; x += 2) {
+    if (x !== 4) {
+      __results.push(x + 1);
+    }
   }
-}
-list = __res;
+  return __results;
+}());
+(function(){
+  var __i, __ref, __len, __j, __ref1, 
+    __len1, __results = [];
+  for (__i = 0, 
+      __len = (__ref = ['a', 'b']).length;
+      __i < __len; ++__i) {
+    x = __ref[__i];
+    for (__j = 0,
+        __len1 = (__ref1 = [1, 2]).length;
+        __j < __len1; ++__j) {
+      y = __ref1[__j];
+      __results.push(x + "" + y);
+    }
+  }
+  return __results;
+}());
 i = 0;
 while (n < 9) {
   n = list[++i];
 }
+
+
+
 i = 1;
 while (!(n > 7)) {
   __run = true;
@@ -1038,7 +1082,7 @@ for (; list[i] !== 9; i++) {
 }
 for (;;) {
   'ha';
-  if (++i > 100) {
+  if (++i > 50) {
     break;
   }
 }
@@ -1047,7 +1091,8 @@ for (;;) {
   if (++i > 100) {
     break;
   }
-}</pre>
+}
+</pre>
         </div>
       </div>
     </div>
