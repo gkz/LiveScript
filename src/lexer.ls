@@ -1073,7 +1073,7 @@ OPENERS = <[ ( [ { CALL( PARAM( INDENT ]>
 CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
 
 # The inverse mappings of {OPEN,CLOS}ERS to look things up from either end.
-INVERSES = new -> import (c = CLOSERS[i]): o, (o): c for o, i in OPENERS
+INVERSES = new -> for o, i in OPENERS then import (c = CLOSERS[i]): o, (o): c 
 
 # Tokens that can start a dot/call chain.
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>

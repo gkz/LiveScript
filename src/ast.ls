@@ -173,7 +173,7 @@ exports.fromJSON = function
     node = ^exports[that]::
     for key, val of it then node[key] = fromJSON val  
     return node
-  if it.length? then (fromJSON v for v in it) else it
+  if it.length? then [fromJSON v for v in it] else it
 
 #### Modules
 
@@ -279,7 +279,7 @@ class exports.Block extends Node
   # Compile to a comma-separated list of expressions.
   compileExpressions: (o, level) ->
     {lines} = this; i = -1
-    lines.splice i-- 1 if that.comment while lines[++i]
+    while lines[++i] then lines.splice i-- 1 if that.comment 
     lines.push Literal \void unless lines.length
     lines.0 <<< {@front}; lines[*-1] <<< {@void}
     return lines.0.compile o, level unless lines.1
@@ -621,7 +621,7 @@ class List extends Node
     {indent, level} = o
     o <<< indent: indent + TAB, level: LEVEL_LIST
     code  = items[i = 0]compile o
-    code += ', ' + that.compile o while items[++i]
+    while items[++i] then code += ', ' + that.compile o 
     code  = "\n#{o.indent}#code\n#indent" if ~code.indexOf \\n
     o <<< {indent, level}
     code
@@ -735,7 +735,7 @@ class exports.Arr extends List
 
   isArray: YES
 
-  asObj: -> Obj(Prop Literal(i), item for item, i in @items)
+  asObj: -> Obj([Prop Literal(i), item for item, i in @items])
 
   # `base[x, ...y]` => `[base[x], ...base[y]]`
   toSlice: (o, base) ->
@@ -852,7 +852,7 @@ class exports.Unary extends Node
   # `^delete o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
   compileSpread: (o) ->
     {it} = this; ops = [this]
-    ops.push it while it instanceof .., it.=it
+    while it instanceof .., it.=it then ops.push it 
     return '' unless it.=expandSlice(o)unwrap! instanceof Arr
                  and (them = it.items)length
     for node, i in them
@@ -1109,7 +1109,7 @@ class exports.Assign extends Node
       [left, reft] = Chain(left)cacheReference o
       right = Binary op.slice(0 -1), reft, right
       op    = \:=
-    right.=it while right instanceof Parens and not right.keep
+    while right instanceof Parens and not right.keep then right.=it 
     right.ripName left.=unwrap!
     lvar = left instanceof Var
     sign = op.replace \: ''
@@ -1435,7 +1435,7 @@ class exports.Fun extends Node
         names.push name = scope.add vr.value, \arg
         p.carp "duplicate parameter \"#name\"" unless dic"#name." = dic"#name." ^^^ 1
     if rest
-      rest.unshift Arr! while splace--
+      while splace-- then rest.unshift Arr! 
       assigns.push Assign Arr(rest), Literal \arguments
     @body.prepend ...assigns if assigns.length
     names.join ', '
@@ -1828,10 +1828,12 @@ class exports.Case extends Node
   compileCase: (o, tab, nobr, bool) ->
     tests = for test in @tests
       test.=expandSlice(o)unwrap!
-      if test instanceof Arr then t for t in test.items else test
+      if test instanceof Arr 
+        for t in test.items then t 
+      else test
     tests.length or tests.push Literal \void
     if bool
-      [t] = tests; i = 0; t = Binary \|| t, that while tests[++i]
+      [t] = tests; i = 0; while tests[++i] then t = Binary \|| t, that 
       tests = [(@<<<{t, aSource: \t, aTargets: [\body]})anaphorize!invert!]
     code = ''
     for t in tests then code += tab + "case #{ t.compile o, LEVEL_PAREN }:\n" 

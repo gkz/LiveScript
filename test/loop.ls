@@ -123,6 +123,8 @@ eq multiLiner.length, singleLiner.length
 eq 25,  multiLiner[*-1]
 eq 25, singleLiner[*-1]
 
+comp = ["#x#y" for x in [1 2 3] for y in [\a \b \c]] 
+eq "#comp", '1a,1b,1c,2a,2b,2c,3a,3b,3c'
 
 # Comprehensions within parentheses.
 result = null
