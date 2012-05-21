@@ -228,7 +228,7 @@ upCaseName = -> it.name .= toUpperCase!
 
 # Curried functions using -->
 each = (f, list) -->
-  f x for x in list
+  for x in list then f x
   list
 
 
@@ -248,7 +248,7 @@ sortBy = (prop, list) --> list.sort (a, b) ->
 
 
 # List comprehensions, destructuring, piping
-({id:id1, name, age} for {id:id1, name} in table1 when id1 is id2 for {id:id2, age} in table2) 
+[{id:id1, name, age} for {id:id1, name} in table1 for {id:id2, age} in table2 when id1 is id2]
 |> sortBy \id
 |> each upCaseName
 |> JSON.stringify
