@@ -38,8 +38,14 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Changelog
 
+### 0.7.2
+- Revised accessor. ([#5](https://github.com/satyr/coco/issues/5))
+- Allowed implicit array after some unary operators.
+- Added named backcall: `<-:f g` => `g(:f ->)`
+- Made `{[q]:p}` short for `{p: [q]:p}`.
+
 ### 0.7.1
-- Added `export` statement. ([#121](https://github.com/satyr/coco/issues/81))
+- Added `export` statement. ([#121](https://github.com/satyr/coco/issues/121))
 - Made `{{q}:p}` short for `{p: {q}:p}`.
 - Allowed keyword literals as object shorthand: `{true}` => `{true: true}`
 - Allowed decimals and `$` in number comments.

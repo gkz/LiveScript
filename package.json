@@ -1,6 +1,6 @@
 {
   "name": "coco",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Unfancy CoffeeScript",
   "keywords": [
     "language",
@@ -18,7 +18,7 @@
     }
   ],
   "engines": {
-    "node": ">= 0.6.15"
+    "node": ">= 0.6.14"
   },
   "directories": {
     "lib": "./lib"
