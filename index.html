@@ -954,7 +954,7 @@ while n < 9
 # until == while not
 # while/until can also accept when guard
 # else clause executes if loops doesn't run
-i = 0
+i = 1
 until n > 7 when n isnt 3
   n = list[++i]
 else
@@ -964,19 +964,22 @@ else
 i = 0
 do
   i++
-while list[i] isnt 5  
+while list[i] isnt 9 
 
 # while accepts an updated clause
 # can be postfix too
 i = 0
-i while list[i] isnt 5, i++
+i while list[i] isnt 9, i++
 
 # while true
 loop
   \ha
+  break if ++i > 100
 
 for ever
   \ha
+  if ++i > 100
+     break
 </pre>
         </div>
         <div class="example-js">
@@ -1013,7 +1016,7 @@ i = 0;
 while (n < 9) {
   n = list[++i];
 }
-i = 0;
+i = 1;
 while (!(n > 7)) {
   __run = true;
   if (n !== 3) {
@@ -1025,21 +1028,26 @@ while (!(n > 7)) {
 i = 0;
 do {
   i++;
-} while (list[i] !== 5);
+} while (list[i] !== 9);
 
 
 
 i = 0;
-for (; list[i] !== 5; i++) {
+for (; list[i] !== 9; i++) {
   i;
 }
 for (;;) {
   'ha';
+  if (++i > 100) {
+    break;
+  }
 }
 for (;;) {
   'ha';
-}
-</pre>
+  if (++i > 100) {
+    break;
+  }
+}</pre>
         </div>
       </div>
     </div>
