@@ -590,10 +590,15 @@ class exports.Call extends Node
     Parens(Chain fun, [Call(args) <<< {method}]; true) <<< {+calling}
 
   @back = (params, node, bound) ->
-    node.=it if noret = node.op is \!
+    fun = Fun params,, bound
+    node.=it if fun.void = node.op is \!
+    if node instanceof Label
+      fun <<< {name: node.label, +labeled}
+      node.=it
+    node.=it if not fun.void and fun.void = node.op is \!
     {args} = node.getCall! or (node = Chain node .add Call!)getCall!
-    for a, index in args then break if a.filler 
-    node <<< back: (args[index] = Fun(params,, bound) <<< void: noret)body
+    for a, index in args when a.filler then break
+    node <<< back: (args[index] = fun)body
 
   @let = (args, body) ->
     params = for a, i in args

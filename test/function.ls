@@ -1,5 +1,8 @@
 I = (x) -> x
-eq I, I I
+M = (x) -> x x
+
+eq I, M I
+
 
 # Bare calls.
 eq I (), I( )
@@ -363,9 +366,8 @@ eq ok, do
 
 new
   me = this
-  f <~ I
+  f <~ M
   eq me, this
-  <- ->
   eq \function typeof f
 
 eq 3 do
@@ -455,8 +457,8 @@ with 0 then let x = 1, y = 2
 eq void do !-> true
 eq void do !~> true
 eq void do
-  <-! run = -> it!
-  <~! run ...
+  <-! M
+  <~! M
   !function C then C
   ok new C instanceof C
   true
@@ -561,9 +563,16 @@ eq 1 multiLine 1
 
 ### explicit naming
 let
-  do f = :a ->
-    a.b = \c
-  eq f.b, \c
+  do a = :b -> eq a, b
+  do c = :d!-> eq c, d
+  do e = !:f-> eq e, f
+let
+  a <-:b  M
+  c <-:d! M
+  e <-!:f M
+  eq a, b
+  eq c, d
+  eq e, f
 
 ### composing
 timesTwo = -> it * 2

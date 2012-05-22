@@ -344,12 +344,12 @@ f = ({p, q}: o?) ->
 f {2 3}
 f (   )
 
-o = {a: {\b \c}}
-{{b, c}:a, {d}:e ? {d: {}}} = o
+o = a: {\b \c}
+{{b, c}:a, [d]:e ? [{}]} = o
 eq a, o.a
 eq b, \b
 eq c, \c
-eq d, e.d
+eq d, e.0
 
 
 ### Unary Assign
