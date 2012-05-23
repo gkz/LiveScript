@@ -820,6 +820,12 @@ dog = new
   @name = \spot
   @mutt = true
 
+# Infix application
+add = (x, y) -> x + y
+3 `add` 4 #=> 7
+
+
+
 # Bound functions using ~> (wavy arrow)
 thisParam = (param) ~> this[param]
 # Bound functions have 'this' lexically bound,
@@ -837,7 +843,7 @@ thisParam = (param) ~> this[param]
 var square, cube, setPersonParams, person,
   length, returnNothing, alsoReturnsNothing,
   times, timesTwo, alsoCurriedTimes, dog,
-  thisParam, __this = this;
+  add, thisParam, __this = this;
 square = function(x){
   return x * x;
 };
@@ -900,6 +906,12 @@ dog = new function(){
   this.name = 'spot';
   this.mutt = true;
 };
+
+add = function(x, y){
+  return x + y;
+};
+add(3, 4);
+
 
 thisParam = function(param){
   return __this[param];
@@ -2136,6 +2148,7 @@ f
 f do
   a: b
 </pre>
+      <li>Remove any JavaScript code literals, eg. <code>`js code here`</code>. That functionality is no longer availible in LiveScript. Rewrite the code to use LiveScript instead. 
       </ul>
     </div>
     <div id="comparison-table" class="section">
@@ -2268,6 +2281,8 @@ TOTAL    851 ms
       <li>Allowed expression in range syntax, eg. <code>[x to y/2]</code> instead of just number literals. This has the side effect of removing naked ranges, eg. <code>2 to 5</code> without enclosing brackets (for loops remain unchanged). Rationale: expressions in ranges are useful, much more than naked ranges which have really limited use. Also closer to CoffeeScript, easing transition again. 
       <li>Changed CLI to bare compilation so that defined variables are attached to global scope.
       <li>Added list comprehensions (eg. <code>[x for x in list when x is \something]</code>) and removed postfix loops (eg. <code>something x for x in list</code>). Comprehensions always return a list. Nested list comprehensions behave properly, ie. the last for is the inner most loop. Rationale: following Haskell and Python. More consistent behavior. Easier to deal with in your head. More intuitive. 
+      <li>Removed JS literals, eg. <code>`js code here`</code>. Rationale: it was unneccasry, and it freed up backticks.
+      <li>Add infix function application, eg. <code>3 `add` 2</code>. Rationale: as in Haskell. Could be useful. 
       </ul>
     </div>
     <hr>
