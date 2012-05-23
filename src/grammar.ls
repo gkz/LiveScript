@@ -359,7 +359,7 @@ operators =
   <[ right    POWER ^      ]>
   <[ right    COMPOSE      ]>
   <[ nonassoc CREMENT      ]>
-  <[ right    BACKTICK     ]>
+  <[ left     BACKTICK     ]>
 
 # Wrapping Up
 # -----------
