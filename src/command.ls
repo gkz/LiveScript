@@ -1,4 +1,3 @@
-`#!/usr/bin/env node`
 # The `LiveScript` utility.
 
 {argv} = process

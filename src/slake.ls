@@ -1,4 +1,3 @@
-`#!/usr/bin/env node`
 # `slake` is a simplified version of [Make](http://www.gnu.org/software/make/)
 # ([Rake](http://rake.rubyforge.org/), [Jake](http://github.com/280north/jake))
 # for LiveScript. You define tasks with names and descriptions in a Slakefile,
