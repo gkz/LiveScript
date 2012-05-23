@@ -583,3 +583,14 @@ plusOneTimesTwo = timesTwo << plusOne
 
 eq 5 timesTwoPlusOne 2
 eq 6 plusOneTimesTwo 2
+
+### infix calls
+add = (x, y) -> x + y
+times = (x, y) -> x * y
+elem = (x, xs) -> x in xs
+
+eq 7, 3 `add` 4
+eq 8, 3 + 2 `add` add 2 1
+eq 25, 2 `add` 3 + 4 `times` 5
+eq 17, 2 `add` 3 `times` 5
+ok 3 `elem` [1 to 10]

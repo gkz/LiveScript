@@ -398,22 +398,6 @@ eq a * b, 21
 
 eq 11, ((, a) -> a)(, 11)
 
-### JS Literal
-
-eq '\\`', `
-  // Inline JS
-  "\\\`"
-`
-
-i = 3
-`LABEL:`
-while --i then while --i then `break LABEL`
-eq i, 1
-
-`not` = -> !it
-eq false `not` true
-
-
 ### String/Array multiplication
 x = \x
 n = 4

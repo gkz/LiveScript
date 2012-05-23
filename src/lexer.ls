@@ -68,7 +68,6 @@ exports import
         | \*        => i += @doComment code, i
         | \/        => i += @doHeregex code, i
         | otherwise =>      i += @doRegex code, i or @doLiteral code, i
-      | \`        => i += @doJS code, i
       | otherwise => i += @doID code, i or @doLiteral code, i or @doSpace code, i
     # Close up all remaining open blocks.
     @dedent @dent
@@ -261,12 +260,6 @@ exports import
     else @last.spaced = true
     @countLines(comment)length
 
-  # Matches embedded JavaScript.
-  doJS: (code, JSTOKEN.lastIndex) ->
-    js = JSTOKEN.exec code .0 or @carp 'unterminated JS literal'
-    @token \LITERAL Object(detab js.slice(1 -1), @dent) <<< {+js}, true
-    @countLines(js)length
-
   # Matches a regular expression literal aka _regex_,
   # disambiguating from division operators.
   doRegex: (code, index) ->
@@ -376,6 +369,7 @@ exports import
       tag = \CASE
       return sym.length if @doCase! 
     case \|> \|>>        then tag = \PIPE
+    case \`              then tag = \BACKTICK
     case \<< \>>         then tag = \COMPOSE
     case \<|             then tag = \BACKPIPE
     case \+ \-           then tag = \+-
@@ -1037,12 +1031,12 @@ SYMBOL = //
 | \|                          # case
 | =>                          # then
 | \*\*=? | \^                 # pow
+| `                           # backtick
 | [^\s#]?
 //g
 SPACE     = /(?=.)[^\n\S]*(?:#.*)?|/g
 MULTIDENT = /(?:\s*#.*)*(?:\n([^\n\S]*))+/g
 SIMPLESTR = /'[^\\']*(?:\\[\s\S][^\\']*)*'|/g
-JSTOKEN   = /`[^\\`]*(?:\\[\s\S][^\\`]*)*`|/g
 BSTOKEN   = // \\ (?: (\S[^\s,;)}\]]*) | \s* ) //g
 
 NUMBER = //

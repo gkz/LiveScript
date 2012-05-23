@@ -131,6 +131,8 @@ bnf =
 
   # All the different types of expressions in our language.
   Expression:
+    o 'Expression BACKTICK Chain BACKTICK Expression' -> $3.add Call [$1, $5]
+
     o \Chain -> $1.unwrap!
 
     o 'Chain ASSIGN Expression'
@@ -357,6 +359,7 @@ operators =
   <[ right    POWER ^      ]>
   <[ right    COMPOSE      ]>
   <[ nonassoc CREMENT      ]>
+  <[ right    BACKTICK     ]>
 
 # Wrapping Up
 # -----------
