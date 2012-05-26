@@ -187,17 +187,19 @@ switch
 !function repl
   argv.1 = \repl
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
-  code  = ''
+  # repl.infunc = false unless repl.infunc?
+  code  = if repl.infunc then '  ' else ''
   cont  = false
-  repl  = require(\readline)createInterface process.stdin, process.stdout
+  readline  = require(\readline)createInterface process.stdin, process.stdout
   reset = !->
-    repl.line = code := ''
-    repl.prompt!
-  ({_ttyWrite} = repl)_ttyWrite = (char) ->
-    cont := char is \\n
+    readline.line = code := ''
+    readline.prompt!
+  ({_ttyWrite} = readline)_ttyWrite = (chr) ->
+    cont := chr in [ \\n, \> ]
     _ttyWrite ...
   prompt = \livescript
   prompt += " -#that" if [\b if o.bare; \c if o.compile]join ''
+  LiveScript.history = readline.history if LiveScript?
   unless o.compile
     module.paths = module.._nodeModulePaths \
       module.filename = process.cwd! + \/repl
@@ -208,14 +210,16 @@ switch
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
         cb err, res
-    repl.completer = server~complete
-  repl.on \attemptClose !->
-    if repl.line or code then say ''; reset! else repl.close!
-  repl.on \close process.stdin~destroy
-  repl.on \line !->
-    if cont
+    readline.completer = server~complete
+  readline.on \attemptClose !->
+    if readline.line or code then say ''; reset! else readline.close!
+  readline.on \close process.stdin~destroy
+  readline.on \line !->
+    repl.infunc = false if it.match(/^\s*$/) # close with a blank line
+    cont = repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or it.match(/^!?function /)
+    if cont or repl.infunc
       code += it + \\n
-      repl.output.write \. * prompt.length + '. '
+      readline.output.write \. * prompt.length + '. '
       return
     code += it
     try
@@ -228,14 +232,14 @@ switch
         _ !? global <<< {_}
         pp  _
         say _ if typeof _ is \function
-        for name of lsv = LiveScript.savedScope.variables when \__ is name.slice 0, 2
+        for name of lsv = LiveScript.savedScope?.variables when \__ is name.slice 0, 2
           delete lsv[name]
           global[name - \.] = void
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"
-  repl.setPrompt "#prompt> "
-  repl.prompt!
+  readline.setPrompt "#prompt> "
+  readline.prompt!
 
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
 # to it, preserving the other options.
