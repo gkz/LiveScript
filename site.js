@@ -1,5 +1,6 @@
 (function(){
   var __join = [].join;
+  __import(this, prelude);
   $(function(){
     var example, src, boom, __i, __ref, __len;
     for (__i = 0, __len = (__ref = $('.example .example-ls')).length; __i < __len; ++__i) {
@@ -85,6 +86,11 @@
       offset: 0
     });
   });
+  function __import(obj, src){
+    var own = {}.hasOwnProperty;
+    for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+    return obj;
+  }
   function __curry(f, args){
     return f.length ? function(){
       var params = args ? args.concat() : [];

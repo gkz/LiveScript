@@ -1,3 +1,4 @@
+import prelude
 $ ->
   for example in $ '.example .example-ls'
     src = $ example .find \.lang-ls .html!
