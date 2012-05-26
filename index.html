@@ -20,6 +20,7 @@
 <script src="lang-ls-0.9.4.js"></script>
 
 <script src="underscore-min.js"></script>
+<script src="prelude-min-0.1.0.js"></script>
 
 <link href="styles.css" rel="stylesheet">
 
@@ -50,6 +51,7 @@
         <li><a href="#installation">Installation</a></li> 
         <li><a href="#editor-support">Text Editor Support</a></li> 
         <li><a href="#usage">Usage</a></li> 
+        <li><a href="#prelude-ls">Standard Library</a></li>
         <li class="divider">
         <li><a href="#reference">Reference</a></li> 
         <li><a href="#literals">Literals</a></li> 
@@ -380,6 +382,18 @@ function __curry(f, args){
         <tr><td>-v, --version</td><td>display version</td></tr>
         <tr><td>-h, --help</td><td>display this</td></tr>
       </table>
+    </div>
+    <div id="prelude-ls" class="section">
+      <a name="prelude-ls">
+      <h2>Standard Libaray</h2>
+      <p><a href="https://github.com/gkz/prelude-ls">prelude.ls</a> is the recommended library when using LiveScript. It allows you to do things such as:
+
+<pre class="prettyprint lang-ls">
+[1 2 3] |> map times 2 |> filter gt 3 |> fold1 add 
+#=> 10
+</pre>
+
+<p>It is loaded on this page and you can use it when running things in the compiler to the right.
     </div>
     <hr>
     <div id="reference" class="section">
