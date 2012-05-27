@@ -63,9 +63,10 @@ bnf =
 
     o 'Chain ?' -> Chain Existence $1.unwrap!
 
-    o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $1, $3, $6
+    o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
+    o '[ Expression LoopHeads ]'  -> Chain new Parens $3.0.makeComprehension $2, $3.slice 1 
 
   # Array/Object
   List:
@@ -130,6 +131,8 @@ bnf =
 
   # All the different types of expressions in our language.
   Expression:
+    o 'Expression BACKTICK Chain BACKTICK Expression' -> $3.add Call [$1, $5]
+
     o \Chain -> $1.unwrap!
 
     o 'Chain ASSIGN Expression'
@@ -138,9 +141,9 @@ bnf =
     , -> Assign $1.unwrap!, Arr.maybe($4), $2
 
     o 'Expression IMPORT Expression'
-    , -> Import $1, $3           , $2 is \<<<
+    , -> Import $1, $3           , $2 is \<<<<
     o 'Expression IMPORT INDENT ArgList OptComma DEDENT'
-    , -> Import $1, Arr.maybe($4), $2 is \<<<
+    , -> Import $1, Arr.maybe($4), $2 is \<<<<
 
     o 'CREMENT Chain' -> Unary $1, $2.unwrap!
     o 'Chain CREMENT' -> Unary $2, $1.unwrap!, true
@@ -152,6 +155,7 @@ bnf =
     o 'UNARY Expression' -> Unary $1, $2
     o '+-    Expression' ditto, prec: \UNARY
     o '^     Expression' ditto, prec: \UNARY
+    o 'UNARY INDENT ArgList OptComma DEDENT' -> Unary $1, Arr.maybe $3
 
     o 'Expression +-      Expression' -> Binary $2, $1, $3
     o 'Expression COMPARE Expression' ditto
@@ -162,17 +166,20 @@ bnf =
     o 'Expression SHIFT   Expression' ditto
     o 'Expression BITWISE Expression' ditto
     o 'Expression CONCAT  Expression' ditto
+    o 'Expression COMPOSE Expression' ditto
 
     o 'Expression RELATION Expression' ->
       *if \! is $2.charAt 0 then Binary $2.slice(1), $1, $3 .invert!
                             else Binary $2         , $1, $3
 
-    o 'Expression PIPE Expression' -> Block $1 .pipe $3
+    o 'Expression PIPE     Expression' -> Block $1 .pipe $3, $2
+    o 'Expression BACKPIPE Expression' ditto 
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 
     # The function literal can be either anonymous with `->`,
-    o 'PARAM( ArgList OptComma )PARAM -> Block' -> L Fun $2, $6, $5 is \~>
+    o 'PARAM( ArgList OptComma )PARAM -> Block' 
+    , -> L Fun $2, $6, $5.charAt(0) is \~, $5 in <[ --> ~~> ]>
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
 
@@ -186,7 +193,6 @@ bnf =
     # to execute, postfix with a single expression, or postconditional.
     o 'LoopHead Block'            -> $1.addBody $2
     o 'LoopHead Block ELSE Block' -> $1.addBody $2 .addElse $4
-    o 'Expression LoopHead' -> $2.addBody Block $1
     o 'DO Block WHILE Expression'
     , -> new While($4, $3 is \until, true)addBody $2
 
@@ -201,8 +207,10 @@ bnf =
 
     o 'SWITCH Expression Cases'               -> new Switch $2, $3
     o 'SWITCH Expression Cases DEFAULT Block' -> new Switch $2, $3, $5
+    o 'SWITCH Expression Cases ELSE    Block' -> new Switch $2, $3, $5
     o 'SWITCH            Cases'               -> new Switch null $2
     o 'SWITCH            Cases DEFAULT Block' -> new Switch null $2, $4
+    o 'SWITCH            Cases ELSE    Block' -> new Switch null $2, $4
     o 'SWITCH                          Block' -> new Switch null [], $2
 
     o 'TRY Block'                           -> new Try $2
@@ -220,12 +228,19 @@ bnf =
     o 'LABEL Expression' -> new Label $1, $2
     o 'LABEL Block'      ditto
 
+    o '[ Expression TO Expression ]'
+    , -> new Parens new For from: $2, op: $3, to: $4
+    o '[ Expression TO Expression BY Expression ]'
+    , -> new Parens new For from: $2, op: $3, to: $4, step: $6 
+
   # Keys and values.
   KeyValue:
     o \Key
     o \LITERAL -> Prop L(Key $1, $1 not in <[ arguments eval ]>), L Literal $1
     o 'Key     DOT KeyBase' -> Prop $3, Chain(          $1; [Index $3, $2])
     o 'LITERAL DOT KeyBase' -> Prop $3, Chain(L Literal $1; [Index $3, $2])
+    o '{ Properties OptComma } LABEL' -> Prop L(Key $5), L(Obj $2 .named $5)
+    o '[ ArgList    OptComma ] LABEL' -> Prop L(Key $5), L(Arr $2 .named $5)
   Property:
     o 'Key : Expression'                     -> Prop $1, $3
     o 'Key : INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($4)
@@ -246,7 +261,7 @@ bnf =
     o \Property                                               -> [$1]
     o 'Properties , Property'                                 -> $1 +++ $3
     o 'Properties OptComma NEWLINE Property'                  -> $1 +++ $4
-    o 'Properties OptComma INDENT Properties OptComma DEDENT' ditto
+    o 'INDENT Properties OptComma DEDENT'                     -> $2
 
   Parenthetical:
     o '( Body )' -> Parens $2.chomp!unwrap!, false, $1 is \"
@@ -269,25 +284,50 @@ bnf =
     # in fixed-size increments.
     o 'FOR Chain IN Expression'
     , -> new For item: $2.unwrap!, index: $3, source: $4
+    o 'FOR Chain IN Expression CASE Expression'
+    , -> new For item: $2.unwrap!, index: $3, source: $4, guard: $6
     o 'FOR Chain IN Expression BY Expression'
     , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6
+    o 'FOR Chain IN Expression BY Expression CASE Expression'
+    , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6, guard: $8
 
     o 'FOR     ID         OF Expression'
     , -> new For {+object,       index: $2,                   source: $4}
+    o 'FOR     ID         OF Expression CASE Expression'
+    , -> new For {+object,       index: $2,                   source: $4, guard: $6}
     o 'FOR     ID , Chain OF Expression'
     , -> new For {+object,       index: $2, item: $4.unwrap!, source: $6}
+    o 'FOR     ID , Chain OF Expression CASE Expression'
+    , -> new For {+object,       index: $2, item: $4.unwrap!, source: $6, guard: $8}
     o 'FOR OWN ID         OF Expression'
     , -> new For {+object, +own, index: $3,                   source: $5}
+    o 'FOR OWN ID         OF Expression CASE Expression'
+    , -> new For {+object, +own, index: $3,                   source: $5, guard: $8}
     o 'FOR OWN ID , Chain OF Expression'
     , -> new For {+object, +own, index: $3, item: $5.unwrap!, source: $7}
+    o 'FOR OWN ID , Chain OF Expression CASE Expression'
+    , -> new For {+object, +own, index: $3, item: $5.unwrap!, source: $7, guard: $8}
 
     o 'FOR ID FROM Expression TO Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6
+    o 'FOR ID FROM Expression TO Expression CASE Expression'
+    , -> new For index: $2, from: $4, op: $5, to: $6, guard: $8
     o 'FOR ID FROM Expression TO Expression BY Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, step: $8
+    o 'FOR ID FROM Expression TO Expression BY Expression CASE Expression'
+    , -> new For index: $2, from: $4, op: $5, to: $6, step: $8, guard: $10
+    o 'FOR ID FROM Expression TO Expression CASE Expression BY Expression'
+    , -> new For index: $2, from: $4, op: $5, to: $6, guard: $8, step: $10
 
-    o 'WHILE Expression'              -> new While $2, $1 is \until
-    o 'WHILE Expression , Expression' -> new While $2, $1 is \until, $4
+    o 'WHILE Expression'                 -> new While $2, $1 is \until
+    o 'WHILE Expression CASE Expression' -> new While $2, $1 is \until .addGuard $4
+    o 'WHILE Expression , Expression'    -> new While $2, $1 is \until, $4
+    o 'WHILE Expression , Expression CASE Expression'
+    , -> new While $2, $1 is \until, $4 .addGuard $6
+
+  LoopHeads:
+    o 'LoopHead'           -> [$1]
+    o 'LoopHeads LoopHead' -> $1 +++ $2
 
   Cases:
     o       'CASE Exprs Block' -> [new Case $2, $3]
@@ -305,6 +345,7 @@ bnf =
 operators =
   # Listed from lower precedence.
   <[ left     PIPE POST_IF FOR WHILE ]>
+  <[ right    BACKPIPE     ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
   <[ right    CONCAT       ]>
   <[ right    LOGIC        ]>
@@ -316,7 +357,9 @@ operators =
   <[ left     MATH         ]>
   <[ right    UNARY        ]>
   <[ right    POWER ^      ]>
+  <[ right    COMPOSE      ]>
   <[ nonassoc CREMENT      ]>
+  <[ left     BACKTICK     ]>
 
 # Wrapping Up
 # -----------
@@ -327,7 +370,7 @@ operators =
 tokens = do
   for name, alts of bnf
     for alt in alts
-      token if token not of bnf for token in alt.0
+      [token for token in alt.0 when token not of bnf]
 .join ' '
 
 bnf.Root = [[[\Body] 'return $$']]

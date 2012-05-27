@@ -10,7 +10,7 @@ tint = (text, color ? green) -> color + text + reset
 
 # Run our node/livescript interpreter.
 run = (args) ->
-  proc = spawn \bin/livescript args
+  proc = spawn \node \bin/livescript & args
   proc.stderr.on \data say
   proc       .on \exit -> process.exit it if it
 
@@ -51,7 +51,7 @@ task \build 'build lib/ from src/' ->
   ext = /\.ls$/; webs = docs
   sources = for file in dir \src
     \src/ + file if ext.test file and file not in webs
-  run [\-bco \lib]concat sources
+  run [\-bco \lib] +++ sources
 
 task \build:full 'build twice and run tests' ->
   exec 'bin/slake build && bin/slake build && bin/slake test'
@@ -102,7 +102,7 @@ task \build:browser 'build extras/' ->
   invoke \test:browser
 
 
-coreSources = -> "src/#src.ls" for src in <[ livescript grammar lexer ast ]>
+coreSources = -> ["src/#src.ls" for src in <[ livescript grammar lexer ast ]>]
 
 task \bench 'quick benchmark in compilation time' ->
   LiveScript   = require \./lib/livescript
@@ -125,7 +125,7 @@ task \bench 'quick benchmark in compilation time' ->
 
 task \loc 'count the lines in main compiler code' ->
   count = 0; line = /^[^\n\S]*[^#\s]/mg
-  ++count while line.test code for code in coreSources!map -> slurp it
+  while line.test [code for code in coreSources!map -> slurp it] then ++count
   console.log count
 
 
@@ -146,7 +146,7 @@ function runTests global.LiveScript
   passedTests = failedTests = 0
   for name, func of require \assert then let
     global[name] = -> func ...; ++passedTests
-  global <<
+  global <<<
     eq: strictEqual
     throws: (msg, fun) ->
       try do fun catch return eq e?message, msg
@@ -165,7 +165,7 @@ function runTests global.LiveScript
       return say e unless stk = e?stack
       msg = e.message or ''+ /^[^]+?(?=\n    at )/exec stk
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
-        m[i] = tint m[i]replace(/\\n/g \\n), bold for i in [2 4]
+        for i in [2 4] then m[i] = tint m[i]replace(/\\n/g \\n), bold 
         msg  = m.slice(1)join \\n
       [, row, col]? = //#filename:(\d+):(\d+)\)?$//m.exec stk
       if row and col

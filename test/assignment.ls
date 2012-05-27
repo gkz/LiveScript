@@ -55,6 +55,29 @@ for nonref, i in <[ 0 f() this true ]>
 throws 'assignment to undeclared variable "Math" on line 1'
 , -> LiveScript.compile 'Math ||:= 0'
 
+# Power
+x = 2
+x **= 2
+eq 4 x
+x ^= 2
+eq 16 x
+
+# obj ::= obj2 as alias to obj::<<<obj2
+lala = ->
+lala ::= prop: true
+
+fafa = new lala
+
+ok lala::prop
+ok !lala::other
+
+ok fafa.prop
+ok !fafa.other
+
+lala ::= other: true
+
+ok lala::other
+ok fafa.other
 
 # Empty assignments
 {} = -> /* will be front and should be wrapped */
@@ -162,7 +185,7 @@ persons =
   George     : {name: 'Bob'  }
   Bob        : {name: 'Alice'}
   Christopher: {name: 'Stan' }
-join1 = ("#{key}: #{name}" for key, {name} of persons)
+join1 = ["#{key}: #{name}" for key, {name} of persons]
 
 eq join1.join(' / '), 'George: Bob / Bob: Alice / Christopher: Stan'
 
@@ -171,12 +194,12 @@ persons = [
   {name: 'Alice', parent: {name: 'Bob'        }}
   {name: 'Stan' , parent: {name: 'Christopher'}}
 ]
-join2 = ("#{parent}: #{name}" for {name, parent: {name: parent}} in persons)
+join2 = ["#{parent}: #{name}" for {name, parent: {name: parent}} in persons]
 
 eq join1.join(' '), join2.join(' ')
 
 persons = [['Bob', ['George']], ['Alice', ['Bob']], ['Stan', ['Christopher']]]
-join3 = ("#{parent}: #{name}" for [name, [parent]] in persons)
+join3 = ["#{parent}: #{name}" for [name, [parent]] in persons]
 
 eq join2.join(' '), join3.join(' ')
 
@@ -236,7 +259,7 @@ a = b: c: d: \e
 a.b.c?.=d
 eq \e a.b.c
 
-a.=b << {\c}
+a.=b <<< {\c}
 eq \c a.c
 
 
@@ -283,7 +306,7 @@ eq 1 a.1
 
 ### Destructuring Default
 new
-  [x ? 2, y || 3, @p && 5, @q !? 7] = [null, false, true, 0]
+  [x ? 2, [y] || [3], @p && 5, @q !? 7] = [null, false, true, 0]
   eq x * y * @p * @q, 210
 
   {a or 2, _: b or 3, @p or 5} = {}
@@ -320,6 +343,13 @@ f = ({p, q}: o?) ->
     eq q, void
 f {2 3}
 f (   )
+
+o = a: {\b \c}
+{{b, c}:a, [d]:e ? [{}]} = o
+eq a, o.a
+eq b, \b
+eq c, \c
+eq d, e.0
 
 
 ### Unary Assign

@@ -18,7 +18,6 @@ __ref = o.k, delete o.k, __ref;
 
 throws 'missing `"` on line 2' -> LiveScript.lex '\n"\n'
 
-throws 'unterminated JS literal on line 3', -> LiveScript.lex '\n\n```\n'
 throws 'unterminated string on line 3'    , -> LiveScript.lex "\n\n'\n"
 throws 'unterminated words on line 3'     , -> LiveScript.lex '\n\n<[\n'
 
@@ -34,7 +33,7 @@ throws 'missing `)CALL` on line 1' -> LiveScript.lex 'f('
 throws '''
   empty range on line 1
   at filename
-''' -> LiveScript.compile '1 to 0' {\filename}
+''' -> LiveScript.compile '[1 to 0]' {\filename}
 
 
 eq '''
@@ -42,21 +41,6 @@ var k;
 for (k in o) {}
 ''' LiveScript.compile 'for k of o then' {+bare}
 
-
-eq '''
-/* (c) 2010 me */
-"use strict";
-var I;
-LABEL:
-I = function(it){
-  return it;
-};
-''', LiveScript.compile '''
-/* (c) 2010 me */
-"use strict"
-`LABEL:`
-I = -> it
-''' bare
 
 
 eq "a['in'] = this['in'];", LiveScript.compile 'a import {@in}' bare
@@ -68,14 +52,14 @@ while (0) {
     ({}), {};
   }
 }
-''', LiveScript.compile '({};{}) while 0 while 0' bare
+''', LiveScript.compile 'while 0 then while 0 then ({};{})' bare
 
 
 throws 'invalid use of null on line 1', -> LiveScript.compile 'null.po'
 
 
 throws 'deprecated octal literal 0666 on line 1' ,-> LiveScript.tokens '0666'
-throws 'invalid number 8 in base 8 on line 1'    ,-> LiveScript.tokens '8r8'
+throws 'invalid number 8 in base 8 on line 1'    ,-> LiveScript.tokens '8~8'
 
 
 tokens = LiveScript.lex '''
@@ -164,13 +148,6 @@ eq '1;\n2;\n3;\n4;', LiveScript.compile '''
 3
 4
 ''' bare
-
-
-eq '''
-#!js
-var a;
-a = 1;
-''' LiveScript.compile '`#!js`; a = 1' bare
 
 
 # `__proto__` should be available as a variable name.

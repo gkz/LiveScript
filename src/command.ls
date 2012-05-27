@@ -1,4 +1,3 @@
-`#!/usr/bin/env node`
 # The `LiveScript` utility.
 
 {argv} = process
@@ -175,7 +174,7 @@ switch
   lines = []
   for [tag, val, lno] in tokens
     lines@@[lno]push if tag.toLowerCase! is val then tag else "#tag:#val"
-  say(if l then l.join(' ')replace /\n/g \\\n else '') for l in lines
+  for l in lines then say(if l then l.join(' ')replace /\n/g \\\n else '') 
 
 # A Read-Eval-Print-Loop.
 # Good for simple tests or poking around the
@@ -188,7 +187,7 @@ switch
 !function repl
   argv.1 = \repl
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
-  repl.infunc = false unless repl.infunc?
+  # repl.infunc = false unless repl.infunc?
   code  = if repl.infunc then '  ' else ''
   cont  = false
   readline  = require(\readline)createInterface process.stdin, process.stdout
@@ -211,13 +210,13 @@ switch
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
         cb err, res
-    repl.completer = server~complete
+    readline.completer = server~complete
   readline.on \attemptClose !->
     if readline.line or code then say ''; reset! else readline.close!
   readline.on \close process.stdin~destroy
   readline.on \line !->
     repl.infunc = false if it.match(/^\s*$/) # close with a blank line
-    cont = repl.infunc = true if it.match(/(\=|\~>|->|\{|\[)\s*$/) or it.match(/^!?function /)
+    cont = repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or it.match(/^!?function /)
     if cont or repl.infunc
       code += it + \\n
       readline.output.write \. * prompt.length + '. '
@@ -227,10 +226,15 @@ switch
       if o.compile
         say LiveScript.compile code, {o.bare}
       else
-        _  = vm.runInThisContext LiveScript.compile(code, {\eval o.bare}), \repl
+        ops = {\eval, +bare, saveScope:LiveScript}
+        ops = {+bare} if code.match(/^\s*!?function/)
+        _  = vm.runInThisContext LiveScript.compile(code, ops), \repl
         _ !? global <<< {_}
         pp  _
         say _ if typeof _ is \function
+        for name of lsv = LiveScript.savedScope?.variables when \__ is name.slice 0, 2
+          delete lsv[name]
+          global[name - \.] = void
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"
@@ -241,7 +245,7 @@ switch
 # to it, preserving the other options.
 !function forkNode
   args = argv.slice 1; i = 0
-  args.splice i-- 2 if that in <[ -n --nodejs ]> while args[++i]
+  while args[++i] when that in <[ -n --nodejs ]> then args.splice i-- 2
   require(\child_process)spawn do
     process.execPath
     o.nodejs.join(' ')trim!split(/\s+/)concat args

@@ -1,7 +1,7 @@
 #### [node.js](http://nodejs.org) setups
 # - Override `.run`.
 # - Inherit `EventEmitter`.
-# - Register _.co_ extension.
+# - Register _.ls extension.
 
 module.exports = !(LiveScript) ->
   fs   = require \fs
@@ -16,13 +16,13 @@ module.exports = !(LiveScript) ->
     else
       dirname = filename = \.
     main.paths = main.._nodeModulePaths dirname
-    main << {filename}
+    main <<< {filename}
     js or code = LiveScript.compile code, {...options, +bare}
     try main._compile code, filename catch throw hackTrace e, code, filename
 
   LiveScript import all require(\events)EventEmitter::
 
-  require.extensions\.co = (module, filename) ->
+  require.extensions\.ls = (module, filename) ->
     js = LiveScript.compile fs.readFileSync(filename, \utf8), {filename, +bare}
     try module._compile js, filename catch throw hackTrace e, js, filename
 
@@ -39,4 +39,4 @@ function hackTrace {stack}:error?, js, filename
     for n from 1 >? lno-4 to end
       traces[i] += "\n#{ ('    ' + n)slice -length }
                       #{ '|+'charAt n is lno } #{[lines[n-1]]}"
-  error << stack: traces.join \\n
+  error <<< stack: traces.join \\n

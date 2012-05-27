@@ -1,5 +1,8 @@
 I = (x) -> x
-eq I, I I
+M = (x) -> x x
+
+eq I, M I
+
 
 # Bare calls.
 eq I (), I( )
@@ -7,7 +10,7 @@ eq I (), I( )
 
 # The empty function should not cause a syntax error.
 ->
-(0 while 0).pop()
+(while 0 then 0).pop()
 
 
 # Multiple nested function declarations mixed with implicit calls should not
@@ -194,7 +197,7 @@ throws 'misplaced function declaration on line 1', ->
 # Returns with multiple branches.
 func = ->
   if it
-    return n for n in [1, 2]
+    for n in [1, 2] then return n
   else
     0
 eq func(0), 0
@@ -202,7 +205,7 @@ eq func(1), 1
 
 
 # Don't gather results from a loop that _jumps_ out of a closure.
-findIt = (items) -> return item if item is 'bacon' for item in items
+findIt = (items) -> for item in items then return item if item is 'bacon' 
 eq 'bacon', findIt [1, 2, 3, 'bacon', 4, 5]
 eq void   , findIt []
 
@@ -265,7 +268,7 @@ eq(area(
 
 sumOfArgs = ->
   sum = 0
-  sum += val for val in arguments
+  for val in arguments then sum += val
   sum
 
 eq 15, sumOfArgs(1, 2, 3, 4, 5)
@@ -316,7 +319,7 @@ eq 1, do []= (a || 0 || 1) -> a
 
 eq arguments,
   switch case 1
-    eq arguments, (arguments for i to 0)0
+    eq arguments, (for i to 0 then arguments)0
     arguments
 
 
@@ -363,9 +366,8 @@ eq ok, do
 
 new
   me = this
-  f <~ I
+  f <~ M
   eq me, this
-  <- ->
   eq \function typeof f
 
 eq 3 do
@@ -455,8 +457,8 @@ with 0 then let x = 1, y = 2
 eq void do !-> true
 eq void do !~> true
 eq void do
-  <-! run = -> it!
-  <~! run ...
+  <-! M
+  <~! M
   !function C then C
   ok new C instanceof C
   true
@@ -465,15 +467,12 @@ eq false !!->
 
 ### new function syntax
 area(a, b) = a * b
-eq (area 2, 3), 6
+eq 6 area 2 3
 
 diff(a,
   b) = 
   a - b
-eq (diff 2, 3), -1
-
-add(a, b = 3) = a + b
-eq (add 2), 5
+eq -1 diff 2, 3
 
 obj = 
   add(x, y): x + y
@@ -489,8 +488,13 @@ class Multiplier
   multiply(x, y): x * y
   xSix!: @num * 6
   !zip(x): x
+  !zip2@!: true
   bound!:
     f@! = @num * 2
+
+  @!zip3@! = true
+
+eq void Multiplier.zip3!
 
 multi = new Multiplier 3
 
@@ -503,3 +507,90 @@ eq 6 sometin.hooloo!
 eq 6    multi.multiply(3, 2)
 eq 18   multi.xSix!
 eq void multi.zip true
+eq void multi.zip2!
+
+### auto currying magic
+times = (x, y) --> x * y
+timesTwo = times 2
+
+eq 12 times 2 6
+eq 8 timesTwo 4
+
+boundAdd = (x, y) ~~> x + y
+addThree = boundAdd 3
+
+eq 12 boundAdd 6 6
+eq 7 addThree 4
+
+threeParams = (x, y, z) --> x * y + z
+eq 10 threeParams 2 3 4 5
+
+multByTwo = threeParams 2
+eq 7 multByTwo(3)(1)
+
+addNine = threeParams 3 3 
+eq 16 addNine 7
+
+minus(x, y) = y - x
+minusTwo = minus 2
+eq 5 minusTwo 7 
+
+!plus! = true
+eq void plus!
+
+class Divider
+  ->
+
+  @divide1(x, y) = x / y
+  @!divide2(x, y) = x / y
+
+eq 2    Divider.divide1 6 3
+eq void Divider.divide2 2 4
+
+f4 = ((a, b, c, d) --> a * b * c * d)(2)(3)
+g = f4 5
+h = f4 7
+
+eq 330 g 11
+eq 546 h 13
+
+multiLine(x) =
+  4
+
+  x
+
+eq 1 multiLine 1
+
+### explicit naming
+let
+  do a = :b -> eq a, b
+  do c = :d!-> eq c, d
+  do e = !:f-> eq e, f
+let
+  a <-:b  M
+  c <-:d! M
+  e <-!:f M
+  eq a, b
+  eq c, d
+  eq e, f
+
+### composing
+timesTwo = -> it * 2
+plusOne = -> it + 1
+
+timesTwoPlusOne = timesTwo >> plusOne
+plusOneTimesTwo = timesTwo << plusOne
+
+eq 5 timesTwoPlusOne 2
+eq 6 plusOneTimesTwo 2
+
+### infix calls
+add = (x, y) -> x + y
+times = (x, y) -> x * y
+elem = (x, xs) -> x in xs
+
+eq 7, 3 `add` 4
+eq 8, 3 + 2 `add` add 2 1
+eq 25, 2 `add` 3 + 4 `times` 5
+eq 25, 2 `add` 3 `times` 5
+ok 3 `elem` [1 to 10]

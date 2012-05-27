@@ -1,3 +1,13 @@
+### Boolean
+ok true
+ok !false
+ok yes
+ok on
+ok !off
+ok !no
+
+throws 'invalid assign on line 1' -> LiveScript.compile 'yes = 6'
+
 ### Numbers
 
 eq 3-4, -1
@@ -11,24 +21,43 @@ eq 255, 0xff
 eq 0xB_C__D___, 0xBCD
 
 # With radix
-ok 2r101010 == 8r0644/10 == 42
-eq 36rO_o, 888
+ok 2~101010 == 8~0644/10 == 42
+eq 36~O_o, 888
 
 # With comment
 eq 1year * 365.25days * 24hours, 8766_total_hours
 eq 36, 0XF + 36RT
 eq 100m2, 10m ** 2
 eq 3000c, 30$ * 100
+eq 36rpm 36
 
 # [#31](https://github.com/satyr/coco/issues/31): Numeric Ranges
 eq '1,2,3'  String [1 to +3]
-eq '1,0,-1' String Array 1 to -1 by -1
+eq '1,0,-1' String [1 to -1 by -1]
 
 til = String
 eq 2, [Number]0 til 2
 
-throws 'range limit exceeded on line 1' -> LiveScript.tokens '0 to 1 by 1e-5'
-throws 'empty range on line 3'          -> LiveScript.tokens '\n\n 1 to 0'
+throws 'range limit exceeded on line 1' -> LiveScript.tokens '[0 to 1 by 1e-5]'
+throws 'empty range on line 3'          -> LiveScript.tokens '\n\n [1 to 0]'
+
+start = 1
+end   = 5
+step  = 2
+eq '1,2,3,4,5' String [start to  end]
+eq '1,2,3,4'   String [start til end]
+eq '2,3,4,5'   String [3 - 1 to  end]
+eq '3,4'       String [3     til end]
+eq '3,5'       String [start + 2 to  end by step ]
+eq '1,3,5'     String [1     to  end by step ]
+eq '1,3'       String [start til 5   by step ]
+eq '1,5'       String [start to  end by 4    ]
+eq '5,3'       String [5     til 1   by -step]
+eq '1,3,5'     String [start to  5   by 2    ]
+eq '1,3,5'     String [1     to  5   by 2    ]
+
+to = 3
+eq 3 to
 
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Boolean/Number should be indexable.
@@ -42,11 +71,11 @@ a = [((x) -> x), ((x) -> x * x)]
 eq a.length, 2
 
 sum  = 0
-sum += n for n in [
+for n in [
   1, 2, 3,
   4  5  6
   7, 8  9
-]
+] then sum += n
 eq sum, 45
 
 
@@ -99,7 +128,7 @@ I2 =
 eq I2.0.0, I2.1.1
 eq I2.0.1, I2.1.0
 
-a = [] <<
+a = [] <<<
   0, 1
   2; 3
 a +=
@@ -165,11 +194,16 @@ new
   eq y.b, 2
   eq y.c, 3
   eq y.d, 4
-  z = {true, false, null, void, this, arguments, eval, -super, +debugger}
+  z = {true, false, on, off, yes, no, null, void, undefined, this, arguments, eval, -super, +debugger}
   eq z.true      , true
   eq z.false     , false
+  eq z.on        , on
+  eq z.off       , off
+  eq z.yes       , yes
+  eq z.no        , no
   eq z.null      , null
   eq z.void      , void
+  eq z.undefined , undefined
   eq z.this      , this
   eq z.arguments , arguments
   eq z.eval      , eval
@@ -183,13 +217,13 @@ new
 
 
 # [#19](https://github.com/satyr/coco/issues/19)
-throws 'duplicate property name "a" on line 1'
+throws 'duplicate property "a" on line 1'
 , -> LiveScript.compile '{a, b, a}'
 
-throws 'duplicate property name "0" on line 1'
+throws 'duplicate property "0" on line 1'
 , -> LiveScript.compile '{0, "0"}'
 
-throws 'duplicate property name "1" on line 1'
+throws 'duplicate property "1" on line 1'
 , -> LiveScript.compile '{1, 1.0}'
 
 
@@ -263,7 +297,7 @@ eq obj.one[2].a     ,'b'
 eq obj.red.indigo   ,'violet'
 eq obj.oddent + '' ,',,,'
 eq obj.red.orange.yellow.green, 'blue'
-eq 2, (key for key of obj.red).length
+eq 2, [key for key of obj.red].length
 
 
 # As part of chained calls.
@@ -298,9 +332,13 @@ o = q: 1 if false
 ok \q not of o
 
 
-# Inline with assignment.
-p: o = q: 0
-eq o.q, 0
+# Inline with assignment/import.
+o =
+  p: t =   q: 0
+  r: t <<< s: 1
+eq o.p, o.r
+eq o.p.q, 0
+eq o.r.s, 1
 
 
 #### Dynamic Keys
@@ -333,7 +371,7 @@ eq obj.splatMe, 'too'
 ok obj.key is obj.s is obj[1/2]
 
 eq 'braceless dynamic key',
-  (key for key of """braceless #{ 0 of ((0):(0)) and 'dynamic' } key""": 0)[0]
+  [key for key of """braceless #{ 0 of ((0):(0)) and 'dynamic' } key""": 0][0]
 
 obj =
   one: 1
@@ -350,6 +388,7 @@ eq ok, obj.key
 
 ### `void`
 eq void, [][0]
+eq undefined, [][0]
 eq void+'', 'undefined'
 
 eq [,,].length, 2
@@ -358,23 +397,6 @@ eq [,,].length, 2
 eq a * b, 21
 
 eq 11, ((, a) -> a)(, 11)
-
-
-### JS Literal
-
-eq '\\`', `
-  // Inline JS
-  "\\\`"
-`
-
-i = 3
-`LABEL:`
-while --i then while --i then `break LABEL`
-eq i, 1
-
-`not` = -> !it
-eq false `not` true
-
 
 ### String/Array multiplication
 x = \x
