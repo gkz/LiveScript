@@ -21,7 +21,7 @@ exports import
     #  - `.line` <br> Specifies the starting line. Default `0`.
     options
   # Copy, set, go!
-  ) -> (^exports)tokenize code||'' options||{}
+  ) -> (^^exports)tokenize code||'' options||{}
 
   # Rewrites the token stream in multiple passes, one logical filter at a time.
   # The order of these passes matters--indentation must be
@@ -126,6 +126,7 @@ exports import
     case \and \or \is \isnt
       @unline!
       tag = if id in <[  is isnt ]> then \COMPARE else \LOGIC
+      tag = \BIOP if @last.0 is \(
       @token tag, switch id
       | \is     => \===   
       | \isnt   => \!==
@@ -269,12 +270,13 @@ exports import
     #     f /re/ 9 /ex/   # f(/re/, 9, /ex/)
     #     a /= b / c / d  # division
     #
+    # if divisable = (able @tokens or @last.0 is \()
     if divisable = able @tokens
       return 0 if not @last.spaced or code.charAt(index+1) in [' ' \=]
     [input, body, flag] = (REGEX <<< lastIndex: index)exec code
     if input
     then @regex body, flag
-    else divisable or @carp 'unterminated regex'
+    else if not divisable and @last.0 isnt \( then @carp 'unterminated regex'
     input.length
 
   # Matches a multiline, extended regex literal.
@@ -358,7 +360,7 @@ exports import
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
-  # the p/nextroper order of operations. There are some symbols that we tag specially
+  # the proper order of operations. There are some symbols that we tag specially
   # here. `;` and newlines are both treated as a NEWLINE, we distinguish
   # parentheses that indicate a method call from regular parentheses, and so on.
   doLiteral: (code, index) ->
@@ -376,7 +378,8 @@ exports import
     case \&              then tag = \CONCAT
     case \&& \||         then tag = \LOGIC
     case \&&& \||| \^^^  then tag = \BITWISE
-    case \**             then tag = \POWER
+    case \^^             then tag = \CLONE
+    case \** \^          then tag = \POWER
     case \?  \!?         then tag = \LOGIC if @last.spaced
     case \/ \% \%%       then tag = \MATH
     case \+++            then tag = \CONCAT
@@ -391,7 +394,7 @@ exports import
       | \, \[ \( \CALL( => @token \LITERAL \void
       | \FOR \OWN       => @token \ID ''
     case \!=
-      unless able @tokens
+      if not able @tokens and @last.0 isnt \(
         @tokens.push [\UNARY \! @line] [\ASSIGN \= @line]
         return 2
       fallthrough
@@ -421,6 +424,8 @@ exports import
         return 9e9
       fallthrough
     case \] \)
+      if tag is \) and @last.0 in <[ +- COMPARE SHIFT LOGIC MATH POWER CONCAT ]> 
+        @tokens[*-1].0 = \BIOP
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>
       # change id@! to calls (id! already makes calls)
@@ -479,7 +484,7 @@ exports import
         @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
         @indent index + that - 1 - @dent - code.lastIndexOf \\n index-1
         return that
-      tag = if able @tokens then \MATH else \STRNUM
+      tag = if able @tokens or @last.0 is \( then \MATH else \STRNUM
     case \@ \@@
       @dotcat val or if val is \@
         then @token \LITERAL \this true
@@ -507,6 +512,8 @@ exports import
     case \<
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
+    if tag in <[ +- COMPARE SHIFT LOGIC MATH POWER CONCAT ]> and @last.0 is \(
+      tag = \BIOP
     @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE MATH POWER IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
@@ -589,7 +596,7 @@ exports import
         str.=slice delta = i + 1 + id.length
         parts.push [\TOKENS nested = [[\ID id, @line]]]
       else
-        clone  = ^exports <<< {+inter, @emender}
+        clone  = ^^exports <<< {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
         delta  = str.length - clone.rest.length
         {rest: str, @line} = clone
@@ -825,7 +832,7 @@ character = if JSON!? then uxxxx else ->
       token.0 = \CALL(
       tpair.0 = \)CALL
       continue
-    continue unless tag in ARG or not token.spaced and tag in <[ +- ^ ]>
+    continue unless tag in ARG or not token.spaced and tag in <[ +- CLONE ]>
     if tag is \CREMENT
       continue if token.spaced or tokens[i+1]?0 not in CHAIN
     skipBlock = seenSwitch = false
@@ -944,6 +951,10 @@ character = if JSON!? then uxxxx else ->
     case \) \)CALL then continue if token.1
     case \]        then continue if token.index
     case \CREMENT  then continue unless able tokens, i
+    case \BIOP     
+      if not token.spaced and token.1 in <[ + - ]> and tokens[i+1].0 isnt \)  
+        tokens[i].0 = \+- 
+      continue
     default continue
     if token.spaced and tokens[i+1]0 in ARG
       tokens.splice ++i, 0 [\, \, token.2]
@@ -1010,6 +1021,7 @@ SYMBOL = //
   [-+*/^]= | %%?= | ::?=      # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | &&& | \|\|\| | \^\^\^       # bitwise
+| \^\^                          # clone
 | \+\+\+                      # list concat 
 | --> | ~~>                   # curry
 | ([-+&|:])\1                 # crement / logic / `prototype`

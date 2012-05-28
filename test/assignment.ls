@@ -227,11 +227,6 @@ x = 'y'
 eq x, 49344
 
 
-{(*>>>>1): mid, (*-1): last} = [1, 2, 3, 4, 5]
-eq mid , 3
-eq last, 5
-
-
 # [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
 [void, null, v] = [1 to 3]
 eq v, 3

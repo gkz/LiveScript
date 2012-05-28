@@ -87,7 +87,7 @@ eq true, [3]pop() in [0, ...array]
 eq true, [4]pop() in [...array, 4]
 eq true, void in length: 1
 
-eq 1, +(-0 in [0])
+eq 1, +( 0 in [0])
 eq 0, +(10 in [ ])
 
 ok array[0]++ in [0, 1] 'should cache testee'
@@ -217,7 +217,7 @@ eq -1, -true
 
 # Should space themselves when repeated.
 eq(+ +1, - -1)
-eq -1, - --[2]0
+eq (-1), - --[2]0
 
 
 ### `do`
@@ -256,11 +256,6 @@ eq o.deep, 'copy'
 o import all: \base
 eq o.all, \base
 
-a = [0]
-a import (*): 1, (*): 2
-eq a[1], 1
-eq a[2], 2
-
 i = 0
 ++i import {}
 eq i, 1
@@ -273,7 +268,7 @@ eq x.c, 3
 eq x.0, 4
 
 eq ',1,2,3' "#{ [] <<< [void 1 2 3] }"
-eq ',1,2,3' "#{ [] <<< (^{0}<<<{1}) <<<< (^{2}<<<{3}) }"
+eq ',1,2,3' "#{ [] <<< (^^{0}<<<{1}) <<<< (^^{2}<<<{3}) }"
 
 eq '''
 ({
@@ -481,3 +476,86 @@ eq -1, 7 %% -2
 
 x = 7; x %%= -2
 eq -1 x
+
+### Partially applied
+addTwo = (+ 2)
+eq 5 addTwo 3
+eq 7 (+) 3, 4
+eq 3 (+)(1) 2 
+eq 3 (1+) 2
+
+eq 2 (-)(4) 2 
+eq 4 (- 5) 9
+eq -4 (5-) 9
+
+eq -2 (-2) # not spaced, not paritally applied
+eq 2 (+2)
+
+ok (===) '2' 2
+ok (!== 2) 9
+
+ok (2 ==) 2
+ok (!=) 2 '2'
+ok (2!=) 3
+ok (!=2) 3
+
+ok (<) 2 3
+ok (2<) 3
+ok (<3) 2
+
+ok (<=) 2 2
+ok (2<=) 4
+ok (<=2) 2
+
+ok (>) 3 2
+ok (3>) 2
+ok (>2) 3
+
+ok (>=) 2 2
+ok (2>=) 1
+ok (>=1) 1
+
+ok (&&) true true
+ok not ((and false) true)
+ok (true and) true
+
+ok (or) false true
+ok (false or) true
+ok (or true) false
+ok (or)(true) false
+
+eq 6 (*) 2 3
+eq 6 (2*) 3
+eq 6 (*3) 2
+
+eq 2 (/) 6 3
+eq 2 (6/) 3
+eq 2 (/3) 6
+
+eq 0 (%) 4 2
+eq 0 (4%) 2
+eq 0 (%2) 4
+
+eq -1 (%%) 7 -2
+eq -1 (7%%) -2
+eq -1 (%%-2) 7
+
+eq 8 (^) 2 3
+eq 8 (2**) 3
+eq 8 (^3) 2
+
+eq '1,2,3' "#{ (&) 1 [2 3] }"
+eq '1,2,3' "#{ (1&) [2 3]  }"
+eq '1,2,3' "#{ (&[2 3]) 1  }"
+
+eq '1,2,3' "#{ (+++) [1] [2 3] }"
+eq '1,2,3' "#{ ([1]+++) [2 3]  }"
+eq '1,2,3' "#{ (+++[2 3]) [1]  }"
+
+eq 2 (>?) 2 1
+eq 2 (2 >?) 1
+eq 2 (>? 1) 2
+
+eq 1 (<?) 2 1
+eq 1 (2 <?) 1
+eq 1 (<? 1) 2

@@ -170,7 +170,7 @@ exports.parse    = (json) -> exports.fromJSON JSON.parse json
 exports.fromJSON = function
   return it unless it and typeof it is \object
   if it.type
-    node = ^exports[that]::
+    node = ^^exports[that]::
     for key, val of it then node[key] = fromJSON val  
     return node
   if it.length? then [fromJSON v for v in it] else it
@@ -843,7 +843,7 @@ class exports.Unary extends Node
       if it instanceof Var and not o.scope.check it.value, true
         @carp "#{ crement op } of undeclared variable \"#{it.value}\""
       it{front} = this if @post
-    case \^ then return "#{ util \clone }(#{ it.compile o, LEVEL_LIST })"
+    case \^^ then return "#{ util \clone }(#{ it.compile o, LEVEL_LIST })"
     case \classof
       return "#{ util \toString }.call(
               #{ it.compile o, LEVEL_LIST }).slice(8, -1)"
@@ -865,7 +865,7 @@ class exports.Unary extends Node
       for op in ops by -1 then node = .. op.op, node, op.post 
       them[i] = if sp then lat = Splat node else node
     if not lat and (@void or not o.level)
-      it = ^Block::<<< {lines: them, @front, +void}
+      it = ^^Block::<<< {lines: them, @front, +void}
     it.compile o, LEVEL_PAREN
 
   # `v = delete o.k`
@@ -881,16 +881,18 @@ class exports.Unary extends Node
 #### Binary operators
 class exports.Binary extends Node
   (op, first, second) ~>
-    switch op
-    | \in => return new In first, second
-    | \+  =>
-      if first instanceof Arr
-        first.items.push Splat second
-        return first
-      if second instanceof Arr
-      or second instanceof While and second = Arr [Splat second]
-        second.items.unshift Splat first
-        return second
+    @partial = first!? or second!?
+    if not @partial
+      switch op
+      | \in => return new In first, second
+      | \+  =>
+        if first instanceof Arr
+          first.items.push Splat second
+          return first
+        if second instanceof Arr
+        or second instanceof While and second = Arr [Splat second]
+          second.items.unshift Splat first
+          return second
     import {op, first, second}
 
   children: <[ first second ]>
@@ -898,7 +900,7 @@ class exports.Binary extends Node
   show: -> @op
 
   isCallable: ->
-    @op in <[ && || ? !? ]> and @first.isCallable! and @second.isCallable!
+    @partial or @op in <[ && || ? !? ]> and @first.isCallable! and @second.isCallable!
 
   isArray: -> switch @op
     | \* => return @first instanceof Arr
@@ -920,6 +922,7 @@ class exports.Binary extends Node
   getDefault: -> switch @op | \? \|| \&& \!? => this
 
   compileNode: (o) ->
+    return @compilePartial o if @partial
     switch @op
     case \? \!?   then return @compileExistence o
     case \*
@@ -1023,7 +1026,7 @@ class exports.Binary extends Node
     return x.compile o if 1 <= n < 2
     # `[x] * 2` => `[x, x]`
     if items
-      if n < 1 then return (^Block::<<< lines: items)add(JS '[]')compile o
+      if n < 1 then return (^^Block::<<< lines: items)add(JS '[]')compile o
       refs = []
       for item, i in items then [items[i], refs.*] = item.cache o, 1x 
       items.push JS! <<<
@@ -1057,6 +1060,38 @@ class exports.Binary extends Node
     code = "((#{@first.compile o}) % (#ref = #{@second.compile o}) + #ref) % #ref"
     o.scope.free ref
     code
+
+  compilePartial: (o) ->
+    mapOp =
+      \+   : [\add]
+      \-   : [\minus \subtract]
+      \==  : [\fuzzyEquals]
+      \!=  : [\fuzzyNotEquals]
+      \=== : [\equals]
+      \!== : [\notEquals]
+      \>   : [\gt \lt]
+      \>=  : [\gte \lte]
+      \<   : [\lt \gt]
+      \<=  : [\lte \gte]
+      \&&  : [\andTest]
+      \||  : [\orTest]
+      \*   : [\multiply]
+      \/   : [\divide \divideBy]
+      \%   : [\rem \remTo]
+      \%%  : [\mod \modTo]
+      \^   : [\pow \powTo]
+      \**  : [\pow \powTo]
+      \&   : [\cons \consTo]
+      \+++ : [\append \appendTo]
+      \>?  : [\max]
+      \<?  : [\min]
+    func = mapOp[@op]
+    @carp 'unsupported operator for parital application' if func!?
+    util \curry
+    switch
+    | @first!? and @second!? => util func.0 
+    | @first?                => "#{ util func.0 }(#{@first.compile o})"
+    | otherwise              => "#{ util (func.1 ? func.0)}(#{@second.compile o})"
 
 #### Assign
 # Assignment to a variable/property.
@@ -1197,7 +1232,7 @@ class exports.Assign extends Node
       else
         (inc = ivar) and start < i and inc += " + #{ i - start }"
         val = Chain rcache||=Literal(rite), [Index JS inc || i]
-      (^@<<<{left: node, right: val, +void})compile o, LEVEL_PAREN
+      (^^@<<<{left: node, right: val, +void})compile o, LEVEL_PAREN
 
   rendObj: (o, nodes, rite) ->
     for node in nodes
@@ -1213,7 +1248,7 @@ class exports.Assign extends Node
       node = logic <<< first: node if logic
       val  = Chain rcache||=Var(rite), [Index key.maybeKey!]
       val  = Import Obj!, val if splat
-      (^@<<<{left: node, right: val, +void})compile o, LEVEL_PAREN
+      (^^@<<<{left: node, right: val, +void})compile o, LEVEL_PAREN
 
 #### Import
 # Copies properties from right to left.
@@ -1985,7 +2020,7 @@ exports.Export = (lines) ->
         Assign Chain(out, [Index Key that]), node
       else
         Import out, node
-  ^Block::<<<{lines}
+  ^^Block::<<<{lines}
 
 ##### Scope
 # Regulates lexical scoping within LiveScript. As you
@@ -2117,6 +2152,36 @@ UTILS =
       return f(g.apply(this, arguments)); 
     }
   }'''
+
+  contradict: 'function(x){ return !x; })'
+  equals: '__curry(function(x, y){ return x === y; })'
+  notEquals: '__curry(function(x, y){ return x !== y; })'
+  fuzzyEquals: '__curry(function(x, y){ return x == y; })'
+  fuzzyNotEquals: '__curry(function(x, y){ return x != y; })'
+  lt: '__curry(function(x, y){ return x < y; })'
+  lte: '__curry(function(x, y){ return x <= y; })'
+  gt: '__curry(function(x, y){ return x > y; })'
+  gte: '__curry(function(x, y){ return x >= y; })'
+  add: '__curry(function(x, y){ return x + y; })'
+  minus: '__curry(function(x, y){ return x - y; })'
+  subtract: '__curry(function(x, y){ return y - x; })'
+  multiply: '__curry(function(x, y){ return x * y; })'
+  divide: '__curry(function(x, y){ return x / y; })'
+  divideBy: '__curry(function(x, y){ return y / x; })'
+  andTest: '__curry(function(x, y){ return x && y; })'
+  orTest: '__curry(function(x, y){ return x || y; })'
+  rem: '__curry(function(x, y){ return x % y; })'
+  remTo: '__curry(function(x, y){ return y % x; })'
+  mod: '__curry(function(x, y){ return (x % y + y) % y; })'
+  modTo: '__curry(function(y, x){ return (x % y + y) % y; })'
+  pow: '__curry(function(x, y){ return Math.pow(x, y); })'
+  powTo: '__curry(function(x, y){ return Math.pow(y, x); })'
+  cons: '__curry(function(x, y){ return [x].concat(y); })'
+  consTo: '__curry(function(x, y){ return [y].concat(x); })'
+  append: '__curry(function(x, y){ return x.concat(y); })'
+  appendTo: '__curry(function(x, y){ return y.concat(x); })'
+  min: '__curry(function(x, y){ return x > y ? y : x; })'
+  max: '__curry(function(x, y){ return x > y ? x : y; })'
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"

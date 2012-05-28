@@ -67,6 +67,9 @@ bnf =
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
     o '[ Expression LoopHeads ]'  -> Chain new Parens $3.0.makeComprehension $2, $3.slice 1 
+    o '( BIOP )'            -> Chain Binary $2
+    o '( BIOP Expression )' -> Chain Binary $2, , $3
+    o '( Expression BIOP )' -> Chain Binary $3, $2
 
   # Array/Object
   List:
@@ -150,18 +153,17 @@ bnf =
 
     o 'UNARY ASSIGN Chain' -> Assign $3.unwrap!, [$1] $2
     o '+-    ASSIGN Chain' ditto
-    o '^     ASSIGN Chain' ditto
+    o 'CLONE ASSIGN Chain' ditto
 
     o 'UNARY Expression' -> Unary $1, $2
     o '+-    Expression' ditto, prec: \UNARY
-    o '^     Expression' ditto, prec: \UNARY
+    o 'CLONE Expression' ditto, prec: \UNARY
     o 'UNARY INDENT ArgList OptComma DEDENT' -> Unary $1, Arr.maybe $3
 
     o 'Expression +-      Expression' -> Binary $2, $1, $3
     o 'Expression COMPARE Expression' ditto
     o 'Expression LOGIC   Expression' ditto
     o 'Expression MATH    Expression' ditto
-    o 'Expression ^       Expression' ditto
     o 'Expression POWER   Expression' ditto
     o 'Expression SHIFT   Expression' ditto
     o 'Expression BITWISE Expression' ditto
@@ -356,7 +358,7 @@ operators =
   <[ left     +-           ]>
   <[ left     MATH         ]>
   <[ right    UNARY        ]>
-  <[ right    POWER ^      ]>
+  <[ right    POWER        ]>
   <[ right    COMPOSE      ]>
   <[ nonassoc CREMENT      ]>
   <[ left     BACKTICK     ]>

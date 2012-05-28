@@ -115,7 +115,7 @@ eq '''
   }
 }).call(this);
 
-''', LiveScript.compile '''try for k of o then let then ^@'''
+''', LiveScript.compile '''try for k of o then let then ^^@'''
 
 
 eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' LiveScript.tokens('''
