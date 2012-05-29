@@ -386,10 +386,10 @@ function __curry(f, args){
     <div id="prelude-ls" class="section">
       <a name="prelude-ls">
       <h2>Standard Libaray</h2>
-      <p><a href="https://github.com/gkz/prelude-ls">prelude.ls</a> is the recommended library when using LiveScript. It allows you to do things such as:
+      <p><a href="https://github.com/gkz/prelude-ls">prelude.ls</a> is the recommended base library when using LiveScript. It allows you to do things such as:
 
 <pre class="prettyprint lang-ls">
-[1 2 3] |> map times 2 |> filter gt 3 |> fold1 add 
+[1 2 3] |> map (* 2) |> filter (> 3) |> fold1 (+) 
 #=> 10
 </pre>
 
