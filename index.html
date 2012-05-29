@@ -20,7 +20,7 @@
 <script src="lang-ls-0.9.6.js"></script>
 
 <script src="underscore-min.js"></script>
-<script src="prelude-min-0.1.0.js"></script>
+<script src="prelude-min-0.2.0.js"></script>
 
 <link href="styles.css" rel="stylesheet">
 
@@ -2299,6 +2299,7 @@ TOTAL    851 ms
       <li>Add infix function application, eg. <code>3 `add` 2</code>. Rationale: as in Haskell. Could be useful. 
       <li>Changed unary clone operator from <code>^</code> to <code>^^</code>. Rationale: disambiguate with partial application of power operator.
       <li>Added partial application of operators. Eg. <code>(+ 2)</code> returns a function which adds 2 to its argument. Also allowed is simply <code>(*)</code> which is a function which multiplies its two arguments. <code>(+x)</code> and <code>(-x)</code> still mean the application of those unary operators - the operator must be spaced to be the partial application of that operator. Using the length star <code>*</code> is no longer allowed within parens (sometimes used when setting dynamic keys), due to ambiguity with the partially applied multiplication operator. Rationale: awesome. As in Haskell.
+      <li>Added unary operators as functions. Eg. you can use <code>(not)</code> as a function, compose it, etc. Rationale: very useful, as in Haskell.
       </ul>
     </div>
     <hr>
