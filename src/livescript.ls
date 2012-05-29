@@ -15,7 +15,7 @@ parser import
     upcomingInput : -> ''
 
 exports import
-  VERSION: \0.9.5c
+  VERSION: \0.9.6
 
   # Compiles a string of LiveScript code to JavaScript.
   compile: (code, options) ->
