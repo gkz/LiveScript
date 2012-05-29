@@ -772,34 +772,35 @@ class exports.Arr extends List
 class exports.Unary extends Node
   # `flag` denotes inversion or postcrement.
   (op, it, flag) ~>
-    if not flag and it.unaries
-      that.push op
-      return it
-    switch op
-    case \!
-      break if flag
-      return it <<< {+void} if it instanceof Fun and not it.void
-      return it.invert!
-    case \++ \-- then @post = true if flag
-    case \new
-      # `new C?` => `new C?()`
-      if it instanceof Existence and not it.negated
-        it = Chain(it)add Call!
-      it.newed = true
-      for node in it.tails or ''
-        if node instanceof Call and not node.new
-          node.args.shift! if node.method is \.call
-          node <<< {\new, method: ''}
-          return it
-    case \~ then if it instanceof Fun and it.statement and not it.bound
-      return it <<< bound: \__this
+    if it?
+      if not flag and it.unaries
+        that.push op
+        return it
+      switch op
+      case \!
+        break if flag
+        return it <<< {+void} if it instanceof Fun and not it.void
+        return it.invert!
+      case \++ \-- then @post = true if flag
+      case \new
+        # `new C?` => `new C?()`
+        if it instanceof Existence and not it.negated
+          it = Chain(it)add Call!
+        it.newed = true
+        for node in it.tails or ''
+          if node instanceof Call and not node.new
+            node.args.shift! if node.method is \.call
+            node <<< {\new, method: ''}
+            return it
+      case \~ then if it instanceof Fun and it.statement and not it.bound
+        return it <<< bound: \__this
     import {op, it}
 
   children: [\it]
 
   show: -> ([\@ if @post]) + @op
 
-  isCallable: -> @op in <[ do new delete ]>
+  isCallable: -> @op in <[ do new delete ]> or @it!?
 
   isArray: -> @it instanceof Arr   and @it.items.length
            or @it instanceof Chain and @it.isArray!
@@ -811,7 +812,7 @@ class exports.Unary extends Node
     .. \! this, true
 
   unfoldSoak: (o) ->
-    @op in <[ ++ -- delete ]> and If.unfoldSoak o, this, \it
+    @op in <[ ++ -- delete ]> and @it? and If.unfoldSoak o, this, \it
 
   getAccessors: ->
     return unless @op is \~
@@ -825,6 +826,7 @@ class exports.Unary extends Node
   function crement then {'++':\in '--':\de}[it] + \crement
 
   compileNode: (o) ->
+    return @compileAsFunc o if @it!?
     return that if @compileSpread o
     {op, it} = this
     switch op
@@ -877,6 +879,10 @@ class exports.Unary extends Node
     return code if @assigned
     code += ", #{ o.scope.free ref }"
     if o.level < LEVEL_LIST then code else "(#code)"
+
+  compileAsFunc: (o) ->
+    (Fun [], Block Unary @op, Chain Var \it).compile o
+    
 
 #### Binary operators
 class exports.Binary extends Node
@@ -2153,7 +2159,6 @@ UTILS =
     }
   }'''
 
-  contradict: 'function(x){ return !x; })'
   equals: '__curry(function(x, y){ return x === y; })'
   notEquals: '__curry(function(x, y){ return x !== y; })'
   fuzzyEquals: '__curry(function(x, y){ return x == y; })'

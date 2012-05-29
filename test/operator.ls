@@ -477,7 +477,7 @@ eq -1, 7 %% -2
 x = 7; x %%= -2
 eq -1 x
 
-### Partially applied
+### Partially applied binary ops
 addTwo = (+ 2)
 eq 5 addTwo 3
 eq 7 (+) 3, 4
@@ -559,3 +559,16 @@ eq 2 (>? 1) 2
 eq 1 (<?) 2 1
 eq 1 (2 <?) 1
 eq 1 (<? 1) 2
+
+# Unary ops as functions
+ok (not) false
+ok (!).call(null, false)
+
+x = 3
+eq 4 (++) x # does not actually modify x
+eq 2 (--) x
+eq 4 (++).call(null, x)
+
+filter(f, xs) = [x for x in xs when f x]
+even(x) = x % 2 == 0
+eq '1,3,5' "#{ filter (not) << even, [1 to 5] }"

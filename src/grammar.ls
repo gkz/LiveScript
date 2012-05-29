@@ -70,6 +70,8 @@ bnf =
     o '( BIOP )'            -> Chain Binary $2
     o '( BIOP Expression )' -> Chain Binary $2, , $3
     o '( Expression BIOP )' -> Chain Binary $3, $2
+    o '( UNARY )'           -> Chain Unary $2
+    o '( CREMENT )'         -> Chain Unary $2
 
   # Array/Object
   List:
