@@ -17,7 +17,7 @@
 
 <script src="google-code-prettify/prettify.js"></script>
 <link href="google-code-prettify/prettify.css" rel="stylesheet">
-<script src="lang-ls-0.9.5.js"></script>
+<script src="lang-ls-0.9.6.js"></script>
 
 <script src="underscore-min.js"></script>
 <script src="prelude-min-0.1.0.js"></script>
@@ -101,9 +101,9 @@
         <h2>Overview</h2>
         <p>LiveScript is a language which compiles down to JavaScript. It is a fork of <a href="http://satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="http://coffeescript.org/">CoffeeScript</a>. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript is Coco but much more compatible with CoffeeScript, more functional, and more feature rich. LiveScript aims for increased expressiveness and code beauty.</p>
         <div class="major-actions">
-          <h3 class="download">Download 0.9.5</h3>
-          <a href="https://github.com/gkz/LiveScript/zipball/0.9.5c"><div class="btn btn-large btn">zip</div></a>
-          <a href="https://github.com/gkz/LiveScript/tarball/0.9.5c"><div class="btn btn-large btn">tar.gz</div></a>
+          <h3 class="download">Download 0.9.6</h3>
+          <a href="https://github.com/gkz/LiveScript/zipball/0.9.6"><div class="btn btn-large btn">zip</div></a>
+          <a href="https://github.com/gkz/LiveScript/tarball/0.9.6"><div class="btn btn-large btn">tar.gz</div></a>
           <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn-primary">View project on GitHub</div></a>
           <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="140" height="40"></iframe>
         </div>
@@ -348,7 +348,7 @@ function __curry(f, args){
     <div id="installation" class="section">
       <a name="installation"></a>
       <h2>Installation</h2>
-      <p>To install LiveScript on your system, download it (<a href="https://github.com/gkz/LiveScript/zipball/0.9.5c">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/0.9.5c">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
+      <p>To install LiveScript on your system, download it (<a href="https://github.com/gkz/LiveScript/zipball/0.9.6">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/0.9.6">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
       <p>You can install it through the <a href="http://npmjs.org">Node Package Manager</a>: <code>sudo npm install -g LiveScript</code>.
       <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
     </div>
@@ -1485,7 +1485,7 @@ obj #=> {two: 2, three: 3}
 document import obj
 
 ## Clone - unary, creates prototypical child value
-child = ^(new String)
+child = ^^(new String)
 child.length #=> 0
 </pre>
         </div>
@@ -2268,7 +2268,7 @@ TOTAL    851 ms
       <li>Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other projects are named LiveScript. Slake because lake was taken and lsake sounds bad. 
       <li>Switched so that <code>==</code> compiles into <code>===</code> and the converse, and also for the negatives. Rationale: Most people would want to use the JavaScript <code>===</code> more often than <code>==</code> and less typing is better, also this makes things more similar to CoffeeScript which compiles <code>==</code> to <code>===</code> so there is less code for people to change coming from CoffeeScript. The compilation of <code>is</code> to <code>===</code> stays the same.
       <li>Switched <code>in</code> and <code>of</code> so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: People have to change less of their CoffeeScript code, they're used to it, and using <code>in</code> for checking if a value is in an array just seems right, using <code>of</code> just feels weird.
-      <li>All bitwise operators except <code>~</code> have changed to triple themselves and shifts have also expanded, eg. <code>&amp;</code> is now <code>&amp;&amp;&amp;</code> (see comparison table for full changes). Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. The way the bitwise operators have changed is modelled after how they are done in F#, a functional language which happens to have them unlike most functional languages. Note: the unary ^ clone operator is unchanged.
+      <li>All bitwise operators except <code>~</code> have changed to triple themselves and shifts have also expanded, eg. <code>&amp;</code> is now <code>&amp;&amp;&amp;</code> (see comparison table for full changes). Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. The way the bitwise operators have changed is modelled after how they are done in F#, a functional language which happens to have them unlike most functional languages. 
       <li><code>=></code>, the pipe operator using _, is now <code>|>></code>. Free up => (for then alias), (<code>|</code> is used as an alias for case).
       <li><code>|</code> is an alias for <code>case</code> (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
       <li><code>=></code> is an alias for <code>then</code>. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with <code>|</code>, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
@@ -2295,8 +2295,10 @@ TOTAL    851 ms
       <li>Allowed expression in range syntax, eg. <code>[x to y/2]</code> instead of just number literals. This has the side effect of removing naked ranges, eg. <code>2 to 5</code> without enclosing brackets (for loops remain unchanged). Rationale: expressions in ranges are useful, much more than naked ranges which have really limited use. Also closer to CoffeeScript, easing transition again. 
       <li>Changed CLI to bare compilation so that defined variables are attached to global scope. Improved repl to continue when lines end with <code>-></code>, <code>~></code>, or <code>=</code>
       <li>Added list comprehensions (eg. <code>[x for x in list when x is \something]</code>) and removed postfix loops (eg. <code>something x for x in list</code>). Comprehensions always return a list. Nested list comprehensions behave properly, ie. the last for is the inner most loop. Rationale: following Haskell and Python. More consistent behavior. Easier to deal with in your head. More intuitive. 
-      <li>Removed JS literals, eg. <code>`js code here`</code>. Rationale: it was unneccasry, and it freed up backticks.
+      <li>Removed JS literals, eg. <code>`js code here`</code>. Rationale: it was unnecessary, and it freed up backticks.
       <li>Add infix function application, eg. <code>3 `add` 2</code>. Rationale: as in Haskell. Could be useful. 
+      <li>Changed unary clone operator from <code>^</code> to <code>^^</code>. Rationale: disambiguate with partial application of power operator.
+      <li>Added partial application of operators. Eg. <code>(+ 2)</code> returns a function which adds 2 to its argument. Also allowed is simply <code>(*)</code> which is a function which multiplies its two arguments. <code>(+x)</code> and <code>(-x)</code> still mean the application of those unary operators - the operator must be spaced to be the partial application of that operator. Using the length star <code>*</code> is no longer allowed within parens (sometimes used when setting dynamic keys), due to ambiguity with the partially applied multiplication operator. Rationale: awesome. As in Haskell.
       </ul>
     </div>
     <hr>
@@ -2327,6 +2329,6 @@ TOTAL    851 ms
 <script type="text/ls">
   console?.log 'LiveScript up'
 </script>
-<script src="livescript-0.9.5.js"></script>
+<script src="livescript-0.9.6.js"></script>
 </body>
 </html>
