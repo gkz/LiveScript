@@ -208,8 +208,8 @@ class exports.Block extends Node
 
   pipe: (target, type) -> 
     switch type
-    | \|>  => @lines.push Call.make(target, [@lines.pop!])
-    | \<|  => @lines.push Call.make(@lines.pop!, [target])
+    | \|>  => @lines.push Call.make(target, [@lines.pop!], pipe: true)
+    | \<|  => @lines.push Call.make(@lines.pop!, [target], pipe: true)
     | \|>> => @lines.push Assign(Var \_; @lines.pop!), target
     this
 
@@ -580,11 +580,13 @@ class exports.Call extends Node
   show: -> ([@new]) + ([@method]) + ([\? if @soak])
 
   compile: (o) ->
-    code  = (@method or '') + \(
+    code  =  (@method or '') + \( + (if @pipe then "\n#{o.indent}" else '')
     for a, i in @args then code += (if i then ', ' else '')+ a.compile o, LEVEL_LIST 
-    code + \)
-
-  @make = (callee, args) -> Chain(callee)add Call args
+    code + \) 
+  @make = (callee, args, opts) -> 
+    call = Call args
+    call <<< opts if opts
+    Chain(callee)add call
 
   @block = (fun, args, method) ->
     Parens(Chain fun, [Call(args) <<< {method}]; true) <<< {+calling}
