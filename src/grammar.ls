@@ -351,11 +351,11 @@ operators =
   <[ left     PIPE POST_IF FOR WHILE ]>
   <[ right    BACKPIPE     ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
-  <[ right    CONCAT       ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
   <[ left     RELATION     ]>
+  <[ right    CONCAT       ]>
   <[ left     SHIFT IMPORT ]>
   <[ left     +-           ]>
   <[ left     MATH         ]>

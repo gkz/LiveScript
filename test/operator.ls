@@ -447,6 +447,7 @@ eq '0,1,5'   String a +++ 5
 ##### &
 eq '0,2,3' String 0 & c
 eq '1,2,3' String 1 & 2 & 3
+ok not (true & [true] and false) # precedence 
 
 #### Join
 eq '0==1' a * \==

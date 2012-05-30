@@ -581,7 +581,7 @@ class exports.Call extends Node
 
   compile: (o) ->
     code  =  (@method or '') + \( + (if @pipe then "\n#{o.indent}" else '')
-    for a, i in @args then code += (if i then ', ' else '')+ a.compile o, LEVEL_LIST 
+    for a, i in @args then code += (if i then ', ' else '') + a.compile o, LEVEL_LIST 
     code + \) 
   @make = (callee, args, opts) -> 
     call = Call args
@@ -1015,7 +1015,7 @@ class exports.Binary extends Node
     |>> If _, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
-    args = @second & arg || []
+    args = @second & (arg || [])
     if @first"is#klass"!
       Chain(@first, [Index Key method; Call args])compile o
     else
