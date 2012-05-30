@@ -424,7 +424,8 @@ exports import
         return 9e9
       fallthrough
     case \] \)
-      if tag is \) and @last.0 in <[ +- COMPARE SHIFT LOGIC MATH POWER CONCAT ]> 
+      if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE
+                                     CONCAT COMPOSE RELATION PIPE BACKPIPE ]>
         @tokens[*-1].0 = \BIOP
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>
@@ -512,9 +513,11 @@ exports import
     case \<
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
-    if tag in <[ +- COMPARE SHIFT LOGIC MATH POWER CONCAT ]> and @last.0 is \(
+    if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT 
+                 COMPOSE RELATION PIPE BACKPIPE ]> and @last.0 is \(
       tag = \BIOP
-    @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE MATH POWER IMPORT SHIFT BITWISE ]>
+    @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE 
+                          MATH POWER IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 

@@ -572,3 +572,6 @@ eq 4 (++).call(null, x)
 filter(f, xs) = [x for x in xs when f x]
 even(x) = x % 2 == 0
 eq '1,3,5' "#{ filter (not) << even, [1 to 5] }"
+
+eq 2 (&&&) 10 3
+eq '1,3,5' "#{filter ((<<) (not), even), [1 to 5] }"

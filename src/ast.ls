@@ -881,7 +881,9 @@ class exports.Unary extends Node
     if o.level < LEVEL_LIST then code else "(#code)"
 
   compileAsFunc: (o) ->
-    (Fun [], Block Unary @op, Chain Var \it).compile o
+    if @op is \!
+    then util \not
+    else (Fun [], Block Unary @op, Chain Var \it).compile o
     
 
 #### Binary operators
@@ -1068,7 +1070,8 @@ class exports.Binary extends Node
     code
 
   compilePartial: (o) ->
-    mapOp =
+    util \curry
+    getFunc =
       \+   : [\add]
       \-   : [\minus \subtract]
       \==  : [\fuzzyEquals]
@@ -1079,8 +1082,8 @@ class exports.Binary extends Node
       \>=  : [\gte \lte]
       \<   : [\lt \gt]
       \<=  : [\lte \gte]
-      \&&  : [\andTest]
-      \||  : [\orTest]
+      \&&  : [\and]
+      \||  : [\or]
       \*   : [\multiply]
       \/   : [\divide \divideBy]
       \%   : [\rem \remTo]
@@ -1091,13 +1094,15 @@ class exports.Binary extends Node
       \+++ : [\append \appendTo]
       \>?  : [\max]
       \<?  : [\min]
-    func = mapOp[@op]
-    @carp 'unsupported operator for parital application' if func!?
-    util \curry
-    switch
-    | @first!? and @second!? => util func.0 
-    | @first?                => "#{ util func.0 }(#{@first.compile o})"
-    | otherwise              => "#{ util (func.1 ? func.0)}(#{@second.compile o})"
+    func = getFunc[@op]
+    if func!?
+      [x, y] = [@first  ? Chain Var \x; @second ? Chain Var \y]
+      "__curry(function(x, y){ return #{(Binary @op, x, y).compile o}; })"
+    else 
+      switch
+      | @first!? and @second!? => util func.0 
+      | @first?                => "#{ util func.0 }(#{@first.compile o})"
+      | otherwise              => "#{ util (func.1 ? func.0)}(#{@second.compile o})"
 
 #### Assign
 # Assignment to a variable/property.
@@ -2159,6 +2164,7 @@ UTILS =
     }
   }'''
 
+  not: '__curry(function(x){ return !x; })'
   equals: '__curry(function(x, y){ return x === y; })'
   notEquals: '__curry(function(x, y){ return x !== y; })'
   fuzzyEquals: '__curry(function(x, y){ return x == y; })'
@@ -2173,8 +2179,8 @@ UTILS =
   multiply: '__curry(function(x, y){ return x * y; })'
   divide: '__curry(function(x, y){ return x / y; })'
   divideBy: '__curry(function(x, y){ return y / x; })'
-  andTest: '__curry(function(x, y){ return x && y; })'
-  orTest: '__curry(function(x, y){ return x || y; })'
+  and: '__curry(function(x, y){ return x && y; })'
+  or: '__curry(function(x, y){ return x || y; })'
   rem: '__curry(function(x, y){ return x % y; })'
   remTo: '__curry(function(x, y){ return y % x; })'
   mod: '__curry(function(x, y){ return (x % y + y) % y; })'
