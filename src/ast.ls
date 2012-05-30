@@ -1072,7 +1072,6 @@ class exports.Binary extends Node
     code
 
   compilePartial: (o) ->
-    util \curry
     getFunc =
       \+   : [\add]
       \-   : [\minus \subtract]
@@ -1098,9 +1097,16 @@ class exports.Binary extends Node
       \<?  : [\min]
     func = getFunc[@op]
     if func!?
-      [x, y] = [@first  ? Chain Var \x; @second ? Chain Var \y]
-      "__curry(function(x, y){ return #{(Binary @op, x, y).compile o}; })"
+      x = Chain Var \x; y = Chain Var \y
+      switch
+      case   @first!? and @second!?
+        "#{util \curry}(function(x, y){ return #{(Binary @op, x, y).compile o}; })"
+      case @first?
+        "function(x){ return #{(Binary @op, @first, x).compile o}; }"
+      default
+        "function(x){ return #{(Binary @op, x, @second).compile o}; }"
     else 
+      util \curry
       switch
       | @first!? and @second!? => util func.0 
       | @first?                => "#{ util func.0 }(#{@first.compile o})"

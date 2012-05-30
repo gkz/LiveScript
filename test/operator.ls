@@ -574,4 +574,6 @@ even(x) = x % 2 == 0
 eq '1,3,5' "#{ filter (not) << even, [1 to 5] }"
 
 eq 2 (&&&) 10 3
+eq 2 (10 &&&) 3
+eq 2 (&&& 3) 10
 eq '1,3,5' "#{filter ((<<) (not), even), [1 to 5] }"
