@@ -1431,11 +1431,11 @@ class exports.Class extends Node
 class exports.Super extends Node
   isCallable: YES
 
-  simple = /^(?:\.|\[[\'\"\d.])/
+  constant = /^\.|^\[['"\d]/
 
   compile: ({scope}:o) ->
-    while scope.fun, scope.=parent
-      if simple.test key = that.meth?compile o
+    while not scope.get \superclass and scope.fun, scope.=parent
+      if constant.test key = that.meth?compile o
         return "superclass.prototype#key"
     \superclass
 
@@ -1939,6 +1939,8 @@ Scope::<<<
     @variables"#name." = type
     name
 
+  get: (name) -> @variables"#name."
+
   # Declares a variable unless declared already.
   declare: (name) ->
     if @shared
@@ -1964,7 +1966,7 @@ Scope::<<<
     @add temp, \var
 
   # Allows a variable to be reused.
-  free: -> @add it, \reuse
+  free: (name) -> @add name, \reuse
 
   # Checks to see if a variable has already been declared.
   # Walks up the scope if `above` flag is specified.
