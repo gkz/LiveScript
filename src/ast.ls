@@ -910,7 +910,7 @@ class exports.Binary extends Node
   show: -> @op
 
   isCallable: ->
-    @partial or @op in <[ && || ? !? ]> and @first.isCallable! and @second.isCallable!
+    @partial or @op in <[ && || ? !? << >> ]> and @first.isCallable! and @second.isCallable!
 
   isArray: -> switch @op
     | \* => return @first instanceof Arr

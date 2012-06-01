@@ -406,6 +406,8 @@ eq \OLLEH ('hello' |> reverse |> upCase)
 
 eq \OLLEH (upCase <| reverse <| \hello)
 
+eq 8 ((+ 2) << (* 2) <| 3)
+
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
 eq 'number,string' ''+ typeof
