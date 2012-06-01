@@ -134,6 +134,7 @@
 
   unfoldSoak   : VOID
   unfoldAssign : VOID
+  unparen      : THIS
   unwrap       : THIS
   maybeKey     : THIS
   expandSlice  : THIS
@@ -185,15 +186,18 @@ Negatable =
 # A list of expressions that forms the body of an indented block of code.
 class exports.Block extends Node
   (node) ~>
-    return node if node instanceof Block
     @lines = []
-    @add node if node
+    return this unless node
+    node.=unparen!
+    return node if node instanceof Block
+    @add node
 
   children: [\lines]
 
   toJSON: -> delete @back; super!
 
   add: ->
+    it.=unparen!
     switch
     case @back    then that.add it
     case it.lines then @lines.push ...that
@@ -1062,8 +1066,7 @@ class exports.Assign extends Node
       [left, reft] = Chain(left)cacheReference o
       right = Binary op.slice(0 -1), reft, right
       op    = \:=
-    right.=it while right instanceof Parens and not right.keep
-    right.ripName left.=unwrap!
+    (right.=unparen!)ripName left.=unwrap!
     lvar = left instanceof Var
     sign = op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
@@ -1452,6 +1455,8 @@ class exports.Parens extends Node
   ::delegate <[ isComplex isCallable isArray isRegex ]> -> @it[it]!
 
   isString: -> @string or @it.isString!
+
+  unparen: -> if @keep then this else @it.unparen!
 
   compile: (o, level ? o.level) ->
     {it} = this

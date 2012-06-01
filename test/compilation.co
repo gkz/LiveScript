@@ -66,9 +66,10 @@ eq '''
 while (0) {
   while (0) {
     ({}), {};
+    break;
   }
 }
-''', Coco.compile '({};{}) while 0 while 0' bare
+''', Coco.compile '({} = ({}; {}); break) while 0 while 0' bare
 
 
 throws 'invalid use of null on line 1', -> Coco.compile 'null.po'
@@ -145,7 +146,7 @@ eq '''
   var __ref;
   throw a < (__ref = +b) && __ref < c;
 }());
-''', Coco.compile '(throw a < +b < c)' bare
+''', Coco.compile '* throw a < +b < c' bare
 
 
 eq '!a;', Coco.compile '!!!a' bare
