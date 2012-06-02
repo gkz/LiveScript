@@ -134,6 +134,7 @@
 
   unfoldSoak   : VOID
   unfoldAssign : VOID
+  unparen      : THIS
   unwrap       : THIS
   maybeKey     : THIS
   expandSlice  : THIS
@@ -185,15 +186,18 @@ Negatable =
 # A list of expressions that forms the body of an indented block of code.
 class exports.Block extends Node
   (node) ~>
-    return node if node instanceof Block
     @lines = []
-    @add node if node
+    return this unless node
+    node.=unparen!
+    return node if node instanceof Block
+    @add node
 
   children: [\lines]
 
   toJSON: -> delete @back; super!
 
   add: ->
+    it.=unparen!
     switch
     | @back     => that.add it
     | it.lines  => @lines.push ...that
@@ -1168,8 +1172,7 @@ class exports.Assign extends Node
       [left, reft] = Chain(left)cacheReference o
       right = Binary op.slice(0 -1), reft, right
       op    = \:=
-    while right instanceof Parens and not right.keep then right.=it 
-    right.ripName left.=unwrap!
+    (right.=unparen!)ripName left.=unwrap!
     lvar = left instanceof Var
     sign = op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
@@ -1538,11 +1541,11 @@ class exports.Class extends Node
 class exports.Super extends Node
   isCallable: YES
 
-  simple = /^(?:\.|\[[\'\"\d.])/
+  constant = /^\.|^\[['"\d]/
 
   compile: ({scope}:o) ->
-    while scope.fun, scope.=parent
-      if simple.test key = that.meth?compile o
+    while not scope.get \superclass and scope.fun, scope.=parent
+      if constant.test key = that.meth?compile o
         return "superclass.prototype#key"
     \superclass
 
@@ -1559,6 +1562,8 @@ class exports.Parens extends Node
   ::delegate <[ isComplex isCallable isArray isRegex ]> -> @it[it]!
 
   isString: -> @string or @it.isString!
+
+  unparen: -> if @keep then this else @it.unparen!
 
   compile: (o, level ? o.level) ->
     {it} = this
@@ -2055,6 +2060,8 @@ Scope ::=
     @variables"#name." = type
     name
 
+  get: (name) -> @variables"#name."
+
   # Declares a variable unless declared already.
   declare: (name) ->
     if @shared
@@ -2080,7 +2087,7 @@ Scope ::=
     @add temp, \var
 
   # Allows a variable to be reused.
-  free: -> @add it, \reuse
+  free: (name) -> @add name, \reuse
 
   # Checks to see if a variable has already been declared.
   # Walks up the scope if `above` flag is specified.

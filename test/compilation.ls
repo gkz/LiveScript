@@ -50,9 +50,10 @@ eq '''
 while (0) {
   while (0) {
     ({}), {};
+    break;
   }
 }
-''', LiveScript.compile 'while 0 then while 0 then ({};{})' bare
+''', LiveScript.compile 'while 0 then while 0 then {} = ({}; {}); break' bare
 
 
 throws 'invalid use of null on line 1', -> LiveScript.compile 'null.po'
@@ -129,7 +130,7 @@ eq '''
   var __ref;
   throw a < (__ref = +b) && __ref < c;
 }());
-''', LiveScript.compile '(throw a < +b < c)' bare
+''', LiveScript.compile '* throw a < +b < c' bare
 
 
 eq '!a;', LiveScript.compile '!!!a' bare

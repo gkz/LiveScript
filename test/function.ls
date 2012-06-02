@@ -220,7 +220,7 @@ eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
 
 
-throws 'inconvertible statement on line 1', -> LiveScript.compile '(return)'
+throws 'inconvertible statement on line 1', -> LiveScript.compile 'r = return'
 throws 'inconvertible statement on line 2', -> LiveScript.compile '''
   r =
     return
