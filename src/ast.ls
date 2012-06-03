@@ -2179,7 +2179,7 @@ UTILS =
     }
   }'''
 
-  not: '__curry(function(x){ return !x; })'
+  not: 'function(x){ return !x; }'
   equals: '__curry(function(x, y){ return x === y; })'
   notEquals: '__curry(function(x, y){ return x !== y; })'
   fuzzyEquals: '__curry(function(x, y){ return x == y; })'
