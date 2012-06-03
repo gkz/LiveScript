@@ -1307,6 +1307,9 @@ n = 0
 
 
 
+
+
+
 ## Math
 # The standard
 1 + 2 #=> 3
@@ -1487,6 +1490,11 @@ document import obj
 ## Clone - unary, creates prototypical child value
 child = ^^(new String)
 child.length #=> 0
+
+## Partial application, ops as functions
+(+ 2) 4    #=> 6
+(*) 4 3    #=> 12
+(not) true #=> false
 </pre>
         </div>
         <div class="example-js">
@@ -1497,7 +1505,10 @@ var n, reverse, add, addTwo, timesTwo,
   neg, string, obj, one, child, __ref, _, 
   __slice = [].slice, __join = [].join, 
   __replace = ''.replace, __split = ''.split,
-  __toString = {}.toString;
+  __toString = {}.toString, 
+  __add = __curry(function(x, y){ return x+y; }), 
+  __multiply = __curry(function(x, y){ return x*y; }),
+  __not = __curry(function(x){ return !x; });
 n = 0;
 1 + 2;
 3 - 4;
@@ -1677,6 +1688,11 @@ __importAll({
 __import(document, obj);
 child = __clone(new String);
 child.length;
+
+
+__add(2)(4);
+__multiply(4, 3);
+__not(true);
 
 function __curry(f, args){
   return f.length ? function(){
