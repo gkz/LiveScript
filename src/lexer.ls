@@ -958,6 +958,10 @@ character = if JSON!? then uxxxx else ->
       if not token.spaced and token.1 in <[ + - ]> and tokens[i+1].0 isnt \)  
         tokens[i].0 = \+- 
       continue
+    case \DOT
+      if token.spaced and tokens[i-1].spaced
+        tokens[i] = [\COMPOSE \<< token.2]
+      continue
     default continue
     if token.spaced and tokens[i+1]0 in ARG
       tokens.splice ++i, 0 [\, \, token.2]

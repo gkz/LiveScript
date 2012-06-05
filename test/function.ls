@@ -584,6 +584,14 @@ plusOneTimesTwo = timesTwo << plusOne
 eq 5 timesTwoPlusOne 2
 eq 6 plusOneTimesTwo 2
 
+pott = timesTwo . plusOne
+eq 6 pott 2
+
+even = (x) -> x % 2 == 0
+odd = (not) . even
+ok odd 3
+ok not odd 2
+
 ### infix calls
 add = (x, y) -> x + y
 times = (x, y) -> x * y
