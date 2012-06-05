@@ -1411,6 +1411,10 @@ timesTwoAddTwo = addTwo << timesTwo
 addTwoTimesTwo 3 #=> 10
 timesTwoAddTwo 3 #=> 8
 
+even = (x) -> x % 2 == 0
+odd  = (not) . even
+
+
 ## List 
 list1 = <[ one two three ]>
 list2 = [\four]
@@ -1501,9 +1505,9 @@ child.length #=> 0
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
 var n, reverse, add, addTwo, timesTwo, 
-  addTwoTimesTwo, timesTwoAddTwo, list1, list2,
-  neg, string, obj, one, child, __ref, _, 
-  __slice = [].slice, __join = [].join, 
+  addTwoTimesTwo, timesTwoAddTwo, even, odd, 
+  list1, list2, neg, string, obj, one, child, __ref,
+  _, __slice = [].slice, __join = [].join, 
   __replace = ''.replace, __split = ''.split,
   __toString = {}.toString, 
   __add = __curry(function(x, y){ return x+y; }), 
@@ -1609,6 +1613,10 @@ timesTwoAddTwo = __compose((addTwo),(timesTwo));
 addTwoTimesTwo(3);
 timesTwoAddTwo(3);
 
+even = function(x){
+  return x % 2 === 0;
+};
+odd = __compose((__not),(even));
 
 list1 = ['one', 'two', 'three'];
 list2 = ['four'];
@@ -2179,6 +2187,7 @@ f do
   a: b
 </pre>
       <li>Remove any JavaScript code literals, eg. <code>`js code here`</code>. That functionality is no longer availible in LiveScript. Rewrite the code to use LiveScript instead. 
+      <li>Change any dually spaced property access, eg. <code>x . y</code> to be either spaced on only one side or not at all. A dually spaced dot is now used to compose functions.
       </ul>
     </div>
     <div id="comparison-table" class="section">
@@ -2316,6 +2325,7 @@ TOTAL    851 ms
       <li>Changed unary clone operator from <code>^</code> to <code>^^</code>. Rationale: disambiguate with partial application of power operator.
       <li>Added partial application of operators. Eg. <code>(+ 2)</code> returns a function which adds 2 to its argument. Also allowed is simply <code>(*)</code> which is a function which multiplies its two arguments. <code>(+x)</code> and <code>(-x)</code> still mean the application of those unary operators - the operator must be spaced to be the partial application of that operator. Using the length star <code>*</code> is no longer allowed within parens (sometimes used when setting dynamic keys), due to ambiguity with the partially applied multiplication operator. Rationale: awesome. As in Haskell.
       <li>Added unary operators as functions. Eg. you can use <code>(not)</code> as a function, compose it, etc. Rationale: very useful, as in Haskell.
+      <li>Added <code>.</code> as alias to <code>&lt;&lt;</code> in composing functions. This disallows property access in the style of <code>x . y</code>. Rationale: as in Haskell. Dually spaced property access should never be used anyway. 
       </ul>
     </div>
     <hr>
