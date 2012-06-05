@@ -151,6 +151,14 @@
   makeReturn: (arref) ->
     if arref then Call.make JS(arref + \.push), [this] else Return this
 
+  makeObjReturn: (arref) ->
+    if arref 
+      items = this.lines.0.items
+      if items.0!? or items.1!?
+        @carp 'must specify both key and value for object comprehension' 
+      Assign (Chain Var arref).add(Index items.0, \., true), items.1 
+    else Return this
+
   # Extra info for `toString`.
   show: String
 
@@ -1179,7 +1187,8 @@ class exports.Assign extends Node
     code = if not o.level and right instanceof While and not right.else and
               (lvar or left.isSimpleAccess!)
       # Optimize `a = while ...`.
-      """#{ res = o.scope.temporary \res } = [];
+      empty = if right.objComp then '{}' else '[]'
+      """#{ res = o.scope.temporary \res } = #empty;
          #{@tab}#{ right.makeReturn(res)compile o }
          #{@tab}#name #sign #{ o.scope.free res }"""
     else
@@ -1694,12 +1703,15 @@ class exports.While extends Node
     @body.lines.length = 0 if top?verb is \continue and not top.label
     this
 
-  addElse: (@else) -> this
+  addElse:  (@else)  -> this
   addGuard: (@guard) -> this
+  addObjComp: -> @objComp = true; this
 
   makeReturn: ->
     if it
-    then @body.makeReturn it
+      if @objComp
+      then @body = Block @body.makeObjReturn it
+      else @body.makeReturn it
     else @getJump! or @returns = true
     this
 
@@ -1717,8 +1729,9 @@ class exports.While extends Node
     o <<< {+\break, +\continue}
     {lines} = @body; code = ret = ''
     if @returns
-      lines[*-1]?=makeReturn res = o.scope.assign \__results '[]'
-      ret = "\n#{@tab}return #{ res or '[]' };"
+      empty = if @objComp then '{}' else '[]'
+      lines[*-1]?=makeReturn res = o.scope.assign \__results empty
+      ret = "\n#{@tab}return #{ res or empty };"
     lines.unshift JS "#{ run = o.scope.temporary \run } = true;" if @else
     code += "\n#that\n#{@tab}" if @body.compile o, LEVEL_TOP
     code += \}
@@ -1739,7 +1752,7 @@ class exports.For extends While
 
   aSource: null
 
-  show: -> @index or 'implicit index'
+  show: -> @index
 
   compileNode: (o) ->
     o.loop = true
@@ -2177,6 +2190,14 @@ UTILS =
     return function(){
       return f(g.apply(this, arguments)); 
     }
+  }'''
+
+  objectFromList: '''function(xs){
+    var o = {}, i;
+    for (i = 0, len = xs.length; i < len; ++i) {
+      o[xs[i][0]] = xs[i][1];
+    }
+    return o;
   }'''
 
   not: 'function(x){ return !x; }'

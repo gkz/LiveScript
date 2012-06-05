@@ -57,13 +57,20 @@ results = [n * 2 for n in nums]
 eq results + '', '2,18'
 
 
-# Basic object comprehensions.
+# Basic 'of' comprehensions.
 obj   = {one: 1, two: 2, three: 3}
 names = [prop + '!' for prop of obj]
 odds  = for prop, value of obj then prop + '!' if value &&& 1
 
 eq names.join(' '), 'one! two! three!'
 eq odds. join(' '), 'one! three!'
+
+
+# Basic object comprehensions
+result = {[key, val * 2] for key, val of obj}
+eq 2 result.one
+eq 4 result.two
+eq 6 result.three
 
 
 # Basic range comprehensions.

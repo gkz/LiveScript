@@ -66,7 +66,11 @@ bnf =
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
+
     o '[ Expression LoopHeads ]'  -> Chain new Parens $3.0.makeComprehension $2, $3.slice 1 
+    o '{ [ ArgList OptComma ] LoopHeads }'
+    , -> Chain new Parens $6.0.addObjComp!makeComprehension (L Arr $3), $6.slice 1
+
     o '( BIOP )'            -> Chain Binary $2
     o '( BIOP Expression )' -> Chain Binary $2, , $3
     o '( Expression BIOP )' -> Chain Binary $3, $2
