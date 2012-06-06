@@ -232,9 +232,6 @@ switch
         _ !? global <<< {_}
         pp  _
         say _ if typeof _ is \function
-        for name of lsv = LiveScript.savedScope?.variables when \__ is name.slice 0, 2
-          delete lsv[name]
-          global[name - \.] = void
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"
