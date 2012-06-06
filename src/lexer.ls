@@ -10,8 +10,6 @@
 # Some potential ambiguity in the grammar has been avoided by
 # pushing some extra smarts into Lexer.
 
-upperCaseOne = (i) -> i.1.toUpperCase!
-
 exports import
   #### Public Methods
 
@@ -90,7 +88,7 @@ exports import
   doID: (code, index) ->
     [input] = match = (ID <<< lastIndex: index)exec code
     return 0 unless input
-    id = match.1.replace /-+([a-zA-Z0-9$_])/g, upperCaseOne
+    id = match.1.replace /-+([a-zA-Z0-9$_])/g, -> it.1.to-upper-case!
     {last} = this
     # `id:_` `_.id` `@id`
     if match.4 or last.0 is \DOT or @adi!
@@ -1023,7 +1021,7 @@ ID = let
     # zero-width (non-)joiner
     \u200c\u200d
   //$
-  // ( [ #start ][ #start #part ]*(([-]+[a-z]+)?)* )
+  // ( [ #start ][ #start #part ]*(([-]+[a-zA-Z]+)?)* )
      ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
   |//g
 SYMBOL = //
