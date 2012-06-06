@@ -66,7 +66,7 @@ eq names.join(' '), 'one! two! three!'
 eq odds. join(' '), 'one! three!'
 
 
-# Basic object comprehensions
+# Object comprehensions
 result = {[key, val * 2] for key, val of obj}
 eq 2 result.one
 eq 4 result.two
@@ -82,6 +82,10 @@ f = ->
 obj = f!
 eq 2 obj.a
 eq 4 obj.b
+
+r = {[key, val] for key, val of {a:1, b:2} when val isnt 2}
+eq 1 r.a
+ok r.b!?
 
 
 # Basic range comprehensions.

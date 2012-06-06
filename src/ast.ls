@@ -153,7 +153,9 @@
 
   makeObjReturn: (arref) ->
     if arref 
-      items = this.lines.0.items
+      base = this.lines.0
+      base.=then.lines.0 if this.lines.0 instanceof If
+      items = base.items
       if items.0!? or items.1!?
         @carp 'must specify both key and value for object comprehension' 
       Assign (Chain Var arref).add(Index items.0, \., true), items.1 
@@ -1710,8 +1712,10 @@ class exports.While extends Node
   makeReturn: ->
     if it
       if @objComp
-      then @body = Block @body.makeObjReturn it
-      else @body.makeReturn it
+        @body = Block @body.makeObjReturn it
+        @body = If @guard, @body if @guard
+      else 
+        @body.makeReturn it
     else 
       @getJump! or @returns = true
     this
@@ -1731,6 +1735,7 @@ class exports.While extends Node
     {lines} = @body; code = ret = ''
     if @returns
       @body = Block @body.makeObjReturn \__results if @objComp
+      @body = If @guard, @body if @guard and @objComp
       empty = if @objComp then '{}' else '[]'
       lines[*-1]?=makeReturn res = o.scope.assign \__results empty
       ret = "\n#{@tab}return #{ res or empty };"
