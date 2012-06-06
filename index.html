@@ -2182,6 +2182,7 @@ f do
 </pre>
       <li>Remove any JavaScript code literals, eg. <code>`js code here`</code>. That functionality is no longer availible in LiveScript. Rewrite the code to use LiveScript instead. 
       <li>Change any dually spaced property access, eg. <code>x . y</code> to be either spaced on only one side or not at all. A dually spaced dot is now used to compose functions.
+      <li>Change any non spaced identifier subtraction, eg. <code>a-b</code> to spaced <code>a - b</code>. <code>a-1</code> and <code>1-b</code> are still fine. This is because <code>a-b</code> is a valid identifier in LiveScript, equivalent to its camel case, <code>aB</code>.
       </ul>
     </div>
     <div id="comparison-table" class="section">
