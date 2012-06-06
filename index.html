@@ -201,6 +201,8 @@ function __compose(f, g){
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
+
+
 # Easy listing of implicit objects using asterisks
 table1 =
   * id: 1
@@ -210,11 +212,6 @@ table1 =
   * id: 3
     name: \donald
 
-
-
-
-
-
 table2 =
   * id: 2
     age: 21
@@ -223,22 +220,10 @@ table2 =
   * id: 3
     age: 26
 
-
-
-
 # Implicit arg, accessignment
-upCaseName = -> it.name .= toUpperCase!
+upCaseName = -> it.name.=toUpperCase!
 
 # Curried functions using -->
-each = (f, list) -->
-  for x in list then f x
-  list
-
-
-
-
-
-
 sortBy = (prop, list) --> list.sort (a, b) -> 
   | a[prop] < b[prop] => -1
   | a[prop] > b[prop] => 1
@@ -253,56 +238,59 @@ sortBy = (prop, list) --> list.sort (a, b) ->
 # List comprehensions, destructuring, piping
 [{id:id1, name, age} for {id:id1, name} in table1 for {id:id2, age} in table2 when id1 is id2]
 |> sortBy \id
-|> each upCaseName
+|> each upCaseName # using 'each' from prelude.ls
 |> JSON.stringify
 
 #=>
 #[{"id":1,"name":"GEORGE","age":20},
 # {"id":2,"name":"MIKE",  "age":21},
 # {"id":3,"name":"DONALD","age":26}]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# operators as functions, backpipe
+fold1 (+) <| pluck \age table2
+#=> 67 ('fold1' and 'pluck' from prelude.ls)
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var table1, table2, upCaseName, each, 
-  sortBy, id2, age, id1, name;
+var table1, table2, upCaseName, 
+  sortBy, id2, age, id1, name,
+  __add = __curry(function(x, y){ return x + y; });
 table1 = [
-  {
-    id: 1,
-    name: 'george'
-  }, {
-    id: 2,
-    name: 'mike'
-  }, {
-    id: 3,
-    name: 'donald'
-  }
+  { id: 1,
+    name: 'george' },
+  { id: 2,
+    name: 'mike'   },
+  { id: 3,
+    name: 'donald' }
 ];
 table2 = [
-  {
-    id: 2,
-    age: 21
-  }, {
-    id: 1,
-    age: 20
-  }, {
-    id: 3,
-    age: 26
-  }
+  { id: 2,
+    age: 21 },
+  { id: 1,
+    age: 20 },
+  { id: 3,
+    age: 26 }
 ];
+
 upCaseName = function(it){
   return it.name = it.name.toUpperCase();
 };
-each = __curry(function(f, list){
-  var x, __i, __len;
-  for (__i = 0, __len = list.length;
-       __i < __len; ++__i) {
-    x = list[__i];
-    f(x);
-  }
-  return list;
-});
 sortBy = __curry(function(prop, list){
   return list.sort(function(a, b){
     switch (false) {
@@ -315,7 +303,10 @@ sortBy = __curry(function(prop, list){
     }
   });
 });
-JSON.stringify(each(upCaseName)(sortBy('id')((function(){
+JSON.stringify(
+each(upCaseName)(
+sortBy('id')(
+(function(){
   var __i, __ref, __len, __ref1, __j, __len1, __ref2, __results = [];
   for (__i = 0, __len = (__ref = table2).length; __i < __len; ++__i) {
     __ref1 = __ref[__i], id2 = __ref1.id, age = __ref1.age;
@@ -332,6 +323,9 @@ JSON.stringify(each(upCaseName)(sortBy('id')((function(){
   }
   return __results;
 }()))));
+
+fold1(__add)(
+pluck('age', table2));
 
 function __curry(f, args){
   return f.length ? function(){
