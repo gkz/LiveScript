@@ -17,7 +17,7 @@
 
 <script src="google-code-prettify/prettify.js"></script>
 <link href="google-code-prettify/prettify.css" rel="stylesheet">
-<script src="lang-ls-0.9.7.js"></script>
+<script src="lang-ls-0.9.8.js"></script>
 
 <script src="underscore-min.js"></script>
 <script src="prelude-min-0.2.0.js"></script>
@@ -101,9 +101,9 @@
         <h2>Overview</h2>
         <p>LiveScript is a language which compiles down to JavaScript. It is a fork of <a href="http://satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="http://coffeescript.org/">CoffeeScript</a>. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript is Coco but much more compatible with CoffeeScript, more functional, and more feature rich. LiveScript aims for increased expressiveness and code beauty.</p>
         <div class="major-actions">
-          <h3 class="download">Download 0.9.7</h3>
-          <a href="https://github.com/gkz/LiveScript/zipball/0.9.7"><div class="btn btn-large btn">zip</div></a>
-          <a href="https://github.com/gkz/LiveScript/tarball/0.9.7"><div class="btn btn-large btn">tar.gz</div></a>
+          <h3 class="download">Download 0.9.8</h3>
+          <a href="https://github.com/gkz/LiveScript/zipball/0.9.8"><div class="btn btn-large btn">zip</div></a>
+          <a href="https://github.com/gkz/LiveScript/tarball/0.9.8"><div class="btn btn-large btn">tar.gz</div></a>
           <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn-primary">View project on GitHub</div></a>
           <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="140" height="40"></iframe>
         </div>
@@ -342,7 +342,7 @@ function __curry(f, args){
     <div id="installation" class="section">
       <a name="installation"></a>
       <h2>Installation</h2>
-      <p>To install LiveScript on your system, download it (<a href="https://github.com/gkz/LiveScript/zipball/0.9.7">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/0.9.7">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
+      <p>To install LiveScript on your system, download it (<a href="https://github.com/gkz/LiveScript/zipball/0.9.8">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/0.9.8">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
       <p>You can install it through the <a href="http://npmjs.org">Node Package Manager</a>: <code>sudo npm install -g LiveScript</code>.
       <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
     </div>
@@ -993,6 +993,7 @@ r = {[key, val * 2] for key, val of {a: 1, b: 2}}
 
 # While
 i = 0
+list = [1 to 10]
 while n < 9
   n = list[++i]
 
@@ -1000,7 +1001,7 @@ while n < 9
 # while/until can also accept when guard
 # else clause executes if loops doesn't run
 i = 1
-until n > 7 when n isnt 3
+until i > 7 when n isnt 99
   n = list[++i]
 else
   10
@@ -1011,30 +1012,32 @@ else
 i = 0
 do
   i++
-while list[i] isnt 9 
+while list[i] < 9 
 
 # while accepts an updated clause
 # can be postfix too
 i = 0
-while list[i] isnt 9, i++ then i
+while list[i] < 9, i++ then i
 
 # while true
+i = 0
 loop
   \ha
-  break if ++i > 100
+  break if ++i > 20
 
 
 
+i = 0
 for ever
   \ha
-  if ++i > 100
+  if ++i > 20
      break
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var i, val, key, x, r, y, n, __ref, __len,
+var i, val, key, x, r, y, list, n, __ref, __len,
   __res, __i, __j, __ref1, __len1, __run;
 for (i = 1; i <= 10; i += 3) {
   i;
@@ -1081,6 +1084,7 @@ for (key in __ref = {
 }
 r = __res;
 i = 0;
+list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 while (n < 9) {
   n = list[++i];
 }
@@ -1088,9 +1092,9 @@ while (n < 9) {
 
 
 i = 1;
-while (!(n > 7)) {
+while (!(i > 7)) {
   __run = true;
-  if (n !== 3) {
+  if (n !== 99) {
     n = list[++i];
   }
 } if (!__run) {
@@ -1107,15 +1111,17 @@ i = 0;
 for (; list[i] !== 9; i++) {
   i;
 }
+i = 0;
 for (;;) {
   'ha';
-  if (++i > 50) {
+  if (++i > 20) {
     break;
   }
 }
+i = 0;
 for (;;) {
   'ha';
-  if (++i > 100) {
+  if (++i > 20) {
     break;
   }
 }
@@ -2358,6 +2364,6 @@ TOTAL    851 ms
 <script type="text/ls">
   console?.log 'LiveScript up'
 </script>
-<script src="livescript-0.9.7.js"></script>
+<script src="livescript-0.9.8.js"></script>
 </body>
 </html>
