@@ -371,3 +371,14 @@ encodeURL = 9
 eq 9 encode-URL
 eq 9 encode-uRL
 eq 9 encode-u-r-l
+
+obj =
+  ha-ha: 2
+
+eq 2 obj.ha-ha
+eq 2 obj.haHa
+
+green = 5
+eq 4 --green
+green--
+eq 3 green

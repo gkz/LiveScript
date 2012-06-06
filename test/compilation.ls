@@ -168,3 +168,6 @@ null;
 -> void;
 null
 ''' bare
+
+# Dash seperated identifiers
+throws "Parse error on line 1: Unexpected 'ID'" -> LiveScript.compile 'a--b = 1'

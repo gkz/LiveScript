@@ -1021,7 +1021,7 @@ ID = let
     # zero-width (non-)joiner
     \u200c\u200d
   //$
-  // ( [ #start ][ #start #part ]*(([-]+[a-zA-Z]+)?)* )
+  // ( [ #start ][ #start #part ]*((\-[a-zA-Z]+)?)* )
      ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
   |//g
 SYMBOL = //
