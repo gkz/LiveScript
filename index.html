@@ -140,9 +140,9 @@ $('h1').on('click', function(){
 # Curried functions, implicit switch, and
 # cons operator
 take(n, [x, ...xs]:list) =
-  | n <= 0       => []
-  | !list.length => []
-  | otherwise    => x & take n - 1, xs
+  | n <= 0     => []
+  | empty list => []
+  | otherwise  => x & take n - 1, xs
 
 take 2, [1 2 3 4 5] #=> [1, 2]
 
@@ -167,7 +167,7 @@ take = __curry(function(n, list){
   switch (false) {
   case !(n <= 0):
     return [];
-  case !!list.length:
+  case !empty(list):
     return [];
   default:
     return [(x)].concat(take(n - 1, xs));
