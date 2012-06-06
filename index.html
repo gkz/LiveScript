@@ -68,6 +68,7 @@
         <li><a href="#comparison-table">Comparison Table</a></li> 
         <li><a href="#speed">Speed</a></li> 
         <li><a href="#changes">Changes from Coco</a></li> 
+        <li><a href="#changelog">Changelog</a></li> 
         <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
         <li><a href="#name">Name</a></li> 
@@ -2334,6 +2335,56 @@ TOTAL    851 ms
       <li>Added <code>.</code> as alias to <code>&lt;&lt;</code> in composing functions. This disallows property access in the style of <code>x . y</code>. Rationale: as in Haskell. Dually spaced property access should never be used anyway. 
       <li>Added object comprehensions. Eg. <code>{[key, val * 2] for key, val of obj}</code> would return an object with all the values double of the original. The first part of the array literal gets translated into the key, the second part into the value. Rationale: very useful when dealing with objects. Can now map and filter objects back into objects.
       <li>Dashes are now supported in identifiers, they get converted into camel case. Eg. <code>get-room</code> is equivalent to <code>getRoom</code>, <code>encode-URI</code> is <code>encodeURI</code>. Rationale: enable different styles which other people may enjoy. As in the lisp family of languages. 
+      </ul>
+    </div>
+    <div id="changelog" class="section">
+      <a name="changelog"></a>
+      <h2>Changelog</h2>
+      <p>For more details see <a href="#changes">Changes from Coco</a>
+      <h3>0.9.8</h3>
+      <ul>
+        <li>Object comprehensions added
+        <li>Dashes in identifiers allows (transformed to camel case)
+      </ul>
+      <h3>0.9.7</h3>
+      <ul>
+        <li>Bug fixes
+        <li>Precedence change of <code>&</code> and <code>+++</code>
+        <li>Nicer pipe (<code>|></code> compilation
+      </ul>
+      <h3>0.9.6</h3>
+      <ul>
+        <li>Partially applied operators
+        <li>Operators as functions
+      </ul>
+      <h3>0.9.5</h3>
+      <ul>
+        <li>Infix function calls added
+        <li>JS literals removed
+        <li>Improved CLI
+      </ul>
+      <h3>0.9.4</h3>
+      <ul>
+        <li>Added proper list comprehensions
+        <li>Removed post-fix loops
+      </ul>
+      <h3>0.9.3</h3>
+      <ul>
+        <li>Changed node requirements
+      </ul>
+      <h3>0.9.2</h3>
+      <ul>
+        <li>Improved CLI
+        <li>Enabled expressions in range syntax
+      </ul>
+      <h3>0.9.1</h3>
+      <ul>
+        <li>Changed number radix symbol to <code>~</code>
+        <li>Added <code>%%=</code>
+      </ul>
+      <h3>0.9.0</h3>
+      <ul>
+        <li>Initial public release, many changes. See <a href="#changes">Changes from Coco</a> for more details.
       </ul>
     </div>
     <hr>
