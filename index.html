@@ -2320,6 +2320,8 @@ TOTAL    851 ms
       <li>Added partial application of operators. Eg. <code>(+ 2)</code> returns a function which adds 2 to its argument. Also allowed is simply <code>(*)</code> which is a function which multiplies its two arguments. <code>(+x)</code> and <code>(-x)</code> still mean the application of those unary operators - the operator must be spaced to be the partial application of that operator. Using the length star <code>*</code> is no longer allowed within parens (sometimes used when setting dynamic keys), due to ambiguity with the partially applied multiplication operator. Rationale: awesome. As in Haskell.
       <li>Added unary operators as functions. Eg. you can use <code>(not)</code> as a function, compose it, etc. Rationale: very useful, as in Haskell.
       <li>Added <code>.</code> as alias to <code>&lt;&lt;</code> in composing functions. This disallows property access in the style of <code>x . y</code>. Rationale: as in Haskell. Dually spaced property access should never be used anyway. 
+      <li>Added object comprehensions. Eg. <code>{[key, val * 2] for key, val of obj}</code> would return an object with all the values double of the original. The first part of the array literal gets translated into the key, the second part into the value. Rationale: very useful when dealing with objects. Can now map and filter objects back into objects.
+      <li>Dashes are now supported in identifiers, they get converted into camel case. Eg. <code>get-room</code> is equivalent to <code>getRoom</code>, <code>encode-URI</code> is <code>encodeURI</code>. Rationale: enable different styles which other people may enjoy. As in the lisp family of languages. 
       </ul>
     </div>
     <hr>
