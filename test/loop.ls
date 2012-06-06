@@ -72,6 +72,11 @@ eq 2 result.one
 eq 4 result.two
 eq 6 result.three
 
+result = {[val, key] for key, val of obj}
+eq \one   result.1
+eq \two   result.2
+eq \three result.3
+
 
 # Basic range comprehensions.
 nums = [i * 3 for i from 1 to 3]
