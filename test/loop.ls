@@ -77,6 +77,12 @@ eq \one   result.1
 eq \two   result.2
 eq \three result.3
 
+f = -> 
+  {[key, val * 2] for key, val of {a:1, b:2}}
+obj = f!
+eq 2 obj.a
+eq 4 obj.b
+
 
 # Basic range comprehensions.
 nums = [i * 3 for i from 1 to 3]

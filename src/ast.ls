@@ -1712,7 +1712,8 @@ class exports.While extends Node
       if @objComp
       then @body = Block @body.makeObjReturn it
       else @body.makeReturn it
-    else @getJump! or @returns = true
+    else 
+      @getJump! or @returns = true
     this
 
   compileNode: (o) ->
@@ -1729,6 +1730,7 @@ class exports.While extends Node
     o <<< {+\break, +\continue}
     {lines} = @body; code = ret = ''
     if @returns
+      @body = Block @body.makeObjReturn \__results if @objComp
       empty = if @objComp then '{}' else '[]'
       lines[*-1]?=makeReturn res = o.scope.assign \__results empty
       ret = "\n#{@tab}return #{ res or empty };"
