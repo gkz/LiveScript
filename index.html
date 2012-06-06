@@ -73,6 +73,7 @@
         <li><a href="#inspiration">Inspiration</a></li> 
         <li><a href="#name">Name</a></li> 
         <li><a href="#thanks">Thanks</a></li> 
+        <li><a href="#contributing">Contributing Guide</a></li> 
       </ul>
     </div>
     <div class="span4 compiler">
@@ -2408,6 +2409,12 @@ TOTAL    851 ms
       <p>You can find the full list of contributors <a href="https://github.com/gkz/LiveScript/graphs/contributors">here</a>. That list includes contributors to LiveScript and its predecessors. 
       <p>People who have contributed directly to LiveScript include <a href="https://github.com/gkz">George Zahariev</a>, <a href="https://github.com/satyr">satyr</a>, <a href="https://github.com/josher19">josher19</a>, <a href="https://github.com/goatslacker">Josh Perez</a>, and <a href="https://github.com/paulmillr">Paul Miller</a>.
       <p>An extra special thanks to satyr, as this project is a fork of his project <a href="https://github.com/satyr/coco">Coco</a> and would not be possible without it. It has been a pleasure to work off of his beautiful Coco compiler. 
+    </div>
+    <div id="contributing" class="section">
+      <a name="contributing"></a>
+      <h2>Contributing Guide</h2>
+      <p>Fork <a href="https://github.com/gkz/LiveScript">LiveScript</a> and make your changes. Always write tests first (in the <code>/test</code> directory).
+      <p>Run <code>bin/slake</code> to see available commands. Always make sure you can <code>bin/slake build:full</code> - ie. build the compiler itself. Useful: <code>git checkout -- lib && bin/slake build:full</code>: cleans out your <code>lib</code> and compiles twice and tests. Only send a pull requests if all tests pass. If you are hacking on the grammar, you will need to <code>git checkout -- lib && bin/slake build && bin/slake build:parser && bin/slake test</code>. Once all tests pass, rewrite any of the compiler that needs rewriting, and then <code>bin/slake build:full</code>.
     </div>
   </div>
 </div>
