@@ -382,3 +382,5 @@ green = 5
 eq 4 --green
 green--
 eq 3 green
+
+eq 6, green-- * a
