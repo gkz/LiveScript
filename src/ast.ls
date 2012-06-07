@@ -2264,7 +2264,7 @@ with PREC = {unary: 0.9}
 
 TAB = ' ' * 2
 
-ID = /^(?!\d)[$\w\x7f-\uffff]+$/
+ID = /^(?!\d)[\w$\xAA-\uFFDC]+$/
 
 SIMPLENUM = /^\d+$/
 
