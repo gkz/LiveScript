@@ -318,7 +318,12 @@ eq 1 a.0
 
 # ACI applies on postcrement.
 eq a.0 ++  -- a.0
-eq 1 i
+eq 1 a.0
+
+# Infix after postcrement.
+eq a.0++ *  2, 2
+eq a.0-- /  2, 1
+ok a.0++ != 2
 
 throws 'increment of undeclared variable "C" on line 1' -> LiveScript.compile 'C++'
 throws 'invalid decrement on line 1' -> LiveScript.compile 'q.=p--'

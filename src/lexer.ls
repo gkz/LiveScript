@@ -272,8 +272,7 @@ exports import
     #     f /re/ 9 /ex/   # f(/re/, 9, /ex/)
     #     a /= b / c / d  # division
     #
-    # if divisable = (able @tokens or @last.0 is \()
-    if divisable = able @tokens
+    if divisable = able @tokens or @last.0 is \CREMENT
       return 0 if not @last.spaced or code.charAt(index+1) in [' ' \=]
     [input, body, flag] = (REGEX <<< lastIndex: index)exec code
     if input
@@ -396,7 +395,7 @@ exports import
       | \, \[ \( \CALL( => @token \LITERAL \void
       | \FOR \OWN       => @token \ID ''
     case \!=
-      if not able @tokens and @last.0 isnt \(
+      unless able @tokens or @last.0 in [\( \CREMENT]
         @tokens.push [\UNARY \! @line] [\ASSIGN \= @line]
         return 2
       fallthrough
@@ -487,7 +486,10 @@ exports import
         @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
         @indent index + that - 1 - @dent - code.lastIndexOf \\n index-1
         return that
-      tag = if able @tokens or @last.0 is \( then \MATH else \STRNUM
+      tag = if able @tokens
+            or @last.0 is \CREMENT and able @tokens, @tokens.length-1
+            or @last.0 is \(
+            then \MATH else \STRNUM
     case \@ \@@
       @dotcat val or if val is \@
         then @token \LITERAL \this true
