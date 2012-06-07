@@ -538,6 +538,16 @@ eq 5 minusTwo 7
 !plus! = true
 eq void plus!
 
+boom(x, y) = x + (y ? 0)
+boom2 = boom 2
+eq 6 boom2 4
+eq 2 boom2!
+
+defArgs(x, y = 4) = x + y
+defArgs2 = defArgs 2
+eq 8 defArgs2 6
+eq 6 defArgs2!
+
 class Divider
   ->
 

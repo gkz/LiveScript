@@ -2186,9 +2186,9 @@ UTILS =
   out: '''typeof exports != 'undefined' && exports || this'''
 
   curry: '''function(f, args){
-    return f.length ? function(){
+    return f.length > 1 ? function(){
       var params = args ? args.concat() : [];
-      return params.push.apply(params, arguments) < f.length ?
+      return params.push.apply(params, arguments) < f.length && arguments.length ?
         __curry.call(this, f, params) : f.apply(this, params);
     } : f;
   }'''
@@ -2197,14 +2197,6 @@ UTILS =
     return function(){
       return f(g.apply(this, arguments)); 
     }
-  }'''
-
-  objectFromList: '''function(xs){
-    var o = {}, i;
-    for (i = 0, len = xs.length; i < len; ++i) {
-      o[xs[i][0]] = xs[i][1];
-    }
-    return o;
   }'''
 
   not: 'function(x){ return !x; }'
