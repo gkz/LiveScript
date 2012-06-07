@@ -253,12 +253,12 @@ exports import
     #     f /re/ 9 /ex/   # f(/re/, 9, /ex/)
     #     a /= b / c / d  # division
     #
-    if divisable = able @tokens or @last.0 is \CREMENT
+    if divisible = able @tokens or @last.0 is \CREMENT
       return 0 if not @last.spaced or code.charAt(index+1) of [' ' \=]
     [input, body, flag] = (REGEX <<< lastIndex: index)exec code
     if input
     then @regex body, flag
-    else divisable or @carp 'unterminated regex'
+    else divisible or @carp 'unterminated regex'
     input.length
 
   # Matches a multiline, extended regex literal.
