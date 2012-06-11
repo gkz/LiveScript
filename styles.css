@@ -194,12 +194,17 @@ body {
 }
 @media screen and (max-width: 1500px) {
   .sidebar h1 a {
-    font-size: 30px;
+    font-size: 32px;
   }
   .row-fluid > .span4.compiler {
     width: 26.623931624%;
   }
   .row-fluid > .span6.content {
     width: 53.717948718%;
+  }
+}
+@media screen and (max-width: 1366px) {
+  .sidebar h1 a {
+    font-size: 26px;
   }
 }
