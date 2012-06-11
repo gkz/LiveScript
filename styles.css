@@ -33,7 +33,7 @@ body {
   margin-left: 5px;
 }
 .sidebar h1 a {
-  font-size: 34px;
+  font-size: 32px;
   line-height: 40px;
   text-shadow: #1A3A4D 0 1px 0;
   color: #317EAC;
@@ -190,4 +190,12 @@ body {
   float: left;
   margin-right: 5px;
   margin-top: 7px;
+}
+@media screen and (max-width: 1440px) {
+  .row-fluid > .span4.compiler {
+    width: 27.623931624%;
+  }
+  .row-fluid > .span6.content {
+    width: 52.717948718%;
+  }
 }
