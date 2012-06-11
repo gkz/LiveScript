@@ -23,6 +23,7 @@ body {
   height: 100%;
   border-right: 1px solid #cccccc;
   padding-top: 25px;
+  overflow-y: auto;
 }
 .sidebar h1 {
   margin-bottom: 20px;
