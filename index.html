@@ -2423,6 +2423,7 @@ TOTAL    851 ms
       <h2>Contributing Guide</h2>
       <p>Fork <a href="https://github.com/gkz/LiveScript">LiveScript</a> and make your changes. Always write tests first (in the <code>/test</code> directory).
       <p>Run <code>bin/slake</code> to see available commands. Always make sure you can <code>bin/slake build:full</code> - ie. build the compiler itself. Useful: <code>git checkout -- lib && bin/slake build:full</code>: cleans out your <code>lib</code> and compiles twice and tests. Only send a pull requests if all tests pass. If you are hacking on the grammar, you will need to <code>git checkout -- lib && bin/slake build && bin/slake build:parser && bin/slake test</code>. Once all tests pass, rewrite any of the compiler that needs rewriting, and then <code>bin/slake build:full</code>.
+      <p>Don't submit patches with a built browser file (<code>extras/livescript.js</code>) created by <code>bin/slake build:browser</code>. This file is only built before releasing a new version. 
     </div>
   </div>
 </div>
