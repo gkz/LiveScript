@@ -159,7 +159,7 @@ eq 1, __proto__ = 1
 λ = -> 七 = 7
 eq λ(), 7
 
-throws 'invalid identifier "♪" on line 1' -> LiveScript.compile '♪　♯'
+throws 'invalid identifier "♪" on line 1' -> LiveScript.compile 'ƒ ♪ ♯'
 
 
 # [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)

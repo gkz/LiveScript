@@ -1009,7 +1009,7 @@ KEYWORDS = KEYWORDS_SHARED +++ KEYWORDS_UNUSED
 ##### Regexes
 # Some of these are given `g` flag and made sure to match empty string
 # so that they can lex from any index by receiving `.lastIndex` beforehand.
-ID = // ( [A-Za-z_$\xAA-\uFFDC](?:(?!\s)[\w$\xAA-\uFFDC])*((\-[a-zA-Z]+)?)* )
+ID = // ( (?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+((\-[a-zA-Z]+)?)* )
         ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
     |//g
 SYMBOL = //
