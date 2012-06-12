@@ -897,7 +897,7 @@ KEYWORDS = KEYWORDS_SHARED.concat KEYWORDS_UNUSED
 # Some of these are given `g` flag and made sure to match empty string
 # so that they can lex from any index by receiving `.lastIndex` beforehand.
 
-ID = // ( [A-Za-z_$\xAA-\uFFDC](?:(?!\s)[\w$\xAA-\uFFDC])* )
+ID = // ( (?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+ )
         ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
     |//g
 SYMBOL = //
