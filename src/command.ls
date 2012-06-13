@@ -33,6 +33,7 @@ global import
   nodejs      :['pass options through to the "node" binary' \ARGS+]
   version     : 'display version'
   help        : 'display this'
+  prelude     :['automatically import prelude.ls' '' \d]
 
 die "Unrecognized option(s): #that\n\n#{help!}" if o.$unknowns * ' '
 
@@ -92,6 +93,7 @@ switch
   options = {filename, o.bare}
   t       = {input, options}
   try
+    t.input = 'import prelude\n' + t.input if o.prelude 
     LiveScript.emit \lex t
     t.tokens = LiveScript.tokens t.input, raw: o.lex
     if o.lex or o.tokens
