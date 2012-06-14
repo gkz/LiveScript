@@ -30,10 +30,14 @@ $ ->
         for line, i in lns 
           lns[i] = line?join(' ')replace /\n/g \\\n or ''
         result = lns * \\n
-      result = _.escape result
+      if action is \run and 
+      (typeof! result is \Array or typeof! result  is \Object)
+        result = JSON.stringify result 
+      result = _.escape result 
       result = result.replace /\n/g, '<br>' .replace /\ /g, \&nbsp;
       if action is \compile and not error
         result = prettyPrintOne result, 'lang-js', false
+
 
       toPrepend = if error
         """<div>

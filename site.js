@@ -1,5 +1,5 @@
 (function(){
-  var __join = [].join;
+  var __join = [].join, __toString = {}.toString;
   __import(this, prelude);
   $(function(){
     var example, src, boom, __i, __ref, __len;
@@ -51,6 +51,9 @@
             lns[i] = (line != null ? line.join(' ').replace(/\n/g, '\\n') : void 8) || '';
           }
           result = __join.call(lns, '\n');
+        }
+        if (action === 'run' && (__toString.call(result).slice(8, -1) === 'Array' || __toString.call(result).slice(8, -1) === 'Object')) {
+          result = JSON.stringify(result);
         }
         result = _.escape(result);
         result = result.replace(/\n/g, '<br>').replace(/\ /g, '&nbsp');
