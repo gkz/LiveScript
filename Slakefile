@@ -14,6 +14,12 @@ run = (args) ->
   proc.stderr.on \data say
   proc       .on \exit -> process.exit it if it
 
+shell = (command) ->
+  err, sout, serr <- exec command
+  process.stdout.write sout if sout
+  process.stderr.write serr if serr
+  console.log err if err
+
 slobber = (path, code) ->
   spit path, code
   say '* ' + path
@@ -26,24 +32,7 @@ minify = ->
   uglify.gen_code ast
 
 
-option \prefix 'set the installation prefix for `install`' \DIR
-
-task \install 'install LiveScript into /usr/local (or --prefix)' (options) ->
-  base = options.prefix or \/usr/local
-  lib  = "#base/lib/livescript"
-  bin  = "#base/bin"
-  nlib = \~/.node_libraries
-  e, stdout, stderr <- exec """
-    echo Installing LiveScript to #lib
-    mkdir -p #lib #bin #nlib
-    cp -rf lib LICENSE README.md package.json #lib
-    ln -sfv  #lib/lib/command.js #bin/livescript
-    ln -sfv  #lib/lib/slake.js    #bin/slake
-    ln -sfnv #lib/lib #nlib/livescript
-    """replace /\n/g \&&
-  say stdout.trim! if stdout
-  say if e then stderr.trim! else tint \done
-
+task \install 'install LiveScript via npm' -> shell 'npm install -g .'
 
 docs = <[ doc.ls ]>
 
@@ -54,11 +43,7 @@ task \build 'build lib/ from src/' ->
   run [\-bco \lib] +++ sources
 
 task \build:full 'build twice and run tests' ->
-  exec 'bin/slake build && bin/slake build && bin/slake test'
-  , (err, stdout, stderr) ->
-    say stdout.trim! if stdout
-    say stderr.trim! if stderr
-    throw err        if err
+  shell 'bin/slake build && bin/slake build && bin/slake test'
 
 task \build:parser 'build lib/parser.js from lib/grammar.js' ->
   spit \lib/parser.js,
