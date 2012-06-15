@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>{{title}}</title>
+<meta name='description' content="LiveScript is a language that compiles down to JavaScript. It is a fork of Coco, which is in turn derived from CoffeeScript. LiveScript is Coco that is much more compatible with CoffeeScript, more functional, and more feature rich.">
+
+<link rel="icon" type="image/png" href="../images/icon.png">
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+<link href="../bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
+<link href="../bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+<script src="../bootstrap/js/bootstrap.js"></script>
+
+<script src="../google-code-prettify/prettify.js"></script>
+<link href="../google-code-prettify/prettify.css" rel="stylesheet">
+<script src="../lang-ls-0.9.8.js"></script>
+
+<link href="styles.css" rel="stylesheet">
+
+<script>
+  if(window.location.host === "gkz.github.com") {
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-7402515-5']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  }
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="span10 content">
+        <h1>{{title}}</h1>
+        <div class="date-author">
+          <span class="date">{{date}}</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+        </div>
+        {{content}}
+        <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for more on LiveScript and prelude.ls
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'livescript'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+      </div>
+      <div class="span2 sidebar">
+        <h1><a href="http://gkz.github.com/LiveScript/">LiveScript</a><img src="../images/icon.png"></h1>
+        <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="140" height="40"></iframe>
+        <a href="http://gkz.github.com/LiveScript"><div class="btn btn-primary btn-large btn">LiveScript Site</div></a>
+        <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn">View on GitHub</div></a>
+        <a href="https://twitter.com/share" class="twitter-share-button" data-via="gkzahariev" data-size="large">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+      </div>
+    </div>
+  </div>
+<script>
+  prettyPrint();
+</script>
+</body>
+</html>

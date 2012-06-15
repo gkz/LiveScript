@@ -1,0 +1,50 @@
+post-template = slurp \post-template.html
+test-name = -> it.match /.+\.html$/
+
+task \build 'build blog posts' build-all
+
+task \watch 'watch for changes, build when they happen' ->
+  watch \post-template.html -> 
+    post-template := slurp \post-template.html
+    build-all!
+
+  dir \posts .forEach (post) ->
+    if test-name post
+      watch "posts/#post", -> build post
+
+!function build-all
+  for post in dir \posts when test-name post
+    build post
+
+!function build post
+  console.log "BUILDING: #post"
+  [head, content] = slurp "posts/#post" .split \-----
+  options = {}
+  for line in head.split \\n when match = line.match /([a-z]+): (.+)/
+    options[match.1] = match.2.trim!
+  options.content = content 
+
+  output = post-template
+  for option, value of options
+    output = output.replace //{{#option}}//g value
+    
+  spit post, output
+
+!function watch source, action
+  :repeat let ptime = 0
+    {mtime} <-! fshoot \stat source
+    action! if ptime ^^^ mtime
+    set-timeout repeat, 500ms, mtime
+
+# Calls a `fs` method, exiting on error.
+!function fshoot name, arg, callback
+  e, result <-! fs[name] arg
+  die e.stack || e if e
+  callback result
+
+!function die
+  warn it
+  process.exit 1
+
+!function warn
+  process.stderr.write it + \\n

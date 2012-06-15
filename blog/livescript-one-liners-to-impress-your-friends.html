@@ -1,0 +1,223 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>10 LiveScript One Liners to Impress Your Friends</title>
+<meta name='description' content="LiveScript is a language that compiles down to JavaScript. It is a fork of Coco, which is in turn derived from CoffeeScript. LiveScript is Coco that is much more compatible with CoffeeScript, more functional, and more feature rich.">
+
+<link rel="icon" type="image/png" href="../images/icon.png">
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+<link href="../bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
+<link href="../bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+<script src="../bootstrap/js/bootstrap.js"></script>
+
+<script src="../google-code-prettify/prettify.js"></script>
+<link href="../google-code-prettify/prettify.css" rel="stylesheet">
+<script src="../lang-ls-0.9.8.js"></script>
+
+<link href="styles.css" rel="stylesheet">
+
+<script>
+  if(window.location.host === "gkz.github.com") {
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-7402515-5']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  }
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="span10 content">
+        <h1>10 LiveScript One Liners to Impress Your Friends</h1>
+        <div class="date-author">
+          <span class="date">15 Jun 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+        </div>
+        
+<p>You may have read <a href="http://ricardo.cc/2011/06/02/10-CoffeeScript-One-Liners-to-Impress-Your-Friends.html">10 CoffeeScript One Liners to Impress your Friends</a> inspired by a post about <a href="http://mkaz.com/solog/scala/10-scala-one-liners-to-impress-your-friends.html">Scala one liners</a> on <a href="http://news.ycombinator.com/item?id=2610243">HN</a>. Well I wanted to impress my friends with some one liners in <a href="http://gkz.github.com/LiveScript/">LiveScript</a>, and it's recommended base library, <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a>. You can try all of these out yourself on the <a href="http://gkz.github.com/LiveScript/">LiveScript website</a>.
+
+
+<h3>Using jQuery</h3>
+
+<p>Parentheses free chaining is nice.
+
+<pre class="prettyprint lang-ls">
+$ \.content .find \.date-author .children \a .text!split ' ' .0
+#=> 'George'
+</pre>
+
+<p><code>func!</code> is a bang call, equivalent to <code>func()</code>. You don't need to use a dot to access things in non-ambiguous situations. You can make string literals of strings without spaces using a leading backlash. You can also use <code>.0</code> instead of <code>[0]</code>.
+
+
+<h3>Multiply each item in a list by 2</h3>
+
+<p>Partially applied operators are also nice.
+
+<pre class="prettyprint lang-ls">
+map (* 2), [1 to 5]
+#=> [2, 4, 6, 8, 10]
+</pre>
+
+<p>You can use operators as functions in LiveScript by surrounding them in parentheses. You can also partially apply them, as shown above.
+
+
+<h3>Joining objects with list comprehensions</h3>
+
+<p>It's almost SQL!
+
+<pre class="prettyprint lang-ls">
+# some data
+table1 =
+  * id: 1
+    name: \george
+  * id: 2
+    name: \mike
+  * id: 3
+    name: \donald
+table2 =
+  * id: 2
+    age: 21
+  * id: 1
+    age: 20
+  * id: 3
+    age: 26
+
+result = [{id, name, age} for {id, name} in table1 for {id:id2, age} in table2 when id is id2]
+#=> [{id: 1, name: "george", age:20}, {id: 2, name: "mike", age: 21},{id:3, name: "donald", age: 26}]
+</pre>
+
+<p>You can list with asterisks. This is useful when listing implicit objects for instance. Also on display here is object destructuring.
+
+<h3>Piping</h3>
+
+<p>Using pipes is a nice way to make your code more readable if you have several nested function calls.
+
+<pre class="prettyprint lang-ls">
+[1 2 3] |> map (* 2) |> filter (> 3) |> fold1 (+) 
+#=> 10
+</pre>
+
+<p>In LiveScript if the preceding item is not callable you can omit the comma when listing things, as we've done with the input list.
+
+
+<h3>Sum a list of numbers</h3>
+
+<p>First, with the built in:
+
+<pre class="prettyprint lang-ls">
+sum [1 to 10]
+#=> 15
+</pre>
+
+<p>Well that was easy. what if we didn't have <code>sum</code>?
+
+<pre class="prettyprint lang-ls">
+fold1 (+), [1 to 5]
+#=> 15
+</pre>
+
+
+<h3>Verify if a word exists in a string</h3>
+
+<p><code>&lt;[ ... ]&gt;</code> delineates a list of one word strings. <code>it</code> is an implicit argument, you can use it for conciseness in unary functions.
+
+<pre class="prettyprint lang-ls">
+wordList = &lt;[ LiveScript JavaScript prelude.ls ]&gt;
+tweet    = 'This is an example tweet talking about LiveScript and stuff.'
+
+any (-&gt; it in words tweet), wordList
+#=> true
+</pre>
+
+
+<h3>Happy Birthday</h3>
+
+<p>If you multiply something by a string literal, it acts as a join. Eg. <code>list * ','</code> acts as <code>list.join ','</code>. Also in this example are list comprehensions and string interpolation. 
+
+<pre class="prettyprint lang-ls">
+["Happy Birthday #{if x is 2 then 'dear George' else 'to you'}" for x to 3] * ', '
+#=> 'Happy Birthday to you, Happy Birthday to you, Happy Birthday dear George, Happy Birthday to you'
+</pre>
+
+
+<h3>Filter a list of numbers</h3>
+
+<p>Pretty straightforward with <code>filter</code> and partially applied operators.
+
+<pre class="prettyprint lang-ls">
+scores = [49 58 76 43 88 77 90]
+
+{passed: filter (&gt; 60), scores; failed: filter (&lt; 60), scores}
+#=> {passed: [76, 88, 77, 90], failed: [49, 58, 43]}
+</pre>
+
+
+<h3>Find the minimum in a list</h3>
+
+<p>There's a built in:
+
+<pre class="prettyprint lang-ls">
+minimum [14 35 -7 46 98]
+#=> -7
+</pre>
+
+<p>What if we didn't have <code>minimum</code>? We can fold with the minimum operator.
+
+<pre class="prettyprint lang-ls">
+fold1 (&lt;?), [14 35 -7 46 98]
+#=> -7
+</pre>
+
+
+<h3>Sieve of Eratosthenes</h3>
+
+<p>Determines if a number is prime. <code>|</code> is an alias for <code>when</code>
+
+<pre class="prettyprint lang-ls">
+f = -&gt; [p.push x for x from 2 to it | not any (-&gt; x % it is 0), (p ?= [])] and it in p
+f 12 #=> false
+f 13 #=> true
+</pre>
+
+        <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for more on LiveScript and prelude.ls
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'livescript'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+      </div>
+      <div class="span2 sidebar">
+        <h1><a href="http://gkz.github.com/LiveScript/">LiveScript</a><img src="../images/icon.png"></h1>
+        <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="140" height="40"></iframe>
+        <a href="http://gkz.github.com/LiveScript"><div class="btn btn-primary btn-large btn">LiveScript Site</div></a>
+        <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn">View on GitHub</div></a>
+        <a href="https://twitter.com/share" class="twitter-share-button" data-via="gkzahariev" data-size="large">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+      </div>
+    </div>
+  </div>
+<script>
+  prettyPrint();
+</script>
+</body>
+</html>
