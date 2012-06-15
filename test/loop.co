@@ -67,6 +67,10 @@ eq '3,6,9,-20,-19,-18,4,4,4,4', '' + nums.concat negs.slice(0, 3), four
 eq '123', (i for i from 1 til 4     ).join ''
 eq '036', (i for i from 0 til 9 by 3).join ''
 
+
+# all/from/to/by aren't reserved off-context.
+all = from = to = by = 1
+
 # Never mess with binary `in`/`of` and variable `by`.
 for i to 0
   ok 0 in [0]
@@ -96,10 +100,6 @@ eq evens + '', '4,6,8'
 # Backward traversing.
 odds = (num for num of [0, 1, 2, 3, 4, 5] by -2)
 eq odds + '', '5,3,1'
-
-
-# all/from/to/by aren't reserved off-context.
-all = from = to = by = 1
 
 
 # Nested comprehensions.
@@ -187,6 +187,12 @@ new -> do ~>
 
 throws    'stray break on line 1' -> Coco.compile \break
 throws 'stray continue on line 1' -> Coco.compile \continue
+
+
+# Play nice with implicit calls.
+ok true, while 0 then
+ok [] = for i to 0 then
+eq 1, i++ for j to 0
 
 
 ### Line folding after `for` prepositions

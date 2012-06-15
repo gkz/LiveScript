@@ -753,11 +753,15 @@ character = if JSON!? then uxxxx else ->
     tokens.splice i++, 0 [\CALL( '' token.2]
     detectEnd tokens, i, ok, go
   function ok token, i
-    return true if not skipBlock and token.alias and token.1 of <[ && || ]>
-                or token.0 is \=>
+    tag = token.0
+    return true if tag of <[ POST_IF \=> ]>
+                or not skipBlock and token.alias and token.1 of <[ && || ]>
     pre = tokens[i-1]
-    switch token.0
-    case \DOT \? then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
+    switch tag
+    case \NEWLINE
+      return pre.0 is not \,
+    case \DOT \?
+      return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
     case \SWITCH                         then seenSwitch := true; fallthrough
     case \IF \CLASS \FUNCTION \LET \WITH then skipBlock  := true
     case \CASE
@@ -770,8 +774,9 @@ character = if JSON!? then uxxxx else ->
     case \WHILE
       return false if token.done
       fallthrough
-    case <[ NEWLINE POST_IF FOR BY TO ]>
-      return pre.0 is not \,
+    case \FOR
+      skipBlock := true
+      return able tokens, i or pre.0 is \CREMENT
     false
   !function go token, i then tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
 
