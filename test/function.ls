@@ -615,3 +615,6 @@ ok 3 `elem` [1 to 10]
 
 eq 5 (`add`) 2 3
 eq 5 (2 `add`) 3
+eq 5 (`add` 3) 2
+
+ok (`elem` [1 to 10]) 3

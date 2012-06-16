@@ -420,6 +420,8 @@ class exports.Chain extends Node
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
     this
 
+  flipIt: -> @flip = true; this
+
   # __Chain__ can be unwrapped as its inner node, if there are no subnodes.
   unwrap: -> if @tails.length then this else @head
 
@@ -482,6 +484,9 @@ class exports.Chain extends Node
     [base.add name; Chain bref || base.head, [nref or name]]
 
   compileNode: (o) ->
+    if @flip
+      util \flip
+      util \curry
     {head, tails} = this; head <<< {@front, @newed}
     return head.compile o unless tails.length
     return that.compile o if @unfoldAssign o
@@ -1430,8 +1435,6 @@ class exports.Fun extends Node
 
   makeReturn: -> if @statement then import {+returns} else super ...
 
-  flip: ->  @flip = true; this
-
   ripName: !->
     # `name = ->`
     @name ||= it.varName!
@@ -2201,8 +2204,10 @@ UTILS =
     }
   }'''
 
-  flip: '''function(f, x, y){
+  flip: '''function(f){
+    return __curry(function (x, y) {
       return f(y, x);
+    });
   }'''
 
   not: 'function(x){ return !x; }'

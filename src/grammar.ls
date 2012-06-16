@@ -79,6 +79,8 @@ bnf =
 
     o '( BACKTICK Chain BACKTICK )'            -> Chain $3
     o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
+    o '( BACKTICK Chain BACKTICK Expression )' 
+    , -> Chain(Chain Var \__flip .add Call [$3]).flipIt!add Call [$5]
 
   # Array/Object
   List:
