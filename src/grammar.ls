@@ -77,6 +77,9 @@ bnf =
     o '( UNARY )'           -> Chain Unary $2
     o '( CREMENT )'         -> Chain Unary $2
 
+    o '( BACKTICK Chain BACKTICK )'            -> Chain $3
+    o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
+
   # Array/Object
   List:
     o '[ ArgList    OptComma ]' -> L Arr $2

@@ -1430,6 +1430,8 @@ class exports.Fun extends Node
 
   makeReturn: -> if @statement then import {+returns} else super ...
 
+  flip: ->  @flip = true; this
+
   ripName: !->
     # `name = ->`
     @name ||= it.varName!
@@ -2197,6 +2199,10 @@ UTILS =
     return function(){
       return f(g.apply(this, arguments)); 
     }
+  }'''
+
+  flip: '''function(f, x, y){
+      return f(y, x);
   }'''
 
   not: 'function(x){ return !x; }'
