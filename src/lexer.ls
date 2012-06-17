@@ -99,12 +99,12 @@ exports import
       return input.length
     # keywords
     switch id
-    case <[ this eval super ]> then return @token(\LITERAL id, true)length
     case <[ true false on off yes no null void undefined arguments debugger ]> 
       tag = \LITERAL
-    case \new \do \typeof \delete then tag = \UNARY
-    case \return \throw           then tag = \HURL
-    case \break  \continue        then tag = \JUMP
+    case \new \do \typeof \delete                      then tag = \UNARY
+    case \return \throw                                then tag = \HURL
+    case \break  \continue                             then tag = \JUMP
+    case \this \eval \super then return @token(\LITERAL id, true)length
     case \for  then @seenFor = true; fallthrough
     case \then then @wantBy  = false
     case \catch \function then id = ''
@@ -777,7 +777,7 @@ character = if JSON!? then uxxxx else ->
   i = 0
   while token = tokens[++i]
     [tag] = token
-    continue unless tag in <[ THEN -> ELSE DEFAULT TRY CATCH FINALLY ]>
+    continue unless tag in <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY ]>
     switch next = tokens[i+1]0
     case \IF then continue if tag is \ELSE
     case \INDENT \THEN
@@ -789,7 +789,7 @@ character = if JSON!? then uxxxx else ->
     else tokens.splice ++i, 0 indent
     switch
     # ->,
-    case next in <[ DOT \? \, \PIPE \BACKPIPE]> then --i; fallthrough
+    case next in <[ DOT ? , PIPE BACKPIPE ]> then --i; fallthrough
     # -> 0,
     case next in <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
       go 0 i+=2; ++i
