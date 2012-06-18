@@ -10,7 +10,7 @@ code {
 .sidebar {
   margin-left: 1030px;
   position: fixed;
-  padding-top: 48px;
+  padding-top: 46px;
 }
 .sidebar h1 {
   margin-bottom: 35px;
@@ -53,6 +53,7 @@ code {
 }
 .content h1 {
   margin-bottom: 5px;
+  font-size: 28px;
 }
 .content .date-author {
   font-size: 14px;
