@@ -121,14 +121,14 @@ exports import
       fallthrough
     case \instanceof
       id  = @tokens.pop!1 + id if last.1 is \!
-      tag = \RELATION
+      tag = if @tokens[*-1].0 is \( then \BIOPR else \RELATION
     case \not
       return (last.1 = \!==; 3) if last.alias and last.1 is \===
       tag = \UNARY; id = \!
     case \and \or \is \isnt
       @unline!
       tag = if id in <[  is isnt ]> then \COMPARE else \LOGIC
-      tag = \BIOP if @last.0 is \(
+      tag = \BIOP if last.0 is \(
       @token tag, switch id
       | \is     => \===   
       | \isnt   => \!==
@@ -140,7 +140,10 @@ exports import
     case \until  then tag = \WHILE
     case \import
       id = \<<<
-      able @tokens or @token \LITERAL \this
+      if last.0 is \(
+        tag = \BIOP
+      else 
+        able @tokens or @token \LITERAL \this
     case \when
       tag = \CASE; fallthrough
     case \case
@@ -188,6 +191,8 @@ exports import
       case \ever then if last.0 is \FOR
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
     tag ||= match.1.toUpperCase!
+    if tag in <[ COMPARE LOGIC RELATION ]> and last.0 is \(
+      tag = if tag is \RELATION then \BIOPR else \BIOP
     @unline! if tag in <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
                           IN OF FROM TO BY EXTENDS ]>
     @token tag, id
@@ -426,8 +431,8 @@ exports import
       fallthrough
     case \] \)
       if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE
-                                     CONCAT COMPOSE RELATION PIPE BACKPIPE ]>
-        @tokens[*-1].0 = \BIOP
+                                     CONCAT COMPOSE RELATION PIPE BACKPIPE IMPORT ]>
+        @tokens[*-1].0 = if @last.0 is \RELATION then \BIOPR else \BIOP
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>
       # change id@! to calls (id! already makes calls)
@@ -518,7 +523,7 @@ exports import
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
     if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT 
-                 COMPOSE RELATION PIPE BACKPIPE ]> and @last.0 is \(
+                 COMPOSE RELATION PIPE BACKPIPE IMPORT ]> and @last.0 is \(
       tag = \BIOP
     @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE 
                           MATH POWER IMPORT SHIFT BITWISE ]>

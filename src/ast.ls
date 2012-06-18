@@ -147,6 +147,10 @@
 
   invert: -> Unary \! this, true
 
+  invertCheck: ->
+    if it.inverted then @invert!
+    this
+
   # Constructs a node that returns the current node's result.
   makeReturn: (arref) ->
     if arref then Call.make JS(arref + \.push), [this] else Return this
@@ -914,6 +918,7 @@ class exports.Binary extends Node
     if not @partial
       switch op
       | \in => return new In first, second
+      | \<<< \<<<< => return Import first, second, op is \<<<<
       | \+  =>
         if first instanceof Arr
           first.items.push Splat second
@@ -943,10 +948,12 @@ class exports.Binary extends Node
   COMPARER = /^(?:[!=]=|[<>])=?$/
 
   invert: ->
-    if EQUALITY.test op = @op and not COMPARER.test @second.op
+    if EQUALITY.test op = @op and not COMPARER.test @second?op
       @op = '!='charAt(op.indexOf \=) + op.slice 1
       return this
     Unary \! Parens(this), true
+
+  invertIt: -> @inverted = true; this
 
   getDefault: -> switch @op | \? \|| \&& \!? => this
 
@@ -1119,11 +1126,18 @@ class exports.Binary extends Node
       x = Chain Var \x; y = Chain Var \y
       switch
       case   @first!? and @second!?
-        "#{util \curry}(function(x, y){ return #{(Binary @op, x, y).compile o}; })"
+        "#{util \curry}(function(x, y){ 
+          return #{(Binary @op, x, y).invertCheck this .compile o}; 
+        })"
       case @first?
-        "function(x){ return #{(Binary @op, @first, x).compile o}; }"
+        "(function(x){ 
+          return #{(Binary @op, @first, x).invertCheck this .compile o}; 
+        })"
       default
-        "function(x){ return #{(Binary @op, x, @second).compile o}; }"
+        "(function(x){ 
+          return #{(Binary @op, x, @second).invertCheck this .compile o};
+        })"
+
     else 
       util \curry
       switch

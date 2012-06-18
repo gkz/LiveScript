@@ -73,7 +73,21 @@ bnf =
 
     o '( BIOP )'            -> Chain Binary $2
     o '( BIOP Expression )' -> Chain Binary $2, , $3
-    o '( Expression BIOP )' -> Chain Binary $3, $2
+    o '( Expression BIOP )' -> Chain Binary $3,   $2
+
+    o '( BIOPR )'
+    , -> Chain if   \! is $2.charAt 0
+               then Binary $2.slice(1) .invertIt!
+               else Binary $2
+    o '( BIOPR Expression )'
+    , -> Chain if   \! is $2.charAt 0
+               then Binary $2.slice(1), , $3 .invertIt!
+               else Binary $2, , $3
+    o '( Expression BIOPR )'
+    , -> Chain if   \! is $3.charAt 0
+               then Binary $3.slice(1), $2 .invertIt!   
+               else Binary $3, $2
+
     o '( UNARY )'           -> Chain Unary $2
     o '( CREMENT )'         -> Chain Unary $2
 

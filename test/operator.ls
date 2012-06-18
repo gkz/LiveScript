@@ -568,6 +568,27 @@ eq 1 (<?) 2 1
 eq 1 (2 <?) 1
 eq 1 (<? 1) 2
 
+ok (instanceof) (new String \h), String
+ok (instanceof String) (new String \h)
+ok ((new String \h) instanceof) String
+
+ok (in) 5 [1 to 10]
+ok (in [1 to 5]) 3
+ok (3 in) [1 to 5]
+
+ok (not in) 0 [1 to 10]
+ok (not in [1 to 5]) 7
+ok (7 not in) [1 to 5]
+
+obj = {}
+(<<<) obj, a: 1
+(<<< b:2) obj
+(obj <<<) c: 3
+
+eq 1 obj.a
+eq 2 obj.b
+eq 3 obj.c
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)
