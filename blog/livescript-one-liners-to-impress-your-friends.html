@@ -14,7 +14,7 @@
 
 <script src="../google-code-prettify/prettify.js"></script>
 <link href="../google-code-prettify/prettify.css" rel="stylesheet">
-<script src="../lang-ls-0.9.8.js"></script>
+<script src="../lang-ls-0.9.9.js"></script>
 
 <link href="styles.css" rel="stylesheet">
 
@@ -38,7 +38,7 @@
       <div class="span10 content">
         <h1>10 LiveScript One Liners to Impress Your Friends</h1>
         <div class="date-author">
-          <span class="date">15 Jun 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+          <span class="date">15 Jun 2012, updated 18 Jun 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
         </div>
         
 <p>You may have read <a href="http://ricardo.cc/2011/06/02/10-CoffeeScript-One-Liners-to-Impress-Your-Friends.html">10 CoffeeScript One Liners to Impress your Friends</a>, inspired by a post about <a href="http://mkaz.com/solog/scala/10-scala-one-liners-to-impress-your-friends.html">Scala one liners</a> on <a href="http://news.ycombinator.com/item?id=2610243">HN</a>. Well I wanted to impress my friends with some one liners in <a href="http://gkz.github.com/LiveScript/">LiveScript</a>, and its recommended base library, <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a>. You can try out all of these yourself on the <a href="http://gkz.github.com/LiveScript/">LiveScript website</a>.
@@ -116,7 +116,7 @@ sum [1 to 10]
 #=> 15
 </pre>
 
-<p>Well that was easy. what if we didn't have <code>sum</code>?
+<p>Well that was easy. What if we didn't have <code>sum</code>?
 
 <pre class="prettyprint lang-ls">
 fold1 (+), [1 to 5]
@@ -126,15 +126,17 @@ fold1 (+), [1 to 5]
 
 <h3>6) Verify if a word exists in a string</h3>
 
-<p><code>&lt;[ ... ]&gt;</code> delineates a list of one word strings. <code>it</code> is an implicit argument, you can use it for conciseness in unary functions.
+<p><code>&lt;[ ... ]&gt;</code> delineates a list of one word strings. 
 
 <pre class="prettyprint lang-ls">
 wordList = &lt;[ LiveScript JavaScript prelude.ls ]&gt;
 tweet    = 'This is an example tweet talking about LiveScript and stuff.'
 
-any (-&gt; it in words tweet), wordList
+any (in words tweet), wordList
 #=> true
 </pre>
+
+<p>Here we used the operator <code>in</code>, with a partially applied second argument, as a function.
 
 
 <h3>7) Happy Birthday</h3>
@@ -149,14 +151,17 @@ any (-&gt; it in words tweet), wordList
 
 <h3>8) Filter a list of numbers</h3>
 
-<p>Pretty straightforward with <code>filter</code> and partially applied operators.
+<p><code>partition</code> is like a combination of <code>filter</code> and <code>reject</code>.
 
 <pre class="prettyprint lang-ls">
 scores = [49 58 76 43 88 77 90]
 
-{passed: filter (&gt; 60), scores; failed: filter (&lt; 60), scores}
-#=> {passed: [76, 88, 77, 90], failed: [49, 58, 43]}
+[passed, failed] = partition (&gt; 60), scores
+passed #=> [76, 88, 77, 90]
+failed #=> [49, 58, 43]}
 </pre>
+
+<p>Destructuring of returned values here.
 
 
 <h3>9) Find the minimum in a list</h3>

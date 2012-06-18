@@ -60,6 +60,7 @@ code {
 }
 .content .date-author .date {
   font-style: italic;
+  color: #777;
 }
 .content h3 {
   line-height: 36px;
