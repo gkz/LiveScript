@@ -33,6 +33,18 @@ code {
   .btn {
     margin-bottom: 10px;
   }
+  h4 {
+    margin-top: 20px;
+  }
+  ul {
+    list-style-type: none;
+    margin-left: 0;
+
+    li {
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+  }
 }
 .content {
   box-sizing: border-box;
@@ -67,5 +79,45 @@ code {
     line-height: 36px;
     margin-top: 30px;
     margin-bottom: 5px;
+  }
+  .note {
+    padding: 5px;
+    padding-left: 15px;
+    border-left: 2px solid #C09853;
+  }
+  .example {
+    height: 100%;
+    overflow: auto;
+    border: 1px solid #E1E1E8;
+    -webkit-border-radius: 3px; 
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    background-color: #f7f7f9;
+
+    .example-ls, .example-js {
+      width: 50%;
+      height: 100%;
+      border: none;
+      h5 {
+        padding-top: 12px;
+        padding-left: 10px;
+      }
+      & > pre {
+        padding: 10px;
+        height: 100%;
+        border: none;
+        margin-bottom: 0;
+      }
+    }
+    .example-ls {
+      float: left; 
+    }
+    .example-js {
+      float: right;
+      box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      border-left: 1px dotted #ccc;
+    }
   }
 }

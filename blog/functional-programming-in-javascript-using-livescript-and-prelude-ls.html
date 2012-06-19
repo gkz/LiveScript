@@ -1,0 +1,606 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>Functional Programming in JavaScript using LiveScript and prelude.ls</title>
+<meta name='description' content="LiveScript is a language that compiles down to JavaScript. It is a fork of Coco, which is in turn derived from CoffeeScript. LiveScript is Coco that is much more compatible with CoffeeScript, more functional, and more feature rich.">
+
+<link rel="icon" type="image/png" href="../images/icon.png">
+
+<link href="../bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
+<link href="../bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+<script src="../bootstrap/js/bootstrap.js"></script>
+
+<script src="../google-code-prettify/prettify.js"></script>
+<link href="../google-code-prettify/prettify.css" rel="stylesheet">
+<script src="../lang-ls-0.9.9.js"></script>
+
+<link href="styles.css" rel="stylesheet">
+
+<script>
+  if(window.location.host === "gkz.github.com") {
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-7402515-5']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  }
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="span10 content">
+        <h1>Functional Programming in JavaScript using LiveScript and prelude.ls</h1>
+        <div class="date-author">
+          <span class="date">19 Jun 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+        </div>
+        
+<p>JavaScript is a great language, with powerful support for functional style programming. Unfortunately, its abilities are obscured by an awkward syntax and a lack of a good standard library. 
+
+<p><a href="http://gkz.github.com/LiveScript/">LiveScript</a> is a language that compiles to JavaScript. It's just JavaScript with some syntax improvements and feature additions, making functional style programming easier. 
+
+<p><a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> is a JavaScript library (written in LiveScript) which provides a rich set of functions to assist in functional style programming. It is somewhat based off of Haskell's Prelude module. It's the recommended base library for LiveScript, but will work with vanilla JavaScript as well.
+
+<p>What is meant by <em>functional style programming</em>? Well, there isn't wide support for immutable values in JavaScript, and since LiveScript is a straightforward mapping to JavaScript, it does not support immutable values either. However, we will be discussing functions as first class values, higher order functions, iteration, currying, composing, piping, operators as functions, and more.
+
+<p>But first, we'll briefly go over the basics of LiveScript:
+
+
+<h3>A Brief Overview of LiveScript</h3>
+
+<p>Like many modern languages, blocks are delimited by whitespace indentation and newlines are used instead of semicolons to terminate statements (you can still use semicolons if you want to fit more than one statement on a line).
+
+<p>For example (LiveScript on the left, compiled JavaScript on the right):
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+if 2 + 2 == 4
+  doSomething()
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+if (2 + 2 === 4) {
+  doSomething();
+}
+</pre>
+  </div>
+</div>
+
+<p class="note">You can try all these examples for yourself using the LiveScript compiler/repl on the <a href="http://gkz.github.com/LiveScript/">LiveScript site</a>.
+
+<p>To further clear things up, you can omit the parentheses when calling a function.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add 2, 3
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+add(2, 3);
+</pre>
+  </div>
+</div>
+
+<p>And comments are:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+# from here to the end of the line.
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+// from here to the end of the line.
+</pre>
+  </div>
+</div>
+
+<p class="note">Lisp hackers, you may be pleased to know that you can use dashes in the name of your variables and functions. The names are equivalent to, and are compiled to, camel case. Eg. <code>my-value = 42</code> == <code>myValue = 42</code>.
+
+
+<h3>Defining Functions</h3>
+
+<p>Defining functions, which we do very often in functional programming, can be cumbersome in JavaScript, as you have to use an eight letter keyword <code>function</code>, and have all the curly braces and semicolons. 
+
+<p>Things become a quite a bit lighter in LiveScript:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+(x, y) -> x + y 
+
+-> # an empty function 
+
+times = (x, y) ->
+  x * y
+# multiple lines, and be assigned to a var like in JavaScript
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var times;
+(function(x, y){ return x + y; });
+
+(function(){});
+
+times = function(x, y){ 
+  return x * y;
+};
+</pre>
+  </div>
+</div>
+
+<p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned. However, you can still use <code>return</code> to force returns if you want, and you can add a bang to your definitions to suppress auto-returning <code>noRet = !(x) -> ...</code>.
+
+
+<h3>First Class and Higher Order Functions</h3>
+
+<p>As in JavaScript, functions in LiveScript are first class values. That means they can be created at execution, stored in data structures, passed as arguments, and returned from functions. Functions which take a function as an argument are <em>higher order functions</em>.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+addTwo = (x) -> x + 2
+
+wrap = (f, x) ->      # take a function as an argument
+  (y) -> x + f(y) + x # returns a function
+
+dollarAddTwo = wrap addTwo, '&#36;'
+dollarAddTwo 3        #=> '&#36;5&#36;'
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var addTwo, wrap, dollarAddTwo;
+addTwo = function(x){ return x + 2; };
+
+wrap = function(f, x){
+  return function(y){ return x + f(y) + x; };
+};
+dollarAddTwo = wrap(addTwo, '&#36;');
+dollarAddTwo(3);
+</pre>
+  </div>
+</div>
+
+<p>Some of the most used higher order functions are those dealing with collections.
+
+
+<h3>Iteration</h3>
+
+<p>Programming often involves dealing with collections of items, be it lists, objects, or strings. Functional programming allows you to deal with collections in a powerful way. Here we will use functions from <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a>.
+
+<p>First, say you want to take a collection and do something to each element - that would call for a <code>map</code>. Its first argument is the function which will be applied to each element. It returns a new collection of the type you inputed. Thus a list will return a new list, and an object will return a new object.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+map ((x) -> x + 2), [1, 2, 3] #=> [3, 4, 5]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+map(function(x){ return x + 2; }, [1, 2, 3]);
+</pre>
+  </div>
+</div>
+
+<p>You may want to take all the items in the collection and get a single value out of them - that calls for a <code>fold</code>. The first argument is a function with two arguments, it uses this function to combine the list into a single value. The second argument is the value to start off with. 
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+fold ((x, y) -> x + y), 0, [1, 2, 3] #=> 6
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+fold(function(x, y){ return x + y; }, 0, [1, 2, 3]);
+</pre>
+  </div>
+</div>
+
+<p>Or you may want to filter items out - which calls for the aptly named <code>filter</code>. The first argument is a function which it applies to each item of the list. If that function evaluates to true, it adds the item to the resulting collection.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+filter even, {a: 1, b: 2, c: 3, d: 4} #=> {b: 2, d: 4}
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+filter(even, { a: 1, b: 2, c: 3, d: 4 });
+</pre>
+  </div>
+</div>
+
+<p>There are many more functions available, just check out the <a href="http://gkz.github.com/prelude-ls/">prelude.ls site</a> for documentation on all of them.
+
+<p>For these higher order functions, it's very useful to have a method of concisely creating the functions you want to use. There are several options which we will explore. First, you can use curried functions to create functions that are subsets of ones you have already defined. You can use composition to create functions that are the combination of several other functions you have defined, and you can also use operators as functions. 
+
+
+<h3>Currying</h3>
+
+<p>Curried functions are very powerful. Essentially, when called with less arguments than defined with, they return a partially applied function. This means that it returns a function whose arguments are those which you didn't supply, with the values for what you did supply already bound. They are defined in LiveScript using the long arrow. Perhaps an example will make things more clear:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+times = (x, y) --> x * y
+times 2, 3          #=> 6 (normal use works as expected)
+double = times 2
+double 5            #=> 10
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var times, double;
+times = __curry(function(x, y){ return x * y; });
+times(2, 3);
+double = times(2);
+double(5);
+
+function __curry(f, args){
+  return f.length > 1 ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length 
+          && arguments.length ?
+      __curry.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
+</pre>
+  </div>
+</div>
+
+<p>Currying allows you to be concise in your higher order collection functions. Say we didn't have <code>double</code> defined.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+map (times 2), [1, 2, 3]  #=> [2, 4, 6]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+map(times(2), [1, 2, 3]);
+</pre>
+  </div>
+</div>
+
+<p>Currying makes it really easy to define functions as a subset of the behavior of one of your already defined functions. But what if you want to combine the behavior multiple functions together?
+
+
+<h3>Composing Functions</h3>
+
+<p>Composing allows you to create functions by 'composing' them out of a series of functions. LiveScript has two operators for composing, forward <code>&gt;&gt;</code> and backwards <code>&lt;&lt;</code>.
+
+<p><code>(f &lt;&lt; g) x</code> is equivalent to <code>f(g(x))</code>, and <code>(f &gt;&gt; g) x</code> is equivalent to <code>g(f(x))</code>. For example:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+even    = (x) -> x % 2 == 0
+invert  = (x) -> not x
+odd     = invert << even
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var even, invert, odd;
+even = function(x){ return x % 2 === 0; };
+invert = function(x){ return !x; };
+odd = __compose((invert),(even));
+
+function __compose(f, g){ return function(){
+    return f(g.apply(this, arguments)); } }
+</pre>
+  </div>
+</div>
+
+<p>Say <code>odd</code> wasn't defined, how could we easily filter a list without having to define a new function?
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+filter (invert << even), [1, 2, 3, 4, 5] #=> [1, 3, 5]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+filter(__compose((invert),(even)), [1, 2, 3, 4, 5]);
+
+function __compose(f, g){ return function(){
+    return f(g.apply(this, arguments)); } }
+</pre>
+  </div>
+</div>
+
+<p class="note">Yes F# users, it's just like F#! LiveScript also includes your beloved pipe operator - more about that later.
+
+<p class="note">Haskell programmers, you can use a spaced dot instead of <code>&lt;&lt;</code>, for example <code>f . g</code>.
+
+<p>Having to define functions for really basic operations seems tedious, is there a better way?
+
+
+<h3>Operators as Function</h3>
+
+<p>You can use operators as functions, simply by wrapping them in parentheses. You can also partially apply their arguments!
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+
+timesTwo = (* 2)
+timesTwo 4 #=> 8
+
+odd = (not) << even
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var timesTwo, odd, 
+    __multiply = __curry(function(x, y){ return x * y; });
+timesTwo = __multiply(2);
+timesTwo(4);
+
+odd = __compose((__not),(even));
+
+function __curry(f, args){
+  return f.length > 1 ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length 
+        && arguments.length ?
+      __curry.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
+function __compose(f, g){ return function(){
+    return f(g.apply(this, arguments)); } }
+function __not(x){ return !x; }
+</pre>
+  </div>
+</div>
+
+<p>All this is great, but what if you have several steps in your process?
+
+
+<h3>Piping</h3>
+
+<p>Instead of a series of nested function calls, you can pipe values in:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+
+[1, 2, 3, 4, 5] |> filter even |> map (* 2) |> fold (+), 0 
+#=> 12
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var __add = __curry(function(x, y){ return x + y; }),
+    __multiply = __curry(function(x, y){ return x * y; });
+fold(__add, 0)(
+map(__multiply(2))(
+filter(even)(
+[1, 2, 3, 4, 5])));
+
+function __curry(f, args){
+  return f.length > 1 ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length 
+        && arguments.length ?
+      __curry.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
+</pre>
+  </div>
+</div>
+
+<p>But if the functionality you want can't be created through partial application of a curried function, composing a function, or the use of an operator?
+
+
+<h3>Implicit Argument</h3>
+
+<p>If the function you are defining only has one argument, then you can omit the <code>(x) -></code> part and just use <code>it</code> as an implicit argument.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+filter (-> it.length > 5), ['tiny', 'middle', 'longer'] 
+#=> ['middle', 'longer']
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+filter(function(it){
+  return it.length > 5;
+}, ['tiny', 'middle', 'longer']);
+</pre>
+  </div>
+</div>
+
+
+<h3>Infix Functions</h3>
+
+<p>You can use functions like operators, and even partially apply their second argument if desired - just wrap them in backticks.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+startsWith = (xs, x) -> x == xs.slice 0, 1
+'hello' `startsWith` 'h' #=> true
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var startsWith;
+startsWith = function(xs, x){ return x === xs.slice(0, 1); };
+startsWith('hello', 'h');
+</pre>
+  </div>
+</div>
+
+
+<h3>Comprehensions</h3>
+
+<p>Tired of seeing <code>map</code>s and <code>filter</code>s? Or want to process several collections at a time? You can use list comprehensions and object comprehensions.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+
+
+r = [x + 1 for x in [2, 3, 4, 5] when x + 1 isnt 4] 
+r #=> [3, 5, 6] 
+
+
+
+
+
+r = {[key, val * 2] for key, val of {a: 1, b: 2}}   
+r #=> {a: 2, b: 4}
+
+
+
+
+r = [x + y for x in [1, 2, 3] for y in [4, 5, 6]]   
+r #=> [5, 7, 9]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, r, key, val, y, __res, __i, __ref, 
+    __len, __j, __ref1, __len1;
+__res = [];
+for (__i = 0, __len = (__ref = [2, 3, 4, 5]).length; 
+    __i < __len; ++__i) {
+  x = __ref[__i];
+  if (x + 1 !== 4) { __res.push(x + 1); }
+}
+r = __res;
+__res = {};
+for (key in __ref = { a: 1, b: 2 }) {
+  val = __ref[key];
+  __res[key] = val * 2;
+}
+r = __res;
+__res = [];
+for (__i = 0, __len = (__ref = [1, 2, 3]).length; 
+    __i < __len; ++__i) {
+  x = __ref[__i];
+  for (__j = 0, __len1 = (__ref1 = [4, 5, 6]).length; 
+      __j < __len1; ++__j) {
+    y = __ref1[__j];
+    __res.push(x + y);
+  }
+}
+r = __res;
+</pre>
+  </div>
+</div>
+
+
+<h3>Concatenation</h3>
+
+<p>You can use the cons operator <code>&</code> to put something in front of a list, or use the append operator <code>+++</code> to join to lists, or add something to the end of a list.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+1 & [2, 3]        #=> [1, 2, 3]
+[1, 2] +++ [3, 4] #=> [1, 2, 3, 4]
+[1, 2] +++ 3      #=> [1, 2, 3]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+[(1)].concat([2, 3]);
+([1, 2]).concat([3, 4]);
+([1, 2]).concat(3);
+</pre>
+  </div>
+</div>
+
+<p>Note that these all return new lists, and don't modify the inputed ones.
+
+
+<h3>Conclusion</h3>
+
+<p>This has been a brief overview of some of the features available in <a href="http://gkz.github.com/LiveScript/">LiveScript</a> and <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> to assist in functional style programming. Both have many more powerful and useful features - to give you a taste:
+
+<pre class="prettyprint lang-ls">
+take(n, [x, ...xs]:list) =
+  | n <= 0     => []
+  | empty list => []
+  | otherwise  => x & take n - 1, xs
+
+take 2, [1 to 5] #=> [1, 2]
+</pre>
+
+<p>Check out their sites for more: <a href="http://gkz.github.com/LiveScript/">LiveScript</a> and <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a>.
+
+<p>You may also be interested in checking out <a href="livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends</a>.
+
+        <hr>
+        <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for more on LiveScript and prelude.ls
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+        if(window.location.host === "gkz.github.com") {
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'livescript'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        }
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+      </div>
+      <div class="span2 sidebar">
+        <h1><a href="http://gkz.github.com/LiveScript/">LiveScript</a><img src="../images/icon.png"></h1>
+        <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="140" height="40"></iframe>
+        <a href="http://gkz.github.com/LiveScript"><div class="btn btn-primary btn-large btn">LiveScript site</div></a>
+        <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn">View on GitHub</div></a>
+        <a href="http://gkz.github.com/prelude-ls"><div class="btn btn-large btn">prelude.ls site</div></a>
+        <div><a href="https://twitter.com/share" class="twitter-share-button" data-via="gkzahariev" data-size="large">Tweet</a></div>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+        <h4>Blog Posts</h4>
+        <ul>
+          <li><a href="functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a>
+          <li><a href="livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends</h3>
+        </ul>
+      </div>
+    </div>
+  </div>
+<script>
+  prettyPrint();
+</script>
+</body>
+</html>

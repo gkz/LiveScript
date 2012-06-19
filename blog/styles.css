@@ -31,6 +31,17 @@ code {
 .sidebar .btn {
   margin-bottom: 10px;
 }
+.sidebar h4 {
+  margin-top: 20px;
+}
+.sidebar ul {
+  list-style-type: none;
+  margin-left: 0;
+}
+.sidebar ul li {
+  margin-bottom: 10px;
+  font-size: 12px;
+}
 .content {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -67,4 +78,46 @@ code {
   line-height: 36px;
   margin-top: 30px;
   margin-bottom: 5px;
+}
+.content .note {
+  padding: 5px;
+  padding-left: 15px;
+  border-left: 2px solid #C09853;
+}
+.content .example {
+  height: 100%;
+  overflow: auto;
+  border: 1px solid #E1E1E8;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+  background-color: #f7f7f9;
+}
+.content .example .example-ls,
+.content .example .example-js {
+  width: 50%;
+  height: 100%;
+  border: none;
+}
+.content .example .example-ls h5,
+.content .example .example-js h5 {
+  padding-top: 12px;
+  padding-left: 10px;
+}
+.content .example .example-ls  > pre,
+.content .example .example-js  > pre {
+  padding: 10px;
+  height: 100%;
+  border: none;
+  margin-bottom: 0;
+}
+.content .example .example-ls {
+  float: left;
+}
+.content .example .example-js {
+  float: right;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  border-left: 1px dotted #ccc;
 }
