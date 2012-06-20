@@ -419,6 +419,7 @@ eq '999 1000' show 999     til 1001
 eq '1e-9'     show 1e-9    til 1e-8
 eq '9999999'  show 9999999 til 1e7
 eq '10000000' show 1e7     til 9999999 by -1
+eq '1 2 3'    show 1       til 3.00001
 
 eq '0.5 0.75 1' show 0.5 til 1.2 by 0.25
 
