@@ -827,17 +827,21 @@ character = if JSON!? then uxxxx else ->
         tokens.splice i++ 0 [\+- sig, token.2]
       continue if token.callable
     case \RANGE
-      [from, char] = decode token.1, lno = token.2
+      [from, char] = decode token.     1, lno = token.2
       [to, tochar] = decode tokens[i+1]1, lno
-      carp 'bad "to" in range' if char ^ tochar
-      if by = tokens[i+2]?0 is \RANGE_BY
-        carp 'bad "by" in range' if isNaN by = tokens[i+3]?1
-      ts = []; to -= token.op is \til and 1e-15
-      for n from from to to by +by or 1
+      carp 'bad "to" in range' lno if char ^ tochar
+      by = 1
+      if byp = tokens[i+2]?0 is \RANGE_BY
+        carp 'bad "by" in range' tokens[i+2]2 unless by = +tokens[i+3]?1
+      if token.op is \til
+        to -= by / 2
+        to = from if from > to ^ by < 0
+      ts = []
+      for n from from to to by by
         carp 'range limit exceeded' lno if 0x10000 < ts.push \
           [\STRNUM, if char then character n else "#n", lno] [\, \, lno]
       ts.pop! or carp 'empty range' lno
-      tokens.splice i, if by then 4 else 2, ...ts
+      tokens.splice i, 2 + 2 * byp, ...ts
       i += ts.length - 1
     case \WORDS
       ts = [[\[ \[ lno = token.2]]
