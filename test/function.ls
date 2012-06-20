@@ -618,3 +618,18 @@ eq 5 (2 `add`) 3
 eq 5 (`add` 3) 2
 
 ok (`elem` [1 to 10]) 3
+
+### implicit call/lookup
+obj =
+  a: 2
+  b: -> 5
+  c: (x, y) -> x + y
+
+eq 2 (.a) obj 
+eq 5 (.b!) obj
+eq 7 (.c 3 4) obj
+
+map(f, xs) = [f x for x in xs]
+
+eq '5,1,7'       "#{ map (.length),  [[1 to 5] [1] [1 to 7]] }"
+eq '1|2|3,1,1|2' "#{ map (.join \|), [[1 to 3] [1] [1 to 2]] }"

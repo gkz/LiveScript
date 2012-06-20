@@ -393,6 +393,11 @@ exports import
     case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
     case \.
+      if @last.0 is \(
+        @token \PARAM( \(  
+        @token \)PARAM \)  
+        @token \->     \-> 
+        @token \ID     \it
       @last.0 = \? if @last.1 is \?
       tag = \DOT
     case \,
