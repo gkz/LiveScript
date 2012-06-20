@@ -217,11 +217,19 @@ eq \named  (new -> return @named = class then)displayName
 ok named!? 'should not leak to global when undeclared'
 
 
+# `super` with nested classes
 class Sup
   class @Sub extends this
     eq super, Sup
+  method: function
+    class extends @constructor
+      eq super, Sup
+      method: ->
+        eq super, method
 
 ok new Sup.Sub instanceof Sup
+(new (new Sup!method!))method!
+
 
 # `prototype`/`constructor`/`superclass` under class body
 new class extends Object
@@ -252,16 +260,16 @@ eq 'A,B' ''+NameEater.subnames
 bird     = {+wing, fly: -> @wing}
 wingless = {-wing}
 
-duck    = ^bird
-dodo    = ^bird <<< {...wingless, +extinct }
-donaldo = ^duck <<< {...wingless, +domestic}
+duck    = ^^bird
+dodo    = ^^bird <<< {...wingless, +extinct }
+donaldo = ^^duck <<< {...wingless, +domestic}
 
 ok bird.fly()
 ok duck.fly()
 ok not donaldo.fly()
 
-ok ^new Number instanceof Number
-eq (^new Number)constructor, Number
+ok ^^new Number instanceof Number
+eq (^^new Number)constructor, Number
 
 
 # Line folding around `extends`

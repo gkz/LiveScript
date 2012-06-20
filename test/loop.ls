@@ -57,13 +57,35 @@ results = [n * 2 for n in nums]
 eq results + '', '2,18'
 
 
-# Basic object comprehensions.
+# Basic 'of' comprehensions.
 obj   = {one: 1, two: 2, three: 3}
 names = [prop + '!' for prop of obj]
 odds  = for prop, value of obj then prop + '!' if value &&& 1
 
 eq names.join(' '), 'one! two! three!'
 eq odds. join(' '), 'one! three!'
+
+
+# Object comprehensions
+result = {[key, val * 2] for key, val of obj}
+eq 2 result.one
+eq 4 result.two
+eq 6 result.three
+
+result = {[val, key] for key, val of obj}
+eq \one   result.1
+eq \two   result.2
+eq \three result.3
+
+f = -> 
+  {[key, val * 2] for key, val of {a:1, b:2}}
+obj = f!
+eq 2 obj.a
+eq 4 obj.b
+
+r = {[key, val] for key, val of {a:1, b:2} when val isnt 2}
+eq 1 r.a
+ok r.b!?
 
 
 # Basic range comprehensions.
@@ -76,6 +98,8 @@ eq '123', [i for i from 1 til 4     ].join ''
 eq '036', [i for i from 0 til 9 by 3].join ''
 
 # Almost never mess with binary `in`/`of` and variable `by`.
+all = from = to = by = 1
+
 for i to 0
   ok 0 of [0]
   ok 0 in [0]
@@ -105,10 +129,6 @@ eq evens + '', '4,6,8'
 # Backward traversing.
 odds = [num for num in [0, 1, 2, 3, 4, 5] by -2]
 eq odds + '', '5,3,1'
-
-
-# all/from/to/by aren't reserved off-context.
-all = from = to = by = 1
 
 
 # Nested comprehensions.
@@ -201,6 +221,11 @@ new -> do ~>
 
 throws    'stray break on line 1' -> LiveScript.compile \break
 throws 'stray continue on line 1' -> LiveScript.compile \continue
+
+
+# Play nice with implicit calls.
+ok true, while 0 then
+ok [] = for i to 0 then
 
 
 ### Line folding after `for` prepositions

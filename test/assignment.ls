@@ -227,11 +227,6 @@ x = 'y'
 eq x, 49344
 
 
-{(*>>>>1): mid, (*-1): last} = [1, 2, 3, 4, 5]
-eq mid , 3
-eq last, 5
-
-
 # [coffee#870](https://github.com/jashkenas/coffee-script/issues/870)
 [void, null, v] = [1 to 3]
 eq v, 3
@@ -359,3 +354,33 @@ eq false, !=o
 eq 0,     -=o
 eq 1,  ! += o
 eq true, !!=o
+
+
+## Dash to camel
+hello-world = 2
+eq hello-world, 2
+
+a = 2
+b = 3
+aB = 99
+eq 1  a-1 
+eq 1  4-b
+eq 99 a-b
+
+encodeURL = 9
+eq 9 encode-URL
+eq 9 encode-uRL
+eq 9 encode-u-r-l
+
+obj =
+  ha-ha: 2
+
+eq 2 obj.ha-ha
+eq 2 obj.haHa
+
+green = 5
+eq 4 --green
+green--
+eq 3 green
+
+eq 6, green-- * a

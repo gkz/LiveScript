@@ -39,7 +39,7 @@ eq obj?.'prop', "hello"
 eq obj.prop?.length, 5
 eq obj?.prop?.'length', 5
 eq void,
-  obj? .prop?. nonexistent? . property
+  obj? .prop?. nonexistent? .property
 
 
 # Soaks and caches method calls as well.

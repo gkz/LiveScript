@@ -66,7 +66,35 @@ bnf =
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
+
     o '[ Expression LoopHeads ]'  -> Chain new Parens $3.0.makeComprehension $2, $3.slice 1 
+    o '{ [ ArgList OptComma ] LoopHeads }'
+    , -> Chain new Parens $6.0.addObjComp!makeComprehension (L Arr $3), $6.slice 1
+
+    o '( BIOP )'            -> Chain Binary $2
+    o '( BIOP Expression )' -> Chain Binary $2, , $3
+    o '( Expression BIOP )' -> Chain Binary $3,   $2
+
+    o '( BIOPR )'
+    , -> Chain if   \! is $2.charAt 0
+               then Binary $2.slice(1) .invertIt!
+               else Binary $2
+    o '( BIOPR Expression )'
+    , -> Chain if   \! is $2.charAt 0
+               then Binary $2.slice(1), , $3 .invertIt!
+               else Binary $2, , $3
+    o '( Expression BIOPR )'
+    , -> Chain if   \! is $3.charAt 0
+               then Binary $3.slice(1), $2 .invertIt!   
+               else Binary $3, $2
+
+    o '( UNARY )'           -> Chain Unary $2
+    o '( CREMENT )'         -> Chain Unary $2
+
+    o '( BACKTICK Chain BACKTICK )'            -> Chain $3
+    o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
+    o '( BACKTICK Chain BACKTICK Expression )' 
+    , -> Chain(Chain Var \__flip .add Call [$3]).flipIt!add Call [$5]
 
   # Array/Object
   List:
@@ -150,18 +178,17 @@ bnf =
 
     o 'UNARY ASSIGN Chain' -> Assign $3.unwrap!, [$1] $2
     o '+-    ASSIGN Chain' ditto
-    o '^     ASSIGN Chain' ditto
+    o 'CLONE ASSIGN Chain' ditto
 
     o 'UNARY Expression' -> Unary $1, $2
     o '+-    Expression' ditto, prec: \UNARY
-    o '^     Expression' ditto, prec: \UNARY
+    o 'CLONE Expression' ditto, prec: \UNARY
     o 'UNARY INDENT ArgList OptComma DEDENT' -> Unary $1, Arr.maybe $3
 
     o 'Expression +-      Expression' -> Binary $2, $1, $3
     o 'Expression COMPARE Expression' ditto
     o 'Expression LOGIC   Expression' ditto
     o 'Expression MATH    Expression' ditto
-    o 'Expression ^       Expression' ditto
     o 'Expression POWER   Expression' ditto
     o 'Expression SHIFT   Expression' ditto
     o 'Expression BITWISE Expression' ditto
@@ -347,16 +374,16 @@ operators =
   <[ left     PIPE POST_IF FOR WHILE ]>
   <[ right    BACKPIPE     ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
-  <[ right    CONCAT       ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
   <[ left     RELATION     ]>
+  <[ right    CONCAT       ]>
   <[ left     SHIFT IMPORT ]>
   <[ left     +-           ]>
   <[ left     MATH         ]>
   <[ right    UNARY        ]>
-  <[ right    POWER ^      ]>
+  <[ right    POWER        ]>
   <[ right    COMPOSE      ]>
   <[ nonassoc CREMENT      ]>
   <[ left     BACKTICK     ]>

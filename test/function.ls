@@ -220,7 +220,7 @@ eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
 
 
-throws 'inconvertible statement on line 1', -> LiveScript.compile '(return)'
+throws 'inconvertible statement on line 1', -> LiveScript.compile 'r = return'
 throws 'inconvertible statement on line 2', -> LiveScript.compile '''
   r =
     return
@@ -538,6 +538,16 @@ eq 5 minusTwo 7
 !plus! = true
 eq void plus!
 
+boom(x, y) = x + (y ? 0)
+boom2 = boom 2
+eq 6 boom2 4
+eq 2 boom2!
+
+defArgs(x, y = 4) = x + y
+defArgs2 = defArgs 2
+eq 8 defArgs2 6
+eq 6 defArgs2!
+
 class Divider
   ->
 
@@ -584,13 +594,27 @@ plusOneTimesTwo = timesTwo << plusOne
 eq 5 timesTwoPlusOne 2
 eq 6 plusOneTimesTwo 2
 
+pott = timesTwo . plusOne
+eq 6 pott 2
+
+even = (x) -> x % 2 == 0
+odd = (not) . even
+ok odd 3
+ok not odd 2
+
 ### infix calls
-add = (x, y) -> x + y
-times = (x, y) -> x * y
-elem = (x, xs) -> x in xs
+add = (x, y) --> x + y
+times = (x, y) --> x * y
+elem = (x, xs) --> x in xs
 
 eq 7, 3 `add` 4
 eq 8, 3 + 2 `add` add 2 1
 eq 25, 2 `add` 3 + 4 `times` 5
 eq 25, 2 `add` 3 `times` 5
 ok 3 `elem` [1 to 10]
+
+eq 5 (`add`) 2 3
+eq 5 (2 `add`) 3
+eq 5 (`add` 3) 2
+
+ok (`elem` [1 to 10]) 3

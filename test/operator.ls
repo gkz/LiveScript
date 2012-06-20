@@ -87,7 +87,7 @@ eq true, [3]pop() in [0, ...array]
 eq true, [4]pop() in [...array, 4]
 eq true, void in length: 1
 
-eq 1, +(-0 in [0])
+eq 1, +( 0 in [0])
 eq 0, +(10 in [ ])
 
 ok array[0]++ in [0, 1] 'should cache testee'
@@ -217,7 +217,7 @@ eq -1, -true
 
 # Should space themselves when repeated.
 eq(+ +1, - -1)
-eq -1, - --[2]0
+eq (-1), - --[2]0
 
 
 ### `do`
@@ -256,11 +256,6 @@ eq o.deep, 'copy'
 o import all: \base
 eq o.all, \base
 
-a = [0]
-a import (*): 1, (*): 2
-eq a[1], 1
-eq a[2], 2
-
 i = 0
 ++i import {}
 eq i, 1
@@ -273,7 +268,7 @@ eq x.c, 3
 eq x.0, 4
 
 eq ',1,2,3' "#{ [] <<< [void 1 2 3] }"
-eq ',1,2,3' "#{ [] <<< (^{0}<<<{1}) <<<< (^{2}<<<{3}) }"
+eq ',1,2,3' "#{ [] <<< (^^{0}<<<{1}) <<<< (^^{2}<<<{3}) }"
 
 eq '''
 ({
@@ -323,7 +318,12 @@ eq 1 a.0
 
 # ACI applies on postcrement.
 eq a.0 ++  -- a.0
-eq 1 i
+eq 1 a.0
+
+# Infix after postcrement.
+eq a.0++ *  2, 2
+eq a.0-- /  2, 1
+ok a.0++ != 2
 
 throws 'increment of undeclared variable "C" on line 1' -> LiveScript.compile 'C++'
 throws 'invalid decrement on line 1' -> LiveScript.compile 'q.=p--'
@@ -411,6 +411,8 @@ eq \OLLEH ('hello' |> reverse |> upCase)
 
 eq \OLLEH (upCase <| reverse <| \hello)
 
+eq 8 ((+ 2) << (* 2) <| 3)
+
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
 eq 'number,string' ''+ typeof
@@ -452,6 +454,7 @@ eq '0,1,5'   String a +++ 5
 ##### &
 eq '0,2,3' String 0 & c
 eq '1,2,3' String 1 & 2 & 3
+ok not (true & [true] and false) # precedence 
 
 #### Join
 eq '0==1' a * \==
@@ -481,3 +484,125 @@ eq -1, 7 %% -2
 
 x = 7; x %%= -2
 eq -1 x
+
+### Partially applied binary ops
+addTwo = (+ 2)
+eq 5 addTwo 3
+eq 7 (+) 3, 4
+eq 3 (+)(1) 2 
+eq 3 (1+) 2
+
+eq 2 (-)(4) 2 
+eq 4 (- 5) 9
+eq -4 (5-) 9
+
+eq -2 (-2) # not spaced, not paritally applied
+eq 2 (+2)
+
+ok (===) '2' 2
+ok (!== 2) 9
+
+ok (2 ==) 2
+ok (!=) 2 '2'
+ok (2!=) 3
+ok (!=2) 3
+
+ok (<) 2 3
+ok (2<) 3
+ok (<3) 2
+
+ok (<=) 2 2
+ok (2<=) 4
+ok (<=2) 2
+
+ok (>) 3 2
+ok (3>) 2
+ok (>2) 3
+
+ok (>=) 2 2
+ok (2>=) 1
+ok (>=1) 1
+
+ok (&&) true true
+ok not ((and false) true)
+ok (true and) true
+
+ok (or) false true
+ok (false or) true
+ok (or true) false
+ok (or)(true) false
+
+eq 6 (*) 2 3
+eq 6 (2*) 3
+eq 6 (*3) 2
+
+eq 2 (/) 6 3
+eq 2 (6/) 3
+eq 2 (/3) 6
+
+eq 0 (%) 4 2
+eq 0 (4%) 2
+eq 0 (%2) 4
+
+eq -1 (%%) 7 -2
+eq -1 (7%%) -2
+eq -1 (%%-2) 7
+
+eq 8 (^) 2 3
+eq 8 (2**) 3
+eq 8 (^3) 2
+
+eq '1,2,3' "#{ (&) 1 [2 3] }"
+eq '1,2,3' "#{ (1&) [2 3]  }"
+eq '1,2,3' "#{ (&[2 3]) 1  }"
+
+eq '1,2,3' "#{ (+++) [1] [2 3] }"
+eq '1,2,3' "#{ ([1]+++) [2 3]  }"
+eq '1,2,3' "#{ (+++[2 3]) [1]  }"
+
+eq 2 (>?) 2 1
+eq 2 (2 >?) 1
+eq 2 (>? 1) 2
+
+eq 1 (<?) 2 1
+eq 1 (2 <?) 1
+eq 1 (<? 1) 2
+
+ok (instanceof) (new String \h), String
+ok (instanceof String) (new String \h)
+ok ((new String \h) instanceof) String
+
+ok (in) 5 [1 to 10]
+ok (in [1 to 5]) 3
+ok (3 in) [1 to 5]
+
+ok (not in) 0 [1 to 10]
+ok (not in [1 to 5]) 7
+ok (7 not in) [1 to 5]
+
+obj = {}
+(<<<) obj, a: 1
+(<<< b:2) obj
+(obj <<<) c: 3
+
+eq 1 obj.a
+eq 2 obj.b
+eq 3 obj.c
+
+# Unary ops as functions
+ok (not) false
+ok (!).call(null, false)
+
+x = 3
+eq 4 (++) x # does not actually modify x
+eq 2 (--) x
+eq 4 (++).call(null, x)
+
+filter(f, xs) = [x for x in xs when f x]
+even(x) = x % 2 == 0
+eq '1,3,5' "#{ filter (not) << even, [1 to 5] }"
+
+eq 2 (&&&) 10 3
+eq 2 (10 &&&) 3
+eq 2 (&&& 3) 10
+eq '1,3,5' "#{filter ((<<) (not), even), [1 to 5] }"

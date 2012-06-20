@@ -1,5 +1,5 @@
 name    : \LiveScript
-version : \0.9.4
+version : \0.9.9
 
 description : 'LiveScript is a language the compiles down to JavaScript, it is Coco but much more compatible with CoffeeScript, more functional, and more feature rich.'
 keywords    :
@@ -17,13 +17,19 @@ licenses :
   ...
 
 engines     : node: '>= 0.6.14 < 0.9.0'
-directories : lib: \./lib
-files       : [\lib]
+directories : 
+  lib: \./lib
+  bin: \./bin
+files       : 
+  \lib
+  \bin
+  \README.md
+  \LICENSE
 
 main : \./lib/livescript
 bin  :
-  livescript: \./lib/command.js
-  slake: \./lib/slake.js
+  livescript: \./bin/livescript
+  slake: \./bin/slake
 
 preferGlobal: true
 

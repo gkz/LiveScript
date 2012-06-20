@@ -50,9 +50,10 @@ eq '''
 while (0) {
   while (0) {
     ({}), {};
+    break;
   }
 }
-''', LiveScript.compile 'while 0 then while 0 then ({};{})' bare
+''', LiveScript.compile 'while 0 then while 0 then {} = ({}; {}); break' bare
 
 
 throws 'invalid use of null on line 1', -> LiveScript.compile 'null.po'
@@ -115,7 +116,7 @@ eq '''
   }
 }).call(this);
 
-''', LiveScript.compile '''try for k of o then let then ^@'''
+''', LiveScript.compile '''try for k of o then let then ^^@'''
 
 
 eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' LiveScript.tokens('''
@@ -129,7 +130,7 @@ eq '''
   var __ref;
   throw a < (__ref = +b) && __ref < c;
 }());
-''', LiveScript.compile '(throw a < +b < c)' bare
+''', LiveScript.compile '* throw a < +b < c' bare
 
 
 eq '!a;', LiveScript.compile '!!!a' bare
@@ -158,6 +159,8 @@ eq 1, __proto__ = 1
 λ = -> 七 = 7
 eq λ(), 7
 
+throws 'invalid identifier "♪" on line 1' -> LiveScript.compile 'ƒ ♪ ♯'
+
 
 # [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)
 eq '''
@@ -167,3 +170,6 @@ null;
 -> void;
 null
 ''' bare
+
+# Dash seperated identifiers
+throws "Parse error on line 1: Unexpected 'ID'" -> LiveScript.compile 'a--b = 1'
