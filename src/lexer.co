@@ -104,6 +104,7 @@ exports import
     case \new \do \typeof \delete                      then tag = \UNARY
     case \return \throw                                then tag = \HURL
     case \break  \continue                             then tag = \JUMP
+    case \var \const \export                           then tag = \DECL
     case \this \eval \super then return @token(\LITERAL id, true)length
     case \for  then @seenFor = true; fallthrough
     case \then then @wantBy  = false
@@ -684,7 +685,8 @@ character = if JSON!? then uxxxx else ->
   i = 0
   while token = tokens[++i]
     [tag] = token
-    continue unless tag of <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY ]>
+    continue unless tag of
+      <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY CONST EXPORT ]>
     switch next = tokens[i+1]0
     case \IF then continue if tag is \ELSE
     case \INDENT \THEN
@@ -893,13 +895,13 @@ KEYWORDS_SHARED = <[
   true false null this void super return throw break continue
   if else for while switch case default try catch finally class extends
   new do delete typeof in instanceof import function
-  let with debugger export
+  let with var const export debugger
 ]>
 
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid runtime errors.
-KEYWORDS_UNUSED = <[ var  const enum  implements interface
-                     package private protected public static yield ]>
+KEYWORDS_UNUSED =
+  <[ enum implements interface package private protected public static yield ]>
 
 KEYWORDS = KEYWORDS_SHARED.concat KEYWORDS_UNUSED
 
