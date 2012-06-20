@@ -1,0 +1,26 @@
+# `.run`s Coco code and calls back, passing error if any.
+Coco.stab = (code, callback, filename, error) ->
+  try Coco.run code, {filename} catch then error = e
+  callback error
+
+# `.stab`s a remote script via `XMLHttpRequest`.
+Coco.load = (url, callback or ->) ->
+  xhr = new XMLHttpRequest
+  xhr.open \GET, url, true
+  xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
+  xhr.onreadystatechange = !->
+    if xhr.readyState is 4
+      if xhr.status of [200 0]
+      then Coco.stab xhr.responseText, callback, url
+      else callback Error "#url: #{xhr.status} #{xhr.statusText}"
+  xhr.send null
+  xhr
+
+# Execute `<script>`s with _coco_ type.
+type = //^ (?: text/ | application/ )? coco $//i
+sink = !(error) -> error and setTimeout -> throw error
+for script of document.getElementsByTagName \script
+  if type.test script.type
+    if script.src
+    then Coco.load that            , sink
+    else Coco.stab script.innerHTML, sink, script.id

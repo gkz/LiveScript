@@ -934,15 +934,19 @@ character = if JSON!? then uxxxx else ->
       and  tokens[i+4]?0 is \]))
         [fromNum, char] = decode token.1, lno
         [toNum, tochar] = decode tokens[i+1].1, lno
-        carp 'bad "to" in range' if char ^^^ tochar
-        if byNum = tokens[i+2]?0 is \RANGE_BY
-          carp 'bad "by" in range' if isNaN byNum = tokens[i+3]?1
-        ts = []; toNum -= token.op is \til and 1e-15
-        for n from fromNum to toNum by +byNum or 1
+        carp 'bad "to" in range' lno if char ^^^ tochar
+        byNum = 1
+        if byp = tokens[i+2]?0 is \RANGE_BY
+          carp 'bad "by" in range' tokens[i+2]2 unless byNum = +tokens[i+3]?1
+        if token.op is \til
+          toNum -= byNum / 2
+          toNum = fromNum if fromNum > toNum ^^^ byNum < 0
+        ts = []
+        for n from fromNum to toNum by byNum
           carp 'range limit exceeded' lno if 0x10000 < ts.push \
             [\STRNUM, if char then character n else "#n", lno] [\, \, lno]
         ts.pop! or carp 'empty range' lno
-        tokens.splice i, if byNum then 4 else 2, ...ts
+        tokens.splice i, 2 + 2 * byp, ...ts
         i += ts.length - 1
       else
         token.0 = \STRNUM
