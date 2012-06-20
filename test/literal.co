@@ -432,6 +432,8 @@ ok \\u2028 to \\u2029
 
 throws 'range limit exceeded on line 2' -> Coco.tokens '\n0 to 1 by 1e-5'
 throws 'empty range on line 2'          -> Coco.tokens '\n1 to 0'
+throws 'empty range on line 2'          -> Coco.tokens '\n1 til 1'
+throws 'empty range on line 2'          -> Coco.tokens '\n2 to 3 by -1'
 throws 'bad "to" in range on line 2'    -> Coco.tokens '\n0 to "q"'
 throws 'bad "by" in range on line 2'    -> Coco.tokens '\n0 to 9 by "2"'
 throws 'bad string in range on line 2'  -> Coco.tokens '\n"a" to "bc"'

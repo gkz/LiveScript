@@ -834,6 +834,7 @@ character = if JSON!? then uxxxx else ->
       if byp = tokens[i+2]?0 is \RANGE_BY
         carp 'bad "by" in range' tokens[i+2]2 unless by = +tokens[i+3]?1
       if token.op is \til
+        carp 'empty range' lno unless from < to ^ by < 0
         to -= by / 2
         to = from if from > to ^ by < 0
       ts = []
