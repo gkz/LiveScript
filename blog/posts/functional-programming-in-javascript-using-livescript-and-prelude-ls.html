@@ -9,6 +9,8 @@ date: 19 Jun 2012
 
 <p>What is meant by <em>functional style programming</em>? Well, there isn't wide support for immutable values in JavaScript, and since LiveScript is a straightforward mapping to JavaScript, it does not support immutable values either. However, we will be discussing functions as first class values, higher order functions, iteration, currying, composing, piping, operators as functions, and more.
 
+<p class="note">Are you familiar with CoffeeScript? If so you can <a href="#iteration">skip ahead a couple of sections</a>.
+
 <p>But first, we'll briefly go over the basics of LiveScript:
 
 
@@ -138,7 +140,7 @@ dollarAddTwo(3);
 
 <p>Some of the most used higher order functions are those dealing with collections.
 
-
+<a name="iteration"></a>
 <h3>Iteration</h3>
 
 <p>Programming often involves dealing with collections of items, be it lists, objects, or strings. Functional programming allows you to deal with collections in a powerful way. Here we will use functions from <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a>.
