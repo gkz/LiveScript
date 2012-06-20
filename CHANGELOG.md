@@ -36,5 +36,5 @@
 * Changed number radix symbol to ~
 * Added %%=
 
-* 0.9.0
-Initial public release, many changes. See [Changes from Coco](http://gkz.github.com/LiveScript/#changes) for more details.
+# 0.9.0
+* Initial public release, many changes. See [Changes from Coco](http://gkz.github.com/LiveScript/#changes) for more details.
