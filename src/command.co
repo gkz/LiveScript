@@ -187,14 +187,14 @@ default
 # - __??__: <https://github.com/joyent/node/blob/master/lib/readline.js>
 !function repl
   argv.1 = \repl
-  # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
-  code  = ''
-  cont  = false
-  repl  = require(\readline)createInterface process.stdin, process.stdout
+  # ref. <https://github.com/joyent/node/blob/master/lib/rl.js>
+  code = ''
+  cont = false
+  rl   = require(\readline)createInterface process.stdin, process.stdout
   reset = !->
-    repl.line = code := ''
-    repl.prompt!
-  ({_ttyWrite} = repl)_ttyWrite = (char) ->
+    rl.line = code := ''
+    rl.prompt!
+  ({_ttyWrite} = rl)_ttyWrite = (char) ->
     cont := char is \\n
     _ttyWrite ...
   prompt = \coco
@@ -209,14 +209,14 @@ default
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
         cb err, res
-    repl.completer = server~complete
-  repl.on \attemptClose !->
-    if repl.line or code then say ''; reset! else repl.close!
-  repl.on \close process.stdin~destroy
-  repl.on \line !->
+    rl.completer = server~complete
+  rl.on \attemptClose !->
+    if rl.line or code then say ''; reset! else rl.close!
+  rl.on \close process.stdin~destroy
+  rl.on \line !->
     if cont
       code += it + \\n
-      repl.output.write \. * prompt.length + '. '
+      rl.output.write \. * prompt.length + '. '
       return
     code += it
     try
@@ -230,8 +230,8 @@ default
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"
-  repl.setPrompt "#prompt> "
-  repl.prompt!
+  rl.setPrompt "#prompt> "
+  rl.prompt!
 
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
 # to it, preserving the other options.
