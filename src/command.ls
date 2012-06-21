@@ -215,7 +215,7 @@ switch
     if readline.line or code then say ''; reset! else readline.close!
   readline.on \close process.stdin~destroy
   readline.on \line !->
-    repl.infunc = false if it.match(/^\s*$/) # close with a blank line
+    repl.infunc = false if it.match(/^$/) # close with a blank line without spaces
     repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or it.match(/^!?(function|class) /)
     if cont or repl.infunc
       code += it + \\n
