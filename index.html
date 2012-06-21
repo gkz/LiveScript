@@ -2340,6 +2340,7 @@ TOTAL    851 ms
       <li>Added <code>.</code> as alias to <code>&lt;&lt;</code> in composing functions. This disallows property access in the style of <code>x . y</code>. Rationale: as in Haskell. Dually spaced property access should never be used anyway. 
       <li>Added object comprehensions. Eg. <code>{[key, val * 2] for key, val of obj}</code> would return an object with all the values double of the original. The first part of the array literal gets translated into the key, the second part into the value. Rationale: very useful when dealing with objects. Can now map and filter objects back into objects.
       <li>Dashes are now supported in identifiers, they get converted into camel case. Eg. <code>get-room</code> is equivalent to <code>getRoom</code>, <code>encode-URI</code> is <code>encodeURI</code>. Rationale: enable different styles which other people may enjoy. As in the lisp family of languages. 
+      <li>Added implicit call/lookup eg. <code>(.length)</code> is equivalent to <code>(x) -> x.length</code> and <code>(.join \*)</code> is equivalent to <code>(x) -> x.join \*</code>. Rationale: useful when mapping, filtering, etc. 
       </ul>
     </div>
     <div id="changelog" class="section">
