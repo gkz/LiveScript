@@ -46,11 +46,10 @@ ok x is not o.x , 'should copy o.x'
 ok y is not o[y], 'should copy o[y]'
 
 
-throws 'splatting "new" on line 1' -> Coco.compile 'new C ...a'
-throws 'splatting "new" on line 1' -> Coco.compile 'new C ...'
+compileThrows 'splatting "new"' 1 'new C ...a'
+compileThrows 'splatting "new"' 1 'new C ...'
 
-throws 'multiple splat in an assignment on line 1'
-     , -> Coco.compile '[...a, ...b] = c'
+compileThrows 'multiple splat in an assignment' 1 '[...a, ...b] = c'
 
 
 class Thisplat

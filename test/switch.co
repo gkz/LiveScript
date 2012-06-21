@@ -33,7 +33,7 @@ eq 2   , switch case 1 then continue while 0; 2
 eq 3   , do -> switch -> 0 case 1 then -> 2 default 3
 
 
-throws 'inconvertible statement on line 3' -> Coco.compile '''
+compileThrows 'inconvertible statement' 3 '''
   for ever
     !switch
       continue

@@ -216,12 +216,12 @@ eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
 
 
-throws 'inconvertible statement on line 1', -> Coco.compile 'r = return'
-throws 'inconvertible statement on line 2', -> Coco.compile '''
+compileThrows 'inconvertible statement' 1 'b = break'
+compileThrows 'inconvertible statement' 2 '''
   r =
     return
 '''
-throws 'inconvertible statement on line 3', -> Coco.compile '''
+compileThrows 'inconvertible statement' 3 '''
   r = if 1
     2 +
     return
@@ -322,7 +322,7 @@ eq arguments,
 ok (@arguments, @eval) ->
 
 
-throws 'duplicate parameter "a" on line 1', -> Coco.compile '(a, a) ->'
+compileThrows 'duplicate parameter "a"' 1 '(a, a) ->'
 
 
 # Fun with radical parameters.
@@ -338,8 +338,8 @@ eq void Function() ->
 
 
 ### Invalid call detection
-throws 'invalid callee on line 1'      -> Coco.compile '[]()'
-throws 'invalid constructor on line 1' -> Coco.compile 'new 42'
+compileThrows 'invalid callee'      1 '[]()'
+compileThrows 'invalid constructor' 1 'new 42'
 
 
 ### `new` block
@@ -398,19 +398,18 @@ new
   eq 4, double 2
   eq 9, triple 3
 
-throws 'redeclaration of read-only variable "f" on line 2' -> Coco.compile '''
+compileThrows 'redeclaration of read-only variable "f"' 2 '''
   f = 0
   function f then
 '''
-throws 'redeclaration of read-only variable "f" on line 2' -> Coco.compile '''
+compileThrows 'redeclaration of read-only variable "f"' 2 '''
   function f
     f = 1
 '''
-throws 'redeclaration of read-only variable "f" on line 1' -> Coco.compile '''
+compileThrows 'redeclaration of read-only variable "f"' 1 '''
   function f f then
 '''
-throws 'misplaced function declaration on line 2', ->
-  Coco.compile 'if 1\n function F then'
+compileThrows 'misplaced function declaration' 2 'if 1\n function F then'
 
 
 ### `let`

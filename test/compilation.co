@@ -16,19 +16,19 @@ eq '''
 ''' Coco.compile 'delete o.k' {\eval, +bare}
 
 
-throws 'missing `"` on line 2' -> Coco.lex '\n"\n'
+compileThrows 'missing `"`' 2 '\n"\n'
 
-throws 'unterminated JS literal on line 3', -> Coco.lex '\n\n```\n'
-throws 'unterminated string on line 3'    , -> Coco.lex "\n\n'\n"
-throws 'unterminated words on line 3'     , -> Coco.lex '\n\n<[\n'
+compileThrows 'unterminated JS literal' 3 '\n\n```\n'
+compileThrows 'unterminated string'     3 "\n\n'\n"
+compileThrows 'unterminated words'      3 '\n\n<[\n'
 
-throws 'contaminated indent %20 on line 2'    -> Coco.lex '1\n\t 2'
-throws 'unmatched dedent (1 for 2) on line 3' -> Coco.lex '1\n  2\n 3'
+compileThrows 'contaminated indent %20'    2 '1\n\t 2'
+compileThrows 'unmatched dedent (1 for 2)' 3 '1\n  2\n 3'
 
-throws 'unmatched `)` on line 2' -> Coco.lex '()\n)'
-throws 'unmatched `]` on line 3' -> Coco.lex '[{\n\n]}'
+compileThrows 'unmatched `)`' 2 '()\n)'
+compileThrows 'unmatched `]`' 3 '[{\n\n]}'
 
-throws 'missing `)CALL` on line 1' -> Coco.lex 'f('
+compileThrows 'missing `)CALL`' 1 'f('
 
 
 throws '''
@@ -72,11 +72,11 @@ while (0) {
 ''', Coco.compile '({} = ({}; {}); break) while 0 while 0' bare
 
 
-throws 'invalid use of null on line 1', -> Coco.compile 'null.po'
+compileThrows 'invalid use of null' 1 'null.po'
 
 
-throws 'deprecated octal literal 0666 on line 1' ,-> Coco.tokens '0666'
-throws 'invalid number 8 in base 8 on line 1'    ,-> Coco.tokens '8r8'
+compileThrows 'deprecated octal literal 0666' 1 '0666'
+compileThrows 'invalid number 8 in base 8'    1 '8r8'
 
 
 tokens = Coco.lex '''
@@ -182,7 +182,7 @@ eq 1, __proto__ = 1
 λ = -> 七 = 7
 eq λ(), 7
 
-throws 'invalid identifier "♪" on line 1' -> Coco.compile 'ƒ　♪　♯'
+compileThrows 'invalid identifier "♪"' 1 'ƒ　♪　♯'
 
 
 # [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)

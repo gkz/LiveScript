@@ -138,9 +138,11 @@ function runTests global.Coco
     global[name] = -> func ...; ++passedTests
   global <<<
     eq: strictEqual
-    throws: (msg, fun) ->
+    throws: !(msg, fun) ->
       try do fun catch return eq e?message, msg
       ok false "should throw: #msg"
+    compileThrows: !(msg, lno, code) ->
+      throws "#msg on line #lno" !-> Coco.compile code
   process.on \exit ->
     time = ((Date.now! - startTime) / 1e3)toFixed 2
     message = "passed #passedTests tests in #time seconds"

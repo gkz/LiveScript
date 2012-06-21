@@ -334,8 +334,8 @@ eq a.0++ *  2, 2
 eq a.0-- /  2, 1
 ok a.0++ != 2
 
-throws 'increment of undeclared variable "C" on line 1' -> Coco.compile 'C++'
-throws 'invalid decrement on line 1' -> Coco.compile 'q.=p--'
+compileThrows 'increment of undeclared variable "C"' 1 'C++'
+compileThrows 'invalid decrement' 1 'q.=p--'
 
 
 ### `delete`
@@ -348,8 +348,8 @@ O = ->
 eq delete (o = new O)[new O], 7
 eq o[7], void
 
-throws 'invalid delete on line 1' -> Coco.compile 'delete a'
-throws 'invalid delete on line 1' -> Coco.compile 'delete a.=b'
+compileThrows 'invalid delete' 1 'delete a'
+compileThrows 'invalid delete' 1 'delete a.=b'
 
 
 ### [[Class]] sniffing

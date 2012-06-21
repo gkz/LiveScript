@@ -19,8 +19,8 @@ r = :outer
   1
 eq r, 1
 
-throws 'undefined label "a" on line 1' -> Coco.compile 'break a'
-throws 'duplicate label "b" on line 2' -> Coco.compile '''
+compileThrows 'undefined label "a"' 1 'break a'
+compileThrows 'duplicate label "b"' 2 '''
   :b
     :b break b
 '''

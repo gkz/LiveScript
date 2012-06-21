@@ -44,28 +44,27 @@ let
     [e, f] = [5, 6]
   eq '1,2,3,4,5,6' [a, b, c, d, e, f]join!
 
-throws 'redeclaration of read-only variable "a" on line 2' -> Coco.compile """
+compileThrows 'redeclaration of read-only variable "a"' 2 '''
   const a = 0
   a = 1
-"""
-throws 'redeclaration of read-only variable "a" on line 2' -> Coco.compile """
+'''
+compileThrows 'redeclaration of read-only variable "a"' 2 '''
   a = 2
   const a = 3
-"""
-throws 'redeclaration of read-only variable "a" on line 2' -> Coco.compile """
+'''
+compileThrows 'redeclaration of read-only variable "a"' 2 '''
   const a = 4
   function a then 5
-"""
-throws 'assignment to constant variable "a" on line 2' -> Coco.compile """
+'''
+compileThrows 'assignment to constant variable "a"' 2 '''
   const a = 6
   -> a := 7
-"""
-throws 'increment of constant variable "a" on line 2' -> Coco.compile """
+'''
+compileThrows 'increment of constant variable "a"' 2 '''
   const a = 8
   ++a
-"""
-throws 'invalid constant variable declaration on line 2' ->
-  Coco.compile 'const\n a'
+'''
+compileThrows 'invalid constant variable declaration' 2 'const\n a'
 
 
 ### `var`
@@ -77,4 +76,4 @@ let
     e
   ok a is b is c is d is e is void
 
-throws 'invalid variable declaration on line 2' -> Coco.compile 'var\n  0'
+compileThrows 'invalid variable declaration' 2 'var\n  0'

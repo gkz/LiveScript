@@ -19,7 +19,7 @@ eq \=, /=/. source
 eq ' ' (/ /)source
 
 
-throws 'unterminated regex on line 1' -> Coco.lex '/1'
+compileThrows 'unterminated regex' 1 '/1'
 
 
 # Should be cached aptly.
@@ -27,7 +27,7 @@ eq 0 (/_/ <<< {0})0
 
 
 # Should accuse duplicate flag.
-throws 'duplicate regex flag `g` on line 1' -> Coco.lex '/^/gg'
+compileThrows 'duplicate regex flag `g`' 1 '/^/gg'
 
 
 # Should be ASI safe.
