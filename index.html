@@ -451,6 +451,13 @@ multiline = "string can be multiline
             and go on and on 
             beginning whitespace is 
             ignored"
+heredoc = '''
+            string can be multiline 
+            with newlines
+            and go on and on 
+            beginning whitespace is 
+            ignored
+'''
 ## Comments
 # a single line comment starts with a #
 /* multiline comments
@@ -556,7 +563,7 @@ void 8;
 
 
 'word';
-var variable, multiline, person, 
+var variable, multiline, heredoc, person, 
     obj, myList, tree, __ref;
 "The answer is " + (2 + 2);
 
@@ -566,6 +573,13 @@ variable = "world";
 
 
 multiline = "string can be multiline and go on and on beginning whitespace is ignored";
+
+
+
+
+heredoc = 'string can be multiline \nwith newlines\nand go on and on \nbeginning whitespace is \nignored';
+
+
 
 
 
