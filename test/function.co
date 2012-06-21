@@ -398,16 +398,24 @@ new
   eq 4, double 2
   eq 9, triple 3
 
-compileThrows 'redeclaration of read-only variable "f"' 2 '''
+compileThrows 'redeclaration of function "f"' 2 '''
   f = 0
   function f then
 '''
-compileThrows 'redeclaration of read-only variable "f"' 2 '''
+compileThrows 'redeclaration of function "f"' 2 '''
   function f
     f = 1
 '''
-compileThrows 'redeclaration of read-only variable "f"' 1 '''
+compileThrows 'redeclaration of function "f"' 2 '''
+  function f then
+  f = 2
+'''
+compileThrows 'redeclaration of function "f"' 1 '''
   function f f then
+'''
+compileThrows 'increment of function "f"' 2 '''
+  function f then
+  ++f
 '''
 compileThrows 'misplaced function declaration' 2 'if 1\n function F then'
 

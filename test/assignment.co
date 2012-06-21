@@ -52,7 +52,7 @@ for nonref, i of <[ 0 f() this true ]>
     Coco.compile \\n * i + "[#{x}, y] = z"
 
 
-compileThrows 'assignment to undeclared variable "Math"' 1 'Math ||:= 0'
+compileThrows 'assignment to undeclared "Math"' 1 'Math ||:= 0'
 
 
 # Empty assignments

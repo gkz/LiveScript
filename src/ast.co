@@ -829,7 +829,7 @@ class exports.Unary extends Node
     case \++ \--
       it.isAssignable! or @carp 'invalid ' + crement op
       if it instanceof Var and o.scope.checkReadOnly it.value
-        @carp "#{ crement op } of #that variable \"#{it.value}\""
+        @carp "#{ crement op } of #that \"#{it.value}\""
       it{front} = this if @post
     case \^ then return "#{ util \clone }(#{ it.compile o, LEVEL_LIST })"
     case \classof
@@ -1084,7 +1084,7 @@ class exports.Assign extends Node
       if op is \=
         o.scope.declare name, left, @const
       else if o.scope.checkReadOnly name
-        left.carp "assignment to #that variable \"#name\""
+        left.carp "assignment to #that \"#name\""
     if o.level
       code += ", #name" if del
       code  = "(#code)" if that > (if del then LEVEL_PAREN else LEVEL_LIST)
@@ -1965,10 +1965,9 @@ exports.Decl =
 Scope::<<<
   # Adds a new variable or overrides an existing one.
   add: (name, type, node) ->
-    if node
-      t = @variables"#name."
-      if t and type of <[ const function ]> or t of <[ const function ]>
-        node.carp "redeclaration of read-only variable \"#name\""
+    if node and t = @variables"#name."
+      if @READONLY[t] or @READONLY[type]
+        node.carp "redeclaration of #that \"#name\""
       return name if t of <[ arg function ]>
     # Dot-suffix to bypass `Object::` members.
     @variables"#name." = type
@@ -2010,7 +2009,7 @@ Scope::<<<
 
   checkReadOnly: (name) -> @READONLY[@check name, true]
 
-  READONLY: const: \constant, undefined: \undeclared
+  READONLY: const: \constant, function: \function, undefined: \undeclared
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->

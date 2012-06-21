@@ -334,8 +334,8 @@ eq a.0++ *  2, 2
 eq a.0-- /  2, 1
 ok a.0++ != 2
 
-compileThrows 'increment of undeclared variable "C"' 1 'C++'
-compileThrows 'invalid decrement' 1 'q.=p--'
+compileThrows 'increment of undeclared "C"' 1 'C++'
+compileThrows 'invalid decrement'           1 'q.=p--'
 
 
 ### `delete`

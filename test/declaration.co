@@ -44,23 +44,23 @@ let
     [e, f] = [5, 6]
   eq '1,2,3,4,5,6' [a, b, c, d, e, f]join!
 
-compileThrows 'redeclaration of read-only variable "a"' 2 '''
+compileThrows 'redeclaration of constant "a"' 2 '''
   const a = 0
   a = 1
 '''
-compileThrows 'redeclaration of read-only variable "a"' 2 '''
+compileThrows 'redeclaration of constant "a"' 2 '''
   a = 2
   const a = 3
 '''
-compileThrows 'redeclaration of read-only variable "a"' 2 '''
+compileThrows 'redeclaration of constant "a"' 2 '''
   const a = 4
   function a then 5
 '''
-compileThrows 'assignment to constant variable "a"' 2 '''
+compileThrows 'assignment to constant "a"' 2 '''
   const a = 6
   -> a := 7
 '''
-compileThrows 'increment of constant variable "a"' 2 '''
+compileThrows 'increment of constant "a"' 2 '''
   const a = 8
   ++a
 '''
