@@ -219,8 +219,8 @@ new -> do ~>
     1
 
 
-throws    'stray break on line 1' -> LiveScript.compile \break
-throws 'stray continue on line 1' -> LiveScript.compile \continue
+compileThrows 'stray break'    1 \break
+compileThrows 'stray continue' 1 \continue
 
 
 # Play nice with implicit calls.

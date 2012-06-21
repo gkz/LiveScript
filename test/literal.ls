@@ -208,14 +208,9 @@ new
 
 
 # [#19](https://github.com/satyr/coco/issues/19)
-throws 'duplicate property "a" on line 1'
-, -> LiveScript.compile '{a, b, a}'
-
-throws 'duplicate property "0" on line 1'
-, -> LiveScript.compile '{0, "0"}'
-
-throws 'duplicate property "1" on line 1'
-, -> LiveScript.compile '{1, 1.0}'
+compileThrows 'duplicate property "a"' 1 '{a, b, a}'
+compileThrows 'duplicate property "0"' 1 '{0, "0"}'
+compileThrows 'duplicate property "1"' 1 '{1, 1.0}'
 
 
 #### Implicit/Braceless
@@ -447,13 +442,13 @@ eq 'y u q m i e' show [\y til \a by -4]
 
 ok [\\u2028 to \\u2029]
 
-throws 'range limit exceeded on line 2' -> LiveScript.tokens '\n[0 to 1 by 1e-5]'
-throws 'empty range on line 2'          -> LiveScript.tokens '\n[1 to 0]'
-throws 'empty range on line 2'          -> LiveScript.tokens '\n[1 til 1]'
-throws 'empty range on line 2'          -> LiveScript.tokens '\n[2 to 3 by -1]'
-throws 'bad "to" in range on line 2'    -> LiveScript.tokens '\n[0 to "q"]'
-throws 'bad "by" in range on line 2'    -> LiveScript.tokens '\n[0 to 9 by "2"]'
-throws 'bad string in range on line 2'  -> LiveScript.tokens '\n["a" to "bc"]'
+compileThrows 'range limit exceeded' 2 '\n[0 to 1 by 1e-5]'
+compileThrows 'empty range' 2 '\n[1 to 0]'
+compileThrows 'empty range' 2 '\n[1 til 1]'
+compileThrows 'empty range' 2 '\n[2 to 3 by -1]'
+compileThrows 'bad "to" in range' 2 '\n[0 to "q"]'
+compileThrows 'bad "by" in range' 2 '\n[0 to 9 by "2"]'
+compileThrows 'bad string in range' 2 '\n["a" to "bc"]'
 
 
 ### Misc

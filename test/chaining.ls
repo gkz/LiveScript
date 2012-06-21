@@ -89,7 +89,7 @@ eq 1, a[0][*-*]
 eq 2, a[--*-1]
 eq 2, a.length
 
-throws 'stray star on line 1' -> LiveScript.compile '[*-1]'
+compileThrows 'stray star' 1 '[*-1]'
 
 
 # Binding Access
@@ -125,10 +125,10 @@ eq '0,1' ''+a.0
 eq '0,1' ''+a[...0]
 eq 2 a.1.2
 
-throws 'calling a slice on line 1' -> LiveScript.compile 'a{0}()'
+compileThrows 'calling a slice' 1 'a{0}()'
 
-throws 'empty slice on line 1' -> LiveScript.compile 'o{}'
-throws 'empty slice on line 1' -> LiveScript.compile 'o[,,]'
+compileThrows 'empty slice' 1 'o{}'
+compileThrows 'empty slice' 1 'o[,,]'
 
 if 0 then @front{ne,ss}
 

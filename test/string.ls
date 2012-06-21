@@ -193,7 +193,7 @@ eq 'multiline nested "interpolations" work', """multiline #{
 } work"""
 
 
-throws 'unterminated interpolation on line 2' -> LiveScript.lex '"#{\n'
+compileThrows 'unterminated interpolation' 2 '"#{\n'
 
 throws "Parse error on line 1: Unexpected ')'" -> LiveScript.compile '"(#{+})"'
 

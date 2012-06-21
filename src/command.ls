@@ -187,7 +187,6 @@ switch
 !function repl
   argv.1 = \repl
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
-  # repl.infunc = false unless repl.infunc?
   code  = if repl.infunc then '  ' else ''
   cont  = false
   readline  = require(\readline)createInterface process.stdin, process.stdout
@@ -210,16 +209,14 @@ switch
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
         cb err, res
-    readline.completer = server~complete
-  readline.on \attemptClose !->
-    if readline.line or code then say ''; reset! else readline.close!
-  readline.on \close process.stdin~destroy
-  readline.on \line !->
-    repl.infunc = false if it.match(/^$/) # close with a blank line without spaces
-    repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or it.match(/^!?(function|class) /)
-    if cont or repl.infunc
+    rl.completer = server~complete
+  rl.on \attemptClose !->
+    if rl.line or code then say ''; reset! else rl.close!
+  rl.on \close process.stdin~destroy
+  rl.on \line !->
+    if cont
       code += it + \\n
-      readline.output.write \. * prompt.length + '. '
+      rl.output.write \. * prompt.length + '. '
       return
     code += it
     try

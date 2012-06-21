@@ -30,9 +30,9 @@ c = new C
 eq c.p = 3, c.p
 ok c.hasOwnProperty \z
 
-throws 'excess accessor parameter on line 1' -> LiveScript.compile 'p:~ (a, b) ->'
+compileThrows 'excess accessor parameter' 1 'p:~ (a, b) ->'
 
-throws 'named accessor on line 1' -> LiveScript.compile 'p:~ ~function f then'
+compileThrows 'named accessor' 1 'p:~ ~function f then'
 
 # No implicit parameter on getter.
 eq '''({
@@ -42,24 +42,25 @@ eq '''({
 });''' LiveScript.compile 'p:~ -> it' {+bare}
 
 
-throws 'duplicate property "p" on line 2' -> LiveScript.compile '''
+compileThrows 'duplicate property "p"' 2 '''
   p:~     ->
   p:~ (_) ->
 '''
-throws 'duplicate property "p" on line 2' -> LiveScript.compile '''
+compileThrows 'duplicate property "p"' 2 '''
   p: 1
   p:~ ->
 '''
-throws 'duplicate property "p" on line 2' -> LiveScript.compile '''
+compileThrows 'duplicate property "p"' 2 '''
   p:~ ->
   p: 1
 '''
-throws 'invalid accessor parameter on line 2' -> LiveScript.compile '''
+
+compileThrows 'invalid accessor parameter' 2 '''
   p:~
     ->
     ->
 '''
-throws 'invalid accessor parameter on line 2' -> LiveScript.compile '''
+compileThrows 'invalid accessor parameter' 2 '''
   p:~
     (_) ->
     (_) ->

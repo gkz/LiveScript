@@ -51,9 +51,7 @@ for nonref, i in <[ 0 f() this true ]>
     x = if i then nonref else \... + nonref
     LiveScript.compile \\n * i + "[#{x}, y] = z"
 
-
-throws 'assignment to undeclared variable "Math" on line 1'
-, -> LiveScript.compile 'Math ||:= 0'
+compileThrows 'assignment to undeclared "Math"' 1 'Math ||:= 0'
 
 # Power
 x = 2

@@ -220,12 +220,12 @@ eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
 
 
-throws 'inconvertible statement on line 1', -> LiveScript.compile 'r = return'
-throws 'inconvertible statement on line 2', -> LiveScript.compile '''
+compileThrows 'inconvertible statement' 1 'b = break'
+compileThrows 'inconvertible statement' 2 '''
   r =
     return
 '''
-throws 'inconvertible statement on line 3', -> LiveScript.compile '''
+compileThrows 'inconvertible statement' 3 '''
   r = if 1
     2 +
     return
@@ -326,7 +326,7 @@ eq arguments,
 ok (@arguments, @eval) ->
 
 
-throws 'duplicate parameter "a" on line 1', -> LiveScript.compile '(a, a) ->'
+compileThrows 'duplicate parameter "a"' 1 '(a, a) ->'
 
 
 # Fun with radical parameters.
@@ -342,8 +342,8 @@ eq void Function() ->
 
 
 ### Invalid call detection
-throws 'invalid callee on line 1'      -> LiveScript.compile '[]()'
-throws 'invalid constructor on line 1' -> LiveScript.compile 'new 42'
+compileThrows 'invalid callee'      1 '[]()'
+compileThrows 'invalid constructor' 1 'new 42'
 
 
 ### `new` block
@@ -401,6 +401,27 @@ new
   function triple a  then a * 3
   eq 4, double 2
   eq 9, triple 3
+
+compileThrows 'redeclaration of function "f"' 2 '''
+  f = 0
+  function f then
+'''
+compileThrows 'redeclaration of function "f"' 2 '''
+  function f
+    f = 1
+'''
+compileThrows 'redeclaration of function "f"' 2 '''
+  function f then
+  f = 2
+'''
+compileThrows 'redeclaration of function "f"' 1 '''
+  function f f then
+'''
+compileThrows 'increment of function "f"' 2 '''
+  function f then
+  ++f
+'''
+compileThrows 'misplaced function declaration' 2 'if 1\n function F then'
 
 
 ### `let`

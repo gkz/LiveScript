@@ -263,8 +263,9 @@ class exports.Block extends Node
     o.block = this; tab = o.indent
     codes = for node in @lines
       node = node.unfoldSoak o or node
-      code = tab + (node <<< {+front})compile o, level
-      if node.isStatement! then code else code + node.terminator
+      continue unless code = (node <<< {+front})compile o, level
+      node.isStatement! or code += node.terminator
+      tab + code
     codes.join \\n
 
   # **Block** is the only node that can serve as the root.
@@ -867,8 +868,8 @@ class exports.Unary extends Node
       return @compilePluck o if o.level and not @void
     case \++ \--
       it.isAssignable! or @carp 'invalid ' + crement op
-      if it instanceof Var and not o.scope.check it.value, true
-        @carp "#{ crement op } of undeclared variable \"#{it.value}\""
+      if it instanceof Var and o.scope.checkReadOnly it.value
+        @carp "#{ crement op } of #that \"#{it.value}\""
       it{front} = this if @post
     case \^^ then return "#{ util \clone }(#{ it.compile o, LEVEL_LIST })"
     case \classof
@@ -1217,9 +1218,9 @@ class exports.Assign extends Node
     if lvar
       del = right.op is \delete
       if op is \=
-        o.scope.declare name
-      else unless o.scope.check name, true
-        left.carp "assignment to undeclared variable \"#name\""
+        o.scope.declare name, left, @const
+      else if o.scope.checkReadOnly name
+        left.carp "assignment to #that \"#name\""
     if o.level
       code += ", #name" if del
       code  = "(#code)" if that > (if del then LEVEL_PAREN else LEVEL_LIST)
@@ -1227,7 +1228,7 @@ class exports.Assign extends Node
 
   compileConditional: (o, left) ->
     if left instanceof Var and @logic in <[ ? !? ]> and @op is \=
-      o.scope.declare left.value
+      o.scope.declare left.value, left
     lefts = Chain(left)cacheReference o
     morph = Binary @logic, lefts.0, @<<<{-logic, left: lefts.1}
     (morph <<< {@void})compileNode o
@@ -1251,7 +1252,7 @@ class exports.Assign extends Node
     rite = @right.compile o, if len is 1 then LEVEL_CALL else LEVEL_LIST
     if left.name
       cache = "#that = #rite"
-      o.scope.declare rite = that
+      o.scope.declare rite = that, left
     else if (ret or len > 1) and (not ID.test rite or left.assigns rite)
       cache = "#{ rref = o.scope.temporary! } = #rite"
       rite  = rref
@@ -1480,9 +1481,9 @@ class exports.Fun extends Node
       name                    or @carp  'nameless function declaration'
       pscope is o.block.scope or @carp 'misplaced function declaration'
       @accessor              and @carp 'named accessor'
-      pscope.add name, \function
+      pscope.add name, \function, this
     if @statement or name and @labeled
-      code += ' ' + scope.add name, \function
+      code += ' ' + scope.add name, \function, this
     @void or @ctor or @newed or body.makeReturn!
     code += "(#{ @compileParams scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
@@ -1524,7 +1525,7 @@ class exports.Fun extends Node
           vr = v
         else if df
           assigns.push Assign vr, p.second, \=, p.op
-        names.push name = scope.add vr.value, \arg
+        names.push name = scope.add vr.value, \arg, p
         p.carp "duplicate parameter \"#name\"" unless dic"#name." = dic"#name." ^^^ 1
     if rest
       while splace-- then rest.unshift Arr! 
@@ -1784,7 +1785,7 @@ class exports.For extends While
     o.loop = true
     temps = @temps = []
     if idx = @index
-    then o.scope.declare idx
+    then o.scope.declare idx, this
     else temps.push idx = o.scope.temporary \i
     @addBody Block Var idx if not @body
     unless @object
@@ -2065,25 +2066,49 @@ class exports.Util extends Node
   # returning the left one.
   @Extends = -> Call.make Util(\extend), @@[0 1]
 
+#### Vars
+# Declares uninitialized variables.
+class exports.Vars extends Node
+  (@vars) ~>
+
+  children: [\vars]
+
+  makeReturn: THIS
+
+  compile: (o, level) ->
+    for v in @vars
+      v.carp 'invalid variable declaration' unless v instanceof Var
+      o.scope.declare v.value, v
+    if level then Literal \void .compile o else ''
+
 #### Parser Utils
 # Helpers for modifying nodes in [parser](../lib/parser.js).
 
 exports.L = (yylineno, node) -> node import line: yylineno + 1
 
-exports.Export = (lines) ->
-  i = -1; out = Util \out
-  while node = lines[++i]
-    if node instanceof Fun and node.name
-      lines.splice i++ 0 Assign Chain(out, [Index Key that]), Var that
-      continue
-    lines[i] =
-      if node.varName!
-      or node instanceof Assign and node.left. varName!
-      or node instanceof Class  and node.title?varName!
-        Assign Chain(out, [Index Key that]), node
-      else
-        Import out, node
-  ^^Block::<<<{lines}
+exports.Decl =
+  export: (lines) ->
+    i = -1; out = Util \out
+    while node = lines[++i]
+      if node instanceof Fun and node.name
+        lines.splice i++ 0 Assign Chain(out, [Index Key that]), Var that
+        continue
+      lines[i] =
+        if node.varName!
+        or node instanceof Assign and node.left. varName!
+        or node instanceof Class  and node.title?varName!
+          Assign Chain(out, [Index Key that]), node
+        else
+          Import out, node
+    ^^Block::<<<{lines}
+
+  const: (lines) ->
+    for node in lines
+      node.carp 'invalid constant variable declaration' unless node.op is \=
+      node.const = true
+    ^^Block::<<<{lines}
+
+  var: Vars
 
 ##### Scope
 # Regulates lexical scoping within LiveScript. As you
@@ -2094,7 +2119,11 @@ exports.Export = (lines) ->
   @variables = {}
 Scope ::=
   # Adds a new variable or overrides an existing one.
-  add: (name, type) ->
+  add: (name, type, node) ->
+    if node and t = @variables"#name."
+      if @READONLY[t] or @READONLY[type]
+        node.carp "redeclaration of #that \"#name\""
+      return name if t of <[ arg function ]>
     # Dot-suffix to bypass `Object::` members.
     @variables"#name." = type
     name
@@ -2102,14 +2131,13 @@ Scope ::=
   get: (name) -> @variables"#name."
 
   # Declares a variable unless declared already.
-  declare: (name) ->
+  declare: (name, node, constant) ->
     if @shared
       return if @check name
       scope = that
     else
       scope = this
-    unless (type = @variables"#name.") and (type in <[ var arg ]> or type.value)
-      scope.add name, \var
+    scope.add name, (if constant then \const else \var), node
 
   # Ensures that an assignment is made at the top of this scope.
   assign: (name, value) -> @add name, {value}
@@ -2131,15 +2159,19 @@ Scope ::=
   # Checks to see if a variable has already been declared.
   # Walks up the scope if `above` flag is specified.
   check: (name, above) ->
-    return found if (found = "#name." of @variables) or not above
+    return type if (type = @variables"#name.") or not above
     @parent?check name, above
+
+  checkReadOnly: (name) -> @READONLY[@check name, true]
+
+  READONLY: const: \constant, function: \function, undefined: \undeclared
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->
     usr = []; tmp = []; asn = []; fun = []
     for name, type of @variables
       name.=slice 0 -1
-      if type in <[ var reuse ]>
+      if type in <[ var const reuse ]>
         (if \_ is name.charAt 0 then tmp else usr)push name
       else if type.value
         if ~(val = entab that, tab)lastIndexOf \function( 0
