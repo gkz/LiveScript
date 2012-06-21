@@ -31,15 +31,6 @@ eq 100m2, 10m ** 2
 eq 3000c, 30$ * 100
 eq 36rpm 36
 
-# [#31](https://github.com/satyr/coco/issues/31): Numeric Ranges
-eq '1,2,3'  String [1 to +3]
-eq '1,0,-1' String [1 to -1 by -1]
-
-til = String
-eq 2, [Number]0 til 2
-
-throws 'range limit exceeded on line 1' -> LiveScript.tokens '[0 to 1 by 1e-5]'
-throws 'empty range on line 3'          -> LiveScript.tokens '\n\n [1 to 0]'
 
 start = 1
 end   = 5
@@ -435,6 +426,33 @@ o = {0 \1 \2 3 4 (5)}
 eq o.1, \1
 eq o.3, 3
 eq o.5, 5
+
+
+### Numeric/Character Ranges
+show = -> it * ' '
+
+eq '-1 0 1 2' show [-1 to +2]
+eq '1 0 -1'   show [+1 to -1 by -1]
+
+eq '999 1000' show [999     til 1001]
+eq '1e-9'     show [1e-9    til 1e-8]
+eq '9999999'  show [9999999 til 1e7]
+eq '10000000' show [1e7     til 9999999 by -1]
+
+eq '0.5 0.75 1' show [0.5 til 1.2 by 0.25]
+
+eq 'A F K P U Z' show [\A to  \Z by 5]
+eq 'y u q m i e' show [\y til \a by -4]
+
+ok [\\u2028 to \\u2029]
+
+throws 'range limit exceeded on line 2' -> LiveScript.tokens '\n[0 to 1 by 1e-5]'
+throws 'empty range on line 2'          -> LiveScript.tokens '\n[1 to 0]'
+throws 'empty range on line 2'          -> LiveScript.tokens '\n[1 til 1]'
+throws 'empty range on line 2'          -> LiveScript.tokens '\n[2 to 3 by -1]'
+throws 'bad "to" in range on line 2'    -> LiveScript.tokens '\n[0 to "q"]'
+throws 'bad "by" in range on line 2'    -> LiveScript.tokens '\n[0 to 9 by "2"]'
+throws 'bad string in range on line 2'  -> LiveScript.tokens '\n["a" to "bc"]'
 
 
 ### Misc

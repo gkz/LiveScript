@@ -205,14 +205,6 @@ eq('+', \+)
 eq '\\', [\\\].0
 eq '$', {\$}.\$
 
-eq 'AFKPUZ' [\A to \Z by 5]*''
-
-throws 'bad "to" in range on line 1'   -> LiveScript.tokens '[0 to "q"]'
-throws 'bad "by" in range on line 1'   -> LiveScript.tokens '[0 to 9 by "2"]'
-throws 'bad string in range on line 1' -> LiveScript.tokens '["a" to "bc"]'
-
-ok \\u2028, \\u2029
-
 
 # [coffee#923](https://github.com/jashkenas/coffee-script/issues/923)
 eq "#{ "{" }", "{"

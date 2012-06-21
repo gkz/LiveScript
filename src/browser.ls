@@ -5,7 +5,7 @@ LiveScript.stab = (code, callback, filename, error) ->
 
 # `.stab`s a remote script via `XMLHttpRequest`.
 LiveScript.load = (url, callback or ->) ->
-  xhr = new (self.ActiveXObject or XMLHttpRequest) \Microsoft.XMLHTTP
+  xhr = new XMLHttpRequest
   xhr.open \GET, url, true
   xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
   xhr.onreadystatechange = !->

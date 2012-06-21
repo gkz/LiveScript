@@ -216,7 +216,7 @@ switch
   readline.on \close process.stdin~destroy
   readline.on \line !->
     repl.infunc = false if it.match(/^\s*$/) # close with a blank line
-    cont = repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or it.match(/^!?function /)
+    repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or it.match(/^!?function /)
     if cont or repl.infunc
       code += it + \\n
       readline.output.write \. * prompt.length + '. '
