@@ -190,10 +190,6 @@ eq ok, do ->
   /* even with trailing comments. */
 
 
-throws 'misplaced function declaration on line 1', ->
-  Coco.compile 'if 1 then function F then'
-
-
 # Returns with multiple branches.
 func = ->
   if it
@@ -401,6 +397,20 @@ new
   function triple a  then a * 3
   eq 4, double 2
   eq 9, triple 3
+
+throws 'redeclaration of read-only variable "f" on line 2' -> Coco.compile '''
+  f = 0
+  function f then
+'''
+throws 'redeclaration of read-only variable "f" on line 2' -> Coco.compile '''
+  function f
+    f = 1
+'''
+throws 'redeclaration of read-only variable "f" on line 1' -> Coco.compile '''
+  function f f then
+'''
+throws 'misplaced function declaration on line 2', ->
+  Coco.compile 'if 1\n function F then'
 
 
 ### `let`

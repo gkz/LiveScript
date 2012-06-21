@@ -1388,7 +1388,7 @@ class exports.Fun extends Node
           vr = v
         else if df
           assigns.push Assign vr, p.second, \=, p.op
-        names.push name = scope.add vr.value, \arg
+        names.push name = scope.add vr.value, \arg, p
         p.carp "duplicate parameter \"#name\"" unless dic"#name." ^= 1
     if rest
       rest.unshift Arr! while splace--
@@ -1967,8 +1967,8 @@ Scope::<<<
   add: (name, type, node) ->
     if node
       t = @variables"#name."
-      if t and type is \const or t is \const
-        node.carp "redeclaration of constant variable \"#name\""
+      if t and type of <[ const function ]> or t of <[ const function ]>
+        node.carp "redeclaration of read-only variable \"#name\""
       return name if t of <[ arg function ]>
     # Dot-suffix to bypass `Object::` members.
     @variables"#name." = type

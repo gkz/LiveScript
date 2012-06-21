@@ -44,15 +44,15 @@ let
     [e, f] = [5, 6]
   eq '1,2,3,4,5,6' [a, b, c, d, e, f]join!
 
-throws 'redeclaration of constant variable "a" on line 2' -> Coco.compile """
+throws 'redeclaration of read-only variable "a" on line 2' -> Coco.compile """
   const a = 0
   a = 1
 """
-throws 'redeclaration of constant variable "a" on line 2' -> Coco.compile """
+throws 'redeclaration of read-only variable "a" on line 2' -> Coco.compile """
   a = 2
   const a = 3
 """
-throws 'redeclaration of constant variable "a" on line 2' -> Coco.compile """
+throws 'redeclaration of read-only variable "a" on line 2' -> Coco.compile """
   const a = 4
   function a then 5
 """
