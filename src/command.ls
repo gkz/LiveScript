@@ -209,14 +209,14 @@ switch
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
         cb err, res
-    rl.completer = server~complete
-  rl.on \attemptClose !->
-    if rl.line or code then say ''; reset! else rl.close!
-  rl.on \close process.stdin~destroy
-  rl.on \line !->
+    readline.completer = server~complete
+  readline.on \attemptClose !->
+    if readline.line or code then say ''; reset! else readline.close!
+  readline.on \close process.stdin~destroy
+  readline.on \line !->
     if cont
       code += it + \\n
-      rl.output.write \. * prompt.length + '. '
+      readline.output.write \. * prompt.length + '. '
       return
     code += it
     try
