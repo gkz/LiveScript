@@ -615,8 +615,8 @@ class exports.Call extends Node
   @block = (fun, args, method) ->
     Parens(Chain fun, [Call(args) <<< {method}]; true) <<< {+calling}
 
-  @back = (params, node, bound) ->
-    fun = Fun params,, bound
+  @back = (params, node, bound, curried) ->
+    fun = Fun params,, bound, curried
     node.=it if fun.void = node.op is \!
     if node instanceof Label
       fun <<< {name: node.label, +labeled}

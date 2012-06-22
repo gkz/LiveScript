@@ -535,7 +535,7 @@ exports import
       return 1 if @dotcat val
       tag = \UNARY
     case \-> \~> \--> \~~> then up = \->; fallthrough
-    case \<- \<~ then @parameters tag = up || \<-
+    case \<- \<~ \<-- \<~~ then @parameters tag = up || \<-
     case \::     then up = \prototype; fallthrough
     case \..     then @adi!; tag = \ID; val = up || \constructor
     default switch val.charAt 0
@@ -1053,9 +1053,9 @@ SYMBOL = //
   [-+*/^]= | %%?= | ::?=      # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | &&& | \|\|\| | \^\^\^       # bitwise
-| \^\^                          # clone
+| \^\^                        # clone
 | \+\+\+                      # list concat 
-| --> | ~~>                   # curry
+| --> | ~~> | <-- | <~~       # curry 
 | ([-+&|:])\1                 # crement / logic / `prototype`
 | %%                          # mod
 | &                           # cons

@@ -142,7 +142,7 @@ bnf =
     o \Expression
 
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
-    , -> Call.back $2, $6, $5 is \<~
+    , -> Call.back $2, $6, $5.charAt(1) is \~, $5.length is 3
 
     # `var` `const` `export`
     o 'DECL Exprs'                          -> Decl[$1] $2
@@ -208,7 +208,7 @@ bnf =
 
     # The function literal can be either anonymous with `->`,
     o 'PARAM( ArgList OptComma )PARAM -> Block' 
-    , -> L Fun $2, $6, $5.charAt(0) is \~, $5 in <[ --> ~~> ]>
+    , -> L Fun $2, $6, $5.charAt(0) is \~, $5.length is 3
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
 
