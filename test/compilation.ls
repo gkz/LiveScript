@@ -176,4 +176,4 @@ null
 # Dash seperated identifiers
 throws "Parse error on line 1: Unexpected 'ID'" -> LiveScript.compile 'a--b = 1'
 
-throws "Inconsistent use of encodeURL as encode-u-r-l" -> LiveScript.compile 'encode-URL is encode-u-r-l'
+throws "Inconsistent use of encodeURL as encode-u-r-l at line 1" -> LiveScript.compile 'encode-URL is encode-u-r-l'
