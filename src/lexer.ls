@@ -82,6 +82,19 @@ exports import
   # The current indentation level.
   dent: 0
 
+  # Map of all Identifiers
+  identifiers: {}
+
+  has-own: Object.prototype.has-own-property,
+
+  # Checks for consistent use of Identifiers with dashes
+  # Raises an error if two different identifiers mangle into the same camelCased id
+  check-consistency: (camel, id) ->
+    if @has-own.call(@identifiers, camel) and @identifiers[camel] isnt id
+      then throw new ReferenceError "Inconsistent use of #{camel} as #{id}"
+      else @identifiers[camel] = id
+
+
   #### Tokenizers
 
   # Matches an identifying literal: variables, keywords, accessors, etc.
@@ -89,6 +102,7 @@ exports import
     [input] = match = (ID <<< lastIndex: index)exec code
     return 0 unless input
     id = match.1.replace /-+([a-zA-Z0-9$_])/g, -> it.1.toUpperCase!
+    @check-consistency id, match.1 if /-/.test match.1
     if NONASCII.test id
       try Function "var #id" catch @carp "invalid identifier \"#id\""
     {last} = this
