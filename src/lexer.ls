@@ -91,7 +91,8 @@ exports import
   # Raises an error if two different identifiers mangle into the same camelCased id
   check-consistency: (camel, id) ->
     if @has-own.call(@identifiers, camel) and @identifiers[camel] isnt id
-      then throw new ReferenceError "Inconsistent use of #{camel} as #{id}"
+      then throw new ReferenceError do
+        "Inconsistent use of #{camel} as #{id} on line #{-~@line}"
       else @identifiers[camel] = id
 
 

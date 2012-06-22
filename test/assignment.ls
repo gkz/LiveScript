@@ -377,3 +377,5 @@ green--
 eq 3 green
 
 eq 6, green-- * a
+
+eq \HELLO 'hello'.to-upper-case!
