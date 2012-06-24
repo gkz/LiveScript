@@ -51,13 +51,11 @@ eq "values: #{ list.join ( ) }", 'values: 0,1,2,3,4,5'
 eq "values: #{ list.join ' ' }", 'values: 0 1 2 3 4 5'
 
 
-obj = {
+obj =
   name: 'Joe'
-  hi: -> "Hello #{@name}."
-  cya: -> "Hello #{@name}.".replace('Hello','Goodbye')
-}
+  toString: -> @name
+  hi: -> "Hello #this."
 eq obj.hi(), "Hello Joe."
-eq obj.cya(), "Goodbye Joe."
 
 
 eq "With #{"quotes"}", 'With quotes'
@@ -196,6 +194,8 @@ eq 'multiline nested "interpolations" work', """multiline #{
 compileThrows 'unterminated interpolation' 2 '"#{\n'
 
 throws "Parse error on line 1: Unexpected ')'" -> Coco.compile '"(#{+})"'
+
+compileThrows 'invalid variable interpolation "if"' 1 '"#if"'
 
 
 # Character/Word Literal
