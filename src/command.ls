@@ -193,6 +193,7 @@ switch
   reset = !->
     readline.line = code := ''
     readline.prompt!
+    repl.inheredoc = false
   ({_ttyWrite} = readline)_ttyWrite = (chr) ->
     cont := chr in [ \\n, \> ]
     _ttyWrite ...
@@ -214,10 +215,21 @@ switch
     if readline.line or code then say ''; reset! else readline.close!
   readline.on \close process.stdin~destroy
   readline.on \line !->
-    if cont
+    repl.infunc = false if it.match(/^$/) # close with a blank line without spaces
+    repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or (it.match(/^!?(function|class|if|unless) /) and not it.match(/ then /))
+    if (cont or repl.infunc) and not repl.inheredoc
       code += it + \\n
       readline.output.write \. * prompt.length + '. '
       return
+    else
+      isheredoc = it.match /(\'\'\'|\"\"\")/g
+      if isheredoc and isheredoc.length % 2 is 1 # odd number of matches
+        repl.inheredoc = not repl.inheredoc
+      if repl.inheredoc
+        code += it + \\n
+        readline.output.write \. * prompt.length + '" '
+        return
+    repl.inheredoc = false
     code += it
     try
       if o.compile
