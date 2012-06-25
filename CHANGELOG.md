@@ -1,3 +1,9 @@
+# 0.9.10
+* Now have `const` and `var` thanks to Coco
+* Implicit access and call functions, eg. `(.length)` and `(.join \|)` - useful for mapping/filtering, etc.
+* Bug fixes
+* Improved repl
+
 # 0.9.9
 * Various bug fixes
 * Calling a curried funciton with no args calls it as is rather than returning itself
