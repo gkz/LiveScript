@@ -197,6 +197,12 @@ throws "Parse error on line 1: Unexpected ')'" -> LiveScript.compile '"(#{+})"'
 
 compileThrows 'invalid variable interpolation "if"' 1 '"#if"'
 
+hi-there = 'Hi there!'
+one-two-three = 123
+
+eq 'Hi there! How are you?' "#hi-there How are you?"
+eq 'ha 123 ha' "ha #one-two-three ha"
+
 
 # Character/Word Literal
 eq 'word', \word

@@ -615,7 +615,8 @@ exports import
         parts.push [\S; @countLines str.slice 0 i; @line]
         return parts <<< size: pos + i + end.length
       case \#
-        if id = (ID <<< lastIndex: i+1)exec(str)1
+        if id = id-orig = (ID <<< lastIndex: i+1)exec(str)1
+          id.=replace /-+([a-zA-Z0-9$_])/g, -> it.1.toUpperCase!
           break if id is \this
           try Function "'use strict'; var #id"; break
           @carp "invalid variable interpolation \"#id\""
@@ -626,7 +627,7 @@ exports import
       if i or nested and not stringified
         stringified = parts.push [\S; @countLines str.slice 0 i; @line]
       if id
-        str.=slice delta = i + 1 + id.length
+        str.=slice delta = i + 1 + id-orig.length
         parts.push [\TOKENS nested = [[\ID id, @line]]]
       else
         clone  = ^^exports <<< {+inter, @emender}
