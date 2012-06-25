@@ -616,9 +616,9 @@ exports import
         return parts <<< size: pos + i + end.length
       case \#
         if id = (ID <<< lastIndex: i+1)exec(str)1
-          break if id is \this or id not in KEYWORDS
-          i += id.length
-          continue
+          break if id is \this
+          try Function "'use strict'; var #id"; break
+          @carp "invalid variable interpolation \"#id\""
         continue unless \{ is str.charAt i+1
       case \\ then ++i; fallthrough
       default continue

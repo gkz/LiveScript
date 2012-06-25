@@ -30,7 +30,7 @@ global import
   tokens      : 'print the tokens the rewriter produces'
   ast         : 'print the syntax tree the parser produces'
   json        : 'print/compile as JSON'
-  nodejs      :['pass options through to the "node" binary' \ARGS+]
+  nodejs      :['pass options through to the "node" binary' \ARGS+ '']
   version     : 'display version'
   help        : 'display this'
 
@@ -239,7 +239,7 @@ switch
 # to it, preserving the other options.
 !function forkNode
   args = argv.slice 1; i = 0
-  while args[++i] when that in <[ -n --nodejs ]> then args.splice i-- 2
+  while args[++i] when that is \--nodejs then args.splice i-- 2
   require(\child_process)spawn do
     process.execPath
     o.nodejs.join(' ')trim!split(/\s+/)concat args
