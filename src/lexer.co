@@ -829,9 +829,11 @@ character = if JSON!? then uxxxx else ->
         tokens.splice i++ 0 [\+- sig, token.2]
       continue if token.callable
     case \RANGE
-      [from, char] = decode token.     1, lno = token.2
-      [to, tochar] = decode tokens[i+1]1, lno
-      carp 'bad "to" in range' lno if char ^ tochar
+      next = tokens[i+1]
+      lno  = token.2
+      [from, char] = decode token.1, lno
+      [to, tochar] = next.0 is \STRNUM and decode next.1, lno
+      carp 'bad "to" in range' lno if to!? or char ^ tochar
       by = 1
       if byp = tokens[i+2]?0 is \RANGE_BY
         carp 'bad "by" in range' tokens[i+2]2 unless by = +tokens[i+3]?1
