@@ -1550,7 +1550,7 @@ class exports.Throw extends Jump
 
 #### Return
 class exports.Return extends Jump
-  ~> import {it} if it and it.value is not \void
+  ~> if it and it.value is not \void then import {it}
 
   getJump: THIS
 
@@ -1564,7 +1564,7 @@ class exports.While extends Node
   (test, @un, mode) ->
     mode and if mode instanceof Node then @update = mode else @post = true
     # `while true` `until false` => `for (;;)`
-    import {test} if @post or test.value is not ''+!un
+    if @post or test.value is not ''+!un then import {test}
 
   children: <[ test body update else ]>
 
@@ -1946,6 +1946,12 @@ exports.Decl =
         else
           Import out, node
     ^Block::<<<{lines}
+
+  import: (lines, all) ->
+    lines[i] = Import Literal(\this), line, all for line, i of lines
+    ^Block::<<<{lines}
+
+  importAll: (lines) -> @import lines, true
 
   const: (lines) ->
     for node of lines

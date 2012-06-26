@@ -289,10 +289,6 @@ eq '''
 
 ok ok.isPrototypeOf new []= (->) <<< prototype: ok
 
-new
-  import life: 2, universe: 3, everything: 7
-  eq @life * @universe * @everything, 42
-
 f = ->
   import it
 <<< new: -> new this it
@@ -315,6 +311,14 @@ eq o? <<< {4}, void
 o = {}
 eq o? <<< {4}, o
 eq 4 o.4
+
+# Declaration Form
+new
+  import life: 2, (universe: 3)
+  import all
+    everything: 7
+    new class then answer: 42
+  eq @life * @universe * @everything, 42
 
 
 ### {in,de}crement

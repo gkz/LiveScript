@@ -136,8 +136,7 @@ exports import
     case \unless then tag = \IF
     case \until  then tag = \WHILE
     case \import
-      id = \<<<
-      able @tokens or @token \LITERAL \this
+      if able @tokens then id = \<<< else tag = \DECL
     default
       break if id of KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id of KEYWORDS_UNUSED
@@ -148,9 +147,11 @@ exports import
       # contextual keywords (reserved only in specific places)
       switch id
       case \own then tag = \OWN if last.0 is \FOR
-      case \all then if last.1 is \<<<
-        last.1 += \<
-        return 3
+      case \all
+        if last.1 is \<<<    and \<
+        or last.1 is \import and \All
+          last.1 += that
+          return 3
       case \from then @forange! and tag = \FROM
       case \to \til
         @forange! and @tokens.push [\FROM '' @line] [\STRNUM \0 @line]
@@ -590,7 +591,7 @@ exports import
   countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
 
   # Checks FOR for FROM/TO.
-  forange: -> @tokens[*-2]?0 is \FOR and import {-seenFor, +seenFrom}
+  forange: -> @tokens[*-2]?0 is \FOR and @<<<{-seenFor, +seenFrom}
 
   # Complains on duplicate flag.
   validate: (flag) ->
@@ -967,7 +968,7 @@ OPENERS = <[ ( [ { CALL( PARAM( INDENT ]>
 CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
 
 # The inverse mappings of {OPEN,CLOS}ERS to look things up from either end.
-INVERSES = new -> import (c = CLOSERS[i]): o, (o): c for o, i of OPENERS
+INVERSES = new -> @[@[o] = CLOSERS[i]] = o for o, i of OPENERS
 
 # Tokens that can start a dot/call chain.
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
