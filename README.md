@@ -36,6 +36,20 @@ Get [Node.js](http://nodejs.org) and [npm](http://npmjs.org), then:
 
 ## Changelog
 
+### 0.7.3
+- Node.js 0.8.x.
+- Added `const` and `var`. ([#139](https://github.com/satyr/coco/issues/139))
+- Made `function` variables read-only.
+- Removed `-n` shorthand for `--nodejs`.
+  ([#142](https://github.com/satyr/coco/issues/142))
+- Bug fixes:
+  - `super` with nested classes and methods
+  - `f a, while b then c` etc.
+  - and others:
+    [#138](https://github.com/satyr/coco/issues/138)
+    [#141](https://github.com/satyr/coco/issues/141)
+    [#143](https://github.com/satyr/coco/issues/143)
+
 ### 0.7.2
 - Revised accessor. ([#5](https://github.com/satyr/coco/issues/5))
 - Allowed implicit array after some unary operators.
