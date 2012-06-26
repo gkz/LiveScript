@@ -55,12 +55,17 @@ default
   case o.eval
     argv.1 = \eval
     compileScript '' $args * \\n
-  case o.stdin                then compileStdin!
-  case $args.length           then compileScripts!
-  case process.stdin.readable then compileStdin!
-  default
-    o.interactive or say version! + \\n + help! + \\n
+  case o.stdin
+    compileStdin!
+  case $args.length
+    compileScripts!
+  case o.interactive
     repl!
+  case require \tty .isatty 0
+    say version! + \\n + help! + \\n
+    repl!
+  default
+    compileStdin!
 
 # Calls a `fs` method, exiting on error.
 !function fshoot name, arg, callback
@@ -189,13 +194,15 @@ default
   argv.1 = \repl
   # ref. <https://github.com/joyent/node/blob/master/lib/rl.js>
   code = ''
-  cont = false
+  cont = 0
   rl   = require(\readline)createInterface process.stdin, process.stdout
   reset = !->
     rl.line = code := ''
     rl.prompt!
   ({_ttyWrite} = rl)_ttyWrite = (char) ->
-    cont := char is \\n
+    if char is \\n
+    then cont += 1
+    else cont := 0
     _ttyWrite ...
   prompt = \coco
   prompt += " -#that" if [\b if o.bare; \c if o.compile]join ''
@@ -206,17 +213,19 @@ default
     global <<< {module, exports, require}
     server = ^require(\repl)REPLServer:: <<<
       context: global, commands: [], useGlobal: true
+      useColors: process.env.NODE_DISABLE_COLORS
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
         cb err, res
     rl.completer = server~complete
-  rl.on \attemptClose !->
-    if rl.line or code then say ''; reset! else rl.close!
-  rl.on \close process.stdin~destroy
+  rl.on \SIGCONT rl.prompt
+  rl.on \SIGINT !->
+    if @line or code then say ''; reset! else @close!
+  rl.on \close process~exit
   rl.on \line !->
-    if cont
+    if 0 < cont < 3
       code += it + \\n
-      rl.output.write \. * prompt.length + '. '
+      @output.write \. * prompt.length + '. '
       return
     code += it
     try
@@ -230,6 +239,12 @@ default
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"
+  process.on \exit !->
+    # Handle `echo 42 | coco -i` etc.
+    if code and rl.output.isTTY
+      cont := 0
+      say ''
+      rl.emit \line ''
   rl.setPrompt "#prompt> "
   rl.prompt!
 
