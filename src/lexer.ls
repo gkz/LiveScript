@@ -632,7 +632,7 @@ exports import
         str.=slice delta = i + 1 + id-orig.length
         parts.push [\TOKENS nested = [[\ID id, @line]]]
       else
-        clone  = ^^exports <<< {+inter, @emender}
+        clone  = exports with {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
         delta  = str.length - clone.rest.length
         {rest: str, @line} = clone

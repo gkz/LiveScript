@@ -893,7 +893,7 @@ class exports.Unary extends Node
       for op in ops by -1 then node = .. op.op, node, op.post 
       them[i] = if sp then lat = Splat node else node
     if not lat and (@void or not o.level)
-      it = ^^Block::<<< {lines: them, @front, +void}
+      it = Block:: with {lines: them, @front, +void}
     it.compile o, LEVEL_PAREN
 
   # `v = delete o.k`
@@ -1063,7 +1063,7 @@ class exports.Binary extends Node
     return x.compile o if 1 <= n < 2
     # `[x] * 2` => `[x, x]`
     if items
-      if n < 1 then return (^^Block::<<< lines: items)add(JS '[]')compile o
+      if n < 1 then return (Block:: with lines: items)add(JS '[]')compile o
       refs = []
       for item, i in items then [items[i], refs.*] = item.cache o, 1x 
       items.push JS! <<<
@@ -1285,7 +1285,7 @@ class exports.Assign extends Node
       else
         (inc = ivar) and start < i and inc += " + #{ i - start }"
         val = Chain rcache||=Literal(rite), [Index JS inc || i]
-      (^^@<<<{left: node, right: val, +void})compile o, LEVEL_PAREN
+      (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
 
   rendObj: (o, nodes, rite) ->
     for node in nodes
@@ -1301,7 +1301,7 @@ class exports.Assign extends Node
       node = logic <<< first: node if logic
       val  = Chain rcache||=Var(rite), [Index key.maybeKey!]
       val  = Import Obj!, val if splat
-      (^^@<<<{left: node, right: val, +void})compile o, LEVEL_PAREN
+      (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
 
 #### Import
 # Copies properties from right to left.
@@ -2100,13 +2100,13 @@ exports.Decl =
           Assign Chain(out, [Index Key that]), node
         else
           Import out, node
-    ^^Block::<<<{lines}
+    Block:: with {lines}
 
   const: (lines) ->
     for node in lines
       node.carp 'invalid constant variable declaration' unless node.op is \=
       node.const = true
-    ^^Block::<<<{lines}
+    Block:: with {lines}
 
   var: Vars
 
