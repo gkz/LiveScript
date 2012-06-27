@@ -686,5 +686,5 @@ eq '1|2|3,1,1|2' "#{ map (.join \|), [[1 to 3] [1] [1 to 2]] }"
 
 ### partialization
 three-add = (x, y, z) -> x + y + z
-g = three-add 2, __, 10
+g = three-add 2, ..., 10
 eq 20 g 8
