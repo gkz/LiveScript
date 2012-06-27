@@ -205,7 +205,7 @@ switch
       module.filename = process.cwd! + \/repl
     vm = require \vm
     global <<< {module, exports, require}
-    server = ^^require(\repl)REPLServer:: <<<
+    server = require(\repl)REPLServer:: with
       context: global, commands: [], useGlobal: true
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e

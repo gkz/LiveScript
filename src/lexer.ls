@@ -160,6 +160,10 @@ exports import
         tag = \BIOP
       else 
         able @tokens or @token \LITERAL \this
+    case \with
+      tag = | able @tokens => \CLONEPORT
+            | last.0 is \( => \BIOP
+            | otherwise    => \WITH
     case \when
       tag = \CASE; fallthrough
     case \case
@@ -451,8 +455,8 @@ exports import
         return 9e9
       fallthrough
     case \] \)
-      if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE
-                                     CONCAT COMPOSE RELATION PIPE BACKPIPE IMPORT ]>
+      if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
+                                     COMPOSE RELATION PIPE BACKPIPE IMPORT CLONEPORT ]>
         @tokens[*-1].0 = if @last.0 is \RELATION then \BIOPR else \BIOP
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>
@@ -630,7 +634,7 @@ exports import
         str.=slice delta = i + 1 + id-orig.length
         parts.push [\TOKENS nested = [[\ID id, @line]]]
       else
-        clone  = ^^exports <<< {+inter, @emender}
+        clone  = exports with {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
         delta  = str.length - clone.rest.length
         {rest: str, @line} = clone

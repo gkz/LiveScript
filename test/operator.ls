@@ -589,6 +589,27 @@ eq 1 obj.a
 eq 2 obj.b
 eq 3 obj.c
 
+obj-with = (obj with)
+obj2 = obj-with a: 9
+
+eq 1 obj.a
+eq 9 obj2.a
+eq 2 obj2.b
+
+withObj2 = (with obj2)
+obj3 = withObj2 d: 6
+
+ok obj2.d!?
+eq 6 obj3.d
+eq 9 obj3.a
+
+f-with = (with)
+obj4 = (with) obj, {a: 0}
+
+eq 1 obj.a
+eq 0 obj4.a
+eq 2 obj4.b
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)
@@ -606,3 +627,26 @@ eq 2 (&&&) 10 3
 eq 2 (10 &&&) 3
 eq 2 (&&& 3) 10
 eq '1,3,5' "#{filter ((<<) (not), even), [1 to 5] }"
+
+### cloneport
+personA = 
+  name: \matias
+  age:  20
+  job:  'a cool job'
+
+personB = personA with name: \john
+
+eq \john   personB.name
+eq \matias personA.name
+
+personC = personA with
+  name: \amy
+  age:  19
+  hair: \blonde
+
+eq \amy    personC.name
+eq 19      personC.age
+eq \blonde personC.hair
+eq \matias personA.name
+eq 20      personA.age
+ok personA.hair!?
