@@ -935,6 +935,7 @@ class exports.Binary extends Node
       | \in        => return new In first, second
       | \with      => return new Import (Unary \^^ first), second, false
       | \<<< \<<<< => return Import first, second, op is \<<<<
+      | \<| \|>    => return Block first .pipe second, op
       | \+         =>
         if first instanceof Arr
           first.items.push Splat second

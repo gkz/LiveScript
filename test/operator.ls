@@ -610,6 +610,13 @@ eq 1 obj.a
 eq 0 obj4.a
 eq 2 obj4.b
 
+eq 5 (<| 3) (+ 2)
+eq 5 (|> (+ 2)) 3
+
+eq 5 (<|) (+ 2), 3
+eq 5 (|>) 3 (+ 2)
+
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)
