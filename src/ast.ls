@@ -493,6 +493,14 @@ class exports.Chain extends Node
       util \flip
       util \curry
     {head, tails} = this; head <<< {@front, @newed}
+
+    if tails.0 instanceof Call and tails.0.partialized
+      util \slice
+      args = tails.0.args
+      code = "#{util \partialize}(#{@head.compile o, LEVEL_LIST}, ["
+      for a, i in args then code += (if i then ', ' else '') + a.compile o, LEVEL_LIST 
+      code += "], [#{tails.0.partialized.toString!}])"
+      return code
     return head.compile o unless tails.length
     return that.compile o if @unfoldAssign o
     @carp 'invalid callee' if tails.0 instanceof Call and not head.isCallable!
@@ -597,6 +605,10 @@ class exports.Call extends Node
         args <<< [Literal \this; Splat Literal \arguments]
       else if splat.it instanceof Arr
         args = splat.it.items
+    else if not args.back
+      for a, i in args when a.value is \__
+        args[i] = Chain Literal \void
+        (@partialized ?= []).push i
     import {args}
 
   children: [\args]
@@ -2250,6 +2262,16 @@ UTILS =
 
   flip: '''function(f){
     return __curry(function (x, y) { return f(y, x); });
+  }'''
+
+  partialize: '''function(f, args, where){
+    return function(){
+      var params = __slice.call(arguments), i, len;
+      for(i = 0, len = params.length; i < len; ++i) {
+        args[where[i]] = params[i];
+      }
+      return f.apply(this, args);
+    };
   }'''
 
   not: 'function(x){ return !x; }'

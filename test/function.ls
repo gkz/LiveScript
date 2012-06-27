@@ -682,3 +682,8 @@ map(f, xs) = [f x for x in xs]
 
 eq '5,1,7'       "#{ map (.length),  [[1 to 5] [1] [1 to 7]] }"
 eq '1|2|3,1,1|2' "#{ map (.join \|), [[1 to 3] [1] [1 to 2]] }"
+
+### partialization
+three-add = (x, y, z) -> x + y + z
+g = three-add 2, __, 10
+eq 20 g 8
