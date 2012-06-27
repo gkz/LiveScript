@@ -688,3 +688,11 @@ eq '1|2|3,1,1|2' "#{ map (.join \|), [[1 to 3] [1] [1 to 2]] }"
 three-add = (x, y, z) -> x + y + z
 g = three-add 2, ..., 10
 eq 20 g 8
+
+h = three-add 2, ..., ...
+f = h ..., 6
+eq 10 f 2
+
+two-add = (x = 10, y) -> x + y
+g = two-add ..., 4
+eq 14 g!

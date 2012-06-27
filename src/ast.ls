@@ -2269,11 +2269,12 @@ UTILS =
 
   partialize: '''function(f, args, where){
     return function(){
-      var params = __slice.call(arguments), i, len;
-      for(i = 0, len = params.length; i < len; ++i) {
-        args[where[i]] = params[i];
+      var params = __slice.call(arguments), i,
+          len = params.length, wlen = where.length;
+      for(i = 0; i < len; ++i) {
+        args[where[0]] = params[i]; where.shift();
       }
-      return f.apply(this, args);
+      return len < wlen && len ? __partialize(f, args, where) : f.apply(this, args);
     };
   }'''
 
