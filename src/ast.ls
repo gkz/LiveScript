@@ -2123,7 +2123,7 @@ Scope ::=
     if node and t = @variables"#name."
       if @READONLY[t] or @READONLY[type]
         node.carp "redeclaration of #that \"#name\""
-      return name if t of <[ arg function ]>
+      return name if t in <[ arg function ]>
     # Dot-suffix to bypass `Object::` members.
     @variables"#name." = type
     name
