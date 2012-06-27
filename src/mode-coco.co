@@ -162,10 +162,10 @@ CocoMode.Rules =
       next : \key
 
     * token: \constant.numeric
-      regex: '(?:0[xX][\\da-fA-F][\\da-fA-F_]*
-                |(?:[2-9]|[12]\\d|3[0-6])[rR][\\da-zA-Z][\\da-zA-Z_]*
+      regex: '(?:0x[\\da-fA-F][\\da-fA-F_]*
+                |(?:[2-9]|[12]\\d|3[0-6])r[\\da-zA-Z][\\da-zA-Z_]*
                 |(?:\\d[\\d_]*(?:\\.\\d[\\d_]*)?|\\.\\d[\\d_]*)
-                 (?:[eE][+-]?\\d[\\d_]*)?[a-zA-Z_]*)'
+                 (?:e[+-]?\\d[\\d_]*)?[\\w$]*)'
 
     * token: \lparen
       regex: '[({[]'
