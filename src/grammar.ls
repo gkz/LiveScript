@@ -161,6 +161,9 @@ bnf =
 
   # All the different types of expressions in our language.
   Expression:
+    o 'Chain CLONEPORT Expression' -> Import (Unary \^^ $1, prec: \UNARY), $3, false
+    o 'Chain CLONEPORT Block' -> Import (Unary \^^ $1, prec: \UNARY), $3.unwrap!, false
+
     o 'Expression BACKTICK Chain BACKTICK Expression' -> $3.add Call [$1, $5]
 
     o \Chain -> $1.unwrap!
@@ -381,7 +384,7 @@ operators =
   <[ right    COMPARE      ]>
   <[ left     RELATION     ]>
   <[ right    CONCAT       ]>
-  <[ left     SHIFT IMPORT ]>
+  <[ left     SHIFT IMPORT CLONEPORT ]>
   <[ left     +-           ]>
   <[ left     MATH         ]>
   <[ right    UNARY        ]>

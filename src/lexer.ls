@@ -160,6 +160,8 @@ exports import
         tag = \BIOP
       else 
         able @tokens or @token \LITERAL \this
+    case \with
+      tag = if able @tokens then \CLONEPORT else \WITH
     case \when
       tag = \CASE; fallthrough
     case \case

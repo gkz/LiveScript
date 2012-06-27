@@ -606,3 +606,23 @@ eq 2 (&&&) 10 3
 eq 2 (10 &&&) 3
 eq 2 (&&& 3) 10
 eq '1,3,5' "#{filter ((<<) (not), even), [1 to 5] }"
+
+### cloneport
+personA = 
+  name: \matias
+  age:  20
+  job:  'a cool job'
+
+personB = personA with name: \john
+
+eq \john   personB.name
+eq \matias personA.name
+
+personC = personA with
+  name: \amy
+  age:   19
+
+eq \amy    personC.name
+eq 19      personC.age
+eq \matias personA.name
+eq 20      personA.age

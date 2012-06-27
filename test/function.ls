@@ -484,8 +484,9 @@ with o = {}
   @b = 2
 eq o.a + o.b, 3
 eq ok, with ok then this
-ok with ok
+x = with ok
   this is ok
+ok x
 
 
 ### `@@`
