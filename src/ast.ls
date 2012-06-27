@@ -2245,15 +2245,11 @@ UTILS =
   }'''
 
   compose: '''function(f, g){
-    return function(){
-      return f(g.apply(this, arguments)); 
-    }
+    return function(){ return f(g.apply(this, arguments)); }
   }'''
 
   flip: '''function(f){
-    return __curry(function (x, y) {
-      return f(y, x);
-    });
+    return __curry(function (x, y) { return f(y, x); });
   }'''
 
   not: 'function(x){ return !x; }'
