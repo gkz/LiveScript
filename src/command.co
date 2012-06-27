@@ -83,8 +83,8 @@ default
       fshoot \readFile source, !-> compileScript source, "#it", base
     e, stats <-! fs.stat source
     if e
-      return walk "#source.co" if top
-      die e
+      return walk "#source.co" if top and not /\.co$/test source
+      die "Can't find: #source"
     if stats.isDirectory!
       <-! fshoot \readdir source
       <-! it.forEach
