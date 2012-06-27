@@ -620,9 +620,12 @@ eq \matias personA.name
 
 personC = personA with
   name: \amy
-  age:   19
+  age:  19
+  hair: \blonde
 
 eq \amy    personC.name
 eq 19      personC.age
+eq \blonde personC.hair
 eq \matias personA.name
 eq 20      personA.age
+ok personA.hair!?
