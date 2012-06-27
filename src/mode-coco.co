@@ -4,7 +4,7 @@
 
 require, exports, module <-! define \ace/mode/coco
 
-identifier = /[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*/$
+identifier = /(?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+/$
 
 exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
   ->
@@ -17,7 +17,8 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
     : [({[=:]
     | [-~]>
     | \b (?: e(?:lse|xport) | d(?:o|efault) | t(?:ry|hen) | finally |
-             let | new | (?:catch|function) (?: \s* #identifier )? )
+             import (?:\s* all)? | const | var |
+             let | new | catch (?:\s* #identifier)? )
   ) \s* $ //
 
   getNextLineIndent: (state, line, tab) ->
@@ -52,7 +53,7 @@ CocoMode.Rules =
     * token: \keyword
       regex: //(?
         :t(?:h(?:is|row|en)|ry|ypeof!?)
-        |c(?:ontinue|a(?:se|tch)|lass)
+        |c(?:on(?:tinue|st)|a(?:se|tch)|lass)
         |i(?:n(?:stanceof)?|mport(?:\s+all)?|[fs])
         |d(?:e(?:fault|lete|bugger)|o)
         |f(?:or(?:\s+own)?|inally|unction)
@@ -62,7 +63,7 @@ CocoMode.Rules =
         |n(?:ew|ot)
         |un(?:less|til)
         |w(?:hile|ith)
-        |o[fr]|return|break|let
+        |o[fr]|return|break|let|var
       )//$ + keywordend
 
     * token: \constant.language
@@ -72,8 +73,7 @@ CocoMode.Rules =
       regex: '(?
         :p(?:ackage|r(?:ivate|otected)|ublic)
         |i(?:mplements|nterface)
-        |e(?:num|xport)
-        |var|const|static|yield
+        |enum|static|yield
       )' + keywordend
 
     * token: \language.support.class

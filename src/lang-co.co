@@ -4,8 +4,8 @@ tint = (ext, shortcuts, fallthroughs) ->
   rule.splice 2 0 0 if rule.length < 4 for rule of shortcuts
   PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
 
-ident = /(?:[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*)/$
-kwend = /(?![$\w\x7f-\uffff])/$
+ident = /(?:(?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+)/$
+kwend = /(?!(?!\s)[$\w\xAA-\uFFDC])/$
 
 ### Main
 tint \co [
@@ -34,19 +34,20 @@ tint \co [
   : t(?:ry|h(?:row|en)|ypeof!?)
   | f(?:or(?:[^\n\S]+(?:own|ever))?|inally|unction)
   | n(?:ew|ot)
-  | c(?:ontinue|a(?:se|tch)|lass)
+  | c(?:on(?:tinue|st)|a(?:se|tch)|lass)
   | i(?:[fs]|n(?:stanceof)?|mport(?:[^\n\S]+all)?)
   | e(?:lse|x(?:tends|port))
   | d(?:e(?:fault|lete|bugger)|o)
   | un(?:less|til)
   | w(?:hile|ith)
-  | o[fr] | return | break | switch | and | let
+  | s(?:witch|uper)
+  | o[fr] | return | break | and | let | var
   ) #kwend //]
   [\typ // ^ (?: true | false | null | void ) #kwend //]
   [\ctx // ^ (?
   : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
-  | it | arguments | eval | by | super | prototype
+  | it | arguments | eval | by | constructor | prototype | superclass
   ) #kwend //]
   [\glb // ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number
