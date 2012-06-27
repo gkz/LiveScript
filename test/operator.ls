@@ -589,6 +589,27 @@ eq 1 obj.a
 eq 2 obj.b
 eq 3 obj.c
 
+obj-with = (obj with)
+obj2 = obj-with a: 9
+
+eq 1 obj.a
+eq 9 obj2.a
+eq 2 obj2.b
+
+withObj2 = (with obj2)
+obj3 = withObj2 d: 6
+
+ok obj2.d!?
+eq 6 obj3.d
+eq 9 obj3.a
+
+f-with = (with)
+obj4 = (with) obj, {a: 0}
+
+eq 1 obj.a
+eq 0 obj4.a
+eq 2 obj4.b
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)

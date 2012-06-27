@@ -161,7 +161,9 @@ exports import
       else 
         able @tokens or @token \LITERAL \this
     case \with
-      tag = if able @tokens then \CLONEPORT else \WITH
+      tag = | able @tokens => \CLONEPORT
+            | last.0 is \( => \BIOP
+            | otherwise    => \WITH
     case \when
       tag = \CASE; fallthrough
     case \case
@@ -453,8 +455,8 @@ exports import
         return 9e9
       fallthrough
     case \] \)
-      if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE
-                                     CONCAT COMPOSE RELATION PIPE BACKPIPE IMPORT ]>
+      if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
+                                     COMPOSE RELATION PIPE BACKPIPE IMPORT CLONEPORT ]>
         @tokens[*-1].0 = if @last.0 is \RELATION then \BIOPR else \BIOP
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>

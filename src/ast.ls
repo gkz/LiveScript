@@ -918,9 +918,10 @@ class exports.Binary extends Node
     @partial = first!? or second!?
     if not @partial
       switch op
-      | \in => return new In first, second
+      | \in        => return new In first, second
+      | \with      => return new Import (Unary \^^ first), second, false
       | \<<< \<<<< => return Import first, second, op is \<<<<
-      | \+  =>
+      | \+         =>
         if first instanceof Arr
           first.items.push Splat second
           return first
