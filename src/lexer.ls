@@ -455,7 +455,7 @@ exports import
       fallthrough
     case \] \)
       if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
-                                     COMPOSE RELATION PIPE BACKPIPE IMPORT CLONEPORT ]>
+                               COMPOSE RELATION PIPE BACKPIPE IMPORT CLONEPORT ASSIGN ]>
         @tokens[*-1].0 = switch @last.0
           | \RELATION => \BIOPR
           | \PIPE     => @parameters false, -1; \BIOPP

@@ -934,6 +934,8 @@ class exports.Binary extends Node
   (op, first, second) ~>
     @partial = first!? or second!?
     if not @partial
+      if \= is op.charAt op.length-1 and op.charAt(op.length-2) not in <[ = < > ! ]>
+        return Assign first.unwrap!, second, op 
       switch op
       | \in        => return new In first, second
       | \with      => return new Import (Unary \^^ first), second, false
