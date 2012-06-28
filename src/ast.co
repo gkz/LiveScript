@@ -362,7 +362,7 @@ class exports.Index extends Node
 
   children: [\key]
 
-  show: -> (@soak or '') + @symbol
+  show: -> ([\? if @soak]) + @symbol
 
   isComplex: -> @key.isComplex!
 
@@ -410,7 +410,9 @@ class exports.Chain extends Node
 
   isAssignable: ->
     return @head.isAssignable! unless tail = @tails[*-1]
-    return false if tail not instanceof Index or tail.key instanceof List
+    return false if tail not instanceof Index
+                 or tail.key instanceof List
+                 or tail.symbol is \.~
     return false if tail.assign for tail of @tails
     true
 
