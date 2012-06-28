@@ -379,7 +379,6 @@ eq 3 do
 eq 6 (a <- g 6; a)
 
 
-map = (f, xs) -> [f x for x in xs]
 addArr = do 
   (x, y) <-- map ..., [2 3 4]
   x + y
@@ -679,10 +678,10 @@ eq 2 (.a) obj
 eq 5 (.b!) obj
 eq 7 (.c 3 4) obj
 
-map(f, xs) = [f x for x in xs]
-
 eq '5,1,7'       "#{ map (.length),  [[1 to 5] [1] [1 to 7]] }"
 eq '1|2|3,1,1|2' "#{ map (.join \|), [[1 to 3] [1] [1 to 2]] }"
+
+eq '3,2,,0' "#{ map (?p), [{p: 3}, {p: 2}, , {p: 0}] }"
 
 ### partialization
 three-add = (x, y, z) -> x + y + z
@@ -696,3 +695,5 @@ eq 10 f 2
 two-add = (x = 10, y) -> x + y
 g = two-add ..., 4
 eq 14 g!
+
+function map f, xs then [f x for x in xs]

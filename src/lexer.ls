@@ -406,18 +406,17 @@ exports import
     case \&&& \||| \^^^  then tag = \BITWISE
     case \^^             then tag = \CLONE
     case \** \^          then tag = \POWER
-    case \?  \!?         then tag = \LOGIC if @last.spaced
+    case \?  \!?         
+      if   @last.0 is \(
+      then create-it-func!
+      else tag = \LOGIC if @last.spaced
     case \/ \% \%%       then tag = \MATH
     case \+++            then tag = \CONCAT
     case \++ \--         then tag = \CREMENT
     case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
     case \.
-      if @last.0 is \(
-        @token \PARAM( \(  
-        @token \)PARAM \)  
-        @token \->     \-> 
-        @token \ID     \it
+      create-it-func! if @last.0 is \(
       @last.0 = \? if @last.1 is \?
       tag = \DOT
     case \,
@@ -555,6 +554,11 @@ exports import
       tag = if tag is \BACKPIPE then \BIOPBP else \BIOP
     @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE 
                           MATH POWER IMPORT SHIFT BITWISE ]>
+    ~function create-it-func
+      @token \PARAM( \(  
+      @token \)PARAM \)  
+      @token \->     \-> 
+      @token \ID     \it
     @token tag, val
     sym.length
 
