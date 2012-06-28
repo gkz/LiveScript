@@ -27,6 +27,7 @@ exports import
   # The order of these passes matters--indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (it || @tokens) ->
+    firstPass              it
     addImplicitIndentation it
     tagPostfixConditionals it
     addImplicitParentheses it
@@ -810,8 +811,17 @@ character = if JSON!? then uxxxx else ->
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
 
-# Wrap single-line blocks with regular INDENT/DEDENT pairs.
-# Because our grammar is LALR(1), it can't handle some sequences
+# Pass before the other rewriting
+!function firstPass tokens
+  prev = [\NEWLINE \\n 0]
+  i = 0
+  while token = tokens[++i]
+    [tag, val, line] = token
+    if val is \. and token.spaced and prev.spaced
+      tokens[i] = [\COMPOSE \<< line] 
+    prev = token
+    continue
+
 # that lack ending delimiters.
 !function addImplicitIndentation tokens
   i = 0
@@ -1012,10 +1022,6 @@ character = if JSON!? then uxxxx else ->
     case \BIOP     
       if not token.spaced and token.1 in <[ + - ]> and tokens[i+1].0 isnt \)  
         tokens[i].0 = \+- 
-      continue
-    case \DOT
-      if token.spaced and tokens[i-1].spaced
-        tokens[i] = [\COMPOSE \<< token.2]
       continue
     default continue
     if token.spaced and tokens[i+1]0 in ARG

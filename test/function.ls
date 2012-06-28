@@ -646,6 +646,8 @@ eq 6 plusOneTimesTwo 2
 pott = timesTwo . plusOne
 eq 6 pott 2
 
+eq 'true,false,true,false' "#{ map (is \function) . (typeof), [->, 2, ~>, 3] }"
+
 even = (x) -> x % 2 == 0
 odd = (not) . even
 ok odd 3
