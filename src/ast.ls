@@ -225,9 +225,12 @@ class exports.Block extends Node
     this
 
   pipe: (target, type) -> 
+    unless type is \|>>
+      args = if type is \|> then @lines.pop! else target
+      args = [args] if typeof! args isnt \Array
     switch type
-    | \|>  => @lines.push Call.make(target, [@lines.pop!], pipe: true)
-    | \<|  => @lines.push Call.make(@lines.pop!, [target], pipe: true)
+    | \|>  => @lines.push Call.make(target,      args, pipe: true)
+    | \<|  => @lines.push Call.make(@lines.pop!, args, pipe: true)
     | \|>> => @lines.push Assign(Var \_; @lines.pop!), target
     this
 
@@ -935,7 +938,8 @@ class exports.Binary extends Node
       | \in        => return new In first, second
       | \with      => return new Import (Unary \^^ first), second, false
       | \<<< \<<<< => return Import first, second, op is \<<<<
-      | \<| \|>    => return Block first .pipe second, op
+      | \<|        => return Block first .pipe second, op
+      | \|>        => return Block second .pipe first, \<|
       | \+         =>
         if first instanceof Arr
           first.items.push Splat second

@@ -457,7 +457,10 @@ exports import
     case \] \)
       if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
                                      COMPOSE RELATION PIPE BACKPIPE IMPORT CLONEPORT ]>
-        @tokens[*-1].0 = if @last.0 is \RELATION then \BIOPR else \BIOP
+        @tokens[*-1].0 = switch @last.0
+          | \RELATION => \BIOPR
+          | \PIPE     => @parameters false, -1; \BIOPP
+          | otherwise => \BIOP
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>
       # change id@! to calls (id! already makes calls)
@@ -549,7 +552,7 @@ exports import
       @adi!; tag = \WORDS; val.=slice 2 -2
     if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT 
                  COMPOSE RELATION PIPE BACKPIPE IMPORT ]> and @last.0 is \(
-      tag = \BIOP
+      tag = if tag is \BACKPIPE then \BIOPBP else \BIOP
     @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE 
                           MATH POWER IMPORT SHIFT BITWISE ]>
     @token tag, val
@@ -592,15 +595,17 @@ exports import
     | \NEWLINE => @tokens.length--
 
   # (Re)tags function parameters.
-  parameters: !(arrow) ->
+  parameters: !(arrow, offset) ->
     if @last.0 is \) is @last.1
       @lpar.0 = \PARAM(
       @last.0 = \)PARAM
       return
     if arrow is \-> then @token \PARAM( '' else
       for t, i in @tokens by -1 when t.0 in <[ NEWLINE INDENT THEN => ( ]> then break
-      @tokens.splice i+1 0 [\PARAM( '' t.2]
-    @token \)PARAM ''
+      @tokens.splice (i+1), 0 [\PARAM( '' t.2]
+    if   offset
+    then @tokens.splice (@tokens.length + offset), 0 [\)PARAM '' t.2]
+    else @token \)PARAM ''
 
   # Expands variables and expressions inside double-quoted strings or heregexes
   # using Ruby-like notation for substitution of arbitrary expressions.
@@ -732,7 +737,7 @@ function carp msg, lno then throw SyntaxError "#msg on line #{-~lno}"
 function able tokens, i ? tokens.length, call
   [tag] = token = tokens[i-1]
   tag in <[ ID ] ? ]> or if call
-    then token.callable or tag in <[ ) )CALL ]> and token.1
+    then token.callable or tag in <[ ) )CALL BIOPBP ]> and token.1
     else tag in <[ } ) )CALL STRNUM LITERAL WORDS ]>
 
 #### String Manipulators
@@ -1124,4 +1129,4 @@ CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
 ARG = CHAIN +++ <[ ... UNARY CREMENT PARAM( FUNCTION
-                      IF SWITCH TRY CLASS RANGE LABEL DO ]>
+                      IF SWITCH TRY CLASS RANGE LABEL DO BIOPBP ]>

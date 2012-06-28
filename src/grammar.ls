@@ -88,6 +88,12 @@ bnf =
                then Binary $3.slice(1), $2 .invertIt!   
                else Binary $3, $2
 
+    o '( BIOPBP )'                              -> Chain Binary $2
+    o '( BIOPBP CALL( ArgList OptComma )CALL )' -> Chain Binary $2, , $4
+
+    o '( BIOPP )'                                -> Chain Binary $2
+    o '( PARAM( ArgList OptComma )PARAM BIOPP )' -> Chain Binary $6, $3
+
     o '( UNARY )'           -> Chain Unary $2
     o '( CREMENT )'         -> Chain Unary $2
 
@@ -207,7 +213,7 @@ bnf =
                             else Binary $2         , $1, $3
 
     o 'Expression PIPE     Expression' -> Block $1 .pipe $3, $2
-    o 'Expression BACKPIPE Expression' ditto 
+    o 'Expression BACKPIPE Expression' -> Block $1 .pipe [$3], $2
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 
