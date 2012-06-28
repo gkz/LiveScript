@@ -629,6 +629,9 @@ eq 2 (&&& 3) 10
 eq \--- (\- *) 3
 eq '4,2' "#{ (/ '') 42 }"
 
+x = 10
+eq 12 (x +) 2
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)

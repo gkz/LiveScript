@@ -1119,18 +1119,19 @@ class exports.Binary extends Node
     code
 
   compilePartial: (o) ->
-    x = Chain Var \x; y = Chain Var \y
+    x = Chain Var x-ref = o.scope.temporary \x
     switch
     case   @first!? and @second!?
-      "#{util \curry}(function(x, y){ 
+      y = Chain Var y-ref = o.scope.temporary \y
+      "#{util \curry}(function(#x-ref, #y-ref){ 
         return #{(Binary @op, x, y).invertCheck this .compile o}; 
       })"
     case @first?
-      "(function(x){ 
+      "(function(#x-ref){ 
         return #{(Binary @op, @first, x).invertCheck this .compile o}; 
       })"
     default
-      "(function(x){ 
+      "(function(#x-ref){ 
         return #{(Binary @op, x, @second).invertCheck this .compile o};
       })"
 
