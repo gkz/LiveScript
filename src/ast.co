@@ -185,12 +185,12 @@ Negatable =
 #### Block
 # A list of expressions that forms the body of an indented block of code.
 class exports.Block extends Node
-  (node) ~>
-    @lines = []
-    return this unless node
-    node.=unparen!
-    return node if node instanceof Block
-    @add node
+  (body || []) ~>
+    if \length in body
+      @lines = body
+    else
+      @lines = []
+      @add body
 
   children: [\lines]
 
@@ -853,7 +853,7 @@ class exports.Unary extends Node
       node = .. op.op, node, op.post for op of ops by -1
       them[i] = if sp then lat = Splat node else node
     if not lat and (@void or not o.level)
-      it = ^Block::<<< {lines: them, @front, +void}
+      it = Block(them) <<< {@front, +void}
     it.compile o, LEVEL_PAREN
 
   # `v = delete o.k`
@@ -994,7 +994,7 @@ class exports.Binary extends Node
     return x.compile o if 1 <= n < 2
     # `[x] * 2` => `[x, x]`
     if items
-      if n < 1 then return (^Block::<<< lines: items)add(JS '[]')compile o
+      if n < 1 then return Block items .add JS '[]' .compile o
       refs = []
       [items[i], refs.*] = item.cache o, 1x for item, i of items
       items.push JS! <<<
@@ -1945,11 +1945,11 @@ exports.Decl =
           Assign Chain(out, [Index Key that]), node
         else
           Import out, node
-    ^Block::<<<{lines}
+    Block lines
 
   import: (lines, all) ->
     lines[i] = Import Literal(\this), line, all for line, i of lines
-    ^Block::<<<{lines}
+    Block lines
 
   importAll: (lines) -> @import lines, true
 
@@ -1957,7 +1957,7 @@ exports.Decl =
     for node of lines
       node.carp 'invalid constant variable declaration' unless node.op is \=
       node.const = true
-    ^Block::<<<{lines}
+    Block lines
 
   var: Vars
 
