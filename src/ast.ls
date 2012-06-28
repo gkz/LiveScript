@@ -926,7 +926,7 @@ class exports.Unary extends Node
   compileAsFunc: (o) ->
     if @op is \!
     then util \not
-    else (Fun [], Block Unary @op, Chain Var \it).compile o
+    else "(#{ (Fun [], Block Unary @op, Chain Var \it).compile o })"
     
 
 #### Binary operators
