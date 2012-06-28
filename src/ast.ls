@@ -1119,52 +1119,20 @@ class exports.Binary extends Node
     code
 
   compilePartial: (o) ->
-    getFunc =
-      \+   : [\add]
-      \-   : [\minus \subtract]
-      \==  : [\fuzzyEquals]
-      \!=  : [\fuzzyNotEquals]
-      \=== : [\equals]
-      \!== : [\notEquals]
-      \>   : [\gt \lt]
-      \>=  : [\gte \lte]
-      \<   : [\lt \gt]
-      \<=  : [\lte \gte]
-      \&&  : [\and]
-      \||  : [\or]
-      \*   : [\multiply]
-      \/   : [\divide \divideBy]
-      \%   : [\rem \remTo]
-      \%%  : [\mod \modTo]
-      \^   : [\pow \powTo]
-      \**  : [\pow \powTo]
-      \&   : [\cons \consTo]
-      \+++ : [\append \appendTo]
-      \>?  : [\max]
-      \<?  : [\min]
-    func = getFunc[@op]
-    if func!?
-      x = Chain Var \x; y = Chain Var \y
-      switch
-      case   @first!? and @second!?
-        "#{util \curry}(function(x, y){ 
-          return #{(Binary @op, x, y).invertCheck this .compile o}; 
-        })"
-      case @first?
-        "(function(x){ 
-          return #{(Binary @op, @first, x).invertCheck this .compile o}; 
-        })"
-      default
-        "(function(x){ 
-          return #{(Binary @op, x, @second).invertCheck this .compile o};
-        })"
-
-    else 
-      util \curry
-      switch
-      | @first!? and @second!? => util func.0 
-      | @first?                => "#{ util func.0 }(#{@first.compile o})"
-      | otherwise              => "#{ util (func.1 ? func.0)}(#{@second.compile o})"
+    x = Chain Var \x; y = Chain Var \y
+    switch
+    case   @first!? and @second!?
+      "#{util \curry}(function(x, y){ 
+        return #{(Binary @op, x, y).invertCheck this .compile o}; 
+      })"
+    case @first?
+      "(function(x){ 
+        return #{(Binary @op, @first, x).invertCheck this .compile o}; 
+      })"
+    default
+      "(function(x){ 
+        return #{(Binary @op, x, @second).invertCheck this .compile o};
+      })"
 
 #### Assign
 # Assignment to a variable/property.
@@ -2282,36 +2250,7 @@ UTILS =
       return len < wlen && len ? __partialize(f, args, where) : f.apply(this, args);
     };
   }'''
-
-  not: 'function(x){ return !x; }'
-  equals: '__curry(function(x, y){ return x === y; })'
-  notEquals: '__curry(function(x, y){ return x !== y; })'
-  fuzzyEquals: '__curry(function(x, y){ return x == y; })'
-  fuzzyNotEquals: '__curry(function(x, y){ return x != y; })'
-  lt: '__curry(function(x, y){ return x < y; })'
-  lte: '__curry(function(x, y){ return x <= y; })'
-  gt: '__curry(function(x, y){ return x > y; })'
-  gte: '__curry(function(x, y){ return x >= y; })'
-  add: '__curry(function(x, y){ return x + y; })'
-  minus: '__curry(function(x, y){ return x - y; })'
-  subtract: '__curry(function(x, y){ return y - x; })'
-  multiply: '__curry(function(x, y){ return x * y; })'
-  divide: '__curry(function(x, y){ return x / y; })'
-  divideBy: '__curry(function(x, y){ return y / x; })'
-  and: '__curry(function(x, y){ return x && y; })'
-  or: '__curry(function(x, y){ return x || y; })'
-  rem: '__curry(function(x, y){ return x % y; })'
-  remTo: '__curry(function(x, y){ return y % x; })'
-  mod: '__curry(function(x, y){ return (x % y + y) % y; })'
-  modTo: '__curry(function(y, x){ return (x % y + y) % y; })'
-  pow: '__curry(function(x, y){ return Math.pow(x, y); })'
-  powTo: '__curry(function(x, y){ return Math.pow(y, x); })'
-  cons: '__curry(function(x, y){ return [x].concat(y); })'
-  consTo: '__curry(function(x, y){ return [y].concat(x); })'
-  append: '__curry(function(x, y){ return x.concat(y); })'
-  appendTo: '__curry(function(x, y){ return y.concat(x); })'
-  min: '__curry(function(x, y){ return x > y ? y : x; })'
-  max: '__curry(function(x, y){ return x > y ? x : y; })'
+  not: '''function(x){ return !x; }'''
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"

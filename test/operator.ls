@@ -622,6 +622,12 @@ eq 5 (3 |>) (+ 2)
 eq 5 (<| 3 2 ) (+)
 eq 5 (3 2 |>) (+)
 
+eq 2 (&&&) 10 3
+eq 2 (10 &&&) 3
+eq 2 (&&& 3) 10
+
+eq \--- (\- *) 3
+eq '4,2' "#{ (/ '') 42 }"
 
 # Unary ops as functions
 ok (not) false
@@ -636,9 +642,6 @@ filter(f, xs) = [x for x in xs when f x]
 even(x) = x % 2 == 0
 eq '1,3,5' "#{ filter (not) << even, [1 to 5] }"
 
-eq 2 (&&&) 10 3
-eq 2 (10 &&&) 3
-eq 2 (&&& 3) 10
 eq '1,3,5' "#{filter ((<<) (not), even), [1 to 5] }"
 
 ### cloneport
