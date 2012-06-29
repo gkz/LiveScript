@@ -95,7 +95,7 @@ bnf =
     o '( PARAM( ArgList OptComma )PARAM BIOPP )' -> Chain Binary $6, $3
 
     o '( UNARY )'           -> Chain Unary $2
-    o '( CREMENT )'         -> Chain Unary $2
+    o '( CREMENT )'         ditto
 
     o '( BACKTICK Chain BACKTICK )'            -> Chain $3
     o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
