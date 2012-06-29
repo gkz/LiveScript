@@ -588,7 +588,8 @@ class exports.Chain extends Node
 
   # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
   expandSlice: (o, assign) ->
-    {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
+    {tails} = this; i = -1
+    while tail = tails[++i] when tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
       x = tails.splice 0 i+1
       x = x.pop!key.toSlice o, Chain(@head, x)unwrap!, assign
