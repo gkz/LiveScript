@@ -128,12 +128,20 @@ switch
 | true  => ok 1
 | true  => ok 0
 
-# otherwise
+# otherwise, _
 eq otherwise?, false
 
 switch
 | false     => ok 0
 | otherwise => ok 1
+
+switch 2 + 3
+case 6 then ok 0
+case _ then ok 1
+
+switch
+| false => ok 0
+| _     => ok 1
 
 switch 2 + 3
 case 6 then ok 0

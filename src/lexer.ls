@@ -183,10 +183,10 @@ exports import
       # contextual keywords (reserved only in specific places)
       switch id
       case \own then tag = \OWN if last.0 is \FOR
-      case \otherwise 
+      case \otherwise \_
         if last.0 in <[ CASE | ]>
           last.0 = \DEFAULT
-          return 9
+          return id.length
       case \all then if last.1 is \<<<
         last.1 += \<
         return 4
