@@ -10,7 +10,7 @@ class FirstChild extends Base
   func: -> super('one/') + it
 
 SecondChild = class extends FirstChild
-  ::func = -> super('two/') + it
+  func: -> (super).call(this, 'two/') + it
 
 thirdCtor = -> @array = [1, 2, 3]
 

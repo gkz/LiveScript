@@ -19,16 +19,14 @@ o <<< a:~ -> 1
 eq 1, o.a
 
 :: =
-  p:~
-    \    -> @z
-    (@z) ->
+  p: -> if it? then @_ = it else @_
 class C extends {::}
-  spd = Object.getOwnPropertyDescriptor super::, \p
-  p:~     -> spd.get.call this
-  p:~ (z) -> spd.set.call this, z
+  p:~
+    \   -> super!
+    (z) -> super z
 c = new C
 eq c.p = 3, c.p
-ok c.hasOwnProperty \z
+ok c.hasOwnProperty \_
 
 compileThrows 'excess accessor parameter' 1 'p:~ (a, b) ->'
 

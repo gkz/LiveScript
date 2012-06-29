@@ -1321,9 +1321,6 @@ class exports.Fun extends Node
     # `name = ->`
     @name ||= it.varName!
     @declared = it instanceof Var
-    # `::meth = ->`
-    @meth = it.tails.0 if it.head?value is \prototype and
-                          it.tails.length is 1 and not it.tails.0.isComplex!
 
   compileNode: (o) ->
     pscope = o.scope
@@ -1418,6 +1415,12 @@ class exports.Class extends Node
     for node, i of lines
       if node instanceof Obj
         lines[i] = Import proto||=Var(\prototype), node
+        for prop of node.items
+          if prop.key instanceof [Key, Literal]
+            if prop.val instanceof Fun
+              prop.val.meth = prop.key
+            else if prop.accessor
+              f.meth = prop.key for f of prop.val
       else if node instanceof Fun and not node.statement
         ctor and node.carp 'redundant constructor'
         ctor = node
@@ -1438,12 +1441,9 @@ class exports.Class extends Node
 class exports.Super extends Node
   isCallable: YES
 
-  constant = /^\.|^\[['"\d]/
-
   compile: ({scope}:o) ->
     while not scope.get \superclass and scope.fun, scope.=parent
-      if constant.test key = that.meth?compile o
-        return "superclass.prototype#key"
+      return \superclass.prototype + Index that .compile o if that.meth
     \superclass
 
 #### Parens
