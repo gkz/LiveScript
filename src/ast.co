@@ -1375,7 +1375,6 @@ class exports.Fun extends Node
     else unless params.length or @wrapper
       params.0 = Var \it if body.traverseChildren -> it.value is \it or null
     if params.length
-      dic = {}
       for p of params
         vr = p
         vr.=first if df = vr.getDefault!
@@ -1389,7 +1388,6 @@ class exports.Fun extends Node
         else if df
           assigns.push Assign vr, p.second, \=, p.op
         names.push name = scope.add vr.value, \arg, p
-        p.carp "duplicate parameter \"#name\"" unless dic"#name." ^= 1
     if rest
       rest.unshift Arr! while splace--
       assigns.push Assign Arr(rest), Literal \arguments
@@ -1978,6 +1976,8 @@ Scope::<<<
     if node and t = @variables"#name."
       if @READONLY[t] or @READONLY[type]
         node.carp "redeclaration of #that \"#name\""
+      else if t is type is \arg
+        node.carp "duplicate parameter \"#name\""
       return name if t of <[ arg function ]>
     # Dot-suffix to bypass `Object::` members.
     @variables"#name." = type
