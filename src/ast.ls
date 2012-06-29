@@ -1121,21 +1121,14 @@ class exports.Binary extends Node
     code
 
   compilePartial: (o) ->
-    x = Chain Var \__x
+    x = Var \__x; y = Var \__y
     switch
-    case   @first!? and @second!?
-      y = Chain Var \__y
-      "#{util \curry}(function(__x, __y){ 
-        return #{(Binary @op, x, y).invertCheck this .compile o}; 
-      })"
+    case  @first!? and @second!?
+      (Fun [x, y], Block((Binary @op, x, y).invertCheck this), false, true).compile o
     case @first?
-      "(function(__x){ 
-        return #{(Binary @op, @first, x).invertCheck this .compile o}; 
-      })"
+      "(#{ (Fun [x], Block((Binary @op, @first, x).invertCheck this)).compile o })"
     default
-      "(function(__x){ 
-        return #{(Binary @op, x, @second).invertCheck this .compile o};
-      })"
+      "(#{ (Fun [x], Block((Binary @op, x, @second).invertCheck this)).compile o })"
 
 #### Assign
 # Assignment to a variable/property.
