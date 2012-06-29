@@ -55,12 +55,12 @@ default
   case o.eval
     argv.1 = \eval
     compileScript '' $args * \\n
+  case o.interactive
+    repl!
   case o.stdin
     compileStdin!
   case $args.length
     compileScripts!
-  case o.interactive
-    repl!
   case require \tty .isatty 0
     say version! + \\n + help! + \\n
     repl!
@@ -223,6 +223,7 @@ default
     if @line or code then say ''; reset! else @close!
   rl.on \close process~exit
   rl.on \line !->
+    # Trigger evaluation also on double blank lines (^J^J^J).
     if 0 < cont < 3
       code += it + \\n
       @output.write \. * prompt.length + '. '
