@@ -360,7 +360,7 @@ h = (f, ...a) -> f a
 eq ok, do
   (a, b) <- g \a, \b
   eq b, \b
-  ...d <- h ..., a
+  ...d <- h _, a
   eq d.0.0, \a
   ok
 
@@ -380,7 +380,7 @@ eq 6 (a <- g 6; a)
 
 
 addArr = do 
-  (x, y) <-- map ..., [2 3 4]
+  (x, y) <-- map _, [2 3 4]
   x + y
 
 eq 5 addArr.0 3
@@ -390,10 +390,10 @@ eq 5 addArr.2 1
 t-obj = 
   z: 10
   bound: ->
-    (x, y) <~~ map ..., [2 3 4]
+    (x, y) <~~ map _, [2 3 4]
     x * y * this.z
   unbound: ->
-    (x, y) <-- map ..., [2 3 4]
+    (x, y) <-- map _, [2 3 4]
     x * y * this.z
 
 timesArr = t-obj.bound!

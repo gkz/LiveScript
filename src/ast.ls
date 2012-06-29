@@ -610,6 +610,7 @@ class exports.Call extends Node
     else
       for a, i in args when a.value is \_
         args[i] = Chain Literal \void
+        args[i].placeholder = true
         (@partialized ?= []).push i
     import {args}
 
@@ -636,8 +637,9 @@ class exports.Call extends Node
       fun <<< {name: node.label, +labeled}
       node.=it
     node.=it if not fun.void and fun.void = node.op is \!
+    node.getCall!?partialized = null
     {args} = node.getCall! or (node = Chain node .add Call!)getCall!
-    for a, index in args when a.filler then break
+    for a, index in args when a.placeholder then break
     node <<< back: (args[index] = fun)body
 
   @let = (args, body) ->
