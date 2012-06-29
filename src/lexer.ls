@@ -397,7 +397,7 @@ exports import
     case \|              
       tag = \CASE
       return sym.length if @doCase! 
-    case \|> \|>>        then tag = \PIPE
+    case \|>             then tag = \PIPE
     case \`              then tag = \BACKTICK
     case \<< \>>         then tag = \COMPOSE
     case \<|             then tag = \BACKPIPE
@@ -1091,7 +1091,7 @@ SYMBOL = //
 | << | >>                     # compose
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
-| \|>>?                       # pipe
+| \|>                         # pipe
 | \|                          # case
 | =>                          # then
 | \*\*=? | \^                 # pow

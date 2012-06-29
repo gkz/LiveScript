@@ -687,15 +687,15 @@ eq '3,2,,0' "#{ map (?p), [{p: 3}, {p: 2}, , {p: 0}] }"
 
 ### partialization
 three-add = (x, y, z) -> x + y + z
-g = three-add 2, ..., 10
+g = three-add 2, _, 10
 eq 20 g 8
 
-h = three-add 2, ..., ...
-f = h ..., 6
+h = three-add 2, _, _
+f = h _, 6
 eq 10 f 2
 
 two-add = (x = 10, y) -> x + y
-g = two-add ..., 4
+g = two-add _, 4
 eq 14 g!
 
 function map f, xs then [f x for x in xs]

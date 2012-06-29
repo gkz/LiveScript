@@ -5,7 +5,7 @@ eq 'one;\ntwo;', LiveScript.compile 'one\r\ntwo' bare
 
 
 # Tab characters should work.
-eq '_(_);', LiveScript.compile '\n\t_\t_\t\n' bare
+eq '_(__);', LiveScript.compile '\n\t_\t__\t\n' bare
 
 
 # `{\eval}` forces the last value to be returned.
