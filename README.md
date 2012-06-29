@@ -14,7 +14,7 @@ keywords, verbose file extension,
 Coco tries to amend them, entwining good parts of both.
 
 ## Principles
-- Respect JavaScript/ECMAScript semantics.
+- Respect JS semantics and idioms.
 - Die for [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
 - Perl over Ruby.
 - Fewer keywords, punctuations and runtime errors.
@@ -35,6 +35,13 @@ Get [Node.js](http://nodejs.org) and [npm](http://npmjs.org), then:
 - `git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
 ## Changelog
+
+### 0.7.4
+- Added `import` declaration in place of the implicit `this import`:
+  `import a, b` => `this <<< a <<< b`
+- Made `super` work in accessor methods.
+- Disallowed redeclarations via `var`.
+- Improved handling of nonexistent files.
 
 ### 0.7.3
 - Node.js 0.8.x.
