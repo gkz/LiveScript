@@ -237,10 +237,10 @@ switch
       else
         ops = {\eval, +bare, saveScope:LiveScript}
         ops = {+bare} if code.match(/^\s*!?function/)
-        _  = vm.runInThisContext LiveScript.compile(code, ops), \repl
-        _ !? global <<< {_}
-        pp  _
-        say _ if typeof _ is \function
+        x  = vm.runInThisContext LiveScript.compile(code, ops), \repl
+        x !? global <<< {_:x}
+        pp  x
+        say x if typeof x is \function
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"

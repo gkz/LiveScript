@@ -590,9 +590,9 @@ class exports.Chain extends Node
   expandSlice: (o, assign) ->
     {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
-      tails.splice 0 i+1
-      |>> _.pop!key.toSlice o, Chain(@head, _)unwrap!, assign
-      |>> @head = _ <<< {@front}
+      x = tails.splice 0 i+1
+      x = x.pop!key.toSlice o, Chain(@head, x)unwrap!, assign
+      @head = x <<< {@front}
       i = -1
     this
 
@@ -873,9 +873,10 @@ class exports.Unary extends Node
     case \new then it.isCallable! or it.carp 'invalid constructor'
     case \do
       # `do f?` => `f?()`
-      Parens if it instanceof Existence and not it.negated
-        then Chain(it)add Call! else Call.make it
-      |>> return (_ <<< {@front, @newed})compile o
+      x = Parens if it instanceof Existence and not it.negated
+                 then Chain(it)add Call! 
+                 else Call.make it
+      return (x <<< {@front, @newed})compile o
     case \delete
       @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compilePluck o if o.level and not @void
@@ -1038,13 +1039,13 @@ class exports.Binary extends Node
 
   compileExistence: (o) ->
     if @op is \!?
-      If(Existence @first; @second) <<< {@cond, @void or not o.level}
-      |>> return _.compileExpression o
+      x = If(Existence @first; @second) <<< {@cond, @void or not o.level}
+      return x.compileExpression o
     if @void or not o.level
-      Binary \&& Existence(@first, true), @second
-      |>> return (_ <<< {+void})compileNode o
-    @first.cache o, true
-    |>> If(Existence _.0; _.1)addElse(@second)compileExpression o
+      x = Binary \&& Existence(@first, true), @second
+      return (x <<< {+void})compileNode o
+    x = @first.cache o, true
+    If(Existence x.0; x.1)addElse(@second)compileExpression o
 
   # `x instanceof [A, B]` => `x instanceof A || x instanceof B`
   compileAnyInstanceOf: (o, items) ->
@@ -1056,8 +1057,8 @@ class exports.Binary extends Node
   compileMinMax: (o) ->
     lefts = @first .cache o, true
     rites = @second.cache o, true
-    Binary @op.charAt!, lefts.0, rites.0
-    |>> If _, lefts.1 .addElse rites.1 .compileExpression o
+    x = Binary @op.charAt!, lefts.0, rites.0
+    If x, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
     args = @second & (arg || [])
