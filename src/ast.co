@@ -27,7 +27,8 @@
     # A statement that _jumps_ out of current context (like `return`) can't be
     # an expression via closure-wrapping, as its meaning will change.
     that.carp 'inconvertible statement' if @getJump!
-    fun = Fun [] Block this; call = Call!; hasThis = hasArgs = false
+    fun = Fun [] Block this; call = Call!
+    var hasArgs, hasThis
     @traverseChildren !->
       switch it.value
       case \this      then hasThis := true
@@ -1923,9 +1924,10 @@ class exports.Vars extends Node
   makeReturn: THIS
 
   compile: (o, level) ->
-    for v of @vars
+    for {value}:v of @vars
       v.carp 'invalid variable declaration' unless v instanceof Var
-      o.scope.declare v.value, v
+      v.carp "redeclaration of \"#value\"" if o.scope.check value
+      o.scope.declare value, v
     if level then Literal \void .compile o else ''
 
 #### Parser Utils
