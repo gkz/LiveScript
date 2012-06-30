@@ -229,7 +229,7 @@ class exports.Block extends Node
     args = [args] if typeof! args isnt \Array
     switch type
     | \|>  => @lines.push Call.make(target,      args, pipe: true)
-    | \<|  => @lines.push Call.make(@lines.pop!, args, pipe: true)
+    | \<|  => @lines.push Call.make(@lines.pop!, args)
     this
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this
