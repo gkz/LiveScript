@@ -238,6 +238,8 @@ eq \e a.b.c
 a.=b <<< {\c}
 eq \c a.c
 
+compileThrows 'assignment to undeclared "a"' 1 'a.=b'
+
 
 ### Subdestructuring
 a = []

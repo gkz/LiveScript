@@ -505,6 +505,7 @@ class exports.Chain extends Node
           [rites[i], lefts[i]] = Chain node .cacheReference o
       else
         [left, @head] = Chain left .cacheReference o
+      op = \:= if op is \=
       return Assign(left, this, op) <<< {+access}
 
   expandSplat: !(o) ->
