@@ -51,9 +51,7 @@ for nonref, i in <[ 0 f() this true ]>
     x = if i then nonref else \... + nonref
     LiveScript.compile \\n * i + "[#{x}, y] = z"
 
-
-throws 'assignment to undeclared variable "Math" on line 1'
-, -> LiveScript.compile 'Math ||:= 0'
+compileThrows 'assignment to undeclared "Math"' 1 'Math ||:= 0'
 
 # Power
 x = 2
@@ -367,11 +365,6 @@ eq 1  a-1
 eq 1  4-b
 eq 99 a-b
 
-encodeURL = 9
-eq 9 encode-URL
-eq 9 encode-uRL
-eq 9 encode-u-r-l
-
 obj =
   ha-ha: 2
 
@@ -384,3 +377,5 @@ green--
 eq 3 green
 
 eq 6, green-- * a
+
+eq \HELLO 'hello'.to-upper-case!

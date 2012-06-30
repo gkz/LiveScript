@@ -26,7 +26,7 @@ ditto = {}
 last  = ''
 
 o = (patterns, action, options) ->
-  patterns.=trim()split /\s+/
+  patterns.=trim!split /\s+/
   action &&= if action is ditto then last else
     "#action"
     .replace /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/ '$$$$ = $1;'
@@ -73,9 +73,34 @@ bnf =
 
     o '( BIOP )'            -> Chain Binary $2
     o '( BIOP Expression )' -> Chain Binary $2, , $3
-    o '( Expression BIOP )' -> Chain Binary $3, $2
+    o '( Expression BIOP )' -> Chain Binary $3,   $2
+
+    o '( BIOPR )'
+    , -> Chain if   \! is $2.charAt 0
+               then Binary $2.slice(1) .invertIt!
+               else Binary $2
+    o '( BIOPR Expression )'
+    , -> Chain if   \! is $2.charAt 0
+               then Binary $2.slice(1), , $3 .invertIt!
+               else Binary $2, , $3
+    o '( Expression BIOPR )'
+    , -> Chain if   \! is $3.charAt 0
+               then Binary $3.slice(1), $2 .invertIt!   
+               else Binary $3, $2
+
+    o '( BIOPBP )'                              -> Chain Binary $2
+    o '( BIOPBP CALL( ArgList OptComma )CALL )' -> Chain Binary $2, , $4
+
+    o '( BIOPP )'                                -> Chain Binary $2
+    o '( PARAM( ArgList OptComma )PARAM BIOPP )' -> Chain Binary $6, $3
+
     o '( UNARY )'           -> Chain Unary $2
-    o '( CREMENT )'         -> Chain Unary $2
+    o '( CREMENT )'         ditto
+
+    o '( BACKTICK Chain BACKTICK )'            -> Chain $3
+    o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
+    o '( BACKTICK Chain BACKTICK Expression )' 
+    , -> Chain(Chain Var \__flip .add Call [$3]).flipIt!add Call [$5]
 
   # Array/Object
   List:
@@ -118,18 +143,20 @@ bnf =
     o \Line                -> Block $1
     o 'Lines NEWLINE Line' -> $1.add $3
     o 'Lines NEWLINE'
-  # A line of LiveScript can be either an expression, backcall, comment or
-  # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm).
+
   Line:
     o \Expression
 
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
-    , -> Call.back $2, $6, $5 is \<~
+    , -> Call.back $2, $6, $5.charAt(1) is \~, $5.length is 3
 
-    o 'EXPORT Exprs'                          -> Export $2
-    o 'EXPORT INDENT ArgList OptComma DEDENT' -> Export $3
+    # `var` `const` `export`
+    o 'DECL Exprs'                          -> Decl[$1] $2
+    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl[$1] $3
 
     o \COMMENT -> L JS $1, true true
+
+    # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm)
     o \...     -> L Throw JS "Error('unimplemented')"
 
   # An indented block of expressions.
@@ -140,6 +167,11 @@ bnf =
 
   # All the different types of expressions in our language.
   Expression:
+    o 'Chain CLONEPORT Expression' 
+    , -> Import (Unary \^^ $1, prec: \UNARY), $3,         false
+    o 'Chain CLONEPORT Block' 
+    , -> Import (Unary \^^ $1, prec: \UNARY), $3.unwrap!, false
+
     o 'Expression BACKTICK Chain BACKTICK Expression' -> $3.add Call [$1, $5]
 
     o \Chain -> $1.unwrap!
@@ -181,13 +213,13 @@ bnf =
                             else Binary $2         , $1, $3
 
     o 'Expression PIPE     Expression' -> Block $1 .pipe $3, $2
-    o 'Expression BACKPIPE Expression' ditto 
+    o 'Expression BACKPIPE Expression' -> Block $1 .pipe [$3], $2
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 
     # The function literal can be either anonymous with `->`,
     o 'PARAM( ArgList OptComma )PARAM -> Block' 
-    , -> L Fun $2, $6, $5.charAt(0) is \~, $5 in <[ --> ~~> ]>
+    , -> L Fun $2, $6, $5.charAt(0) is \~, $5.length is 3
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
 
@@ -360,7 +392,7 @@ operators =
   <[ right    COMPARE      ]>
   <[ left     RELATION     ]>
   <[ right    CONCAT       ]>
-  <[ left     SHIFT IMPORT ]>
+  <[ left     SHIFT IMPORT CLONEPORT ]>
   <[ left     +-           ]>
   <[ left     MATH         ]>
   <[ right    UNARY        ]>

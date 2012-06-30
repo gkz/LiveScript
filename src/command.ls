@@ -30,7 +30,7 @@ global import
   tokens      : 'print the tokens the rewriter produces'
   ast         : 'print the syntax tree the parser produces'
   json        : 'print/compile as JSON'
-  nodejs      :['pass options through to the "node" binary' \ARGS+]
+  nodejs      :['pass options through to the "node" binary' \ARGS+ '']
   version     : 'display version'
   help        : 'display this'
   prelude     :['automatically import prelude.ls' '' \d]
@@ -189,13 +189,13 @@ switch
 !function repl
   argv.1 = \repl
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
-  # repl.infunc = false unless repl.infunc?
   code  = if repl.infunc then '  ' else ''
   cont  = false
   readline  = require(\readline)createInterface process.stdin, process.stdout
   reset = !->
     readline.line = code := ''
     readline.prompt!
+    repl.inheredoc = false
   ({_ttyWrite} = readline)_ttyWrite = (chr) ->
     cont := chr in [ \\n, \> ]
     _ttyWrite ...
@@ -207,7 +207,7 @@ switch
       module.filename = process.cwd! + \/repl
     vm = require \vm
     global <<< {module, exports, require}
-    server = ^^require(\repl)REPLServer:: <<<
+    server = require(\repl)REPLServer:: with
       context: global, commands: [], useGlobal: true
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
@@ -217,12 +217,21 @@ switch
     if readline.line or code then say ''; reset! else readline.close!
   readline.on \close process.stdin~destroy
   readline.on \line !->
-    repl.infunc = false if it.match(/^\s*$/) # close with a blank line
-    cont = repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or it.match(/^!?function /)
-    if cont or repl.infunc
+    repl.infunc = false if it.match(/^$/) # close with a blank line without spaces
+    repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or (it.match(/^!?(function|class|if|unless) /) and not it.match(/ then /))
+    if (cont or repl.infunc) and not repl.inheredoc
       code += it + \\n
       readline.output.write \. * prompt.length + '. '
       return
+    else
+      isheredoc = it.match /(\'\'\'|\"\"\")/g
+      if isheredoc and isheredoc.length % 2 is 1 # odd number of matches
+        repl.inheredoc = not repl.inheredoc
+      if repl.inheredoc
+        code += it + \\n
+        readline.output.write \. * prompt.length + '" '
+        return
+    repl.inheredoc = false
     code += it
     try
       if o.compile
@@ -230,10 +239,10 @@ switch
       else
         ops = {\eval, +bare, saveScope:LiveScript}
         ops = {+bare} if code.match(/^\s*!?function/)
-        _  = vm.runInThisContext LiveScript.compile(code, ops), \repl
-        _ !? global <<< {_}
-        pp  _
-        say _ if typeof _ is \function
+        x  = vm.runInThisContext LiveScript.compile(code, ops), \repl
+        x !? global <<< {_:x}
+        pp  x
+        say x if typeof x is \function
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"
@@ -244,7 +253,7 @@ switch
 # to it, preserving the other options.
 !function forkNode
   args = argv.slice 1; i = 0
-  while args[++i] when that in <[ -n --nodejs ]> then args.splice i-- 2
+  while args[++i] when that is \--nodejs then args.splice i-- 2
   require(\child_process)spawn do
     process.execPath
     o.nodejs.join(' ')trim!split(/\s+/)concat args

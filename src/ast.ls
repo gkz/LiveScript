@@ -147,6 +147,10 @@
 
   invert: -> Unary \! this, true
 
+  invertCheck: ->
+    if it.inverted then @invert!
+    this
+
   # Constructs a node that returns the current node's result.
   makeReturn: (arref) ->
     if arref then Call.make JS(arref + \.push), [this] else Return this
@@ -221,10 +225,11 @@ class exports.Block extends Node
     this
 
   pipe: (target, type) -> 
+    args = if type is \|> then @lines.pop! else target
+    args = [args] if typeof! args isnt \Array
     switch type
-    | \|>  => @lines.push Call.make(target, [@lines.pop!], pipe: true)
-    | \<|  => @lines.push Call.make(@lines.pop!, [target], pipe: true)
-    | \|>> => @lines.push Assign(Var \_; @lines.pop!), target
+    | \|>  => @lines.push Call.make(target,      args, pipe: true)
+    | \<|  => @lines.push Call.make(@lines.pop!, args)
     this
 
   unwrap: -> if @lines.length is 1 then @lines.0 else this
@@ -259,8 +264,9 @@ class exports.Block extends Node
     o.block = this; tab = o.indent
     codes = for node in @lines
       node = node.unfoldSoak o or node
-      code = tab + (node <<< {+front})compile o, level
-      if node.isStatement! then code else code + node.terminator
+      continue unless code = (node <<< {+front})compile o, level
+      node.isStatement! or code += node.terminator
+      tab + code
     codes.join \\n
 
   # **Block** is the only node that can serve as the root.
@@ -420,6 +426,8 @@ class exports.Chain extends Node
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
     this
 
+  flipIt: -> @flip = true; this
+
   # __Chain__ can be unwrapped as its inner node, if there are no subnodes.
   unwrap: -> if @tails.length then this else @head
 
@@ -482,7 +490,18 @@ class exports.Chain extends Node
     [base.add name; Chain bref || base.head, [nref or name]]
 
   compileNode: (o) ->
+    if @flip
+      util \flip
+      util \curry
     {head, tails} = this; head <<< {@front, @newed}
+
+    if tails.0 instanceof Call and tails.0.partialized
+      util \slice
+      args = tails.0.args
+      code = "#{util \partialize}(#{@head.compile o, LEVEL_LIST}, ["
+      for a, i in args then code += (if i then ', ' else '') + a.compile o, LEVEL_LIST 
+      code += "], [#{tails.0.partialized.toString!}])"
+      return code
     return head.compile o unless tails.length
     return that.compile o if @unfoldAssign o
     @carp 'invalid callee' if tails.0 instanceof Call and not head.isCallable!
@@ -569,11 +588,12 @@ class exports.Chain extends Node
 
   # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
   expandSlice: (o, assign) ->
-    {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
+    {tails} = this; i = -1
+    while tail = tails[++i] when tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
-      tails.splice 0 i+1
-      |>> _.pop!key.toSlice o, Chain(@head, _)unwrap!, assign
-      |>> @head = _ <<< {@front}
+      x = tails.splice 0 i+1
+      x = x.pop!key.toSlice o, Chain(@head, x)unwrap!, assign
+      @head = x <<< {@front}
       i = -1
     this
 
@@ -587,6 +607,11 @@ class exports.Call extends Node
         args <<< [Literal \this; Splat Literal \arguments]
       else if splat.it instanceof Arr
         args = splat.it.items
+    else
+      for a, i in args when a.value is \_
+        args[i] = Chain Literal \void
+        args[i].placeholder = true
+        (@partialized ?= []).push i
     import {args}
 
   children: [\args]
@@ -605,15 +630,16 @@ class exports.Call extends Node
   @block = (fun, args, method) ->
     Parens(Chain fun, [Call(args) <<< {method}]; true) <<< {+calling}
 
-  @back = (params, node, bound) ->
-    fun = Fun params,, bound
+  @back = (params, node, bound, curried) ->
+    fun = Fun params,, bound, curried
     node.=it if fun.void = node.op is \!
     if node instanceof Label
       fun <<< {name: node.label, +labeled}
       node.=it
     node.=it if not fun.void and fun.void = node.op is \!
+    node.getCall!?partialized = null
     {args} = node.getCall! or (node = Chain node .add Call!)getCall!
-    for a, index in args when a.filler then break
+    for a, index in args when a.placeholder then break
     node <<< back: (args[index] = fun)body
 
   @let = (args, body) ->
@@ -850,16 +876,17 @@ class exports.Unary extends Node
     case \new then it.isCallable! or it.carp 'invalid constructor'
     case \do
       # `do f?` => `f?()`
-      Parens if it instanceof Existence and not it.negated
-        then Chain(it)add Call! else Call.make it
-      |>> return (_ <<< {@front, @newed})compile o
+      x = Parens if it instanceof Existence and not it.negated
+                 then Chain(it)add Call! 
+                 else Call.make it
+      return (x <<< {@front, @newed})compile o
     case \delete
       @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compilePluck o if o.level and not @void
     case \++ \--
       it.isAssignable! or @carp 'invalid ' + crement op
-      if it instanceof Var and not o.scope.check it.value, true
-        @carp "#{ crement op } of undeclared variable \"#{it.value}\""
+      if it instanceof Var and o.scope.checkReadOnly it.value
+        @carp "#{ crement op } of #that \"#{it.value}\""
       it{front} = this if @post
     case \^^ then return "#{ util \clone }(#{ it.compile o, LEVEL_LIST })"
     case \classof
@@ -883,7 +910,7 @@ class exports.Unary extends Node
       for op in ops by -1 then node = .. op.op, node, op.post 
       them[i] = if sp then lat = Splat node else node
     if not lat and (@void or not o.level)
-      it = ^^Block::<<< {lines: them, @front, +void}
+      it = Block:: with {lines: them, @front, +void}
     it.compile o, LEVEL_PAREN
 
   # `v = delete o.k`
@@ -899,7 +926,7 @@ class exports.Unary extends Node
   compileAsFunc: (o) ->
     if @op is \!
     then util \not
-    else (Fun [], Block Unary @op, Chain Var \it).compile o
+    else "(#{ (Fun [], Block Unary @op, Chain Var \it).compile o })"
     
 
 #### Binary operators
@@ -907,9 +934,15 @@ class exports.Binary extends Node
   (op, first, second) ~>
     @partial = first!? or second!?
     if not @partial
+      if \= is op.charAt op.length-1 and op.charAt(op.length-2) not in <[ = < > ! ]>
+        return Assign first.unwrap!, second, op 
       switch op
-      | \in => return new In first, second
-      | \+  =>
+      | \in        => return new In first, second
+      | \with      => return new Import (Unary \^^ first), second, false
+      | \<<< \<<<< => return Import first, second, op is \<<<<
+      | \<|        => return Block first .pipe second, op
+      | \|>        => return Block second .pipe first, \<|
+      | \+         =>
         if first instanceof Arr
           first.items.push Splat second
           return first
@@ -938,10 +971,12 @@ class exports.Binary extends Node
   COMPARER = /^(?:[!=]=|[<>])=?$/
 
   invert: ->
-    if EQUALITY.test op = @op and not COMPARER.test @second.op
+    if EQUALITY.test op = @op and not COMPARER.test @second?op
       @op = '!='charAt(op.indexOf \=) + op.slice 1
       return this
     Unary \! Parens(this), true
+
+  invertIt: -> @inverted = true; this
 
   getDefault: -> switch @op | \? \|| \&& \!? => this
 
@@ -1007,13 +1042,13 @@ class exports.Binary extends Node
 
   compileExistence: (o) ->
     if @op is \!?
-      If(Existence @first; @second) <<< {@cond, @void or not o.level}
-      |>> return _.compileExpression o
+      x = If(Existence @first; @second) <<< {@cond, @void or not o.level}
+      return x.compileExpression o
     if @void or not o.level
-      Binary \&& Existence(@first, true), @second
-      |>> return (_ <<< {+void})compileNode o
-    @first.cache o, true
-    |>> If(Existence _.0; _.1)addElse(@second)compileExpression o
+      x = Binary \&& Existence(@first, true), @second
+      return (x <<< {+void})compileNode o
+    x = @first.cache o, true
+    If(Existence x.0; x.1)addElse(@second)compileExpression o
 
   # `x instanceof [A, B]` => `x instanceof A || x instanceof B`
   compileAnyInstanceOf: (o, items) ->
@@ -1025,8 +1060,8 @@ class exports.Binary extends Node
   compileMinMax: (o) ->
     lefts = @first .cache o, true
     rites = @second.cache o, true
-    Binary @op.charAt!, lefts.0, rites.0
-    |>> If _, lefts.1 .addElse rites.1 .compileExpression o
+    x = Binary @op.charAt!, lefts.0, rites.0
+    If x, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
     args = @second & (arg || [])
@@ -1050,7 +1085,7 @@ class exports.Binary extends Node
     return x.compile o if 1 <= n < 2
     # `[x] * 2` => `[x, x]`
     if items
-      if n < 1 then return (^^Block::<<< lines: items)add(JS '[]')compile o
+      if n < 1 then return (Block:: with lines: items)add(JS '[]')compile o
       refs = []
       for item, i in items then [items[i], refs.*] = item.cache o, 1x 
       items.push JS! <<<
@@ -1086,45 +1121,14 @@ class exports.Binary extends Node
     code
 
   compilePartial: (o) ->
-    getFunc =
-      \+   : [\add]
-      \-   : [\minus \subtract]
-      \==  : [\fuzzyEquals]
-      \!=  : [\fuzzyNotEquals]
-      \=== : [\equals]
-      \!== : [\notEquals]
-      \>   : [\gt \lt]
-      \>=  : [\gte \lte]
-      \<   : [\lt \gt]
-      \<=  : [\lte \gte]
-      \&&  : [\and]
-      \||  : [\or]
-      \*   : [\multiply]
-      \/   : [\divide \divideBy]
-      \%   : [\rem \remTo]
-      \%%  : [\mod \modTo]
-      \^   : [\pow \powTo]
-      \**  : [\pow \powTo]
-      \&   : [\cons \consTo]
-      \+++ : [\append \appendTo]
-      \>?  : [\max]
-      \<?  : [\min]
-    func = getFunc[@op]
-    if func!?
-      x = Chain Var \x; y = Chain Var \y
-      switch
-      case   @first!? and @second!?
-        "#{util \curry}(function(x, y){ return #{(Binary @op, x, y).compile o}; })"
-      case @first?
-        "function(x){ return #{(Binary @op, @first, x).compile o}; }"
-      default
-        "function(x){ return #{(Binary @op, x, @second).compile o}; }"
-    else 
-      util \curry
-      switch
-      | @first!? and @second!? => util func.0 
-      | @first?                => "#{ util func.0 }(#{@first.compile o})"
-      | otherwise              => "#{ util (func.1 ? func.0)}(#{@second.compile o})"
+    x = Var \__x; y = Var \__y
+    switch
+    case  @first!? and @second!?
+      (Fun [x, y], Block((Binary @op, x, y).invertCheck this), false, true).compile o
+    case @first?
+      "(#{ (Fun [x], Block((Binary @op, @first, x).invertCheck this)).compile o })"
+    default
+      "(#{ (Fun [x], Block((Binary @op, x, @second).invertCheck this)).compile o })"
 
 #### Assign
 # Assignment to a variable/property.
@@ -1198,9 +1202,9 @@ class exports.Assign extends Node
     if lvar
       del = right.op is \delete
       if op is \=
-        o.scope.declare name
-      else unless o.scope.check name, true
-        left.carp "assignment to undeclared variable \"#name\""
+        o.scope.declare name, left, @const
+      else if o.scope.checkReadOnly name
+        left.carp "assignment to #that \"#name\""
     if o.level
       code += ", #name" if del
       code  = "(#code)" if that > (if del then LEVEL_PAREN else LEVEL_LIST)
@@ -1208,7 +1212,7 @@ class exports.Assign extends Node
 
   compileConditional: (o, left) ->
     if left instanceof Var and @logic in <[ ? !? ]> and @op is \=
-      o.scope.declare left.value
+      o.scope.declare left.value, left
     lefts = Chain(left)cacheReference o
     morph = Binary @logic, lefts.0, @<<<{-logic, left: lefts.1}
     (morph <<< {@void})compileNode o
@@ -1232,7 +1236,7 @@ class exports.Assign extends Node
     rite = @right.compile o, if len is 1 then LEVEL_CALL else LEVEL_LIST
     if left.name
       cache = "#that = #rite"
-      o.scope.declare rite = that
+      o.scope.declare rite = that, left
     else if (ret or len > 1) and (not ID.test rite or left.assigns rite)
       cache = "#{ rref = o.scope.temporary! } = #rite"
       rite  = rref
@@ -1265,7 +1269,7 @@ class exports.Assign extends Node
       else
         (inc = ivar) and start < i and inc += " + #{ i - start }"
         val = Chain rcache||=Literal(rite), [Index JS inc || i]
-      (^^@<<<{left: node, right: val, +void})compile o, LEVEL_PAREN
+      (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
 
   rendObj: (o, nodes, rite) ->
     for node in nodes
@@ -1281,7 +1285,7 @@ class exports.Assign extends Node
       node = logic <<< first: node if logic
       val  = Chain rcache||=Var(rite), [Index key.maybeKey!]
       val  = Import Obj!, val if splat
-      (^^@<<<{left: node, right: val, +void})compile o, LEVEL_PAREN
+      (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
 
 #### Import
 # Copies properties from right to left.
@@ -1461,9 +1465,9 @@ class exports.Fun extends Node
       name                    or @carp  'nameless function declaration'
       pscope is o.block.scope or @carp 'misplaced function declaration'
       @accessor              and @carp 'named accessor'
-      pscope.add name, \function
+      pscope.add name, \function, this
     if @statement or name and @labeled
-      code += ' ' + scope.add name, \function
+      code += ' ' + scope.add name, \function, this
     @void or @ctor or @newed or body.makeReturn!
     code += "(#{ @compileParams scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
@@ -1505,7 +1509,7 @@ class exports.Fun extends Node
           vr = v
         else if df
           assigns.push Assign vr, p.second, \=, p.op
-        names.push name = scope.add vr.value, \arg
+        names.push name = scope.add vr.value, \arg, p
         p.carp "duplicate parameter \"#name\"" unless dic"#name." = dic"#name." ^^^ 1
     if rest
       while splace-- then rest.unshift Arr! 
@@ -1765,7 +1769,7 @@ class exports.For extends While
     o.loop = true
     temps = @temps = []
     if idx = @index
-    then o.scope.declare idx
+    then o.scope.declare idx, this
     else temps.push idx = o.scope.temporary \i
     @addBody Block Var idx if not @body
     unless @object
@@ -2046,25 +2050,49 @@ class exports.Util extends Node
   # returning the left one.
   @Extends = -> Call.make Util(\extend), @@[0 1]
 
+#### Vars
+# Declares uninitialized variables.
+class exports.Vars extends Node
+  (@vars) ~>
+
+  children: [\vars]
+
+  makeReturn: THIS
+
+  compile: (o, level) ->
+    for v in @vars
+      v.carp 'invalid variable declaration' unless v instanceof Var
+      o.scope.declare v.value, v
+    if level then Literal \void .compile o else ''
+
 #### Parser Utils
 # Helpers for modifying nodes in [parser](../lib/parser.js).
 
 exports.L = (yylineno, node) -> node import line: yylineno + 1
 
-exports.Export = (lines) ->
-  i = -1; out = Util \out
-  while node = lines[++i]
-    if node instanceof Fun and node.name
-      lines.splice i++ 0 Assign Chain(out, [Index Key that]), Var that
-      continue
-    lines[i] =
-      if node.varName!
-      or node instanceof Assign and node.left. varName!
-      or node instanceof Class  and node.title?varName!
-        Assign Chain(out, [Index Key that]), node
-      else
-        Import out, node
-  ^^Block::<<<{lines}
+exports.Decl =
+  export: (lines) ->
+    i = -1; out = Util \out
+    while node = lines[++i]
+      if node instanceof Fun and node.name
+        lines.splice i++ 0 Assign Chain(out, [Index Key that]), Var that
+        continue
+      lines[i] =
+        if node.varName!
+        or node instanceof Assign and node.left. varName!
+        or node instanceof Class  and node.title?varName!
+          Assign Chain(out, [Index Key that]), node
+        else
+          Import out, node
+    Block:: with {lines}
+
+  const: (lines) ->
+    for node in lines
+      node.carp 'invalid constant variable declaration' unless node.op is \=
+      node.const = true
+    Block:: with {lines}
+
+  var: Vars
 
 ##### Scope
 # Regulates lexical scoping within LiveScript. As you
@@ -2075,7 +2103,11 @@ exports.Export = (lines) ->
   @variables = {}
 Scope ::=
   # Adds a new variable or overrides an existing one.
-  add: (name, type) ->
+  add: (name, type, node) ->
+    if node and t = @variables"#name."
+      if @READONLY[t] or @READONLY[type]
+        node.carp "redeclaration of #that \"#name\""
+      return name if t in <[ arg function ]>
     # Dot-suffix to bypass `Object::` members.
     @variables"#name." = type
     name
@@ -2083,14 +2115,13 @@ Scope ::=
   get: (name) -> @variables"#name."
 
   # Declares a variable unless declared already.
-  declare: (name) ->
+  declare: (name, node, constant) ->
     if @shared
       return if @check name
       scope = that
     else
       scope = this
-    unless (type = @variables"#name.") and (type in <[ var arg ]> or type.value)
-      scope.add name, \var
+    scope.add name, (if constant then \const else \var), node
 
   # Ensures that an assignment is made at the top of this scope.
   assign: (name, value) -> @add name, {value}
@@ -2112,15 +2143,19 @@ Scope ::=
   # Checks to see if a variable has already been declared.
   # Walks up the scope if `above` flag is specified.
   check: (name, above) ->
-    return found if (found = "#name." of @variables) or not above
+    return type if (type = @variables"#name.") or not above
     @parent?check name, above
+
+  checkReadOnly: (name) -> @READONLY[@check name, true]
+
+  READONLY: const: \constant, function: \function, undefined: \undeclared
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->
     usr = []; tmp = []; asn = []; fun = []
     for name, type of @variables
       name.=slice 0 -1
-      if type in <[ var reuse ]>
+      if type in <[ var const reuse ]>
         (if \_ is name.charAt 0 then tmp else usr)push name
       else if type.value
         if ~(val = entab that, tab)lastIndexOf \function( 0
@@ -2194,40 +2229,24 @@ UTILS =
   }'''
 
   compose: '''function(f, g){
-    return function(){
-      return f(g.apply(this, arguments)); 
-    }
+    return function(){ return f(g.apply(this, arguments)); }
   }'''
 
-  not: 'function(x){ return !x; }'
-  equals: '__curry(function(x, y){ return x === y; })'
-  notEquals: '__curry(function(x, y){ return x !== y; })'
-  fuzzyEquals: '__curry(function(x, y){ return x == y; })'
-  fuzzyNotEquals: '__curry(function(x, y){ return x != y; })'
-  lt: '__curry(function(x, y){ return x < y; })'
-  lte: '__curry(function(x, y){ return x <= y; })'
-  gt: '__curry(function(x, y){ return x > y; })'
-  gte: '__curry(function(x, y){ return x >= y; })'
-  add: '__curry(function(x, y){ return x + y; })'
-  minus: '__curry(function(x, y){ return x - y; })'
-  subtract: '__curry(function(x, y){ return y - x; })'
-  multiply: '__curry(function(x, y){ return x * y; })'
-  divide: '__curry(function(x, y){ return x / y; })'
-  divideBy: '__curry(function(x, y){ return y / x; })'
-  and: '__curry(function(x, y){ return x && y; })'
-  or: '__curry(function(x, y){ return x || y; })'
-  rem: '__curry(function(x, y){ return x % y; })'
-  remTo: '__curry(function(x, y){ return y % x; })'
-  mod: '__curry(function(x, y){ return (x % y + y) % y; })'
-  modTo: '__curry(function(y, x){ return (x % y + y) % y; })'
-  pow: '__curry(function(x, y){ return Math.pow(x, y); })'
-  powTo: '__curry(function(x, y){ return Math.pow(y, x); })'
-  cons: '__curry(function(x, y){ return [x].concat(y); })'
-  consTo: '__curry(function(x, y){ return [y].concat(x); })'
-  append: '__curry(function(x, y){ return x.concat(y); })'
-  appendTo: '__curry(function(x, y){ return y.concat(x); })'
-  min: '__curry(function(x, y){ return x > y ? y : x; })'
-  max: '__curry(function(x, y){ return x > y ? x : y; })'
+  flip: '''function(f){
+    return __curry(function (x, y) { return f(y, x); });
+  }'''
+
+  partialize: '''function(f, args, where){
+    return function(){
+      var params = __slice.call(arguments), i,
+          len = params.length, wlen = where.length;
+      for(i = 0; i < len; ++i) {
+        args[where[0]] = params[i]; where.shift();
+      }
+      return len < wlen && len ? __partialize(f, args, where) : f.apply(this, args);
+    };
+  }'''
+  not: '''function(x){ return !x; }'''
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"

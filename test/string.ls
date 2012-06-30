@@ -51,13 +51,11 @@ eq "values: #{ list.join ( ) }", 'values: 0,1,2,3,4,5'
 eq "values: #{ list.join ' ' }", 'values: 0 1 2 3 4 5'
 
 
-obj = {
+obj =
   name: 'Joe'
-  hi: -> "Hello #{@name}."
-  cya: -> "Hello #{@name}.".replace('Hello','Goodbye')
-}
+  toString: -> @name
+  hi: -> "Hello #this."
 eq obj.hi(), "Hello Joe."
-eq obj.cya(), "Goodbye Joe."
 
 
 eq "With #{"quotes"}", 'With quotes'
@@ -193,9 +191,17 @@ eq 'multiline nested "interpolations" work', """multiline #{
 } work"""
 
 
-throws 'unterminated interpolation on line 2' -> LiveScript.lex '"#{\n'
+compileThrows 'unterminated interpolation' 2 '"#{\n'
 
 throws "Parse error on line 1: Unexpected ')'" -> LiveScript.compile '"(#{+})"'
+
+compileThrows 'invalid variable interpolation "if"' 1 '"#if"'
+
+hi-there = 'Hi there!'
+one-two-three = 123
+
+eq 'Hi there! How are you?' "#hi-there How are you?"
+eq 'ha 123 ha' "ha #one-two-three ha"
 
 
 # Character/Word Literal
@@ -204,14 +210,6 @@ eq \c, 'c'
 eq('+', \+)
 eq '\\', [\\\].0
 eq '$', {\$}.\$
-
-eq 'AFKPUZ' [\A to \Z by 5]*''
-
-throws 'bad "to" in range on line 1'   -> LiveScript.tokens '[0 to "q"]'
-throws 'bad "by" in range on line 1'   -> LiveScript.tokens '[0 to 9 by "2"]'
-throws 'bad string in range on line 1' -> LiveScript.tokens '["a" to "bc"]'
-
-ok \\u2028, \\u2029
 
 
 # [coffee#923](https://github.com/jashkenas/coffee-script/issues/923)

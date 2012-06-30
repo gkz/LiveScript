@@ -27,6 +27,7 @@ exports import
   # The order of these passes matters--indentation must be
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (it || @tokens) ->
+    firstPass              it
     addImplicitIndentation it
     tagPostfixConditionals it
     addImplicitParentheses it
@@ -82,6 +83,20 @@ exports import
   # The current indentation level.
   dent: 0
 
+  # Map of all Identifiers
+  identifiers: {}
+
+  has-own: Object.prototype.has-own-property,
+
+  # Checks for consistent use of Identifiers with dashes
+  # Raises an error if two different identifiers mangle into the same camelCased id
+  check-consistency: (camel, id) ->
+    if @has-own.call(@identifiers, camel) and @identifiers[camel] isnt id
+      then throw new ReferenceError do
+        "Inconsistent use of #{camel} as #{id} on line #{-~@line}"
+      else @identifiers[camel] = id
+
+
   #### Tokenizers
 
   # Matches an identifying literal: variables, keywords, accessors, etc.
@@ -89,6 +104,7 @@ exports import
     [input] = match = (ID <<< lastIndex: index)exec code
     return 0 unless input
     id = match.1.replace /-+([a-zA-Z0-9$_])/g, -> it.1.toUpperCase!
+    @check-consistency id, match.1 if /-/.test match.1
     if NONASCII.test id
       try Function "var #id" catch @carp "invalid identifier \"#id\""
     {last} = this
@@ -99,12 +115,13 @@ exports import
       return input.length
     # keywords
     switch id
-    case <[ this eval super ]> then return @token(\LITERAL id, true)length
     case <[ true false on off yes no null void undefined arguments debugger ]> 
       tag = \LITERAL
-    case \new \do \typeof \delete then tag = \UNARY
-    case \return \throw           then tag = \HURL
-    case \break  \continue        then tag = \JUMP
+    case \new \do \typeof \delete                      then tag = \UNARY
+    case \return \throw                                then tag = \HURL
+    case \break  \continue                             then tag = \JUMP
+    case \var \const \export                           then tag = \DECL
+    case \this \eval \super then return @token(\LITERAL id, true)length
     case \for  then @seenFor = true; fallthrough
     case \then then @wantBy  = false
     case \catch \function then id = ''
@@ -121,14 +138,14 @@ exports import
       fallthrough
     case \instanceof
       id  = @tokens.pop!1 + id if last.1 is \!
-      tag = \RELATION
+      tag = if @tokens[*-1].0 is \( then \BIOPR else \RELATION
     case \not
       return (last.1 = \!==; 3) if last.alias and last.1 is \===
       tag = \UNARY; id = \!
     case \and \or \is \isnt
       @unline!
       tag = if id in <[  is isnt ]> then \COMPARE else \LOGIC
-      tag = \BIOP if @last.0 is \(
+      tag = \BIOP if last.0 is \(
       @token tag, switch id
       | \is     => \===   
       | \isnt   => \!==
@@ -140,7 +157,14 @@ exports import
     case \until  then tag = \WHILE
     case \import
       id = \<<<
-      able @tokens or @token \LITERAL \this
+      if last.0 is \(
+        tag = \BIOP
+      else 
+        able @tokens or @token \LITERAL \this
+    case \with
+      tag = | able @tokens => \CLONEPORT
+            | last.0 is \( => \BIOP
+            | otherwise    => \WITH
     case \when
       tag = \CASE; fallthrough
     case \case
@@ -159,10 +183,10 @@ exports import
       # contextual keywords (reserved only in specific places)
       switch id
       case \own then tag = \OWN if last.0 is \FOR
-      case \otherwise 
+      case \otherwise \_
         if last.0 in <[ CASE | ]>
           last.0 = \DEFAULT
-          return 9
+          return id.length
       case \all then if last.1 is \<<<
         last.1 += \<
         return 4
@@ -188,6 +212,8 @@ exports import
       case \ever then if last.0 is \FOR
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
     tag ||= match.1.toUpperCase!
+    if tag in <[ COMPARE LOGIC RELATION ]> and last.0 is \(
+      tag = if tag is \RELATION then \BIOPR else \BIOP
     @unline! if tag in <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
                           IN OF FROM TO BY EXTENDS ]>
     @token tag, id
@@ -371,7 +397,7 @@ exports import
     case \|              
       tag = \CASE
       return sym.length if @doCase! 
-    case \|> \|>>        then tag = \PIPE
+    case \|>             then tag = \PIPE
     case \`              then tag = \BACKTICK
     case \<< \>>         then tag = \COMPOSE
     case \<|             then tag = \BACKPIPE
@@ -381,13 +407,17 @@ exports import
     case \&&& \||| \^^^  then tag = \BITWISE
     case \^^             then tag = \CLONE
     case \** \^          then tag = \POWER
-    case \?  \!?         then tag = \LOGIC if @last.spaced
+    case \?  \!?         
+      if   @last.0 is \(
+      then create-it-func!
+      else tag = \LOGIC if @last.spaced
     case \/ \% \%%       then tag = \MATH
     case \+++            then tag = \CONCAT
     case \++ \--         then tag = \CREMENT
     case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
     case \.
+      create-it-func! if @last.0 is \(
       @last.0 = \? if @last.1 is \?
       tag = \DOT
     case \,
@@ -425,9 +455,12 @@ exports import
         return 9e9
       fallthrough
     case \] \)
-      if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE
-                                     CONCAT COMPOSE RELATION PIPE BACKPIPE ]>
-        @tokens[*-1].0 = \BIOP
+      if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
+                               COMPOSE RELATION PIPE BACKPIPE IMPORT CLONEPORT ASSIGN ]>
+        @tokens[*-1].0 = switch @last.0
+          | \RELATION => \BIOPR
+          | \PIPE     => @parameters false, -1; \BIOPP
+          | otherwise => \BIOP
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>
       # change id@! to calls (id! already makes calls)
@@ -509,7 +542,7 @@ exports import
       return 1 if @dotcat val
       tag = \UNARY
     case \-> \~> \--> \~~> then up = \->; fallthrough
-    case \<- \<~ then @parameters tag = up || \<-
+    case \<- \<~ \<-- \<~~ then @parameters tag = up || \<-
     case \::     then up = \prototype; fallthrough
     case \..     then @adi!; tag = \ID; val = up || \constructor
     default switch val.charAt 0
@@ -518,10 +551,15 @@ exports import
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
     if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT 
-                 COMPOSE RELATION PIPE BACKPIPE ]> and @last.0 is \(
-      tag = \BIOP
+                 COMPOSE RELATION PIPE BACKPIPE IMPORT ]> and @last.0 is \(
+      tag = if tag is \BACKPIPE then \BIOPBP else \BIOP
     @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE 
                           MATH POWER IMPORT SHIFT BITWISE ]>
+    ~function create-it-func
+      @token \PARAM( \(  
+      @token \)PARAM \)  
+      @token \->     \-> 
+      @token \ID     \it
     @token tag, val
     sym.length
 
@@ -562,15 +600,17 @@ exports import
     | \NEWLINE => @tokens.length--
 
   # (Re)tags function parameters.
-  parameters: !(arrow) ->
+  parameters: !(arrow, offset) ->
     if @last.0 is \) is @last.1
       @lpar.0 = \PARAM(
       @last.0 = \)PARAM
       return
     if arrow is \-> then @token \PARAM( '' else
       for t, i in @tokens by -1 when t.0 in <[ NEWLINE INDENT THEN => ( ]> then break
-      @tokens.splice i+1 0 [\PARAM( '' t.2]
-    @token \)PARAM ''
+      @tokens.splice (i+1), 0 [\PARAM( '' t.2]
+    if   offset
+    then @tokens.splice (@tokens.length + offset), 0 [\)PARAM '' t.2]
+    else @token \)PARAM ''
 
   # Expands variables and expressions inside double-quoted strings or heregexes
   # using Ruby-like notation for substitution of arbitrary expressions.
@@ -589,10 +629,11 @@ exports import
         parts.push [\S; @countLines str.slice 0 i; @line]
         return parts <<< size: pos + i + end.length
       case \#
-        if id = (ID <<< lastIndex: i+1)exec(str)1
-          break if id is \this or id not in KEYWORDS
-          i += id.length
-          continue
+        if id = id-orig = (ID <<< lastIndex: i+1)exec(str)1
+          id.=replace /-+([a-zA-Z0-9$_])/g, -> it.1.toUpperCase!
+          break if id is \this
+          try Function "'use strict'; var #id"; break
+          @carp "invalid variable interpolation \"#id\""
         continue unless \{ is str.charAt i+1
       case \\ then ++i; fallthrough
       default continue
@@ -600,10 +641,10 @@ exports import
       if i or nested and not stringified
         stringified = parts.push [\S; @countLines str.slice 0 i; @line]
       if id
-        str.=slice delta = i + 1 + id.length
+        str.=slice delta = i + 1 + id-orig.length
         parts.push [\TOKENS nested = [[\ID id, @line]]]
       else
-        clone  = ^^exports <<< {+inter, @emender}
+        clone  = exports with {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
         delta  = str.length - clone.rest.length
         {rest: str, @line} = clone
@@ -701,7 +742,7 @@ function carp msg, lno then throw SyntaxError "#msg on line #{-~lno}"
 function able tokens, i ? tokens.length, call
   [tag] = token = tokens[i-1]
   tag in <[ ID ] ? ]> or if call
-    then token.callable or tag in <[ ) )CALL ]> and token.1
+    then token.callable or tag in <[ ) )CALL BIOPBP ]> and token.1
     else tag in <[ } ) )CALL STRNUM LITERAL WORDS ]>
 
 #### String Manipulators
@@ -770,14 +811,24 @@ character = if JSON!? then uxxxx else ->
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
 
-# Wrap single-line blocks with regular INDENT/DEDENT pairs.
-# Because our grammar is LALR(1), it can't handle some sequences
+# Pass before the other rewriting
+!function firstPass tokens
+  prev = [\NEWLINE \\n 0]
+  i = 0
+  while token = tokens[++i]
+    [tag, val, line] = token
+    if val is \. and token.spaced and prev.spaced
+      tokens[i] = [\COMPOSE \<< line] 
+    prev = token
+    continue
+
 # that lack ending delimiters.
 !function addImplicitIndentation tokens
   i = 0
   while token = tokens[++i]
     [tag] = token
-    continue unless tag in <[ THEN -> ELSE DEFAULT TRY CATCH FINALLY ]>
+    continue unless tag in
+      <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY CONST EXPORT ]>
     switch next = tokens[i+1]0
     case \IF then continue if tag is \ELSE
     case \INDENT \THEN
@@ -789,7 +840,7 @@ character = if JSON!? then uxxxx else ->
     else tokens.splice ++i, 0 indent
     switch
     # ->,
-    case next in <[ DOT \? \, \PIPE \BACKPIPE]> then --i; fallthrough
+    case next in <[ DOT ? , PIPE BACKPIPE ]> then --i; fallthrough
     # -> 0,
     case next in <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
       go 0 i+=2; ++i
@@ -846,11 +897,15 @@ character = if JSON!? then uxxxx else ->
     tokens.splice i++, 0 [\CALL( '' token.2]
     detectEnd tokens, i, ok, go
   function ok token, i
-    return true if not skipBlock and token.alias and token.1 in <[ && || ]>
-                or token.0 in [\PIPE \BACKPIPE]
+    tag = token.0
+    return true if tag in <[ POST_IF PIPE BACKPIPE ]>
+                or not skipBlock and token.alias and token.1 in <[ && || ]>
     pre = tokens[i-1]
-    switch token.0
-    case \DOT \? then return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
+    switch tag
+    case \NEWLINE
+      return pre.0 is not \,
+    case \DOT \?
+      return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
     case \SWITCH                         then seenSwitch := true; fallthrough
     case \IF \CLASS \FUNCTION \LET \WITH then skipBlock  := true
     case \CASE
@@ -863,8 +918,9 @@ character = if JSON!? then uxxxx else ->
     case \WHILE
       return false if token.done
       fallthrough
-    case <[ NEWLINE POST_IF FOR BY TO ]>
-      return pre.0 is not \,
+    case \FOR
+      skipBlock := true
+      return able tokens, i or pre.0 is \CREMENT
     false
   !function go token, i then tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
 
@@ -924,15 +980,20 @@ character = if JSON!? then uxxxx else ->
       and  tokens[i+4]?0 is \]))
         [fromNum, char] = decode token.1, lno
         [toNum, tochar] = decode tokens[i+1].1, lno
-        carp 'bad "to" in range' if char ^^^ tochar
-        if byNum = tokens[i+2]?0 is \RANGE_BY
-          carp 'bad "by" in range' if isNaN byNum = tokens[i+3]?1
-        ts = []; toNum -= token.op is \til and 1e-15
-        for n from fromNum to toNum by +byNum or 1
-          carp 'range limit exceeded' lno if 0x10000 < ts.push \
-            [\STRNUM, if char then character n else "#n", lno] [\, \, lno]
+        carp 'bad "to" in range' lno if char ^^^ tochar
+        byNum = 1
+        if byp = tokens[i+2]?0 is \RANGE_BY
+          carp 'bad "by" in range' tokens[i+2]2 unless byNum = +tokens[i+3]?1
+        ts  = []
+        enc = if char then character else String
+        add = !->
+           if 0x10000 < ts.push [\STRNUM enc n; lno] [\, \, lno]
+             carp 'range limit exceeded' lno
+        if token.op is \to
+        then for n from fromNum to  toNum by byNum then add!
+        else for n from fromNum til toNum by byNum then add!
         ts.pop! or carp 'empty range' lno
-        tokens.splice i, if byNum then 4 else 2, ...ts
+        tokens.splice i, 2 + 2 * byp, ...ts
         i += ts.length - 1
       else
         token.0 = \STRNUM
@@ -961,10 +1022,6 @@ character = if JSON!? then uxxxx else ->
     case \BIOP     
       if not token.spaced and token.1 in <[ + - ]> and tokens[i+1].0 isnt \)  
         tokens[i].0 = \+- 
-      continue
-    case \DOT
-      if token.spaced and tokens[i-1].spaced
-        tokens[i] = [\COMPOSE \<< token.2]
       continue
     default continue
     if token.spaced and tokens[i+1]0 in ARG
@@ -996,13 +1053,13 @@ KEYWORDS_SHARED = <[
   true false null this void super return throw break continue
   if else for while switch case default try catch finally class extends
   new do delete typeof in instanceof import function
-  let with debugger export
+  let with var const export debugger
 ]>
 
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid runtime errors.
-KEYWORDS_UNUSED = <[ var  const enum  implements interface
-                     package private protected public static yield ]>
+KEYWORDS_UNUSED =
+  <[ enum implements interface package private protected public static yield ]>
 
 KEYWORDS = KEYWORDS_SHARED +++ KEYWORDS_UNUSED
 
@@ -1016,9 +1073,9 @@ SYMBOL = //
   [-+*/^]= | %%?= | ::?=      # compound assign
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | &&& | \|\|\| | \^\^\^       # bitwise
-| \^\^                          # clone
+| \^\^                        # clone
 | \+\+\+                      # list concat 
-| --> | ~~>                   # curry
+| --> | ~~> | <-- | <~~       # curry 
 | ([-+&|:])\1                 # crement / logic / `prototype`
 | %%                          # mod
 | &                           # cons
@@ -1034,7 +1091,7 @@ SYMBOL = //
 | << | >>                     # compose
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
-| \|>>?                       # pipe
+| \|>                         # pipe
 | \|                          # case
 | =>                          # then
 | \*\*=? | \^                 # pow
@@ -1082,4 +1139,4 @@ CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
 ARG = CHAIN +++ <[ ... UNARY CREMENT PARAM( FUNCTION
-                      IF SWITCH TRY CLASS RANGE LABEL DO ]>
+                      IF SWITCH TRY CLASS RANGE LABEL DO BIOPBP ]>

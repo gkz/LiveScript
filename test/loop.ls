@@ -98,6 +98,8 @@ eq '123', [i for i from 1 til 4     ].join ''
 eq '036', [i for i from 0 til 9 by 3].join ''
 
 # Almost never mess with binary `in`/`of` and variable `by`.
+all = from = to = by = 1
+
 for i to 0
   ok 0 of [0]
   ok 0 in [0]
@@ -127,10 +129,6 @@ eq evens + '', '4,6,8'
 # Backward traversing.
 odds = [num for num in [0, 1, 2, 3, 4, 5] by -2]
 eq odds + '', '5,3,1'
-
-
-# all/from/to/by aren't reserved off-context.
-all = from = to = by = 1
 
 
 # Nested comprehensions.
@@ -221,8 +219,13 @@ new -> do ~>
     1
 
 
-throws    'stray break on line 1' -> LiveScript.compile \break
-throws 'stray continue on line 1' -> LiveScript.compile \continue
+compileThrows 'stray break'    1 \break
+compileThrows 'stray continue' 1 \continue
+
+
+# Play nice with implicit calls.
+ok true, while 0 then
+ok [] = for i to 0 then
 
 
 ### Line folding after `for` prepositions

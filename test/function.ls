@@ -220,12 +220,12 @@ eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
 
 
-throws 'inconvertible statement on line 1', -> LiveScript.compile 'r = return'
-throws 'inconvertible statement on line 2', -> LiveScript.compile '''
+compileThrows 'inconvertible statement' 1 'b = break'
+compileThrows 'inconvertible statement' 2 '''
   r =
     return
 '''
-throws 'inconvertible statement on line 3', -> LiveScript.compile '''
+compileThrows 'inconvertible statement' 3 '''
   r = if 1
     2 +
     return
@@ -326,7 +326,7 @@ eq arguments,
 ok (@arguments, @eval) ->
 
 
-throws 'duplicate parameter "a" on line 1', -> LiveScript.compile '(a, a) ->'
+compileThrows 'duplicate parameter "a"' 1 '(a, a) ->'
 
 
 # Fun with radical parameters.
@@ -342,8 +342,8 @@ eq void Function() ->
 
 
 ### Invalid call detection
-throws 'invalid callee on line 1'      -> LiveScript.compile '[]()'
-throws 'invalid constructor on line 1' -> LiveScript.compile 'new 42'
+compileThrows 'invalid callee'      1 '[]()'
+compileThrows 'invalid constructor' 1 'new 42'
 
 
 ### `new` block
@@ -360,7 +360,7 @@ h = (f, ...a) -> f a
 eq ok, do
   (a, b) <- g \a, \b
   eq b, \b
-  ...d <- h ..., a
+  ...d <- h _, a
   eq d.0.0, \a
   ok
 
@@ -378,6 +378,33 @@ eq 3 do
 
 eq 6 (a <- g 6; a)
 
+
+addArr = do 
+  (x, y) <-- map _, [2 3 4]
+  x + y
+
+eq 5 addArr.0 3
+eq 5 addArr.1 2
+eq 5 addArr.2 1
+
+t-obj = 
+  z: 10
+  bound: ->
+    (x, y) <~~ map _, [2 3 4]
+    x * y * this.z
+  unbound: ->
+    (x, y) <-- map _, [2 3 4]
+    x * y * this.z
+
+timesArr = t-obj.bound!
+eq 60 timesArr.0 3
+eq 60 timesArr.1 2
+eq 60 timesArr.2 1.5
+
+timesArr = t-obj.unbound!
+ok isNaN timesArr.0 3
+ok isNaN timesArr.1 2
+ok isNaN timesArr.2 1.5
 
 ### `function`
 new
@@ -401,6 +428,27 @@ new
   function triple a  then a * 3
   eq 4, double 2
   eq 9, triple 3
+
+compileThrows 'redeclaration of function "f"' 2 '''
+  f = 0
+  function f then
+'''
+compileThrows 'redeclaration of function "f"' 2 '''
+  function f
+    f = 1
+'''
+compileThrows 'redeclaration of function "f"' 2 '''
+  function f then
+  f = 2
+'''
+compileThrows 'redeclaration of function "f"' 1 '''
+  function f f then
+'''
+compileThrows 'increment of function "f"' 2 '''
+  function f then
+  ++f
+'''
+compileThrows 'misplaced function declaration' 2 'if 1\n function F then'
 
 
 ### `let`
@@ -435,8 +483,9 @@ with o = {}
   @b = 2
 eq o.a + o.b, 3
 eq ok, with ok then this
-ok with ok
+x = with ok
   this is ok
+ok x
 
 
 ### `@@`
@@ -597,18 +646,56 @@ eq 6 plusOneTimesTwo 2
 pott = timesTwo . plusOne
 eq 6 pott 2
 
+eq 'true,false,true,false' "#{ map (is \function) . (typeof), [->, 2, ~>, 3] }"
+
 even = (x) -> x % 2 == 0
 odd = (not) . even
 ok odd 3
 ok not odd 2
 
 ### infix calls
-add = (x, y) -> x + y
-times = (x, y) -> x * y
-elem = (x, xs) -> x in xs
+add = (x, y) --> x + y
+times = (x, y) --> x * y
+elem = (x, xs) --> x in xs
 
 eq 7, 3 `add` 4
 eq 8, 3 + 2 `add` add 2 1
 eq 25, 2 `add` 3 + 4 `times` 5
 eq 25, 2 `add` 3 `times` 5
 ok 3 `elem` [1 to 10]
+
+eq 5 (`add`) 2 3
+eq 5 (2 `add`) 3
+eq 5 (`add` 3) 2
+
+ok (`elem` [1 to 10]) 3
+
+### implicit call/lookup
+obj =
+  a: 2
+  b: -> 5
+  c: (x, y) -> x + y
+
+eq 2 (.a) obj 
+eq 5 (.b!) obj
+eq 7 (.c 3 4) obj
+
+eq '5,1,7'       "#{ map (.length),  [[1 to 5] [1] [1 to 7]] }"
+eq '1|2|3,1,1|2' "#{ map (.join \|), [[1 to 3] [1] [1 to 2]] }"
+
+eq '3,2,,0' "#{ map (?p), [{p: 3}, {p: 2}, , {p: 0}] }"
+
+### partialization
+three-add = (x, y, z) -> x + y + z
+g = three-add 2, _, 10
+eq 20 g 8
+
+h = three-add 2, _, _
+f = h _, 6
+eq 10 f 2
+
+two-add = (x = 10, y) -> x + y
+g = two-add _, 4
+eq 14 g!
+
+function map f, xs then [f x for x in xs]
