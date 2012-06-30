@@ -1589,33 +1589,41 @@ class exports.While extends Node
 
   makeReturn: ->
     if it
-    then @body.makeReturn it
-    else @getJump! or @returns = true
+      @body.makeReturn it
+      @else?makeReturn it
+    else
+      @getJump! or @returns = true
     this
 
   compileNode: (o) ->
     o.loop = true
     @test and if @un then @test.=invert! else @anaphorize!
-    return 'do {' + @compileBody (o.indent += TAB; o), @test if @post
+    return 'do {' + @compileBody (o.indent += TAB; o) if @post
     test = @test?compile o, LEVEL_PAREN or ''
-    head = if @update
-    then "for (;#{ test and ' ' + test }; #{ that.compile o, LEVEL_PAREN }"
-    else if test then "while (#test" else 'for (;;'
+    unless @update or @else
+      head = if test then "while (#test" else 'for (;;'
+    else
+      head = 'for ('
+      head += "#{ @yet = o.scope.temporary \yet } = true" if @else
+      head += ";#{ test and ' ' + test };"
+      head += ' ' + that.compile o, LEVEL_PAREN if @update
     head + ') {' + @compileBody (o.indent += TAB; o)
 
-  compileBody: (o, potest) ->
-    o <<< {+\break, +\continue}
-    {lines} = @body; code = ret = ''
+  compileBody: (o) ->
+    o.break = o.continue = true
+    {body: {lines}, yet, tab} = this
+    code = ret = ''
     if @returns
       lines[*-1]?=makeReturn res = o.scope.assign \__results '[]'
-      ret = "\n#{@tab}return #{ res or '[]' };"
-    lines.unshift JS "#{ run = o.scope.temporary \run } = true;" if @else
-    code += "\n#that\n#{@tab}" if @body.compile o, LEVEL_TOP
+      ret = "\n#{tab}return #{ res or '[]' };"
+      @else?makeReturn!
+    yet and lines.unshift JS "#yet = false;"
+    code += "\n#that\n#tab" if @body.compile o, LEVEL_TOP
     code += \}
-    code += " while (#{ potest.compile o<<<{@tab} LEVEL_PAREN });" if potest
-    if run
-      @else.makeReturn! if @returns
-      code += " if (!#run) #{ @compileBlock o, @else }"
+    code += " while (#{ @test.compile o<<<{tab} LEVEL_PAREN });" if @post
+    if yet
+      code += " if (#yet) #{ @compileBlock o, @else }"
+      o.scope.free yet
     code + ret
 
 #### For
@@ -1664,11 +1672,19 @@ class exports.For extends While
           temps.push lvar = o.scope.temporary \len
           vars = "#idx = 0, #lvar = #srcPart.length"
           cond = "#idx < #lvar"
-    head = 'for (' + if @object then "#idx in #srcPart" else
+    @else and @yet = o.scope.temporary \yet
+    head = 'for ('
+    head += "#idx in " if @object
+    head += "#that = true, " if @yet
+    if @object
+      head += srcPart
+    else
       step is pvar or vars += ', ' + step
-      "#vars; #cond; " + if 1 == Math.abs pvar
-      then (if pvar < 0 then \-- else \++) + idx
-      else idx + if pvar < 0 then ' -= ' + pvar.slice 1 else ' += ' + pvar
+      head += "#vars; #cond; " + if 1 == Math.abs pvar
+        then (if pvar < 0 then \-- else \++) + idx
+        else idx + if pvar < 0
+          then ' -= ' + pvar.slice 1
+          else ' += ' + pvar
     @own and head += ") if (#{ o.scope.assign \__own '{}.hasOwnProperty' }
                             .call(#svar, #idx)"
     head += ') {'
