@@ -54,6 +54,9 @@ for nonref, i of <[ 0 f() this true ]>
 
 compileThrows 'assignment to undeclared "Math"' 1 'Math ||:= 0'
 
+compileThrows 'invalid assign'    1 'f() ?=x'
+compileThrows 'invalid accessign' 1 'f()?= x'
+
 
 # Empty assignments
 {} = -> /* will be front and should be wrapped */
