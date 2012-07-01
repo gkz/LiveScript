@@ -185,11 +185,10 @@ eq λ(), 7
 compileThrows 'invalid identifier "♪"' 1 'ƒ　♪　♯'
 
 
-# [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)
-eq '''
-(function(){});
-null;
-''' Coco.compile '''
--> void;
-null
+# - [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)
+# - Ignore top-level `void`s.
+eq '(function(){});' Coco.compile '''
+  -> void;
+  void;
+  void
 ''' bare

@@ -311,8 +311,12 @@ class exports.Literal extends Atom
   compile: (o, level ? o.level) ->
     switch val = "#{@value}"
     case \this then return o.scope.fun?bound or val
-    case \void then val += ' 8'; fallthrough
-    case \null then @carp 'invalid use of ' + @value if level is LEVEL_CALL
+    case \void
+      return '' unless level
+      val += ' 8'
+      fallthrough
+    case \null
+      @carp 'invalid use of ' + @value if level is LEVEL_CALL
     case \debugger then if level
       return "(function(){\n#TAB#{o.indent}debugger;\n#{o.indent}}())"
     case \* then @carp 'stray star'
