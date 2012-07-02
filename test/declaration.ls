@@ -77,3 +77,13 @@ let
   ok a is b is c is d is e is void
 
 compileThrows 'invalid variable declaration' 2 'var\n  0'
+
+
+### with const flag
+
+throws 'redeclaration of constant "z" on line 2' ->
+  LiveScript.compile 'z = 1\nz = 2' {+\const}
+throws 'increment of constant "z" on line 2'  ->
+  LiveScript.compile 'z = 9\nz++'   {+\const}
+throws 'assignment to constant "z" on line 2' ->
+  LiveScript.compile 'z = 1\nz := 2' {+\const}

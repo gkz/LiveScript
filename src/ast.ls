@@ -14,7 +14,7 @@
 # scope, and indentation level.
 (Node = -> ...):: =
   compile: (options, level) ->
-    o = {}; for key, o[key] of options then continue
+    o = {} <<< options
     o.level? = level
     node = @unfoldSoak o or this
     # If a statement appears within an expression, wrap it in a closure.
@@ -100,8 +100,8 @@
     @[@aSource] <<< {+cond}
 
   # Throws a syntax error, appending `@line` number to the message.
-  carp: ->
-    throw SyntaxError "#it on line #{ @line or @traverseChildren -> it.line }"
+  carp: (msg, type = SyntaxError) ->
+    throw type "#msg on line #{ @line or @traverseChildren -> it.line }"
 
   # Defines delegaters.
   delegate: !(names, fn) ->
@@ -884,11 +884,9 @@ class exports.Unary extends Node
       @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compilePluck o if o.level and not @void
     case \++ \--
-      if o.scope.variables["#{it.value}."]
-        throw new ReferenceError "Conflict definitions of `#{it.value}`"
       it.isAssignable! or @carp 'invalid ' + crement op
       if it instanceof Var and o.scope.checkReadOnly it.value
-        @carp "#{ crement op } of #that \"#{it.value}\""
+        @carp "#{ crement op } of #that \"#{it.value}\"" ReferenceError
       it{front} = this if @post
     case \^^ then return "#{ util \clone }(#{ it.compile o, LEVEL_LIST })"
     case \classof
@@ -1168,8 +1166,6 @@ class exports.Assign extends Node
 
   compileNode: (o) ->
     left = @left.expandSlice(o, true)unwrap!
-    if o.scope.variables["#{left.value}."]
-      throw new ReferenceError "Conflict definitions of `#{left.value}`"
     unless @right
       left.isAssignable! or left.carp 'invalid unary assign'
       [left, @right] = Chain left .cacheReference o
@@ -1206,9 +1202,9 @@ class exports.Assign extends Node
     if lvar
       del = right.op is \delete
       if op is \=
-        o.scope.declare name, left, @const
+        o.scope.declare name, left, (@const or o.const)
       else if o.scope.checkReadOnly name
-        left.carp "assignment to #that \"#name\""
+        left.carp "assignment to #that \"#name\"" ReferenceError
     if o.level
       code += ", #name" if del
       code  = "(#code)" if that > (if del then LEVEL_PAREN else LEVEL_LIST)

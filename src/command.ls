@@ -34,6 +34,7 @@ global import
   version     : 'display version'
   help        : 'display this'
   prelude     :['automatically import prelude.ls' '' \d]
+  const       :['compile all variables as constants' '' \k]
 
 die "Unrecognized option(s): #that\n\n#{help!}" if o.$unknowns * ' '
 
@@ -90,7 +91,7 @@ switch
 # Compile a single source script, containing the given code, according to the
 # requested options.
 !function compileScript filename, input, base
-  options = {filename, o.bare}
+  options = {filename, o.bare, o.const}
   t       = {input, options}
   try
     LiveScript.emit \lex t
