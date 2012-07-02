@@ -1133,7 +1133,7 @@ class exports.Binary extends Node
 #### Assign
 # Assignment to a variable/property.
 class exports.Assign extends Node
-  (@left, rite, @op or \=, @logic or @op.logic) ~>
+  (@left, rite, @op or \=, @logic or @op.logic, @defParam) ~>
     @op += ''
     @[if rite instanceof Node then \right else \unaries] = rite
 
@@ -1202,7 +1202,7 @@ class exports.Assign extends Node
     if lvar
       del = right.op is \delete
       if op is \=
-        o.scope.declare name, left, (@const or o.const)
+        o.scope.declare name, left, (@const or not @defParam and o.const)
       else if o.scope.checkReadOnly name
         left.carp "assignment to #that \"#name\"" ReferenceError
     if o.level
@@ -1508,7 +1508,7 @@ class exports.Fun extends Node
           assigns.push Assign vr, if df then Binary p.op, v, p.second else v
           vr = v
         else if df
-          assigns.push Assign vr, p.second, \=, p.op
+          assigns.push Assign vr, p.second, \=, p.op, true
         names.push name = scope.add vr.value, \arg, p
         p.carp "duplicate parameter \"#name\"" unless dic"#name." = dic"#name." ^^^ 1
     if rest

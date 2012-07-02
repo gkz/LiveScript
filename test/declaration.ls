@@ -87,3 +87,10 @@ throws 'increment of constant "z" on line 2'  ->
   LiveScript.compile 'z = 9\nz++'   {+\const}
 throws 'assignment to constant "z" on line 2' ->
   LiveScript.compile 'z = 1\nz := 2' {+\const}
+
+eq '''(function(n){
+  n == null && (n = 2);
+  return n + 1;
+});''' LiveScript.compile '(n = 2) -> n + 1' {+\const, +bare}
+
+
