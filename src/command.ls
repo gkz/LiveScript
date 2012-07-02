@@ -93,10 +93,6 @@ switch
   options = {filename, o.bare}
   t       = {input, options}
   try
-    t.input = '''
-      if   window?
-      then prelude.installPrelude window
-      else (require 'prelude-ls').installPrelude global\n''' + t.input if o.prelude
     LiveScript.emit \lex t
     t.tokens = LiveScript.tokens t.input, raw: o.lex
     if o.lex or o.tokens
@@ -104,6 +100,10 @@ switch
       throw
     LiveScript.emit \parse t
     t.ast = LiveScript.ast t.tokens
+    if o.prelude 
+      t.ast.lines.unshift LiveScript.ast LiveScript.tokens '''if   window?
+          then prelude.installPrelude window
+          else (require 'prelude-ls').installPrelude global'''
     if o.ast
       say if o.json then t.ast.stringify 2 else ''trim.call t.ast
       throw
