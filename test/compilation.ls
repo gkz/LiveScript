@@ -177,3 +177,14 @@ null
 throws "Parse error on line 1: Unexpected 'ID'" -> LiveScript.compile 'a--b = 1'
 
 throws "Inconsistent use of encodeURL as encode-u-r-l on line 1" -> LiveScript.compile 'encode-URL is encode-u-r-l'
+
+# vars are immutable
+throws "Conflicting definitions of `z`" -> LiveScript.compile 'z = 1\nz = 2'
+throws "Conflicting definitions of `z`" -> LiveScript.compile 'z = 9\nz++'
+throws "Conflicting definitions of `z`" -> LiveScript.compile 'z = 6\n++z'
+throws "Conflicting definitions of `z`" -> LiveScript.compile 'z = 4\nz--'
+throws "Conflicting definitions of `z`" -> LiveScript.compile 'z = 12\n--z'
+throws "Conflicting definitions of `z`" -> LiveScript.compile 'z = 2\nz *= 7'
+throws "Conflicting definitions of `z`" -> LiveScript.compile 'z = 4\nz /= 2'
+throws "Conflicting definitions of `z`" -> LiveScript.compile 'z = 4\nz ^= 2'
+throws "Conflicting definitions of `z`" -> LiveScript.compile 'z = \\45\n!! = z'

@@ -884,6 +884,8 @@ class exports.Unary extends Node
       @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compilePluck o if o.level and not @void
     case \++ \--
+      if o.scope.variables["#{it.value}."]
+        throw new ReferenceError "Conflict definitions of `#{it.value}`"
       it.isAssignable! or @carp 'invalid ' + crement op
       if it instanceof Var and o.scope.checkReadOnly it.value
         @carp "#{ crement op } of #that \"#{it.value}\""
@@ -1166,6 +1168,8 @@ class exports.Assign extends Node
 
   compileNode: (o) ->
     left = @left.expandSlice(o, true)unwrap!
+    if o.scope.variables["#{left.value}."]
+      throw new ReferenceError "Conflict definitions of `#{left.value}`"
     unless @right
       left.isAssignable! or left.carp 'invalid unary assign'
       [left, @right] = Chain left .cacheReference o
