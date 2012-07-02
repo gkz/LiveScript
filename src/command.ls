@@ -93,7 +93,10 @@ switch
   options = {filename, o.bare}
   t       = {input, options}
   try
-    t.input = 'import prelude\n' + t.input if o.prelude 
+    t.input = '''
+      if   window?
+      then prelude.installPrelude window
+      else (require 'prelude-ls').installPrelude global\n''' + t.input if o.prelude
     LiveScript.emit \lex t
     t.tokens = LiveScript.tokens t.input, raw: o.lex
     if o.lex or o.tokens
