@@ -101,6 +101,8 @@ eq 42, do(0; parent.child.~method)
 eq 42, do(0; parent.child~"me#{'th'}od")
 eq 42, parent.child. ~ [\method] null
 
+compileThrows 'invalid assign' 1 'o~m=g'
+
 
 # Dots have to workaround syntax error when accessing a simple number.
 eq '0 .go;'  , LiveScript.compile '0.go', {+bare}

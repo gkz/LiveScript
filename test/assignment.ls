@@ -77,6 +77,10 @@ lala ::= other: true
 ok lala::other
 ok fafa.other
 
+compileThrows 'invalid assign'    1 'f() ?=x'
+compileThrows 'invalid accessign' 1 'f()?= x'
+
+
 # Empty assignments
 {} = -> /* will be front and should be wrapped */
 
@@ -254,6 +258,8 @@ eq \e a.b.c
 
 a.=b <<< {\c}
 eq \c a.c
+
+compileThrows 'assignment to undeclared "a"' 1 'a.=b'
 
 
 ### Subdestructuring

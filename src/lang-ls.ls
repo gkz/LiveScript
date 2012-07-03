@@ -4,8 +4,8 @@ tint = (ext, shortcuts, fallthroughs) ->
   for rule in shortcuts when rule.length < 4 then rule.splice 2 0 0
   PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
 
-ident = /(?:[$A-Za-z_\x7f-\uffff][$\w\x7f-\uffff]*)/$
-kwend = /(?![$\w\x7f-\uffff])/$
+ident = /(?:(?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+)/$
+kwend = /(?!(?!\s)[$\w\xAA-\uFFDC])/$
 
 ### Main
 tint \ls [
@@ -15,9 +15,9 @@ tint \ls [
   [\lang-ls-at //(^ @@? #ident? )// \@]
   [\com /^#.*/ \#]
   [\typ // ^ (?
-  : 0x[\dA-Fa-f][\dA-Fa-f_]*                
-  | (\d*) ~ ([\dA-Za-z]\w*)                 
-  | ( (\d[\d_]*)(\.\d[\d_]*)? (?:e[+-]?\d[\d_]*)? ) [$\w]*
+  : 0x[\da-f][\da-f_]*
+  | (?:[2-9]|[12]\d|3[0-6]) r [\da-z][\da-z_]*
+  | \d[\d_]*(?:\.\d[\d_]*)? (?:e[+-]?\d[\d_]*)? [\w$]*
   ) //i \0123456789]
   [\lang-js /^`([^\\`]*(?:\\[\S\s][^\\`]*)*)`/ \`]
 ] [
@@ -33,20 +33,21 @@ tint \ls [
   [\kwd // ^ (?
   : t(?:ry|h(?:row|en)|ypeof!?)
   | f(?:or(?:[^\n\S]+(?:own|ever))?|inally|unction)
-  | n(?:ew|ot)
-  | c(?:ontinue|a(?:se|tch)|lass)
-  | i(?:[fs]|snt|n(?:stanceof)?|mport(?:[^\n\S]+all)?)
+  | n(?:ew|ot|o)
+  | c(?:on(?:tinue|st)|a(?:se|tch)|lass)
+  | i(?:[fs]|n(?:stanceof)?|mport(?:[^\n\S]+all)?)
   | e(?:lse|x(?:tends|port))
   | d(?:e(?:fault|lete|bugger)|o)
   | un(?:less|til)
-  | w(?:hile|ith|hen)
-  | o[fr] | return | break | switch | and | let | loop
+  | w(?:hile|ith)
+  | s(?:witch|uper)
+  | o[frn] | off | return | break | and | let | var | loop | yes
   ) #kwend //]
   [\typ // ^ (?: true | false | null | void ) #kwend //]
   [\ctx // ^ (?
   : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
-  | it | arguments | eval | by | super | prototype
+  | it | arguments | eval | by | constructor | prototype | superclass
   ) #kwend //]
   [\glb // ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number

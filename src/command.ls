@@ -56,12 +56,17 @@ switch
   case o.eval
     argv.1 = \eval
     compileScript '' $args * \\n
-  case o.stdin                then compileStdin!
-  case $args.length           then compileScripts!
-  case process.stdin.readable then compileStdin!
-  default
-    o.interactive or say version! + \\n + help! + \\n
+  case o.interactive
     repl!
+  case o.stdin
+    compileStdin!
+  case $args.length
+    compileScripts!
+  case require \tty .isatty 0
+    say version! + \\n + help! + \\n
+    repl!
+  default
+    compileStdin!
 
 # Calls a `fs` method, exiting on error.
 !function fshoot name, arg, callback
@@ -79,8 +84,8 @@ switch
       fshoot \readFile source, !-> compileScript source, "#it", base
     e, stats <-! fs.stat source
     if e
-      return walk "#source.ls" if top
-      die e
+      return walk "#source.ls" if top and not /\.ls$/test source
+      die "Can't find: #source"
     if stats.isDirectory!
       <-! fshoot \readdir source
       <-! it.forEach
@@ -194,18 +199,20 @@ switch
   argv.1 = \repl
   # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
   code  = if repl.infunc then '  ' else ''
-  cont  = false
-  readline  = require(\readline)createInterface process.stdin, process.stdout
+  cont  = 0
+  rl  = require(\readline)createInterface process.stdin, process.stdout
   reset = !->
-    readline.line = code := ''
-    readline.prompt!
+    rl.line = code := ''
+    rl.prompt!
     repl.inheredoc = false
-  ({_ttyWrite} = readline)_ttyWrite = (chr) ->
-    cont := chr in [ \\n, \> ]
+  ({_ttyWrite} = rl)_ttyWrite = (chr) ->
+    if char in [\\n \>]
+    then cont += 1
+    else cont := 0
     _ttyWrite ...
   prompt = \livescript
   prompt += " -#that" if [\b if o.bare; \c if o.compile]join ''
-  LiveScript.history = readline.history if LiveScript?
+  LiveScript.history = rl.history if LiveScript?
   unless o.compile
     module.paths = module.._nodeModulePaths \
       module.filename = process.cwd! + \/repl
@@ -213,19 +220,21 @@ switch
     global <<< {module, exports, require}
     server = require(\repl)REPLServer:: with
       context: global, commands: [], useGlobal: true
+      useColors: process.env.NODE_DISABLE_COLORS
       eval: !(code,,, cb) ->
         try res = vm.runInThisContext code, \repl catch then err = e
         cb err, res
-    readline.completer = server~complete
-  readline.on \attemptClose !->
-    if readline.line or code then say ''; reset! else readline.close!
-  readline.on \close process.stdin~destroy
-  readline.on \line !->
+    rl.completer = server~complete
+  rl.on \SIGCONT rl.prompt
+  rl.on \SIGINT !->
+    if @line or code then say ''; reset! else @close!
+  rl.on \close process~exit
+  rl.on \line !->
     repl.infunc = false if it.match(/^$/) # close with a blank line without spaces
     repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or (it.match(/^!?(function|class|if|unless) /) and not it.match(/ then /))
-    if (cont or repl.infunc) and not repl.inheredoc
+    if (0 < cont < 3 or repl.infunc) and not repl.inheredoc
       code += it + \\n
-      readline.output.write \. * prompt.length + '. '
+      @output.write \. * prompt.length + '. '
       return
     else
       isheredoc = it.match /(\'\'\'|\"\"\")/g
@@ -233,7 +242,7 @@ switch
         repl.inheredoc = not repl.inheredoc
       if repl.inheredoc
         code += it + \\n
-        readline.output.write \. * prompt.length + '" '
+        rl.output.write \. * prompt.length + '" '
         return
     repl.inheredoc = false
     code += it
@@ -250,8 +259,14 @@ switch
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"
-  readline.setPrompt "#prompt> "
-  readline.prompt!
+  process.on \exit !->
+    # Handle `echo 42 | livescript -i` etc.
+    if code and rl.output.isTTY
+      cont := 0
+      say ''
+      rl.emit \line ''
+  rl.setPrompt "#prompt> "
+  rl.prompt!
 
 # Start up a new __node.js__ instance with the arguments in `--nodejs` passed
 # to it, preserving the other options.

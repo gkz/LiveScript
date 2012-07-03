@@ -77,10 +77,10 @@ let
   ok a is b is c is d is e is void
 
 compileThrows 'invalid variable declaration' 2 'var\n  0'
+compileThrows 'redeclaration of "a"'         2 '(a) ->\n  var a'
 
 
 ### with const flag
-
 throws 'redeclaration of constant "z" on line 2' ->
   LiveScript.compile 'z = 1\nz = 2' {+\const}
 throws 'increment of constant "z" on line 2'  ->
@@ -92,5 +92,3 @@ eq '''(function(n){
   n == null && (n = 2);
   return n + 1;
 });''' LiveScript.compile '(n = 2) -> n + 1' {+\const, +bare}
-
-

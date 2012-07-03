@@ -34,12 +34,10 @@ minify = ->
 
 task \install 'install LiveScript via npm' -> shell 'npm install -g .'
 
-docs = <[ doc.ls ]>
-
 task \build 'build lib/ from src/' ->
-  ext = /\.ls$/; webs = docs
+  ext = /\.ls$/
   sources = for file in dir \src
-    \src/ + file if ext.test file and file not in webs
+    \src/ + file if ext.test file
   run [\-bco \lib] +++ sources
 
 task \build:full 'build twice and run tests' ->
@@ -53,12 +51,6 @@ task \build:parser 'build lib/parser.js from lib/grammar.js' ->
       .replace /return parser;[^]+/ ''
       .replace /(:[^]+?break;)(?=\ncase \d+\1)/g \:
       .replace /(:return .+)\nbreak;/g \$1
-
-task \build:doc 'build doc/' ->
-  <- docs.forEach
-  name = it.slice 0 -3; js = require(\./lib/livescript)compile slurp \src/ + it
-  fs.writeFile "doc/#name.raw.js"    js
-  slobber      "doc/#name.js" minify js
 
 task \build:browser 'build extras/' ->
   LiveScript = require \./lib/livescript

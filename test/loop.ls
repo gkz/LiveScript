@@ -325,6 +325,13 @@ for cond in [true false]
   else
     ok not cond
 
+r = for i from 0 to 3
+  while i &&& 1
+    break
+  else
+    i
+eq '0,2' ''+r
+
 r = for i til 1 then i else [9]
 eq 0 r.0
 

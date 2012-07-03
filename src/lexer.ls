@@ -156,11 +156,11 @@ exports import
     case \unless then tag = \IF
     case \until  then tag = \WHILE
     case \import
-      id = \<<<
       if last.0 is \(
+        id = \<<<
         tag = \BIOP
       else 
-        able @tokens or @token \LITERAL \this
+        if able @tokens then id = \<<< else tag = \DECL
     case \with
       tag = | able @tokens => \CLONEPORT
             | last.0 is \( => \BIOP
@@ -187,9 +187,11 @@ exports import
         if last.0 in <[ CASE | ]>
           last.0 = \DEFAULT
           return id.length
-      case \all then if last.1 is \<<<
-        last.1 += \<
-        return 4
+      case \all
+        if last.1 is \<<<    and \<
+        or last.1 is \import and \All
+          last.1 += that
+          return 3
       case \from then @forange! and tag = \FROM
       case \to \til
         @forange! and @tokens.push [\FROM '' @line] [\STRNUM \0 @line]
@@ -723,7 +725,7 @@ exports import
   countLines: -> (while pos = 1 + it.indexOf \\n pos then ++@line); it
 
   # Checks FOR for FROM/TO.
-  forange: -> @tokens[*-2]?0 is \FOR and import {-seenFor, +seenFrom}
+  forange: -> @tokens[*-2]?0 is \FOR and @<<<{-seenFor, +seenFrom}
 
   # Complains on duplicate flag.
   validate: (flag) ->
@@ -1132,7 +1134,7 @@ OPENERS = <[ ( [ { CALL( PARAM( INDENT ]>
 CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
 
 # The inverse mappings of {OPEN,CLOS}ERS to look things up from either end.
-INVERSES = new -> for o, i in OPENERS then import (c = CLOSERS[i]): o, (o): c 
+INVERSES = new -> for o, i in OPENERS then @[@[o] = CLOSERS[i]] = o 
 
 # Tokens that can start a dot/call chain.
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
