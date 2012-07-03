@@ -685,6 +685,9 @@ eq '1|2|3,1,1|2' "#{ map (.join \|), [[1 to 3] [1] [1 to 2]] }"
 
 eq '3,2,,0' "#{ map (?p), [{p: 3}, {p: 2}, , {p: 0}] }"
 
+eq 2 (obj.) \a
+eq 7 ((obj <<< d: 7).) \d
+
 ### partialization
 three-add = (x, y, z) -> x + y + z
 g = three-add 2, _, 10

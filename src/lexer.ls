@@ -819,8 +819,26 @@ character = if JSON!? then uxxxx else ->
   i = 0
   while token = tokens[++i]
     [tag, val, line] = token
-    if val is \. and token.spaced and prev.spaced
+    switch
+    case val is \. and token.spaced and prev.spaced
       tokens[i] = [\COMPOSE \<< line] 
+    case tag is \) and prev.1 is \.
+      tokens.splice i, 0,
+        [\[  \[  line]
+        [\ID \it line]
+        [\]  \]  line]
+      parens = 1
+      :LOOP for j from i to 0 by -1
+        switch tokens[j].0
+        | \) => ++parens
+        | \( =>
+          if --parens is 0
+            tokens.splice j+1, 0,
+              [\PARAM( \(  line]
+              [\ID     \it line]
+              [\)PARAM \)  line]
+              [\->     \-> line]
+            break LOOP
     prev = token
     continue
 
