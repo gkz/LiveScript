@@ -2069,7 +2069,7 @@ class exports.Util extends Node
   ##### Util.Extends
   # An operator that sets up class-ical inheritance between two constructors,
   # returning the left one.
-  @Extends = -> Call.make Util(\extend), @@[0 1]
+  @Extends = -> Call.make Util(\extend), &[0 1]
 
 #### Vars
 # Declares uninitialized variables.

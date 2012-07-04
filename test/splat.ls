@@ -79,7 +79,7 @@ eq '0.0', 0.toFixed ...[1]
 
 # Multiple splats in the same chain.
 o =
-  f: -> @a.push ...@@; this
+  f: -> @a.push ...arguments; this
   a: [1]
 
 o.f(...o.a).f(...o.a)

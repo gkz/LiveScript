@@ -166,7 +166,7 @@ switch
   #     foo.ls     => foo.js
   #     foo.jsm.ls => foo.jsm
   filename = path.basename(source)replace do
-    /(?:(\.\w+)?\.\w+)?$/ -> @@1 or if o.json then \.json else \.js
+    /(?:(\.\w+)?\.\w+)?$/ -> &1 or if o.json then \.json else \.js
   dir = path.dirname source
   if o.output
     dir = path.join that, dir.slice if base is \. then 0 else base.length

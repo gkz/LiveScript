@@ -525,9 +525,7 @@ exports import
             or @last.0 is \(
             then \MATH else \STRNUM
     case \@ \@@
-      @dotcat val or if val is \@
-        then @token \LITERAL \this true
-        else @token \LITERAL \arguments
+      @dotcat val or if val is \@ then @token \LITERAL \this true
       return val.length
     case \&
       @token \LITERAL \arguments
@@ -783,7 +781,7 @@ enlines = replacer /\n/g \\\n
 enslash = replacer /\\/g \\\\
 
 # Quotes slashes unless already quoted.
-reslash = replacer /(\\.)|\//g -> @@1 or \\\/
+reslash = replacer /(\\.)|\//g -> &1 or \\\/
 
 # Deletes the first character if newline.
 function lchomp then it.slice 1 + it.lastIndexOf \\n 0
@@ -1100,12 +1098,12 @@ SYMBOL = //
 | --> | ~~> | <-- | <~~       # curry 
 | ([-+&|:])\1                 # crement / logic / `prototype`
 | %%                          # mod
-| &                           # 
+| &                           # arguments
 | \([^\n\S]*\)                # call
 | [-~]>                       # function, bound function
 | <[-~]                       # backcall
 | [!=]==?                     # equality
-| @@                          # `arguments`
+| @@                          # autovivification
 | <\[(?:[\s\S]*?\]>)?         # words
 | <<<<< | >>>>>?              # shifts
 | <<<<?                       # import
