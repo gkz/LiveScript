@@ -1001,7 +1001,6 @@ class exports.Binary extends Node
     case \<? \>?  then return @compileMinMax o
     case \<< \>>  then return @compileCompose o, @op is \>>
     case \+++     then return @compileConcat o
-    case \&       then return @compileConcat o, true
     case \%%      then return @compileMod o
     case \&& \||
       @second.void = true if top = @void or not o.level
@@ -1072,7 +1071,7 @@ class exports.Binary extends Node
     If x, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
-    args = @second & (arg || [])
+    args = [@second] +++ (arg || [])
     if @first"is#klass"!
       Chain(@first, [Index Key method; Call args])compile o
     else
@@ -1110,10 +1109,7 @@ class exports.Binary extends Node
 
   compilePow: (o) -> Call.make(JS \Math.pow; [@first, @second])compile o
 
-  compileConcat: (o, cons = false) -> 
-    firstPart = "(#{@first.compile o})" 
-    firstPart = "[#{firstPart}]" if cons
-    "#{firstPart}.concat(#{@second.compile o})"
+  compileConcat: (o) -> "(#{ @first.compile o }).concat(#{ @second.compile o })"
 
   compileCompose: (o, forward) ->
     [first, second] = 

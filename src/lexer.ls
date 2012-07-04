@@ -404,7 +404,6 @@ exports import
     case \<< \>>         then tag = \COMPOSE
     case \<|             then tag = \BACKPIPE
     case \+ \-           then tag = \+-
-    case \&              then tag = \CONCAT
     case \&& \||         then tag = \LOGIC
     case \&&& \||| \^^^  then tag = \BITWISE
     case \^^             then tag = \CLONE
@@ -1098,7 +1097,7 @@ SYMBOL = //
 | --> | ~~> | <-- | <~~       # curry 
 | ([-+&|:])\1                 # crement / logic / `prototype`
 | %%                          # mod
-| &                           # cons
+| &                           # 
 | \([^\n\S]*\)                # call
 | [-~]>                       # function, bound function
 | <[-~]                       # backcall
