@@ -38,9 +38,9 @@
         <li class="active"><a href="#overview">Overview</a></li> 
         <li class="divider">
         <li><a href="#installation">Installation</a></li> 
-        <li><a href="#editor-support">Text Editor Support</a></li> 
-        <li><a href="#projects-using">Projects Using</a></li> 
         <li><a href="#usage">Usage</a></li> 
+        <li><a href="#community">Community</a></li> 
+        <li><a href="#editor-support">Text Editor Support</a></li> 
         <li><a href="#prelude-ls">Standard Library</a></li>
         <li class="divider">
         <li><a href="#reference">Reference</a></li> 
@@ -107,7 +107,7 @@
 <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for updates on LiveScript releases.
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
         <p>Newest blog post: <strong><a href="http://gkz.github.com/LiveScript/blog/functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a></strong>
-        <p>Double-click an example to load it into the compiler. CoffeeScript users check out the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
+        <p>Double-click an example to load it into the compiler/repl. CoffeeScript users check out the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
       <h3>Some Examples</h3>
       <div class="example">
         <div class="example-ls">
@@ -345,18 +345,6 @@ function __curry(f, args){
       <p>You can install it through the <a href="http://npmjs.org">Node Package Manager</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
       <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
     </div>
-    <div id="editor-support" class="section">
-      <a name="editor-support"></a>
-      <h2>Text Editor Support</h2>
-      <p>Vim users check out <a href="https://github.com/gkz/vim-ls">vim-ls</a>.
-      <p>TextMate, Chocolat, and Sublime Text bundle for LiveScript: <a href="https://github.com/paulmillr/LiveScript.tmbundle">LiveScript.tmbundle</a>.
-      <p>Add yours to the <a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">wiki page</a>.
-    </div>
-    <div id="projects-using" class="section">
-      <a name="projects-using"></a>
-      <h2>Project using LiveScript</h2>
-        <p><a href="https://github.com/gkz/LiveScript/wiki/Projects-using-LiveScript">Projects using LiveScript</a> - add your own to the list.
-    </div>
     <div id="usage" class="section">
       <a name="usage"></a>
       <h2>Usage</h2>
@@ -379,7 +367,36 @@ function __curry(f, args){
         <tr><td>-n, --nodejs ARGS+</td><td>pass options through to the "node" binary</td></tr>
         <tr><td>-v, --version</td><td>display version</td></tr>
         <tr><td>-h, --help</td><td>display this</td></tr>
+        <tr><td>-d, --prelude</td><td>automatically import prelude.ls</td></tr>
+        <tr><td>-k, --const</td><td>compile all variables as constants</td></tr>
       </table>
+    </div>
+    <div id="community" class="section">
+      <a name="community"></a>
+      <h2>Community</h2>
+      <ul>
+        <li><a href="https://groups.google.com/forum/#!forum/livescript">Google Groups</a>
+        <li><a href="http://www.reddit.com/r/livescript/">r/livescript</a>
+        <li><a href="http://ost.io/gkz/LiveScript">ost.io/gkz/LiveScript</a>
+      </ul>
+      <h3>Blog</h3>
+      <ul>
+        <li><a href="http://gkz.github.com/LiveScript/blog/functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a>
+        <li><a href="http://gkz.github.com/LiveScript/blog/livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends</a>
+      </ul>
+      <h3>In the Wild</h3>
+      <ul>
+        <li><a href="https://github.com/gkz/LiveScript/wiki/Projects-using-LiveScript">Projects using LiveScript</a>
+        <li><a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">Projects supporting LiveScript</a>
+      </ul>
+      <p>Add your own projects to the lists!
+    </div>
+    <div id="editor-support" class="section">
+      <a name="editor-support"></a>
+      <h2>Text Editor Support</h2>
+      <p>Vim users check out <a href="https://github.com/gkz/vim-ls">vim-ls</a>.
+      <p>TextMate, Chocolat, and Sublime Text bundle for LiveScript: <a href="https://github.com/paulmillr/LiveScript.tmbundle">LiveScript.tmbundle</a>.
+      <p>Add yours to the <a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">wiki page</a>.
     </div>
     <div id="prelude-ls" class="section">
       <a name="prelude-ls">
@@ -391,15 +408,204 @@ function __curry(f, args){
 #=> 10
 </pre>
 
-<p>It is loaded on this page and you can use it when running things in the compiler to the right.
+      <p>You can automatically import prelude.ls when compiling by using the <code>-d</code> or <code>--prelude</code> options.
+
+      <p>Prelude is loaded on this page and you can use it when running things in the compiler/repl to the right.
     </div>
     <hr>
     <div id="reference" class="section">
       <a name="reference"></a>
       <h2>Reference</h2>
-      <p>LiveScript uses whitespace to delimit blocks of code. Semicolons are not required to terminate expressions if you have a newline at the end. You also don't need to use parentheses when calling functions. Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. Almost everything is an expression. The extension for LiveScript files is <code>.ls</code>. For differences from CoffeeScript, see the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
+      <h3>A Basic Overview</h3>
+      <p>Like many modern languages, blocks are delimited by whitespace indentation and newlines are used instead of semicolons to terminate statements (you can still use semicolons if you want to fit more than one statement on a line).
+
+      <p>For example (LiveScript on the left, compiled JavaScript on the right):
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+if 2 + 2 == 4
+  doSomething()
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+if (2 + 2 === 4) {
+  doSomething();
+}
+</pre>
+        </div>
+      </div>
+
+      <p class="note">You can try all these examples for yourself using the LiveScript compiler/repl to the right.
+
+      <p>To further clear things up, you can omit the parentheses when calling a function.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add 2, 3
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+add(2, 3);
+</pre>
+        </div>
+      </div>
+
+      <p>And comments are:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+# from here to the end of the line.
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+// from here to the end of the line.
+</pre>
+        </div>
+      </div>
+
+      <p class="note">Lisp hackers, you may be pleased to know that you can use dashes in the name of your variables and functions. The names are equivalent to, and are compiled to, camel case. Eg. <code>my-value = 42</code> == <code>myValue = 42</code>.
+
+      <p>The file extension for LiveScript is <code>.ls</code>.
+
+
+      <h3>Defining Functions</h3>
+
+      <p>Defining functions is very lightweight in LiveScript:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+(x, y) -> x + y 
+
+-> # an empty function 
+
+times = (x, y) ->
+  x * y
+# multiple lines, and be assigned to 
+# a var like in JavaScript
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var times;
+(function(x, y){ return x + y; });
+
+(function(){});
+
+times = function(x, y){ 
+  return x * y;
+};
+
+
+</pre>
+        </div>
+      </div>
+
+      <p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned. However, you can still use <code>return</code> to force returns if you want, and you can add a bang to your definitions to suppress auto-returning <code>noRet = !(x) -> ...</code>.
+
+      <h3>Assignment</h3>
+      <p>Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. 
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+x = 10
+
+
+do ->
+  x = 5
+
+x #=> 10
+
+do ->
+  x := 2
+
+x #=> 2
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 10;
+
+(function(){
+  var x;
+  return x = 5;
+})();
+x;
+
+(function(){
+  return x = 2;
+})();
+x;
+</pre>
+        </div>
+      </div>
+      
+      <p>Almost everything is an expression, which means you can do things like:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = if   2 + 2 == 4
+    then 10
+    else 0
+x #=> 10
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 2 + 2 === 4 ? 10 : 0;
+
+x;
+</pre>
+        </div>
+      </div>
+
+      <p>Things such as loops, switch statements, and even try/catch statements are all expressions. 
+
+      <p>If you want to simply declare a variable and not initialize it, you can use <code>var</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+var x
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+</pre>
+        </div>
+      </div>
+
+      <p>You can also declare constants in LiveScript using <code>const</code>. They are checked at compile time - the compiled JS is no different.
+      
+      <p>Attempting to compile the following:
+
+<pre class="prettyprint lang-ls">
+const x = 10
+x = 0
+</pre>
+
+      <p>Results in <code>redeclaration of constant "x" on line 2</code>. 
+
+      <p>However, objects are not frozen if declared as constants - you can still modify their properties. You can force all variables to be constants if you compile with the <code>-k</code> or <code>--const</code> flags.
+
+
+      <hr>
+
+      <p>For differences from CoffeeScript, see the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
       <p>You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript. Note that LiveScript wraps compiled JS in a safety wrapper <code>(function(){...contents...}).call(this);</code> - this wrapper has been omitted in all examples and this page's compiler output for conciseness.
-      <p>You can use dashes in identifiers, and they are equivalent to, and are converted to, camel case. Eg. <code>get-room</code> is equivalent to, and compiles in JS to, <code>getRoom</code>.
     </div>
     <div id="literals" class="section">
       <a name="literal"></a>
@@ -1756,6 +1962,7 @@ function __clone(it){
 <pre class="prettyprint lang-ls">
 # Basic
 x = 10
+var y # Can declare without initializing
 
 # Nondeclaring assignment using :=
 # := must be used to modify variables
@@ -1767,6 +1974,10 @@ x #=> 10
 do ->
   x := 2
 x #=> 2
+
+# Constants
+const z = 3
+# 'z = 2' would result in compile time error
 
 # Compound assign
 # (no compound assign for bitwise ops)
@@ -1874,6 +2085,11 @@ x;
   return x = 2;
 })();
 x;
+
+z = 3;
+
+
+
 
 x += 2;
 x -= 1;
@@ -2362,11 +2578,11 @@ TOTAL    851 ms
         <li>Updated to work with node 0.8.x
         <li>Added partial application of funcs using <code>_</code> placeholder
         <li>Added infix <code>with</code> "cloneport", clones head and imports tail into that
-        <li>Allow partial application of pipe <code>|&lt;</code> and backpipe <code>&gt;|</code> and use as function
+        <li>Allow partial application of pipe <code>|&gt;</code> and backpipe <code>&lt;|</code> and use as function
         <li>Better compilation of various operators-as-functions
         <li>Added existential soak implicit call/lookup, eg. <code>(?length)</code>
         <li>Allow partially applied assign - <code>=</code>, <code>+=</code>, etc.
-        <li>Removed <code>|&lt;&lt;<code> pipe operator - use normal pipes and partial application now
+        <li>Removed <code>|&lt;&lt;</code> pipe operator - use normal pipes and partial application now
         <li>Changed backcall placeholder to underscore <code>_</code>
         <li>Added underscore <code>_</code> as alias to <code>otherwise</code> in switch statements
         <li>Added <code>--prelude</code> or <code>-d</code> option to automatically include <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> in compiled files
@@ -2375,7 +2591,7 @@ TOTAL    851 ms
         <li>Removed cons <code>&</code> operator
         <li>Added <code>&</code> as alias to <code>arguments</code>, allowing <code>-> &0 + &1</code> etc. 
         <li>Removed <code>@@</code> as alias to <code>arguments</code>
-        <li>Increased precedence of the pipe <code>|&lt;</code> operator to allow assignment of the entire thing without parens, not just of the first section
+        <li>Increased precedence of the pipe <code>|&gt;</code> operator to allow assignment of the entire thing without parens, not just of the first section
       </ul>
       <h3>0.9.10</h3>
       <ul>

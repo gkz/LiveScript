@@ -120,6 +120,9 @@ body {
 .content .section {
   margin-bottom: 20px;
 }
+.content h3 {
+  margin-top: 10px;
+}
 .content p,
 .content ul {
   margin-top: 5px;
@@ -137,6 +140,11 @@ body {
 .content table {
   margin-top: 5px;
   margin-bottom: 5px;
+}
+.content .note {
+  padding: 5px;
+  padding-left: 15px;
+  border-left: 2px solid #C09853;
 }
 .content .example {
   height: 100%;
