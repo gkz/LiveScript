@@ -205,7 +205,7 @@ switch
     rl.line = code := ''
     rl.prompt!
     repl.inheredoc = false
-  ({_ttyWrite} = rl)_ttyWrite = (chr) ->
+  ({_ttyWrite} = rl)_ttyWrite = (char) ->
     if char in [\\n \>]
     then cont += 1
     else cont := 0
