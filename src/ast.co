@@ -178,7 +178,7 @@ exports.fromJSON = function
     return node
   if it.length? then fromJSON v for v of it else it
 
-#### Modules
+#### Mixins
 
 Negatable =
   show   : -> @negated and \!
@@ -1257,12 +1257,10 @@ class exports.Import extends Node
 #### Of
 # Handles `of` operation that tests if the left operand is included within
 # the right operand, arraywise.
-class exports.Of extends Node
+class exports.Of extends Node implements Negatable
   (@item, @array) ->
 
   children: <[ item array ]>
-
-  ::<<<< Negatable
 
   compileNode: (o) ->
     {items} = array = @array.expandSlice(o)unwrap!
@@ -1286,12 +1284,10 @@ class exports.Of extends Node
 
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
-class exports.Existence extends Node
+class exports.Existence extends Node implements Negatable
   (@it, @negated) ~>
 
   children: [\it]
-
-  ::<<<< Negatable
 
   compileNode: (o) ->
     node = @it.unwrap! <<< {@front}
@@ -1403,23 +1399,23 @@ class exports.Fun extends Node
 
 #### Class
 class exports.Class extends Node
-  (@title, @sup, body) -> @fun = Fun [] body
+  (@title, @sup, @mixins, body) -> @fun = Fun [] body
 
-  children: <[ title sup fun ]>
+  children: <[ title sup mixins fun ]>
 
   isCallable: YES
 
   ripName: !-> @name = it.varName!
 
   compile: (o, level) ->
-    {fun, title} = this
+    {{{lines}:body}:fun, title} = this
     decl = title?varName!
     name = decl or @name
     if ID.test name || '' then fun.cname = name else name = \constructor
-    {lines} = fun.body
+    proto = Var \prototype
     for node, i of lines
       if node instanceof Obj
-        lines[i] = Import proto||=Var(\prototype), node
+        lines[i] = Import proto, node
         for prop of node.items
           if prop.key instanceof [Key, Literal]
             if prop.val instanceof Fun
@@ -1432,10 +1428,15 @@ class exports.Class extends Node
     ctor ||= lines.* = Fun!
     ctor <<< {name, +ctor, +statement}
     lines.push vname = fun.proto = Var fun.bound = name
+    args = []
     if @sup
-      args = [that]
+      args.push that
       fun.proto = Util.Extends vname, fun.params.* = Var \superclass
-    fun.cname and fun.body.prepend Literal "#name.displayName = '#name'"
+    if @mixins
+      imports = for args.* of that
+        Import proto, JS("arguments[#{args.length-1}]"), true
+      body.prepend ...imports
+    fun.cname and body.prepend Literal "#name.displayName = '#name'"
     clas = Parens Call.make(fun, args), true
     clas = Assign vname, clas if decl and title.isComplex!
     clas = Assign title, clas if title

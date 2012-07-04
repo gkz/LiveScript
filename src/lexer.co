@@ -896,15 +896,15 @@ function indexOfPair tokens, i
 # Keywords that Coco shares in common with JavaScript.
 KEYWORDS_SHARED = <[
   true false null this void super return throw break continue
-  if else for while switch case default try catch finally class extends
-  new do delete typeof in instanceof import function
-  let with var const export debugger
+  if else for while switch case default try catch finally
+  function class extends implements new do delete typeof in instanceof
+  let with var const import export debugger
 ]>
 
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid runtime errors.
 KEYWORDS_UNUSED =
-  <[ enum implements interface package private protected public static yield ]>
+  <[ enum interface package private protected public static yield ]>
 
 KEYWORDS = KEYWORDS_SHARED.concat KEYWORDS_UNUSED
 
