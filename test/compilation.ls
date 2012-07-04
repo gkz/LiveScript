@@ -176,3 +176,7 @@ eq '(function(){});' LiveScript.compile '''
 throws "Parse error on line 1: Unexpected 'ID'" -> LiveScript.compile 'a--b = 1'
 
 throws "Inconsistent use of encodeURL as encode-u-r-l on line 1" -> LiveScript.compile 'encode-URL is encode-u-r-l'
+
+
+# Optimize concat [#72](https://github.com/gkz/LiveScript/issues/72)
+eq '[1].concat([2], [3], [4]);' LiveScript.compile '[1] +++ [2] +++ [3] +++ [4]' bare
