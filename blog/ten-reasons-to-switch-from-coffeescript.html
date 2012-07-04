@@ -62,14 +62,14 @@ Here's ten reasons:</p>
 
 <li>Improved operators associativity. <code>unique pulls .length</code> will execute <code>unique</code> and then get <code>.length</code> property of result, unlike in coffeescript, which requires brackets. <code>unique node or not empty node</code> compiles to <code>unique(node) || !empty(node)</code> and not to <code>unique(node || !empty(node))</code>.</li>
 
-<li>Real, ECMAScript 6 / Python / Haskell-style flattened list comprehensions.</li>
+<li>Real, ECMAScript 6 / Python / Haskell-style flattened list comprehensions. `[x ** y for x in [10, 20] for y in [2, 3]]` will create `[100, 1000, 400, 8000]` as it should.</li>
 
 <li>Curried functions. <code>(a, b, c) --&gt; a * b * c</code> instead of <code>(a) -&gt; (b) -&gt; (c) -&gt; a * b * c</code>. Very useful for functional caching of stuff.</li>
 
 <li>New idioms. Async callbacks flattening syntax: <code>error &lt;- fs.write-file path, data</code>. “Array of words” ruby idiom: <code>&lt;[one two three]&gt;</code> vs <code>['one', 'two', 'three']</code>. <code>is not</code> works like <code>isnt</code>, like in Python and unlike in Coffee <code>2 is not 4</code> is <code>2 !== 4</code> and not <code>2 === !4</code> and much more.</li>
 </ol>
 
-<p>In case you’ve already written some coffeescript code, there’s <a href="http://gkz.github.com/LiveScript/#coffee-to-ls">convertion guide</a>.</p>
+<p>In case you’ve already written some coffeescript code, there’s <a href="http://gkz.github.com/LiveScript/#coffee-to-ls">conversion guide</a>.</p>
 
 <p>If you decided to write a web application with LiveScript,
 I recommend to take a look at <a href="http://brunch.io/">Brunch</a>,
