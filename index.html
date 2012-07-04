@@ -2292,7 +2292,7 @@ list[list.length - 1];
     </div>
     <div id="oop" class="section">
       <a name="oop"></a>
-      <h2>OOP</h2>
+      <h2>Object Oriented Programming</h2>
       <div class="example">
         <div class="example-ls">
           <h5>LiveScript</h5>
@@ -2301,10 +2301,13 @@ class Item
   # constructor
   ->
     @id = Math.random!
+    @boundToInstance = ~> 'instance bound'
 
+  @static = 'static'
   # properties and methods
   type   : \unknown
   getName: -> @name ? @id
+  boundToClass: ~> @static
  
 class Box extends Item
   (@name) ->
@@ -2324,6 +2327,9 @@ thing.priv     #=> (nothing)
 Box.static!    #=> 'secret'
 Box::type = \block 
 thing.type     #=> 'block' 
+
+thing.boundToClass!    #=> 'static'
+thing.boundToInstance! #=> 'instance bound'
 </pre>
         </div>
         <div class="example-js">
@@ -2334,14 +2340,22 @@ Item = (function(){
   Item.displayName = 'Item';
   var prototype = Item.prototype, constructor = Item;
   function Item(){
+    var __this = this;
     this.id = Math.random();
+    this.boundToInstance = function(){
+      return 'instance bound';
+    };
   }
-  prototype.type = 'unkown';
+  Item['static'] = 'static';
+  prototype.type = 'unknown';
   prototype.getName = function(){
     var __ref;
     return (__ref = this.name) != null
       ? __ref
       : this.id;
+  };
+  prototype.boundToClass = function(){
+    return Item['static'];
   };
   return Item;
 }());
@@ -2367,7 +2381,8 @@ thing.priv;
 Box['static']();
 Box.prototype.type = 'block';
 thing.type;
-
+thing.boundToClass();
+thing.boundToInstance();
 function __extend(sub, sup){
   function fun(){} fun.prototype = (sub.superclass = sup).prototype;
   (sub.prototype = new fun).constructor = sub;
