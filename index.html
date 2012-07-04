@@ -43,7 +43,7 @@
         <li><a href="#editor-support">Text Editor Support</a></li> 
         <li><a href="#prelude-ls">Standard Library</a></li>
         <li class="divider">
-        <li><a href="#reference">Reference</a></li> 
+        <li><a href="#introduction">Introduction</a></li> 
         <li><a href="#literals">Literals</a></li> 
         <li><a href="#conditions">Conditions</a></li> 
         <li><a href="#functions">Functions</a></li> 
@@ -413,10 +413,9 @@ function __curry(f, args){
       <p>Prelude is loaded on this page and you can use it when running things in the compiler/repl to the right.
     </div>
     <hr>
-    <div id="reference" class="section">
-      <a name="reference"></a>
-      <h2>Reference</h2>
-      <h3>A Basic Overview</h3>
+    <div id="introduction" class="section">
+      <a name="introduction"></a>
+      <h2>Introduction</h2>
       <p>Like many modern languages, blocks are delimited by whitespace indentation and newlines are used instead of semicolons to terminate statements (you can still use semicolons if you want to fit more than one statement on a line).
 
       <p>For example (LiveScript on the left, compiled JavaScript on the right):
@@ -602,7 +601,7 @@ x = 0
       <p>However, objects are not frozen if declared as constants - you can still modify their properties. You can force all variables to be constants if you compile with the <code>-k</code> or <code>--const</code> flags.
 
 
-      <hr>
+      <h3>Info</h3>
 
       <p>For differences from CoffeeScript, see the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
       <p>You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript. Note that LiveScript wraps compiled JS in a safety wrapper <code>(function(){...contents...}).call(this);</code> - this wrapper has been omitted in all examples and this page's compiler output for conciseness.
