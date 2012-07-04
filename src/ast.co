@@ -1,7 +1,8 @@
 # Contains all of the node classes for the AST (abstract syntax tree).
 # Most nodes are created as the result of actions in the [grammar](#grammar),
-# but some are created by other nodes as a method of code generation. To convert
-# the syntax tree into a string of JavaScript code, call `compileRoot`.
+# but some are created by other nodes as a method of code generation.
+# To convert the syntax tree into a string of JavaScript code,
+# call `Block::compileRoot`.
 
 ### Node
 # The abstract base class for all nodes in the syntax tree.
@@ -338,11 +339,11 @@ class exports.Var extends Atom
   compile: (o) -> if @temp then o.scope.free @value else @value
 
 #### Key
-# The name of a property, in the form of `{key: _}` or `_.key`.
-class exports.Key extends Atom
+# A property name in the form of `{key: _}` or `_.key`.
+class exports.Key extends Node
   (name, @reserved or name.reserved) ~> @name = '' + name
 
-  isAssignable: -> not @reserved
+  isComplex: NO
 
   assigns: -> it is @name
 
@@ -1868,7 +1869,8 @@ class exports.If extends Node
              #pad: #{ els?compile o, LEVEL_LIST  or 'void 8' }"
     if o.level < LEVEL_COND then code else "(#code)"
 
-  # Unfolds a node's child if soak, then tuck the node under the created **If**.
+  # Unfolds a node's child if soak,
+  # then tuck the node under the created **If**.
   @unfoldSoak = (o, parent, name) ->
     if parent[name]unfoldSoak o
       parent[name] = that.then
@@ -1923,7 +1925,7 @@ class exports.JS extends Node
 class exports.Util extends Node
   (@verb) ~>
 
-  {::show} = Jump::
+  {(Jump::)show}
 
   isCallable: YES
 
