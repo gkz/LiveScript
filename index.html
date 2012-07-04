@@ -1055,6 +1055,15 @@ dog = new
 add = (x, y) -> x + y
 3 `add` 4 #=> 7
 
+# Implicit call/lookup (useful for higher 
+# order functions such as map/filter etc.)
+(.length)
+
+
+(.join \*)
+
+
+(obj.)
 
 
 # Bound functions using ~> (wavy arrow)
@@ -1138,11 +1147,19 @@ dog = new function(){
   this.mutt = true;
 };
 
-add = function(x, y){
-  return x + y;
-};
+add = function(x, y){ return x + y; };
 add(3, 4);
 
+
+(function(it){
+  return it.length;
+});
+(function(it){
+  return it.join('*');
+});
+(function(it){
+  return obj[it];
+});
 
 thisParam = function(param){
   return __this[param];
@@ -1848,9 +1865,6 @@ list2 = ['four'];
 
 
 (list1).concat(list2);
-
-
-[('zero')].concat(list1);
 
 
 [1].concat(__slice.call(list2));
