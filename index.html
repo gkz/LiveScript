@@ -136,12 +136,12 @@ $('h1').on('click', function(){
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# Curried functions, implicit switch, and
-# cons operator
+# Curried functions, implicit switch, and 
+# concat operator
 take(n, [x, ...xs]:list) =
   | n <= 0     => []
   | empty list => []
-  | otherwise  => x & take n - 1, xs
+  | otherwise  => [x] +++ (take n - 1, xs)
 
 take 2, [1 2 3 4 5] #=> [1, 2]
 
@@ -1444,9 +1444,6 @@ list2 = [\four]
 # Concat
 list1 +++ list2 #=> ['one', 'two', 'three', 'four']
 
-# Cons
-\zero & list1   #=> ['zero', 'one', 'two', 'three']
-
 # Concat when first is list literal
 [1] + list2     #=> [1, 'four']
 
@@ -2282,9 +2279,6 @@ f do
         <tr>
           <td>List Concat</td><td>xs.concat ys</td><td>xs.concat ys</td><td>xs +++ ys</td>
         </tr>
-        <tr>
-          <td>Cons</td><td>[x].concat ys</td><td>[x].concat ys</td><td>x & ys</td>
-        </tr>
       </table>
     </div>
     <div id="speed" class="section">
@@ -2325,7 +2319,6 @@ TOTAL    851 ms
       <li>Added <code>otherwise</code> as a contextual keyword, when used after <code>case</code> or <code>|</code>, making that the default statement. Rationale: same as in Haskell. It allows <code>| otherwise => 4 + 9</code>, which fits in with the rest of the structure.
       <li>Added implicit <code>switch</code> after <code>-></code>, <code>~></code>, <code>:</code>, or an assign when they are followed by case tokens (either <code>case</code> or <code>|</code>). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
       <li>Added list concat operator, <code>+++</code>. Eg. <code>xs +++ ys</code> is <code>xs.concat(ys)</code>. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
-      <li>Added cons operator, <code>&amp;</code>. It sticks the first item to the start of the second item (a list, or not, making a list). Eg. <code>x &amp; ys</code> is <code>[x].concat(ys)</code>. Rationale: less typing, beauty, inspired by Haskell's <code>:</code> function.
       <li><code>^</code> is now an alias to <code>**</code>, the power operator. Rationale: it was available, and is used in other languages. 
       <li>Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell. 
       <li>Power operator is now right associative. eg. 2^2^3 == 2^(2^3) == 256. Rationale: follwing Haskell's and many other languages lead on this one.
@@ -2363,6 +2356,26 @@ TOTAL    851 ms
       <a name="changelog"></a>
       <h2>Changelog</h2>
       <p>For more details see <a href="#changes">Changes from Coco</a>
+      <h3>0.9.11</h3>
+      <ul>
+        <li>Bug fixes
+        <li>Updated to work with node 0.8.x
+        <li>Added partial application of funcs using <code>_</code> placeholder
+        <li>Added infix <code>with</code> "cloneport", clones head and imports tail into that
+        <li>Allow partial application of pipe <code>|&lt;</code> and backpipe <code>&gt;|</code> and use as function
+        <li>Better compilation of various operators-as-functions
+        <li>Added existential soak implicit call/lookup, eg. <code>(?length)</code>
+        <li>Allow partially applied assign - <code>=</code>, <code>+=</code>, etc.
+        <li>Removed <code>|&lt;&lt;<code> pipe operator - use normal pipes and partial application now
+        <li>Changed backcall placeholder to underscore <code>_</code>
+        <li>Added <code>--prelude</code> or <code>-d</code> option to automatically include <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> in compiled files
+        <li>Added <code>--const</code> or <code>-k</code> option to compile as if all variables are constants
+        <li>Added partial application of property accessor eg. <code>(obj.)</code>
+        <li>Removed cons <code>&</code> operator
+        <li>Added <code>&</code> as alias to <code>arguments</code>, allowing <code>-> &0 + &1</code> etc. 
+        <li>Removed <code>@@</code> as alias to <code>arguments</code>
+        <li>Increased precedence of the pipe <code>|&lt;</code> operator to allow assignment of the entire thing without parens, not just of the first section
+      </ul>
       <h3>0.9.10</h3>
       <ul>
         <li>Now have `const` and `var` thanks to Coco
