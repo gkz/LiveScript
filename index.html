@@ -1173,8 +1173,48 @@ function __curry(f, args){
   } : f;
 }
 </pre>
-          </div>
         </div>
+      </div>
+
+      <p>Backcalls are very useful. They allow you to unnest callbacks. They are defined using arrows pointed to the left. All the syntax is the same as regular arrows for defining bound functions (<code><~</code>), curried functions (<code><--, <~~</code>), etc. - except that it is just pointing the other way.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+<- $
+alert \boom
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+$(function(){
+  return alert('boom');
+});
+</pre>
+        </div>
+      </div>
+
+      <p>They can take arguments, and you can specify a placeholder for where you want it to go.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x <- map _, [1 to 3]
+x * 2
+#=> [2, 4, 6]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+map(function(x){
+  return x * 2;
+}, [1, 2, 3]);
+</pre>
+        </div>
+      </div>
+
+
+
     </div>
     <div id="loops" class="section">
       <a name="loops"></a>
