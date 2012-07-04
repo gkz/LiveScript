@@ -488,11 +488,11 @@ x = with ok
 ok x
 
 
-### `@@`
+### `&`
 let 0
-  eq @@ , arguments
-  eq @@0, 0
-  eq @@1, void
+  eq & , arguments
+  eq &0, 0
+  eq &1, void
 
 
 ### thisplat

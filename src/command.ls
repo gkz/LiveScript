@@ -10,7 +10,7 @@ global import
   say  : !-> process.stdout.write it + \\n
   warn : !-> process.stderr.write it + \\n
   die  : !-> warn it; process.exit 1
-  p    : !-> []forEach.call @@, console.dir
+  p    : !-> []forEach.call arguments, console.dir
   pp   : !(x, showHidden, depth) ->
     say util.inspect x, showHidden, depth, !process.env.NODE_DISABLE_COLORS
   ppp  : !-> pp it, true, null

@@ -529,6 +529,9 @@ exports import
         then @token \LITERAL \this true
         else @token \LITERAL \arguments
       return val.length
+    case \&
+      @token \LITERAL \arguments
+      return 1
     case \!
       switch then unless @last.spaced
         if able @tokens, null true
