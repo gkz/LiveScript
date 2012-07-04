@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset='utf-8'>
-<title>{{title}}</title>
+<title>Ten reasons to switch from CoffeeScript to LiveScript</title>
 <meta name='description' content="LiveScript is a language that compiles down to JavaScript. It is a fork of Coco, which is in turn derived from CoffeeScript. LiveScript is Coco that is much more compatible with CoffeeScript, more functional, and more feature rich.">
 
 <link rel="icon" type="image/png" href="../images/icon.png">
@@ -36,11 +36,45 @@
   <div class="container">
     <div class="row">
       <div class="span10 content">
-        <h1>{{title}}</h1>
+        <h1>Ten reasons to switch from CoffeeScript to LiveScript</h1>
         <div class="date-author">
-          <span class="date">{{date}}</span> - {{author}}
+          <span class="date">4 Jul 2012</span> - <a href="http://paulmillr.com/">Paul Miller</a>
         </div>
-        {{content}}
+        
+
+<p><a href="http://coffeescript.org">CoffeeScript</a> has been around for a while and is now used by many developers and tools.</p>
+
+<p>But why should someone switch from Coffee to its fork, LiveScript?
+Here's ten reasons:</p>
+
+<ol>
+<li>Improved readability. LiveScript supports dashes in identifiers and mangles them to camelCase to keep consistent with javascript code style. <code>document.query-selector-all</code> will be transformed to <code>document.querySelectorAll</code>. As for numbers, they support underscores and suffixes: <code>64_000km</code> will be compiled simply to <code>64000</code>.</li>
+
+<li><code>|&gt;</code> chaining operator. It works with functions instead of methods on prototypes which allows to easily write your own modular functions for chains.</li>
+
+<li><a href="http://gkz.github.com/prelude-ls/">Standard library</a>. ECMAScript 5 array extras are nice, but they’re not enough. Plays awesomly with chaining operator.</li>
+
+<li>Partially applied operators and member access. This allows writing pure functional code without boilerplate: <code>people |&gt; map (.name) |&gt; filter (in visitors)</code> instead of <code>people.map((man) -&gt; man.name).filter((name) -&gt; name in visitors)</code>.</li>
+
+<li>Compiler flag that disables variable reassignments in compile-time for less errors. Works like ES6 <code>const</code>, but it compiles to <code>var</code>, because <code>const</code> isn’t supported greatly by engines today.</li>
+
+<li>Improved scoping. <code>=</code> always declares variable in current scope, use <code>:=</code> for redeclaration of outer scope var, which reduces bugs.</li>
+
+<li>Improved operators associativity. <code>unique pulls .length</code> will execute <code>unique</code> and then get <code>.length</code> property of result, unlike in coffeescript, which requires brackets. <code>unique node or not empty node</code> compiles to <code>unique(node) || !empty(node)</code> and not to <code>unique(node || !empty(node))</code>.</li>
+
+<li>Real, ECMAScript 6 / Python / Haskell-style flattened list comprehensions.</li>
+
+<li>Curried functions. <code>(a, b, c) --&gt; a * b * c</code> instead of <code>(a) -&gt; (b) -&gt; (c) -&gt; a * b * c</code>. Very useful for functional caching of stuff.</li>
+
+<li>New idioms. Async callbacks flattening syntax: <code>error &lt;- fs.write-file path, data</code>. “Array of words” ruby idiom: <code>&lt;[one two three]&gt;</code> vs <code>['one', 'two', 'three']</code>. <code>is not</code> works like <code>isnt</code>, like in Python and unlike in Coffee <code>2 is not 4</code> is <code>2 !== 4</code> and not <code>2 === !4</code> and much more.</li>
+</ol>
+
+<p>In case you’ve already written some coffeescript code, there’s <a href="http://gkz.github.com/LiveScript/#coffee-to-ls">convertion guide</a>.</p>
+
+<p>If you decided to write a web application with LiveScript,
+I recommend to take a look at <a href="http://brunch.io/">Brunch</a>,
+which "just works" and supports livescript without mess.</p>
+
         <hr>
         <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for more on LiveScript and prelude.ls
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
