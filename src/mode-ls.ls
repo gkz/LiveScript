@@ -1,8 +1,8 @@
 # Defines an editing mode for [Ace](http://ace.ajax.org).
 #
-# Open [test/ace.htm](../test/ace.htm) to test.
+# Open [test/ace.html](../test/ace.html) to test.
 
-require, exports, module <-! define \ace/mode/coco
+require, exports, module <-! define \ace/mode/ls
 
 identifier = /(?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+/$
 
@@ -60,14 +60,14 @@ LiveScriptMode.Rules =
         |s(?:uper|witch)
         |e(?:lse|x(?:tends|port)|val)
         |a(?:nd|rguments)
-        |n(?:ew|ot|o)
+        |n(?:ew|ot)
         |un(?:less|til)
         |w(?:hile|ith)
-        |o[frn]|off|return|break|let|var|loop|yes
+        |o[fr]|return|break|let|var|loop
       )//$ + keywordend
 
     * token: \constant.language
-      regex: '(?:true|false|null|void)' + keywordend
+      regex: '(?:true|false|yes|no|on|off|null|void|undefined)' + keywordend
 
     * token: \invalid.illegal
       regex: '(?
