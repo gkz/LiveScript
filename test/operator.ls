@@ -196,18 +196,15 @@ eq (10 >>>>> 3), 1
 
 num = 10; eq (num = num ^^^ 3), 9
 
-#coffee-737: `in` should have higher precedence than logical operators.
+# [coffee#737](https://github.com/jashkenas/coffee-script/issues/737)
 eq 1, 1 in [1] && 1
 
-#coffee-768: `in` should preserve evaluation order.
+# [coffee#768](https://github.com/jashkenas/coffee-script/issues/768)
 share = 0
 a = -> share++ if share is 0
 b = -> share++ if share is 1
 c = -> share++ if share is 2
 ok a() not in [b(),c()] and share is 3
-
-# `in` with cache and `__indexOf` should work in commaed lists.
-eq [Object() in Array()].length, 1
 
 
 # Operators should respect new lines as spaced.
@@ -318,7 +315,7 @@ new
   import all
     everything: 7
     new class then answer: 42
-  eq @life * @universe * @everything, 42
+  eq @life * @universe * @everything, @answer
 
 
 ### {in,de}crement
