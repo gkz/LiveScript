@@ -1,3 +1,12 @@
+# util curried funcs
+filter(f, xs) = [x for x in xs when f x]
+even(x) = x % 2 == 0
+map(f, xs) = [f x for x in xs]
+fold(f, memo, xs) =
+  for x in xs
+    memo = f memo, x
+  memo
+
 # Newline suppression for binary operators.
 eq 32,
   1 *
@@ -406,6 +415,12 @@ eq \OLLEH (upCase <| reverse <| \hello)
 
 eq 8 ((+ 2) << (* 2) <| 3)
 
+x = 3 |> (- 2) |> ([\a \b \c].)
+eq \b x
+
+x = [1, 2, 3, 4, 5] |> filter even |> map (* 2) |> fold (+), 0 
+eq 12 x
+
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
 eq 'number,string' ''+ typeof
@@ -635,8 +650,6 @@ eq 4 (++) x # does not actually modify x
 eq 2 (--) x
 eq 4 (++).call(null, x)
 
-filter(f, xs) = [x for x in xs when f x]
-even(x) = x % 2 == 0
 eq '1,3,5' "#{ filter (not) << even, [1 to 5] }"
 
 eq '1,3,5' "#{filter ((<<) (not), even), [1 to 5] }"
@@ -663,3 +676,5 @@ eq \blonde personC.hair
 eq \matias personA.name
 eq 20      personA.age
 ok personA.hair!?
+
+

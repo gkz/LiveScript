@@ -388,9 +388,10 @@ bnf =
 # and `x = y = z` `x = (y = z)` (not `(x = y) = z`).
 operators =
   # Listed from lower precedence.
-  <[ left     PIPE POST_IF FOR WHILE ]>
+  <[ left     POST_IF FOR WHILE ]>
   <[ right    BACKPIPE     ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
+  <[ left     PIPE         ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
