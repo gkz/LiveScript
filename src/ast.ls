@@ -1109,7 +1109,8 @@ class exports.Binary extends Node
 
   compilePow: (o) -> Call.make(JS \Math.pow; [@first, @second])compile o
 
-  compileConcat: (o) -> "(#{ @first.compile o }).concat(#{ @second.compile o })"
+  compileConcat: (o) -> 
+    Chain @first .add Index (Key \concat), \., true .add Call [@second] .compile o
 
   compileCompose: (o, forward) ->
     [first, second] = 
