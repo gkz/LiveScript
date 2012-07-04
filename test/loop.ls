@@ -246,6 +246,11 @@ them = []
 until them.1 then them.push(->)
 eq ...them
 
+them = []
+until them.1 then them.push((x, y) --> x + y)
+eq 5 them.1(2) 3
+
+
 
 ### IIFE Scoping
 # IIFE constructions under `for` auto-capture the loop variables.

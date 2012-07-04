@@ -1475,12 +1475,13 @@ class exports.Fun extends Node
     code += "(#{ @compileParams scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
-    return pscope.assign pscope.temporary(\fn), code if inLoop
+    curry-code-check = ~> if @curried then "#{ util \curry }(#code)" else code
+    if inLoop then return pscope.assign pscope.temporary(\fn), curry-code-check!
     if @returns
       code += "\n#{tab}return #name;"
     else if @bound and @ctor
       code += ' function __ctor(){} __ctor.prototype = prototype;'
-    code = "#{ util \curry }(#code)" if @curried
+    code = curry-code-check!
     if @front and not @statement then "(#code)" else code
 
   compileParams: (scope) ->
