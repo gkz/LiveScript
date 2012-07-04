@@ -315,12 +315,12 @@ exports import
     {length} = @countLines input
     {last} = this; last <<< {+eol, +spaced}
     return length if index + length >= code.length
+    if tabs and (@emender ||= //[^#{ tabs.charAt! }]//)exec tabs
+      @carp "contaminated indent #{ escape that }"
     if 0 > delta = tabs.length - @dent
       @dedent -delta
       @newline!
     else
-      if tabs and (@emender ||= //[^#{ tabs.charAt 0 }]//)exec tabs
-        @carp "contaminated indent #{ escape that }"
       if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := += ]>
       or tag of <[ +- => DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
                    IN OF TO BY FROM EXTENDS ]>
