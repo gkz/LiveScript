@@ -169,7 +169,7 @@ exports import
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
     tag ||= match.1.toUpperCase!
     @unline! if tag of <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
-                          IN OF FROM TO BY EXTENDS ]>
+                          IN OF FROM TO BY EXTENDS IMPLEMENTS ]>
     @token tag, id
     input.length
 
@@ -323,7 +323,7 @@ exports import
     else
       if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := += ]>
       or tag of <[ +- => DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
-                   IN OF TO BY FROM EXTENDS ]>
+                   IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
         return length
       if delta then @indent delta else @newline!
     @wantBy = false
@@ -591,7 +591,9 @@ exports import
   countLines: -> ++@line while pos = 1 + it.indexOf \\n pos; it
 
   # Checks FOR for FROM/TO.
-  forange: -> @tokens[*-2]?0 is \FOR and @<<<{-seenFor, +seenFrom}
+  forange: ->
+    if @tokens[* - 2 - (@last.0 of <[NEWLINE INDENT]>)]?0 is \FOR
+      import {-seenFor, +seenFrom}
 
   # Complains on duplicate flag.
   validate: (flag) ->
@@ -757,8 +759,10 @@ character = if JSON!? then uxxxx else ->
     detectEnd tokens, i, ok, go
   function ok token, i
     tag = token.0
-    return true if tag of <[ POST_IF => ]>
-                or not skipBlock and token.alias and token.1 of <[ && || ]>
+    return true if tag of <[ => POST_IF ]>
+    unless skipBlock
+      return true if token.alias and token.1 of <[ && || ]>
+                  or tag of <[ TO BY IMPLEMENTS ]>
     pre = tokens[i-1]
     switch tag
     case \NEWLINE

@@ -194,16 +194,21 @@ ok true, while 0 then
 ok [] = for i to 0 then
 eq 1, i++ for j to 0
 
+void for i from Number 2 to Number 3 by Number 4
+eq 6 i
 
-### Line folding after `for` prepositions
-for x in
-   {2}
-  for y  of
-     [3] by
-     -1
-    for z from
-        5 til
-        6
+
+### Line folding before/after `for` prepositions
+for x
+in   {2}
+  for y
+  of [3]
+    for z
+    from
+      5
+    to
+      7 by
+      11
       eq x*y*z, 30
 
 

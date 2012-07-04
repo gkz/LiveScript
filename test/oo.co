@@ -288,6 +288,12 @@ ok r0.neq  r1
 ok r1.gte  r0
 ok r0.eq new Rect 1 6
 
+ok class extends Function '' implements
+                               {}
+  class
+  implements {}
+    void
+
 
 ### Clone
 bird     = {+wing, fly: -> @wing}
