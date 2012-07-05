@@ -1298,6 +1298,32 @@ function __curry(f, args){
 </pre>
         </div>
       </div>
+
+      <h3>Arguments</h3>
+
+      <p>You can access the <code>arguments</code> object with the shorthand <code>&</code>. The first argument is <code>&0</code>, the second <code>&1</code>, and so on.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+addThreeNumbers = -> &0 + &1 + &2
+addThreeNumbers 1 2 3 #=> 6
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var addThreeNumbers;
+addThreeNumbers = function(){
+  return arguments[0] + arguments[1] + arguments[2];
+};
+addThreeNumbers(1, 2, 3);
+</pre>
+        </div>
+      </div>
+
+      <p>Note that currying won't work in that situation, as the number of declared arguments in <code>addThreeNumbers</code> is 0.
+
     </div>
     <div id="loops" class="section">
       <a name="loops"></a>
