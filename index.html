@@ -2253,7 +2253,7 @@ x.'hello world'.1.[0] #=> 5
 
 
 # Accessignment using .=
-document.title .= toUpperCase! #=> LIVESCRIPT
+document.title.=toUpperCase! #=> LIVESCRIPT
 
 # Array slice
 list = [1 2 3 4 5]
@@ -2346,10 +2346,13 @@ class Item
   @static = 'static'
   # properties and methods
   type   : \unknown
-  getName: -> @name ? @id
   boundToClass: ~> @static
+
+Renameable =
+  setName: -> @name = it
+  getName: -> @name ? @id
  
-class Box extends Item
+class Box extends Item implements Renameable
   (@name) ->
     super ...
 
@@ -2370,12 +2373,13 @@ thing.type     #=> 'block'
 
 thing.boundToClass!    #=> 'static'
 thing.boundToInstance! #=> 'instance bound'
+
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var Item, Box, thing;
+var Item, Renameable, Box, thing;
 Item = (function(){
   Item.displayName = 'Item';
   var prototype = Item.prototype, constructor = Item;
@@ -2388,20 +2392,26 @@ Item = (function(){
   }
   Item['static'] = 'static';
   prototype.type = 'unknown';
-  prototype.getName = function(){
-    var __ref;
-    return (__ref = this.name) != null
-      ? __ref
-      : this.id;
-  };
   prototype.boundToClass = function(){
     return Item['static'];
   };
   return Item;
 }());
+Renameable = {
+  setName: function(it){
+    return this.name = it;
+  },
+  getName: function(){
+    var __ref;
+    return (__ref = this.name) != null
+      ? __ref
+      : this.id;
+  }
+};
 Box = (function(superclass){
   Box.displayName = 'Box';
   var priv, prototype = __extend(Box, superclass).prototype, constructor = Box;
+  __importAll(prototype, arguments[1]);
   function Box(name){
     this.name = name;
     superclass.apply(this, arguments);
@@ -2412,7 +2422,7 @@ Box = (function(superclass){
     return priv;
   };
   return Box;
-}(Item));
+}(Item, Renameable));
 thing = new Box('boxy');
 thing.getName();
 thing.id;
@@ -2429,6 +2439,11 @@ function __extend(sub, sup){
   if (typeof sup.extended == 'function') sup.extended(sub);
   return sub;
 }
+function __importAll(obj, src){
+  for (var key in src) obj[key] = src[key];
+  return obj;
+}
+
 </pre>
         </div>
       </div>
@@ -2663,6 +2678,7 @@ TOTAL    851 ms
         <li>Added <code>&</code> as alias to <code>arguments</code>, allowing <code>-> &0 + &1</code> etc. 
         <li>Removed <code>@@</code> as alias to <code>arguments</code>
         <li>Increased precedence of the pipe <code>|&gt;</code> operator to allow assignment of the entire thing without parens, not just of the first section
+        <li>Added mixin feature <code>implements</code>, eg. <code>class Cow extends Animal implements Mooer</code>, which does <code>::<<< Mooer</code> in the class body.which does <code>::<<< Mooer</code> in the class body.
       </ul>
       <h3>0.9.10</h3>
       <ul>
