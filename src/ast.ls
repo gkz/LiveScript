@@ -13,7 +13,7 @@
 # the environment from higher in the tree (such as if a returned value is
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
-{splitAt, breakIt} = require \prelude-ls
+{splitAt, breakIt, find} = require \prelude-ls
 (Node = -> ...):: =
   compile: (options, level) ->
     o = {} <<< options
@@ -502,7 +502,7 @@ class exports.Chain extends Node
       util \flip
       util \curry
     {head, tails} = this; head <<< {@front, @newed}
-    for t in tails when t.partialized then has-partial = true; break
+    has-partial = find (.partialized?), tails
     if has-partial
       util \slice
       [pre, rest]     = breakIt (.partialized?), tails
@@ -1477,7 +1477,12 @@ class exports.Fun extends Node
     code += "(#{ @compileParams scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
-    curry-code-check = ~> if @curried then "#{ util \curry }(#code)" else code
+    curry-code-check = ~> 
+      if @curried 
+        if @hasSplats
+          @carp 'cannot curry a function with a variable number of arguments'
+        "#{ util \curry }(#code)" 
+      else code
     if inLoop then return pscope.assign pscope.temporary(\fn), curry-code-check!
     if @returns
       code += "\n#{tab}return #name;"
@@ -1489,7 +1494,7 @@ class exports.Fun extends Node
   compileParams: (scope) ->
     {params, body} = this; names = []; assigns = []
     for p, i in params
-      if p instanceof Splat then splace = i
+      if p instanceof Splat then splace = i; @hasSplats = true
       # `(a = x) ->` => `(a ? x) ->`
       else if p.op is \= and not p.logic
         params[i] = Binary \? p.left, p.right
