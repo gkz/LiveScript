@@ -1176,6 +1176,8 @@ function __curry(f, args){
         </div>
       </div>
 
+      <h3>Backcalls</h3>
+
       <p>Backcalls are very useful. They allow you to unnest callbacks. They are defined using arrows pointed to the left. All the syntax is the same as regular arrows for defining bound functions (<code><~</code>), curried functions (<code><--, <~~</code>), suppressing return (<code><-!</code>) - except that it is just pointing the other way.
 
       <div class="example">
@@ -1213,8 +1215,91 @@ map(function(x){
         </div>
       </div>
 
+      <h3>Partial Application</h3>
 
+      <p>You can partially apply functions using the underscore <code>_</code> as a placeholder. Sometimes, the function you want to deal with isn't curried, or if it is the arguments are not in a good order. In these cases partial application is very useful. 
 
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+filterNums = filter _, [1 to 5]
+
+filterNums even  #=> [2, 4]
+filterNums odd   #=> [1, 3, 5]
+filterNums (< 3) #=> [1, 2]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var filterNums, __slice = [].slice;
+filterNums = __partialize(filter, [void 8,
+    [1, 2, 3, 4, 5]], [0]);
+filterNums(even);
+filterNums(odd);
+filterNums((function(it){
+  return it < 3;
+}));
+function __partialize(f, args, where){
+  return function(){
+    var params = __slice.call(arguments), i,
+        len = params.length, wlen = where.length,
+        ta = args ? args.concat() : [], tw = where ? where.concat() : [];
+    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
+    return len < wlen && len ? __partialize(f, ta, tw) : f.apply(this, ta);
+  };
+}
+</pre>
+        </div>
+      </div>
+
+      <p>If you call a partially applied function with no arguments, it will execute as is instead of returning itself, allowing you to use default arguments.
+
+      <p>Partially applied functions are also really useful for piping if the functions you are using don't have a nice argument order and aren't curried (like in underscore.js for isntance).
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 2 3] 
+  |> _.map _, (* 2) 
+  |> _.reduce _, (+), 0 
+  #=> 12
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var __slice = [].slice;
+__partialize(_.reduce, [
+  void 8, __curry(function(__x, __y){
+    return __x + __y;
+  }), 0
+], [0])(
+__partialize(_.map, [
+  void 8, (function(it){
+    return it * 2;
+  })
+], [0])(
+[1, 2, 3]));
+function __partialize(f, args, where){
+  return function(){
+    var params = __slice.call(arguments), i,
+        len = params.length, wlen = where.length,
+        ta = args ? args.concat() : [], tw = where ? where.concat() : [];
+    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
+    return len < wlen && len ? __partialize(f, ta, tw) : f.apply(this, ta);
+  };
+}
+function __curry(f, args){
+  return f.length > 1 ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      __curry.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
+
+</pre>
+        </div>
+      </div>
     </div>
     <div id="loops" class="section">
       <a name="loops"></a>
@@ -2678,7 +2763,7 @@ TOTAL    851 ms
         <li>Added <code>&</code> as alias to <code>arguments</code>, allowing <code>-> &0 + &1</code> etc. 
         <li>Removed <code>@@</code> as alias to <code>arguments</code>
         <li>Increased precedence of the pipe <code>|&gt;</code> operator to allow assignment of the entire thing without parens, not just of the first section
-        <li>Added mixin feature <code>implements</code>, eg. <code>class Cow extends Animal implements Mooer</code>, which does <code>::<<< Mooer</code> in the class body.which does <code>::<<< Mooer</code> in the class body.
+        <li>Added mixin feature <code>implements</code> thanks to Coco, eg. <code>class Cow extends Animal implements Mooer</code>, which does <code>::<<< Mooer</code> in the class body.
       </ul>
       <h3>0.9.10</h3>
       <ul>
