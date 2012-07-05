@@ -197,6 +197,10 @@ eq 1, i++ for j to 0
 void for i from Number 2 to Number 3 by Number 4
 eq 6 i
 
+let i, j = i
+  ok ... for k to 0
+  eq ...for k to 1 then i
+
 
 ### Line folding before/after `for` prepositions
 for x
