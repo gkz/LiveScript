@@ -502,12 +502,14 @@ class exports.Chain extends Node
       util \curry
     {head, tails} = this; head <<< {@front, @newed}
 
-    if tails.0 instanceof Call and tails.0.partialized
+    last-tail = tails[*-1]
+    if last-tail instanceof Call and last-tail.partialized
+      tails.pop!
       util \slice
-      args = tails.0.args
-      code = "#{util \partialize}(#{@head.compile o, LEVEL_LIST}, ["
+      args = last-tail.args
+      code = "#{util \partialize}(#{@compile o, LEVEL_LIST}, ["
       for a, i in args then code += (if i then ', ' else '') + a.compile o, LEVEL_LIST 
-      code += "], [#{tails.0.partialized.toString!}])"
+      code += "], [#{last-tail.partialized.toString!}])"
       return code
     return head.compile o unless tails.length
     return that.compile o if @unfoldAssign o

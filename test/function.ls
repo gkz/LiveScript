@@ -702,5 +702,10 @@ two-add = (x = 10, y) -> x + y
 g = two-add _, 4
 eq 14 g!
 
+obj = 
+  three-add: (x, y, z) -> x + y + z
+
+f = obj.three-add 1, _, 3
+eq 6 f 2
 
 function map f, xs then [f x for x in xs]
