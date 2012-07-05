@@ -26,6 +26,7 @@ Coco tries to amend them, entwining good parts of both.
 
 ## Documents
 - [Additions](https://github.com/satyr/coco/wiki/additions)
+- [Glossary](https://github.com/satyr/coco/wiki/glossary)
 - [Annotated Source](http://satyr.github.com/coco/src/)
 
 ## Installation
@@ -35,6 +36,10 @@ Get [Node.js](http://nodejs.org) and [npm](http://npmjs.org), then:
 - `git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
 ## Changelog
+
+### 0.7.5
+- Implemented `implements`. ([#144](https://github.com/satyr/coco/issues/144))
+- Top-level `void`s are now simply ignored and usable like Python's __pass__.
 
 ### 0.7.4
 - Added `import` declaration in place of the implicit `this import`:
