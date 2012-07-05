@@ -13,7 +13,6 @@
 # the environment from higher in the tree (such as if a returned value is
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
-{splitAt, breakIt, find} = require \prelude-ls
 (Node = -> ...):: =
   compile: (options, level) ->
     o = {} <<< options
@@ -502,12 +501,17 @@ class exports.Chain extends Node
       util \flip
       util \curry
     {head, tails} = this; head <<< {@front, @newed}
-    has-partial = find (.partialized?), tails
+    for t in tails when t.partialized? then has-partial = true; break
     if has-partial
       util \slice
-      [pre, rest]     = breakIt (.partialized?), tails
-      [partial, post] = splitAt 1, rest if rest?
-      partial.=0
+      pre  = []
+      rest = []
+      for t in tails
+        broken = broken or t.partialized?
+        if   broken
+        then rest.push t
+        else pre .push t
+      [partial, post] = [rest.0, rest.slice 1] if rest?
       @tails = pre
       return (Chain (Chain Var util \partialize 
         .add Call [this; Arr partial.args; Arr partial.partialized]), post).compile o
