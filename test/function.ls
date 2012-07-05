@@ -708,4 +708,6 @@ obj =
 f = obj.three-add 1, _, 3
 eq 6 f 2
 
+eq 9 (6 |> obj.three-add 1, _, 2)
+
 function map f, xs then [f x for x in xs]

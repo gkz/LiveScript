@@ -13,6 +13,7 @@
 # the environment from higher in the tree (such as if a returned value is
 # being requested by the surrounding function), information about the current
 # scope, and indentation level.
+{splitAt, breakIt} = require \prelude-ls
 (Node = -> ...):: =
   compile: (options, level) ->
     o = {} <<< options
@@ -501,16 +502,15 @@ class exports.Chain extends Node
       util \flip
       util \curry
     {head, tails} = this; head <<< {@front, @newed}
-
-    last-tail = tails[*-1]
-    if last-tail instanceof Call and last-tail.partialized
-      tails.pop!
+    for t in tails when t.partialized then has-partial = true; break
+    if has-partial
       util \slice
-      args = last-tail.args
-      code = "#{util \partialize}(#{@compile o, LEVEL_LIST}, ["
-      for a, i in args then code += (if i then ', ' else '') + a.compile o, LEVEL_LIST 
-      code += "], [#{last-tail.partialized.toString!}])"
-      return code
+      [pre, rest]     = breakIt (.partialized?), tails
+      [partial, post] = splitAt 1, rest if rest?
+      partial.=0
+      @tails = pre
+      return (Chain (Chain Var util \partialize 
+        .add Call [this; Arr partial.args; Arr partial.partialized]), post).compile o
     return head.compile o unless tails.length
     return that.compile o if @unfoldAssign o
     @carp 'invalid callee' if tails.0 instanceof Call and not head.isCallable!
@@ -622,7 +622,7 @@ class exports.Call extends Node
       for a, i in args when a.value is \_
         args[i] = Chain Literal \void
         args[i].placeholder = true
-        (@partialized ?= []).push i
+        (@partialized ?= []).push Chain Literal i
     import {args}
 
   children: [\args]

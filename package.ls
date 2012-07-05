@@ -35,6 +35,9 @@ preferGlobal: true
 
 repository: type: \git, url: \git://github.com/gkz/LiveScript.git
 
+dependencies: 
+  \prelude-ls : '>= 0.5.0'
+
 devDependencies:
-  jison      : \0.2.1
-  \uglify-js : \1.2.6
+  jison       : \0.2.1
+  \uglify-js  : \1.2.6
