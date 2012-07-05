@@ -114,7 +114,7 @@
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
 # Unnested callbacks and paren free chaining
-<- $ \h1 .on \click
+<-! $ \h1 .on \click
 alert \boom!
 # Double click to load, then hit 
 # Run and click the LiveScript logo
@@ -125,7 +125,7 @@ alert \boom!
 <pre class="prettyprint lang-js">
 
 $('h1').on('click', function(){
-  return alert('boom!');
+  alert('boom!');
 });
 
 
@@ -143,15 +143,18 @@ take(n, [x, ...xs]:list) =
   | empty list => []
   | otherwise  => [x] +++ (take n - 1, xs)
 
+
+
+
+
+
+
 take 2, [1 2 3 4 5] #=> [1, 2]
 
 takeThree = take 3
 takeThree [3 to 8] #=> [3, 4, 5]
 
-# Implicit argument
-reverse = -> it.reverse!
-
-# Function composition
+# Function composition, reverse from prelude.ls
 lastThree = reverse >> takeThree >> reverse
 lastThree [1 to 8] #=> [6, 7, 8]
 </pre>
@@ -159,7 +162,7 @@ lastThree [1 to 8] #=> [6, 7, 8]
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var take, takeThree, reverse, lastThree, __slice = [].slice;
+var take, takeThree, lastThree, __slice = [].slice;
 take = __curry(function(n, list){
   var x, xs;
   x = list[0], xs = __slice.call(list, 1);
@@ -169,29 +172,26 @@ take = __curry(function(n, list){
   case !empty(list):
     return [];
   default:
-    return [(x)].concat(take(n - 1, xs));
+    return [x].concat(take(n - 1, xs));
   }
 });
 take(2, [1, 2, 3, 4, 5]);
+
 takeThree = take(3);
 takeThree([3, 4, 5, 6, 7, 8]);
-reverse = function(it){
-  return it.reverse();
-};
+
+
 lastThree = __compose((__compose((reverse),(takeThree))),(reverse));
 lastThree([1, 2, 3, 4, 5, 6, 7, 8]);
-
 function __curry(f, args){
-  return f.length ? function(){
+  return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length ?
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
       __curry.call(this, f, params) : f.apply(this, params);
   } : f;
 }
 function __compose(f, g){
-  return function(){
-    return f(g.apply(this, arguments)); 
-  }
+  return function(){ return f(g.apply(this, arguments)); }
 }
 </pre>
         </div>
@@ -200,7 +200,6 @@ function __compose(f, g){
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-
 
 # Easy listing of implicit objects using asterisks
 table1 =
@@ -260,21 +259,20 @@ sortBy = (prop, list) --> list.sort (a, b) ->
 
 
 # operators as functions, backpipe
-fold1 (+) <| pluck \age table2
-#=> 67 ('fold1' and 'pluck' from prelude.ls)
+fold1 (+) <| map (.age), table2
+#=> 67 ('fold1' and map from prelude.ls)
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var table1, table2, upCaseName, 
-  sortBy, id2, age, id1, name,
-  __add = __curry(function(x, y){ return x + y; });
+var table1, table2, upCaseName, sortBy,
+    id1, name, id2, age;
 table1 = [
   { id: 1,
     name: 'george' },
   { id: 2,
-    name: 'mike'   },
+    name: 'mike' },
   { id: 3,
     name: 'donald' }
 ];
@@ -286,10 +284,10 @@ table2 = [
   { id: 3,
     age: 26 }
 ];
-
 upCaseName = function(it){
   return it.name = it.name.toUpperCase();
 };
+
 sortBy = __curry(function(prop, list){
   return list.sort(function(a, b){
     switch (false) {
@@ -307,10 +305,10 @@ each(upCaseName)(
 sortBy('id')(
 (function(){
   var __i, __ref, __len, __ref1, __j, __len1, __ref2, __results = [];
-  for (__i = 0, __len = (__ref = table2).length; __i < __len; ++__i) {
-    __ref1 = __ref[__i], id2 = __ref1.id, age = __ref1.age;
-    for (__j = 0, __len1 = (__ref1 = table1).length; __j < __len1; ++__j) {
-      __ref2 = __ref1[__j], id1 = __ref2.id, name = __ref2.name;
+  for (__i = 0, __len = (__ref = table1).length; __i < __len; ++__i) {
+    __ref1 = __ref[__i], id1 = __ref1.id, name = __ref1.name;
+    for (__j = 0, __len1 = (__ref1 = table2).length; __j < __len1; ++__j) {
+      __ref2 = __ref1[__j], id2 = __ref2.id, age = __ref2.age;
       if (id1 === id2) {
         __results.push({
           id: id1,
@@ -322,17 +320,19 @@ sortBy('id')(
   }
   return __results;
 }()))));
-
-fold1(__add)(
-pluck('age', table2));
-
+fold1(__curry(function(__x, __y){
+  return __x + __y;
+}))(map(function(it){
+  return it.age;
+},table2));
 function __curry(f, args){
-  return f.length ? function(){
+  return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length ?
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
       __curry.call(this, f, params) : f.apply(this, params);
   } : f;
 }
+
 </pre>
         </div>
       </div>
@@ -1176,7 +1176,7 @@ function __curry(f, args){
         </div>
       </div>
 
-      <p>Backcalls are very useful. They allow you to unnest callbacks. They are defined using arrows pointed to the left. All the syntax is the same as regular arrows for defining bound functions (<code><~</code>), curried functions (<code><--, <~~</code>), etc. - except that it is just pointing the other way.
+      <p>Backcalls are very useful. They allow you to unnest callbacks. They are defined using arrows pointed to the left. All the syntax is the same as regular arrows for defining bound functions (<code><~</code>), curried functions (<code><--, <~~</code>), suppressing return (<code><-!</code>) - except that it is just pointing the other way.
 
       <div class="example">
         <div class="example-ls">
