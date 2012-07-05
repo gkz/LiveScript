@@ -1275,9 +1275,7 @@ __partialize(_.reduce, [
   }), 0
 ], [0])(
 __partialize(_.map, [
-  void 8, (function(it){
-    return it * 2;
-  })
+  void 8, (function(it){ return it * 2; })
 ], [0])(
 [1, 2, 3]));
 function __partialize(f, args, where){
@@ -1561,6 +1559,15 @@ func 'hello' #=> lo
 
 
 
+
+# You can also use _ instead of otherwise
+state = | 2 + 2 is 5 => 'I love Big Brother'
+        | _          => 'I love Julia'
+
+
+
+
+
 # CoffeeScript style switches work fine too
 day = \Sun
 switch day
@@ -1576,7 +1583,7 @@ switch day
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var something, result, func, day;
+var something, result, func, state, day;
 switch (6) {
 case 1:
   'hello';
@@ -1637,6 +1644,15 @@ func = function(param){
   }
 };
 func('hello');
+
+state = (function(){
+  switch (false) {
+  case 2 + 2 !== 5:
+    return 'I love Big Brother';
+  default:
+    return 'I love Julia';
+  }
+}());
 
 day = 'Sun';
 switch (day) {
