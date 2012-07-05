@@ -946,7 +946,9 @@ character = if JSON!? then uxxxx else ->
       fallthrough
     case \FOR
       skipBlock := true
-      return able tokens, i or pre.0 is \CREMENT
+      return able tokens, i
+          or pre.0 is \CREMENT
+          or pre.0 is \... and pre.spaced
     false
   !function go token, i then tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
 

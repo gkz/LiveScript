@@ -230,6 +230,9 @@ ok [] = for i to 0 then
 for i from Number 2 to Number 3 by Number 4 then void
 eq 6 i
 
+let i, j = i
+  eq ...for k to 1 then i
+
 
 ### Line folding before/after `for` prepositions
 for x
