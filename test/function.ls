@@ -692,6 +692,7 @@ eq 7 ((obj <<< d: 7).) \d
 three-add = (x, y, z) -> x + y + z
 g = three-add 2, _, 10
 eq 20 g 8
+eq 19 g 7
 
 h = three-add 2, _, _
 f = h _, 6
@@ -700,5 +701,6 @@ eq 10 f 2
 two-add = (x = 10, y) -> x + y
 g = two-add _, 4
 eq 14 g!
+
 
 function map f, xs then [f x for x in xs]
