@@ -54,7 +54,7 @@ LiveScriptMode.Rules =
       regex: //(?
         :t(?:h(?:is|row|en)|ry|ypeof!?)
         |c(?:on(?:tinue|st)|a(?:se|tch)|lass)
-        |i(?:n(?:stanceof)?|mport(?:\s+all)?|[fs])
+        |i(?:n(?:stanceof)?|mp(?:ort(?:\s+all)?|lements)|[fs])
         |d(?:e(?:fault|lete|bugger)|o)
         |f(?:or(?:\s+own)?|inally|unction)
         |s(?:uper|witch)

@@ -262,10 +262,10 @@ bnf =
     o 'TRY Block CATCH Block FINALLY Block' -> new Try $2, $3, $4, $6
     o 'TRY Block             FINALLY Block' -> new Try $2, null null $4
 
-    o 'CLASS                          Block' -> new Class null        null $2
-    o 'CLASS       EXTENDS Expression Block' -> new Class null        $3,  $4
-    o 'CLASS Chain                    Block' -> new Class $2.unwrap!, null $3
-    o 'CLASS Chain EXTENDS Expression Block' -> new Class $2.unwrap!, $4,  $5
+    o 'CLASS Chain OptExtends OptImplements Block'
+    , -> new Class $2.unwrap!, $3, $4, $5
+    o 'CLASS       OptExtends OptImplements Block'
+    , -> new Class null      , $2, $3, $4
 
     o 'Chain EXTENDS Expression' -> Util.Extends $1.unwrap!, $3
 
@@ -276,6 +276,10 @@ bnf =
     , -> new Parens new For from: $2, op: $3, to: $4
     o '[ Expression TO Expression BY Expression ]'
     , -> new Parens new For from: $2, op: $3, to: $4, step: $6 
+
+  Exprs:
+    o         \Expression  -> [$1]
+    o 'Exprs , Expression' -> $1 +++ $3
 
   # The various forms of property.
   KeyValue:
@@ -377,9 +381,13 @@ bnf =
     o       'CASE Exprs Block' -> [new Case $2, $3]
     o 'Cases CASE Exprs Block' -> $1 +++ new Case $3, $4
 
-  Exprs:
-    o         \Expression  -> [$1]
-    o 'Exprs , Expression' -> $1 +++ $3
+  OptExtends:
+    o 'EXTENDS Expression' -> $2
+    o ''                   -> null
+
+  OptImplements:
+    o 'IMPLEMENTS Exprs' -> $2
+    o ''                 -> null
 
 # Precedence and Associativity
 # ----------------------------

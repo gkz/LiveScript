@@ -22,6 +22,7 @@ compileThrows 'unterminated string'     3 "\n\n'\n"
 compileThrows 'unterminated words'      3 '\n\n<[\n'
 
 compileThrows 'contaminated indent %20'    2 '1\n\t 2'
+compileThrows 'contaminated indent %09'    3 ' 1\n  2\n\t3'
 compileThrows 'unmatched dedent (1 for 2)' 3 '1\n  2\n 3'
 
 compileThrows 'unmatched `)`' 2 '()\n)'

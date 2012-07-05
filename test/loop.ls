@@ -227,16 +227,21 @@ compileThrows 'stray continue' 1 \continue
 ok true, while 0 then
 ok [] = for i to 0 then
 
+for i from Number 2 to Number 3 by Number 4 then void
+eq 6 i
 
-### Line folding after `for` prepositions
-for x of
-   {2}
-  for y in
-     [3] by
-     -1
-    for z from
-        5 til
-        6
+
+### Line folding before/after `for` prepositions
+for x
+of   {2}
+  for y
+  in [3]
+    for z
+    from
+      5
+    to
+      7 by
+      11
       eq x*y*z, 30
 
 

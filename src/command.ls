@@ -197,11 +197,10 @@ switch
 # - __??__: <https://github.com/joyent/node/blob/master/lib/readline.js>
 !function repl
   argv.1 = \repl
-  # ref. <https://github.com/joyent/node/blob/master/lib/repl.js>
-  code  = if repl.infunc then '  ' else ''
-  cont  = 0
-  rl  = require(\readline)createInterface process.stdin, process.stdout
-  reset = !->
+  code   = if repl.infunc then '  ' else ''
+  cont   = 0
+  rl     = require(\readline)createInterface process.stdin, process.stdout
+  reset  = !->
     rl.line = code := ''
     rl.prompt!
     repl.inheredoc = false
@@ -211,7 +210,7 @@ switch
     else cont := 0
     _ttyWrite ...
   prompt = \livescript
-  prompt += " -#that" if [\b if o.bare; \c if o.compile]join ''
+  prompt += " -#that" if \b * !!o.bare + \c * !!o.compile
   LiveScript.history = rl.history if LiveScript?
   unless o.compile
     module.paths = module.._nodeModulePaths \
@@ -245,7 +244,7 @@ switch
         rl.output.write \. * prompt.length + '" '
         return
     repl.inheredoc = false
-    code += it
+    return reset! unless code += it
     try
       if o.compile
         say LiveScript.compile code, {o.bare}
@@ -259,12 +258,7 @@ switch
     catch then say e
     reset!
   process.on \uncaughtException !-> say "\n#{ it?stack or it }"
-  process.on \exit !->
-    # Handle `echo 42 | livescript -i` etc.
-    if code and rl.output.isTTY
-      cont := 0
-      say ''
-      rl.emit \line ''
+  process.on \exit              !-> rl._ttyWrite \\r if code and rl.output.isTTY
   rl.setPrompt "#prompt> "
   rl.prompt!
 

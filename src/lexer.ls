@@ -217,7 +217,7 @@ exports import
     if tag in <[ COMPARE LOGIC RELATION ]> and last.0 is \(
       tag = if tag is \RELATION then \BIOPR else \BIOP
     @unline! if tag in <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
-                          IN OF FROM TO BY EXTENDS ]>
+                          IN OF FROM TO BY EXTENDS IMPLEMENTS ]>
     @token tag, id
     input.length
 
@@ -360,6 +360,8 @@ exports import
     {length} = @countLines input
     {last} = this; last <<< {+eol, +spaced}
     return length if index + length >= code.length
+    if tabs and (@emender ||= //[^#{ tabs.charAt! }]//)exec tabs
+      @carp "contaminated indent #{ escape that }"
     if 0 > delta = tabs.length - @dent
       @dedent -delta
       @newline!
@@ -368,7 +370,7 @@ exports import
         @carp "contaminated indent #{ escape that }"
       if (tag = last.0) is \ASSIGN and ''+last.1 not in <[ = := += ]>
       or tag in <[ +- PIPE BACKPIPE DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
-                   IN OF TO BY FROM EXTENDS ]>
+                   IN OF TO BY FROM EXTENDS IMPLEMENTS]>
         return length
       if delta then @indent delta else @newline!
     @wantBy = false
@@ -725,7 +727,9 @@ exports import
   countLines: -> (while pos = 1 + it.indexOf \\n pos then ++@line); it
 
   # Checks FOR for FROM/TO.
-  forange: -> @tokens[*-2]?0 is \FOR and @<<<{-seenFor, +seenFrom}
+  forange: ->
+    if @tokens[* - 2 - (@last.0 in <[NEWLINE INDENT]>)]?0 is \FOR
+      import {-seenFor, +seenFrom}
 
   # Complains on duplicate flag.
   validate: (flag) ->
@@ -919,7 +923,9 @@ character = if JSON!? then uxxxx else ->
   function ok token, i
     tag = token.0
     return true if tag in <[ POST_IF PIPE BACKPIPE ]>
-                or not skipBlock and token.alias and token.1 in <[ && || ]>
+    unless skipBlock
+      return true if token.alias and token.1 in <[ && || ]>
+                  or tag in <[ TO BY IMPLEMENTS ]>
     pre = tokens[i-1]
     switch tag
     case \NEWLINE
@@ -1071,15 +1077,15 @@ function indexOfPair tokens, i
 # Keywords that LiveScript shares in common with JavaScript.
 KEYWORDS_SHARED = <[
   true false null this void super return throw break continue
-  if else for while switch case default try catch finally class extends
-  new do delete typeof in instanceof import function
-  let with var const export debugger
+  if else for while switch case default try catch finally
+  function class extends implements new do delete typeof in instanceof
+  let with var const import export debugger
 ]>
 
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid runtime errors.
 KEYWORDS_UNUSED =
-  <[ enum implements interface package private protected public static yield ]>
+  <[ enum interface package private protected public static yield ]>
 
 KEYWORDS = KEYWORDS_SHARED +++ KEYWORDS_UNUSED
 

@@ -1,7 +1,8 @@
 # Contains all of the node classes for the AST (abstract syntax tree).
 # Most nodes are created as the result of actions in the [grammar](#grammar),
-# but some are created by other nodes as a method of code generation. To convert
-# the syntax tree into a string of JavaScript code, call `compileRoot`.
+# but some are created by other nodes as a method of code generation.
+# To convert the syntax tree into a string of JavaScript code,
+# call `Block::compileRoot`.
 
 ### Node
 # The abstract base class for all nodes in the syntax tree.
@@ -191,7 +192,7 @@ exports.fromJSON = function
     return node
   if it.length? then [fromJSON v for v in it] else it
 
-#### Modules
+#### Mixins
 
 Negatable =
   show   : -> @negated and \!
@@ -369,11 +370,11 @@ class exports.Var extends Atom
   compile: (o) -> if @temp then o.scope.free @value else @value
 
 #### Key
-# The name of a property, in the form of `{key: _}` or `_.key`.
-class exports.Key extends Atom
+# A property name in the form of `{key: _}` or `_.key`.
+class exports.Key extends Node
   (name, @reserved or name.reserved) ~> @name = '' + name
 
-  isAssignable: -> not @reserved
+  isComplex: NO
 
   assigns: -> it is @name
 
@@ -1376,12 +1377,10 @@ class exports.Import extends Node
 #### In
 # Handles `in` operation that tests if the left operand is included within
 # the right operand, arraywise.
-class exports.In extends Node
+class exports.In extends Node implements Negatable
   (@item, @array) ->
 
   children: <[ item array ]>
-
-  ::<<< Negatable
 
   compileNode: (o) ->
     {items} = array = @array.expandSlice(o)unwrap!
@@ -1405,12 +1404,10 @@ class exports.In extends Node
 
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
-class exports.Existence extends Node
+class exports.Existence extends Node implements Negatable
   (@it, @negated) ~>
 
   children: [\it]
-
-  ::<<< Negatable
 
   compileNode: (o) ->
     node = @it.unwrap! <<< {@front}
@@ -1526,23 +1523,23 @@ class exports.Fun extends Node
 
 #### Class
 class exports.Class extends Node
-  (@title, @sup, body) -> @fun = Fun [] body
+  (@title, @sup, @mixins, body) -> @fun = Fun [] body
 
-  children: <[ title sup fun ]>
+  children: <[ title sup mixins fun ]>
 
   isCallable: YES
 
   ripName: !-> @name = it.varName!
 
   compile: (o, level) ->
-    {fun, title} = this
+    {{{lines}:body}:fun, title} = this
     decl = title?varName!
     name = decl or @name
     if ID.test name || '' then fun.cname = name else name = \constructor
-    {lines} = fun.body
+    proto = Var \prototype
     for node, i in lines
       if node instanceof Obj
-        lines[i] = Import proto||=Var(\prototype), node
+        lines[i] = Import proto, node
         for prop in node.items
           if prop.key instanceof [Key, Literal]
             if prop.val instanceof Fun
@@ -1555,10 +1552,15 @@ class exports.Class extends Node
     ctor ||= lines.* = Fun!
     ctor <<< {name, +ctor, +statement}
     lines.push vname = fun.proto = Var fun.bound = name
+    args = []
     if @sup
-      args = [that]
+      args.push that
       fun.proto = Util.Extends vname, fun.params.* = Var \superclass
-    fun.cname and fun.body.prepend Literal "#name.displayName = '#name'"
+    if @mixins
+      imports = for args.* in that
+        Import proto, JS("arguments[#{args.length-1}]"), true
+      body.prepend ...imports
+    fun.cname and body.prepend Literal "#name.displayName = '#name'"
     clas = Parens Call.make(fun, args), true
     clas = Assign vname, clas if decl and title.isComplex!
     clas = Assign title, clas if title
@@ -2009,7 +2011,8 @@ class exports.If extends Node
              #pad: #{ els?compile o, LEVEL_LIST  or 'void 8' }"
     if o.level < LEVEL_COND then code else "(#code)"
 
-  # Unfolds a node's child if soak, then tuck the node under the created **If**.
+  # Unfolds a node's child if soak,
+  # then tuck the node under the created **If**.
   @unfoldSoak = (o, parent, name) ->
     if parent[name]unfoldSoak o
       parent[name] = that.then
@@ -2064,7 +2067,7 @@ class exports.JS extends Node
 class exports.Util extends Node
   (@verb) ~>
 
-  {::show} = Jump::
+  {(Jump::)show}
 
   isCallable: YES
 

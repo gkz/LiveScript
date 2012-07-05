@@ -256,6 +256,54 @@ class A extends NameEater
 eq 'A,B' ''+NameEater.subnames
 
 
+# Line folding around `extends`
+class   Inject
+extends Object
+  class Reject extends
+        Object
+    ok true
+
+
+#### `implements`
+Mover =
+  x: 0, y: 0
+  moveTo: (@x, @y) -> this
+  moveBy: (dx, dy) -> @x += dx; @y += dy; this
+
+Magnitude =
+  lt  : -> ...
+  gt  : -> it.lt this
+  lte : -> @lt it or @eq it
+  gte : -> @gt it or @eq it
+  eq  : -> not @neq it
+  neq : -> @lt it or @gt it
+
+Measurable =
+  lt: -> @measure! < it.measure!
+
+class Point implements Mover
+  isAt: -> @x is it.x and @y is it.y
+
+class Rect extends Point implements Magnitude, Measurable
+  (@w, @h) ->
+  measure: -> @w * @h
+
+r0 = new Rect 2 3
+r1 = new Rect 5 7
+r0.moveTo 1, 1
+r1.moveBy 1, 1
+ok r0.isAt r1
+ok r0.neq  r1
+ok r1.gte  r0
+ok r0.eq new Rect 1 6
+
+ok class extends Function '' implements
+                               {}
+  class
+  implements {}
+    void
+
+
 ### Clone
 bird     = {+wing, fly: -> @wing}
 wingless = {-wing}
@@ -270,11 +318,3 @@ ok not donaldo.fly()
 
 ok ^^new Number instanceof Number
 eq (^^new Number)constructor, Number
-
-
-# Line folding around `extends`
-class   Inject
-extends Object
-  class Reject extends
-        Object
-    ok true
