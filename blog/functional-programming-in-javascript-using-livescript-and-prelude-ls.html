@@ -38,7 +38,7 @@
       <div class="span10 content">
         <h1>Functional Programming in JavaScript using LiveScript and prelude.ls</h1>
         <div class="date-author">
-          <span class="date">19 Jun 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+          <span class="date">19 Jun 2012, updated 6 Jul 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
         </div>
         
 <p>JavaScript is a great language, with powerful support for functional style programming. Unfortunately, its abilities are obscured by an awkward syntax and a lack of a good standard library. 
@@ -47,7 +47,7 @@
 
 <p><a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> is a JavaScript library (written in LiveScript) which provides a rich set of functions to assist in functional style programming. It is somewhat based off of Haskell's Prelude module. It's the recommended base library for LiveScript, but will work with vanilla JavaScript as well.
 
-<p>What is meant by <em>functional style programming</em>? Well, there isn't wide support for immutable values in JavaScript, and since LiveScript is a straightforward mapping to JavaScript, it does not support immutable values either. However, we will be discussing functions as first class values, higher order functions, iteration, currying, composing, piping, operators as functions, and more.
+<p>What is meant by <em>functional style programming</em>? Well, we will be discussing functions as first class values, higher order functions, iteration, currying, composing, piping, operators as functions, and more.
 
 <p class="note">Are you familiar with CoffeeScript? If so you can <a href="#iteration">skip ahead a couple of sections</a>.
 
@@ -348,7 +348,6 @@ function __compose(f, g){ return function(){
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
 
-
 timesTwo = (* 2)
 timesTwo 4 #=> 8
 
@@ -357,24 +356,12 @@ odd = (not) << even
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var timesTwo, odd, 
-    __multiply = __curry(function(x, y){ return x * y; });
-timesTwo = __multiply(2);
+var timesTwo, odd;
+timesTwo = (function(it){ return it * 2; });
 timesTwo(4);
-
 odd = __compose((__not),(even));
-
-function __curry(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length 
-        && arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
-  } : f;
-}
-function __compose(f, g){ return function(){
-    return f(g.apply(this, arguments)); } }
-function __not(x){ return !x; }
+function __compose(f, g){
+  return function(){ return f(g.apply(this, arguments)); }
 </pre>
   </div>
 </div>
@@ -397,21 +384,22 @@ function __not(x){ return !x; }
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var __add = __curry(function(x, y){ return x + y; }),
-    __multiply = __curry(function(x, y){ return x * y; });
-fold(__add, 0)(
-map(__multiply(2))(
+fold(__curry(function(__x, __y){
+  return __x + __y;
+}), 0)(
+map((function(it){
+  return it * 2;
+}))(
 filter(even)(
 [1, 2, 3, 4, 5])));
-
 function __curry(f, args){
   return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length 
-        && arguments.length ?
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
       __curry.call(this, f, params) : f.apply(this, params);
   } : f;
 }
+
 </pre>
   </div>
 </div>
@@ -524,26 +512,24 @@ r = __res;
 
 <h3>Concatenation</h3>
 
-<p>You can use the cons operator <code>&</code> to put something in front of a list, or use the append operator <code>+++</code> to join to lists, or add something to the end of a list.
+<p>You can use the concat operator <code>+++</code> to join to lists, or add something to the end of a list.
 
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
-1 & [2, 3]        #=> [1, 2, 3]
 [1, 2] +++ [3, 4] #=> [1, 2, 3, 4]
 [1, 2] +++ 3      #=> [1, 2, 3]
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-[(1)].concat([2, 3]);
 ([1, 2]).concat([3, 4]);
 ([1, 2]).concat(3);
 </pre>
   </div>
 </div>
 
-<p>Note that these all return new lists, and don't modify the inputed ones.
+<p>Note that it returns a new list, and doesn't modify the inputed ones.
 
 
 <h3>Conclusion</h3>
@@ -554,7 +540,7 @@ r = __res;
 take(n, [x, ...xs]:list) =
   | n <= 0     => []
   | empty list => []
-  | otherwise  => x & take n - 1, xs
+  | otherwise  => [x] +++ (take n - 1, xs)
 
 take 2, [1 to 5] #=> [1, 2]
 </pre>
