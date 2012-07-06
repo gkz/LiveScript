@@ -1,37 +1,127 @@
-title: Ten reasons to switch from CoffeeScript to LiveScript
-date:  4 Jul 2012
+title: 10 Reasons to Switch from CoffeeScript to LiveScript
+date:  5 Jul 2012
 author: <a href="http://paulmillr.com/">Paul Miller</a>
 -----
 
-<p><a href="http://coffeescript.org">CoffeeScript</a> has been around for a while and is now used by many developers and tools.</p>
+<p class="note">The following is a guest post by Paul Miller. You can submit a guest post as well, just send a pull request.
 
-<p>But why should someone switch from Coffee to its fork, LiveScript?
-Here's ten reasons:</p>
+<p><a href="http://coffeescript.org">CoffeeScript</a> has been around for a while and is now used by many developers and tools.
+
+<p>But why should someone switch from CoffeeScript to its fork, LiveScript?
+Here are ten reasons:
 
 <ol>
-<li>Improved readability. LiveScript supports dashes in identifiers and mangles them to camelCase to keep consistent with javascript code style. <code>document.query-selector-all</code> will be transformed to <code>document.querySelectorAll</code>. As for numbers, they support underscores and suffixes: <code>64_000km</code> will be compiled simply to <code>64000</code>.</li>
+<li><h3>Improved Readability</h3>
+<p>LiveScript supports dashes in identifiers and mangles them to camelCase to keep consistent with JavaScript code style. 
 
-<li><code>|&gt;</code> chaining operator. It works with functions instead of methods on prototypes which allows to easily write your own modular functions for chains.</li>
+<pre class="prettyprint">document.query-selector-all</pre>
 
-<li><a href="http://gkz.github.com/prelude-ls/">Standard library</a>. ECMAScript 5 array extras are nice, but they’re not enough. Plays awesomly with chaining operator.</li>
+<p>is equivalent to and will compile to
 
-<li>Partially applied operators and member access. This allows writing pure functional code without boilerplate: <code>people |&gt; map (.name) |&gt; filter (in visitors)</code> instead of <code>people.map((man) -&gt; man.name).filter((name) -&gt; name in visitors)</code>.</li>
+<pre class="prettyprint lang-ls">document.querySelectorAll</pre>
 
-<li>Compiler flag that disables variable reassignments in compile-time for less errors. Works like ES6 <code>const</code>, but it compiles to <code>var</code>, because <code>const</code> isn’t supported greatly by engines today.</li>
+<p>As for numbers, they support underscores and suffixes: 
 
-<li>Improved scoping. <code>=</code> always declares variable in current scope, use <code>:=</code> for redeclaration of outer scope var, which reduces bugs.</li>
+<pre class="prettyprint lang-ls">64_000km</pre>
 
-<li>Improved operators associativity. <code>unique pulls .length</code> will execute <code>unique</code> and then get <code>.length</code> property of result, unlike in coffeescript, which requires brackets. <code>unique node or not empty node</code> compiles to <code>unique(node) || !empty(node)</code> and not to <code>unique(node || !empty(node))</code>.</li>
+<p>will be compiled simply to 
 
-<li>Real, ECMAScript 6 / Python / Haskell-style flattened list comprehensions. `[x ** y for x in [10, 20] for y in [2, 3]]` will create `[100, 1000, 400, 8000]` as it should.</li>
+<pre class="prettyprint lang-ls">64000</pre>
 
-<li>Curried functions. <code>(a, b, c) --&gt; a * b * c</code> instead of <code>(a) -&gt; (b) -&gt; (c) -&gt; a * b * c</code>. Very useful for functional caching of stuff.</li>
+<li><h3><code>|&gt;</code> Pipe Operator</h3>
+<p>It works with functions instead of methods on prototypes which allows to easily write your own modular functions for chains. For example:
 
-<li>New idioms. Async callbacks flattening syntax: <code>error &lt;- fs.write-file path, data</code>. “Array of words” ruby idiom: <code>&lt;[one two three]&gt;</code> vs <code>['one', 'two', 'three']</code>. <code>is not</code> works like <code>isnt</code>, like in Python and unlike in Coffee <code>2 is not 4</code> is <code>2 !== 4</code> and not <code>2 === !4</code> and much more.</li>
+<pre class="prettyprint lang-ls">
+[1 2 3] |> map (* 2) |> sum #=> 10
+</pre>
+
+<li><h3>Standard Library</h3>
+<p><a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> - based off of Haskell's Prelude module. ECMAScript 5 array extras are nice, but they’re not enough. Plays awesomly with the pipe operator.
+
+<li><h3>Partially Applied Operators and Member Access</h3>
+<p>This allows writing pure functional code without boilerplate: 
+
+<pre class="prettyprint lang-ls">people |&gt; map (.name) |&gt; filter (in visitors)</pre>
+
+<p>instead of 
+
+<pre class="prettyprint lang-ls">people.map((man) -&gt; man.name).filter((name) -&gt; name in visitors)</pre>
+
+<li><h3>Constants</h3>
+
+<pre class="prettyprint lang-ls">const x = 10</pre>
+
+<p>They are checked at compile-time for less errors. Works like ES6 <code>const</code>, but it compiles to <code>var</code>, because <code>const</code> isn’t supported greatly by engines today.
+
+<li><h3>Improved scoping</h3>
+<p><code>=</code> always declares variable in current scope, use <code>:=</code> for redeclaration of outer scope variables, which reduces bugs.
+
+<pre class="prettyprint lang-ls">
+x = 1
+y = 1
+do ->
+  x = 2
+  y := 2
+x #=> 1
+y #=> 2
+</pre>
+
+<li><h3>Improved operators associativity</h3>
+<pre class="prettyprint lang-ls">unique pulls .length</pre>
+
+<p>will execute <code>unique</code> and then get <code>.length</code> property of result, unlike in CoffeeScript, which requires brackets. And thus it is equivalent to
+
+<pre class="prettyprint lang-ls">unique(pulls).length</pre>
+
+<p>this allows for parentheses free chaining
+
+<pre class="prettyprint lang-ls">unique node or not empty node</pre>
+
+<p>compiles to 
+
+<pre class="prettyprint lang-ls">unique(node) || !empty(node)</pre>
+
+<li><h3>Real, ECMAScript 6 / Python / Haskell-style flattened list comprehensions</h3>
+<pre class="prettyprint lang-ls">[x ** y for x in [10, 20] for y in [2, 3]]</pre>
+
+<p>will create 
+
+<pre class="prettyprint lang-ls">[100, 1000, 400, 8000]</pre>
+
+<p>as it should.
+
+<li><h3>Curried functions</h3>
+<pre class="prettyprint lang-ls">(a, b, c) --&gt; a * b * c</pre>
+
+<p>instead of 
+
+<pre class="prettyprint lang-ls">(a) -&gt; (b) -&gt; (c) -&gt; a * b * c</pre>
+
+<p>Very useful for functional caching of stuff.
+
+<li><h3>New idioms</h3>
+<p>Async callbacks flattening syntax: 
+
+<pre class="prettyprint lang-ls">
+error &lt;- fs.write-file path, data
+alert error
+</pre>
+
+<p>“Array of words” Ruby idiom: 
+
+<pre class="prettyprint lang-ls">&lt;[one two three]&gt;</pre>
+
+<p>vs
+
+<pre class="prettyprint lang-ls">['one', 'two', 'three']</pre>
 </ol>
 
-<p>In case you’ve already written some coffeescript code, there’s <a href="http://gkz.github.com/LiveScript/#coffee-to-ls">conversion guide</a>.</p>
+<hr>
+
+<p>In case you’ve already written some CoffeeScript code, there’s a <a href="http://gkz.github.com/LiveScript/#coffee-to-ls">conversion guide</a>.</p>
 
 <p>If you decided to write a web application with LiveScript,
-I recommend to take a look at <a href="http://brunch.io/">Brunch</a>,
-which "just works" and supports livescript without mess.</p>
+I recommend you take a look at <a href="http://brunch.io/">Brunch</a>,
+which "just works" and supports LiveScript cleanly.</p>
+
+<p>Interested in functional programming? Take a look at <a href="http://gkz.github.com/LiveScript/blog/functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a>.
