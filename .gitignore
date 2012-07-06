@@ -1,4 +1,5 @@
 t.*
+bench.ls
 test/*.js
 *#
 extras/*.raw.js
