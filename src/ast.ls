@@ -511,7 +511,7 @@ class exports.Chain extends Node
         if   broken
         then rest.push t
         else pre .push t
-      [partial, post] = [rest.0, rest.slice 1] if rest?
+      [partial, ...post] = rest if rest?
       @tails = pre
       return (Chain (Chain Var util \partialize 
         .add Call [this; Arr partial.args; Arr partial.partialized]), post).compile o
