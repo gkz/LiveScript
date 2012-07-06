@@ -501,7 +501,9 @@ class exports.Chain extends Node
       util \flip
       util \curry
     {head, tails} = this; head <<< {@front, @newed}
-    for t in tails when t.partialized? then has-partial = true; break
+    return head.compile o unless tails.length
+    return that.compile o if @unfoldAssign o
+    for t in tails when t.partialized then has-partial = true; break
     if has-partial
       util \slice
       pre  = []
@@ -515,8 +517,6 @@ class exports.Chain extends Node
       @tails = pre
       return (Chain (Chain Var util \partialize 
         .add Call [this; Arr partial.args; Arr partial.partialized]), post).compile o
-    return head.compile o unless tails.length
-    return that.compile o if @unfoldAssign o
     @carp 'invalid callee' if tails.0 instanceof Call and not head.isCallable!
     @expandSlice o; @expandBind o; @expandSplat o; @expandStar o
     return @head.compile o unless @tails.length
