@@ -141,7 +141,7 @@ $('h1').on('click', function(){
 take(n, [x, ...xs]:list) =
   | n <= 0     => []
   | empty list => []
-  | otherwise  => [x] +++ (take n - 1, xs)
+  | otherwise  => [x] +++ take n - 1, xs
 
 
 
@@ -1256,7 +1256,7 @@ function __partialize(f, args, where){
 
       <p>If you call a partially applied function with no arguments, it will execute as is instead of returning itself, allowing you to use default arguments.
 
-      <p>Partially applied functions are also really useful for piping if the functions you are using don't have a nice argument order and aren't curried (like in underscore.js for isntance).
+      <p>Partially applied functions are also really useful for piping if the functions you are using don't have a nice argument order and aren't curried (like in underscore.js for instance).
 
       <div class="example">
         <div class="example-ls">
