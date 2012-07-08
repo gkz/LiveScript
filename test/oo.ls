@@ -336,3 +336,36 @@ eq 5 (new C)getX!
 class D
   extends C
 eq 5 (new D)getX!
+
+# Bound methods are bound to instance not class, 
+# however bound static funcs are still bound to class
+class G
+  ->
+    @x = 5
+    @y = 6
+  getX: -> @x
+  getY: ~> @y
+  @x = \staticX
+  @y = \staticY
+  @getStatX = -> @x
+  @getStatY = ~> @y
+
+g = new G
+obj = x: 0, y: 0
+obj{getX, getY} = g
+obj{getStatY, getStatX} = G
+
+eq 0 obj.getStatX!
+eq \staticY obj.getStatY!
+
+eq 0 obj.getX!
+eq 6 obj.getY!
+
+class H extends G
+
+h = new H
+obj = x: 0, y: 0
+obj{getX, getY} = h
+
+eq 0 obj.getX!
+eq 6 obj.getY!

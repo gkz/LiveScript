@@ -1558,6 +1558,7 @@ class exports.Class extends Node
 
   compile: (o, level) ->
     {{{lines}:body}:fun, title} = this
+    bound-funcs = []
     decl = title?varName!
     name = decl or @name
     if ID.test name || '' then fun.cname = name else name = \constructor
@@ -1569,6 +1570,9 @@ class exports.Class extends Node
           if prop.key instanceof [Key, Literal]
             if prop.val instanceof Fun
               prop.val.meth = prop.key
+              if prop.val.bound 
+                bound-funcs.push prop.key
+                prop.val.bound = false
             else if prop.accessor
               for f in prop.val then f.meth = prop.key 
       else if node instanceof Fun and not node.statement
@@ -1578,6 +1582,11 @@ class exports.Class extends Node
                     then  Fun [] Block Chain(new Super).add Call [Splat Literal \arguments]
                     else Fun!
     ctor <<< {name, +ctor, +statement}
+    for f in bound-funcs
+      ctor.body.lines.unshift do
+        Assign (Chain Literal \this .add Index f), 
+               (Chain Var (util \bind) 
+                 .add Call [Literal \this; Literal "'#{f.name}'"; Var \prototype])
     lines.push vname = fun.proto = Var fun.bound = name
     args = []
     if @sup
@@ -2253,8 +2262,8 @@ UTILS =
   }'''
 
   # Creates a bound method.
-  bind: '''function(obj, key){
-    return function(){ return obj[key].apply(obj, arguments) };
+  bind: '''function(obj, key, target){
+    return function(){ return (target || obj)[key].apply(obj, arguments) };
   }'''
 
   # Copies properties from right to left.
