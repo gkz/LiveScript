@@ -843,6 +843,10 @@ character = if JSON!? then uxxxx else ->
               [\)PARAM \)  line]
               [\->     \-> line]
             break LOOP
+    case tag is \CLASS
+      k = i
+      while t = tokens[++k] when t.0 in <[ THEN NEWLINE INDENT ]> then break
+      tokens.splice k, 0, [\THEN \THEN line] if t.0 is \NEWLINE
     prev = token
     continue
 
