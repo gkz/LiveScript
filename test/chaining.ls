@@ -155,6 +155,9 @@ eq '1,2'   "#{ l[til z] }"
 
 eq '1,2,3,4,5' "#{ l[to] }"
 
+eq '1,2,3' "#{ l[til -2] }"
+eq '2,3' "#{ l[1 til -2] }"
+
 # Automatic Dot Insertion
 eq @toString, @\toString
 eq @toString, @"to#{\S}tring"

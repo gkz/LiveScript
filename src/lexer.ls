@@ -1002,10 +1002,12 @@ character = if JSON!? then uxxxx else ->
       lno = token.2
       if   tokens[i-1]0 is \[
       and  tokens[i+1]0 is \STRNUM
-      and (tokens[i+2]0 is \] 
-      or  (tokens[i+2]0 is \RANGE_BY
-      and  tokens[i+3]?0 is \STRNUM
-      and  tokens[i+4]?0 is \]))
+      and ((tokens[i+2]0 is \] 
+        and (tokens[i+1]1.charAt(0) in [\' \"]
+          or +tokens[i+1]1 >= 0))
+        or  (tokens[i+2]0 is \RANGE_BY
+        and  tokens[i+3]?0 is \STRNUM
+        and  tokens[i+4]?0 is \]))
         [fromNum, char] = decode token.1, lno
         [toNum, tochar] = decode tokens[i+1].1, lno
         carp 'bad "to" in range' lno if char ^^^ tochar
