@@ -318,3 +318,12 @@ ok not donaldo.fly()
 
 ok ^^new Number instanceof Number
 eq (^^new Number)constructor, Number
+
+# Inherit super
+class A
+  -> @x = 5
+
+class B extends A
+  getX: -> @x
+
+eq 5 (new B).getX!

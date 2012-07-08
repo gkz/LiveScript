@@ -1548,7 +1548,7 @@ class exports.Fun extends Node
 
 #### Class
 class exports.Class extends Node
-  (@title, @sup, @mixins, body) -> @fun = Fun [] body
+  ({@title, @sup, @mixins, body}) -> @fun = Fun [] body
 
   children: <[ title sup mixins fun ]>
 
@@ -1574,7 +1574,9 @@ class exports.Class extends Node
       else if node instanceof Fun and not node.statement
         ctor and node.carp 'redundant constructor'
         ctor = node
-    ctor ||= lines.* = Fun!
+    ctor ||= lines.* = if @sup and @sup instanceof [Fun, Var]
+                    then  Fun [] Block Chain(new Super).add Call [Splat Literal \arguments]
+                    else Fun!
     ctor <<< {name, +ctor, +statement}
     lines.push vname = fun.proto = Var fun.bound = name
     args = []
@@ -1594,6 +1596,8 @@ class exports.Class extends Node
 #### Super
 # Reference to the parent method or constructor.
 class exports.Super extends Node
+  -> 
+
   isCallable: YES
 
   compile: ({scope}:o) ->

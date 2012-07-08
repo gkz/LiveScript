@@ -277,14 +277,15 @@ bnf =
     o 'TRY Block             FINALLY Block' -> new Try $2, null null $4
 
     o 'CLASS Chain OptExtends OptImplements Block'
-    , -> new Class $2.unwrap!, $3, $4, $5
+    , -> new Class title: $2.unwrap!, sup: $3, mixins: $4, body: $5
     o 'CLASS       OptExtends OptImplements Block'
-    , -> new Class null      , $2, $3, $4
+    , -> new Class                    sup: $2, mixins: $3, body: $4
 
     o 'Chain EXTENDS Expression' -> Util.Extends $1.unwrap!, $3
 
     o 'LABEL Expression' -> new Label $1, $2
     o 'LABEL Block'      ditto
+
 
   Exprs:
     o         \Expression  -> [$1]
