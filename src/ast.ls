@@ -410,6 +410,20 @@ class exports.Index extends Node
     if @key instanceof Key and \' is not code.charAt 0
     then ".#code" else "[#code]"
 
+#### Slice
+# slices away at the target
+class exports.Slice extends Node
+  ({@type, @target, @from, @to}) ~>
+
+  children: [\target \from \to]
+
+  show: -> @type
+    
+  compileNode: (o) ->
+    "#{util \slice }.call(#{@target.compile o}, 
+     #{if @from then @from.compile o else \0}
+     #{if @to then \, + @to.compile(o) + (if @type is \to then ' + 1' else '') else ''})"
+
 #### Chain
 # Acts as a container for property-access/function-call chains, by holding
 # __Index__ or __Call__ instances as `@tails`.

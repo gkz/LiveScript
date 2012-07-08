@@ -134,6 +134,26 @@ compileThrows 'empty slice' 1 'o[,,]'
 
 if 0 then @front{ne,ss}
 
+x = 3
+y = 1
+l = [1 to 5]
+eq '2,3,4' "#{ l[1 to  x] }"
+eq '2,3'   "#{ l[1 til x] }"
+
+eq '2,3,4' "#{ l[y to  3] }"
+eq '2,3'   "#{ l[y til 3] }"
+
+eq '2,3,4' "#{ l[y to  x] }"
+eq '2,3'   "#{ l[y til x] }"
+
+eq '3,4,5' "#{ l[2 til] }"
+eq '1,2'   "#{ l[til 2] }"
+
+z = 2
+eq '3,4,5' "#{ l[z til] }"
+eq '1,2'   "#{ l[til z] }"
+
+eq '1,2,3,4,5' "#{ l[to] }"
 
 # Automatic Dot Insertion
 eq @toString, @\toString

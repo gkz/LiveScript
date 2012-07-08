@@ -110,6 +110,15 @@ bnf =
     o '[ Expression TO Expression BY Expression ]'
     , -> Chain new For from: $2, op: $3, to: $4, step: $6 
 
+    o 'Chain DOT [ Expression TO Expression ]'
+    , -> Chain Slice type: $5, target: $1, from: $4, to: $6
+    o 'Chain DOT [ Expression TO ]'
+    , -> Chain Slice type: $5, target: $1, from: $4
+    o 'Chain DOT [ TO Expression ]'
+    , -> Chain Slice type: $4, target: $1, to: $5
+    o 'Chain DOT [ TO ]'
+    , -> Chain Slice type: $4, target: $1
+
   # An array or object
   List:
     o '[ ArgList    OptComma ]' -> L Arr $2
