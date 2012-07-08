@@ -32,6 +32,7 @@ eq 3000c, 30$ * 100
 eq 36rpm 36
 
 
+# Ranges
 start = 1
 end   = 5
 step  = 2
@@ -49,6 +50,9 @@ eq '1,3,5'     String [1     to  5   by 2    ]
 
 to = 3
 eq 3 to
+
+eq 4 [1 to end].3
+eq 5 [1 to end].length
 
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Boolean/Number should be indexable.

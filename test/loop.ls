@@ -56,6 +56,8 @@ results = [n * 2 for n in nums]
 
 eq results + '', '2,18'
 
+eq 11 [x for x to 10]length
+
 
 # Basic 'of' comprehensions.
 obj   = {one: 1, two: 2, three: 3}

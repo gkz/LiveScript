@@ -70,9 +70,9 @@ bnf =
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 
-    o '[ Expression LoopHeads ]'  -> Chain new Parens $3.0.makeComprehension $2, $3.slice 1 
+    o '[ Expression LoopHeads ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1 
     o '{ [ ArgList OptComma ] LoopHeads }'
-    , -> Chain new Parens $6.0.addObjComp!makeComprehension (L Arr $3), $6.slice 1
+    , -> Chain $6.0.addObjComp!makeComprehension (L Arr $3), $6.slice 1
 
     o '( BIOP )'            -> Chain Binary $2
     o '( BIOP Expression )' -> Chain Binary $2, , $3
@@ -104,6 +104,11 @@ bnf =
     o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
     o '( BACKTICK Chain BACKTICK Expression )' 
     , -> Chain(Chain Var \__flip .add Call [$3]).flipIt!add Call [$5]
+
+    o '[ Expression TO Expression ]'
+    , -> Chain new For from: $2, op: $3, to: $4
+    o '[ Expression TO Expression BY Expression ]'
+    , -> Chain new For from: $2, op: $3, to: $4, step: $6 
 
   # An array or object
   List:
@@ -271,11 +276,6 @@ bnf =
 
     o 'LABEL Expression' -> new Label $1, $2
     o 'LABEL Block'      ditto
-
-    o '[ Expression TO Expression ]'
-    , -> new Parens new For from: $2, op: $3, to: $4
-    o '[ Expression TO Expression BY Expression ]'
-    , -> new Parens new For from: $2, op: $3, to: $4, step: $6 
 
   Exprs:
     o         \Expression  -> [$1]
