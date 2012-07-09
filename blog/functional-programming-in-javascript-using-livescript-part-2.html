@@ -14,7 +14,7 @@
 
 <script src="../google-code-prettify/prettify.js"></script>
 <link href="../google-code-prettify/prettify.css" rel="stylesheet">
-<script src="../lang-ls-0.9.11.js"></script>
+<script src="../lang-ls-0.9.12.js"></script>
 
 <link href="styles.css" rel="stylesheet">
 
@@ -76,7 +76,7 @@ x = 10;
 
 <pre class="prettyprint lang-ls">
 x = 0  # error: redeclaration of constant "x" on line 2
-X++    # error: increment of constant "x" on line 2
+x++    # error: increment of constant "x" on line 2
 x += 2 # error: assignment to constant "x" on line 2
 </pre>
 
@@ -102,7 +102,7 @@ livescript -ck file.ls
 
 <p>Curried functions are very useful, but what should you do when the functions you are dealing with aren't curried or don't have their arguments in the order you want?
 
-<p>You can partially apply functions by calling them using an underscore <code>_</code> as a placeholder for the values you don't want to bind. When you partially apply a function, instead of executing that function, a new function is returned with the arguments you supplied already bound, and the whose arguments are the ones you put the placeholder on.
+<p>You can now partially apply functions by calling them using an underscore <code>_</code> as a placeholder for the values you don't want to bind. When you partially apply a function, instead of executing that function, a new function is returned with the arguments you supplied already bound, and the whose arguments are the ones you put the placeholder on.
 
 <div class="example">
 <div class="example-ls">
@@ -195,7 +195,7 @@ function __curry(f, args){
 
 <p>This feature came as an idea from a <a href="http://news.ycombinator.com/item?id=4136354">Hacker News comment</a>.
 
-<p>When mapping and filtering over collections of objects, it would be really useful to have a succinct way to express functions which access properties or call methods.
+<p>When mapping and filtering over collections of objects, it is really useful to have a succinct way to express functions which access properties or call methods.
 
 <pre class="prettyprint lang-ls">
 (.prop)
@@ -303,7 +303,7 @@ if (typeof window != 'undefined' && window !== null) {
 
 <p><code>&0</code> is the first argument, <code>&1</code> is the second, and so on.
 
-<p>A good use case for this is when defining custom functions on which to fold, as those functions require two arguments and can't take advantage of some the other function shorthand available. 
+<p>A good use case for this is when defining custom functions on which to fold, as those functions require two arguments and can't take advantage of some the other function defining shorthand available. 
 
 <div class="example">
 <div class="example-ls">
@@ -440,7 +440,7 @@ list2;
 <pre class="prettyprint lang-ls">
 switch
 case 5 == 6 
-  \never
+  'never'
 case false
   'also never'
 case 6 / 2 is 3
@@ -530,7 +530,7 @@ function __curry(f, args){
 </div>
 
 
-<h3>Piping</h3>
+<h3>Piping Updates</h3>
 
 <p>The forward pipe operator <code>|&gt;</code> now has increased precedence, allowing you to assign a variable to the result of several steps without surrounding the entire thing with parentheses.
 
@@ -589,7 +589,7 @@ function __curry(f, args){
 
 <p>Have any ideas or suggestions? You can <a href="https://github.com/gkz/LiveScript/issues?direction=desc&sort=updated&state=open">create a ticket on GitHub</a> or ask general questions at the <a href="https://groups.google.com/forum/#!forum/livescript">LiveScript Google Group</a>.
 
-<p>Check out the <a href="ADDHNLINK">discussion on Hacker News</a>.
+<!--<p>Check out the <a href="ADDHNLINK">discussion on Hacker News</a>.-->
 
 <p>And finally, for more information, <strong><a href="http://gkz.github.com/LiveScript/">check out the LiveScript site</a></strong>.
 
