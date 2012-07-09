@@ -12,7 +12,7 @@ eq 32,
   1 *
   2 +
   3 -
-  4 <<<<<
+  4 .<<. 
   5
 
 if  false
@@ -21,8 +21,8 @@ and null
 ?   false
 !?  true
   eq 3 1
-     &&& 2
-     ||| 3
+     .&. 2
+     .|. 3
 else ok 0 'leading logical/bitwise operators should continue lines'
 
 
@@ -35,7 +35,7 @@ ok 10 < 20 > 10
 
 ok 50 > 10 > 5 is parseInt('5', 10)
 
-eq 1, 1 ||| 2 < 3 < 4
+eq 1, 1 .|. 2 < 3 < 4
 
 ok 1 == 1 <= 1, '`x == y <= z` should become `x == y && y <= z`'
 
@@ -187,21 +187,14 @@ eq c, 3
 
 
 # Bitwise operators:
-eq (10 &&&   3), 2
-eq (10 |||   3), 11
-eq (10 ^^^   3), 9
-eq (10 <<<<< 3), 80
-eq (10 >>>>  3), 1
-eq (10 >>>>> 3), 1
-
-num = 10; eq (num = num ^^^ 3), 9
-
 eq (10 .&.   3), 2
 eq (10 .|.   3), 11
 eq (10 .^.   3), 9
 eq (10 .<<.  3), 80
 eq (10 .>>.  3), 1
 eq (10 .>>>. 3), 1
+
+num = 10; eq (num = num .^. 3), 9
 
 # [coffee#737](https://github.com/jashkenas/coffee-script/issues/737)
 eq 1, 1 in [1] && 1
@@ -625,9 +618,9 @@ eq 5 (3 |>) (+ 2)
 eq 5 (<| 3 2 ) (+)
 eq 5 (3 2 |>) (+)
 
-eq 2 (&&&) 10 3
-eq 2 (10 &&&) 3
-eq 2 (&&& 3) 10
+eq 2 (.&.) 10 3
+eq 2 (10 .&.) 3
+eq 2 (.&. 3) 10
 
 x = 2
 (x +=) 2

@@ -156,7 +156,7 @@ switch
 !function watch source, action
   :repeat let ptime = 0
     {mtime} <-! fshoot \stat source
-    do action if ptime ^^^ mtime
+    do action if ptime .^. mtime
     setTimeout repeat, 500ms, mtime
 
 # Write out a JavaScript source file with the compiled code. By default, files

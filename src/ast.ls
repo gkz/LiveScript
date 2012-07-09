@@ -766,7 +766,7 @@ class exports.Obj extends List
         "#{ key = node.compile o }: #key"
       # Canonicalize the key, e.g.: `0.0` => `0`
       ID.test key or key = do Function "return #key"
-      node.carp "duplicate property \"#key\"" unless dic"#key." = dic"#key." ^^^ 1
+      node.carp "duplicate property \"#key\"" unless dic"#key." = dic"#key." .^. 1
     code = "{#{ code and code + \\n + @tab }}"
     rest and code = Import(JS code; Obj rest)compile o <<< indent: @tab
     if @front and \{ is code.charAt! then "(#code)" else code
@@ -1049,9 +1049,6 @@ class exports.Binary extends Node
   mapOp: (op) ->
     | op.match //\.([&\|\^] | << | >>>?)\.// => that.1
     | op is \of                              => \in
-    | op in [\&&& \||| \^^^]                 => op.charAt 1
-    | op is \<<<<<                           => \<<
-    | op in [\>>>>> \>>>>]                   => op.slice 2
     | otherwise                              => op
 
   # Mimic Python's chained comparisons when multiple comparison operators are
@@ -1539,7 +1536,7 @@ class exports.Fun extends Node
         else if df
           assigns.push Assign vr, p.second, \=, p.op, true
         names.push name = scope.add vr.value, \arg, p
-        p.carp "duplicate parameter \"#name\"" unless dic"#name." = dic"#name." ^^^ 1
+        p.carp "duplicate parameter \"#name\"" unless dic"#name." = dic"#name." .^. 1
     if rest
       while splace-- then rest.unshift Arr! 
       assigns.push Assign Arr(rest), Literal \arguments
@@ -1891,7 +1888,7 @@ class exports.For extends While
     then it.it = Call.make fun <<< void: true
     else fun = it.it.head
     {params} = fun; call = it.it.tails.0
-    return if params.length ^^^ call.args.length - !!call.method
+    return if params.length .^. call.args.length - !!call.method
     {index, item} = this
     if index and not dup params, index
       call.args.push params.* = Var index
@@ -2340,10 +2337,10 @@ LEVEL_CALL   = 5  # ...()
 # Operator precedances.
 with PREC = {unary: 0.9}
   @\&& = @\||                                            = 0.2
-  @\&&&  = @\^^^  = @\|||                                = 0.3
+  @\.&.  = @\.^.  = @\.|.                                = 0.3
   @\== = @\!= = @\=== = @\!==                            = 0.4
   @\<  = @\>  = @\<=  = @\>= = @of = @instanceof = @\+++ = 0.5
-  @\<<<<< = @\>>>> = @\>>>>>                             = 0.6
+  @\.<<. = @\.>>. = @\.>>>.                              = 0.6
   @\+  = @\-                                             = 0.7
   @\*  = @\/  = @\%                                      = 0.8
 

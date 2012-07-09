@@ -408,7 +408,6 @@ exports import
     case \+ \-           then tag = \+-
     case \&& \||         then tag = \LOGIC
     case \.&. \.|. \.^.  then tag = \BITWISE
-    case \&&& \||| \^^^  then tag = \BITWISE
     case \^^             then tag = \CLONE
     case \** \^          then tag = \POWER
     case \?  \!?         
@@ -442,7 +441,6 @@ exports import
       tag = \COMPARE
     case <[ < > <= >= ]> then tag = \COMPARE
     case <[ .<<. .>>. .>>>. <? >? ]> then tag = \SHIFT
-    case <[ <<<<<  >>>>  >>>>>  <?  >? ]> then tag = \SHIFT
     case \(
       unless @last.0 in <[ FUNCTION LET ]> or @able true or @last.1 is \.@
         @token \( \(
@@ -1016,7 +1014,7 @@ character = if JSON!? then uxxxx else ->
         and  tokens[i+4]?0 is \]))
         [fromNum, char] = decode token.1, lno
         [toNum, tochar] = decode tokens[i+1].1, lno
-        carp 'bad "to" in range' lno if char ^^^ tochar
+        carp 'bad "to" in range' lno if char .^. tochar
         byNum = 1
         if byp = tokens[i+2]?0 is \RANGE_BY
           carp 'bad "by" in range' tokens[i+2]2 unless byNum = +tokens[i+3]?1
@@ -1107,9 +1105,8 @@ ID = // ( (?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+((\-[a-zA-Z]+)?)* )
     |//g
 SYMBOL = //
   [-+*/^]= | %%?= | ::?=      # compound assign
-| \.(?:[&\|\^] | << | >>>? )\. # bitwise and shifts
+| \.(?:[&\|\^] | << | >>>?)\. # bitwise and shifts
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
-| &&& | \|\|\| | \^\^\^       # bitwise
 | \^\^                        # clone
 | \+\+\+                      # list concat 
 | --> | ~~> | <-- | <~~       # curry 
@@ -1122,7 +1119,6 @@ SYMBOL = //
 | [!=]==?                     # equality
 | @@                          # autovivification
 | <\[(?:[\s\S]*?\]>)?         # words
-| <<<<< | >>>>>?              # shifts
 | <<<<?                       # import
 | <\|                         # backpipe
 | << | >>                     # compose
