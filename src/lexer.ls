@@ -407,6 +407,7 @@ exports import
     case \<|             then tag = \BACKPIPE
     case \+ \-           then tag = \+-
     case \&& \||         then tag = \LOGIC
+    case \.&. \.|. \.^.  then tag = \BITWISE
     case \&&& \||| \^^^  then tag = \BITWISE
     case \^^             then tag = \CLONE
     case \** \^          then tag = \POWER
@@ -440,6 +441,7 @@ exports import
         | \!=  => \!==
       tag = \COMPARE
     case <[ < > <= >= ]> then tag = \COMPARE
+    case <[ .<<. .>>. .>>>. <? >? ]> then tag = \SHIFT
     case <[ <<<<<  >>>>  >>>>>  <?  >? ]> then tag = \SHIFT
     case \(
       unless @last.0 in <[ FUNCTION LET ]> or @able true or @last.1 is \.@
@@ -1105,6 +1107,7 @@ ID = // ( (?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+((\-[a-zA-Z]+)?)* )
     |//g
 SYMBOL = //
   [-+*/^]= | %%?= | ::?=      # compound assign
+| \.(?:[&\|\^] | << | >>>? )\. # bitwise and shifts
 | \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
 | &&& | \|\|\| | \^\^\^       # bitwise
 | \^\^                        # clone
