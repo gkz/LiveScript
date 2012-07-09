@@ -208,7 +208,7 @@ exports import
       return 1 + parts.size
     str = (SIMPLESTR <<< lastIndex: index)exec code .0
           or @carp 'unterminated string'
-    @strnum unlines string q, str.slice 1 -1
+    @strnum unlines @string q, str.slice 1 -1
     @countLines(str)length
 
   # Matches heredocs, adjusting indentation to the correct level,
@@ -219,7 +219,7 @@ exports import
       raw = code.slice index+3 end
       # Remove trailing indent.
       doc = raw.replace LASTDENT, ''
-      @strnum enlines string q, lchomp detab doc, heretabs doc
+      @strnum enlines @string q, lchomp detab doc, heretabs doc
       return @countLines(raw)length + 6
     parts = @interpolate code, index, q+q+q
     tabs  = heretabs code.slice(index+3 index+parts.size)replace LASTDENT, ''
@@ -284,7 +284,7 @@ exports import
         else
           val = t.1.replace HEREGEX_OMIT, ''
           continue if one and not val
-          one = tokens.push t <<< [\STRNUM string \' enslash val]
+          one = tokens.push t <<< [\STRNUM @string \' enslash val]
         tokens.push [\+- \+ tokens[*-1]2]
       --tokens.length
       if dynaflag or flag >= \g
@@ -297,7 +297,7 @@ exports import
   # Matches a word literal, or ignores a sequence of whitespaces.
   doBackslash: (code, BSTOKEN.lastIndex) ->
     [input, word] = BSTOKEN.exec code
-    if word then @strnum string \' word else @countLines input
+    if word then @strnum @string \' word else @countLines input
     input.length
 
   # Matches newlines and {in,de}dents, determining which is which.
@@ -526,7 +526,7 @@ exports import
 
   # Merges `@interpolate`d strings.
   addInterpolated: !(parts, nlines) ->
-    return @strnum nlines string \" parts.0.1 unless parts.1
+    return @strnum nlines @string \" parts.0.1 unless parts.1
     {tokens, last} = this
     [left, right, joint] = if not last.spaced and last.1 is \%
       --tokens.length
@@ -541,7 +541,7 @@ exports import
         tokens.push ...t.1
       else
         continue if i > 1 and not t.1
-        tokens.push [\STRNUM; nlines string \" t.1; t.2]
+        tokens.push [\STRNUM; nlines @string \" t.1; t.2]
       tokens.push joint.concat tokens[*-1]2
     --tokens.length
     @token right, '', callable
@@ -552,7 +552,7 @@ exports import
   # Records a regex token.
   regex: (body, flag) ->
     try RegExp body catch @carp e.message
-    return @strnum string \' enslash body if flag is \$
+    return @strnum @string \' enslash body if flag is \$
     @token \LITERAL "/#{ body or '(?:)' }/#{ @validate flag }"
 
   # Supplies an implicit DOT if applicable.
@@ -604,6 +604,8 @@ exports import
   # Throws a syntax error with the current line number.
   carp: !-> carp it, @line
 
+  string: (q, body) -> string q, body, @line
+
 #### Helpers
 
 function carp msg, lno then throw SyntaxError "#msg on line #{-~lno}"
@@ -616,17 +618,21 @@ function able tokens, i ? tokens.length, call
     else tag of <[ } ) )CALL STRNUM LITERAL WORDS ]>
 
 #### String Manipulators
-
-# Constructs a string literal by (un)escaping quotes and newlines.
+# Constructs a string literal by (un)escaping quotes etc.
 string = let do
-  escaped = // \\ (?: ([0-3]?[0-7]{2} | [1-7] | 0(?=[89]))
-                    | [\\0bfnrtuvx] | [^\n\S] | ([\w\W])   )? //g
-  descape = (it, oct, rest) ->
+  re = // ['"] |
+    \\ (?: ([0-3]?[0-7]{2} | [1-7] | 0(?=[89]))
+         | x[\dA-Fa-f]{2} | u[\dA-Fa-f]{4} | ([xu])
+         | [\\0bfnrtv] | [^\n\S] | ([\w\W])
+       )? //g
+then (q, body, lno) ->
+  body.=replace re, (it, oct, xu, rest) ->
+    return \\ + it if it of [q, \\]
     # Convert octal to hex for strict mode.
     return \\\x + (0x100 + parseInt oct, 8)toString 16 .slice 1 if oct
-    rest or if it is \\ then \\\\ else it
-  qs = "'":/'/g '"':/"/g
-then (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
+    carp 'malformed character escape sequence' lno if xu
+    if not rest or q is rest then it else rest
+  q + body + q
 
 # Detects the minimum indent count for a heredoc, ignoring empty lines.
 function heretabs doc
@@ -858,7 +864,7 @@ character = if JSON!? then uxxxx else ->
     case \WORDS
       ts = [[\[ \[ lno = token.2]]
       for word of token.1.match /\S+/g or ''
-        ts.push [\STRNUM; string \' word; lno] [\, \, lno]
+        ts.push [\STRNUM; string \', word, lno; lno] [\, \, lno]
       tokens.splice i, 1, ...ts, [\] \] lno]
       i += ts.length
     case \INDENT
