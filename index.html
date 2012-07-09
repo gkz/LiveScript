@@ -55,7 +55,6 @@
         <li><a href="#oop">OOP</a></li> 
         <li class="divider">
         <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li> 
-        <li><a href="#comparison-table">Comparison Table</a></li> 
         <li><a href="#speed">Speed</a></li> 
         <li><a href="#changes">Changes from Coco</a></li> 
         <li><a href="#changelog">Changelog</a></li> 
@@ -96,9 +95,9 @@
         <p>LiveScript is a language which compiles down to JavaScript. It is a fork of <a href="http://satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="http://coffeescript.org/">CoffeeScript</a>. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript is Coco but much more compatible with CoffeeScript, more functional, and more feature rich. LiveScript aims for increased expressiveness and code beauty.
         <p>While adding features to assist in functional style programming, LiveScript also deeply supports imperative and object oriented programming, and has an optional class system with inheritance, calls to super, and more.
         <div class="major-actions">
-          <h3 class="download">0.9.11:</h3>
-          <a href="https://github.com/gkz/LiveScript/zipball/0.9.11b"><div class="btn btn-large btn">zip</div></a>
-          <a href="https://github.com/gkz/LiveScript/tarball/0.9.11b"><div class="btn btn-large btn">tar.gz</div></a>
+          <h3 class="download">0.9.12:</h3>
+          <a href="https://github.com/gkz/LiveScript/zipball/0.9.12"><div class="btn btn-large btn">zip</div></a>
+          <a href="https://github.com/gkz/LiveScript/tarball/0.9.12"><div class="btn btn-large btn">tar.gz</div></a>
           <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn-primary">View project on GitHub</div></a>
           <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="150" height="40"></iframe>
           <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://gkz.github.com/LiveScript/" data-text="LiveScript - functional CoffeeScript" data-size="large" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
@@ -341,7 +340,7 @@ function __curry(f, args){
     <div id="installation" class="section">
       <a name="installation"></a>
       <h2>Installation</h2>
-      <p>To install LiveScript on your system, download it (<a href="https://github.com/gkz/LiveScript/zipball/0.9.11b">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/0.9.11b">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
+      <p>To install LiveScript on your system, download it (<a href="https://github.com/gkz/LiveScript/zipball/0.9.12">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/0.9.12">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
       <p>You can install it through the <a href="http://npmjs.org">Node Package Manager</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
       <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
     </div>
@@ -1745,13 +1744,13 @@ n--    #=> 1
 -2 ^ 2 ^ 3 #=> -256
 
 ## Bitwise and shifts
-14 &&& 9   #=> 8
-14 ||| 9   #=> 15
-14 ^^^ 9   #=> 7
+14 .&. 9   #=> 8
+14 .|. 9   #=> 15
+14 .^. 9   #=> 7
 ~9         #=> -10
-9 <<<<< 2  #=> 36
--9 >>>> 2  #=> -3
--9 >>>>> 2 #=> 1073741821
+9  .<<. 2  #=> 36
+-9 .>>. 2  #=> -3
+-9 .>>>. 2 #=> 1073741821
 
 ## Comparison
 # Strict equals
@@ -2464,12 +2463,12 @@ class Item
   # constructor
   ->
     @id = Math.random!
-    @boundToInstance = ~> 'instance bound'
+    @x = 10
 
   @static = 'static'
   # properties and methods
-  type   : \unknown
-  boundToClass: ~> @static
+  type: \unknown
+  boundToInstance: ~> @x
 
 Renameable =
   setName: -> @name = it
@@ -2494,8 +2493,7 @@ Box.static!    #=> 'secret'
 Box::type = \block 
 thing.type     #=> 'block' 
 
-thing.boundToClass!    #=> 'static'
-thing.boundToInstance! #=> 'instance bound'
+thing.boundToInstance! #=> 10
 
 # infix with - "cloneport"
 thing2 = thing with name: \boxahoy
@@ -2513,16 +2511,14 @@ Item = (function(){
   Item.displayName = 'Item';
   var prototype = Item.prototype, constructor = Item;
   function Item(){
-    var __this = this;
+    this.boundToInstance = __bind(this, 'boundToInstance', prototype);
     this.id = Math.random();
-    this.boundToInstance = function(){
-      return 'instance bound';
-    };
+    this.x = 10;
   }
   Item['static'] = 'static';
   prototype.type = 'unknown';
-  prototype.boundToClass = function(){
-    return Item['static'];
+  prototype.boundToInstance = function(){
+    return this.x;
   };
   return Item;
 }());
@@ -2560,12 +2556,14 @@ thing.priv;
 Box['static']();
 Box.prototype.type = 'block';
 thing.type;
-thing.boundToClass();
 thing.boundToInstance();
 thing2 = (__ref = __clone(thing), __ref.name = 'boxahoy', __ref);
 thing2.name;
 thing2.type;
 thing2 instanceof Box;
+function __bind(obj, key, target){
+  return function(){ return (target || obj)[key].apply(obj, arguments) };
+}
 function __extend(sub, sup){
   function fun(){} fun.prototype = (sub.superclass = sup).prototype;
   (sub.prototype = new fun).constructor = sub;
@@ -2608,7 +2606,7 @@ class Item
   -> 
 </pre>
         <li>Change any calls to super from <code>super</code> to <code>super ...</code> - this is because <code>super</code> is a direct reference to the parent function rather than a call itself.
-        <li>Change any bitwise operators you are using according to the <a href="#comparison-table">comparison table</a> (eg. <code>&</code> changes to <code>&&&</code>)
+        <li>Change any bitwise operators to themselves surrounded by dots. Eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is now <code>.&gt;&gt;.</code>
         <li>If you are modifying variables in upper scopes at any time, eg.
 <pre>
 x = 10
@@ -2647,72 +2645,6 @@ f do
       <li>Change any non spaced identifier subtraction, eg. <code>a-b</code> to spaced <code>a - b</code>. <code>a-1</code> and <code>1-b</code> are still fine. This is because <code>a-b</code> is a valid identifier in LiveScript, equivalent to its camel case, <code>aB</code>.
       </ul>
     </div>
-    <div id="comparison-table" class="section">
-      <a name="comparison-table"></a>
-      <h2>Comparison Table</h2>
-      <table class="table table-bordered table-striped">
-        <tr>
-          <th></th><th>CoffeeScript</th><th>Coco</th><th>LiveScript</th>
-        </tr>
-        <tr>
-          <td>Command Line</td><td>coffee</td><td>coco</td><td>livescript</td>
-        </tr>
-        <tr>
-          <td>Build</td><td>cake</td><td>coke</td><td>slake</td>
-        </tr>
-        <tr>
-          <td>File Extension</td><td>.coffee</td><td>.co</td><td>.ls</td>
-        </tr>
-        <tr>
-          <td>Strict Equality</td><td>== OR is</td><td>=== OR is</td><td>== OR is</td>
-        </tr>
-        <tr>
-          <td>Strict Inequality</td><td>!= OR isnt</td><td>!== OR is not</td><td>!= OR is not OR isnt</td>
-        </tr>
-        <tr>
-          <td>Fuzzy Equality</td><td>N/A</td><td>==</td><td>===</td>
-        </tr>
-        <tr>
-          <td>Power Operator</td><td>N/A</td><td>**</td><td>** OR ^</td>
-        </tr>
-        <tr>
-          <td>Pipe Operator using calls</td><td>N/A</td><td>N/A</td><td>|></td>
-        </tr>
-        <tr>
-          <td>Bitwise &</td><td>&</td><td>&</td><td>&&&</td>
-        </tr>
-        <tr>
-          <td>Bitwise |</td><td>|</td><td>|</td><td>|||</td>
-        </tr>
-        <tr>
-          <td>Bitwise ^</td><td>^</td><td>^</td><td>^^^</td>
-        </tr>
-        <tr>
-          <td>Bitwise &lt;&lt;</td><td>&lt;&lt;</td><td>&lt;&lt;</td><td>&lt;&lt;&lt;&lt;&lt;</td>
-        </tr>
-        <tr>
-          <td>Bitwise >></td><td>>></td><td>>></td><td>>>>></td>
-        </tr>
-        <tr>
-          <td>Bitwise >>></td><td>>>></td><td>>>></td><td>>>>>></td>
-        </tr>
-        <tr>
-          <td>In</td><td>in</td><td>of</td><td>in</td>
-        </tr>
-        <tr>
-          <td>Of</td><td>of</td><td>in</td><td>of</td>
-        </tr>
-        <tr>
-          <td>Case</td><td>when</td><td>case</td><td>case OR | OR when</td>
-        </tr>
-        <tr>
-          <td>Then</td><td>then</td><td>then</td><td>then OR =></td>
-        </tr>
-        <tr>
-          <td>List Concat</td><td>xs.concat ys</td><td>xs.concat ys</td><td>xs +++ ys</td>
-        </tr>
-      </table>
-    </div>
     <div id="speed" class="section">
       <a name="speed"></a>
       <h2>Speed</h2>
@@ -2744,7 +2676,7 @@ TOTAL    851 ms
       <li>Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other projects are named LiveScript. Slake because lake was taken and lsake sounds bad. 
       <li>Switched so that <code>==</code> compiles into <code>===</code> and the converse, and also for the negatives. Rationale: Most people would want to use the JavaScript <code>===</code> more often than <code>==</code> and less typing is better, also this makes things more similar to CoffeeScript which compiles <code>==</code> to <code>===</code> so there is less code for people to change coming from CoffeeScript. The compilation of <code>is</code> to <code>===</code> stays the same.
       <li>Switched <code>in</code> and <code>of</code> so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: People have to change less of their CoffeeScript code, they're used to it, and using <code>in</code> for checking if a value is in an array just seems right, using <code>of</code> just feels weird.
-      <li>All bitwise operators except <code>~</code> have changed to triple themselves and shifts have also expanded, eg. <code>&amp;</code> is now <code>&amp;&amp;&amp;</code> (see comparison table for full changes). Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. The way the bitwise operators have changed is modelled after how they are done in F#, a functional language which happens to have them unlike most functional languages. 
+      <li>All bitwise operators except <code>~</code> have changed to be surrounded by dots, eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>. Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. 
       <li><code>=></code>, the pipe operator using <code>_</code>, is removed. Free up => (for <code>then</code> alias), (<code>|</code> is used as an alias for case). Use other pipes (<code>|></code>) and partial application instead.
       <li><code>|</code> is an alias for <code>case</code> (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
       <li><code>=></code> is an alias for <code>then</code>. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with <code>|</code>, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
@@ -2785,12 +2717,26 @@ TOTAL    851 ms
       <li>Changed <code>arguments</code> alias to <code>&</code>, removed <code>@@</code> as that alias. Eg. <code>-> &amp;0 + &amp;1</code>. Rationale: shorter - less typing.
       <li>Added <code>-d, --prelude</code> option for automatically adding prelude.ls. Rationale: make it easier to use prelude.ls.
       <li>Added <code>-k, --const</code> option for compiling as if all variables as constants. Rationale: some people coming from languages with all immutable values may find this nice.
+      <li>Allowed arbitrary expressions in slicing syntax, eg. <code>list[1 to x]</code>. Rationale: useful.
+      <li>Changed so that constructors are inherited. Rationale: useful, and more like in CoffeeScript.
+      <li>Allowed empty class definitions, ie. with no block. Rationale: useful and more like CoffeeScript.
+      <li>Bound methods are bound to the instance, not the class. Rationale: seems pretty useless to be bound to the class, so this is more useful. Also more like CoffeeScript.
       </ul>
     </div>
     <div id="changelog" class="section">
       <a name="changelog"></a>
       <h2>Changelog</h2>
       <p>For more details see <a href="#changes">Changes from Coco</a>
+      <h3>0.9.12</h3>
+      <ul>
+        <li>Changed bitwise/shift operator syntax to be more clear. Now simply as in JS, but surrounded by dots. Eg. <code>&</code> is <code>.&.</code>, and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>
+        <li>Speed improvements
+        <li>Allowed arbitrary expressions in slicing syntax, eg. <code>list[1 to x]</code>
+        <li>Made classes work more like in CoffeeScript - details:
+        <li>Constructors are now inherited
+        <li>Allowed empty class definitions, eg. <code>class A extends B</code>
+        <li>Bound methods (eg. <code>f: ~></code>) are bound to the instance, not to the class
+      </ul>
       <h3>0.9.11</h3>
       <ul>
         <li>Bug fixes
@@ -2914,12 +2860,12 @@ TOTAL    851 ms
 <script src="bootstrap/js/bootstrap-scrollspy.js"></script>
 
 <script src="google-code-prettify/prettify.js"></script>
-<script src="lang-ls-0.9.11.js"></script>
+<script src="lang-ls-0.9.12.js"></script>
 
 <script src="underscore-min.js"></script>
 <script src="prelude-browser-min-0.5.0.js"></script>
 <script src="site.js"></script>
 
-<script src="livescript-0.9.11b.js"></script>
+<script src="livescript-0.9.12.js"></script>
 </body>
 </html>

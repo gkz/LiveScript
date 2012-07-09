@@ -33,7 +33,7 @@ task \watch 'watch for changes, build when they happen' ->
 !function watch source, action
   :repeat let ptime = 0
     {mtime} <-! fshoot \stat source
-    action! if ptime ^^^ mtime
+    action! if ptime .^. mtime
     set-timeout repeat, 500ms, mtime
 
 # Calls a `fs` method, exiting on error.
