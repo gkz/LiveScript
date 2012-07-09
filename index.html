@@ -2511,16 +2511,14 @@ Item = (function(){
   Item.displayName = 'Item';
   var prototype = Item.prototype, constructor = Item;
   function Item(){
-    var __this = this;
+    this.boundToInstance = __bind(this, 'boundToInstance', prototype);
     this.id = Math.random();
-    this.boundToInstance = function(){
-      return 'instance bound';
-    };
+    this.x = 10;
   }
   Item['static'] = 'static';
   prototype.type = 'unknown';
-  prototype.boundToClass = function(){
-    return Item['static'];
+  prototype.boundToInstance = function(){
+    return this.x;
   };
   return Item;
 }());
@@ -2558,12 +2556,14 @@ thing.priv;
 Box['static']();
 Box.prototype.type = 'block';
 thing.type;
-thing.boundToClass();
 thing.boundToInstance();
 thing2 = (__ref = __clone(thing), __ref.name = 'boxahoy', __ref);
 thing2.name;
 thing2.type;
 thing2 instanceof Box;
+function __bind(obj, key, target){
+  return function(){ return (target || obj)[key].apply(obj, arguments) };
+}
 function __extend(sub, sup){
   function fun(){} fun.prototype = (sub.superclass = sup).prototype;
   (sub.prototype = new fun).constructor = sub;
