@@ -898,9 +898,8 @@ class exports.Binary extends Node
   isCallable: ->
     @op of <[ && || ? !? ]> and @first.isCallable! and @second.isCallable!
 
-  isArray: -> switch @op
-    case \* then return @first instanceof Arr
-    case \/ then return @second.isMatcher!
+  isArray: -> switch @op case \* then @first .isArray!
+                         case \/ then @second.isMatcher!
 
   isString: -> switch @op
     case \+ \* then @first.isString! or @second.isString!
@@ -922,7 +921,7 @@ class exports.Binary extends Node
     case \? \!? then return @compileExistence o
     case \*
       return @compileJoin   o if @second.isString!
-      return @compileRepeat o if @first.isString! or @first instanceof Arr
+      return @compileRepeat o if @first.isString! or @first.isArray!
     case \-  then return @compileRemove o if @second.isMatcher!
     case \/  then return @compileSplit  o if @second.isMatcher!
     case \** then return @compilePow o
@@ -995,11 +994,15 @@ class exports.Binary extends Node
   compileSplit  : -> @compileMethod it, \String \split
 
   compileRepeat: (o) ->
-    {first: x, second: n} = this; {items} = x
-    if (x = JS that if items and Splat.compileArray o, items)
+    {first: x, second: n} = this
+    {items} = x.=expandSlice o .unwrap!
+    arr = x.isArray! and \Array
+    if items and Splat.compileArray o, items
+      x     = JS that
+      items = null
+    if arr and not items
     or not (n instanceof Literal and n.value < 0x20)
-      x = Call.make Util(\repeat + if items then \Array else \String), [x, n]
-      return x.compile o
+      return Call.make Util(\repeat + (arr or \String)), [x, n] .compile o
     n = +n.value
     return x.compile o if 1 <= n < 2
     # `[x] * 2` => `[x, x]`
