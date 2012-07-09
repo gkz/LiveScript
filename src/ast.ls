@@ -1020,7 +1020,7 @@ class exports.Binary extends Node
     case \/       then return @compileSplit  o if @second.isMatcher!
     case \** \^   then return @compilePow o
     case \<? \>?  then return @compileMinMax o
-    case \<< \>>  then return @compileCompose o, @op is \>>
+    case \<< \>>  then return @compileCompose o
     case \+++     then return @compileConcat o
     case \%%      then return @compileMod o
     case \&& \||
@@ -1133,12 +1133,13 @@ class exports.Binary extends Node
       | otherwise                            => [x]
     Chain @first .add Index (Key \concat), \., true .add Call(f @second) .compile o
 
-  compileCompose: (o, forward) ->
-    [first, second] = 
-      | forward   => [@second, @first]
-      | otherwise => [@first, @second]
-
-    "#{ util \compose }((#{first.compile o}),(#{second.compile o}))"
+  compileCompose: (o) ->
+    f = (x) ->
+      | x instanceof Binary and x.op in [\<< \>>] => (f x.first) +++ (f x.second)
+      | otherwise                                 => [x]
+    args = ([@first] +++ f @second)
+    args.=reverse! if @op is \>>
+    Chain Var (util \compose) .add Call(args) .compile o
   
   compileMod: (o) ->
     ref = o.scope.temporary!
@@ -2300,8 +2301,13 @@ UTILS =
     } : f;
   }'''
 
-  compose: '''function(f, g){
-    return function(){ return f(g.apply(this, arguments)); }
+  compose: '''function(){
+    var fs = arguments;
+    return function(){
+      var i, args = arguments;
+      for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+      return args[0];
+    };
   }'''
 
   flip: '''function(f){
