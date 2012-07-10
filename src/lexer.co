@@ -28,7 +28,7 @@ exports import
   # corrected before implicit parentheses can be wrapped around blocks of code.
   rewrite: (it || @tokens) ->
     addImplicitIndentation it
-    tagPostfixConditionals it
+    rewriteBlockless       it
     addImplicitParentheses it
     addImplicitBraces      it
     expandLiterals         it
@@ -673,19 +673,23 @@ character = if JSON!? then uxxxx else ->
 
 #### Rewriters
 
-# The Coco language has a good deal of optional syntax, implicit syntax,
-# and shorthand syntax. This can greatly complicate a grammar and bloat
-# the resulting parse table. Instead of making the parser handle it all,
-# we take a series of passes over the token stream,
-# convert shorthand into the unambiguous long form, add implicit indentation
-# and parentheses, and generally clean things up.
+# The Coco language has a good deal of optional, implicit, and/or shorthand
+# syntax. This can greatly complicate a grammar and bloat the resulting parse
+# table. Instead of making the parser handle it all, we take a series of passes
+# over the token stream, convert shorthand into the unambiguous long form,
+# add implicit indentation and parentheses, and generally clean things up.
 
-# Tag postfix conditionals as such, so that we can parse them with a
-# different precedence.
-!function tagPostfixConditionals tokens
-  detectEnd tokens, i+1, ok, go if token.0 is \IF for token, i of tokens
+# - Tag postfix conditionals.
+# - Fill in empty blocks for bodyless `class`es.
+!function rewriteBlockless tokens
+  for [tag]:token, i of tokens
+    detectEnd tokens, i+1, ok, go if tag of <[ IF CLASS ]>
   function  ok then it.0 of <[ NEWLINE INDENT ]>
-  !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
+  !function go it, i
+    if tag is \IF
+      it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
+    else unless it.0 is \INDENT
+      tokens.splice i, 0 [\INDENT 0 lno = tokens[i-1]2] [\DEDENT 0 lno]
 
 # Wrap single-line blocks with regular INDENT/DEDENT pairs.
 # Because our grammar is LALR(1), it can't handle some sequences
