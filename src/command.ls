@@ -217,6 +217,7 @@ switch
       module.filename = process.cwd! + \/repl
     vm = require \vm
     global <<< {module, exports, require}
+    global <<< require \prelude-ls if o.prelude
     server = require(\repl)REPLServer:: with
       context: global, commands: [], useGlobal: true
       useColors: process.env.NODE_DISABLE_COLORS
