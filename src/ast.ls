@@ -1230,7 +1230,8 @@ class exports.Assign extends Node
     if lvar
       del = right.op is \delete
       if op is \=
-        o.scope.declare name, left, (@const or not @defParam and o.const)
+        o.scope.declare name, left,
+          (@const or not @defParam and o.const and \__ isnt name.slice 0 2)
       else if o.scope.checkReadOnly name
         left.carp "assignment to #that \"#name\"" ReferenceError
     if o.level

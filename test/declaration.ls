@@ -92,3 +92,7 @@ eq '''(function(n){
   n == null && (n = 2);
   return n + 1;
 });''' LiveScript.compile '(n = 2) -> n + 1' {+\const, +bare}
+
+eq '''var __ref;
+1 < 2 && 2 === (__ref = 4 / 2) && __ref > 0;''' LiveScript.compile '1 < 2 == 4/2 > 0' {+\const, +bare}
+
