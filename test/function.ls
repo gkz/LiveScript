@@ -528,22 +528,13 @@ obj =
 
 eq obj.add(1, 2), 3
 
-!nothing(x) = x
-eq void, nothing true
-
 class Multiplier
   (@num) ->
 
   multiply(x, y): x * y
   xSix!: @num * 6
-  !zip(x): x
-  !zip2@!: true
   bound!:
-    f@! = @num * 2
-
-  @!zip3@! = true
-
-eq void Multiplier.zip3!
+    ~f! = @num * 2
 
 multi = new Multiplier 3
 
@@ -555,8 +546,6 @@ eq 6 sometin.hooloo!
 
 eq 6    multi.multiply(3, 2)
 eq 18   multi.xSix!
-eq void multi.zip true
-eq void multi.zip2!
 
 ### auto currying magic
 times = (x, y) --> x * y
@@ -584,9 +573,6 @@ minus(x, y) = y - x
 minusTwo = minus 2
 eq 5 minusTwo 7 
 
-!plus! = true
-eq void plus!
-
 boom(x, y) = x + (y ? 0)
 boom2 = boom 2
 eq 6 boom2 4
@@ -601,10 +587,8 @@ class Divider
   ->
 
   @divide1(x, y) = x / y
-  @!divide2(x, y) = x / y
 
 eq 2    Divider.divide1 6 3
-eq void Divider.divide2 2 4
 
 f4 = ((a, b, c, d) --> a * b * c * d)(2)(3)
 g = f4 5

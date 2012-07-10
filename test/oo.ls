@@ -98,7 +98,7 @@ eq [func() for func in new Mini().generate()] + '', '10,20,30'
 # A bound function in a bound method with secondary function syntax
 class Mini2
   ->
-    @generate@! =
+    @.~generate! =
       for i from 1 to 3 then let
         ~> @num * i
   num: 10

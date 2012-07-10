@@ -471,30 +471,20 @@ exports import
         @tokens.pop!
         @token \CALL( \(
         @token \)CALL \)
-      if @last.0 is \)CALL
+      else if @last.0 is \)CALL
         tag = \ASSIGN if val is \=
-        arrow = \->
+        arrow = \-->
         @tokens.pop! # remove the )CALL
         @token \)PARAM \) # add )PARAM
         for t, i in @tokens by -1 when t.0 is \CALL( then break # find opening CALL
         # remove opening call, replace with assign and param
         @tokens.splice i, 1, [tag, val, @line], [\PARAM( \( @line]
-        # if 'id@(params) = something' then 'id = (params) ~> something'
-        if @tokens[i-1].1 in <[ .@ this ]>
-          @tokens.splice i-1, 1
-          arrow = \~>
-          i-- # we have one less token now
-        # if '!id(params)=' or '!id(params):' then disable func return
-        if @tokens[i-2].1 is \! 
-          @tokens.splice i-2, 1
-          @tokens.splice i, 0, [\UNARY \! @line]
-        else if @tokens[i-2].1 is \.
-        and     @tokens[i-3].1 is \) 
-        and     @tokens[i-4].1 is \! 
-        and     @tokens[i-5].1 is \this
-          @tokens.splice i-4, 2
-          @tokens.splice i-1, 0, [\UNARY \! @line]
-        @token \-> (arrow.charAt 0) + arrow
+        if @tokens[i-2]?1 in [\.~ \~]
+          @tokens.splice i-2, 1; --i # remove the ~
+          if @tokens[i-2].0 in [\LITERAL \ID]
+            @tokens.splice i-2 + 1, 0, [\DOT \. @line]; ++i
+          arrow = \~~>
+        @token \-> arrow
         return sym.length
       if val is \:
         if @last.0 not in <[ ID STRNUM ) ]> then tag = \LABEL; val = ''
