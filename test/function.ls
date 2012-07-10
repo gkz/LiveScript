@@ -547,6 +547,10 @@ eq 6 sometin.hooloo!
 eq 6    multi.multiply(3, 2)
 eq 18   multi.xSix!
 
+
+Multiplier::~func(x) = x
+eq 5 multi.func(5)
+
 ### auto currying magic
 times = (x, y) --> x * y
 timesTwo = times 2

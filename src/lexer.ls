@@ -481,7 +481,7 @@ exports import
         @tokens.splice i, 1, [tag, val, @line], [\PARAM( \( @line]
         if @tokens[i-2]?1 in [\.~ \~]
           @tokens.splice i-2, 1; --i # remove the ~
-          if @tokens[i-2].0 in [\LITERAL \ID]
+          if able @tokens.slice 0, i - 1
             @tokens.splice i-2 + 1, 0, [\DOT \. @line]; ++i
           arrow = \~~>
         @token \-> arrow
