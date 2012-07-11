@@ -394,8 +394,11 @@ class exports.Chain extends Node
       {@head, @tails} = Chain @head.it
       it.soak = true
     @tails.push it
-    if it instanceof Call and not it.method and @head instanceof Super
-      it.method = \.call; it.args.unshift Literal \this
+    if it instanceof Call and not it.method
+    and @head instanceof Super and not @head.called
+      it.method = \.call
+      it.args.unshift Literal \this
+      @head.called = true
     else if delete it.vivify
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
     this

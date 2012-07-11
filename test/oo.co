@@ -7,7 +7,7 @@ class Base
     "static/#{string}"
 
 class FirstChild extends Base
-  func: -> super('one/') + it
+  func: -> super('one/').concat it
 
 SecondChild = class extends FirstChild
   func: -> (super).call(this, 'two/') + it
