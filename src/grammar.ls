@@ -304,7 +304,8 @@ bnf =
     o 'Key : INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($4)
 
     o \KeyValue
-    o 'KeyValue LOGIC Expression' -> Binary $2, $1, $3
+    o 'KeyValue LOGIC Expression'  -> Binary $2, $1, $3
+    o 'KeyValue ASSIGN Expression' -> Binary \?, $1, $3
 
     o '+- Key'     -> Prop $2.maybeKey!   , L Literal $1 is \+
     o '+- LITERAL' -> Prop L(Key $2, true), L Literal $1 is \+

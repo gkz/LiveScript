@@ -314,6 +314,9 @@ new
   @{a ? 2, \b ? 3, ([\c]) ? 5} = {}
   eq @a * @b * @c, 30
 
+  
+  @{a = 2, \b = 3, ([\c]) = 5} = {}
+  eq @a * @b * @c, 30
 
 ### Compound/Conditional Destructuring
 a = b = c = null
