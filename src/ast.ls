@@ -1513,8 +1513,8 @@ class exports.Fun extends Node
     for p, i in params
       if p instanceof Splat then splace = i; @hasSplats = true
       # `(a = x) ->` => `(a ? x) ->`
-      else if p.op is \= and not p.logic
-        params[i] = Binary \? p.left, p.right
+      else if p.op is \=
+        params[i] = Binary (p.logic or \?), p.left, p.right
     # `(a, ...b, c) ->` => `(a) -> [[] ...b, c] = @@`
     if splace?
       rest = params.splice splace, 9e9
