@@ -1999,10 +1999,12 @@ exports.Decl =
 !function Scope @parent, @shared
   @variables = {}
 Scope::<<<
+  READ_ONLY: const:\constant function:\function undefined:\undeclared
+
   # Adds a new variable or overrides an existing one.
   add: (name, type, node) ->
     if node and t = @variables"#name."
-      if @READONLY[t] or @READONLY[type]
+      if @READ_ONLY[t] or @READ_ONLY[type]
         node.carp "redeclaration of #that \"#name\""
       else if t is type is \arg
         node.carp "duplicate parameter \"#name\""
@@ -2045,9 +2047,8 @@ Scope::<<<
     return type if (type = @variables"#name.") or not above
     @parent?check name, above
 
-  checkReadOnly: (name) -> @READONLY[@check name, true]
-
-  READONLY: const: \constant, function: \function, undefined: \undeclared
+  # Checks if a variable can be reassigned.
+  checkReadOnly: (name) -> @READ_ONLY[@check name, true]
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->
