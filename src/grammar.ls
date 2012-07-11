@@ -305,7 +305,7 @@ bnf =
 
     o \KeyValue
     o 'KeyValue LOGIC Expression'  -> Binary $2, $1, $3
-    o 'KeyValue ASSIGN Expression' -> Binary \?, $1, $3
+    o 'KeyValue ASSIGN Expression' -> Binary ($2.logic or \?), $1, $3
 
     o '+- Key'     -> Prop $2.maybeKey!   , L Literal $1 is \+
     o '+- LITERAL' -> Prop L(Key $2, true), L Literal $1 is \+

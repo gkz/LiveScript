@@ -314,9 +314,17 @@ new
   @{a ? 2, \b ? 3, ([\c]) ? 5} = {}
   eq @a * @b * @c, 30
 
-  
+  @a = @b = @c = void
   @{a = 2, \b = 3, ([\c]) = 5} = {}
   eq @a * @b * @c, 30
+
+  @a = @b = @c = void
+  @{a && 2, b || 3} = {a: 99}
+  eq @a * @b, 6
+
+  @a = @b = @c = void
+  @{a &&= 2, b ||= 3} = {a: 99}
+  eq @a * @b, 6
 
 ### Compound/Conditional Destructuring
 a = b = c = null
