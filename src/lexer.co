@@ -104,11 +104,16 @@ exports import
     case \new \do \typeof \delete                      then tag = \UNARY
     case \return \throw                                then tag = \HURL
     case \break  \continue                             then tag = \JUMP
-    case \var \const \export                           then tag = \DECL
     case \this \eval \super then return @token(\LITERAL id, true)length
     case \for  then @seenFor = true; fallthrough
     case \then then @wantBy  = false
     case \catch \function then id = ''
+    case \const
+      if @last.1 is \export
+        @last.1 += \Const
+        return 5
+      fallthrough
+    case \var \export then tag = \DECL
     case \in \of
       if @seenFor
         @seenFor = false

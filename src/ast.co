@@ -1984,7 +1984,6 @@ exports.Decl =
     lines[i] = Import Literal(\this), line, all for line, i of lines
     Block lines
 
-  importAll: (lines) -> @import lines, true
 
   const: (lines) ->
     for node of lines
@@ -1993,6 +1992,9 @@ exports.Decl =
     Block lines
 
   var: Vars
+
+  importAll   : -> @import it, true
+  exportConst : -> @export (@const it)lines
 
 ##### Scope
 # Regulates lexical scoping within Coco. As you
