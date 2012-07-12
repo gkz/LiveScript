@@ -37,6 +37,15 @@ Get [Node.js](http://nodejs.org) and [npm](http://npmjs.org), then:
 
 ## Changelog
 
+### 0.7.6
+- Added `export const`.
+- Enabled object splat within brace objects via `...:`.
+- Allowed array repetition to work on slices and comprehensions.
+- Disallowed malformed hex/unicode escape sequence in string.
+- Quit overloading `+` for array concatenation.
+- `class` can be bodyless again.
+- `super` no longer auto-`.call`s more than once.
+
 ### 0.7.5
 - Implemented `implements`. ([#144](https://github.com/satyr/coco/issues/144))
 - Top-level `void`s are now simply ignored and usable like Python's __pass__.
