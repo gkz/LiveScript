@@ -161,7 +161,7 @@
   toString: (idt or '') ->
     tree  = \\n + idt + @..displayName
     tree += ' ' + that if @show!
-    @eachChild -> tree += it.toString idt + TAB; void
+    @eachChild !-> tree += it.toString idt + TAB
     tree
 
   # JSON serialization
@@ -908,12 +908,12 @@ class exports.Binary extends Node
     case \+ \* then @first.isString! or @second.isString!
     case \-    then @second.isMatcher!
 
-  EQUALITY = /^[!=]==?$/
-  COMPARER = /^(?:[!=]=|[<>])=?$/
+  COMPARER   = /^(?:[!=]=|[<>])=?$/
+  INVERSIONS = '===':'!==' '!==':'===' '==':'!=' '!=':'=='
 
   invert: ->
-    if EQUALITY.test op = @op and not COMPARER.test @second.op
-      @op = '!='charAt(op.indexOf \=) + op.slice 1
+    if not COMPARER.test @second.op and INVERSIONS[@op]
+      @op = that
       return this
     Unary \! Parens(this), true
 
@@ -947,10 +947,10 @@ class exports.Binary extends Node
             #{ @second.compile o, level }"
     if o.level <= level then code else "(#code)"
 
-  # Mimic Python's chained comparisons when multiple comparison operators are
-  # used sequentially. e.g.:
+  # Mimic Python/Perl6's chained comparisons
+  # when multiple comparison operators are used sequentially:
   #
-  #     $ coco -e '50 < 65 === 9r72 > 10'
+  #     $ coco -pe '50 < 65 === 9r72 > 10'
   #     true
   #
   # See <http://docs.python.org/reference/expressions.html#notin>.
@@ -1043,12 +1043,12 @@ class exports.Assign extends Node
   ::delegate <[ isCallable isRegex ]> -> @op of <[ = := ]> and @right[it]!
 
   isArray: -> switch @op
-    case \= \:= \+= then do @right.isArray
-    case \/=        then do @right.isMatcher
+    case \= \:= \+= then @right.isArray!
+    case \/=        then @right.isMatcher!
 
   isString: -> switch @op
-    case \= \:= \+= \*= then do @right.isString
-    case \-=            then do @right.isMatcher
+    case \= \:= \+= \*= then @right.isString!
+    case \-=            then @right.isMatcher!
 
   unfoldSoak: (o) ->
     if @left instanceof Existence
@@ -1127,8 +1127,8 @@ class exports.Assign extends Node
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
-  compileDestructuring: (o, left) ->
-    {items} = left; len = items.length; ret = o.level and not @void
+  compileDestructuring: (o, {{length: len}:items}:left) ->
+    ret  = o.level and not @void
     rite = @right.compile o, if len is 1 then LEVEL_CALL else LEVEL_LIST
     if left.name
       cache = "#that = #rite"
@@ -1326,10 +1326,7 @@ class exports.Fun extends Node
 
   makeReturn: -> if @statement then import {+returns} else super ...
 
-  ripName: !->
-    # `name = ->`
-    @name ||= it.varName!
-    @declared = it instanceof Var
+  ripName: !-> @name ||= it.varName!
 
   compileNode: (o) ->
     pscope = o.scope
@@ -1975,9 +1972,8 @@ exports.Decl =
         if node.varName!
         or node instanceof Assign and node.left. varName!
         or node instanceof Class  and node.title?varName!
-          Assign Chain(out, [Index Key that]), node
-        else
-          Import out, node
+        then Assign Chain(out, [Index Key that]), node
+        else Import out, node
     Block lines
 
   import: (lines, all) ->
@@ -1987,14 +1983,14 @@ exports.Decl =
 
   const: (lines) ->
     for node of lines
-      node.carp 'invalid constant variable declaration' unless node.op is \=
+      node.op is \= or node.carp 'invalid constant variable declaration'
       node.const = true
     Block lines
 
   var: Vars
 
   importAll   : -> @import it, true
-  exportConst : -> @export (@const it)lines
+  exportConst : -> @export @const(it)lines
 
 ##### Scope
 # Regulates lexical scoping within Coco. As you
