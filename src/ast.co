@@ -705,6 +705,7 @@ class exports.Obj extends List
 # `x: y`
 class exports.Prop extends Node
   (@key, @val) ~>
+    return Splat @val if key.value is \...
     if val.getAccessors!
       @val = that
       for fun of that

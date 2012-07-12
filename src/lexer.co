@@ -387,8 +387,11 @@ exports import
       fallthrough
     case \] \)
       @lpar = @parens.pop! if \) is tag = val = @pair val
-    case \: then if @last.0 not of <[ ID STRNUM ) ]>
-      tag = \LABEL; val = ''
+    case \:
+      switch @last.0
+      case \ID \STRNUM \) then break
+      case \...           then @last.0 = \STRNUM
+      default tag = \LABEL; val = ''
     case <[ = := += -= *= /= %= &= ^= |= <<= >>= >>>= <?= >?= **= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
         @last.1 += val
