@@ -263,7 +263,7 @@ class exports.Block extends Node
     code = @compileWithDeclarations o
     # Wrap everything in a safety closure unless requested not to.
     bare or code = "(function(){\n#code\n}).call(this);\n"
-    ([prefix]) + code
+    [prefix] + code
 
   # Compile to a function body.
   compileWithDeclarations: (o) ->
@@ -368,7 +368,7 @@ class exports.Index extends Node
 
   children: [\key]
 
-  show: -> ([\? if @soak]) + @symbol
+  show: -> [\? if @soak] + @symbol
 
   isComplex: -> @key.isComplex!
 
@@ -578,7 +578,7 @@ class exports.Call extends Node
 
   children: [\args]
 
-  show: -> ([@new]) + ([@method]) + ([\? if @soak])
+  show: -> [@new] + [@method] + [\? if @soak]
 
   compile: (o) ->
     code  = (@method or '') + \(
@@ -798,7 +798,7 @@ class exports.Unary extends Node
 
   children: [\it]
 
-  show: -> ([\@ if @post]) + @op
+  show: -> [\@ if @post] + @op
 
   isCallable: -> @op of <[ do new delete ]>
 
@@ -884,14 +884,6 @@ class exports.Binary extends Node
   (op, first, second) ~>
     switch op
     case \of then return new Of first, second
-    case \+
-      if first instanceof Arr
-        first.items.push Splat second
-        return first
-      if second instanceof Arr
-      or second instanceof While and second = Arr [Splat second]
-        second.items.unshift Splat first
-        return second
     import {op, first, second}
 
   children: <[ first second ]>
@@ -1043,8 +1035,8 @@ class exports.Assign extends Node
   ::delegate <[ isCallable isRegex ]> -> @op of <[ = := ]> and @right[it]!
 
   isArray: -> switch @op
-    case \= \:= \+= then @right.isArray!
-    case \/=        then @right.isMatcher!
+    case \= \:= then @right.isArray!
+    case \/=    then @right.isMatcher!
 
   isString: -> switch @op
     case \= \:= \+= \*= then @right.isString!
@@ -1077,7 +1069,6 @@ class exports.Assign extends Node
     {op, right} = this
     return @compileMinMax o, left, right if op of <[ <?= >?= ]>
     if op is \**=
-    or op is \+= and right instanceof [Arr, While]
     or op is \*= and right.isString!
     or op of <[ -= /= ]> and right.isMatcher!
       [left, reft] = Chain(left)cacheReference o

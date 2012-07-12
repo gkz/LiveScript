@@ -428,22 +428,7 @@ eq '8,9' ''+ -~[7 8]
 
 
 ### Overloaded
-a = [0 1]
-b = ''
-
-#### Concat
-eq '0,1,2' String a + [2]
-eq '3,4,5' String [3 4] + {0: 5, length: 1}
-eq '0,1' ''+ b += [0 1]
-ok b instanceof a..
-
-x = [6]
-y = [7 to 10]
-[[] ...x, []] += y
-eq '6,8,9' ''+ x
-
-x += for i til 2 then i
-eq '6,8,9,0,1' ''+ x
+a = b = [0 1]
 
 #### Join
 eq '0==1' a * \==
