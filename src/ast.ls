@@ -769,7 +769,7 @@ class exports.Obj extends List
         "#{ key = node.compile o }: #key"
       # Canonicalize the key, e.g.: `0.0` => `0`
       ID.test key or key = do Function "return #key"
-      node.carp "duplicate property \"#key\"" unless dic"#key." = dic"#key." .^. 1
+      node.carp "duplicate property \"#key\"" unless dic"#key." .^.= 1
     code = "{#{ code and code + \\n + @tab }}"
     rest and code = Import(JS code; Obj rest)compile o <<< indent: @tab
     if @front and \{ is code.charAt! then "(#code)" else code
