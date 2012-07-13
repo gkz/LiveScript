@@ -499,7 +499,7 @@ exports import
         @token tag, val
         return sym.length
       fallthrough
-    case <[ := += -= *= /= %= %%= <?= >?= **= ^= ]>
+    case <[ := += -= *= /= %= %%= <?= >?= **= ^= .&.= .|.= .^.= .<<.= .>>.= .>>>.= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
         @last.1 += val
         return val.length
@@ -1108,31 +1108,31 @@ ID = // ( (?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+((\-[a-zA-Z]+)?)* )
         ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
     |//g
 SYMBOL = //
-  [-+*/^]= | %%?= | ::?=      # compound assign
-| \.(?:[&\|\^] | << | >>>?)\. # bitwise and shifts
-| \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
-| \^\^                        # clone
-| \+\+\+                      # list concat 
-| --> | ~~> | <-- | <~~       # curry 
-| ([-+&|:])\1                 # crement / logic / `prototype`
-| %%                          # mod
-| &                           # arguments
-| \([^\n\S]*\)                # call
-| [-~]>                       # function, bound function
-| <[-~]                       # backcall
-| [!=]==?                     # equality
-| @@                          # autovivification
-| <\[(?:[\s\S]*?\]>)?         # words
-| <<<<?                       # import
-| <\|                         # backpipe
-| << | >>                     # compose
-| [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
-| !\?                         # inexistence
-| \|>                         # pipe
-| \|                          # case
-| =>                          # then
-| \*\*=? | \^                 # pow
-| `                           # backtick
+  [-+*/^]= | %%?= | ::?=        # compound assign
+| \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
+| \.{1,3}                       # dot / `constructor` / splat/placeholder/yada*3
+| \^\^                          # clone
+| \+\+\+                        # list concat 
+| --> | ~~> | <-- | <~~         # curry 
+| ([-+&|:])\1                   # crement / logic / `prototype`
+| %%                            # mod
+| &                             # arguments
+| \([^\n\S]*\)                  # call
+| [-~]>                         # function, bound function
+| <[-~]                         # backcall
+| [!=]==?                       # equality
+| @@                            # autovivification
+| <\[(?:[\s\S]*?\]>)?           # words
+| <<<<?                         # import
+| <\|                           # backpipe
+| << | >>                       # compose
+| [<>]\??=?                     # {less,greater}-than-(or-equal-to) / min/max
+| !\?                           # inexistence
+| \|>                           # pipe
+| \|                            # case
+| =>                            # then
+| \*\*=? | \^                   # pow
+| `                             # backtick
 | [^\s#]?
 //g
 SPACE     = /[^\n\S]*(?:#.*)?/g

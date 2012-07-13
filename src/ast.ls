@@ -1205,13 +1205,14 @@ class exports.Assign extends Node
     left.isAssignable! or left.carp 'invalid assign'
     return @compileConditional   o, left if @logic
     {op, right} = this
-    return @compileMinMax o, left, right if op in <[ <?= >?= ]>
+    return @compileMinMax  o, left, right if op in <[ <?= >?= ]>
     if op in <[ **= ^= %%= ]>
     or op is \*= and right.isString!
     or op in <[ -= /= ]> and right.isMatcher!
       [left, reft] = Chain(left)cacheReference o
       right = Binary op.slice(0 -1), reft, right
       op    = \:=
+    op = (op.slice 1 -2) + \= if op in <[ .&.= .|.= .^.= .<<.= .>>.= .>>>.= ]>
     (right.=unparen!)ripName left.=unwrap!
     lvar = left instanceof Var
     sign = op.replace \: ''

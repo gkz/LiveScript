@@ -194,7 +194,12 @@ eq (10 .<<.  3), 80
 eq (10 .>>.  3), 1
 eq (10 .>>>. 3), 1
 
-num = 10; eq (num = num .^. 3), 9
+num = 10; eq (num .<<.=  3), 80
+num = 10; eq (num .>>.=  3), 1
+num = 10; eq (num .>>>.= 3), 1
+num = 10; eq (num .&.=   3), 2
+num = 10; eq (num .^.=   3), 9
+num = 10; eq (num .|.=   3), 11
 
 # [coffee#737](https://github.com/jashkenas/coffee-script/issues/737)
 eq 1, 1 in [1] && 1
