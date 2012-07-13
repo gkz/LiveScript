@@ -1532,12 +1532,12 @@ class exports.Jump extends Node
 
   getJump: (ctx or {}) ->
     return this unless ctx[@verb]
-    return that not of (ctx.labels or []) and this if @label
+    return that not of ctx@@labels and this if @label
 
   compileNode: (o) ->
     if @label
-    then that of (o.labels or []) or @carp "undefined label \"#that\""
-    else o[@verb] or @carp "stray #{@verb}"
+    then that of o@@labels or @carp "unknown label \"#that\""
+    else o[@verb]          or @carp "stray #{@verb}"
     @show! + \;
 
   @extended = !(sub) ->
