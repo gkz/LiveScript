@@ -29,7 +29,7 @@ exports import
   rewrite: (it || @tokens) ->
     firstPass              it
     addImplicitIndentation it
-    tagPostfixConditionals it
+    rewriteBlockless       it
     addImplicitParentheses it
     addImplicitBraces      it
     expandLiterals         it
@@ -59,17 +59,17 @@ exports import
     i = 0
     while c = code.charAt i
       switch c
-      | ' '         => i += @doSpace     code, i
-      | \\n         => i += @doLine      code, i
-      | \\          => i += @doBackslash code, i
-      | \' \"       => i += @doString    code, i, c
-      | [\0 to \9]  => i += @doNumber    code, i
-      | \/          =>
+      | ' '        => i += @doSpace     code, i
+      | \\n        => i += @doLine      code, i
+      | \\         => i += @doBackslash code, i
+      | \' \"      => i += @doString    code, i, c
+      | [\0 to \9] => i += @doNumber    code, i
+      | \/         =>
         switch code.charAt i+1
-        | \*        => i += @doComment code, i
-        | \/        => i += @doHeregex code, i
-        | otherwise =>      i += @doRegex code, i or @doLiteral code, i
-      | otherwise => i += @doID code, i or @doLiteral code, i or @doSpace code, i
+        | \*  => i += @doComment code, i
+        | \/  => i += @doHeregex code, i
+        | _   => i += @doRegex   code, i or @doLiteral code, i
+      | otherwise  => i += @doID code, i or @doLiteral code, i or @doSpace code, i
     # Close up all remaining open blocks.
     @dedent @dent
     @carp "missing `#that`" if @closes.pop!
@@ -120,11 +120,16 @@ exports import
     case \new \do \typeof \delete                      then tag = \UNARY
     case \return \throw                                then tag = \HURL
     case \break  \continue                             then tag = \JUMP
-    case \var \const \export                           then tag = \DECL
     case \this \eval \super then return @token(\LITERAL id, true)length
     case \for  then @seenFor = true; fallthrough
     case \then then @wantBy  = false
     case \catch \function then id = ''
+    case \const
+      if @last.1 is \export
+        @last.1 += \Const
+        return 5
+      fallthrough
+    case \var \export then tag = \DECL
     case \in \of
       if @seenFor
         @seenFor = false
@@ -259,7 +264,7 @@ exports import
       return 1 + parts.size
     str = (SIMPLESTR <<< lastIndex: index)exec code .0
           or @carp 'unterminated string'
-    @strnum unlines string q, str.slice 1 -1
+    @strnum unlines @string q, str.slice 1 -1
     @countLines(str)length
 
   # Matches heredocs, adjusting indentation to the correct level,
@@ -270,7 +275,7 @@ exports import
       raw = code.slice index+3 end
       # Remove trailing indent.
       doc = raw.replace LASTDENT, ''
-      @strnum enlines string q, lchomp detab doc, heretabs doc
+      @strnum enlines @string q, lchomp detab doc, heretabs doc
       return @countLines(raw)length + 6
     parts = @interpolate code, index, q+q+q
     tabs  = heretabs code.slice(index+3 index+parts.size)replace LASTDENT, ''
@@ -329,7 +334,7 @@ exports import
         else
           val = t.1.replace HEREGEX_OMIT, ''
           continue if one and not val
-          one = tokens.push t <<< [\STRNUM string \' enslash val]
+          one = tokens.push t <<< [\STRNUM @string \' enslash val]
         tokens.push [\+- \+ tokens[*-1]2]
       --tokens.length
       if dynaflag or flag >= \g
@@ -342,7 +347,7 @@ exports import
   # Matches a word literal, or ignores a sequence of whitespaces.
   doBackslash: (code, BSTOKEN.lastIndex) ->
     [input, word] = BSTOKEN.exec code
-    if word then @strnum string \' word else @countLines input
+    if word then @strnum @string \' word else @countLines input
     input.length
 
   # Matches newlines and {in,de}dents, determining which is which.
@@ -487,7 +492,10 @@ exports import
         @token \-> arrow
         return sym.length
       if val is \:
-        if @last.0 not in <[ ID STRNUM ) ]> then tag = \LABEL; val = ''
+        switch @last.0
+        | \ID \STRNUM \) => break
+        | \...           => @last.0 = \STRNUM
+        | otherwise      => tag = \LABEL; val = ''
         @token tag, val
         return sym.length
       fallthrough
@@ -652,7 +660,7 @@ exports import
 
   # Merges `@interpolate`d strings.
   addInterpolated: !(parts, nlines) ->
-    return @strnum nlines string \" parts.0.1 unless parts.1
+    return @strnum nlines @string \" parts.0.1 unless parts.1
     {tokens, last} = this
     [left, right, joint] = if not last.spaced and last.1 is \%
       --tokens.length
@@ -667,7 +675,7 @@ exports import
         tokens.push ...t.1
       else
         continue if i > 1 and not t.1
-        tokens.push [\STRNUM; nlines string \" t.1; t.2]
+        tokens.push [\STRNUM; nlines @string \" t.1; t.2]
       tokens.push joint +++ tokens[*-1]2
     --tokens.length
     @token right, '', callable
@@ -678,7 +686,7 @@ exports import
   # Records a regex token.
   regex: (body, flag) ->
     try RegExp body catch @carp e.message
-    return @strnum string \' enslash body if flag is \$
+    return @strnum @string \' enslash body if flag is \$
     @token \LITERAL "/#{ body or '(?:)' }/#{ @validate flag }"
 
   # Supplies an implicit DOT if applicable.
@@ -730,6 +738,8 @@ exports import
   # Throws a syntax error with the current line number.
   carp: !-> carp it, @line
 
+  string: (q, body) -> string q, body, @line
+
 #### Helpers
 
 function carp msg, lno then throw SyntaxError "#msg on line #{-~lno}"
@@ -742,17 +752,21 @@ function able tokens, i ? tokens.length, call
     else tag in <[ } ) )CALL STRNUM LITERAL WORDS ]>
 
 #### String Manipulators
-
-# Constructs a string literal by (un)escaping quotes and newlines.
+# Constructs a string literal by (un)escaping quotes etc.
 string = let do
-  escaped = // \\ (?: ([0-3]?[0-7]{2} | [1-7] | 0(?=[89]))
-                    | [\\0bfnrtuvx] | [^\n\S] | ([\w\W])   )? //g
-  descape = (it, oct, rest) ->
+  re = // ['"] |
+    \\ (?: ([0-3]?[0-7]{2} | [1-7] | 0(?=[89]))
+         | x[\dA-Fa-f]{2} | u[\dA-Fa-f]{4} | ([xu])
+         | [\\0bfnrtv] | [^\n\S] | ([\w\W])
+       )? //g
+then (q, body, lno) ->
+  body.=replace re, (it, oct, xu, rest) ->
+    return \\ + it if it in [q, \\]
     # Convert octal to hex for strict mode.
     return \\\x + (0x100 + parseInt oct, 8)toString 16 .slice 1 if oct
-    rest or if it is \\ then \\\\ else it
-  qs = "'":/'/g '"':/"/g
-then (q, body) -> q + body.replace(escaped, descape)replace(qs[q], \\\$&) + q
+    carp 'malformed character escape sequence' lno if xu
+    if not rest or q is rest then it else rest
+  q + body + q
 
 # Detects the minimum indent count for a heredoc, ignoring empty lines.
 function heretabs doc
@@ -793,19 +807,11 @@ character = if JSON!? then uxxxx else ->
 
 #### Rewriters
 
-# The LiveScript language has a good deal of optional syntax, implicit syntax,
-# and shorthand syntax. This can greatly complicate a grammar and bloat
-# the resulting parse table. Instead of making the parser handle it all,
-# we take a series of passes over the token stream,
-# convert shorthand into the unambiguous long form, add implicit indentation
-# and parentheses, and generally clean things up.
-
-# Tag postfix conditionals as such, so that we can parse them with a
-# different precedence.
-!function tagPostfixConditionals tokens
-  for token, i in tokens when token.0 is \IF then detectEnd tokens, i+1, ok, go 
-  function  ok then it.0 in <[ NEWLINE INDENT ]>
-  !function go then it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
+# The LiveScript language has a good deal of optional, implicit, and/or shorthand
+# syntax. This can greatly complicate a grammar and bloat the resulting parse
+# table. Instead of making the parser handle it all, we take a series of passes
+# over the token stream, convert shorthand into the unambiguous long form,
+# add implicit indentation and parentheses, and generally clean things up.
 
 # Pass before the other rewriting
 !function firstPass tokens
@@ -833,12 +839,20 @@ character = if JSON!? then uxxxx else ->
               [\)PARAM \)  line]
               [\->     \-> line]
             break LOOP
-    case tag is \CLASS
-      k = i
-      while t = tokens[++k] when t.0 in <[ THEN NEWLINE INDENT ]> then break
-      tokens.splice k, 0, [\THEN \THEN line] if t.0 is \NEWLINE
     prev = token
     continue
+
+# - Tag postfix conditionals.
+# - Fill in empty blocks for bodyless `class`es.
+!function rewriteBlockless tokens
+  for [tag]:token, i in tokens
+    detectEnd tokens, i+1, ok, go if tag in <[ IF CLASS ]>
+  function  ok then it.0 in <[ NEWLINE INDENT ]>
+  !function go it, i
+    if tag is \IF
+      it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
+    else unless it.0 is \INDENT
+      tokens.splice i, 0 [\INDENT 0 lno = tokens[i-1]2] [\DEDENT 0 lno]
 
 # that lack ending delimiters.
 !function addImplicitIndentation tokens
@@ -1027,7 +1041,7 @@ character = if JSON!? then uxxxx else ->
     case \WORDS
       ts = [[\[ \[ lno = token.2]]
       for word in token.1.match /\S+/g or ''
-        ts.push [\STRNUM; string \' word; lno] [\, \, lno]
+        ts.push [\STRNUM; string \', word, lno; lno] [\, \, lno]
       tokens.splice i, 1, ...ts, [\] \] lno]
       i += ts.length
     case \INDENT

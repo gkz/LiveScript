@@ -129,7 +129,7 @@ a = [] <<<
 a +=
   4
   5
-eq '0,1,2,3,4,5' ''+a
+eq '0,1,2,34,5' a
 
 eq '0,1' ''+ do ->
   return
@@ -342,7 +342,7 @@ obj = {
   (--i) or 'default value'
   /*      splat       */
   ...o
-  ...{splatMe: 'too'}
+  ...: splatMe: 'too'
   /*   normal keys    */
   key: ok
   's': ok
@@ -387,31 +387,6 @@ eq [,,].length, 2
 eq a * b, 21
 
 eq 11, ((, a) -> a)(, 11)
-
-### String/Array multiplication
-x = \x
-n = 4
-eq ''    'x'*0
-eq \x    'x'*1
-eq \xx   "x"*2
-eq \xxx  \x *3
-eq \xxxx \x *n
-eq ''    "#{x}" * 0
-eq \x    "#{x}" * 1
-eq \xx   "#{x}" * 2
-eq \xxx  "#{x}" * 3
-eq \xxxx "#{x}" * n
-
-i = -1
-eq ''    ''+ [i++]*0
-eq '0'   ''+ [i++]*1
-eq '1,1' ''+ [i++]*2
-eq '2,3,2,3,2,3' ''+ [i++, i++] * 3
-eq '4,5,4,5,4,5' ''+ [i++, i++] * (n-1)
-
-a = [1]
-eq '0,1,0,1' ''+ [0 ...a] * 2
-eq '1,1,1,1' ''+ [  ...a] * n
 
 
 ### ACI

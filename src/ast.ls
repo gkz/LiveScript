@@ -175,7 +175,7 @@
   toString: (idt or '') ->
     tree  = \\n + idt + @..displayName
     tree += ' ' + that if @show!
-    @eachChild -> tree += it.toString idt + TAB; void
+    @eachChild !-> tree += it.toString idt + TAB
     tree
 
   # JSON serialization
@@ -285,7 +285,7 @@ class exports.Block extends Node
     code = @compileWithDeclarations o
     # Wrap everything in a safety closure unless requested not to.
     bare or code = "(function(){\n#code\n}).call(this);\n"
-    ([prefix]) + code
+    [prefix] + code
 
   # Compile to a function body.
   compileWithDeclarations: (o) ->
@@ -399,7 +399,7 @@ class exports.Index extends Node
 
   children: [\key]
 
-  show: -> ([\? if @soak]) + @symbol
+  show: -> [\? if @soak] + @symbol
 
   isComplex: -> @key.isComplex!
 
@@ -439,8 +439,11 @@ class exports.Chain extends Node
       {@head, @tails} = Chain @head.it
       it.soak = true
     @tails.push it
-    if it instanceof Call and not it.method and @head instanceof Super
-      it.method = \.call; it.args.unshift Literal \this
+    if it instanceof Call and not it.method
+    and @head instanceof Super and not @head.called
+      it.method = \.call
+      it.args.unshift Literal \this
+      @head.called = true
     else if delete it.vivify
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
     this
@@ -645,7 +648,7 @@ class exports.Call extends Node
 
   children: [\args]
 
-  show: -> ([@new]) + ([@method]) + ([\? if @soak])
+  show: -> [@new] + [@method] + [\? if @soak]
 
   compile: (o) ->
     code  =  (@method or '') + \( + (if @pipe then "\n#{o.indent}" else '')
@@ -775,6 +778,7 @@ class exports.Obj extends List
 # `x: y`
 class exports.Prop extends Node
   (@key, @val) ~>
+    return Splat @val if key.value is \...
     if val.getAccessors!
       @val = that
       for fun in that
@@ -869,7 +873,7 @@ class exports.Unary extends Node
 
   children: [\it]
 
-  show: -> ([\@ if @post]) + @op
+  show: -> [\@ if @post] + @op
 
   isCallable: -> @op in <[ do new delete ]> or @it!?
 
@@ -971,14 +975,6 @@ class exports.Binary extends Node
       | \<<< \<<<< => return Import first, second, op is \<<<<
       | \<|        => return Block first .pipe second, op
       | \|>        => return Block second .pipe first, \<|
-      | \+         =>
-        if first instanceof Arr
-          first.items.push Splat second
-          return first
-        if second instanceof Arr
-        or second instanceof While and second = Arr [Splat second]
-          second.items.unshift Splat first
-          return second
     import {op, first, second}
 
   children: <[ first second ]>
@@ -988,20 +984,19 @@ class exports.Binary extends Node
   isCallable: ->
     @partial or @op in <[ && || ? !? << >> ]> and @first.isCallable! and @second.isCallable!
 
-  isArray: -> switch @op
-    | \* => return @first instanceof Arr
-    | \/ => return @second.isMatcher!
+  isArray: -> switch @op | \* => @first .isArray!
+                         | \/ => @second.isMatcher!
 
   isString: -> switch @op
     | \+ \* => @first.isString! or @second.isString!
     | \-    => @second.isMatcher!
 
-  EQUALITY = /^[!=]==?$/
-  COMPARER = /^(?:[!=]=|[<>])=?$/
+  COMPARER   = /^(?:[!=]=|[<>])=?$/
+  INVERSIONS = '===':'!==' '!==':'===' '==':'!=' '!=':'=='
 
   invert: ->
-    if EQUALITY.test op = @op and not COMPARER.test @second?op
-      @op = '!='charAt(op.indexOf \=) + op.slice 1
+    if not COMPARER.test @second.op and INVERSIONS[@op]
+      @op = that
       return this
     Unary \! Parens(this), true
 
@@ -1015,7 +1010,7 @@ class exports.Binary extends Node
     case \? \!?   then return @compileExistence o
     case \*
       return @compileJoin   o if @second.isString!
-      return @compileRepeat o if @first.isString! or @first instanceof Arr
+      return @compileRepeat o if @first.isString! or @first.isArray!
     case \-       then return @compileRemove o if @second.isMatcher!
     case \/       then return @compileSplit  o if @second.isMatcher!
     case \** \^   then return @compilePow o
@@ -1051,10 +1046,10 @@ class exports.Binary extends Node
     | op is \of                              => \in
     | otherwise                              => op
 
-  # Mimic Python's chained comparisons when multiple comparison operators are
-  # used sequentially. e.g.:
+  # Mimic Python/Perl6's chained comparisons
+  # when multiple comparison operators are used sequentially:
   #
-  #     $ livescript -e '50 < 65 == 9r72 > 10'
+  #     $ livescript -pe '50 < 65 === 9r72 > 10'
   #     true
   #
   # See <http://docs.python.org/reference/expressions.html#notin>.
@@ -1101,11 +1096,15 @@ class exports.Binary extends Node
   compileSplit  : -> @compileMethod it, \String \split
 
   compileRepeat: (o) ->
-    {first: x, second: n} = this; {items} = x
-    if (x = JS that if items and Splat.compileArray o, items)
+    {first: x, second: n} = this
+    {items} = x.=expandSlice o .unwrap!
+    arr = x.isArray! and \Array
+    if items and Splat.compileArray o, items
+      x     = JS that
+      items = null
+    if arr and not items
     or not (n instanceof Literal and n.value < 0x20)
-      x = Call.make Util(\repeat + if items then \Array else \String), [x, n]
-      return x.compile o
+      return Call.make Util(\repeat + (arr or \String)), [x, n] .compile o
     n = +n.value
     return x.compile o if 1 <= n < 2
     # `[x] * 2` => `[x, x]`
@@ -1174,12 +1173,12 @@ class exports.Assign extends Node
   ::delegate <[ isCallable isRegex ]> -> @op in <[ = := ]> and @right[it]!
 
   isArray: -> switch @op
-    | \= \:= \+= => do @right.isArray
-    | \/=        => do @right.isMatcher
+    | \= \:= => @right.isArray!
+    | \/=    => @right.isMatcher!
 
   isString: -> switch @op
-    | \= \:= \+= \*= => do @right.isString
-    | \-=            => do @right.isMatcher
+    | \= \:= \+= \*= => @right.isString!
+    | \-=            => @right.isMatcher!
 
   unfoldSoak: (o) ->
     if @left instanceof Existence
@@ -1208,7 +1207,6 @@ class exports.Assign extends Node
     {op, right} = this
     return @compileMinMax o, left, right if op in <[ <?= >?= ]>
     if op in <[ **= ^= %%= ]>
-    or op is \+= and right instanceof [Arr, While]
     or op is \*= and right.isString!
     or op in <[ -= /= ]> and right.isMatcher!
       [left, reft] = Chain(left)cacheReference o
@@ -1260,8 +1258,8 @@ class exports.Assign extends Node
   # Implementation of recursive destructuring,
   # when assigning to an array or object literal.
   # See <http://wiki.ecmascript.org/doku.php?id=harmony:destructuring>.
-  compileDestructuring: (o, left) ->
-    {items} = left; len = items.length; ret = o.level and not @void
+  compileDestructuring: (o, {{length: len}:items}:left) ->
+    ret  = o.level and not @void
     rite = @right.compile o, if len is 1 then LEVEL_CALL else LEVEL_LIST
     if left.name
       cache = "#that = #rite"
@@ -1459,10 +1457,7 @@ class exports.Fun extends Node
 
   makeReturn: -> if @statement then import {+returns} else super ...
 
-  ripName: !->
-    # `name = ->`
-    @name ||= it.varName!
-    @declared = it instanceof Var
+  ripName: !-> @name ||= it.varName!
 
   compileNode: (o) ->
     pscope = o.scope
@@ -2147,24 +2142,25 @@ exports.Decl =
         if node.varName!
         or node instanceof Assign and node.left. varName!
         or node instanceof Class  and node.title?varName!
-          Assign Chain(out, [Index Key that]), node
-        else
-          Import out, node
+        then Assign Chain(out, [Index Key that]), node
+        else Import out, node
     Block lines
 
   import: (lines, all) ->
     for line, i in lines then lines[i] = Import Literal(\this), line, all 
     Block lines
 
-  importAll: (lines) -> @import lines, true
 
   const: (lines) ->
     for node in lines
-      node.carp 'invalid constant variable declaration' unless node.op is \=
+      node.op is \= or node.carp 'invalid constant variable declaration'
       node.const = true
     Block lines
 
   var: Vars
+
+  importAll   : -> @import it, true
+  exportConst : -> @export @const(it)lines
 
 ##### Scope
 # Regulates lexical scoping within LiveScript. As you
@@ -2174,10 +2170,12 @@ exports.Decl =
 !function Scope @parent, @shared
   @variables = {}
 Scope ::=
+  READ_ONLY: const:\constant function:\function undefined:\undeclared
+
   # Adds a new variable or overrides an existing one.
   add: (name, type, node) ->
     if node and t = @variables"#name."
-      if @READONLY[t] or @READONLY[type]
+      if @READ_ONLY[t] or @READ_ONLY[type]
         node.carp "redeclaration of #that \"#name\""
       else if t is type is \arg
         node.carp "duplicate parameter \"#name\""
@@ -2220,9 +2218,8 @@ Scope ::=
     return type if (type = @variables"#name.") or not above
     @parent?check name, above
 
-  checkReadOnly: (name) -> @READONLY[@check name, true]
-
-  READONLY: const: \constant, function: \function, undefined: \undeclared
+  # Checks if a variable can be reassigned.
+  checkReadOnly: (name) -> @READ_ONLY[@check name, true]
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->

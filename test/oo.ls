@@ -7,7 +7,7 @@ class Base
     "static/#{string}"
 
 class FirstChild extends Base
-  func: -> super('one/') + it
+  func: -> super('one/').concat it
 
 SecondChild = class extends FirstChild
   func: -> (super).call(this, 'two/') + it
@@ -141,12 +141,12 @@ Namespace = {}
 Class     = null
 
 # but undeclared.
-Namespace.Class = class then
+Namespace.Class = class
 eq Namespace.Class.displayName, 'Class'
 eq Class, null
 
 # and declared.
-class Namespace.Class then
+class Namespace.Class
 eq Class, Namespace.Class
 
 
@@ -182,8 +182,8 @@ eq ns.method2(2).length, 2
 # [coffee#1009](https://github.com/jashkenas/coffee-script/issues/1009)
 # Class names are "$"-prefixed when reserved.
 new
-  class @in   then
-  class @eval then
+  class @in
+  class @eval
   ok $in?
   ok $eval?
 
@@ -210,10 +210,10 @@ eq oss[5.67](), oss
 eq oss['""'](), oss
 
 
-eq \declared (class declared then)displayName
+eq \declared (class declared)displayName
 ok declared?
 
-eq \named  (new -> return @named = class then)displayName
+eq \named  (new -> return @named = class)displayName
 ok named!? 'should not leak to global when undeclared'
 
 
@@ -251,7 +251,7 @@ class NameEater
     @subnames.push it.displayName
 
 class A extends NameEater
-  (class B then) extends NameEater
+  (class B) extends NameEater
 
 eq 'A,B' ''+NameEater.subnames
 

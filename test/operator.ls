@@ -434,27 +434,7 @@ eq '8,9' ''+ -~[7 8]
 
 
 ### Overloaded
-a = [0 1]
-b = ''
-c = [2 3]
-
-#### Concat
-eq '0,1,2' String a + [2]
-eq '3,4,5' String [3 4] + {0: 5, length: 1}
-eq '0,1' ''+ b += [0 1]
-ok b instanceof a..
-
-x = [6]
-y = [7 to 10]
-[[] ...x, []] += y
-eq '6,8,9' ''+ x
-
-x += for i til 2 then i
-eq '6,8,9,0,1' ''+ x
-
-##### +++
-eq '0,1,2,3' String a +++ c
-eq '0,1,5'   String a +++ 5
+a = b = [0 1]
 
 #### Join
 eq '0==1' a * \==
@@ -475,6 +455,43 @@ eq 2 (/abc/ / /[^/]+/)length
 eq "#{ x = ''+ Math.random() }"/'.'*'.' x
 eq '0,1' ''+ b /= /\D/
 eq '0,1' ''+ b
+
+### Repeat
+x = \x
+n = 4
+eq ''    'x'*0
+eq \x    'x'*1
+eq \xx   "x"*2
+eq \xxx  \x *3
+eq \xxxx \x *n
+eq ''    "#{x}" * 0
+eq \x    "#{x}" * 1
+eq \xx   "#{x}" * 2
+eq \xxx  "#{x}" * 3
+eq \xxxx "#{x}" * n
+
+i = -1
+eq ''    ''+ [i++]*0
+eq '0'   ''+ [i++]*1
+eq '1,1' ''+ [i++]*2
+eq '2,3,2,3,2,3' ''+ [i++, i++] * 3
+eq '4,5,4,5,4,5' ''+ [i++, i++] * (n-1)
+
+a = [1]
+eq '0,1,0,1' ''+ [0 ...a] * 2
+eq '1,1,1,1' ''+ [  ...a] * n
+eq '1,1,1,1' ''+ a[0 , 0] * 2
+eq '1,1,1,1' ''+ a[0 ...] * n
+
+eq '0,1,0,1' ''+ [i for i to 1] * 2
+eq '0,0,0,0' ''+ [i for i to 0] * n
+
+a = [0 1]
+c = [2 3]
+
+##### +++
+eq '0,1,2,3' String a +++ c
+eq '0,1,5'   String a +++ 5
 
 ### Mod
 eq -3, -3 % 4
@@ -673,5 +690,4 @@ eq \blonde personC.hair
 eq \matias personA.name
 eq 20      personA.age
 ok personA.hair!?
-
 
