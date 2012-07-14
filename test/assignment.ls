@@ -308,9 +308,14 @@ new
   [x ? 2, [y] || [3], @p && 5, @q !? 7] = [null, false, true, 0]
   eq x * y * @p * @q, 210
 
+  @p = @q = void
+  [x = 2, [y] ||= [3], @p &&= 5, @q !? 7] = [null, false, true, 0]
+  eq x * y * @p * @q, 210
+
   {a or 2, _: b or 3, @p or 5} = {}
   eq a * b * @p, 30
 
+  @a = @b = @c = void
   @{a ? 2, \b ? 3, ([\c]) ? 5} = {}
   eq @a * @b * @c, 30
 

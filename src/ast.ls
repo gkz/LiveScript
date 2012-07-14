@@ -966,9 +966,11 @@ class exports.Unary extends Node
 class exports.Binary extends Node
   (op, first, second, destructuring) ~>
     if destructuring 
-      if (op.logic or op is \=)
-        op? = op.logic
-        op = \? if op is \=
+      logic = op.logic
+      logic = destructuring if typeof! destructuring is \String
+      op = | logic    => that
+           | op is \= => \?
+           | _        => \=
     @partial = first!? or second!?
     if not @partial
       if \= is op.charAt op.length-1 and op.charAt(op.length-2) not in <[ = < > ! ]>
@@ -1301,6 +1303,8 @@ class exports.Assign extends Node
       else
         (inc = ivar) and start < i and inc += " + #{ i - start }"
         val = Chain rcache||=Literal(rite), [Index JS inc || i]
+      if node instanceof Assign
+        node = Binary node.op, node.left, node.right, (node.logic or true)
       (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
 
   rendObj: (o, nodes, rite) ->
