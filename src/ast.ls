@@ -1702,12 +1702,12 @@ class exports.Jump extends Node
 
   getJump: (ctx or {}) ->
     return this unless ctx[@verb]
-    return that not in (ctx.labels or []) and this if @label
+    return that not in ctx@@labels and this if @label
 
   compileNode: (o) ->
     if @label
-    then that in (o.labels or []) or @carp "undefined label \"#that\""
-    else o[@verb] or @carp "stray #{@verb}"
+    then that in o@@labels or @carp "unknown label \"#that\""
+    else o[@verb]          or @carp "stray #{@verb}"
     @show! + \;
 
   @extended = !(sub) ->
@@ -2043,13 +2043,14 @@ class exports.If extends Node
       else @compileBlock o, els
 
   compileExpression: (o) ->
-    {then: thn, else: els} = this
-    @void and thn.void = (els or 0)void = true
-    return Parens(Binary \&& @if, thn)compile o if not els and (@cond or @void)
+    {then: thn, else: els or Literal \void} = this
+    @void and thn.void = els.void = true
+    if not @else and (@cond or @void)
+      return Parens Binary \&& @if, thn .compile o
     code = @if.compile o, LEVEL_COND
-    pad  = if els?isComplex! then \\n + o.indent += TAB else ' '
-    code += "#pad? #{ thn.compile o, LEVEL_LIST              }
-             #pad: #{ els?compile o, LEVEL_LIST  or 'void 8' }"
+    pad  = if els.isComplex! then \\n + o.indent += TAB else ' '
+    code += "#pad? #{ thn.compile o, LEVEL_LIST }
+             #pad: #{ els.compile o, LEVEL_LIST }"
     if o.level < LEVEL_COND then code else "(#code)"
 
   # Unfolds a node's child if soak,

@@ -19,7 +19,7 @@ r = :outer
   1
 eq r, 1
 
-compileThrows 'undefined label "a"' 1 'break a'
+compileThrows   'unknown label "a"' 1 'break a'
 compileThrows 'duplicate label "b"' 2 '''
   :b
     :b break b
