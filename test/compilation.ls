@@ -188,3 +188,6 @@ compileThrows 'cannot curry a function with a variable number of arguments' 1 '(
 # Optimize/clean compose [#101](https://github.com/gkz/LiveScript/issues/101)
 eq '__compose(j, h, g, f);' (LiveScript.compile 'f >> g >> h >> j' bare).split(\\n).0
 eq '__compose(f, g, h, j);' (LiveScript.compile 'f << g << h << j' bare).split(\\n).0
+
+# destructuring assign sugar
+compileThrows 'invalid assign' 1 '{a **= b} = c'

@@ -964,7 +964,11 @@ class exports.Unary extends Node
 
 #### Binary operators
 class exports.Binary extends Node
-  (op, first, second) ~>
+  (op, first, second, destructuring) ~>
+    if destructuring 
+      if (op.logic or op is \=)
+        op? = op.logic
+        op = \? if op is \=
     @partial = first!? or second!?
     if not @partial
       if \= is op.charAt op.length-1 and op.charAt(op.length-2) not in <[ = < > ! ]>
