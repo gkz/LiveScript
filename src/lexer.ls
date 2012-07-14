@@ -124,6 +124,7 @@ exports import
     case \for  then @seenFor = true; fallthrough
     case \then then @wantBy  = false
     case \catch \function then id = ''
+    case \where then
     case \const
       if @last.1 is \export
         @last.1 += \Const
@@ -918,7 +919,7 @@ character = if JSON!? then uxxxx else ->
     brackets.push prev.0 is \DOT if tag is \[
     if prev.0 is \]
       if brackets.pop! then prev.index = true else continue
-    continue unless prev.0 in <[ FUNCTION LET ]>
+    continue unless prev.0 in <[ FUNCTION LET WHERE ]>
                  or prev.spaced and able tokens, i, true
     if token.doblock
       token.0 = \CALL(

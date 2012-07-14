@@ -483,6 +483,13 @@ ok let [it] = [ok]
   it is ok
 
 
+### `where`
+eq 5 x + y where x = 2, y = 3
+
+eq 5 x + y where x = 2,
+                 y = 3
+
+
 ### `with`
 with o = {}
   @a = 1

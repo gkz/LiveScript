@@ -184,6 +184,7 @@ bnf =
 
   # All the different types of expressions in our language.
   Expression:
+    o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.let $4, Block [$1]
     o 'Chain CLONEPORT Expression' 
     , -> Import (Unary \^^ $1, prec: \UNARY), $3,         false
     o 'Chain CLONEPORT Block' 
@@ -409,7 +410,7 @@ operators =
   # Listed from lower precedence.
   <[ left     POST_IF FOR WHILE ]>
   <[ right    BACKPIPE     ]>
-  <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
+  <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL WHERE ]>
   <[ left     PIPE         ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
