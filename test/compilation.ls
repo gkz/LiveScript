@@ -186,8 +186,8 @@ eq '[1].concat([2], [3], [4]);' LiveScript.compile '[1] +++ [2] +++ [3] +++ [4]'
 compileThrows 'cannot curry a function with a variable number of arguments' 1 '(...args) --> args[0]'
 
 # Optimize/clean compose [#101](https://github.com/gkz/LiveScript/issues/101)
-eq '__compose(j, h, g, f);' (LiveScript.compile 'f >> g >> h >> j' bare).split(\\n).0
-eq '__compose(f, g, h, j);' (LiveScript.compile 'f << g << h << j' bare).split(\\n).0
+eq '__compose([j, h, g, f]);' (LiveScript.compile 'f >> g >> h >> j' bare).split(\\n).0
+eq '__compose([f, g, h, j]);' (LiveScript.compile 'f << g << h << j' bare).split(\\n).0
 
 # destructuring assign sugar
 compileThrows 'invalid assign' 1 '{a **= b} = c'

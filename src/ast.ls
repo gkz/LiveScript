@@ -1144,7 +1144,7 @@ class exports.Binary extends Node
       | otherwise                                 => [x]
     args = ([@first] +++ f @second)
     args.=reverse! if @op is \>>
-    Chain Var (util \compose) .add Call(args) .compile o
+    Chain Var (util \compose) .add Call([Arr args]) .compile o
   
   compileMod: (o) ->
     ref = o.scope.temporary!
@@ -2318,8 +2318,7 @@ UTILS =
     } : f;
   }'''
 
-  compose: '''function(){
-    var fs = arguments;
+  compose: '''function(fs){
     return function(){
       var i, args = arguments;
       for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
