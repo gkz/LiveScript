@@ -264,13 +264,13 @@ bnf =
     o \JUMP     -> L new Jump $1
     o 'JUMP ID' -> L new Jump $1, $2
 
-    o 'SWITCH Expression Cases'               -> new Switch $1, $2, $3
-    o 'SWITCH Expression Cases DEFAULT Block' -> new Switch $1, $2, $3, $5
-    o 'SWITCH Expression Cases ELSE    Block' -> new Switch $1, $2, $3, $5
-    o 'SWITCH            Cases'               -> new Switch $1, null $2
-    o 'SWITCH            Cases DEFAULT Block' -> new Switch $1, null $2, $4
-    o 'SWITCH            Cases ELSE    Block' -> new Switch $1, null $2, $4
-    o 'SWITCH                          Block' -> new Switch $1, null [], $2
+    o 'SWITCH Exprs Cases'               -> new Switch $1, $2, $3
+    o 'SWITCH Exprs Cases DEFAULT Block' -> new Switch $1, $2, $3, $5
+    o 'SWITCH Exprs Cases ELSE    Block' -> new Switch $1, $2, $3, $5
+    o 'SWITCH       Cases'               -> new Switch $1, null $2
+    o 'SWITCH       Cases DEFAULT Block' -> new Switch $1, null $2, $4
+    o 'SWITCH       Cases ELSE    Block' -> new Switch $1, null $2, $4
+    o 'SWITCH                     Block' -> new Switch $1, null [], $2
 
     o 'TRY Block'                           -> new Try $2
     o 'TRY Block CATCH Block'               -> new Try $2, $3, $4

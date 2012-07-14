@@ -197,8 +197,18 @@ match ++x
 false-func = -> false
 true-func  = -> true
 
+# no subject
 match
 | false-func => ok 0
 | true-func  => ok 1
 | otherwise  => ok 0
+
+# multiple arguments
+x = 1
+y = 2
+match x, y
+| (==) => ok 0
+| (>)  => ok 0
+| (<)  => ok 1
+| _    => ok 0
 
