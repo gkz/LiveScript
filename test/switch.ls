@@ -193,3 +193,12 @@ match ++x
 | (== 4)        => ok 0
 | (== 3), (==8) => ok 1
 | _             => ok 0
+
+false-func = -> false
+true-func  = -> true
+
+match
+| false-func => ok 0
+| true-func  => ok 1
+| otherwise  => ok 0
+
