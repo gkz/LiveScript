@@ -1935,7 +1935,10 @@ class exports.Try extends Node
 # Compiles to the regular JS `switch`-`case`-`default`,
 # but with forced `break` after each cases.
 class exports.Switch extends Node
-  (@topic, @cases, @default) ->
+  (@type, @topic, @cases, @default) ->
+    if type is \match
+      @target = topic
+      @topic = null
 
   children: <[ topic cases default ]>
 
@@ -1959,11 +1962,13 @@ class exports.Switch extends Node
 
   compileNode: (o) ->
     {tab} = this
+    [target-node, target] = Chain @target .cacheReference o if @target
     topic = !!@topic and @anaphorize!compile o, LEVEL_PAREN
     code  = "switch (#topic) {\n"
     stop  = @default or @cases.length - 1
     o.break = true
-    for c, i in @cases then code += c.compileCase o, tab, i is stop, !topic 
+    for c, i in @cases
+      code += c.compileCase o, tab, i is stop, !topic, target, (if i is 0 then target-node)
     if @default
       o.indent = tab + TAB
       code += tab + "default:\n#that\n" if @default.compile o, LEVEL_TOP
@@ -1981,13 +1986,17 @@ class exports.Case extends Node
     @body.makeReturn it unless @body.lines[*-1]?value is \fallthrough
     this
 
-  compileCase: (o, tab, nobr, bool) ->
+  compileCase: (o, tab, nobr, bool, target, target-node) ->
     tests = for test in @tests
       test.=expandSlice(o)unwrap!
       if test instanceof Arr 
         for t in test.items then t 
       else test
     tests.length or tests.push Literal \void
+    if target
+      for test, i in tests
+        target = target-node if i is 0 and target-node
+        tests[i] = Chain test .add Call [target]
     if bool
       [t] = tests; i = 0; while tests[++i] then t = Binary \|| t, that 
       tests = [(@<<<{t, aSource: \t, aTargets: [\body]})anaphorize!invert!]

@@ -101,17 +101,17 @@ exports import
 
   # Matches an identifying literal: variables, keywords, accessors, etc.
   doID: (code, index) ->
-    [input] = match = (ID <<< lastIndex: index)exec code
+    [input] = regex-match = (ID <<< lastIndex: index)exec code
     return 0 unless input
-    id = match.1.replace /-+([a-zA-Z0-9$_])/g, -> it.1.toUpperCase!
-    @check-consistency id, match.1 if /-/.test match.1
+    id = regex-match.1.replace /-+([a-zA-Z0-9$_])/g, -> it.1.toUpperCase!
+    @check-consistency id, regex-match.1 if /-/.test regex-match.1
     if NONASCII.test id
       try Function "var #id" catch @carp "invalid identifier \"#id\""
     {last} = this
     # `id:_` `_.id` `@id`
-    if match.4 or last.0 is \DOT or @adi!
+    if regex-match.4 or last.0 is \DOT or @adi!
       @token \ID if id in KEYWORDS then Object(id) <<< {+reserved} else id
-      @token \: \: if match.4
+      @token \: \: if regex-match.4
       return input.length
     # keywords
     switch id
@@ -174,6 +174,8 @@ exports import
       tag = \CASE; fallthrough
     case \case
       return input.length if @doCase!
+    case \match
+      tag = \SWITCH
     case \loop
       @token \WHILE   id
       @token \LITERAL \true
@@ -218,7 +220,7 @@ exports import
         else @wantBy &&= !tag = \BY
       case \ever then if last.0 is \FOR
         @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
-    tag ||= match.1.toUpperCase!
+    tag ||= regex-match.1.toUpperCase!
     if tag in <[ COMPARE LOGIC RELATION ]> and last.0 is \(
       tag = if tag is \RELATION then \BIOPR else \BIOP
     @unline! if tag in <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
@@ -228,14 +230,14 @@ exports import
 
   # Matches a number, including decimal, hex and exponential notation.
   doNumber: (code, NUMBER.lastIndex) ->
-    return 0 unless input = (match = NUMBER.exec code)0
+    return 0 unless input = (regex-match = NUMBER.exec code)0
     {last} = this
     # `. 0.0` => `. 0 . 0`
-    if match.5 and (last.0 is \DOT or @adi!)
-      @token \STRNUM match.4.replace NUMBER_OMIT, ''
-      return match.4.length
-    if radix = match.1
-      num = parseInt rnum = match.2.replace(NUMBER_OMIT, ''), radix
+    if regex-match.5 and (last.0 is \DOT or @adi!)
+      @token \STRNUM regex-match.4.replace NUMBER_OMIT, ''
+      return regex-match.4.length
+    if radix = regex-match.1
+      num = parseInt rnum = regex-match.2.replace(NUMBER_OMIT, ''), radix
       if radix > 36 or radix < 2
         @carp "invalid number base #radix (with number #rnum), 
                base must be from 2 to 36"
@@ -243,9 +245,9 @@ exports import
         @carp "invalid number #rnum in base #radix"
       num += ''
     else
-      num = (match.3 or input)replace NUMBER_OMIT, ''
-      if match.3 and num.charAt! is \0 and num.charAt(1) not in ['' \.]
-        @carp "deprecated octal literal #{match.4}"
+      num = (regex-match.3 or input)replace NUMBER_OMIT, ''
+      if regex-match.3 and num.charAt! is \0 and num.charAt(1) not in ['' \.]
+        @carp "deprecated octal literal #{regex-match.4}"
     if not last.spaced and last.0 is \+-
       last.0 = \STRNUM; last.1 += num
       return input.length

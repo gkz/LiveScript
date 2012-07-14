@@ -181,3 +181,15 @@ when true  then ok 1
 switch
 | false => ok 0
 else ok 1
+
+#### match
+x = 2
+match x
+| (== 3) => ok 0
+| (== 2) => ok 1
+| _      => ok 0
+
+match ++x
+| (== 4)        => ok 0
+| (== 3), (==8) => ok 1
+| _             => ok 0
