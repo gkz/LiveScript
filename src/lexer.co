@@ -707,7 +707,7 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[++i]
     [tag] = token
     continue unless tag of
-      <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY CONST EXPORT ]>
+      <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY ]>
     switch next = tokens[i+1]0
     case \IF then continue if tag is \ELSE
     case \INDENT \THEN
@@ -728,17 +728,19 @@ character = if JSON!? then uxxxx else ->
      and \, is tokens[idx = 1 + indexOfPair tokens, i+1]?0
       go 0 idx; ++i
     default
-      seenSwitch = false
       detectEnd tokens, i+1, ok, go
-  function ok token, i
-    switch token.0
+  function ok [t0]:token, i
+    # Handle nesting intuitively:
+    #   `try try a finally b` => `try (try a finally b)`
+    t = tag
+    tag := '' if tag is t0 or tag is \THEN and t0 is \SWITCH
+    switch t0
     case \NEWLINE       then token.1 is not \;
     case \DOT \? \, \=> then tokens[i-1]eol
-    case \ELSE          then tag is \THEN
-    case \CATCH         then tag is \TRY
-    case \FINALLY       then tag of <[ TRY CATCH THEN ]>
-    case \SWITCH        then not seenSwitch := true
-    case \CASE \DEFAULT then not seenSwitch
+    case \ELSE          then t is \THEN
+    case \CATCH         then t is \TRY
+    case \FINALLY       then t of <[ TRY CATCH THEN ]>
+    case \CASE \DEFAULT then t of <[ CASE THEN ]>
   !function go [] i
     prev = tokens[i-1]
     tokens.splice if prev.0 is \, then i-1 else i, 0, dedent <<< {prev.2}

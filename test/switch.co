@@ -30,7 +30,8 @@ eq func(8), void
 eq void, switch case 1 then break
 eq 1   , switch case 0 then break default 1
 eq 2   , switch case 1 then continue while 0; 2
-eq 3   , do -> switch -> 0 case 1 then -> 2 default 3
+eq 3   , do -> switch 0 case 1 then -> 2 default 3
+eq 4   , if 1 then switch 2 case 3 then default 4
 
 
 compileThrows 'inconvertible statement' 3 '''

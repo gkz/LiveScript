@@ -66,6 +66,10 @@ eq i, 2
 eq 2, do -> if 0 then -> 1 else 2
 
 
+# Outer `then` should skip `else`.
+eq 3, if 1 then if 0 then 2 else 3
+
+
 # With suppressed indentations.
 eq 6,
   if 0 then 1 \
