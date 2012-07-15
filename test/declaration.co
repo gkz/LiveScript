@@ -4,9 +4,10 @@ out = exports ? this
 
 a = random!
 export a
-export b = random!
 eq out.a, a
-eq out.b, b
+eq do
+  export b = random!
+  out.b
 
 export class C
   @d = random!
@@ -77,6 +78,7 @@ let
     d
     e
   ok a is b is c is d is e is void
+  eq void var f
 
 compileThrows 'invalid variable declaration' 2 'var\n  0'
 compileThrows 'redeclaration of "a"'         2 '(a) ->\n  var a'

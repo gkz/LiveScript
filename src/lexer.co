@@ -108,12 +108,6 @@ exports import
     case \for  then @seenFor = true; fallthrough
     case \then then @wantBy  = false
     case \catch \function then id = ''
-    case \const
-      if @last.1 is \export
-        @last.1 += \Const
-        return 5
-      fallthrough
-    case \var \export then tag = \DECL
     case \in \of
       if @seenFor
         @seenFor = false
@@ -141,7 +135,9 @@ exports import
     case \unless then tag = \IF
     case \until  then tag = \WHILE
     case \import
-      if able @tokens then id = \<<< else tag = \DECL
+      if able @tokens then id = \<<<; break
+      fallthrough
+    case \export \const \var then tag = \DECL
     default
       break if id of KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id of KEYWORDS_UNUSED
@@ -707,7 +703,7 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[++i]
     [tag] = token
     continue unless tag of
-      <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY ]>
+      <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY DECL ]>
     switch next = tokens[i+1]0
     case \IF then continue if tag is \ELSE
     case \INDENT \THEN
@@ -718,17 +714,19 @@ character = if JSON!? then uxxxx else ->
     then (tokens[i] = indent)then = true
     else tokens.splice ++i, 0 indent
     switch
+    case tag is \DECL then break
     # ->,
     case next of <[ DOT ? , => ]> then --i; fallthrough
     # -> 0,
     case next of <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
       go 0 i+=2; ++i
+      continue
     # -> [0],
     case next of <[ ( [ { ]>
      and \, is tokens[idx = 1 + indexOfPair tokens, i+1]?0
       go 0 idx; ++i
-    default
-      detectEnd tokens, i+1, ok, go
+      continue
+    detectEnd tokens, i+1, ok, go
   function ok [t0]:token, i
     # Handle nesting intuitively:
     #   `try try a finally b` => `try (try a finally b)`
@@ -795,9 +793,9 @@ character = if JSON!? then uxxxx else ->
       if seenSwitch then skipBlock := true else return true
     case \INDENT
       return skipBlock := false if skipBlock
-      return pre.0 not of <[
-        { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY HURL DO
-      ]>
+      return pre.0 not of
+        <[ { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY
+           HURL DECL DO ]>
     case \WHILE
       return false if token.done
       fallthrough
@@ -1001,4 +999,4 @@ CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
 ARG = CHAIN.concat <[ ... UNARY CREMENT PARAM( FUNCTION
-                      IF SWITCH TRY CLASS RANGE LABEL DO ]>
+                      IF SWITCH TRY CLASS RANGE LABEL DECL DO ]>
