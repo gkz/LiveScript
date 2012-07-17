@@ -323,7 +323,7 @@ exports import
       @newline!
     else
       if (tag = last.0) is \ASSIGN and ''+last.1 not of <[ = := += ]>
-      or tag of <[ +- => DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
+      or tag of <[ +- |> DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
                    IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
         return length
       if delta then @indent delta else @newline!
@@ -434,7 +434,7 @@ exports import
     case \<
       @carp 'unterminated words' if val.length < 4
       @adi!; tag = \WORDS; val.=slice 2 -2
-    @unline! if tag of <[ , => DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
+    @unline! if tag of <[ , |> DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 
@@ -587,8 +587,8 @@ exports import
 
   # Checks if the last token is
   #
-  # - `f()`: `call`able via explicit parentheses
-  # - `x''`: indexable via implicit brackets
+  # - `f()`: `call`able via explicit parentheses.
+  # - `x''`: indexable via implicit dots.
   able: (call) -> not @last.spaced and able @tokens, null call
 
   # Increments `@line` by the number of newlines in a string.
@@ -716,7 +716,7 @@ character = if JSON!? then uxxxx else ->
     switch
     case tag is \DECL then break
     # ->,
-    case next of <[ DOT ? , => ]> then --i; fallthrough
+    case next of <[ DOT ? , |> ]> then --i; fallthrough
     # -> 0,
     case next of <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
       go 0 i+=2; ++i
@@ -734,7 +734,7 @@ character = if JSON!? then uxxxx else ->
     tag := '' if tag is t0 or tag is \THEN and t0 is \SWITCH
     switch t0
     case \NEWLINE       then token.1 is not \;
-    case \DOT \? \, \=> then tokens[i-1]eol
+    case \DOT \? \, \|> then tokens[i-1]eol
     case \ELSE          then t is \THEN
     case \CATCH         then t is \TRY
     case \FINALLY       then t of <[ TRY CATCH THEN ]>
@@ -777,7 +777,7 @@ character = if JSON!? then uxxxx else ->
     detectEnd tokens, i, ok, go
   function ok token, i
     tag = token.0
-    return true if tag of <[ => POST_IF ]>
+    return true if tag of <[ |> POST_IF ]>
     unless skipBlock
       return true if token.alias and token.1 of <[ && || ]>
                   or tag of <[ TO BY IMPLEMENTS ]>
@@ -953,7 +953,7 @@ SYMBOL = //
 | >>>?=?                      # rite shift
 | [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
 | !\?                         # inexistence
-| =>                          # pipe
+| \|>                         # pipe
 | \*\*=?                      # pow
 | [^\s#]?
 //g
