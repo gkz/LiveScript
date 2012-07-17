@@ -1040,12 +1040,12 @@ class exports.Binary extends Node
         return @compileAnyInstanceOf o, items if items.1
         @second = items.0 or rite
       @second.isCallable! or @second.carp 'invalid instanceof operand'
+    case <[ ==== !=== ]>       then @op.=slice 0 3; fallthrough
+    case <[ <== >== <<= >>= ]> then return @compileDeepEq o
     default
       if COMPARER.test @op
         if @xorChildren (.isRegex!)
           return @compileRegexEquals o, that
-        if @xorChildren (instanceof [Arr, Obj])
-          return @compileObjEquals o, that +++ (Literal "'#{@op}'")
         if @op is \=== and (@first instanceof Literal and @second instanceof Literal)
         and @first.isWhat! isnt @second.isWhat!
           console?.warn "WARNING: strict comparison of two different types will always be false: #{@first.value} == #{@second.value}"
@@ -1174,8 +1174,15 @@ class exports.Binary extends Node
   compileRegexEquals: (o, [regex, target]) ->
     Chain regex .add Index Key \exec .add Call [target] .compile o
 
-  compileObjEquals: (o, args) ->
-    Chain Var (util \eq) .add Call args .compile o
+  compileDeepEq: (o) ->
+    if @op in <[ >== >>= ]>
+      [@first, @second] = [@second, @first]
+      @op = if @op is \>== then \<== else \<<=
+    if @op is \!==
+      @op = \===
+      negate = true
+    r = Chain Var (util \deepEq) .add Call [@first, @second, Literal "'#{@op}'"]
+    (if negate then Unary \! r else r).compile o
 
   compileXor: (o) ->
     left  = Chain @first  .cacheReference o
@@ -2369,7 +2376,7 @@ UTILS =
   not: '''function(x){ return !x; }'''
 
   # modified version of underscore.js's _.isEqual and eq functions
-  eq: '''function(x, y, type){
+  deepEq: '''function(x, y, type){
     var toString = {}.toString, hasOwnProperty = {}.hasOwnProperty,
         has = function (obj, key) { return hasOwnProperty.call(obj, key); };
     first = true;
@@ -2399,31 +2406,19 @@ UTILS =
       stack.push(a);
       size = 0;
       result = true;
-      if (type === '>' || type === '>=') {
-        ref = a;
-        a = b;
-        b = ref;
-        type = '<' + type.substring(1);
-      }
       if (className == '[object Array]') {
         alength = a.length;
         blength = b.length;
-        if (!first) { 
-          result = alength === blength;
-          size = alength;
-        } else {
-          first = false;
+        if (first) { 
           switch (type) {
-          case '===': 
-            result = alength === blength; 
-            break;
-          case '<': 
-            result = alength < blength; 
-            break;
-          case '<=': 
-            result = alength <= blength; 
-            break;
+          case '===': result = alength === blength; break;
+          case '<==': result = alength <= blength; break;
+          case '<<=': result = alength < blength; break;
           }
+          size = alength;
+          first = false;
+        } else {
+          result = alength === blength;
           size = alength;
         }
         if (result) {
@@ -2446,11 +2441,16 @@ UTILS =
           for (key in b) {
             if (has(b, key)) { ++sizeB; }
           }
-          if (type === '<') {
-            result = size < sizeB;
-          } else if (type === '<=') {
-            result = size <= sizeB
+          if (first) {
+            if (type === '<<=') {
+              result = size < sizeB;
+            } else if (type === '<==') {
+              result = size <= sizeB
+            } else {
+              result = size === sizeB;
+            }
           } else {
+            first = false;
             result = size === sizeB;
           }
         }
@@ -2479,8 +2479,9 @@ LEVEL_CALL   = 5  # ...()
 with PREC = {unary: 0.9}
   @\&& = @\|| = @\xor                                    = 0.2
   @\.&.  = @\.^.  = @\.|.                                = 0.3
-  @\== = @\!= = @\=== = @\!==                            = 0.4
+  @\== = @\!= = @\~= = @\!~= = @\=== = @\!==             = 0.4
   @\<  = @\>  = @\<=  = @\>= = @of = @instanceof = @\+++ = 0.5
+  @\<<= = @\>>= = @\<== = @\>==                          = 0.5
   @\.<<. = @\.>>. = @\.>>>.                              = 0.6
   @\+  = @\-                                             = 0.7
   @\*  = @\/  = @\%                                      = 0.8

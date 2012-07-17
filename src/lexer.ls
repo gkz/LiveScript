@@ -449,7 +449,8 @@ exports import
         | \==  => \===
         | \!=  => \!==
       tag = \COMPARE
-    case <[ < > <= >= ]> then tag = \COMPARE
+    case <[ === !== ]> then val += '='; fallthrough
+    case <[ < > <= >= <== >== >>= <<= ]> then tag = \COMPARE
     case <[ .<<. .>>. .>>>. <? >? ]> then tag = \SHIFT
     case \(
       unless @last.0 in <[ FUNCTION LET ]> or @able true or @last.1 is \.@
@@ -1125,12 +1126,13 @@ SYMBOL = //
 | \([^\n\S]*\)                  # call
 | [-~]>                         # function, bound function
 | <[-~]                         # backcall
-| [!=]=                         # strict equality
+| [!=]==?                       # strict equality, deep equals
 | !?\~=                         # fuzzy equality
 | @@                            # autovivification
 | <\[(?:[\s\S]*?\]>)?           # words
 | <<<<?                         # import
 | <\|                           # backpipe
+| [<>]== | <<= | >>=            # deep {less,greater}-than-(or-equal-to)
 | << | >>                       # compose
 | [<>]\??=?                     # {less,greater}-than-(or-equal-to) / min/max
 | !\?                           # inexistence
