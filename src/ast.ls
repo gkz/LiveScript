@@ -1888,7 +1888,7 @@ class exports.For extends While
       head += srcPart
     else
       step is pvar or vars += ', ' + step
-      head += "#vars; #cond; " + if 1 === Math.abs pvar
+      head += "#vars; #cond; " + if 1 ~= Math.abs pvar
         then (if pvar < 0 then \-- else \++) + idx
         else idx + if pvar < 0 
           then ' -= ' + pvar.slice 1 

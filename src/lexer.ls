@@ -436,15 +436,16 @@ exports import
       switch @last.0
       | \, \[ \( \CALL( => @token \LITERAL \void
       | \FOR \OWN       => @token \ID ''
-    case \!=
+    case \!= \~=
       unless able @tokens or @last.0 in [\( \CREMENT]
-        @tokens.push [\UNARY \! @line] [\ASSIGN \= @line]
+        @tokens.push if val is \!= then [\UNARY \! @line] else [\UNARY \~ @line]
+                   , [\ASSIGN \= @line]
         return 2
       fallthrough
-    case <[ === !== == ]> 
+    case \!~= \==
       val = switch val
-        | \=== => \==
-        | \!== => \!=
+        | \~=  => \==
+        | \!~= => \!=
         | \==  => \===
         | \!=  => \!==
       tag = \COMPARE
@@ -1124,7 +1125,8 @@ SYMBOL = //
 | \([^\n\S]*\)                  # call
 | [-~]>                         # function, bound function
 | <[-~]                         # backcall
-| [!=]==?                       # equality
+| [!=]=                         # strict equality
+| !?\~=                         # fuzzy equality
 | @@                            # autovivification
 | <\[(?:[\s\S]*?\]>)?           # words
 | <<<<?                         # import
