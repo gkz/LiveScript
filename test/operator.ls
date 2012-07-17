@@ -696,3 +696,51 @@ eq \matias personA.name
 eq 20      personA.age
 ok personA.hair!?
 
+
+### Overloaded ==
+# Regex
+if /[aeuio]*/ == 'ee'
+  eq 'ee' that.0
+else 
+  ok 0
+
+# Arr/Obj
+xs  = [1 to 5]
+obj = {+opt, -goo, inp: \haha}
+
+ok [1 2 3 4 5] == xs
+ok not ([1 2 8 4 5] == xs)
+ok not ([1 2 3 4 6] == xs)
+
+ok not ([1 2 3 4 5] < xs)
+ok [1 2 3] < xs
+
+ok [1 2 3] <= xs
+ok [1 2 3 4 5] <= xs
+ok not ([1 2 3 4 5 6] <= xs)
+
+ok [1 2 3 4 5 6] >= xs
+ok [1 2 3 4 5] >= xs
+ok not ([1 2 3 4] >= xs)
+
+ok not ([1 2 3 4 5] > xs)
+ok [1 2 3 4 5 6] > xs
+
+ok {opt: true, goo: false, inp: 'haha'} == obj
+ok not ({opt: false, goo: false, inp: 'haha'} == obj)
+ok not ({opt: true, goo: false} == obj)
+ok not ({opt: true, goo: false, inp: 'haha', da: 4} == obj)
+
+ok {opt: true, goo: false} < obj
+ok not ({opt: true, goo: false, inp: 'haha'} < obj)
+
+ok {opt: true, goo: false} <= obj
+ok {opt: true, goo: false, inp: 'haha'} <= obj
+ok not ({opt: true, goo: false, inp: 'haha', da: 6} <= obj)
+
+ok {opt: true, goo: false, inp: 'haha', moo: 45} > obj
+ok not ({opt: true, goo: false, inp: 'haha'} > obj)
+
+ok {opt: true, goo: false, inp: 'haha', moo: 45} >= obj
+ok {opt: true, goo: false, inp: 'haha'} >= obj
+ok not ({opt: true, goo: false} >= obj)

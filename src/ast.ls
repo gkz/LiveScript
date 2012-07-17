@@ -1010,6 +1010,11 @@ class exports.Binary extends Node
 
   getDefault: -> switch @op | \? \|| \&& \!? => this
 
+  xorChildren: (test) ->
+    result = ((first = test @first or second = test @second) and not (first and second))
+    if not result then return false
+    return if first then [@first, @second] else [@second, @first]
+
   compileNode: (o) ->
     return @compilePartial o if @partial
     switch @op
@@ -1035,12 +1040,15 @@ class exports.Binary extends Node
         return @compileAnyInstanceOf o, items if items.1
         @second = items.0 or rite
       @second.isCallable! or @second.carp 'invalid instanceof operand'
-    case \===
-      if (@first instanceof Literal and @second instanceof Literal)
-      and @first.isWhat! isnt @second.isWhat!
-        console?.warn "WARNING: strict comparison of two different types will always be false: #{@first.value} == #{@second.value}"
-      fallthrough
     default
+      if COMPARER.test @op
+        if @xorChildren (.isRegex!)
+          return @compileRegexEquals o, that
+        if @xorChildren (instanceof [Arr, Obj])
+          return @compileObjEquals o, that +++ (Literal "'#{@op}'")
+        if @op is \=== and (@first instanceof Literal and @second instanceof Literal)
+        and @first.isWhat! isnt @second.isWhat!
+          console?.warn "WARNING: strict comparison of two different types will always be false: #{@first.value} == #{@second.value}"
       return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
     @first <<< {@front}
     code = "#{ @first .compile o, level = LEVEL_OP + PREC[@op] } #{@mapOp @op} \
@@ -1162,6 +1170,12 @@ class exports.Binary extends Node
       "(#{ (Fun [vit], Block((Binary @op, @first, vit) .invertCheck this)).compile o })"
     default
       "(#{ (Fun [vit], Block((Binary @op, vit, @second).invertCheck this)).compile o })"
+  
+  compileRegexEquals: (o, [regex, target]) ->
+    Chain regex .add Index Key \exec .add Call [target] .compile o
+
+  compileObjEquals: (o, args) ->
+    Chain Var (util \eq) .add Call args .compile o
 
 #### Assign
 # Assignment to a variable/property.
@@ -2346,6 +2360,98 @@ UTILS =
     };
   }'''
   not: '''function(x){ return !x; }'''
+
+  # modified version of underscore.js's _.isEqual and eq functions
+  eq: '''function(x, y, type){
+    var toString = {}.toString, hasOwnProperty = {}.hasOwnProperty,
+        has = function (obj, key) { return hasOwnProperty.call(obj, key); };
+    first = true;
+    return eq(x, y, []);
+    function eq(a, b, stack) {
+      var className, length, size, result, alength, blength, r, key, ref, sizeB;
+      if (a === b) { return a !== 0 || 1 / a == 1 / b; }
+      if (a == null || b == null) { return a === b; }
+      className = toString.call(a);
+      if (toString.call(b) != className) { return false; }
+      switch (className) {
+        case '[object String]': return a == String(b);
+        case '[object Number]':
+          return a != +a ? b != +b : (a == 0 ? 1 / a == 1 / b : a == +b);
+        case '[object Date]':
+        case '[object Boolean]':
+          return +a == +b;
+        case '[object RegExp]':
+          return a.source == b.source &&
+                 a.global == b.global &&
+                 a.multiline == b.multiline &&
+                 a.ignoreCase == b.ignoreCase;
+      }
+      if (typeof a != 'object' || typeof b != 'object') { return false; }
+      length = stack.length;
+      while (length--) { if (stack[length] == a) { return true; } }
+      stack.push(a);
+      size = 0;
+      result = true;
+      if (type === '>' || type === '>=') {
+        ref = a;
+        a = b;
+        b = ref;
+        type = '<' + type.substring(1);
+      }
+      if (className == '[object Array]') {
+        alength = a.length;
+        blength = b.length;
+        if (!first) { 
+          result = alength === blength;
+          size = alength;
+        } else {
+          first = false;
+          switch (type) {
+          case '===': 
+            result = alength === blength; 
+            break;
+          case '<': 
+            result = alength < blength; 
+            break;
+          case '<=': 
+            result = alength <= blength; 
+            break;
+          }
+          size = alength;
+        }
+        if (result) {
+          while (size--) {
+            if (!(result = size in a == size in b && eq(a[size], b[size], stack))){ break; }
+          }
+        }
+      } else {
+        if ('constructor' in a != 'constructor' in b || a.constructor != b.constructor) {
+          return false;
+        }
+        for (key in a) {
+          if (has(a, key)) {
+            size++;
+            if (!(result = has(b, key) && eq(a[key], b[key], stack))) { break; }
+          }
+        }
+        if (result) {
+          sizeB = 0;
+          for (key in b) {
+            if (has(b, key)) { ++sizeB; }
+          }
+          if (type === '<') {
+            result = size < sizeB;
+          } else if (type === '<=') {
+            result = size <= sizeB
+          } else {
+            result = size === sizeB;
+          }
+        }
+      }
+      stack.pop();
+      return result;
+    }
+  }'''
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"
