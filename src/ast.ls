@@ -1011,10 +1011,8 @@ class exports.Binary extends Node
   getDefault: -> switch @op | \? \|| \&& \!? => this
 
   xorChildren: (test) ->
-    result = ((first = test @first or second = test @second) and not (first and second))
-    if not result then return false
+    return false unless (first = test @first) xor test @second
     return if first then [@first, @second] else [@second, @first]
-
 
   compileNode: (o) ->
     return @compilePartial o if @partial
