@@ -148,15 +148,16 @@ exports import
     case \not
       return (last.1 = \!==; 3) if last.alias and last.1 is \===
       tag = \UNARY; id = \!
-    case \and \or \is \isnt
+    case \and \or \xor \is \isnt 
       @unline!
-      tag = if id in <[  is isnt ]> then \COMPARE else \LOGIC
+      tag = if id in <[ is isnt ]> then \COMPARE else \LOGIC
       tag = \BIOP if last.0 is \(
       @token tag, switch id
       | \is     => \===   
       | \isnt   => \!==
       | \or     => \||
       | \and    => \&&
+      | \xor    => \xor
       @last.alias = true
       return id.length
     case \unless then tag = \IF
@@ -935,7 +936,7 @@ character = if JSON!? then uxxxx else ->
     tag = token.0
     return true if tag in <[ POST_IF PIPE BACKPIPE ]>
     unless skipBlock
-      return true if token.alias and token.1 in <[ && || ]>
+      return true if token.alias and token.1 in <[ && || xor ]>
                   or tag in <[ TO BY IMPLEMENTS ]>
     pre = tokens[i-1]
     switch tag

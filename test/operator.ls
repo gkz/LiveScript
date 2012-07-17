@@ -697,6 +697,23 @@ eq 20      personA.age
 ok personA.hair!?
 
 
+# xor
+ok not (0 xor 0)
+ok not (1 xor 1)
+ok (0 xor 1)
+ok (1 xor 0)
+
+x = -> 1
+y = -> 0
+ok not (y! xor y!)
+ok not (x! xor x!)
+ok (y! xor x!)
+ok (x! xor y!)
+
+ok (x 0 xor y!)
+
+eq 'moo' (0 xor 'moo')
+
 ### Overloaded ==
 # Regex
 if /[aeuio]*/ == 'ee'

@@ -1015,6 +1015,7 @@ class exports.Binary extends Node
     if not result then return false
     return if first then [@first, @second] else [@second, @first]
 
+
   compileNode: (o) ->
     return @compilePartial o if @partial
     switch @op
@@ -1029,6 +1030,7 @@ class exports.Binary extends Node
     case \<< \>>  then return @compileCompose o
     case \+++     then return @compileConcat o
     case \%%      then return @compileMod o
+    case \xor     then return @compileXor o
     case \&& \||
       @second.void = true if top = @void or not o.level
       if top or @cond
@@ -1176,6 +1178,13 @@ class exports.Binary extends Node
 
   compileObjEquals: (o, args) ->
     Chain Var (util \eq) .add Call args .compile o
+
+  compileXor: (o) ->
+    left  = Chain @first  .cacheReference o
+    right = Chain @second .cacheReference o
+    Binary \&& (Binary \&& (Parens Binary \|| (Block [right.0, left.0]), right.1)
+                         , (Unary \! Binary \&& left.1, right.1))
+             , (Parens Binary \|| left.1, right.1) .compile o
 
 #### Assign
 # Assignment to a variable/property.
@@ -2470,7 +2479,7 @@ LEVEL_CALL   = 5  # ...()
 
 # Operator precedances.
 with PREC = {unary: 0.9}
-  @\&& = @\||                                            = 0.2
+  @\&& = @\|| = @\xor                                    = 0.2
   @\.&.  = @\.^.  = @\.|.                                = 0.3
   @\== = @\!= = @\=== = @\!==                            = 0.4
   @\<  = @\>  = @\<=  = @\>= = @of = @instanceof = @\+++ = 0.5
