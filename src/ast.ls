@@ -1044,7 +1044,7 @@ class exports.Binary extends Node
     case <[ <== >== <<= >>= ]> then return @compileDeepEq o
     default
       if COMPARER.test @op
-        if @xorChildren (.isRegex!)
+        if @op in [\=== \!==] and @xorChildren (.isRegex!)
           return @compileRegexEquals o, that
         if @op is \=== and (@first instanceof Literal and @second instanceof Literal)
         and @first.isWhat! isnt @second.isWhat!
@@ -1172,7 +1172,9 @@ class exports.Binary extends Node
       "(#{ (Fun [vit], Block((Binary @op, vit, @second).invertCheck this)).compile o })"
   
   compileRegexEquals: (o, [regex, target]) ->
-    Chain regex .add Index Key \exec .add Call [target] .compile o
+    if @op is \===
+    then Chain regex .add Index Key \exec .add Call [target] .compile o
+    else Unary \! (Chain regex .add Index Key \test .add Call [target]) .compile o
 
   compileDeepEq: (o) ->
     if @op in <[ >== >>= ]>

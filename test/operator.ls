@@ -720,6 +720,11 @@ if /[aeuio]*/ == 'ee'
 else 
   ok 0
 
+if /moo/ != 'loo'
+  ok 1
+else 
+  ok 0
+
 ### Deep Equals
 NaN === NaN
 /moo/gi === /moo/gi
