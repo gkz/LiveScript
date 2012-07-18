@@ -697,7 +697,7 @@ eq 20      personA.age
 ok personA.hair!?
 
 
-# xor
+### xor
 ok not (0 xor 0)
 ok not (1 xor 1)
 ok (0 xor 1)
@@ -786,3 +786,12 @@ ok [[4, 3] {name: \loo, k: [NaN]}] <== [[4, 3] {name: \loo, k: [NaN]} /[ae]/g]
 
 ok [[4, 3] {name: \koo, k: [NaN]}] <<= [[4, 3] {name: \koo, k: [NaN]} /[ae]/g]  
 ok !([[4, 3] {name: \moo, k: [NaN]} /[ae]/g] <<= [[4, 3] {name: \moo, k: [NaN]} /[ae]/g])
+
+
+### Calling binary logic
+f = -> it - 1
+g = -> it + 1
+
+eq 2 (f or g) 1
+eq 1 (f or g) 2
+ok not (f and g) 1
