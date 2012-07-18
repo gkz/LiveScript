@@ -467,6 +467,7 @@ class exports.Chain extends Node
         switch
         | test instanceof Literal                  => Binary \=== test, target
         | test instanceof Arr, test instanceof Obj => Binary \<== test, target
+        | test instanceof Var and test.value is \_ => Literal \true
         | otherwise                                =>
           this .add Call if target then [target] else []
 
@@ -1995,6 +1996,10 @@ class exports.Switch extends Node
       if topic
         throw "can't have more than one topic in switch statement" if topic.length > 1
         @topic.=0
+    if @cases.length and (last = @cases[*-1]).tests.length is 1
+    and last.tests.0 instanceof Var and last.tests.0.value is \_
+      @cases.pop!
+      @default = last.body
 
   children: <[ topic cases default ]>
 

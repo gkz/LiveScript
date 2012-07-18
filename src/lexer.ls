@@ -191,7 +191,7 @@ exports import
       # contextual keywords (reserved only in specific places)
       switch id
       case \own then tag = \OWN if last.0 is \FOR
-      case \otherwise \_
+      case \otherwise
         if last.0 in <[ CASE | ]>
           last.0 = \DEFAULT
           return id.length

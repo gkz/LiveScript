@@ -246,3 +246,9 @@ match x, y, z
 match 2
 | even and 2 => ok 1
 | otherwise  => ok 0
+
+match 3, \haha
+| _, 'muhaha'  => ok 0
+| even, _      => ok 0
+| _, 'haha'    => ok 1
+| otherwise    => ok 0
