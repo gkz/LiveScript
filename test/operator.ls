@@ -789,9 +789,11 @@ ok !([[4, 3] {name: \moo, k: [NaN]} /[ae]/g] <<= [[4, 3] {name: \moo, k: [NaN]} 
 
 
 ### Calling binary logic
-f = -> it - 1
-g = -> it + 1
+f = (- 1)
+g = (+ 1)
+h = (- 1)
 
 eq 2 (f or g) 1
 eq 1 (f or g) 2
 ok not (f and g) 1
+eq 2 (f or h or g) 1

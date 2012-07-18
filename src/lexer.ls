@@ -176,8 +176,7 @@ exports import
       tag = \CASE; fallthrough
     case \case
       return input.length if @doCase!
-    case \match
-      tag = \SWITCH
+    case \match then tag = \SWITCH
     case \loop
       @token \WHILE   id
       @token \LITERAL \true

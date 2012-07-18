@@ -447,9 +447,16 @@ class exports.Chain extends Node
     else if delete it.vivify
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
     else if it instanceof Call and @head instanceof Parens and @tails.length is 1
-    and @head.it instanceof Binary and @head.it.op in <[ && || xor ]>
-      return Chain Parens Binary @head.it.op, (Chain @head.it.first  .add it) 
-                                            , (Chain @head.it.second .add it)
+    and @head.it instanceof Binary and @head.it.op in logics = <[ && || xor ]>
+      call = it
+      f = (x, key) ->
+        y = x[key]
+        if y instanceof Binary and y.op in logics
+        then f y, \first; f y, \second
+        else x[key] = Chain y .add call
+      f @head.it, \first
+      f @head.it, \second
+      return @head.it
     this
 
   flipIt: -> @flip = true; this
