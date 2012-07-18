@@ -173,7 +173,7 @@ boom2 = ->
 eq 3 boom2!
 
 # when
-switch 
+switch
 when false then ok 0
 when true  then ok 1
 
@@ -190,9 +190,9 @@ match x
 | _      => ok 0
 
 match ++x
-| (== 4)        => ok 0
-| (== 3), (==8) => ok 1
-| _             => ok 0
+| (== 4)          => ok 0
+| (== 3) or (==8) => ok 1
+| _               => ok 0
 
 false-func = -> false
 true-func  = -> true
@@ -203,12 +203,14 @@ match
 | true-func  => ok 1
 | otherwise  => ok 0
 
-# multiple arguments
+# multiple topics
+even = --> it % 2 == 0
+odd = (not) . even
 x = 1
 y = 2
 match x, y
-| (==) => ok 0
-| (>)  => ok 0
-| (<)  => ok 1
-| _    => ok 0
+| odd,  odd  => ok 0
+| even, even => ok 0
+| odd,  even => ok 1
+| otherwise  => ok 0
 

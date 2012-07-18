@@ -1978,11 +1978,12 @@ class exports.Try extends Node
 class exports.Switch extends Node
   (@type, @topic, @cases, @default) ->
     if type is \match
-      if topic
-        @target = if topic.length > 1 then @apply = true; Arr topic else topic.0
+      @target = Arr topic if topic
       @topic = null
     else
-      @topic.=0 if @topic
+      if topic
+        throw "can't have more than one topic in switch statement" if topic.length > 1
+        @topic.=0
 
   children: <[ topic cases default ]>
 
@@ -2007,13 +2008,16 @@ class exports.Switch extends Node
   compileNode: (o) ->
     {tab} = this
     [target-node, target] = Chain @target .cacheReference o if @target
-    topic = !!@topic and @anaphorize!compile o, LEVEL_PAREN
+    topic = if @type is \match
+      t = if target then [target-node] else []
+      Block (t +++ [Literal \false]) .compile o, LEVEL_PAREN
+    else
+      !!@topic and @anaphorize!compile o, LEVEL_PAREN
     code  = "switch (#topic) {\n"
     stop  = @default or @cases.length - 1
     o.break = true
     for c, i in @cases
-      code += c.compileCase o, tab, i is stop, !topic,
-        @type, @apply, target, (if i is 0 then target-node)
+      code += c.compileCase o, tab, i is stop, (@type is \match or !topic), @type, target
     if @default
       o.indent = tab + TAB
       code += tab + "default:\n#that\n" if @default.compile o, LEVEL_TOP
@@ -2031,7 +2035,7 @@ class exports.Case extends Node
     @body.makeReturn it unless @body.lines[*-1]?value is \fallthrough
     this
 
-  compileCase: (o, tab, nobr, bool, type, apply, target, target-node) ->
+  compileCase: (o, tab, nobr, bool, type, target) ->
     tests = for test in @tests
       test.=expandSlice(o)unwrap!
       if test instanceof Arr
@@ -2040,12 +2044,12 @@ class exports.Case extends Node
     tests.length or tests.push Literal \void
     if type is \match
       for test, i in tests
-        target = target-node if i is 0 and target-node
-        tests[i] = if apply
-          then Chain test .add Index Key \apply, \., true .add Call [Literal \this; target]
-          else Chain test .add Call if target then [target] else []
+        tests[i] = Chain test .add Call if target
+                     then [Chain target .add Index (Literal i), \., true]
+                     else []
     if bool
-      [t] = tests; i = 0; while tests[++i] then t = Binary \|| t, that
+      binary = if type is \match then \&& else \||
+      [t] = tests; i = 0; while tests[++i] then t = Binary binary, t, that
       tests = [(@<<<{t, aSource: \t, aTargets: [\body]})anaphorize!invert!]
     code = ''
     for t in tests then code += tab + "case #{ t.compile o, LEVEL_PAREN }:\n"
