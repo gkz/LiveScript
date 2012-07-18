@@ -242,3 +242,7 @@ match x, y, z
 | [1 2 3], /^ha/g, {foo: true, moo: 2, g: {hi: \!}} => ok 0
 | [1 2 3], /^ha/g, {foo: true, moo: 2, g: {hi: \?}} => ok 1
 | otherwise                                         => ok 0
+
+match 2
+| even and 2 => ok 1
+| otherwise  => ok 0

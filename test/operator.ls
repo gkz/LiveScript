@@ -12,7 +12,7 @@ eq 32,
   1 *
   2 +
   3 -
-  4 .<<. 
+  4 .<<.
   5
 
 if  false
@@ -364,7 +364,7 @@ eq \RegExp typeof! /^/
 
 ### Pow
 eq -256, -2**2**3  # -((2)**(2**3))
-eq -256, -2^2^3  
+eq -256, -2^2^3
 eq 17, 1+2*2**3  # 1+(2*(2**3))
 eq 32, 2*4**2
 eq 32, 2*4^2
@@ -420,7 +420,7 @@ eq 8 ((+ 2) << (* 2) <| 3)
 x = 3 |> (- 2) |> ([\a \b \c].)
 eq \b x
 
-x = [1, 2, 3, 4, 5] |> filter even |> map (* 2) |> fold (+), 0 
+x = [1, 2, 3, 4, 5] |> filter even |> map (* 2) |> fold (+), 0
 eq 12 x
 
 ### Unary spread
@@ -511,10 +511,10 @@ eq -1 x
 addTwo = (+ 2)
 eq 5 addTwo 3
 eq 7 (+) 3, 4
-eq 3 (+)(1) 2 
+eq 3 (+)(1) 2
 eq 3 (1+) 2
 
-eq 2 (-)(4) 2 
+eq 2 (-)(4) 2
 eq 4 (- 5) 9
 eq -4 (5-) 9
 
@@ -674,7 +674,7 @@ eq '1,3,5' "#{ filter (not) << even, [1 to 5] }"
 eq '1,3,5' "#{filter ((<<) (not), even), [1 to 5] }"
 
 ### cloneport
-personA = 
+personA =
   name: \matias
   age:  20
   job:  'a cool job'
@@ -717,12 +717,12 @@ eq 'moo' (0 xor 'moo')
 ### Regex overloaded ==
 if /[aeuio]*/ == 'ee'
   eq 'ee' that.0
-else 
+else
   ok 0
 
 if /moo/ != 'loo'
   ok 1
-else 
+else
   ok 0
 
 ### Deep Equals
@@ -778,13 +778,13 @@ ok {opt: true, goo: false, inp: 'haha', moo: 45} >== obj
 ok {opt: true, goo: false, inp: 'haha'} >== obj
 ok not ({opt: true, goo: false} >== obj)
 
-ok [[4, 3] {name: \moo, k: [NaN]} /[ae]/g] === [[4, 3] {name: \moo, k: [NaN]} /[ae]/g]  
+ok [[4, 3] {name: \moo, k: [NaN]} /[ae]/g] === [[4, 3] {name: \moo, k: [NaN]} /[ae]/g]
 ok !([[4, 3] {name: \mooo, k: [NaN]} /[ae]/g] === [[4, 3] {name: \moo, k: [NaN]} /[ae]/g])
 
-ok [[4, 3] {name: \noo, k: [NaN]} /[ae]/g] <== [[4, 3] {name: \noo, k: [NaN]} /[ae]/g]  
-ok [[4, 3] {name: \loo, k: [NaN]}] <== [[4, 3] {name: \loo, k: [NaN]} /[ae]/g]  
+ok [[4, 3] {name: \noo, k: [NaN]} /[ae]/g] <== [[4, 3] {name: \noo, k: [NaN]} /[ae]/g]
+ok [[4, 3] {name: \loo, k: [NaN]}] <== [[4, 3] {name: \loo, k: [NaN]} /[ae]/g]
 
-ok [[4, 3] {name: \koo, k: [NaN]}] <<= [[4, 3] {name: \koo, k: [NaN]} /[ae]/g]  
+ok [[4, 3] {name: \koo, k: [NaN]}] <<= [[4, 3] {name: \koo, k: [NaN]} /[ae]/g]
 ok !([[4, 3] {name: \moo, k: [NaN]} /[ae]/g] <<= [[4, 3] {name: \moo, k: [NaN]} /[ae]/g])
 
 
@@ -792,8 +792,14 @@ ok !([[4, 3] {name: \moo, k: [NaN]} /[ae]/g] <<= [[4, 3] {name: \moo, k: [NaN]} 
 f = (- 1)
 g = (+ 1)
 h = (- 1)
+even = -> it % 2 == 0
+odd = (not) . even
 
 eq 2 (f or g) 1
 eq 1 (f or g) 2
 ok not (f and g) 1
 eq 2 (f or h or g) 1
+ok (even or 1) 2
+ok (odd or 2) 2
+ok not (even or 1) 3
+ok ((.length > 4) or [1 2 3]) [1 2 3]

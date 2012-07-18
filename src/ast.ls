@@ -439,6 +439,9 @@ class exports.Chain extends Node
       {@head, @tails} = Chain @head.it
       it.soak = true
     @tails.push it
+    bi = if @head instanceof Parens and @head.it instanceof Binary
+         and not @head.it.partial then @head.it
+         else if @head instanceof Binary and not @head.partial then @head
     if it instanceof Call and not it.method
     and @head instanceof Super and not @head.called
       it.method = \.call
@@ -446,18 +449,26 @@ class exports.Chain extends Node
       @head.called = true
     else if delete it.vivify
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
-    else if it instanceof Call and @head instanceof Parens and @tails.length is 1
-    and @head.it instanceof Binary and @head.it.op in logics = <[ && || xor ]>
+    else if it instanceof Call and @tails.length is 1
+    and bi and bi.op in logics = <[ && || xor ]>
       call = it
       f = (x, key) ->
         y = x[key]
         if y instanceof Binary and y.op in logics
         then f y, \first; f y, \second
-        else x[key] = Chain y .add call
-      f @head.it, \first
-      f @head.it, \second
-      return @head.it
+        else x[key] = Chain y .auto-compare call.args.0
+      f bi, \first
+      f bi, \second
+      return bi
     this
+
+  auto-compare: (target) ->
+        test = this.head
+        switch
+        | test instanceof Literal                  => Binary \=== test, target
+        | test instanceof Arr, test instanceof Obj => Binary \<== test, target
+        | otherwise                                =>
+          this .add Call if target then [target] else []
 
   flipIt: -> @flip = true; this
 
@@ -2045,11 +2056,7 @@ class exports.Case extends Node
     if type is \match
       for test, i in tests
         tar = Chain target .add Index (Literal i), \., true
-        tests[i] = switch
-        | test instanceof Literal                  => Binary \=== test, tar
-        | test instanceof Arr, test instanceof Obj => Binary \<== test, tar
-        | otherwise                                =>
-          Chain test .add Call if target then [tar] else []
+        tests[i] = Chain test .auto-compare (if target then tar else null)
     if bool
       binary = if type is \match then \&& else \||
       [t] = tests; i = 0; while tests[++i] then t = Binary binary, t, that
