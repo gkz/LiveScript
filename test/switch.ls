@@ -230,12 +230,12 @@ z = {+foo, moo: 2, g: {hi: \?}}
 match x
 | [2 4 6]   => ok 0
 | [1 2 3 4] => ok 0
-| [1 2]     => ok 1
+| [1 2 _]   => ok 1
 | otherwise => ok 0
 
 match z
 | {-foo, goo: 23, g: {hi: \?}} => ok 0
-| {+foo, moo: 2}               => ok 1
+| {+foo, moo: 2,  g: _}        => ok 1
 | otherwise                    => ok 0
 
 match x, y, z
@@ -248,7 +248,15 @@ match 2
 | otherwise  => ok 0
 
 match 3, \haha
-| _, 'muhaha'  => ok 0
-| even, _      => ok 0
-| _, 'haha'    => ok 1
-| otherwise    => ok 0
+| _, 'muhaha' => ok 0
+| even, _     => ok 0
+| _, 'haha'   => ok 1
+| _           => ok 0
+
+take = (n, [x, ...xs]:list) ->
+  match n, list
+  | (<= 0), _  => []
+  | _     , [] => []
+  | otherwise  => [x] +++ take n - 1, xs
+
+eq '1,2,3' "#{ take 3, [1 to 10] }"

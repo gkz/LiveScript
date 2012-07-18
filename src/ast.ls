@@ -465,8 +465,8 @@ class exports.Chain extends Node
   auto-compare: (target) ->
         test = this.head
         switch
-        | test instanceof Literal                  => Binary \=== test, target
-        | test instanceof Arr, test instanceof Obj => Binary \<== test, target
+        | test instanceof Literal                  => Binary \===  test, target
+        | test instanceof Arr, test instanceof Obj => Binary \==== test, target
         | test instanceof Var and test.value is \_ => Literal \true
         | otherwise                                =>
           this .add Call if target then [target] else []
@@ -716,14 +716,22 @@ class List extends Node
   isEmpty : -> not @items.length
   assigns : -> for node in @items then return true if node.assigns it
 
-  @compile = (o, items) ->
+  @compile = (o, items, deepEq) ->
     switch items.length
     | 0 => return ''
     | 1 => return items.0.compile o, LEVEL_LIST
     {indent, level} = o
     o <<< indent: indent + TAB, level: LEVEL_LIST
     code  = items[i = 0]compile o
-    while items[++i] then code += ', ' + that.compile o
+    while items[++i]
+      code += ', '
+      target = that
+      if deepEq
+        if target instanceof Var and target.value is \_
+          target = Literal "'__placeholder__'"
+        else if target instanceof [Obj, Arr]
+          target.deepEq = true
+      code += target.compile o
     code  = "\n#{o.indent}#code\n#indent" if ~code.indexOf \\n
     o <<< {indent, level}
     code
@@ -780,6 +788,10 @@ class exports.Obj extends List
         if node instanceof Prop
         then node.val = logic <<< first: node.val
         else node = Prop node, logic <<< first: node
+      if @deepEq and node instanceof Prop
+        if node.val instanceof Var and node.val.value is \_
+        then node.val = Literal "'__placeholder__'"
+        else if node.val instanceof [Obj, Arr] then node.val.deepEq = true
       if multi then code += \, else multi = true
       code += idt + if node instanceof Prop
         {key, val} = node
@@ -858,7 +870,7 @@ class exports.Arr extends List
     return '[]' unless items.length
     if code = Splat.compileArray o, items
       return if @newed then "(#code)" else code
-    "[#{ List.compile o, items }]"
+    "[#{ List.compile o, items, @deepEq }]"
 
   @maybe = (nodes) ->
     return nodes.0 if nodes.length is 1 and nodes.0 not instanceof Splat
@@ -1206,6 +1218,8 @@ class exports.Binary extends Node
     if @op is \!==
       @op = \===
       negate = true
+    for x in [@first, @second]
+      x.deepEq = true if x instanceof [Obj, Arr]
     r = Chain Var (util \deepEq) .add Call [@first, @second, Literal "'#{@op}'"]
     (if negate then Unary \! r else r).compile o
 
@@ -2415,6 +2429,7 @@ UTILS =
     return eq(x, y, []);
     function eq(a, b, stack) {
       var className, length, size, result, alength, blength, r, key, ref, sizeB;
+      if (a === '__placeholder__' || b === '__placeholder__') { return true; }
       if (a === b) { return a !== 0 || 1 / a == 1 / b; }
       if (a == null || b == null) { return a === b; }
       className = toString.call(a);

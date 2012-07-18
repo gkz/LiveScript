@@ -787,6 +787,12 @@ ok [[4, 3] {name: \loo, k: [NaN]}] <== [[4, 3] {name: \loo, k: [NaN]} /[ae]/g]
 ok [[4, 3] {name: \koo, k: [NaN]}] <<= [[4, 3] {name: \koo, k: [NaN]} /[ae]/g]
 ok !([[4, 3] {name: \moo, k: [NaN]} /[ae]/g] <<= [[4, 3] {name: \moo, k: [NaN]} /[ae]/g])
 
+ok [1, _, 3]      === [1 2 3]
+ok {a: 1, b:_}    === {a: 1, b: 2}
+ok {a: [1, _, 3]} === {a: [1 4 3]}
+ok {a: {b: _}}    === {a: {b: 9}}
+ok [9 [1, _, 3]]  === [9 [1 4 3]]
+
 
 ### Calling binary logic
 f = (- 1)
