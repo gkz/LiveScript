@@ -106,7 +106,7 @@ switch
       throw
     LiveScript.emit \parse t
     t.ast = LiveScript.ast t.tokens
-    if o.prelude 
+    if o.prelude
       t.ast.lines.unshift LiveScript.ast LiveScript.tokens '''if   window?
           then prelude.installPrelude window
           else (require 'prelude-ls').installPrelude global'''
@@ -185,7 +185,7 @@ switch
   lines = []
   for [tag, val, lno] in tokens
     lines@@[lno]push if tag.toLowerCase! is val then tag else "#tag:#val"
-  for l in lines then say(if l then l.join(' ')replace /\n/g \\\n else '') 
+  for l in lines then say(if l then l.join(' ')replace /\n/g \\\n else '')
 
 # A Read-Eval-Print-Loop.
 # Good for simple tests or poking around the

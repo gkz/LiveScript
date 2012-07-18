@@ -70,7 +70,7 @@ bnf =
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 
-    o '[ Expression LoopHeads ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1 
+    o '[ Expression LoopHeads ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1
     o '{ [ ArgList OptComma ] LoopHeads }'
     , -> Chain $6.0.addObjComp!makeComprehension (L Arr $3), $6.slice 1
 
@@ -88,7 +88,7 @@ bnf =
                else Binary $2, , $3
     o '( Expression BIOPR )'
     , -> Chain if   \! is $3.charAt 0
-               then Binary $3.slice(1), $2 .invertIt!   
+               then Binary $3.slice(1), $2 .invertIt!
                else Binary $3, $2
 
     o '( BIOPBP )'                              -> Chain Binary $2
@@ -102,13 +102,13 @@ bnf =
 
     o '( BACKTICK Chain BACKTICK )'            -> Chain $3
     o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
-    o '( BACKTICK Chain BACKTICK Expression )' 
+    o '( BACKTICK Chain BACKTICK Expression )'
     , -> Chain(Chain Var \__flip .add Call [$3]).flipIt!add Call [$5]
 
     o '[ Expression TO Expression ]'
     , -> Chain new For from: $2, op: $3, to: $4
     o '[ Expression TO Expression BY Expression ]'
-    , -> Chain new For from: $2, op: $3, to: $4, step: $6 
+    , -> Chain new For from: $2, op: $3, to: $4, step: $6
 
     o 'Chain DOT [ Expression TO Expression ]'
     , -> Chain Slice type: $5, target: $1, from: $4, to: $6
@@ -185,9 +185,9 @@ bnf =
   # All the different types of expressions in our language.
   Expression:
     o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.let $4, Block [$1]
-    o 'Chain CLONEPORT Expression' 
+    o 'Chain CLONEPORT Expression'
     , -> Import (Unary \^^ $1, prec: \UNARY), $3,         false
-    o 'Chain CLONEPORT Block' 
+    o 'Chain CLONEPORT Block'
     , -> Import (Unary \^^ $1, prec: \UNARY), $3.unwrap!, false
 
     o 'Expression BACKTICK Chain BACKTICK Expression' -> $3.add Call [$1, $5]
@@ -236,7 +236,7 @@ bnf =
     o 'Chain !?' -> Existence $1.unwrap!, true
 
     # The function literal can be either anonymous with `->`,
-    o 'PARAM( ArgList OptComma )PARAM -> Block' 
+    o 'PARAM( ArgList OptComma )PARAM -> Block'
     , -> L Fun $2, $6, $5.charAt(0) is \~, $5.length is 3
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1

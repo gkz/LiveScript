@@ -115,7 +115,7 @@ exports import
       return input.length
     # keywords
     switch id
-    case <[ true false on off yes no null void undefined arguments debugger ]> 
+    case <[ true false on off yes no null void undefined arguments debugger ]>
       tag = \LITERAL
     case \new \do \typeof \delete                      then tag = \UNARY
     case \return \throw                                then tag = \HURL
@@ -148,12 +148,12 @@ exports import
     case \not
       return (last.1 = \!==; 3) if last.alias and last.1 is \===
       tag = \UNARY; id = \!
-    case \and \or \xor \is \isnt 
+    case \and \or \xor \is \isnt
       @unline!
       tag = if id in <[ is isnt ]> then \COMPARE else \LOGIC
       tag = \BIOP if last.0 is \(
       @token tag, switch id
-      | \is     => \===   
+      | \is     => \===
       | \isnt   => \!==
       | \or     => \||
       | \and    => \&&
@@ -166,7 +166,7 @@ exports import
       if last.0 is \(
         id = \<<<
         tag = \BIOP
-      else 
+      else
         if able @tokens then id = \<<< else tag = \DECL
     case \with
       tag = | able @tokens => \CLONEPORT
@@ -213,8 +213,8 @@ exports import
           @token \TO id
           return id.length
       case \by
-        if last.0 is \STRNUM 
-        and @tokens[*-2]0 is \RANGE 
+        if last.0 is \STRNUM
+        and @tokens[*-2]0 is \RANGE
         and @tokens[*-3]0 is \[
         then tag = \RANGE_BY
         else if \] in @closes then tag = \BY
@@ -406,9 +406,9 @@ exports import
     return 0 unless sym = (SYMBOL <<< lastIndex: index)exec(code)0
     switch tag = val = sym
     case \=>             then tag = \THEN; @unline!
-    case \|              
+    case \|
       tag = \CASE
-      return sym.length if @doCase! 
+      return sym.length if @doCase!
     case \|>             then tag = \PIPE
     case \`              then tag = \BACKTICK
     case \<< \>>         then tag = \COMPOSE
@@ -418,7 +418,7 @@ exports import
     case \.&. \.|. \.^.  then tag = \BITWISE
     case \^^             then tag = \CLONE
     case \** \^          then tag = \POWER
-    case \?  \!?         
+    case \?  \!?
       if   @last.0 is \(
       then create-it-func!
       else tag = \LOGIC if @last.spaced
@@ -563,9 +563,9 @@ exports import
     @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE 
                           MATH POWER IMPORT SHIFT BITWISE ]>
     ~function create-it-func
-      @token \PARAM( \(  
-      @token \)PARAM \)  
-      @token \->     \-> 
+      @token \PARAM( \(
+      @token \)PARAM \)
+      @token \->     \->
       @token \ID     \it
     @token tag, val
     sym.length
@@ -655,7 +655,7 @@ exports import
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
         delta  = str.length - clone.rest.length
         {rest: str, @line} = clone
-        while nested.0?0 is \NEWLINE then nested.shift! 
+        while nested.0?0 is \NEWLINE then nested.shift!
         if nested.length
           nested.unshift [\( \( nested.0.2]
           nested.push    [\) \) @line]
@@ -776,7 +776,7 @@ then (q, body, lno) ->
 # Detects the minimum indent count for a heredoc, ignoring empty lines.
 function heretabs doc
   dent = 0/0
-  while TABS.exec doc then dent <?= that.0.length - 1 
+  while TABS.exec doc then dent <?= that.0.length - 1
   dent
 TABS = /\n[^\n\S]*(?!$)/mg
 
@@ -826,7 +826,7 @@ character = if JSON!? then uxxxx else ->
     [tag, val, line] = token
     switch
     case val is \. and token.spaced and prev.spaced
-      tokens[i] = [\COMPOSE \<< line] 
+      tokens[i] = [\COMPOSE \<< line]
     case tag is \) and prev.1 is \.
       tokens.splice i, 0,
         [\[  \[  line]
@@ -983,7 +983,7 @@ character = if JSON!? then uxxxx else ->
     continue unless pre.0 in <[ : ASSIGN IMPORT ]> or stack[*-1]?0 is not \{
     stack.push [\{]
     inline = not pre.doblock and pre.0 not in <[ NEWLINE INDENT ]>
-    while tokens[index-2]?0 is \COMMENT then index -= 2 
+    while tokens[index-2]?0 is \COMMENT then index -= 2
     tokens.splice index, 0 [\{ \{ tokens[index]2]
     detectEnd tokens, ++i+1, ok, go
   function ok token, i
@@ -1015,7 +1015,7 @@ character = if JSON!? then uxxxx else ->
       lno = token.2
       if   tokens[i-1]0 is \[
       and  tokens[i+1]0 is \STRNUM
-      and ((tokens[i+2]0 is \] 
+      and ((tokens[i+2]0 is \]
         and (tokens[i+1]1.charAt(0) in [\' \"]
           or +tokens[i+1]1 >= 0))
         or  (tokens[i+2]0 is \RANGE_BY
@@ -1062,9 +1062,9 @@ character = if JSON!? then uxxxx else ->
     case \) \)CALL then continue if token.1
     case \]        then continue if token.index
     case \CREMENT  then continue unless able tokens, i
-    case \BIOP     
-      if not token.spaced and token.1 in <[ + - ]> and tokens[i+1].0 isnt \)  
-        tokens[i].0 = \+- 
+    case \BIOP
+      if not token.spaced and token.1 in <[ + - ]> and tokens[i+1].0 isnt \)
+        tokens[i].0 = \+-
       continue
     default continue
     if token.spaced and tokens[i+1]0 in ARG
@@ -1176,7 +1176,7 @@ OPENERS = <[ ( [ { CALL( PARAM( INDENT ]>
 CLOSERS = <[ ) ] } )CALL )PARAM DEDENT ]>
 
 # The inverse mappings of {OPEN,CLOS}ERS to look things up from either end.
-INVERSES = new -> for o, i in OPENERS then @[@[o] = CLOSERS[i]] = o 
+INVERSES = new -> for o, i in OPENERS then @[@[o] = CLOSERS[i]] = o
 
 # Tokens that can start a dot/call chain.
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>

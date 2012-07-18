@@ -158,13 +158,13 @@
     if arref then Call.make JS(arref + \.push), [this] else Return this
 
   makeObjReturn: (arref) ->
-    if arref 
+    if arref
       base = this.lines.0
       base.=then.lines.0 if this.lines.0 instanceof If
       items = base.items
       if items.0!? or items.1!?
-        @carp 'must specify both key and value for object comprehension' 
-      Assign (Chain Var arref).add(Index items.0, \., true), items.1 
+        @carp 'must specify both key and value for object comprehension'
+      Assign (Chain Var arref).add(Index items.0, \., true), items.1
     else Return this
 
   # Extra info for `toString`.
@@ -188,7 +188,7 @@ exports.fromJSON = function
   return it unless it and typeof it is \object
   if it.type
     node = ^^exports[that]::
-    for key, val of it then node[key] = fromJSON val  
+    for key, val of it then node[key] = fromJSON val
     return node
   if it.length? then [fromJSON v for v in it] else it
 
@@ -226,7 +226,7 @@ class exports.Block extends Node
     @lines.splice @neck!, 0, ...arguments
     this
 
-  pipe: (target, type) -> 
+  pipe: (target, type) ->
     args = if type is \|> then @lines.pop! else target
     args = [args] if typeof! args isnt \Array
     switch type
@@ -239,13 +239,13 @@ class exports.Block extends Node
   # Removes trailing comment nodes.
   chomp: ->
     {lines} = this; i = lines.length
-    while lines[--i] then break unless that.comment 
+    while lines[--i] then break unless that.comment
     lines.length = i + 1
     this
 
   # Finds the right position for inserting variable declarations.
   neck: ->
-    for x, pos in @lines then break unless x.comment or x instanceof Literal 
+    for x, pos in @lines then break unless x.comment or x instanceof Literal
     pos
 
   isComplex: -> @lines.length > 1 or @lines.0?isComplex!
@@ -301,12 +301,12 @@ class exports.Block extends Node
   # Compile to a comma-separated list of expressions.
   compileExpressions: (o, level) ->
     {lines} = this; i = -1
-    while lines[++i] then lines.splice i-- 1 if that.comment 
+    while lines[++i] then lines.splice i-- 1 if that.comment
     lines.push Literal \void unless lines.length
     lines.0 <<< {@front}; lines[*-1] <<< {@void}
     return lines.0.compile o, level unless lines.1
     code = ''; last = lines.pop!
-    for node in lines then code += (node <<< {+void})compile(o, LEVEL_PAREN) + ', ' 
+    for node in lines then code += (node <<< {+void})compile(o, LEVEL_PAREN) + ', '
     code += last.compile o, LEVEL_PAREN
     if level < LEVEL_LIST then code else "(#code)"
 
@@ -328,7 +328,7 @@ class exports.Literal extends Atom
   isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt!
   isRegex    : -> "#{@value}"charAt! is \/
   isComplex  : -> @isRegex! or @value is \debugger
-  isWhat     : -> 
+  isWhat     : ->
     | @isEmpty!    => \empty
     | @isCallable! => \callable
     | @isString!   => \string
@@ -342,7 +342,7 @@ class exports.Literal extends Atom
     switch val = "#{@value}"
     | \this      => return o.scope.fun?bound or val
     | \undefined => val = 'void'; fallthrough
-    | \void      => 
+    | \void      =>
       return '' unless level
       val += ' 8'
       fallthrough
@@ -418,7 +418,7 @@ class exports.Slice extends Node
   children: [\target \from \to]
 
   show: -> @type
-    
+
   compileNode: (o) ->
     "#{util \slice }.call(#{@target.compile o}, 
      #{if @from then @from.compile o else \0}
@@ -477,7 +477,7 @@ class exports.Chain extends Node
 
   isAssignable: ->
     return @head.isAssignable! unless tail = @tails[*-1]
-    return false if tail not instanceof Index 
+    return false if tail not instanceof Index
                  or tail.key instanceof List
                  or tail.symbol is \.~
     for tail in @tails when tail.assign then return false
@@ -543,7 +543,7 @@ class exports.Chain extends Node
         else pre .push t
       [partial, ...post] = rest if rest?
       @tails = pre
-      return (Chain (Chain Var util \partialize 
+      return (Chain (Chain Var util \partialize
         .add Call [this; Arr partial.args; Arr partial.partialized]), post).compile o
     @carp 'invalid callee' if tails.0 instanceof Call and not head.isCallable!
     @expandSlice o; @expandBind o; @expandSplat o; @expandStar o
@@ -621,7 +621,7 @@ class exports.Chain extends Node
       continue unless stars.length
       [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap!cache o
       value = Chain(ref, [Index Key \length])compile o
-      for star in stars then star <<< {value, isAssignable: YES} 
+      for star in stars then star <<< {value, isAssignable: YES}
       @head = JS sub.compile(o, LEVEL_CALL) + tails.shift!compile o
       o.scope.free temps.0 if temps
       i = -1
@@ -663,9 +663,9 @@ class exports.Call extends Node
 
   compile: (o) ->
     code  =  (@method or '') + \( + (if @pipe then "\n#{o.indent}" else '')
-    for a, i in @args then code += (if i then ', ' else '') + a.compile o, LEVEL_LIST 
-    code + \) 
-  @make = (callee, args, opts) -> 
+    for a, i in @args then code += (if i then ', ' else '') + a.compile o, LEVEL_LIST
+    code + \)
+  @make = (callee, args, opts) ->
     call = Call args
     call <<< opts if opts
     Chain(callee)add call
@@ -702,7 +702,7 @@ class List extends Node
   named : (@name) -> this
 
   isEmpty : -> not @items.length
-  assigns : -> for node in @items then return true if node.assigns it  
+  assigns : -> for node in @items then return true if node.assigns it
 
   @compile = (o, items) ->
     switch items.length
@@ -711,7 +711,7 @@ class List extends Node
     {indent, level} = o
     o <<< indent: indent + TAB, level: LEVEL_LIST
     code  = items[i = 0]compile o
-    while items[++i] then code += ', ' + that.compile o 
+    while items[++i] then code += ', ' + that.compile o
     code  = "\n#{o.indent}#code\n#indent" if ~code.indexOf \\n
     o <<< {indent, level}
     code
@@ -814,7 +814,7 @@ class exports.Prop extends Node
 
   compileDescriptor: (o) ->
     obj = Obj!
-    for fun in @val then obj.items.push Prop Key(fun.x + \et  ), fun 
+    for fun in @val then obj.items.push Prop Key(fun.x + \et  ), fun
     obj.items.push Prop Key(\configurable), Literal true
     obj.items.push Prop Key(\enumerable  ), Literal true
     obj.compile o
@@ -921,7 +921,7 @@ class exports.Unary extends Node
     case \do
       # `do f?` => `f?()`
       x = Parens if it instanceof Existence and not it.negated
-                 then Chain(it)add Call! 
+                 then Chain(it)add Call!
                  else Call.make it
       return (x <<< {@front, @newed})compile o
     case \delete
@@ -946,12 +946,12 @@ class exports.Unary extends Node
   # `^delete o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
   compileSpread: (o) ->
     {it} = this; ops = [this]
-    while it instanceof .., it.=it then ops.push it 
+    while it instanceof .., it.=it then ops.push it
     return '' unless it.=expandSlice(o)unwrap! instanceof Arr
                  and (them = it.items)length
     for node, i in them
       node.=it if sp = node instanceof Splat
-      for op in ops by -1 then node = .. op.op, node, op.post 
+      for op in ops by -1 then node = .. op.op, node, op.post
       them[i] = if sp then lat = Splat node else node
     if not lat and (@void or not o.level)
       it = Block(them) <<< {@front, +void}
@@ -971,12 +971,12 @@ class exports.Unary extends Node
     if @op is \!
     then util \not
     else "(#{ (Fun [], Block Unary @op, Chain Var \it).compile o })"
-    
+
 
 #### Binary operators
 class exports.Binary extends Node
   (op, first, second, destructuring) ~>
-    if destructuring 
+    if destructuring
       logic = op.logic
       logic = destructuring if typeof! destructuring is \String
       op = | logic    => that
@@ -985,7 +985,7 @@ class exports.Binary extends Node
     @partial = first!? or second!?
     if not @partial
       if \= is op.charAt op.length-1 and op.charAt(op.length-2) not in <[ = < > ! ]>
-        return Assign first.unwrap!, second, op 
+        return Assign first.unwrap!, second, op
       switch op
       | \in        => return new In first, second
       | \with      => return new Import (Unary \^^ first), second, false
@@ -1065,7 +1065,7 @@ class exports.Binary extends Node
     code = "#{ @first .compile o, level = LEVEL_OP + PREC[@op] } #{@mapOp @op} \
             #{ @second.compile o, level }"
     if o.level <= level then code else "(#code)"
-  
+
   mapOp: (op) ->
     | op.match //\.([&\|\^] | << | >>>?)\.// => that.1
     | op is \of                              => \in
@@ -1099,7 +1099,7 @@ class exports.Binary extends Node
   compileAnyInstanceOf: (o, items) ->
     [sub, ref, @temps] = @first.cache o
     test = Binary \instanceof sub, items.shift!
-    for item in items then test = Binary \|| test, Binary \instanceof ref, item 
+    for item in items then test = Binary \|| test, Binary \instanceof ref, item
     Parens test .compile o
 
   compileMinMax: (o) ->
@@ -1136,7 +1136,7 @@ class exports.Binary extends Node
     if items
       if n < 1 then return Block items .add JS '[]' .compile o
       refs = []
-      for item, i in items then [items[i], refs.*] = item.cache o, 1x 
+      for item, i in items then [items[i], refs.*] = item.cache o, 1x
       items.push JS! <<<
         compile: -> (", #{ List.compile o, refs }" * (n-1))slice 2
       x.compile o
@@ -1151,7 +1151,7 @@ class exports.Binary extends Node
 
   compilePow: (o) -> Call.make(JS \Math.pow; [@first, @second])compile o
 
-  compileConcat: (o) -> 
+  compileConcat: (o) ->
     f = (x) ->
       | x instanceof Binary and x.op is \+++ => (f x.first) +++ (f x.second)
       | otherwise                            => [x]
@@ -1164,7 +1164,7 @@ class exports.Binary extends Node
     args = ([@first] +++ f @second)
     args.=reverse! if @op is \>>
     Chain Var (util \compose) .add Call([Arr args]) .compile o
-  
+
   compileMod: (o) ->
     ref = o.scope.temporary!
     code = "((#{@first.compile o}) % (#ref = #{@second.compile o}) + #ref) % #ref"
@@ -1181,7 +1181,7 @@ class exports.Binary extends Node
       "(#{ (Fun [vit], Block((Binary @op, @first, vit) .invertCheck this)).compile o })"
     default
       "(#{ (Fun [vit], Block((Binary @op, vit, @second).invertCheck this)).compile o })"
-  
+
   compileRegexEquals: (o, [regex, target]) ->
     if @op is \===
     then Chain regex .add Index Key \exec .add Call [target] .compile o
@@ -1243,7 +1243,7 @@ class exports.Assign extends Node
     unless @right
       left.isAssignable! or left.carp 'invalid unary assign'
       [left, @right] = Chain left .cacheReference o
-      for op in @unaries then @right = Unary op, @right 
+      for op in @unaries then @right = Unary op, @right
     return (Parens(@right) <<< {@front, @newed})compile o if left.isEmpty!
     if left.getDefault!
       @right = Binary left.op, @right, left.second
@@ -1539,11 +1539,11 @@ class exports.Fun extends Node
     code += "(#{ @compileParams scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
-    curry-code-check = ~> 
-      if @curried 
+    curry-code-check = ~>
+      if @curried
         if @hasSplats
           @carp 'cannot curry a function with a variable number of arguments'
-        "#{ util \curry }(#code)" 
+        "#{ util \curry }(#code)"
       else code
     if inLoop then return pscope.assign pscope.temporary(\fn), curry-code-check!
     if @returns
@@ -1585,7 +1585,7 @@ class exports.Fun extends Node
         names.push name = scope.add vr.value, \arg, p
         p.carp "duplicate parameter \"#name\"" unless dic"#name." = dic"#name." .^. 1
     if rest
-      while splace-- then rest.unshift Arr! 
+      while splace-- then rest.unshift Arr!
       assigns.push Assign Arr(rest), Literal \arguments
     @body.prepend ...assigns if assigns.length
     names.join ', '
@@ -1614,11 +1614,11 @@ class exports.Class extends Node
           if prop.key instanceof [Key, Literal]
             if prop.val instanceof Fun
               prop.val.meth = prop.key
-              if prop.val.bound 
+              if prop.val.bound
                 bound-funcs.push prop.key
                 prop.val.bound = false
             else if prop.accessor
-              for f in prop.val then f.meth = prop.key 
+              for f in prop.val then f.meth = prop.key
       else if node instanceof Fun and not node.statement
         ctor and node.carp 'redundant constructor'
         ctor = node
@@ -1628,8 +1628,8 @@ class exports.Class extends Node
     ctor <<< {name, +ctor, +statement}
     for f in bound-funcs
       ctor.body.lines.unshift do
-        Assign (Chain Literal \this .add Index f), 
-               (Chain Var (util \bind) 
+        Assign (Chain Literal \this .add Index f),
+               (Chain Var (util \bind)
                  .add Call [Literal \this; Literal "'#{f.name}'"; Var \prototype])
     lines.push vname = fun.proto = Var fun.bound = name
     args = []
@@ -1649,7 +1649,7 @@ class exports.Class extends Node
 #### Super
 # Reference to the parent method or constructor.
 class exports.Super extends Node
-  -> 
+  ->
 
   isCallable: YES
 
@@ -1701,7 +1701,7 @@ class exports.Splat extends Node
   # Compiles a list of nodes mixed with splats to a proper array.
   @compileArray = (o, list, apply) ->
     expand list
-    for node, index in list then break if node instanceof Splat 
+    for node, index in list then break if node instanceof Splat
     return '' if index >= list.length
     unless list.1
       return (if apply then Object else ensureArray) list.0.it
@@ -1795,7 +1795,7 @@ class exports.While extends Node
 
   getJump: (ctx or {}) ->
     ctx <<< {+\continue, +\break}
-    for node in @body?.lines or [] then return node if node.getJump ctx 
+    for node in @body?.lines or [] then return node if node.getJump ctx
 
   addBody: (@body) ->
     @body = Block If @guard, body if @guard
@@ -1812,10 +1812,10 @@ class exports.While extends Node
       if @objComp
         @body = Block @body.makeObjReturn it
         @body = If @guard, @body if @guard
-      else 
+      else
         @body.makeReturn it
         @else?makeReturn it
-    else 
+    else
       @getJump! or @returns = true
     this
 
@@ -1910,8 +1910,8 @@ class exports.For extends While
       step is pvar or vars += ', ' + step
       head += "#vars; #cond; " + if 1 ~= Math.abs pvar
         then (if pvar < 0 then \-- else \++) + idx
-        else idx + if pvar < 0 
-          then ' -= ' + pvar.slice 1 
+        else idx + if pvar < 0
+          then ' -= ' + pvar.slice 1
           else ' += ' + pvar
     @own and head += ") if (#{ o.scope.assign \__own '{}.hasOwnProperty' }
                             .call(#svar, #idx)"
@@ -2000,7 +2000,7 @@ class exports.Switch extends Node
     @default?getJump ctx
 
   makeReturn: ->
-    for c in @cases then c.makeReturn it 
+    for c in @cases then c.makeReturn it
     @default?makeReturn it
     this
 
@@ -2034,8 +2034,8 @@ class exports.Case extends Node
   compileCase: (o, tab, nobr, bool, type, apply, target, target-node) ->
     tests = for test in @tests
       test.=expandSlice(o)unwrap!
-      if test instanceof Arr 
-        for t in test.items then t 
+      if test instanceof Arr
+        for t in test.items then t
       else test
     tests.length or tests.push Literal \void
     if type is \match
@@ -2045,10 +2045,10 @@ class exports.Case extends Node
           then Chain test .add Index Key \apply, \., true .add Call [Literal \this; target]
           else Chain test .add Call if target then [target] else []
     if bool
-      [t] = tests; i = 0; while tests[++i] then t = Binary \|| t, that 
+      [t] = tests; i = 0; while tests[++i] then t = Binary \|| t, that
       tests = [(@<<<{t, aSource: \t, aTargets: [\body]})anaphorize!invert!]
     code = ''
-    for t in tests then code += tab + "case #{ t.compile o, LEVEL_PAREN }:\n" 
+    for t in tests then code += tab + "case #{ t.compile o, LEVEL_PAREN }:\n"
     {lines} = @body; last = lines[*-1]
     lines[*-1] = JS '// fallthrough' if ft = last?value is \fallthrough
     o.indent = tab += TAB
@@ -2213,7 +2213,7 @@ exports.Decl =
     Block lines
 
   import: (lines, all) ->
-    for line, i in lines then lines[i] = Import Literal(\this), line, all 
+    for line, i in lines then lines[i] = Import Literal(\this), line, all
     Block lines
 
 
