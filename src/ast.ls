@@ -2038,15 +2038,18 @@ class exports.Case extends Node
   compileCase: (o, tab, nobr, bool, type, target) ->
     tests = for test in @tests
       test.=expandSlice(o)unwrap!
-      if test instanceof Arr
+      if test instanceof Arr and type isnt \match
         for t in test.items then t
       else test
     tests.length or tests.push Literal \void
     if type is \match
       for test, i in tests
-        tests[i] = Chain test .add Call if target
-                     then [Chain target .add Index (Literal i), \., true]
-                     else []
+        tar = Chain target .add Index (Literal i), \., true
+        tests[i] = switch
+        | test instanceof Literal                  => Binary \=== test, tar
+        | test instanceof Arr, test instanceof Obj => Binary \<== test, tar
+        | otherwise                                =>
+          Chain test .add Call if target then [tar] else []
     if bool
       binary = if type is \match then \&& else \||
       [t] = tests; i = 0; while tests[++i] then t = Binary binary, t, that

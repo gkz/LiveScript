@@ -214,3 +214,31 @@ match x, y
 | odd,  even => ok 1
 | otherwise  => ok 0
 
+# literals
+x = 5
+y = \moo
+z = true
+match x, y, z
+| 5, \moo, false => ok 0
+| 4, \moo, true  => ok 0
+| 5, \moo, true  => ok 1
+| otherwise      => ok 0
+
+x = [1 2 3]
+y = 'haha'
+z = {+foo, moo: 2, g: {hi: \?}}
+match x
+| [2 4 6]   => ok 0
+| [1 2 3 4] => ok 0
+| [1 2]     => ok 1
+| otherwise => ok 0
+
+match z
+| {-foo, goo: 23, g: {hi: \?}} => ok 0
+| {+foo, moo: 2}               => ok 1
+| otherwise                    => ok 0
+
+match x, y, z
+| [1 2 3], /^ha/g, {foo: true, moo: 2, g: {hi: \!}} => ok 0
+| [1 2 3], /^ha/g, {foo: true, moo: 2, g: {hi: \?}} => ok 1
+| otherwise                                         => ok 0
