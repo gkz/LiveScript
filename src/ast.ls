@@ -728,7 +728,7 @@ class List extends Node
       target = that
       if deepEq
         if target instanceof Var and target.value is \_
-          target = Literal "'__placeholder__'"
+          target = Obj [Prop (Key \__placeholder__), Literal true]
         else if target instanceof [Obj, Arr]
           target.deepEq = true
       code += target.compile o
@@ -790,7 +790,7 @@ class exports.Obj extends List
         else node = Prop node, logic <<< first: node
       if @deepEq and node instanceof Prop
         if node.val instanceof Var and node.val.value is \_
-        then node.val = Literal "'__placeholder__'"
+        then node.val = Obj [Prop (Key \__placeholder__), Literal true]
         else if node.val instanceof [Obj, Arr] then node.val.deepEq = true
       if multi then code += \, else multi = true
       code += idt + if node instanceof Prop
@@ -2429,7 +2429,7 @@ UTILS =
     return eq(x, y, []);
     function eq(a, b, stack) {
       var className, length, size, result, alength, blength, r, key, ref, sizeB;
-      if (a === '__placeholder__' || b === '__placeholder__') { return true; }
+      if (a.__placeholder__ || b.__placeholder__) { return true; }
       if (a === b) { return a !== 0 || 1 / a == 1 / b; }
       if (a == null || b == null) { return a === b; }
       className = toString.call(a);
