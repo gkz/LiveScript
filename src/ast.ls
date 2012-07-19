@@ -414,15 +414,18 @@ class exports.Index extends Node
 # slices away at the target
 class exports.Slice extends Node
   ({@type, @target, @from, @to}) ~>
-    @from = Literal 0 unless @from
+    @from ?= Literal 0
+    @to = Binary \+ @to, Literal \1 if @to and @type is \to
 
   children: [\target \from \to]
 
   show: -> @type
 
   compileNode: (o) ->
-    "#{util \slice }.call(#{@target.compile o}, #{@from.compile o}
-     #{if @to then \, + @to.compile(o) + (if @type is \to then ' + 1' else '') else ''})"
+    @to = Binary \|| @to, Literal \9e9 if @to and @type is \to
+    args = [@target, @from]
+    args.push @to if @to
+    Chain Var (util \slice) .add Index (Key \call), \. true .add Call args .compile o
 
 #### Chain
 # Acts as a container for property-access/function-call chains, by holding
@@ -1351,9 +1354,8 @@ class exports.Assign extends Node
 
   compileSplice: (o) ->
     [from-exp-node, from-exp] = Chain @left.from .cacheReference o
-    [right-node, right]       = Chain @right .cacheReference o
+    [right-node, right]       = Chain @right     .cacheReference o
     to-exp = Binary \- @left.to, from-exp
-    to-exp = Binary \+ to-exp, Literal \1 if @left.type is \to
     Block [Chain Var (util \splice) .add Index (Key \apply), \. true
         .add Call [@left.target, (Chain Arr [from-exp-node, to-exp]
                         .add Index (Key \concat), \. true .add Call [right-node])]; right]
