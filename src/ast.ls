@@ -2019,6 +2019,8 @@ class exports.Switch extends Node
 
   aSource: \topic, aTargets: [\cases]
 
+  show: -> @type
+
   isStatement: YES
 
   isCallable: ->
