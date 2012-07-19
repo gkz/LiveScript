@@ -158,6 +158,21 @@ eq '1,2,3,4,5' "#{ l[to] }"
 eq '1,2,3' "#{ l[til -2] }"
 eq '2,3' "#{ l[1 til -2] }"
 
+# splice
+l = [1 to 5]
+x = 3
+eq '8,9' "#{ l[2 to x] = [8 9] }"
+eq '1,2,8,9,5' "#{ l }"
+
+y = -> 2
+l = [1 to 5]
+eq '8,9' "#{ l[y! til 4] = [8 9] }"
+eq '1,2,8,9,5' "#{ l }"
+
+l = [1 to 5]
+eq '8,9' "#{ l[2 to 3] = [8 9] }"
+eq '1,2,8,9,5' "#{ l }"
+
 # Automatic Dot Insertion
 eq @toString, @\toString
 eq @toString, @"to#{\S}tring"

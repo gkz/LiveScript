@@ -414,14 +414,14 @@ class exports.Index extends Node
 # slices away at the target
 class exports.Slice extends Node
   ({@type, @target, @from, @to}) ~>
+    @from = Literal 0 unless @from
 
   children: [\target \from \to]
 
   show: -> @type
 
   compileNode: (o) ->
-    "#{util \slice }.call(#{@target.compile o}, 
-     #{if @from then @from.compile o else \0}
+    "#{util \slice }.call(#{@target.compile o}, #{@from.compile o}
      #{if @to then \, + @to.compile(o) + (if @type is \to then ' + 1' else '') else ''})"
 
 #### Chain
@@ -1265,6 +1265,7 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
+    return @compileSplice o if @left instanceof Slice
     left = @left.expandSlice(o, true)unwrap!
     unless @right
       left.isAssignable! or left.carp 'invalid unary assign'
@@ -1347,6 +1348,16 @@ class exports.Assign extends Node
     list.push rite     if ret or not list.length
     code = list.join ', '
     if list.length < 2 or o.level < LEVEL_LIST then code else "(#code)"
+
+  compileSplice: (o) ->
+    [from-exp-node, from-exp] = Chain @left.from .cacheReference o
+    [right-node, right]       = Chain @right .cacheReference o
+    to-exp = Binary \- @left.to, from-exp
+    to-exp = Binary \+ to-exp, Literal \1 if @left.type is \to
+    Block [Chain Var (util \splice) .add Index (Key \apply), \. true
+        .add Call [@left.target, (Chain Arr [from-exp-node, to-exp]
+                        .add Index (Key \concat), \. true .add Call [right-node])]; right]
+      .compile o, LEVEL_LIST
 
   rendArr: (o, nodes, rite) ->
     for node, i in nodes
@@ -2515,6 +2526,7 @@ UTILS =
   toString : '{}.toString'
   join     : '[].join'
   slice    : '[].slice'
+  splice   : '[].splice'
 
 # Each level indicates a node's position in the AST.
 LEVEL_TOP    = 0  # ...;
