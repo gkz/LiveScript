@@ -433,7 +433,8 @@ exports import
     case \=>     then return 1 + @doInlinedent code, index+2
     default if \< is val.charAt 0
       @carp 'unterminated words' if val.length < 4
-      @adi!; tag = \WORDS
+      @token \WORDS, val, @adi!
+      return val.length
     @unline! if tag of <[ , |> DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
