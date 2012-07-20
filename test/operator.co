@@ -412,6 +412,27 @@ eq void,
   -> |> _ _ |> _
 
 
+### Listar
+* 0, 1
+  ok 2
+
+eq 3,
+ * 3
+
+eq '4,5,6' ''+ do then * 4
+                         *5
+                          6
+
+
+### Inlinedent
+eq 42, let n = Number 40 => n++
+                            ++n
+
+n = 3
+eq '10,5,16,8,4,2,1' ''+ while n > 1 => if n & 1 => n = 3*n + 1
+                                        else     => n /= 2
+
+
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
 eq 'number,string' ''+ typeof

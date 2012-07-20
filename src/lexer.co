@@ -337,9 +337,10 @@ exports import
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
   # Multi-character operators are also literal tokens, so that Jison can assign
-  # the proper order of operations. There are some symbols that we tag specially
-  # here. `;` and newlines are both treated as a NEWLINE, we distinguish
-  # parentheses that indicate a method call from regular parentheses, and so on.
+  # the proper order of operations.
+  # There are some symbols that we tag specially here.
+  # `;` and newlines are both treated as a NEWLINE, we distinguish parentheses
+  # that indicate a method call from regular parentheses, and so on.
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL <<< lastIndex: index)exec(code)0
     switch tag = val = sym
@@ -382,7 +383,10 @@ exports import
         return 9e9
       fallthrough
     case \] \)
-      @lpar = @parens.pop! if \) is tag = val = @pair val
+      if \) is tag = val = @pair val
+        if @last is @lpar = @parens.pop!
+          @last.0 = \CALL(
+          tag     = \)CALL
     case \:
       switch @last.0
       case \ID \STRNUM \) then break
@@ -399,11 +403,8 @@ exports import
         @token \UNARY val.charAt!; val = \=
       tag = \ASSIGN
     case \*
-      if @last.0 of <[ NEWLINE INDENT THEN ]> and
-         (INLINEDENT <<< lastIndex: index+1)exec code .0.length
-        @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
-        @indent index + that - 1 - @dent - code.lastIndexOf \\n index-1
-        return that
+      return that if @last.0 of <[ NEWLINE INDENT THEN ]>
+                  and @doInlinedent code, index+1, \list
       tag = if able @tokens
             or @last.0 is \CREMENT and able @tokens, @tokens.length-1
             then \MATH else \STRNUM
@@ -429,14 +430,19 @@ exports import
     case \<- \<~ then @parameters tag = up || \<-
     case \::     then up = \prototype; fallthrough
     case \..     then @adi!; tag = \ID; val = up || \constructor
-    default switch val.charAt 0
-    case \( then @token \CALL( \(; tag = \)CALL; val = \)
-    case \<
+    case \=>     then return 1 + @doInlinedent code, index+2
+    default if \< is val.charAt 0
       @carp 'unterminated words' if val.length < 4
-      @adi!; tag = \WORDS; val.=slice 2 -2
+      @adi!; tag = \WORDS
     @unline! if tag of <[ , |> DOT LOGIC COMPARE MATH IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
+
+  doInlinedent: (code, index, list) ->
+    return 0 unless d = (INLINEDENT <<< lastIndex: index)exec code .0.length
+    list and @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
+    @indent index + d - @dent - 2 - code.lastIndexOf \\n index
+    d
 
   #### Token Manipulators
 
@@ -875,7 +881,7 @@ character = if JSON!? then uxxxx else ->
       i += ts.length - 1
     case \WORDS
       ts = [[\[ \[ lno = token.2]]
-      for word of token.1.match /\S+/g or ''
+      for word of token.1.slice 2 -2 .match /\S+/g or ''
         ts.push [\STRNUM; string \', word, lno; lno] [\, \, lno]
       tokens.splice i, 1, ...ts, [\] \] lno]
       i += ts.length
@@ -940,21 +946,17 @@ ID = // ( (?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+ )
         ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
     |//g
 SYMBOL = //
-  [-+*/%&|^:]=                # compound assign
-| \.{1,3}                     # dot / `constructor` / splat/placeholder/yada*3
-| ([+&|:])\1                  # increment / logic / `prototype`
-| \([^\n\S]*\)                # call
-| -[->]                       # decrement / function
-| [!=]==?                     # equality
-| ~>                          # bound function
-| @@                          # `arguments`
-| <\[(?:[\s\S]*?\]>)?         # words
-| <(?: <(?:=|<{0,2}) | [-~])  # left shift / import / backcall
-| >>>?=?                      # rite shift
-| [<>]\??=?                   # {less,greater}-than-(or-equal-to) / min/max
-| !\?                         # inexistence
-| \|>                         # pipe
-| \*\*=?                      # pow
+  [-+*/%&|^:]=               # compound assign
+| \.{1,3}                    # dot / `constructor` / splat/placeholder/yada*3
+| ([-+&|@:])\1               # crement / logic / `prototype` / `arguments`
+| [-~=|]>                    # (bound-)function / inlinedent / pipe
+| [!=]==?                    # equality
+| <(?: <(?:=|<{0,2}) | [-~]
+     | \[(?:[\s\S]*?\]>)? )  # left shift / import / backcall / words
+| >>>?=?                     # rite shift
+| [<>]\??=?                  # {less,greater}-than(-or-equal-to) / min/max
+| !\?                        # inexistence
+| \*\*=?                     # pow
 | [^\s#]?
 //g
 SPACE     = /[^\n\S]*(?:#.*)?/g
