@@ -125,12 +125,6 @@ exports import
     case \then then @wantBy  = false
     case \catch \function then id = ''
     case \where then
-    case \const
-      if @last.1 is \export
-        @last.1 += \Const
-        return 5
-      fallthrough
-    case \var \export then tag = \DECL
     case \in \of
       if @seenFor
         @seenFor = false
@@ -168,6 +162,7 @@ exports import
         tag = \BIOP
       else
         if able @tokens then id = \<<< else tag = \DECL
+    case \export \const \var then tag = \DECL
     case \with
       tag = | able @tokens => \CLONEPORT
             | last.0 is \( => \BIOP
@@ -865,7 +860,7 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[++i]
     [tag] = token
     continue unless tag in
-      <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY CONST EXPORT ]>
+      <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY DECL ]>
     switch next = tokens[i+1]0
     case \IF then continue if tag is \ELSE
     case \INDENT \THEN
@@ -876,27 +871,31 @@ character = if JSON!? then uxxxx else ->
     then (tokens[i] = indent)then = true
     else tokens.splice ++i, 0 indent
     switch
+    case tag is \DECL then break
     # ->,
     case next in <[ DOT ? , PIPE BACKPIPE ]> then --i; fallthrough
     # -> 0,
     case next in <[ ID STRNUM LITERAL ]> and \, is tokens[i+2]?0
       go 0 i+=2; ++i
+      continue
     # -> [0],
     case next in <[ ( [ { ]>
      and \, is tokens[idx = 1 + indexOfPair tokens, i+1]?0
       go 0 idx; ++i
-    default
-      seenSwitch = false
-      detectEnd tokens, i+1, ok, go
-  function ok token, i
-    switch token.0
-    | \NEWLINE         => token.1 is not \;
-    | \DOT \? \, \PIPE \BACKPIPE => tokens[i-1]eol
-    | \ELSE            => tag is \THEN
-    | \CATCH           => tag is \TRY
-    | \FINALLY         => tag in <[ TRY CATCH THEN ]>
-    | \SWITCH          => not seenSwitch := true
-    | \CASE \DEFAULT   => not seenSwitch
+      continue
+    detectEnd tokens, i+1, ok, go
+  function ok [t0]:token, i
+    # Handle nesting intuitively:
+    #   `try try a finally b` => `try (try a finally b)`
+    t = tag
+    tag := '' if tag is t0 or tag is \THEN and t0 is \SWITCH
+    switch t0
+    case \NEWLINE       then token.1 is not \;
+    case \DOT \? \, \PIPE \BACKPIPE then tokens[i-1]eol
+    case \ELSE          then t is \THEN
+    case \CATCH         then t is \TRY
+    case \FINALLY       then t in <[ TRY CATCH THEN ]>
+    case \CASE \DEFAULT then t in <[ CASE THEN ]>
   !function go [] i
     prev = tokens[i-1]
     tokens.splice if prev.0 is \, then i-1 else i, 0, dedent <<< {prev.2}
@@ -951,9 +950,9 @@ character = if JSON!? then uxxxx else ->
       if seenSwitch then skipBlock := true else return true
     case \INDENT
       return skipBlock := false if skipBlock
-      return pre.0 not in <[
-        { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY HURL DO
-      ]>
+      return pre.0 not in
+        <[ { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY
+           HURL DECL DO ]>
     case \WHILE
       return false if token.done
       fallthrough
@@ -1033,8 +1032,9 @@ character = if JSON!? then uxxxx else ->
            if 0x10000 < ts.push [\STRNUM enc n; lno] [\, \, lno]
              carp 'range limit exceeded' lno
         if token.op is \to
-        then for n from fromNum to  toNum by byNum then add!
-        else for n from fromNum til toNum by byNum then add!
+          for n from fromNum to  toNum by byNum then add!
+        else
+          for n from fromNum til toNum by byNum then add!
         ts.pop! or carp 'empty range' lno
         tokens.splice i, 2 + 2 * byp, ...ts
         i += ts.length - 1
@@ -1183,4 +1183,4 @@ CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
 ARG = CHAIN +++ <[ ... UNARY CREMENT PARAM( FUNCTION
-                      IF SWITCH TRY CLASS RANGE LABEL DO BIOPBP ]>
+                      IF SWITCH TRY CLASS RANGE LABEL DECL DO BIOPBP ]>

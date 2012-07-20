@@ -167,10 +167,6 @@ bnf =
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
     , -> Call.back $2, $6, $5.charAt(1) is \~, $5.length is 3
 
-    # `var`, `const`, `export`, or `import`
-    o 'DECL Exprs'                          -> Decl[$1] $2
-    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl[$1] $3
-
     o \COMMENT -> L JS $1, true true
 
     # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm)
@@ -287,6 +283,8 @@ bnf =
     o 'LABEL Expression' -> new Label $1, $2
     o 'LABEL Block'      ditto
 
+    # `var`, `const`, `export`, or `import`
+    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl[$1] $3
 
   Exprs:
     o         \Expression  -> [$1]

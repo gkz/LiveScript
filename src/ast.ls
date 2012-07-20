@@ -2248,7 +2248,7 @@ class exports.Vars extends Node
       v.carp 'invalid variable declaration' unless v instanceof Var
       v.carp "redeclaration of \"#value\"" if o.scope.check value
       o.scope.declare value, v
-    if level then Literal \void .compile o else ''
+    Literal \void .compile o, level
 
 #### Parser Utils
 # Helpers for modifying nodes in [parser](../lib/parser.js).
@@ -2274,6 +2274,7 @@ exports.Decl =
     for line, i in lines then lines[i] = Import Literal(\this), line, all
     Block lines
 
+  importAll: -> @import it, true
 
   const: (lines) ->
     for node in lines
@@ -2282,9 +2283,6 @@ exports.Decl =
     Block lines
 
   var: Vars
-
-  importAll   : -> @import it, true
-  exportConst : -> @export @const(it)lines
 
 ##### Scope
 # Regulates lexical scoping within LiveScript. As you
