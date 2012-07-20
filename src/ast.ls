@@ -1661,6 +1661,9 @@ class exports.Class extends Node
       else if node instanceof Fun and not node.statement
         ctor and node.carp 'redundant constructor'
         ctor = node
+      else if node instanceof Assign and node.left instanceof Chain
+      and node.left.head.value is \this and node.right instanceof Fun
+        node.right.stat = node.left.tails.0.key
     ctor ||= lines.* = if @sup and @sup instanceof [Fun, Var]
                     then  Fun [] Block Chain(new Super).add Call [Splat Literal \arguments]
                     else Fun!
@@ -1674,12 +1677,17 @@ class exports.Class extends Node
     args = []
     if @sup
       args.push that
-      fun.proto = Util.Extends vname, fun.params.* = Var \superclass
+      imports = Chain Import (Literal \this), Var \superclass
+      fun.proto = Util.Extends (if fun.cname
+        then Block [Assign (imports.add Index Key \displayName), Literal "'#name'"
+                   ; Literal name]
+        else imports)
+        , fun.params.* = Var \superclass
     if @mixins
       imports = for args.* in that
         Import proto, JS("arguments[#{args.length-1}]"), true
       body.prepend ...imports
-    fun.cname and body.prepend Literal "#name.displayName = '#name'"
+    body.prepend Literal "#name.displayName = '#name'" if fun.cname and not @sup
     clas = Parens Call.make(fun, args), true
     clas = Assign vname, clas if decl and title.isComplex!
     clas = Assign title, clas if title
@@ -1694,7 +1702,9 @@ class exports.Super extends Node
 
   compile: ({scope}:o) ->
     while not scope.get \superclass and scope.fun, scope.=parent
-      return \superclass.prototype + Index that .compile o if that.meth
+      result = that
+      return \superclass.prototype + Index that .compile o if result.meth
+      return \superclass           + Index that .compile o if result.stat
     \superclass
 
 #### Parens

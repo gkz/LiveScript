@@ -369,3 +369,16 @@ obj{getX, getY} = h
 
 eq 0 obj.getX!
 eq 6 obj.getY!
+
+# Inherit static
+class A
+  @stat = -> 2
+
+class B extends A
+
+eq 2 B.stat!
+
+class C extends B
+  @stat = -> 2 + super!
+
+eq 4 C.stat!

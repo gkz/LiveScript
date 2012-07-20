@@ -18,9 +18,9 @@ eq 2, o.foo
 o <<< a:~ -> 1
 eq 1, o.a
 
-:: =
+class A
   p: -> if it? then @_ = it else @_
-class C extends {::}
+class C extends A
   p:~
     \   -> super!
     (z) -> super z
