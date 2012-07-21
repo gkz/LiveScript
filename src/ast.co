@@ -2000,6 +2000,8 @@ Scope::<<<
         node.carp "redeclaration of #that \"#name\""
       else if t is type is \arg
         node.carp "duplicate parameter \"#name\""
+      else if t is \upvar
+        node.carp "accidental shadow of \"#name\""
       return name if t of <[ arg function ]>
     # Dot-suffix to bypass `Object::` members.
     @variables"#name." = type
@@ -2040,7 +2042,10 @@ Scope::<<<
     @parent?check name, above
 
   # Checks if a variable can be reassigned.
-  checkReadOnly: (name) -> @READ_ONLY[@check name, true]
+  checkReadOnly: (name) ->
+    return that if @READ_ONLY[@check name, true]
+    @variables"#name." ||= \upvar
+    ''
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->
