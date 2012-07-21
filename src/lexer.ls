@@ -551,7 +551,8 @@ exports import
     case \( then @token \CALL( \(; tag = \)CALL; val = \)
     case \<
       @carp 'unterminated words' if val.length < 4
-      @adi!; tag = \WORDS; val.=slice 2 -2
+      @token \WORDS, val.slice(2, -2), @adi!
+      return val.length
     if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT 
                  COMPOSE RELATION PIPE BACKPIPE IMPORT ]> and @last.0 is \(
       tag = if tag is \BACKPIPE then \BIOPBP else \BIOP

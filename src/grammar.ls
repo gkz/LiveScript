@@ -237,17 +237,15 @@ bnf =
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
 
-    # The full complement of `if` and `unless` expressions,
-    # including postfix one-liners.
-    o \IfBlock
-    o 'IfBlock ELSE Block'            -> $1.addElse $3
+    # The full complement of `if` and `unless` expressions
+    o 'IF Expression Block Else'      -> If $2, $3, $1 is \unless .addElse $4
+    # and their postfix forms.
     o 'Expression POST_IF Expression' -> If $3, $1, $2 is \unless
 
     # Loops can either be normal with a block of expressions to execute
-    o 'LoopHead Block'            -> $1.addBody $2
     # and an optional `else` clause,
-    o 'LoopHead Block ELSE Block' -> $1.addBody $2 .addElse $4
-
+    o 'LoopHead Block Else' -> $1.addBody $2 .addElse $3
+    # postfix with a single expression,
     o 'DO Block WHILE Expression'
     , -> new While($4, $3 is \until, true)addBody $2
 
@@ -330,11 +328,10 @@ bnf =
     o \Block
     o 'Block NEWLINE Lines' -> $1.add $3
 
-  # The most basic form of `if` is a condition and an action. The following
-  # `if`-related rules are broken up along these lines to avoid ambiguity.
-  IfBlock:
-    o              'IF Expression Block' ->            If $2, $3, $1 is \unless
-    o 'IfBlock ELSE IF Expression Block' -> $1.addElse If $4, $5, $3 is \unless
+  Else:
+    o ''                              -> null
+    o 'ELSE Block'                    -> $2
+    o 'ELSE IF Expression Block Else' -> If $3, $4, $2 is \unless .addElse $5
 
   LoopHead:
     # The source of a `for`-loop is an array, object, or range.

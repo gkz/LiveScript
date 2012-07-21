@@ -153,6 +153,8 @@
     if it.inverted then @invert!
     this
 
+  addElse: (@else) -> this
+
   # Constructs a node that returns the current node's result.
   makeReturn: (arref) ->
     if arref then Call.make JS(arref + \.push), [this] else Return this
@@ -1852,7 +1854,6 @@ class exports.While extends Node
     @body.lines.length = 0 if top?verb is \continue and not top.label
     this
 
-  addElse:  (@else)  -> this
   addGuard: (@guard) -> this
   addObjComp: -> @objComp = true; this
 
@@ -1898,7 +1899,7 @@ class exports.While extends Node
     code += \}
     code += " while (#{ @test.compile o<<<{tab} LEVEL_PAREN });" if @post
     if yet
-      code += " if (#yet) #{ @compileBlock o, @else }"
+      code += " if (#yet) #{ @compileBlock o, Block @else }"
       o.scope.free yet
     code + ret
 
@@ -2127,12 +2128,6 @@ class exports.If extends Node
 
   terminator: ''
 
-  # Rewrites a chain of **If**s to add a default case as the final `else`.
-  addElse: ->
-    if @else instanceof .. then @else.addElse it
-                           else @else    =    it
-    this
-
   ::delegate <[ isCallable isArray isString isRegex ]> ->
     @else?[it]! and @then[it]!
 
@@ -2301,6 +2296,8 @@ Scope ::=
         node.carp "redeclaration of #that \"#name\""
       else if t is type is \arg
         node.carp "duplicate parameter \"#name\""
+      else if t is \upvar
+        node.carp "accidental shadow of \"#name\""
       return name if t in <[ arg function ]>
     # Dot-suffix to bypass `Object::` members.
     @variables"#name." = type
@@ -2341,7 +2338,10 @@ Scope ::=
     @parent?check name, above
 
   # Checks if a variable can be reassigned.
-  checkReadOnly: (name) -> @READ_ONLY[@check name, true]
+  checkReadOnly: (name) ->
+    return that if @READ_ONLY[@check name, true]
+    @variables"#name." ||= \upvar
+    ''
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->

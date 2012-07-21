@@ -90,6 +90,7 @@ eq 'c', result.1.b
 eq '<[ quoted words ]>', <[ <[ quoted words ]\> ]>.join ' '
 eq \\ <[\]>0
 eq 0  <[ ]>length
+eq \1 [String]<[0]> 1
 
 
 #### Implicit arrays

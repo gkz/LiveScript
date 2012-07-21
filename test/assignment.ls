@@ -383,7 +383,7 @@ eq hello-world, 2
 a = 2
 b = 3
 aB = 99
-eq 1  a-1 
+eq 1  a-1
 eq 1  4-b
 eq 99 a-b
 
@@ -401,3 +401,11 @@ eq 3 green
 eq 6, green-- * a
 
 eq \HELLO 'hello'.to-upper-case!
+
+### Ill-shadow Protection
+compileThrows 'accidental shadow of "a"' 4 '''
+  a = 1
+  let 
+    a := 2
+    a  = 3
+'''
