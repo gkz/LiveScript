@@ -149,6 +149,8 @@
 
   invert: -> Unary \! this, true
 
+  addElse: (@else) -> this
+
   # Constructs a node that returns the current node's result.
   makeReturn: (arref) ->
     if arref then Call.make JS(arref + \.push), [this] else Return this
@@ -1587,8 +1589,6 @@ class exports.While extends Node
     body.lines.length = 0 if top?verb is \continue and not top.label
     this
 
-  addElse: (@else) -> this
-
   makeReturn: ->
     if it
       @body.makeReturn it
@@ -1624,7 +1624,7 @@ class exports.While extends Node
     code += \}
     code += " while (#{ @test.compile o<<<{tab} LEVEL_PAREN });" if @post
     if yet
-      code += " if (#yet) #{ @compileBlock o, @else }"
+      code += " if (#yet) #{ @compileBlock o, Block @else }"
       o.scope.free yet
     code + ret
 
@@ -1825,12 +1825,6 @@ class exports.If extends Node
   show: -> @un and \!
 
   terminator: ''
-
-  # Rewrites a chain of **If**s to add a default case as the final `else`.
-  addElse: ->
-    if @else instanceof .. then @else.addElse it
-                           else @else    =    it
-    this
 
   ::delegate <[ isCallable isArray isString isRegex ]> ->
     @else?[it]! and @then[it]!

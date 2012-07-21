@@ -301,12 +301,12 @@ for cond of [true false]
   else
     ok not cond
 
-r = for i from 0 to 3
+r = for i from 0 to 9
   while i & 1
     break
-  else
+  else if i & 2
     i
-eq '0,2' ''+r
+eq '2,6' ''+r
 
 r = for i til 1 then i else [9]
 eq 0 r.0
