@@ -432,6 +432,11 @@ n = 3
 eq '10,5,16,8,4,2,1' ''+ while n > 1 => if n & 1 => n = 3*n + 1
                                         else     => n /= 2
 
+ok -> =>
+   -> =>
+      => ->
+         => ->
+
 
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]

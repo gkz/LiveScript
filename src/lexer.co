@@ -430,7 +430,10 @@ exports import
     case \<- \<~ then @parameters tag = up || \<-
     case \::     then up = \prototype; fallthrough
     case \..     then @adi!; tag = \ID; val = up || \constructor
-    case \=>     then return 1 + @doInlinedent code, index+2
+    case \=>
+      @unline!
+      return 1 + that if @doInlinedent code, index+2
+      tag = \THEN
     default if \< is val.charAt 0
       @carp 'unterminated words' if val.length < 4
       @token \WORDS, val, @adi!
