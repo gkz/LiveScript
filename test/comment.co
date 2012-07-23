@@ -169,7 +169,7 @@ eq true, do
     /* 3 */
 
 
-ok/* mid-expression block comments work as whitespace */true
+eq 0, [0]/* inline block comment */[0]
 
 
 /*

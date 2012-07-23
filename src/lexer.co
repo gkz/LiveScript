@@ -237,8 +237,8 @@ exports import
               then code.slice index, end+2
               else code.slice(index) + \*/
     if @last.0 of <[ NEWLINE INDENT THEN ]>
-    then @token \COMMENT detab comment, @dent; @token \NEWLINE \\n
-    else @last.spaced = true
+      @token \COMMENT detab comment, @dent
+      @token \NEWLINE \\n
     @countLines(comment)length
 
   # Matches embedded JavaScript.
