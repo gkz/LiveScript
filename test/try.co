@@ -3,7 +3,7 @@ throws 'up', -> throw Error 'up'
 
 
 # Basic try/catch.
-eq 5, try throw 'error' catch e then e.length
+eq 5, try throw 'error' catch err err.length
 
 eq 2, try
   throw 'up'
@@ -45,3 +45,7 @@ eq 2, do -> try do -> throw 1 catch do -> 2 finally
 try throw
 catch
   eq null e
+
+
+# `throw` from anywhere
+eq 0, try [throw 0] catch then e

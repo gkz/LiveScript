@@ -476,7 +476,7 @@ eq "#{ x = ''+ Math.random() }"/'.'*'.' x
 eq '0,1' ''+ b /= /\D/
 eq '0,1' ''+ b
 
-### Repeat
+#### Repeat
 x = \x
 n = 4
 eq ''    'x'*0
