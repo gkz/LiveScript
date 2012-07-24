@@ -1719,7 +1719,7 @@ class exports.For extends While
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Node
-  (@attempt, @thrown ? \e$, @recovery, @ensure) ->
+  (@attempt, @thrown, @recovery, @ensure) ->
 
   children: <[ attempt recovery ensure ]>
 
@@ -1738,12 +1738,16 @@ class exports.Try extends Node
 
   compileNode: (o) ->
     o.indent += TAB
-    code = "try #{@compileBlock o, @attempt}"
+    code = 'try ' + @compileBlock o, @attempt
     if @recovery or not @ensure
-      o.scope.check(v = @thrown or \e) or o.scope.add v, \catch
-      code += " catch (#v) #{ @compileBlock o, @recovery }"
-    if @ensure
-      code += " finally #{ @compileBlock o, @ensure }"
+      code += ' catch (e$) {'
+      if @recovery
+        code += \\n + o.indent +
+                o.scope.declare(@thrown or \e, this) + ' = e$;'
+        code += \\n + that if @recovery.compile o
+        code += \\n + @tab
+      code += \}
+    code += ' finally ' + @compileBlock o, that if @ensure
     code
 
 #### Switch

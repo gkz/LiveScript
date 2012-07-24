@@ -221,6 +221,18 @@ eq(+ +1, - -1)
 eq -1, - --[2]0
 
 
+### `throw`
+throws 'up' -> throw Error 'up'
+
+# from anywhere.
+try [throw 0] catch
+  eq e, 0
+
+# `null` when empty.
+try throw catch
+  eq e, null
+
+
 ### `do`
 eq '', do do do -> -> -> do String
 eq 1, do -> 1

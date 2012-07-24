@@ -107,7 +107,7 @@ bnf =
 
   # A list of lines, separated by newlines or semicolons.
   Lines:
-    o ''                   -> Block!
+    o ''                   -> L Block!
     o \Line                -> Block $1
     o 'Lines NEWLINE Line' -> $1.add $3
     o 'Lines NEWLINE'
