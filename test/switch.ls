@@ -30,10 +30,11 @@ eq func(8), void
 eq void, switch case 1 then break
 eq 1   , switch case 0 then break default 1
 eq 2   , switch case 1 then (while 0 then continue); 2
-eq 3   , do -> switch -> 0 case 1 then -> 2 default 3
+eq 3   , do -> switch 0 case 1 then -> 2 default 3
+eq 4   , if 1 then switch 2 case 3 then default 4
 
 
-throws 'inconvertible statement on line 3' -> LiveScript.compile '''
+compileThrows 'inconvertible statement' 3 '''
   for ever
     !switch
       continue
@@ -128,12 +129,20 @@ switch
 | true  => ok 1
 | true  => ok 0
 
-# otherwise
+# otherwise, _
 eq otherwise?, false
 
 switch
 | false     => ok 0
 | otherwise => ok 1
+
+switch 2 + 3
+case 6 then ok 0
+case _ then ok 1
+
+switch
+| false => ok 0
+| _     => ok 1
 
 switch 2 + 3
 case 6 then ok 0
@@ -165,7 +174,7 @@ boom2 = ->
 eq 3 boom2!
 
 # when
-switch 
+switch
 when false then ok 0
 when true  then ok 1
 
@@ -173,3 +182,82 @@ when true  then ok 1
 switch
 | false => ok 0
 else ok 1
+
+#### match
+x = 2
+match x
+| (== 3) => ok 0
+| (== 2) => ok 1
+| _      => ok 0
+
+match ++x
+| (== 4)          => ok 0
+| (== 3) or (==8) => ok 1
+| _               => ok 0
+
+false-func = -> false
+true-func  = -> true
+
+# no subject
+match
+| false-func => ok 0
+| true-func  => ok 1
+| otherwise  => ok 0
+
+# multiple topics
+even = --> it % 2 == 0
+odd = (not) . even
+x = 1
+y = 2
+match x, y
+| odd,  odd  => ok 0
+| even, even => ok 0
+| odd,  even => ok 1
+| otherwise  => ok 0
+
+# literals
+x = 5
+y = \moo
+z = true
+match x, y, z
+| 5, \moo, false => ok 0
+| 4, \moo, true  => ok 0
+| 5, \moo, true  => ok 1
+| otherwise      => ok 0
+
+x = [1 2 3]
+y = 'haha'
+z = {+foo, moo: 2, g: {hi: \?}}
+match x
+| [2 4 6]   => ok 0
+| [1 2 3 4] => ok 0
+| [1 2 _]   => ok 1
+| otherwise => ok 0
+
+match z
+| {-foo, goo: 23, g: {hi: \?}} => ok 0
+| {+foo, moo: 2,  g: _}        => ok 1
+| otherwise                    => ok 0
+
+match x, y, z
+| [1 2 3], /^ha/g, {foo: true, moo: 2, g: {hi: \!}} => ok 0
+| [1 2 3], /^ha/g, {foo: true, moo: 2, g: {hi: \?}} => ok 1
+| otherwise                                         => ok 0
+
+match 2
+| even and 2 => ok 1
+| otherwise  => ok 0
+
+match 3, \haha
+| _, 'muhaha' => ok 0
+| even, _     => ok 0
+| _, 'haha'   => ok 1
+| _           => ok 0
+
+take = (n, [x, ...xs]:list) ->
+  match n, list
+  | (<= 0), _  => []
+  | _     , [] => []
+  | otherwise  => [x] +++ take n - 1, xs
+
+eq '1,2,3' "#{ take 3, [1 to 10] }"

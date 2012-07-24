@@ -7,10 +7,10 @@ class Base
     "static/#{string}"
 
 class FirstChild extends Base
-  func: -> super('one/') + it
+  func: -> super('one/').concat it
 
 SecondChild = class extends FirstChild
-  ::func = -> super('two/') + it
+  func: -> (super).call(this, 'two/') + it
 
 thirdCtor = -> @array = [1, 2, 3]
 
@@ -98,7 +98,7 @@ eq [func() for func in new Mini().generate()] + '', '10,20,30'
 # A bound function in a bound method with secondary function syntax
 class Mini2
   ->
-    @generate@! =
+    @.~generate! =
       for i from 1 to 3 then let
         ~> @num * i
   num: 10
@@ -141,12 +141,12 @@ Namespace = {}
 Class     = null
 
 # but undeclared.
-Namespace.Class = class then
+Namespace.Class = class
 eq Namespace.Class.displayName, 'Class'
 eq Class, null
 
 # and declared.
-class Namespace.Class then
+class Namespace.Class
 eq Class, Namespace.Class
 
 
@@ -182,8 +182,8 @@ eq ns.method2(2).length, 2
 # [coffee#1009](https://github.com/jashkenas/coffee-script/issues/1009)
 # Class names are "$"-prefixed when reserved.
 new
-  class @in   then
-  class @eval then
+  class @in
+  class @eval
   ok $in?
   ok $eval?
 
@@ -210,10 +210,10 @@ eq oss[5.67](), oss
 eq oss['""'](), oss
 
 
-eq \declared (class declared then)displayName
+eq \declared (class declared)displayName
 ok declared?
 
-eq \named  (new -> return @named = class then)displayName
+eq \named  (new -> return @named = class)displayName
 ok named!? 'should not leak to global when undeclared'
 
 
@@ -251,9 +251,57 @@ class NameEater
     @subnames.push it.displayName
 
 class A extends NameEater
-  (class B then) extends NameEater
+  (class B) extends NameEater
 
 eq 'A,B' ''+NameEater.subnames
+
+
+# Line folding around `extends`
+class   Inject
+extends Object
+  class Reject extends
+        Object
+    ok true
+
+
+#### `implements`
+Mover =
+  x: 0, y: 0
+  moveTo: (@x, @y) -> this
+  moveBy: (dx, dy) -> @x += dx; @y += dy; this
+
+Magnitude =
+  lt  : -> ...
+  gt  : -> it.lt this
+  lte : -> @lt it or @eq it
+  gte : -> @gt it or @eq it
+  eq  : -> not @neq it
+  neq : -> @lt it or @gt it
+
+Measurable =
+  lt: -> @measure! < it.measure!
+
+class Point implements Mover
+  isAt: -> @x is it.x and @y is it.y
+
+class Rect extends Point implements Magnitude, Measurable
+  (@w, @h) ->
+  measure: -> @w * @h
+
+r0 = new Rect 2 3
+r1 = new Rect 5 7
+r0.moveTo 1, 1
+r1.moveBy 1, 1
+ok r0.isAt r1
+ok r0.neq  r1
+ok r1.gte  r0
+ok r0.eq new Rect 1 6
+
+ok class extends Function '' implements
+                               {}
+  class
+  implements {}
+    void
 
 
 ### Clone
@@ -271,10 +319,66 @@ ok not donaldo.fly()
 ok ^^new Number instanceof Number
 eq (^^new Number)constructor, Number
 
+# Inherit constructors
+class A
+  -> @x = 5
 
-# Line folding around `extends`
-class   Inject
-extends Object
-  class Reject extends
-        Object
-    ok true
+class B extends A
+  getX: -> @x
+
+eq 5 (new B)getX!
+
+# No body
+class C extends B
+
+eq 5 (new C)getX!
+
+class D
+  extends C
+eq 5 (new D)getX!
+
+# Bound methods are bound to instance not class, 
+# however bound static funcs are still bound to class
+class G
+  ->
+    @x = 5
+    @y = 6
+  getX: -> @x
+  getY: ~> @y
+  @x = \staticX
+  @y = \staticY
+  @getStatX = -> @x
+  @getStatY = ~> @y
+
+g = new G
+obj = x: 0, y: 0
+obj{getX, getY} = g
+obj{getStatY, getStatX} = G
+
+eq 0 obj.getStatX!
+eq \staticY obj.getStatY!
+
+eq 0 obj.getX!
+eq 6 obj.getY!
+
+class H extends G
+
+h = new H
+obj = x: 0, y: 0
+obj{getX, getY} = h
+
+eq 0 obj.getX!
+eq 6 obj.getY!
+
+# Inherit static
+class A
+  @stat = -> 2
+
+class B extends A
+
+eq 2 B.stat!
+
+class C extends B
+  @stat = -> 2 + super!
+
+eq 4 C.stat!

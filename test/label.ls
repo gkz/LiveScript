@@ -19,8 +19,8 @@ r = :outer
   1
 eq r, 1
 
-throws 'undefined label "a" on line 1' -> LiveScript.compile 'break a'
-throws 'duplicate label "b" on line 2' -> LiveScript.compile '''
+compileThrows   'unknown label "a"' 1 'break a'
+compileThrows 'duplicate label "b"' 2 '''
   :b
     :b break b
 '''

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<meta http-equiv=X-UA-Compatible content=IE=edge,chrome=1>
+<title>ace/mode/livescript</title>
+<style>
+body    {overflow:hidden}
+#editor {margin:0; position:absolute; top:0; bottom:0; left:0; right:0}
+</style>
+<pre id=editor>
+#!/usr/bin/env livescript
+
+try
+  throw URIError decodeURI 0xbad - 32~123 * 123456.7e+8f
+catch e
+  console.log \word + 'qstring' + "qqstring" + '''
+    qdoc
+  ''' + """
+    qqdoc
+  """
+
+do ->
+  switch it
+  case <[ quoted words ]>
+    return /regex/imgy.test //
+      heregex  # comment
+    //imgy
+  /* JS Comment */
+  this is: not JS
+  void
+
+public illegal
+
+[1 2 3] |> sum-of-number
+
+true false yes no on off 
+null void undefined
+</pre>
+<script src=http://ajaxorg.github.com/ace/build/src/ace.js></script>
+<script src=../lib/mode-ls.js></script>
+<script>!function(){
+  self.editor  = ace.edit('editor')
+  self.session = editor.getSession()
+  editor.setShowInvisibles(true)
+  session.setMode(new (require('ace/mode/ls')).Mode)
+  session.setTabSize(2)
+  try { var code = localStorage.code } catch(_){ return }
+  if(code) session.setValue(code)
+  setInterval(self.onunload = function(){
+    localStorage.code = session.getValue()
+  }, 1e4)
+  }()
+</script>

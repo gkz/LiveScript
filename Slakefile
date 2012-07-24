@@ -10,7 +10,7 @@ tint = (text, color ? green) -> color + text + reset
 
 # Run our node/livescript interpreter.
 run = (args) ->
-  proc = spawn \node \bin/livescript & args
+  proc = spawn \node [\bin/livescript] +++ args
   proc.stderr.on \data say
   proc       .on \exit -> process.exit it if it
 
@@ -34,12 +34,10 @@ minify = ->
 
 task \install 'install LiveScript via npm' -> shell 'npm install -g .'
 
-docs = <[ doc.ls ]>
-
 task \build 'build lib/ from src/' ->
-  ext = /\.ls$/; webs = docs
+  ext = /\.ls$/
   sources = for file in dir \src
-    \src/ + file if ext.test file and file not in webs
+    \src/ + file if ext.test file
   run [\-bco \lib] +++ sources
 
 task \build:full 'build twice and run tests' ->
@@ -53,12 +51,6 @@ task \build:parser 'build lib/parser.js from lib/grammar.js' ->
       .replace /return parser;[^]+/ ''
       .replace /(:[^]+?break;)(?=\ncase \d+\1)/g \:
       .replace /(:return .+)\nbreak;/g \$1
-
-task \build:doc 'build doc/' ->
-  <- docs.forEach
-  name = it.slice 0 -3; js = require(\./lib/livescript)compile slurp \src/ + it
-  fs.writeFile "doc/#name.raw.js"    js
-  slobber      "doc/#name.js" minify js
 
 task \build:browser 'build extras/' ->
   LiveScript = require \./lib/livescript
@@ -133,9 +125,11 @@ function runTests global.LiveScript
     global[name] = -> func ...; ++passedTests
   global <<<
     eq: strictEqual
-    throws: (msg, fun) ->
+    throws: !(msg, fun) ->
       try do fun catch return eq e?message, msg
       ok false "should throw: #msg"
+    compileThrows: !(msg, lno, code) ->
+      throws "#msg on line #lno" !-> LiveScript.compile code
   process.on \exit ->
     time = ((Date.now! - startTime) / 1e3)toFixed 2
     message = "passed #passedTests tests in #time seconds"
@@ -150,7 +144,7 @@ function runTests global.LiveScript
       return say e unless stk = e?stack
       msg = e.message or ''+ /^[^]+?(?=\n    at )/exec stk
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
-        for i in [2 4] then m[i] = tint m[i]replace(/\\n/g \\n), bold 
+        for i in [2 4] then m[i] = tint m[i]replace(/\\n/g \\n), bold
         msg  = m.slice(1)join \\n
       [, row, col]? = //#filename:(\d+):(\d+)\)?$//m.exec stk
       if row and col

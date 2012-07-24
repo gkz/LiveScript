@@ -220,12 +220,12 @@ eq 3, do -> (1; 2; 3)
 eq 3, do -> return (1; 2; 3)
 
 
-throws 'inconvertible statement on line 1', -> LiveScript.compile 'r = return'
-throws 'inconvertible statement on line 2', -> LiveScript.compile '''
+compileThrows 'inconvertible statement' 1 'b = break'
+compileThrows 'inconvertible statement' 2 '''
   r =
     return
 '''
-throws 'inconvertible statement on line 3', -> LiveScript.compile '''
+compileThrows 'inconvertible statement' 3 '''
   r = if 1
     2 +
     return
@@ -312,6 +312,12 @@ eq 1, f 1, 0
 eq 6, f 1, 1
 eq 2, f 0, 0
 
+f = (a ||= 2, b &&= 5) -> a + b
+eq 7, f 0, 1
+eq 1, f 1, 0
+eq 6, f 1, 1
+eq 2, f 0, 0
+
 do (a ? I(1)) -> eq a, 1
 
 eq 1, do []= (a || 0 || 1) -> a
@@ -326,7 +332,7 @@ eq arguments,
 ok (@arguments, @eval) ->
 
 
-throws 'duplicate parameter "a" on line 1', -> LiveScript.compile '(a, a) ->'
+compileThrows 'duplicate parameter "a"' 1 '(a, a) ->'
 
 
 # Fun with radical parameters.
@@ -342,8 +348,8 @@ eq void Function() ->
 
 
 ### Invalid call detection
-throws 'invalid callee on line 1'      -> LiveScript.compile '[]()'
-throws 'invalid constructor on line 1' -> LiveScript.compile 'new 42'
+compileThrows 'invalid callee'      1 '[]()'
+compileThrows 'invalid constructor' 1 'new 42'
 
 
 ### `new` block
@@ -360,7 +366,7 @@ h = (f, ...a) -> f a
 eq ok, do
   (a, b) <- g \a, \b
   eq b, \b
-  ...d <- h ..., a
+  ...d <- h _, a
   eq d.0.0, \a
   ok
 
@@ -378,6 +384,33 @@ eq 3 do
 
 eq 6 (a <- g 6; a)
 
+
+addArr = do 
+  (x, y) <-- map _, [2 3 4]
+  x + y
+
+eq 5 addArr.0 3
+eq 5 addArr.1 2
+eq 5 addArr.2 1
+
+t-obj = 
+  z: 10
+  bound: ->
+    (x, y) <~~ map _, [2 3 4]
+    x * y * this.z
+  unbound: ->
+    (x, y) <-- map _, [2 3 4]
+    x * y * this.z
+
+timesArr = t-obj.bound!
+eq 60 timesArr.0 3
+eq 60 timesArr.1 2
+eq 60 timesArr.2 1.5
+
+timesArr = t-obj.unbound!
+ok isNaN timesArr.0 3
+ok isNaN timesArr.1 2
+ok isNaN timesArr.2 1.5
 
 ### `function`
 new
@@ -401,6 +434,27 @@ new
   function triple a  then a * 3
   eq 4, double 2
   eq 9, triple 3
+
+compileThrows 'redeclaration of function "f"' 2 '''
+  f = 0
+  function f then
+'''
+compileThrows 'redeclaration of function "f"' 2 '''
+  function f
+    f = 1
+'''
+compileThrows 'redeclaration of function "f"' 2 '''
+  function f then
+  f = 2
+'''
+compileThrows 'redeclaration of function "f"' 1 '''
+  function f f then
+'''
+compileThrows 'increment of function "f"' 2 '''
+  function f then
+  ++f
+'''
+compileThrows 'misplaced function declaration' 2 'if 1\n function F then'
 
 
 ### `let`
@@ -429,21 +483,29 @@ ok let [it] = [ok]
   it is ok
 
 
+### `where`
+eq 5 x + y where x = 2, y = 3
+
+eq 5 x + y where x = 2,
+                 y = 3
+
+
 ### `with`
 with o = {}
   @a = 1
   @b = 2
 eq o.a + o.b, 3
 eq ok, with ok then this
-ok with ok
+x = with ok
   this is ok
+ok x
 
 
-### `@@`
+### `&`
 let 0
-  eq @@ , arguments
-  eq @@0, 0
-  eq @@1, void
+  eq & , arguments
+  eq &0, 0
+  eq &1, void
 
 
 ### thisplat
@@ -479,22 +541,13 @@ obj =
 
 eq obj.add(1, 2), 3
 
-!nothing(x) = x
-eq void, nothing true
-
 class Multiplier
   (@num) ->
 
   multiply(x, y): x * y
   xSix!: @num * 6
-  !zip(x): x
-  !zip2@!: true
   bound!:
-    f@! = @num * 2
-
-  @!zip3@! = true
-
-eq void Multiplier.zip3!
+    ~f! = @num * 2
 
 multi = new Multiplier 3
 
@@ -506,8 +559,10 @@ eq 6 sometin.hooloo!
 
 eq 6    multi.multiply(3, 2)
 eq 18   multi.xSix!
-eq void multi.zip true
-eq void multi.zip2!
+
+
+Multiplier::~func(x) = x
+eq 5 multi.func(5)
 
 ### auto currying magic
 times = (x, y) --> x * y
@@ -535,9 +590,6 @@ minus(x, y) = y - x
 minusTwo = minus 2
 eq 5 minusTwo 7 
 
-!plus! = true
-eq void plus!
-
 boom(x, y) = x + (y ? 0)
 boom2 = boom 2
 eq 6 boom2 4
@@ -552,10 +604,8 @@ class Divider
   ->
 
   @divide1(x, y) = x / y
-  @!divide2(x, y) = x / y
 
 eq 2    Divider.divide1 6 3
-eq void Divider.divide2 2 4
 
 f4 = ((a, b, c, d) --> a * b * c * d)(2)(3)
 g = f4 5
@@ -597,6 +647,8 @@ eq 6 plusOneTimesTwo 2
 pott = timesTwo . plusOne
 eq 6 pott 2
 
+eq 'true,false,true,false' "#{ map (is \function) . (typeof), [->, 2, ~>, 3] }"
+
 even = (x) -> x % 2 == 0
 odd = (not) . even
 ok odd 3
@@ -629,7 +681,34 @@ eq 2 (.a) obj
 eq 5 (.b!) obj
 eq 7 (.c 3 4) obj
 
-map(f, xs) = [f x for x in xs]
-
 eq '5,1,7'       "#{ map (.length),  [[1 to 5] [1] [1 to 7]] }"
 eq '1|2|3,1,1|2' "#{ map (.join \|), [[1 to 3] [1] [1 to 2]] }"
+
+eq '3,2,,0' "#{ map (?p), [{p: 3}, {p: 2}, , {p: 0}] }"
+
+eq 2 (obj.) \a
+eq 7 ((obj <<< d: 7).) \d
+
+### partialization
+three-add = (x, y, z) -> x + y + z
+g = three-add 2, _, 10
+eq 20 g 8
+eq 19 g 7
+
+h = three-add 2, _, _
+f = h _, 6
+eq 10 f 2
+
+two-add = (x = 10, y) -> x + y
+g = two-add _, 4
+eq 14 g!
+
+obj = 
+  three-add: (x, y, z) -> x + y + z
+
+f = obj.three-add 1, _, 3
+eq 6 f 2
+
+eq 9 (6 |> obj.three-add 1, _, 2)
+
+function map f, xs then [f x for x in xs]

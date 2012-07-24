@@ -51,13 +51,11 @@ eq "values: #{ list.join ( ) }", 'values: 0,1,2,3,4,5'
 eq "values: #{ list.join ' ' }", 'values: 0 1 2 3 4 5'
 
 
-obj = {
+obj =
   name: 'Joe'
-  hi: -> "Hello #{@name}."
-  cya: -> "Hello #{@name}.".replace('Hello','Goodbye')
-}
+  toString: -> @name
+  hi: -> "Hello #this."
 eq obj.hi(), "Hello Joe."
-eq obj.cya(), "Goodbye Joe."
 
 
 eq "With #{"quotes"}", 'With quotes'
@@ -193,9 +191,21 @@ eq 'multiline nested "interpolations" work', """multiline #{
 } work"""
 
 
-throws 'unterminated interpolation on line 2' -> LiveScript.lex '"#{\n'
+compileThrows 'unterminated interpolation' 2 '"#{\n'
 
 throws "Parse error on line 1: Unexpected ')'" -> LiveScript.compile '"(#{+})"'
+
+compileThrows 'invalid variable interpolation "if"' 1 '"#if"'
+
+compileThrows 'malformed character escape sequence' 1 '"\\x"'
+compileThrows 'malformed character escape sequence' 1 '"\\u"'
+
+hi-there = 'Hi there!'
+one-two-three = 123
+
+# Dash separated var interpolation
+eq 'Hi there! How are you?' "#hi-there How are you?"
+eq 'ha 123 ha' "ha #one-two-three ha"
 
 
 # Character/Word Literal
@@ -232,10 +242,10 @@ eq \2 '1'.replace "#{1}" -> 2
 # Safe Octals
 let
   'use strict'
-  '\1'
-  '\02'
-  '\377'
-  '\08\09'
+  eq '\1'     '\x01'
+  eq '\02'    '\x02'
+  eq '\377'   '\xFF'
+  eq '\08\09' '\x008\x009'
 
 
 # Unjoined

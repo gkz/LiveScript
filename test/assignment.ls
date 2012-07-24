@@ -51,9 +51,7 @@ for nonref, i in <[ 0 f() this true ]>
     x = if i then nonref else \... + nonref
     LiveScript.compile \\n * i + "[#{x}, y] = z"
 
-
-throws 'assignment to undeclared variable "Math" on line 1'
-, -> LiveScript.compile 'Math ||:= 0'
+compileThrows 'assignment to undeclared "Math"' 1 'Math ||:= 0'
 
 # Power
 x = 2
@@ -78,6 +76,10 @@ lala ::= other: true
 
 ok lala::other
 ok fafa.other
+
+compileThrows 'invalid assign'    1 'f() ?=x'
+compileThrows 'invalid accessign' 1 'f()?= x'
+
 
 # Empty assignments
 {} = -> /* will be front and should be wrapped */
@@ -257,6 +259,8 @@ eq \e a.b.c
 a.=b <<< {\c}
 eq \c a.c
 
+compileThrows 'assignment to undeclared "a"' 1 'a.=b'
+
 
 ### Subdestructuring
 a = []
@@ -304,12 +308,28 @@ new
   [x ? 2, [y] || [3], @p && 5, @q !? 7] = [null, false, true, 0]
   eq x * y * @p * @q, 210
 
+  @p = @q = void
+  [x = 2, [y] ||= [3], @p &&= 5, @q !? 7] = [null, false, true, 0]
+  eq x * y * @p * @q, 210
+
   {a or 2, _: b or 3, @p or 5} = {}
   eq a * b * @p, 30
 
+  @a = @b = @c = void
   @{a ? 2, \b ? 3, ([\c]) ? 5} = {}
   eq @a * @b * @c, 30
 
+  @a = @b = @c = void
+  @{a = 2, \b = 3, ([\c]) = 5} = {}
+  eq @a * @b * @c, 30
+
+  @a = @b = @c = void
+  @{a && 2, b || 3} = {a: 99}
+  eq @a * @b, 6
+
+  @a = @b = @c = void
+  @{a &&= 2, b ||= 3} = {a: 99}
+  eq @a * @b, 6
 
 ### Compound/Conditional Destructuring
 a = b = c = null
@@ -363,14 +383,9 @@ eq hello-world, 2
 a = 2
 b = 3
 aB = 99
-eq 1  a-1 
+eq 1  a-1
 eq 1  4-b
 eq 99 a-b
-
-encodeURL = 9
-eq 9 encode-URL
-eq 9 encode-uRL
-eq 9 encode-u-r-l
 
 obj =
   ha-ha: 2
@@ -384,3 +399,13 @@ green--
 eq 3 green
 
 eq 6, green-- * a
+
+eq \HELLO 'hello'.to-upper-case!
+
+### Ill-shadow Protection
+compileThrows 'accidental shadow of "a"' 4 '''
+  a = 1
+  let 
+    a := 2
+    a  = 3
+'''

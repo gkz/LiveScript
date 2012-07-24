@@ -32,6 +32,7 @@ eq 3000c, 30$ * 100
 eq 36rpm 36
 
 
+# Ranges
 start = 1
 end   = 5
 step  = 2
@@ -49,6 +50,9 @@ eq '1,3,5'     String [1     to  5   by 2    ]
 
 to = 3
 eq 3 to
+
+eq 4 [1 to end].3
+eq 5 [1 to end].length
 
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Boolean/Number should be indexable.
@@ -86,6 +90,7 @@ eq 'c', result.1.b
 eq '<[ quoted words ]>', <[ <[ quoted words ]\> ]>.join ' '
 eq \\ <[\]>0
 eq 0  <[ ]>length
+eq \1 [String]<[0]> 1
 
 
 #### Implicit arrays
@@ -125,7 +130,7 @@ a = [] <<<
 a +=
   4
   5
-eq '0,1,2,3,4,5' ''+a
+eq '0,1,2,34,5' a
 
 eq '0,1' ''+ do ->
   return
@@ -208,14 +213,9 @@ new
 
 
 # [#19](https://github.com/satyr/coco/issues/19)
-throws 'duplicate property "a" on line 1'
-, -> LiveScript.compile '{a, b, a}'
-
-throws 'duplicate property "0" on line 1'
-, -> LiveScript.compile '{0, "0"}'
-
-throws 'duplicate property "1" on line 1'
-, -> LiveScript.compile '{1, 1.0}'
+compileThrows 'duplicate property "a"' 1 '{a, b, a}'
+compileThrows 'duplicate property "0"' 1 '{0, "0"}'
+compileThrows 'duplicate property "1"' 1 '{1, 1.0}'
 
 
 #### Implicit/Braceless
@@ -343,7 +343,7 @@ obj = {
   (--i) or 'default value'
   /*      splat       */
   ...o
-  ...{splatMe: 'too'}
+  ...: splatMe: 'too'
   /*   normal keys    */
   key: ok
   's': ok
@@ -389,31 +389,6 @@ eq a * b, 21
 
 eq 11, ((, a) -> a)(, 11)
 
-### String/Array multiplication
-x = \x
-n = 4
-eq ''    'x'*0
-eq \x    'x'*1
-eq \xx   "x"*2
-eq \xxx  \x *3
-eq \xxxx \x *n
-eq ''    "#{x}" * 0
-eq \x    "#{x}" * 1
-eq \xx   "#{x}" * 2
-eq \xxx  "#{x}" * 3
-eq \xxxx "#{x}" * n
-
-i = -1
-eq ''    ''+ [i++]*0
-eq '0'   ''+ [i++]*1
-eq '1,1' ''+ [i++]*2
-eq '2,3,2,3,2,3' ''+ [i++, i++] * 3
-eq '4,5,4,5,4,5' ''+ [i++, i++] * (n-1)
-
-a = [1]
-eq '0,1,0,1' ''+ [0 ...a] * 2
-eq '1,1,1,1' ''+ [  ...a] * n
-
 
 ### ACI
 eq null null
@@ -438,6 +413,7 @@ eq '999 1000' show [999     til 1001]
 eq '1e-9'     show [1e-9    til 1e-8]
 eq '9999999'  show [9999999 til 1e7]
 eq '10000000' show [1e7     til 9999999 by -1]
+eq '1 2 3'    show [1       til 3.00001]
 
 eq '0.5 0.75 1' show [0.5 til 1.2 by 0.25]
 
@@ -446,13 +422,13 @@ eq 'y u q m i e' show [\y til \a by -4]
 
 ok [\\u2028 to \\u2029]
 
-throws 'range limit exceeded on line 2' -> LiveScript.tokens '\n[0 to 1 by 1e-5]'
-throws 'empty range on line 2'          -> LiveScript.tokens '\n[1 to 0]'
-throws 'empty range on line 2'          -> LiveScript.tokens '\n[1 til 1]'
-throws 'empty range on line 2'          -> LiveScript.tokens '\n[2 to 3 by -1]'
-throws 'bad "to" in range on line 2'    -> LiveScript.tokens '\n[0 to "q"]'
-throws 'bad "by" in range on line 2'    -> LiveScript.tokens '\n[0 to 9 by "2"]'
-throws 'bad string in range on line 2'  -> LiveScript.tokens '\n["a" to "bc"]'
+compileThrows 'range limit exceeded' 2 '\n[0 to 1 by 1e-5]'
+compileThrows 'empty range' 2 '\n[1 to 0]'
+compileThrows 'empty range' 2 '\n[1 til 1]'
+compileThrows 'empty range' 2 '\n[2 to 3 by -1]'
+compileThrows 'bad "to" in range' 2 '\n[0 to "q"]'
+compileThrows 'bad "by" in range' 2 '\n[0 to 9 by "2"]'
+compileThrows 'bad string in range' 2 '\n["a" to "bc"]'
 
 
 ### Misc

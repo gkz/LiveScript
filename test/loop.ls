@@ -51,16 +51,18 @@ eq void, do -> while 0 then return
 
 
 # Basic array comprehensions.
-nums    = for n in [1, 2, 3] then n * n if n &&& 1
+nums    = for n in [1, 2, 3] then n * n if n .&. 1
 results = [n * 2 for n in nums]
 
 eq results + '', '2,18'
+
+eq 11 [x for x to 10]length
 
 
 # Basic 'of' comprehensions.
 obj   = {one: 1, two: 2, three: 3}
 names = [prop + '!' for prop of obj]
-odds  = for prop, value of obj then prop + '!' if value &&& 1
+odds  = for prop, value of obj then prop + '!' if value .&. 1
 
 eq names.join(' '), 'one! two! three!'
 eq odds. join(' '), 'one! three!'
@@ -191,7 +193,7 @@ eq func()[0], 3
 
 i = 6
 odds = while i--
-  continue unless i &&& 1
+  continue unless i .&. 1
   i
 eq '5,3,1', '' + odds
 
@@ -219,24 +221,32 @@ new -> do ~>
     1
 
 
-throws    'stray break on line 1' -> LiveScript.compile \break
-throws 'stray continue on line 1' -> LiveScript.compile \continue
+compileThrows 'stray break'    1 \break
+compileThrows 'stray continue' 1 \continue
 
 
 # Play nice with implicit calls.
 ok true, while 0 then
 ok [] = for i to 0 then
 
+for i from Number 2 to Number 3 by Number 4 then void
+eq 6 i
 
-### Line folding after `for` prepositions
-for x of
-   {2}
-  for y in
-     [3] by
-     -1
-    for z from
-        5 til
-        6
+let i, j = i
+  eq ...for k to 1 then i
+
+
+### Line folding before/after `for` prepositions
+for x
+of   {2}
+  for y
+  in [3]
+    for z
+    from
+      5
+    to
+      7 by
+      11
       eq x*y*z, 30
 
 
@@ -245,6 +255,11 @@ for x of
 them = []
 until them.1 then them.push(->)
 eq ...them
+
+them = []
+until them.1 then them.push((x, y) --> x + y)
+eq 5 them.1(2) 3
+
 
 
 ### IIFE Scoping
@@ -308,7 +323,7 @@ i = 0; evens = [i while i < 9, i += 2]
 eq '0,2,4,6,8' ''+evens
 
 i = 1; odds = until i > 9, ++i
-  continue unless i &&& 1
+  continue unless i .&. 1
   i
 eq '1,3,5,7,9' ''+odds
 
@@ -324,6 +339,13 @@ for cond in [true false]
     break
   else
     ok not cond
+
+r = for i from 0 to 9
+  while i .&. 1
+    break
+  else if i .&. 2
+    i
+eq '2,6' ''+r
 
 r = for i til 1 then i else [9]
 eq 0 r.0

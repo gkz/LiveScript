@@ -46,11 +46,10 @@ ok x is not o.x , 'should copy o.x'
 ok y is not o[y], 'should copy o[y]'
 
 
-throws 'splatting "new" on line 1' -> LiveScript.compile 'new C ...a'
-throws 'splatting "new" on line 1' -> LiveScript.compile 'new C ...'
+compileThrows 'splatting "new"' 1 'new C ...a'
+compileThrows 'splatting "new"' 1 'new C ...'
 
-throws 'multiple splat in an assignment on line 1'
-     , -> LiveScript.compile '[...a, ...b] = c'
+compileThrows 'multiple splat in an assignment' 1 '[...a, ...b] = c'
 
 
 class Thisplat
@@ -80,7 +79,7 @@ eq '0.0', 0.toFixed ...[1]
 
 # Multiple splats in the same chain.
 o =
-  f: -> @a.push ...@@; this
+  f: -> @a.push ...arguments; this
   a: [1]
 
 o.f(...o.a).f(...o.a)

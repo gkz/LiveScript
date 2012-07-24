@@ -45,13 +45,13 @@ global import
 
 args     = process.argv.slice 2
 filename = args.0 in <[ -f --slakefile ]> and args.splice(0 2)1 or \Slakefile
-path.exists filename, rec = (affirmative) ->
+fs.exists filename, :rec(affirmative) ->
   unless affirmative
     if process.cwd! is \/
       console.error 'no "%s"' filename
       process.exit 1
     process.chdir \..
-    return path.exists filename, rec
+    return fs.exists filename, rec
   optparse = require \./optparse
   LiveScript.run slurp(filename), {filename}
   Options := optparse Flags, args

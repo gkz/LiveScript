@@ -5,7 +5,7 @@ eq 'one;\ntwo;', LiveScript.compile 'one\r\ntwo' bare
 
 
 # Tab characters should work.
-eq '_(_);', LiveScript.compile '\n\t_\t_\t\n' bare
+eq '_(__);', LiveScript.compile '\n\t_\t__\t\n' bare
 
 
 # `{\eval}` forces the last value to be returned.
@@ -16,18 +16,19 @@ __ref = o.k, delete o.k, __ref;
 ''' LiveScript.compile 'delete o.k' {\eval, +bare}
 
 
-throws 'missing `"` on line 2' -> LiveScript.lex '\n"\n'
+compileThrows 'missing `"`' 2 '\n"\n'
 
-throws 'unterminated string on line 3'    , -> LiveScript.lex "\n\n'\n"
-throws 'unterminated words on line 3'     , -> LiveScript.lex '\n\n<[\n'
+compileThrows 'unterminated string'     3 "\n\n'\n"
+compileThrows 'unterminated words'      3 '\n\n<[\n'
 
-throws 'contaminated indent %20 on line 2'    -> LiveScript.lex '1\n\t 2'
-throws 'unmatched dedent (1 for 2) on line 3' -> LiveScript.lex '1\n  2\n 3'
+compileThrows 'contaminated indent %20'    2 '1\n\t 2'
+compileThrows 'contaminated indent %09'    3 ' 1\n  2\n\t3'
+compileThrows 'unmatched dedent (1 for 2)' 3 '1\n  2\n 3'
 
-throws 'unmatched `)` on line 2' -> LiveScript.lex '()\n)'
-throws 'unmatched `]` on line 3' -> LiveScript.lex '[{\n\n]}'
+compileThrows 'unmatched `)`' 2 '()\n)'
+compileThrows 'unmatched `]`' 3 '[{\n\n]}'
 
-throws 'missing `)CALL` on line 1' -> LiveScript.lex 'f('
+compileThrows 'missing `)CALL`' 1 'f('
 
 
 throws '''
@@ -56,11 +57,13 @@ while (0) {
 ''', LiveScript.compile 'while 0 then while 0 then {} = ({}; {}); break' bare
 
 
-throws 'invalid use of null on line 1', -> LiveScript.compile 'null.po'
+
+compileThrows 'invalid use of null' 1 'null.po'
 
 
-throws 'deprecated octal literal 0666 on line 1' ,-> LiveScript.tokens '0666'
-throws 'invalid number 8 in base 8 on line 1'    ,-> LiveScript.tokens '8~8'
+compileThrows 'deprecated octal literal 0666' 1 '0666'
+compileThrows 'invalid number 8 in base 8'    1 '8~8'
+
 
 
 tokens = LiveScript.lex '''
@@ -159,17 +162,32 @@ eq 1, __proto__ = 1
 λ = -> 七 = 7
 eq λ(), 7
 
-throws 'invalid identifier "♪" on line 1' -> LiveScript.compile 'ƒ ♪ ♯'
+compileThrows 'invalid identifier "♪"' 1 'ƒ　♪　♯'
 
 
-# [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)
-eq '''
-(function(){});
-null;
-''' LiveScript.compile '''
--> void;
-null
+# - [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)
+# - Ignore top-level `void`s.
+eq '(function(){});' LiveScript.compile '''
+  -> void;
+  void;
+  void
 ''' bare
 
 # Dash seperated identifiers
 throws "Parse error on line 1: Unexpected 'ID'" -> LiveScript.compile 'a--b = 1'
+
+throws "Inconsistent use of encodeURL as encode-u-r-l on line 1" -> LiveScript.compile 'encode-URL is encode-u-r-l'
+
+
+# Optimize concat [#72](https://github.com/gkz/LiveScript/issues/72)
+eq '[1].concat([2], [3], [4]);' LiveScript.compile '[1] +++ [2] +++ [3] +++ [4]' bare
+
+# Error when attempting to curry a funciton using splats [#91](https://github.com/gkz/LiveScript/issues/91)
+compileThrows 'cannot curry a function with a variable number of arguments' 1 '(...args) --> args[0]'
+
+# Optimize/clean compose [#101](https://github.com/gkz/LiveScript/issues/101)
+eq '__compose([j, h, g, f]);' (LiveScript.compile 'f >> g >> h >> j' bare).split(\\n).0
+eq '__compose([f, g, h, j]);' (LiveScript.compile 'f << g << h << j' bare).split(\\n).0
+
+# destructuring assign sugar
+compileThrows 'invalid assign' 1 '{a **= b} = c'

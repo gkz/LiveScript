@@ -1,9 +1,18 @@
+# util curried funcs
+filter(f, xs) = [x for x in xs when f x]
+even(x) = x % 2 == 0
+map(f, xs) = [f x for x in xs]
+fold(f, memo, xs) =
+  for x in xs
+    memo = f memo, x
+  memo
+
 # Newline suppression for binary operators.
 eq 32,
   1 *
   2 +
   3 -
-  4 <<<<<
+  4 .<<.
   5
 
 if  false
@@ -12,8 +21,8 @@ and null
 ?   false
 !?  true
   eq 3 1
-     &&& 2
-     ||| 3
+     .&. 2
+     .|. 3
 else ok 0 'leading logical/bitwise operators should continue lines'
 
 
@@ -26,7 +35,7 @@ ok 10 < 20 > 10
 
 ok 50 > 10 > 5 is parseInt('5', 10)
 
-eq 1, 1 ||| 2 < 3 < 4
+eq 1, 1 .|. 2 < 3 < 4
 
 ok 1 == 1 <= 1, '`x == y <= z` should become `x == y && y <= z`'
 
@@ -40,8 +49,8 @@ eq 1, (1 unless 1 < 0 == 0)
 # (In)equality
 a = 1
 b = '1'
-ok a === b
-ok not a !== b
+ok a ~= b
+ok not a !~= b
 ok not (a == b)
 ok not (a is  b)
 ok a !=  b
@@ -178,27 +187,29 @@ eq c, 3
 
 
 # Bitwise operators:
-eq (10 &&&   3), 2
-eq (10 |||   3), 11
-eq (10 ^^^   3), 9
-eq (10 <<<<< 3), 80
-eq (10 >>>>  3), 1
-eq (10 >>>>> 3), 1
+eq (10 .&.   3), 2
+eq (10 .|.   3), 11
+eq (10 .^.   3), 9
+eq (10 .<<.  3), 80
+eq (10 .>>.  3), 1
+eq (10 .>>>. 3), 1
 
-num = 10; eq (num = num ^^^ 3), 9
+num = 10; eq (num .<<.=  3), 80
+num = 10; eq (num .>>.=  3), 1
+num = 10; eq (num .>>>.= 3), 1
+num = 10; eq (num .&.=   3), 2
+num = 10; eq (num .^.=   3), 9
+num = 10; eq (num .|.=   3), 11
 
-#coffee-737: `in` should have higher precedence than logical operators.
+# [coffee#737](https://github.com/jashkenas/coffee-script/issues/737)
 eq 1, 1 in [1] && 1
 
-#coffee-768: `in` should preserve evaluation order.
+# [coffee#768](https://github.com/jashkenas/coffee-script/issues/768)
 share = 0
 a = -> share++ if share is 0
 b = -> share++ if share is 1
 c = -> share++ if share is 2
 ok a() not in [b(),c()] and share is 3
-
-# `in` with cache and `__indexOf` should work in commaed lists.
-eq [Object() in Array()].length, 1
 
 
 # Operators should respect new lines as spaced.
@@ -280,10 +291,6 @@ eq '''
 
 ok ok.isPrototypeOf new []= (->) <<< prototype: ok
 
-new
-  import life: 2, universe: 3, everything: 7
-  eq @life * @universe * @everything, 42
-
 f = ->
   import it
 <<< new: -> new this it
@@ -307,6 +314,14 @@ o = {}
 eq o? <<< {4}, o
 eq 4 o.4
 
+# Declaration Form
+new
+  import life: 2, (universe: 3)
+  import all
+    everything: 7
+    new class then answer: 42
+  eq @life * @universe * @everything, @answer
+
 
 ### {in,de}crement
 a = [0]
@@ -325,8 +340,8 @@ eq a.0++ *  2, 2
 eq a.0-- /  2, 1
 ok a.0++ != 2
 
-throws 'increment of undeclared variable "C" on line 1' -> LiveScript.compile 'C++'
-throws 'invalid decrement on line 1' -> LiveScript.compile 'q.=p--'
+compileThrows 'increment of undeclared "C"' 1 'C++'
+compileThrows 'invalid decrement'           1 'q.=p--'
 
 
 ### `delete`
@@ -339,8 +354,8 @@ O = ->
 eq delete (o = new O)[new O], 7
 eq o[7], void
 
-throws 'invalid delete on line 1' -> LiveScript.compile 'delete a'
-throws 'invalid delete on line 1' -> LiveScript.compile 'delete a.=b'
+compileThrows 'invalid delete' 1 'delete a'
+compileThrows 'invalid delete' 1 'delete a.=b'
 
 
 ### [[Class]] sniffing
@@ -349,7 +364,7 @@ eq \RegExp typeof! /^/
 
 ### Pow
 eq -256, -2**2**3  # -((2)**(2**3))
-eq -256, -2^2^3  
+eq -256, -2^2^3
 eq 17, 1+2*2**3  # 1+(2*(2**3))
 eq 32, 2*4**2
 eq 32, 2*4^2
@@ -393,17 +408,6 @@ eq o.c * o.d, 14
 
 
 ### Pipe
-Array 0 |>> _.concat 1, 2
-        |>> _ <<<   {3: 4}
-        |>> eq '1,2,,4' "#_"
-
-String 0
-|>> if _ then _+_ else _*_
-|>> eq \00 _
-
-eq void,
-  -> |>> _ _ |>> _
-
 reverse = -> it.split '' .reverse! * ''
 upCase  = -> it.toUpperCase!
 
@@ -412,6 +416,12 @@ eq \OLLEH ('hello' |> reverse |> upCase)
 eq \OLLEH (upCase <| reverse <| \hello)
 
 eq 8 ((+ 2) << (* 2) <| 3)
+
+x = 3 |> (- 2) |> ([\a \b \c].)
+eq \b x
+
+x = [1, 2, 3, 4, 5] |> filter even |> map (* 2) |> fold (+), 0
+eq 12 x
 
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
@@ -429,38 +439,13 @@ eq '8,9' ''+ -~[7 8]
 
 
 ### Overloaded
-a = [0 1]
-b = ''
-c = [2 3]
-
-#### Concat
-eq '0,1,2' String a + [2]
-eq '3,4,5' String [3 4] + {0: 5, length: 1}
-eq '0,1' ''+ b += [0 1]
-ok b instanceof a..
-
-x = [6]
-y = [7 to 10]
-[[] ...x, []] += y
-eq '6,8,9' ''+ x
-
-x += for i til 2 then i
-eq '6,8,9,0,1' ''+ x
-
-##### +++
-eq '0,1,2,3' String a +++ c
-eq '0,1,5'   String a +++ 5
-
-##### &
-eq '0,2,3' String 0 & c
-eq '1,2,3' String 1 & 2 & 3
-ok not (true & [true] and false) # precedence 
+a = b = [0 1]
 
 #### Join
 eq '0==1' a * \==
 eq '0101' [... a] * 2 * ''
 eq '(01)' <[( )]> * "#{a * ''}"
-eq '0@@1' (-> @@ * \@@) 0 1
+eq '0@@1' (-> arguments * \@@) 0 1
 eq '0.1' b *= \.
 eq '0.1' b
 
@@ -476,6 +461,43 @@ eq "#{ x = ''+ Math.random() }"/'.'*'.' x
 eq '0,1' ''+ b /= /\D/
 eq '0,1' ''+ b
 
+### Repeat
+x = \x
+n = 4
+eq ''    'x'*0
+eq \x    'x'*1
+eq \xx   "x"*2
+eq \xxx  \x *3
+eq \xxxx \x *n
+eq ''    "#{x}" * 0
+eq \x    "#{x}" * 1
+eq \xx   "#{x}" * 2
+eq \xxx  "#{x}" * 3
+eq \xxxx "#{x}" * n
+
+i = -1
+eq ''    ''+ [i++]*0
+eq '0'   ''+ [i++]*1
+eq '1,1' ''+ [i++]*2
+eq '2,3,2,3,2,3' ''+ [i++, i++] * 3
+eq '4,5,4,5,4,5' ''+ [i++, i++] * (n-1)
+
+a = [1]
+eq '0,1,0,1' ''+ [0 ...a] * 2
+eq '1,1,1,1' ''+ [  ...a] * n
+eq '1,1,1,1' ''+ a[0 , 0] * 2
+eq '1,1,1,1' ''+ a[0 ...] * n
+
+eq '0,1,0,1' ''+ [i for i to 1] * 2
+eq '0,0,0,0' ''+ [i for i to 0] * n
+
+a = [0 1]
+c = [2 3]
+
+##### +++
+eq '0,1,2,3' String a +++ c
+eq '0,1,5'   String a +++ 5
+
 ### Mod
 eq -3, -3 % 4
 eq 1, -3 %% 4
@@ -489,18 +511,18 @@ eq -1 x
 addTwo = (+ 2)
 eq 5 addTwo 3
 eq 7 (+) 3, 4
-eq 3 (+)(1) 2 
+eq 3 (+)(1) 2
 eq 3 (1+) 2
 
-eq 2 (-)(4) 2 
+eq 2 (-)(4) 2
 eq 4 (- 5) 9
 eq -4 (5-) 9
 
 eq -2 (-2) # not spaced, not paritally applied
 eq 2 (+2)
 
-ok (===) '2' 2
-ok (!== 2) 9
+ok (~=) '2' 2
+ok (!~= 2) 9
 
 ok (2 ==) 2
 ok (!=) 2 '2'
@@ -552,10 +574,6 @@ eq 8 (^) 2 3
 eq 8 (2**) 3
 eq 8 (^3) 2
 
-eq '1,2,3' "#{ (&) 1 [2 3] }"
-eq '1,2,3' "#{ (1&) [2 3]  }"
-eq '1,2,3' "#{ (&[2 3]) 1  }"
-
 eq '1,2,3' "#{ (+++) [1] [2 3] }"
 eq '1,2,3' "#{ ([1]+++) [2 3]  }"
 eq '1,2,3' "#{ (+++[2 3]) [1]  }"
@@ -589,6 +607,59 @@ eq 1 obj.a
 eq 2 obj.b
 eq 3 obj.c
 
+obj-with = (obj with)
+obj2 = obj-with a: 9
+
+eq 1 obj.a
+eq 9 obj2.a
+eq 2 obj2.b
+
+withObj2 = (with obj2)
+obj3 = withObj2 d: 6
+
+ok obj2.d!?
+eq 6 obj3.d
+eq 9 obj3.a
+
+f-with = (with)
+obj4 = (with) obj, {a: 0}
+
+eq 1 obj.a
+eq 0 obj4.a
+eq 2 obj4.b
+
+
+eq 5 (<|) (+ 2), 3
+eq 5 (<| 3) (+ 2)
+eq 5 ((+ 2) <|) 3
+
+eq 5 (|>) 3 (+ 2)
+eq 5 (|> (+ 2)) 3
+eq 5 (3 |>) (+ 2)
+
+eq 5 (<| 3 2 ) (+)
+eq 5 (3 2 |>) (+)
+
+eq 2 (.&.) 10 3
+eq 2 (10 .&.) 3
+eq 2 (.&. 3) 10
+
+x = 2
+(x +=) 2
+eq 4 x
+
+(x -=) 3
+eq 1 x
+
+(x :=) 5
+eq 5 x
+
+eq \--- (\- *) 3
+eq '4,2' "#{ (/ '') 42 }"
+
+x = 10
+eq 12 (x +) 2
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)
@@ -598,11 +669,143 @@ eq 4 (++) x # does not actually modify x
 eq 2 (--) x
 eq 4 (++).call(null, x)
 
-filter(f, xs) = [x for x in xs when f x]
-even(x) = x % 2 == 0
 eq '1,3,5' "#{ filter (not) << even, [1 to 5] }"
 
-eq 2 (&&&) 10 3
-eq 2 (10 &&&) 3
-eq 2 (&&& 3) 10
 eq '1,3,5' "#{filter ((<<) (not), even), [1 to 5] }"
+
+### cloneport
+personA =
+  name: \matias
+  age:  20
+  job:  'a cool job'
+
+personB = personA with name: \john
+
+eq \john   personB.name
+eq \matias personA.name
+
+personC = personA with
+  name: \amy
+  age:  19
+  hair: \blonde
+
+eq \amy    personC.name
+eq 19      personC.age
+eq \blonde personC.hair
+eq \matias personA.name
+eq 20      personA.age
+ok personA.hair!?
+
+
+### xor
+ok not (0 xor 0)
+ok not (1 xor 1)
+ok (0 xor 1)
+ok (1 xor 0)
+
+x = -> 1
+y = -> 0
+ok not (y! xor y!)
+ok not (x! xor x!)
+ok (y! xor x!)
+ok (x! xor y!)
+
+ok (x 0 xor y!)
+
+eq 'moo' (0 xor 'moo')
+
+### Regex overloaded ==
+if /[aeuio]*/ == 'ee'
+  eq 'ee' that.0
+else
+  ok 0
+
+if /moo/ != 'loo'
+  ok 1
+else
+  ok 0
+
+### Deep Equals
+NaN === NaN
+/moo/gi === /moo/gi
+
+xs  = [1 to 5]
+obj = {+opt, -goo, inp: \haha}
+
+ok [1 2 3 4 5] === xs
+ok not ([1 2 8 4 5] === xs)
+ok not ([1 2 3 4 6] === xs)
+
+ok not ([1 2 3 4 5] !== xs)
+ok [1 2 8 4 5] !== xs
+ok [1 2 3 4 6] !== xs
+
+ok not ([1 2 3 4 5] <<= xs)
+ok [1 2 3] <<= xs
+
+ok [1 2 3] <== xs
+ok [1 2 3 4 5] <== xs
+ok not ([1 2 3 4 5 6] <== xs)
+
+ok [1 2 3 4 5 6] >== xs
+ok [1 2 3 4 5] >== xs
+ok not ([1 2 3 4] >== xs)
+
+ok not ([1 2 3 4 5] >>= xs)
+ok [1 2 3 4 5 6] >>= xs
+
+ok {opt: true, goo: false, inp: 'haha'} === obj
+ok not ({opt: false, goo: false, inp: 'haha'} === obj)
+ok not ({opt: true, goo: false} === obj)
+ok not ({opt: true, goo: false, inp: 'haha', da: 4} === obj)
+
+ok not ({opt: true, goo: false, inp: 'haha'} !== obj)
+ok {opt: false, goo: false, inp: 'haha'} !== obj
+ok {opt: true, goo: false} !== obj
+ok {opt: true, goo: false, inp: 'haha', da: 4} !== obj
+
+ok {opt: true, goo: false} <<= obj
+ok not ({opt: true, goo: false, inp: 'haha'} <<= obj)
+
+ok {opt: true, goo: false} <== obj
+ok {opt: true, goo: false, inp: 'haha'} <== obj
+ok not ({opt: true, goo: false, inp: 'haha', da: 6} <== obj)
+
+ok {opt: true, goo: false, inp: 'haha', moo: 45} >>= obj
+ok not ({opt: true, goo: false, inp: 'haha'} >>= obj)
+
+ok {opt: true, goo: false, inp: 'haha', moo: 45} >== obj
+ok {opt: true, goo: false, inp: 'haha'} >== obj
+ok not ({opt: true, goo: false} >== obj)
+
+ok [[4, 3] {name: \moo, k: [NaN]} /[ae]/g] === [[4, 3] {name: \moo, k: [NaN]} /[ae]/g]
+ok !([[4, 3] {name: \mooo, k: [NaN]} /[ae]/g] === [[4, 3] {name: \moo, k: [NaN]} /[ae]/g])
+
+ok [[4, 3] {name: \noo, k: [NaN]} /[ae]/g] <== [[4, 3] {name: \noo, k: [NaN]} /[ae]/g]
+ok [[4, 3] {name: \loo, k: [NaN]}] <== [[4, 3] {name: \loo, k: [NaN]} /[ae]/g]
+
+ok [[4, 3] {name: \koo, k: [NaN]}] <<= [[4, 3] {name: \koo, k: [NaN]} /[ae]/g]
+ok !([[4, 3] {name: \moo, k: [NaN]} /[ae]/g] <<= [[4, 3] {name: \moo, k: [NaN]} /[ae]/g])
+
+ok [1, _, 3]      === [1 2 3]
+ok {a: 1, b:_}    === {a: 1, b: 2}
+ok {a: [1, _, 3]} === {a: [1 4 3]}
+ok {a: {b: _}}    === {a: {b: 9}}
+ok [9 [1, _, 3]]  === [9 [1 4 3]]
+
+
+### Calling binary logic
+f = (- 1)
+g = (+ 1)
+h = (- 1)
+even = -> it % 2 == 0
+odd = (not) . even
+
+eq 2 (f or g) 1
+eq 1 (f or g) 2
+ok not (f and g) 1
+eq 2 (f or h or g) 1
+ok (even or 1) 2
+ok (odd or 2) 2
+ok not (even or 1) 3
+ok ((.length > 4) or [1 2 3]) [1 2 3]

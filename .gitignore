@@ -1,7 +1,9 @@
 t.*
+bench.ls
 test/*.js
 *#
 extras/*.raw.js
 doc/*.raw.js
 *.swp
 .DS_Store
+node_modules
