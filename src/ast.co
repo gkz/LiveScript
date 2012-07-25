@@ -1952,7 +1952,11 @@ class exports.Vars extends Node
 
 exports.L = (yylineno, node) -> node import line: yylineno + 1
 
-exports.Decl =
+exports.Decl = (type, nodes, lno) ->
+  throw SyntaxError "empty #type on line #lno" unless nodes.0
+  DECLS[type] nodes
+
+DECLS =
   export: (lines) ->
     i = -1; out = Util \out
     while node = lines[++i]

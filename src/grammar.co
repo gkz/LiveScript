@@ -220,7 +220,7 @@ bnf =
     o 'LABEL Block'      ditto
 
     # `var`, `const`, `export`, or `import`
-    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl[$1] $3
+    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl $1, $3, yylineno+1
 
   Exprs:
     o         \Expression  -> [$1]
