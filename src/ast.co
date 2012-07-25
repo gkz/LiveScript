@@ -303,8 +303,8 @@ class exports.Literal extends Atom
     return JS "#value" true if value.js
     return new Super        if value is \super
 
-  isEmpty    : -> switch @value case \void \null then true
-  isCallable : -> switch @value case \this \eval then true
+  isEmpty    : -> @value of <[ null void   ]>
+  isCallable : -> @value of <[ this eval & ]>
   isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt!
   isRegex    : -> "#{@value}"charAt! is \/
   isComplex  : -> @isRegex! or @value is \debugger
@@ -323,6 +323,7 @@ class exports.Literal extends Atom
     case \debugger then if level
       return "(function(){\n#TAB#{o.indent}debugger;\n#{o.indent}}())"
     case \* then @carp 'stray star'
+    case \& then @carp 'stray cascadee' unless val = o.cascadee
     val
 
 #### Var
@@ -1901,6 +1902,21 @@ class exports.Label extends Node
     "#label: " + if it instanceof Block
       then o.indent += TAB; @compileBlock o, it
       else it.compile o
+
+#### Cascade
+#
+class exports.Cascade extends Node
+  (@target, @block) ->
+
+  children: <[ target block ]>
+
+  terminator: ''
+
+  compileNode: (o) ->
+    @temps = [ref = o.scope.temporary \x]
+    t = ref + ' = ' + @target.compile o, LEVEL_LIST
+    b = @block.compile o <<< cascadee: ref
+    if o.level then "(#t, #b)" else "#t;\n#b"
 
 #### JS
 # Embedded JavaScript snippets.

@@ -12,7 +12,6 @@ and null
 ?   false
 !?  true
   eq 3 1
-     & 2
      | 3
 else ok 0 'leading logical/bitwise operators should continue lines'
 
