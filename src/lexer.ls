@@ -289,9 +289,9 @@ exports import
     comment = if ~end = code.indexOf \*/ index+2
               then code.slice index, end+2
               else code.slice(index) + \*/
-    if @last.0 in <[ NEWLINE INDENT THEN => ]>
-    then @token \COMMENT detab comment, @dent; @token \NEWLINE \\n
-    else @last.spaced = true
+    if @last.0 in <[ NEWLINE INDENT THEN ]>
+      @token \COMMENT detab comment, @dent
+      @token \NEWLINE \\n
     @countLines(comment)length
 
   # Matches a regular expression literal aka _regex_,

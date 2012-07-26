@@ -33,13 +33,13 @@
     @traverseChildren !->
       switch it.value
       | \this      => hasThis := true
-      | \arguments => hasArgs := it.value = \__args
+      | \arguments => hasArgs := it.value = \args$
     if hasThis
       call.args.push Literal \this
       call.method = \.call
     if hasArgs
       call.args.push Literal \arguments
-      fun.params.push Var \__args
+      fun.params.push Var \args$
     # Flag the function as `wrapper` so that it shares a scope
     # with its parent to preserve the expected lexical scope.
     Parens(Chain fun<<<{+wrapper, @void} [call]; true)compile o
@@ -517,7 +517,7 @@ class exports.Chain extends Node
   #
   # compiles to
   #
-  #     (__ref = a())[__key = b()] || (__ref[__key] = c);
+  #     (ref$ = a())[key$ = b()] || (ref$[key$] = c);
   #
   cacheReference: (o) ->
     name = @tails[*-1]
@@ -761,10 +761,10 @@ class exports.Obj extends List
         # `o{k or v}` => `{k: a.k or v}`
         node.=first if logic = node.getDefault!
         if node instanceof Parens
-          # `a{(++i)}` => `{(__ref = ++i): a[__ref]}`
+          # `a{(++i)}` => `{(ref$ = ++i): a[ref$]}`
           [key, node] = node.cache o, true
-          # `a{(++i)} = b` => `{(__ref): a[__ref = ++i]} = b`
-          #                => `a[__ref = ++i] = b[__ref]`
+          # `a{(++i)} = b` => `{(ref$): a[ref$ = ++i]} = b`
+          #                => `a[ref$ = ++i] = b[ref$]`
           [key, node] = [node, key] if assign
           key = Parens key
         else key = node
@@ -908,7 +908,7 @@ class exports.Unary extends Node
             node <<< {\new, method: ''}
             return it
       case \~ then if it instanceof Fun and it.statement and not it.bound
-        return it <<< bound: \__this
+        return it <<< bound: \this$
     import {op, it}
 
   children: [\it]
@@ -1172,7 +1172,7 @@ class exports.Binary extends Node
     # `'x' * 2` => `'xx'`
     else if x instanceof Literal
       (q = (x.=compile o)charAt!) + "#{ x.slice 1 -1 }" * n + q
-    # `"#{x}" * 2` => `(__ref = "" + x) + __ref`
+    # `"#{x}" * 2` => `(ref$ = "" + x) + ref$`
     else
       if n < 1 then return Block(x.it)add(JS "''")compile o
       x = (refs = x.cache o, 1, LEVEL_OP)0 + " + #{refs.1}" * (n-1)
@@ -1204,7 +1204,7 @@ class exports.Binary extends Node
     vit = Var \it
     switch
     case  @first!? and @second!?
-      x = Var \__x; y = Var \__y
+      x = Var \x$; y = Var \y$
       (Fun [x, y], Block((Binary @op, x, y).invertCheck this), false, true).compile o
     case @first?
       "(#{ (Fun [vit], Block((Binary @op, @first, vit) .invertCheck this)).compile o })"
@@ -1309,7 +1309,7 @@ class exports.Assign extends Node
       del = right.op is \delete
       if op is \=
         o.scope.declare name, left,
-          (@const or not @defParam and o.const and \__ isnt name.slice 0 2)
+          (@const or not @defParam and o.const and \$ isnt name.slice -1)
       else if o.scope.checkReadOnly name
         left.carp "assignment to #that \"#name\"" ReferenceError
     if o.level
@@ -1530,7 +1530,7 @@ class exports.Existence extends Node implements Negatable
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Block!, @bound and \__this, @curried or false) ~>
+  (@params or [], @body or Block!, @bound and \this$, @curried or false) ~>
 
   children: <[ params body ]>
 
@@ -1562,13 +1562,13 @@ class exports.Fun extends Node
     o.indent += TAB
     {body, name, tab} = this
     code = \function
-    if @bound is \__this
+    if @bound is \this$
       if @ctor
-        scope.assign \__this 'this instanceof __ctor ? this : new __ctor'
-        body.add Return Literal \__this
+        scope.assign \this$ 'this instanceof ctor$ ? this : new ctor$'
+        body.add Return Literal \this$
       else if sscope.fun?bound
       then @bound = that
-      else sscope.assign \__this \this
+      else sscope.assign \this$ \this
     if @statement
       name                    or @carp  'nameless function declaration'
       pscope is o.block.scope or @carp 'misplaced function declaration'
@@ -1590,7 +1590,7 @@ class exports.Fun extends Node
     if @returns
       code += "\n#{tab}return #name;"
     else if @bound and @ctor
-      code += ' function __ctor(){} __ctor.prototype = prototype;'
+      code += ' function ctor$(){} ctor$.prototype = prototype;'
     code = curry-code-check!
     if @front and not @statement then "(#code)" else code
 
@@ -1888,10 +1888,10 @@ class exports.While extends Node
     {body: {lines}, yet, tab} = this
     code = ret = ''
     if @returns
-      @body = Block @body.makeObjReturn \__results if @objComp
+      @body = Block @body.makeObjReturn \results$ if @objComp
       @body = If @guard, @body if @guard and @objComp
       empty = if @objComp then '{}' else '[]'
-      lines[*-1]?=makeReturn res = o.scope.assign \__results empty
+      lines[*-1]?=makeReturn res = o.scope.assign \results$ empty
       ret = "\n#{@tab}return #{ res or empty };"
       @else?makeReturn!
     yet and lines.unshift JS "#yet = false;"
@@ -1963,7 +1963,7 @@ class exports.For extends While
         else idx + if pvar < 0
           then ' -= ' + pvar.slice 1
           else ' += ' + pvar
-    @own and head += ") if (#{ o.scope.assign \__own '{}.hasOwnProperty' }
+    @own and head += ") if (#{ o.scope.assign \own$ '{}.hasOwnProperty' }
                             .call(#svar, #idx)"
     head += ') {'
     @infuseIIFE!
@@ -1995,7 +1995,7 @@ class exports.For extends While
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Node
-  (@attempt, @thrown ? \__e, @recovery, @ensure) ->
+  (@attempt, @thrown, @recovery, @ensure) ->
 
   children: <[ attempt recovery ensure ]>
 
@@ -2014,12 +2014,16 @@ class exports.Try extends Node
 
   compileNode: (o) ->
     o.indent += TAB
-    code = "try #{@compileBlock o, @attempt}"
+    code = 'try ' + @compileBlock o, @attempt
     if @recovery or not @ensure
-      o.scope.check(v = @thrown or \e) or o.scope.add v, \catch
-      code += " catch (#v) #{ @compileBlock o, @recovery }"
-    if @ensure
-      code += " finally #{ @compileBlock o, @ensure }"
+      code += ' catch (e$) {'
+      if @recovery
+        code += \\n + o.indent +
+                o.scope.declare(@thrown or \e, this) + ' = e$;'
+        code += \\n + that if @recovery.compile o
+        code += \\n + @tab
+      code += \}
+    code += ' finally ' + @compileBlock o, that if @ensure
     code
 
 #### Switch
@@ -2250,7 +2254,11 @@ class exports.Vars extends Node
 
 exports.L = (yylineno, node) -> node import line: yylineno + 1
 
-exports.Decl =
+exports.Decl = (type, nodes, lno) ->
+  throw SyntaxError "empty #type on line #lno" unless nodes.0
+  DECLS[type] nodes
+
+DECLS =
   export: (lines) ->
     i = -1; out = Util \out
     while node = lines[++i]
@@ -2318,13 +2326,14 @@ Scope ::=
   assign: (name, value) -> @add name, {value}
 
   # If we need to store an intermediate result, find an available name for a
-  # compiler-generated variable. `__var`, `__var2`, and so on.
+  # compiler-generated variable. `var$`, `var2$`, and so on.
   temporary: (name || \ref) ->
     i = 0
     do
-      temp = \__ + if name.length > 1
-        then name + (i++ || '')
-        else (i++ + parseInt name, 36)toString 36
+      temp = "#{
+        if name.length > 1 then name + (i++ || '')
+                           else (i++ + parseInt name, 36)toString 36
+      }$"
     until @variables"#temp." in [\reuse void]
     @add temp, \var
 
@@ -2417,7 +2426,7 @@ UTILS =
     return f.length > 1 ? function(){
       var params = args ? args.concat() : [];
       return params.push.apply(params, arguments) < f.length && arguments.length ?
-        __curry.call(this, f, params) : f.apply(this, params);
+        curry$.call(this, f, params) : f.apply(this, params);
     } : f;
   }'''
 
@@ -2430,16 +2439,16 @@ UTILS =
   }'''
 
   flip: '''function(f){
-    return __curry(function (x, y) { return f(y, x); });
+    return curry$(function (x, y) { return f(y, x); });
   }'''
 
   partialize: '''function(f, args, where){
     return function(){
-      var params = __slice.call(arguments), i,
+      var params = slice$.call(arguments), i,
           len = params.length, wlen = where.length,
           ta = args ? args.concat() : [], tw = where ? where.concat() : [];
       for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
-      return len < wlen && len ? __partialize(f, ta, tw) : f.apply(this, ta);
+      return len < wlen && len ? partialize$(f, ta, tw) : f.apply(this, ta);
     };
   }'''
   not: '''function(x){ return !x; }'''
@@ -2566,6 +2575,6 @@ SIMPLENUM = /^\d+$/
 ##### Helpers
 
 # Declares a utility function at the top level.
-function util then Scope.root.assign \__ + it, UTILS[it]
+function util then Scope.root.assign it+\$ UTILS[it]
 
 function entab code, tab then code.replace /\n/g \\n + tab

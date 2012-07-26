@@ -103,7 +103,7 @@ bnf =
     o '( BACKTICK Chain BACKTICK )'            -> Chain $3
     o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
     o '( BACKTICK Chain BACKTICK Expression )'
-    , -> Chain(Chain Var \__flip .add Call [$3]).flipIt!add Call [$5]
+    , -> Chain(Chain Var \flip$ .add Call [$3]).flipIt!add Call [$5]
 
     o '[ Expression TO Expression ]'
     , -> Chain new For from: $2, op: $3, to: $4
@@ -156,7 +156,7 @@ bnf =
 
   # A list of lines, separated by newlines or semicolons.
   Lines:
-    o ''                   -> Block!
+    o ''                   -> L Block!
     o \Line                -> Block $1
     o 'Lines NEWLINE Line' -> $1.add $3
     o 'Lines NEWLINE'
@@ -282,7 +282,7 @@ bnf =
     o 'LABEL Block'      ditto
 
     # `var`, `const`, `export`, or `import`
-    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl[$1] $3
+    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl $1, $3, yylineno+1
 
   Exprs:
     o         \Expression  -> [$1]

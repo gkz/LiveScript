@@ -82,6 +82,7 @@ let
 
 compileThrows 'invalid variable declaration' 2 'var\n  0'
 compileThrows 'redeclaration of "a"'         2 '(a) ->\n  var a'
+compileThrows 'empty var'                    2 '\nvar'
 
 
 ### with const flag
@@ -97,6 +98,5 @@ eq '''(function(n){
   return n + 1;
 });''' LiveScript.compile '(n = 2) -> n + 1' {+\const, +bare}
 
-eq '''var __ref;
-1 < 2 && 2 === (__ref = 4 / 2) && __ref > 0;''' LiveScript.compile '1 < 2 == 4/2 > 0' {+\const, +bare}
-
+eq '''var ref$;
+1 < 2 && 2 === (ref$ = 4 / 2) && ref$ > 0;''' LiveScript.compile '1 < 2 == 4/2 > 0' {+\const, +bare}
