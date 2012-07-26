@@ -92,12 +92,12 @@
       <div id="overview" class="section">
         <a name="overview"></a>
         <h2>Overview</h2>
-        <p>LiveScript is a language which compiles down to JavaScript. It is a fork of <a href="http://satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="http://coffeescript.org/">CoffeeScript</a>. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript is Coco but much more compatible with CoffeeScript, more functional, and more feature rich. LiveScript aims for increased expressiveness and code beauty.
+        <p>LiveScript is a language which compiles to JavaScript. It is a fork of <a href="http://satyr.github.com/coco/">Coco</a> which is in turn derived from <a href="http://coffeescript.org/">CoffeeScript</a>. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript is Coco but much more compatible with CoffeeScript, more functional, and more feature rich. LiveScript aims for increased expressiveness and code beauty.
         <p>While adding features to assist in functional style programming, LiveScript also deeply supports imperative and object oriented programming, and has an optional class system with inheritance, calls to super, and more.
         <div class="major-actions">
-          <h3 class="download">0.9.12:</h3>
-          <a href="https://github.com/gkz/LiveScript/zipball/0.9.12"><div class="btn btn-large btn">zip</div></a>
-          <a href="https://github.com/gkz/LiveScript/tarball/0.9.12"><div class="btn btn-large btn">tar.gz</div></a>
+          <h3 class="download">1.0.0:</h3>
+          <a href="https://github.com/gkz/LiveScript/zipball/1.0.0"><div class="btn btn-large btn">zip</div></a>
+          <a href="https://github.com/gkz/LiveScript/tarball/1.0.0"><div class="btn btn-large btn">tar.gz</div></a>
           <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn-primary">View project on GitHub</div></a>
           <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="150" height="40"></iframe>
           <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://gkz.github.com/LiveScript/" data-text="LiveScript - functional CoffeeScript" data-size="large" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
@@ -108,39 +108,35 @@
         <p>Featured blog post: <strong><a href="blog/functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript - Part 2</a></strong>
         <p>Double-click an example to load it into the compiler/repl. CoffeeScript users check out the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
       <h3>Some Examples</h3>
+      <p>Unnested callbacks and parentheses free chaining:
       <div class="example">
         <div class="example-ls">
-          <h5>LiveScript</h5>
+        <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# Unnested callbacks and paren free chaining
 <-! $ \h1 .on \click
 alert \boom!
-# Double click to load, then hit 
-# Run and click the LiveScript logo
 </pre>
         </div>
         <div class="example-js">
-          <h5>JavaScript</h5>
+        <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-
 $('h1').on('click', function(){
   alert('boom!');
 });
-
-
 </pre>
         </div>
       </div>
+      <p>Curried functions, implicit switch, the concat operator, and function composition:
       <div class="example">
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# Curried functions, implicit switch, and 
-# concat operator
 take(n, [x, ...xs]:list) =
   | n <= 0     => []
   | empty list => []
   | otherwise  => [x] +++ take n - 1, xs
+
+
 
 
 
@@ -153,7 +149,7 @@ take 2, [1 2 3 4 5] #=> [1, 2]
 takeThree = take 3
 takeThree [3 to 8] #=> [3, 4, 5]
 
-# Function composition, reverse from prelude.ls
+# Function composition, 'reverse' from prelude.ls
 lastThree = reverse >> takeThree >> reverse
 lastThree [1 to 8] #=> [6, 7, 8]
 </pre>
@@ -161,10 +157,10 @@ lastThree [1 to 8] #=> [6, 7, 8]
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var take, takeThree, lastThree, __slice = [].slice;
-take = __curry(function(n, list){
+var take, takeThree, lastThree, slice$ = [].slice;
+take = curry$(function(n, list){
   var x, xs;
-  x = list[0], xs = __slice.call(list, 1);
+  x = list[0], xs = slice$.call(list, 1);
   switch (false) {
   case !(n <= 0):
     return [];
@@ -180,17 +176,21 @@ takeThree = take(3);
 takeThree([3, 4, 5, 6, 7, 8]);
 
 
-lastThree = __compose((__compose((reverse),(takeThree))),(reverse));
+lastThree = compose$([reverse, takeThree, reverse]);
 lastThree([1, 2, 3, 4, 5, 6, 7, 8]);
-function __curry(f, args){
+function curry$(f, args){
   return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
     return params.push.apply(params, arguments) < f.length && arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
+      curry$.call(this, f, params) : f.apply(this, params);
   } : f;
 }
-function __compose(f, g){
-  return function(){ return f(g.apply(this, arguments)); }
+function compose$(fs){
+  return function(){
+    var i, args = arguments;
+    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+    return args[0];
+  };
 }
 </pre>
         </div>
@@ -217,8 +217,8 @@ table2 =
   * id: 3
     age: 26
 
-# Implicit arg, accessignment
-upCaseName = -> it.name.=toUpperCase!
+# Implicit access, accessignment
+upCaseName = (.name.=toUpperCase!)
 
 # Curried functions using -->
 sortBy = (prop, list) --> list.sort (a, b) -> 
@@ -237,7 +237,6 @@ sortBy = (prop, list) --> list.sort (a, b) ->
 |> sortBy \id
 |> each upCaseName # using 'each' from prelude.ls
 |> JSON.stringify
-
 #=>
 #[{"id":1,"name":"GEORGE","age":20},
 # {"id":2,"name":"MIKE",  "age":21},
@@ -265,8 +264,8 @@ fold1 (+) <| map (.age), table2
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var table1, table2, upCaseName, sortBy,
-    id1, name, id2, age;
+var table1, table2, upCaseName,
+    sortBy, id1, name, id2, age;
 table1 = [
   { id: 1,
     name: 'george' },
@@ -286,8 +285,7 @@ table2 = [
 upCaseName = function(it){
   return it.name = it.name.toUpperCase();
 };
-
-sortBy = __curry(function(prop, list){
+sortBy = curry$(function(prop, list){
   return list.sort(function(a, b){
     switch (false) {
     case !(a[prop] < b[prop]):
@@ -303,13 +301,13 @@ JSON.stringify(
 each(upCaseName)(
 sortBy('id')(
 (function(){
-  var __i, __ref, __len, __ref1, __j, __len1, __ref2, __results = [];
-  for (__i = 0, __len = (__ref = table1).length; __i < __len; ++__i) {
-    __ref1 = __ref[__i], id1 = __ref1.id, name = __ref1.name;
-    for (__j = 0, __len1 = (__ref1 = table2).length; __j < __len1; ++__j) {
-      __ref2 = __ref1[__j], id2 = __ref2.id, age = __ref2.age;
+  var i$, ref$, len$, ref1$, j$, len1$, ref2$, results$ = [];
+  for (i$ = 0, len$ = (ref$ = table1).length; i$ < len$; ++i$) {
+    ref1$ = ref$[i$], id1 = ref1$.id, name = ref1$.name;
+    for (j$ = 0, len1$ = (ref1$ = table2).length; j$ < len1$; ++j$) {
+      ref2$ = ref1$[j$], id2 = ref2$.id, age = ref2$.age;
       if (id1 === id2) {
-        __results.push({
+        results$.push({
           id: id1,
           name: name,
           age: age
@@ -317,21 +315,20 @@ sortBy('id')(
       }
     }
   }
-  return __results;
+  return results$;
 }()))));
-fold1(__curry(function(__x, __y){
-  return __x + __y;
+fold1(curry$(function(x$, y$){
+  return x$ + y$;
 }))(map(function(it){
   return it.age;
-},table2));
-function __curry(f, args){
+}, table2));
+function curry$(f, args){
   return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
     return params.push.apply(params, arguments) < f.length && arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
+      curry$.call(this, f, params) : f.apply(this, params);
   } : f;
 }
-
 </pre>
         </div>
       </div>
@@ -340,7 +337,7 @@ function __curry(f, args){
     <div id="installation" class="section">
       <a name="installation"></a>
       <h2>Installation</h2>
-      <p>To install LiveScript on your system, download it (<a href="https://github.com/gkz/LiveScript/zipball/0.9.12">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/0.9.12">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
+      <p>To install LiveScript on your system, download it (<a href="https://github.com/gkz/LiveScript/zipball/1.0.0">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.0.0">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
       <p>You can install it through the <a href="http://npmjs.org">Node Package Manager</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
       <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates.</p>
     </div>
@@ -352,6 +349,8 @@ function __curry(f, args){
       <table class="usage-options table table-striped table-bordered">
         <tr><td>-i, --interactive</td><td>start REPL; use ^J for multiline input</td></tr>
         <tr><td>-c, --compile</td><td>compile to JavaScript and save as .js files</td></tr>
+        <tr><td>-d, --prelude</td><td>automatically import prelude.ls</td></tr>
+        <tr><td>-k, --const</td><td>compile all variables as constants</td></tr>
         <tr><td>-o, --output DIR</td><td>compile into the specified directory</td></tr>
         <tr><td>-w, --watch</td><td>watch scripts for changes, and repeat</td></tr>
         <tr><td>-s, --stdin</td><td>read stdin</td></tr>
@@ -366,8 +365,6 @@ function __curry(f, args){
         <tr><td>-n, --nodejs ARGS+</td><td>pass options through to the "node" binary</td></tr>
         <tr><td>-v, --version</td><td>display version</td></tr>
         <tr><td>-h, --help</td><td>display this</td></tr>
-        <tr><td>-d, --prelude</td><td>automatically import prelude.ls</td></tr>
-        <tr><td>-k, --const</td><td>compile all variables as constants</td></tr>
       </table>
     </div>
     <div id="community" class="section">
@@ -2675,7 +2672,7 @@ TOTAL    851 ms
       <h2>Changes from Coco: Detail and Rationale</h2>
       <ul>
       <li>Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other projects are named LiveScript. Slake because lake was taken and lsake sounds bad. 
-      <li>Switched so that <code>==</code> compiles into <code>===</code> and the converse, and also for the negatives. Rationale: Most people would want to use the JavaScript <code>===</code> more often than <code>==</code> and less typing is better, also this makes things more similar to CoffeeScript which compiles <code>==</code> to <code>===</code> so there is less code for people to change coming from CoffeeScript. The compilation of <code>is</code> to <code>===</code> stays the same.
+      <li>Switched so that <code>==</code> compiles into <code>===</code>, and also for the negatives. Rationale: Most people would want to use the JavaScript <code>===</code> more often than <code>==</code> and less typing is better, also this makes things more similar to CoffeeScript which compiles <code>==</code> to <code>===</code> so there is less code for people to change coming from CoffeeScript. The compilation of <code>is</code> to <code>===</code> stays the same.
       <li>Switched <code>in</code> and <code>of</code> so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: People have to change less of their CoffeeScript code, they're used to it, and using <code>in</code> for checking if a value is in an array just seems right, using <code>of</code> just feels weird.
       <li>All bitwise operators except <code>~</code> have changed to be surrounded by dots, eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>. Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. 
       <li><code>=></code>, the pipe operator using <code>_</code>, is removed. Free up => (for <code>then</code> alias), (<code>|</code> is used as an alias for case). Use other pipes (<code>|></code>) and partial application instead.
@@ -2722,6 +2719,7 @@ TOTAL    851 ms
       <li>Changed so that constructors are inherited. Rationale: useful, and more like in CoffeeScript.
       <li>Allowed empty class definitions, ie. with no block. Rationale: useful and more like CoffeeScript.
       <li>Bound methods are bound to the instance, not the class. Rationale: seems pretty useless to be bound to the class, so this is more useful. Also more like CoffeeScript.
+      <li>See the <a href="#changelog">changelog</a> for more things from version 1.0.0 and beyond
       </ul>
     </div>
     <div id="changelog" class="section">
