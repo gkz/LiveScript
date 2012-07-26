@@ -19,6 +19,8 @@ global import
 {$args} = o = require(\./optparse) do
   interactive : 'start REPL; use ^J for multiline input'
   compile     : 'compile to JavaScript and save as .js files'
+  prelude     :['automatically import prelude.ls' '' \d]
+  const       :['compile all variables as constants' '' \k]
   output      :['compile into the specified directory' \DIR]
   watch       : 'watch scripts for changes, and repeat'
   stdin       : 'read stdin'
@@ -33,8 +35,6 @@ global import
   nodejs      :['pass options through to the "node" binary' \ARGS+ '']
   version     : 'display version'
   help        : 'display this'
-  prelude     :['automatically import prelude.ls' '' \d]
-  const       :['compile all variables as constants' '' \k]
 
 die "Unrecognized option(s): #that\n\n#{help!}" if o.$unknowns * ' '
 
