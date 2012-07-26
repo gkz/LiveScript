@@ -2728,6 +2728,26 @@ TOTAL    851 ms
       <a name="changelog"></a>
       <h2>Changelog</h2>
       <p>For more details see <a href="#changes">Changes from Coco</a>
+      <h3>1.0.0</h3>
+      <ul>
+        <li>Nicer compilation for the compose op
+        <li>The <code>--prelude</code>/<code>-d</code> flags work for the repl
+        <li>New func syntax eg. <code>f(x) = x</code> now uses <code>~</code> for bound funcs, liked named funcs, eg. <code>~f(x) = x</code>
+        <li>Removed no return option for new func syntax
+        <li>Added function keyword arguments ala python, eg. <code>f = ({x = 2, y = 3}) -> x + y</code>, and then application with <code>f y: 4</code>
+        <li>Removed overloading of <code>+</code> for list concatination (just use <code>+++</code>)
+        <li>Readded bitwise compound assign, eg. <code>.&.=</code>
+        <li>Added <code>where</code>, like <code>let</code> but comes after instead of before
+        <li>Changed fuzzy equals (<code>==</code> in JS) to <code>~=</code>, <code>!~=</code> for the negation
+        <li>Added <code>xor</code> operator, exclusive or - true if only one side or the other is true
+        <li>Doing equals on a regex literal will compile to an exec, eg. <code>x == /[ae]/g</code> is <code>/[ae]/g.exec(x)</code> - you can use <code>that</code> to get the results if used in an if statement. The negation simply uses test.
+        <li>Binary logic is callable, eg. <code>(f or g) x</code> is <code>f(x) || g(x)</code>
+        <li>Allow splicing like in CoffeeScript, eg. <code>list[1 to x] = [1 2 3]</code>
+        <li>Static functions are now inherited and support calls to <code>super</code>
+        <li>Generated reference variables are now named with a <code>$</code> after them instead of <code>__</code> preceding. eg. <code>ref$</code> instead of <code>__ref</code>
+        <li>Added deep compare, allows the comparison of objects, arrays, and more. <code>===</code> - experimental
+        <li>Added <code>match</code> statement - experimental
+      </ul>
       <h3>0.9.12</h3>
       <ul>
         <li>Changed bitwise/shift operator syntax to be more clear. Now simply as in JS, but surrounded by dots. Eg. <code>&</code> is <code>.&.</code>, and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>
