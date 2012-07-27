@@ -164,6 +164,8 @@ bnf =
   Line:
     o \Expression
 
+    o 'Expression Block' -> new Cascade $1, $2
+
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
     , -> Call.back $2, $6, $5.charAt(1) is \~, $5.length is 3
 

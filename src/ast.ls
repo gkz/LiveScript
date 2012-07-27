@@ -175,14 +175,14 @@
   # String representation of the node for inspecting the parse tree.
   # This is what `livescript --ast` prints out.
   toString: (idt or '') ->
-    tree  = \\n + idt + @..displayName
+    tree  = \\n + idt + @constructor.displayName
     tree += ' ' + that if @show!
     @eachChild !-> tree += it.toString idt + TAB
     tree
 
   # JSON serialization
   stringify : (space) -> JSON.stringify this, null space
-  toJSON    : -> {type: @..displayName, ...this}
+  toJSON    : -> {type: @constructor.displayName, ...this}
 
 # JSON deserialization
 exports.parse    = (json) -> exports.fromJSON JSON.parse json
@@ -325,8 +325,8 @@ class exports.Literal extends Atom
     return JS "#value" true if value.js
     return new Super        if value is \super
 
-  isEmpty    : -> switch @value | \void \null => true
-  isCallable : -> switch @value | \this \eval => true
+  isEmpty    : -> @value in <[ void null ]>
+  isCallable : -> @value in <[ this eval .. ]>
   isString   : -> 0 <= '\'"'indexOf "#{@value}"charAt!
   isRegex    : -> "#{@value}"charAt! is \/
   isComplex  : -> @isRegex! or @value is \debugger
@@ -352,6 +352,7 @@ class exports.Literal extends Atom
     | \on \yes   => val = 'true'
     | \off \no   => val = 'false'
     | \*         => @carp 'stray star'
+    | \..        => @carp 'stray cascadee' unless val = o.cascadee
     | \debugger  => if level
       return "(function(){\n#TAB#{o.indent}debugger;\n#{o.indent}}())"
     val
@@ -879,9 +880,9 @@ class exports.Arr extends List
 
   @maybe = (nodes) ->
     return nodes.0 if nodes.length is 1 and nodes.0 not instanceof Splat
-    .. nodes
+    constructor nodes
 
-  @wrap = -> .. [Splat it <<< isArray: YES]
+  @wrap = -> constructor [Splat it <<< isArray: YES]
 
 #### Unary operators
 class exports.Unary extends Node
@@ -924,7 +925,7 @@ class exports.Unary extends Node
 
   invert: ->
     return @it if @op is \! and @it.op in <[ ! < > <= >= of instanceof ]>
-    .. \! this, true
+    constructor \! this, true
 
   unfoldSoak: (o) ->
     @op in <[ ++ -- delete ]> and @it? and If.unfoldSoak o, this, \it
@@ -975,12 +976,12 @@ class exports.Unary extends Node
   # `^delete o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
   compileSpread: (o) ->
     {it} = this; ops = [this]
-    while it instanceof .., it.=it then ops.push it
+    while it instanceof constructor, it.=it then ops.push it
     return '' unless it.=expandSlice(o)unwrap! instanceof Arr
                  and (them = it.items)length
     for node, i in them
       node.=it if sp = node instanceof Splat
-      for op in ops by -1 then node = .. op.op, node, op.post
+      for op in ops by -1 then node = constructor op.op, node, op.post
       them[i] = if sp then lat = Splat node else node
     if not lat and (@void or not o.level)
       it = Block(them) <<< {@front, +void}
@@ -1347,7 +1348,7 @@ class exports.Assign extends Node
     else if (ret or len > 1) and (not ID.test rite or left.assigns rite)
       cache = "#{ rref = o.scope.temporary! } = #rite"
       rite  = rref
-    list = @"rend#{ left..displayName }" o, items, rite
+    list = @"rend#{ left.constructor.displayName }" o, items, rite
     o.scope.free rref  if rref
     list.unshift cache if cache
     list.push rite     if ret or not list.length
@@ -2151,7 +2152,7 @@ class exports.If extends Node
     o.indent += TAB
     code += @compileBlock o, Block @then
     return code unless els = @else
-    code + ' else ' + if els instanceof ..
+    code + ' else ' + if els instanceof constructor
       then els.compile o <<< indent: @tab, LEVEL_TOP
       else @compileBlock o, els
 
@@ -2203,6 +2204,21 @@ class exports.Label extends Node
     "#label: " + if it instanceof Block
       then o.indent += TAB; @compileBlock o, it
       else it.compile o
+
+#### Cascade
+#
+class exports.Cascade extends Node
+  (@target, @block) ->
+
+  children: <[ target block ]>
+
+  terminator: ''
+
+  compileNode: (o) ->
+    @temps = [ref = o.scope.temporary \x]
+    t = ref + ' = ' + @target.compile o, LEVEL_LIST
+    b = @block.compile o <<< cascadee: ref
+    if o.level then "(#t, #b)" else "#t;\n#b"
 
 #### JS
 # Embedded JavaScript snippets.
@@ -2326,16 +2342,13 @@ Scope ::=
   assign: (name, value) -> @add name, {value}
 
   # If we need to store an intermediate result, find an available name for a
-  # compiler-generated variable. `var$`, `var2$`, and so on.
+  # compiler-generated variable. `var$`, `var1$`, and so on.
   temporary: (name || \ref) ->
-    i = 0
-    do
-      temp = "#{
-        if name.length > 1 then name + (i++ || '')
-                           else (i++ + parseInt name, 36)toString 36
-      }$"
-    until @variables"#temp." in [\reuse void]
-    @add temp, \var
+    until @variables"#name\$." in [\reuse void]
+      name = if name.length < 2 and name < \z
+        then String.fromCharCode name.charCodeAt! + 1
+        else name.replace /\d*$/ -> ++it
+    @add name + \$, \var
 
   # Allows a variable to be reused.
   free: (name) -> @add name, \reuse

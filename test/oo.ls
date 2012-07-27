@@ -235,12 +235,11 @@ ok new Sup.Sub instanceof Sup
 new class extends Object
   eq ::, prototype
   eq ::, @::
-  eq .., constructor
-  eq .., @
+  eq constructor, @
   ok super is superclass is Object
   ->
-    eq ::, @..::
-    eq .., @..
+    eq ::, @constructor::
+    eq constructor, @constructor
 
 
 # `extended` hook

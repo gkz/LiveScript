@@ -213,7 +213,7 @@ switch
   prompt += " -#that" if \b * !!o.bare + \c * !!o.compile
   LiveScript.history = rl.history if LiveScript?
   unless o.compile
-    module.paths = module.._nodeModulePaths \
+    module.paths = module.constructor._nodeModulePaths \
       module.filename = process.cwd! + \/repl
     vm = require \vm
     global <<< {module, exports, require}

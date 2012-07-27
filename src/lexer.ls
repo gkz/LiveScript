@@ -422,6 +422,7 @@ exports import
     case \++ \--         then tag = \CREMENT
     case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
+    case \..             then tag = \LITERAL
     case \.
       create-it-func! if @last.0 is \(
       @last.0 = \? if @last.1 is \?
@@ -540,13 +541,21 @@ exports import
         else break
         return 1
       tag = \UNARY
+    case \&
+      unless able @tokens
+        tag = \LITERAL
+        break
+      fallthrough
+    case \| then tag = \BITWISE
     case \~
       return 1 if @dotcat val
       tag = \UNARY
     case \-> \~> \--> \~~> then up = \->; fallthrough
     case \<- \<~ \<-- \<~~ then @parameters tag = up || \<-
-    case \::     then up = \prototype; fallthrough
-    case \..     then @adi!; tag = \ID; val = up || \constructor
+    case \::
+      @adi!
+      val = \prototype
+      tag = \ID
     default switch val.charAt 0
     case \( then @token \CALL( \(; tag = \)CALL; val = \)
     case \<
@@ -1128,7 +1137,7 @@ SYMBOL = //
 | <[-~]                         # backcall
 | [!=]==?                       # strict equality, deep equals
 | !?\~=                         # fuzzy equality
-| @@                            # autovivification
+| @@                            # autovivification, constructor
 | <\[(?:[\s\S]*?\]>)?           # words
 | <<<<?                         # import
 | <\|                           # backpipe

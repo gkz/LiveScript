@@ -433,3 +433,18 @@ compileThrows 'bad string in range' 2 '\n["a" to "bc"]'
 
 ### yadayadayada
 throws \unimplemented -> ...
+
+
+### Cascade
+a = [2 7 1 8]
+  ..push 2
+  ..shift!
+  ..sort!
+eq '1,2,7,8' ''+a
+
+eq 10, do
+  1 + 2
+    .. + 3
+      4 + ..
+
+compileThrows 'stray cascadee' 2 '\n..'
