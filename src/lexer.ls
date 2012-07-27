@@ -220,7 +220,7 @@ exports import
     if tag in <[ COMPARE LOGIC RELATION ]> and last.0 is \(
       tag = if tag is \RELATION then \BIOPR else \BIOP
     @unline! if tag in <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
-                          IN OF FROM TO BY EXTENDS IMPLEMENTS ]>
+                          IN OF FROM TO BY EXTENDS IMPLEMENTS WHERE ]>
     @token tag, id
     input.length
 

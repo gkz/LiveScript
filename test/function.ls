@@ -489,6 +489,22 @@ eq 5 x + y where x = 2, y = 3
 eq 5 x + y where x = 2,
                  y = 3
 
+r = x + y where
+  x = 2
+  y = 3
+eq 5 r
+
+r = x + y
+  where
+    x = 2
+    y = 3
+eq 5 r
+
+r = x + y
+  where x = 2,
+        y = 3
+eq 5 r
+
 
 ### `with`
 with o = {}
