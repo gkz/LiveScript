@@ -1137,7 +1137,7 @@ SYMBOL = //
 | <[-~]                         # backcall
 | [!=]==?                       # strict equality, deep equals
 | !?\~=                         # fuzzy equality
-| @@                            # autovivification, constructor
+| @@                            # autovivification
 | <\[(?:[\s\S]*?\]>)?           # words
 | <<<<?                         # import
 | <\|                           # backpipe
