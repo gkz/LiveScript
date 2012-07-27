@@ -182,8 +182,8 @@ bnf =
 
   # All the different types of expressions in our language.
   Expression:
-    o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.let $4, Block [$1]
-    o 'Expression WHERE Block' -> Chain Call.let $3.lines, Block [$1]
+    o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.where $4, Block [$1]
+    o 'Expression WHERE Block' -> Chain Call.where $3.lines, Block [$1]
 
     o 'Chain CLONEPORT Expression'
     , -> Import (Unary \^^ $1, prec: \UNARY), $3,         false

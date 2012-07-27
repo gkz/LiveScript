@@ -505,6 +505,11 @@ r = x + y
         y = 3
 eq 5 r
 
+r = x + y
+  where x = 2,
+        y = x + 1
+eq 5 r
+
 
 ### `with`
 with o = {}

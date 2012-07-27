@@ -711,6 +711,15 @@ class exports.Call extends Node
     args.unshift Literal \this
     @block Fun(params, body), args, \.call
 
+  @where = (args, body) ->
+    lines = [a for a in args when a.op is \= and not a.logic]
+    params = for a, i in args
+      if a.op is \= and not a.logic
+      then args[i] = Literal \void; a.left
+      else Var a.varName! || a.carp 'invalid "let" argument'
+    args.unshift Literal \this
+    @block Fun(params, Block lines +++ body.lines), args, \.call
+
 #### List
 # An abstract node for a list of comma-separated items.
 class List extends Node
