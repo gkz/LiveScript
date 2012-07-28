@@ -1280,7 +1280,7 @@ class exports.Assign extends Node
   unfoldAssign: -> @access and this
 
   compileNode: (o) ->
-    return @compileSplice o if @left instanceof Slice
+    return @compileSplice o if @left instanceof Slice and @op is \=
     left = @left.expandSlice(o, true)unwrap!
     unless @right
       left.isAssignable! or left.carp 'invalid unary assign'
