@@ -16,6 +16,23 @@ body {
 .container-fluid {
   padding: 0;
 }
+h1 {
+  margin-bottom: 20px;
+  margin-left: 20px;
+}
+h1 img {
+  margin-top: -27px;
+  margin-left: 5px;
+}
+h1 a {
+  font-size: 34px;
+  line-height: 40px;
+  text-shadow: #1A3A4D 0 1px 0;
+  color: #317EAC;
+}
+h1 a:hover {
+  text-decoration: none;
+}
 .sidebar {
   background-image: url(images/groovepaper.png);
   background-attachment: static;
@@ -24,23 +41,6 @@ body {
   border-right: 1px solid #cccccc;
   padding-top: 25px;
   overflow-y: auto;
-}
-.sidebar h1 {
-  margin-bottom: 20px;
-  margin-left: 20px;
-}
-.sidebar h1 img {
-  margin-top: -27px;
-  margin-left: 5px;
-}
-.sidebar h1 a {
-  font-size: 34px;
-  line-height: 40px;
-  text-shadow: #1A3A4D 0 1px 0;
-  color: #317EAC;
-}
-.sidebar h1 a:hover {
-  text-decoration: none;
 }
 .sidebar .nav {
   margin-left: 20px;
@@ -118,10 +118,10 @@ body {
   margin-top: 4px;
 }
 .content .section {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 .content h3 {
-  margin-top: 10px;
+  margin-top: 15px;
 }
 .content p,
 .content ul {

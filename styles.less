@@ -19,6 +19,26 @@ body {
 
 @dividing-border: 1px solid #ccc;
 
+@margin-left: 20px;
+h1 {
+  margin-bottom: 20px;
+  margin-left: @margin-left;
+  
+  img {
+    margin-top: -27px; 
+    margin-left: 5px;
+  }
+  a {
+    font-size: 34px;
+    line-height: 40px;
+    text-shadow: #1A3A4D 0 1px 0;
+    color: #317EAC;
+    &:hover {
+      text-decoration: none; 
+    }
+  }
+}
+
 .sidebar {
   background-image: url(images/groovepaper.png);
   background-attachment: static;
@@ -26,27 +46,7 @@ body {
   height: 100%;
   border-right: @dividing-border;
   padding-top: 25px;
-  @margin-left: 20px;
   overflow-y: auto;
-
-  h1 {
-    margin-bottom: 20px;
-    margin-left: @margin-left;
-    
-    img {
-      margin-top: -27px; 
-      margin-left: 5px;
-    }
-    a {
-      font-size: 34px;
-      line-height: 40px;
-      text-shadow: #1A3A4D 0 1px 0;
-      color: #317EAC;
-      &:hover {
-        text-decoration: none; 
-      }
-    }
-  }
 
   .nav {
     margin-left: @margin-left;
@@ -125,10 +125,10 @@ body {
     }
   }
   .section {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
   }
   h3 {
-    margin-top: 10px;
+    margin-top: 15px;
   }
   p, ul { 
     margin-top: 5px;
