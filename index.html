@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset='utf-8'>
-<title>LiveScript</title>
+<title>LiveScript - a language which compiles to JavaScript</title>
 <meta name='description' content="LiveScript is a language that compiles down to JavaScript. It is a fork of Coco, which is in turn derived from CoffeeScript. LiveScript is Coco that is much more compatible with CoffeeScript, more functional, and more feature rich.">
 
 <link rel="icon" type="image/png" href="images/icon.png">
@@ -2722,7 +2722,15 @@ TOTAL    851 ms
       <li>Changed so that constructors are inherited. Rationale: useful, and more like in CoffeeScript.
       <li>Allowed empty class definitions, ie. with no block. Rationale: useful and more like CoffeeScript.
       <li>Bound methods are bound to the instance, not the class. Rationale: seems pretty useless to be bound to the class, so this is more useful. Also more like CoffeeScript.
-      <li>See the <a href="#changelog">changelog</a> for more things from version 1.0.0 and beyond
+      <li>Added function keyword arguments like in python. Rationale: useful.
+      <li>Added a exclusive or <code>xor</code> operator. Rationale: logic completeness.
+      <li>Binary logic is callable. Ratioanle: useful.
+      <li>Allow splicing like in CoffeeScript. Rationale: easier transition, useful.
+      <li>Overloaded equals when using regex to mean exec/test. Rationale: shorter.
+      <li>Static functions are inherited. Rationale: as in CoffeeScript - ease transition.
+      <li>Removed the constructor shorthand. Rationale: rarely useful, use it for cascade instead.
+      <li>Changed cascade op from <code>&</code> to <code>..</code>. Rationale: like in other languages.
+      <li>Added match statement and deep compare. Rationale: experimental, will see if good.
       </ul>
     </div>
     <div id="changelog" class="section">
@@ -2738,7 +2746,7 @@ TOTAL    851 ms
         <li>Added function keyword arguments ala python, eg. <code>f = ({x = 2, y = 3}) -> x + y</code>, and then application with <code>f y: 4</code>
         <li>Removed overloading of <code>+</code> for list concatination (just use <code>+++</code>)
         <li>Readded bitwise compound assign, eg. <code>.&.=</code>
-        <li>Added <code>where</code>, like <code>let</code> but comes after instead of before
+        <li>Added <code>where</code>, like <code>let</code> but comes after instead of before - also allows for nested assignments
         <li>Changed fuzzy equals (<code>==</code> in JS) to <code>~=</code>, <code>!~=</code> for the negation
         <li>Added <code>xor</code> operator, exclusive or - true if only one side or the other is true
         <li>Doing equals on a regex literal will compile to an exec, eg. <code>x == /[ae]/g</code> is <code>/[ae]/g.exec(x)</code> - you can use <code>that</code> to get the results if used in an if statement. The negation simply uses test.
@@ -2746,6 +2754,8 @@ TOTAL    851 ms
         <li>Allow splicing like in CoffeeScript, eg. <code>list[1 to x] = [1 2 3]</code>
         <li>Static functions are now inherited and support calls to <code>super</code>
         <li>Generated reference variables are now named with a <code>$</code> after them instead of <code>__</code> preceding. eg. <code>ref$</code> instead of <code>__ref</code>
+        <li>Removed constructor shorthand, just use <code>constructor</code>
+        <li>Added cascade op from coco <code>..</code>
         <li>Added deep compare, allows the comparison of objects, arrays, and more. <code>===</code> - experimental
         <li>Added <code>match</code> statement - experimental
       </ul>
