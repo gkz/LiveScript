@@ -1864,8 +1864,8 @@ class exports.While extends Node
     @body.lines.length = 0 if top?verb is \continue and not top.label
     this
 
-  addGuard: (@guard) -> this
-  addObjComp: -> @objComp = true; this
+  addGuard:   (@guard)          -> this
+  addObjComp: (@objComp = true) -> this
 
   makeReturn: ->
     if it
@@ -1873,6 +1873,8 @@ class exports.While extends Node
         @body = Block @body.makeObjReturn it
         @body = If @guard, @body if @guard
       else
+        unless @body or @index
+          @addBody Block Var @index = \ridx$
         @body.makeReturn it
         @else?makeReturn it
     else

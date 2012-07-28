@@ -54,6 +54,9 @@ eq 3 to
 eq 4 [1 to end].3
 eq 5 [1 to end].length
 
+r = [1 to end]
+eq '1,2,3,4,5' String r
+
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Boolean/Number should be indexable.
 ok 42['toString']
