@@ -555,7 +555,7 @@ x;
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-x = if   2 + 2 == 4
+x = if 2 + 2 == 4
     then 10
     else 0
 x #=> 10
@@ -610,109 +610,477 @@ x = 0
     <div id="literals" class="section">
       <a name="literal"></a>
       <h2>Literals</h2>
+
+      <h3>Numbers</h3>
+
+      <p><code>.4</code> is not valid, it must be preceded with a zero, eg. <code>0.4</code>.
+
       <div class="example">
         <div class="example-ls">
-        <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-## Numbers
 42
 17.34
+0.4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+42;
+17.34;
+0.4;
+</pre>
+        </div>
+      </div>
 
-# Underscores and letters are ignored
+      <p>Underscores and appended letters are ignored.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 64_000km
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+64000;
+</pre>
+        </div>
+      </div>
 
-# Any base can be used from 2 to 36
+      <p>Any base can be used from 2 to 36 using <code>~</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 6~12
 2~1000
 16~ff
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+8;
+8;
+255;
+</pre>
+        </div>
+      </div>
 
-## Boolean
+      <h3>Booleans, Undefined, Null</h3>
+
+      <p>Aliases as in CoffeeScript.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 true
 false
 on
 off
 yes
 no
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+true;
+false;
+true;
+false;
+true;
+false;
+</pre>
+        </div>
+      </div>
 
-## Undefined
+      <p>In JavaScript, <code>undefined</code> can be redefined, so it is prudent to use the <code>void</code> operator which produces the undefined value, always.
+
+      <p><code>void</code> at the top level compiles to nothing (for use as a placeholder) - it must be used as a value to compile.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
 void
-undefined
+x = void
+y = undefined
 
-## Strings
+null
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, y;
+// void compiles to nothing here!
+x = void 8;
+y = void 8;
+
+null;
+</pre>
+        </div>
+      </div>
+
+      <h3>Strings</h3>
+
+      <p>You can use double or single quotes.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 'a string'
+"a string"
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+'a string';
+"a string";
+</pre>
+        </div>
+      </div>
 
-# Strings without whitespace can be written with 
-# a preceding backslash instead of quotes
+
+      <p>Strings without whitespace can be written with a preceding backslash instead of quotes.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 \word
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+'word';
+</pre>
+        </div>
+      </div>
 
-# Double quoted strings are interpolated
+      <p>Double quoted strings allow interpolation. Single quoted strings are passed through as-is. Simple variables can be interpolated without curly braces.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
 "The answer is #{2 + 2}"
+'As #{is}'
 
-# Variables can be interpolated without the braces
 variable = "world"
 "Hello #variable"
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var variable;
+"The answer is " + (2 + 2);
+'As #{is}';
 
-# Multiline strings
-multiline = "string can be multiline 
+variable = "world";
+"Hello " + variable;
+</pre>
+        </div>
+      </div>
+
+      <p>Multiline strings (can also do the same but with double quotes):
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+multiline = 'string can be multiline 
             and go on and on 
             beginning whitespace is 
-            ignored"
+            ignored'
 heredoc = '''
-            string can be multiline 
+            string can be multiline
             with newlines
-            and go on and on 
-            beginning whitespace is 
+            and go on and on
+            beginning whitespace is
             ignored
 '''
-## Comments
-# a single line comment starts with a #
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var multiline, heredoc;
+multiline = 'string can be multiline and go on and on beginning whitespace is ignored';
+
+heredoc = 'string can be multiline\nwith newlines\nand go on and on\nbeginning whitespace is\nignored';
+
+
+
+
+
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Comments</h3>
+
+      <p>Single line comments start off with a <code>#</code>. They are not passed through to the compiled output.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+# single line comment
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+
+</pre>
+        </div>
+      </div>
+
+      <p>Multiline comments are preserved in the output.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 /* multiline comments
    use this format and are preserved
    in the output unlike single line ones
 */
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+/* multiline comments
+   use this format and are preserved
+   in the output unlike single line ones
+*/
+</pre>
+        </div>
+      </div>
 
-## Objects - braces are optional
-person = 
+      <h3>Objects</h3>
+
+      <p>Braces are optional:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+obj = {prop: 1, thing: 'moo'}
+
+
+
+person =
   age:      23
   eyeColor: \green
   height:   180cm
 
-# Dynamic keys
+oneline = color: \blue, heat: 4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj, person, oneline;
+obj = {
+  prop: 1,
+  thing: 'moo'
+};
+person = {
+  age: 23,
+  eyeColor: 'green',
+  height: 180
+};
+oneline = {
+  color: 'blue',
+  heat: 4
+};
+</pre>
+        </div>
+      </div>
+
+      <p>Dynamic keys:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 obj =
   "#variable": 234
   (person.eyeColor): false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, obj;
+obj = (ref$ = {}, ref$[variable + ""] = 234, ref$[person.eyeColor] = false, ref$);
+</pre>
+        </div>
+      </div>
 
-# Flagging shorthand
+      <p>Property setting shorthand - easily set properties with variables if you want the property name to be the same as the variable name.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = 1
+y = 2
+obj = {x, y}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, y, obj;
+x = 1;
+y = 2;
+obj = {
+  x: x,
+  y: y
+};
+</pre>
+        </div>
+      </div>
+
+      <p>Flagging shorthand - easily set boolean properties.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 {+debug, -live}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+({
+  debug: true,
+  live: false
+});
+</pre>
+        </div>
+      </div>
 
-# This
-this 
+      <p>This - no need to use a dot <code>.</code> to access properties.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+this
 @
 @location
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+this;
+this;
+this.location;
+</pre>
+        </div>
+      </div>
 
-## Regex
+      <h3>Regular Expressions</h3>
+
+      <p>Regular regex delineated with a single <code>/</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+/moo/gi
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+/moo/gi;
+</pre>
+        </div>
+      </div>
+
+      <p>Delineated with <code>//</code> - multi-line, comments, spacing!
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 //
 | [!=]==?             # equality
 | @@                  # arguments
 | <\[(?:[\s\S]*?\]>)? # words
 //g
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+/|[!=]==?|@@|<\[(?:[\s\S]*?\]>)?/g;
 
-## Lists
+
+
+
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Lists</h3>
+
+      <p>Regular list literal delineated with brackets:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 [1, person.age, 'French Fries']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+[1, person.age, 'French Fries'];
+</pre>
+        </div>
+      </div>
 
-# Commas are not needed if the item
-# preceding is non callable
+      <p>Commas are not needed if the item preceding is not callable:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 [1 2 3 true void \word 'hello there']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+[1, 2, 3, true, void 8, 'word', 'hello there'];
+</pre>
+        </div>
+      </div>
 
-# Implicit list
-myList = 
+      <p>Implicit lists created with an indented block. They need at least two items for it to work. If you have only one item, you can add a yaddayaddayadda <code>...</code> to force the implicit list.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+myList =
   32 + 1
   person.height
   \beautiful
 
-# Listing using asterisks
+oneItem =
+  1
+  ...
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var myList, oneItem;
+myList = [32 + 1, person.height, 'beautiful'];
+
+
+
+oneItem = [1];
+
+
+
+</pre>
+        </div>
+      </div>
+
+      <p>Listing using asterisks:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 tree =
-  * * 1 
+  * * 1
     * * 2
       * 3
     * 4
@@ -723,145 +1091,124 @@ tree =
       * * 9
         * 10
     * 11
- 
-# List of strings
-<[ list of words ]>
 
-# Ranges 
+objList =
+  * name: \tessa
+    age:  23
+  * name: \kendall
+    age:  19
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var tree, objList;
+tree = [[1, [2, 3], 4], [5, 6, [7, 8, [9, 10]], 11]];
+
+
+
+
+
+
+
+objList = [
+  {
+    name: 'tessa',
+    age: 23
+  }, {
+    name: 'kendall',
+    age: 19
+  }
+];
+</pre>
+        </div>
+      </div>
+
+      <p>Lists of words:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+<[ list of words ]>
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+['list', 'of', 'words'];
+</pre>
+        </div>
+      </div>
+
+      <h3>Ranges</h3>
+
+      <p>With number/string literals:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 [2 to 20 by 3]
 [4 til 6]
 [\A to \D]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+[2, 5, 8, 11, 14, 17, 20];
+[4, 5];
+["A", "B", "C", "D"];
+</pre>
+        </div>
+      </div>
 
-# Labels ':label'
+      <p>With any expression:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = 1
+r = [1 to x]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+      <h3>Misc</h3>
+
+      <p>Labels (useful for nested loops)
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 :label 4 + 2
 </pre>
         </div>
         <div class="example-js">
-        <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-
-42;
-17.34;
-
-
-64000;
-
-
-8;
-8;
-255;
-
-
-true;
-false;
-true;
-false;
-true;
-false;
-
-
-void 8; // evaluates to undefined
-void 8;
-
-
-'a string';
-
-
-
-'word';
-var variable, multiline, heredoc, person, 
-    obj, myList, tree, __ref;
-"The answer is " + (2 + 2);
-
-
-variable = "world";
-"Hello " + variable;
-
-
-multiline = "string can be multiline and go on and on beginning whitespace is ignored";
-
-
-
-
-heredoc = 'string can be multiline \nwith newlines\nand go on and on \nbeginning whitespace is \nignored';
-
-
-
-
-
-/* multiline comments
-   use this format and are preserved
-   in the output unlike single line ones
-*/
-
-
-person = {
-  age: 23,
-  eyeColor: 'green',
-  height: 180
-};
-
-obj = (__ref = {}, __ref[variable + ""] = 234,
-  __ref[person.eyeColor] = false, __ref);
-
-({
-  debug: true,
-  live: false
-});
-
-this;
-this;
-this.location;
-
-
-/|[!=]==?|@@|<\[(?:[\s\S]*?\]>)?/g;
-
-
-
-
-
-
-[1, person.age, 'French Fries'];
-
-
-
-[1, 2, 3, true, void 8, 'word', 'hello there'];
-
-
-myList = [32 + 1, person.height, 'beautiful'];
-
-
-
-
-
-tree = [[1, [2, 3], 4], 
-  [5, 6, [7, 8, [9, 10]], 11]];
-
-
-
-
-
-
-
-
-
-
-
-
-['list', 'of', 'words'];
-
-
-[2, 5, 8, 11, 14, 17, 20];
-[4, 5];
-["A", "B", "C", "D"];
-
 label: {
   4 + 2;
 }
 </pre>
         </div>
       </div>
+
+      <p>Yaddayaddayadda - a placeholder:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+...
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+throw Error('unimplemented');
+</pre>
+        </div>
+      </div>
     </div>
+
     <div id="conditions" class="section">
       <a name="conditions"></a>
       <h2>Conditions</h2>
