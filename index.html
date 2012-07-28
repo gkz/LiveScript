@@ -780,7 +780,7 @@ variable = "world";
         </div>
       </div>
 
-      <p>Multiline strings (can also do the same but with double quotes):
+      <p>Multiline strings (can also do the same but with double quotes for use with interpolation):
 
       <div class="example">
         <div class="example-ls">
@@ -988,7 +988,7 @@ this.location;
         </div>
       </div>
 
-      <p>Delineated with <code>//</code> - multi-line, comments, spacing!
+      <p>Delineated with <code>//</code> - multiline, comments, spacing!
 
       <div class="example">
         <div class="example-ls">
@@ -1164,19 +1164,25 @@ objList = [
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-x = 1
-r = [1 to x]
+x = 4
+r = [1 to x] #=> [1,2,3,4]
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var x, res$, ridx$, r;
+x = 4;
+res$ = [];
+for (ridx$ = 1; ridx$ <= x; ++ridx$) {
+  res$.push(ridx$);
+}
+r = res$;
 </pre>
         </div>
       </div>
       <h3>Misc</h3>
 
-      <p>Labels (useful for nested loops)
+      <p>Labels (useful for nested loops):
 
       <div class="example">
         <div class="example-ls">
