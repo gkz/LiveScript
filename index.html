@@ -3125,86 +3125,228 @@ if ((that = halfYear) != null) {
     <div id="loops" class="section">
       <a name="loops"></a>
       <h2>Loops and Comprehensions</h2>
+
+      <p><code>for</code> loops have the structure <code>for (from) (to|til) (by) (when)</code> - (everything is optional).
+      <p><code>by</code> is the step value, the default is <code>1</code>.
+      <p><code>from</code>, if omitted defaults to <code>0</code>.
+      <p><code>when</code>, (alias <code>case</code>, <code>|</code>) is an optional guard.
+      <p>Use <code>in</code> to iterate through lists, and <code>of</code> to iterate through objects.
+      <p>If used as an expression, loops will produce a list.
+
       <div class="example">
         <div class="example-ls">
-          <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# For loops
-# for (from) (to|til) (by) (when)
+
 for i from 1 to 10 by 3
   i
-# by is optional step value
-# from is optional, if omitted 
-# 'from 0' is implied
-# when (alias case, |) optional guard
 
 for val, i in [7 8 9]
-  val 
+  val
 
 
 
 for key, val of {one: 1, two: 2}
   key
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i, ref$, len$, val, key;
+for (i = 1; i <= 10; i += 3) {
+  i;
+}
+for (i = 0, len$ = (ref$ = [7, 8, 9]).length; i < len$; ++i) {
+  val = ref$[i];
+  val;
+}
+for (key in ref$ = {
+  one: 1,
+  two: 2
+}) {
+  val = ref$[key];
+  key;
+}
+</pre>
+        </div>
+      </div>
 
+      <p>List comprehensions always produce a list.
 
-
-
-
-# List Comprehension
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 r = [x + 1 for x to 10 by 2 when x isnt 4]
-# r => [1, 3, 7, 9, 11]
+# r => [1,3,7,9,11]
+
+
 
 
 
 
 
 r = ["#x#y" for x in [\a \b] for y in [1 2]]
-# r => [ 'a1', 'a2', 'b1', 'b2' ]
+# r => ['a1','a2','b1','b2']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var res$, x, r, i$, ref$, len$, j$, ref1$, len1$, y;
+res$ = [];
+for (x = 0; x <= 10; x += 2) {
+  if (x !== 4) {
+    res$.push(x + 1);
+  }
+}
+r = res$;
+res$ = [];
+for (i$ = 0, len$ = (ref$ = ['a', 'b']).length; i$ < len$; ++i$) {
+  x = ref$[i$];
+  for (j$ = 0, len1$ = (ref1$ = [1, 2]).length; j$ < len1$; ++j$) {
+    y = ref1$[j$];
+    res$.push(x + "" + y);
+  }
+}
+r = res$;
+</pre>
+        </div>
+      </div>
 
+      <p>Object comprehensions produce an object.
 
-
-
-
-
-
-
-# Object Comprehension
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 r = {[key, val * 2] for key, val of {a: 1, b: 2}}
 # r => {a: 2, b: 4}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var res$, key, ref$, val, r;
+res$ = {};
+for (key in ref$ = {
+  a: 1,
+  b: 2
+}) {
+  val = ref$[key];
+  res$[key] = val * 2;
+}
+r = res$;
+</pre>
+        </div>
+      </div>
 
+      <p><code>while</code> loops:
 
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 
-
-
-# While
 i = 0
 list = [1 to 10]
 while n < 9
   n = list[++i]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i, list, n;
+i = 0;
+list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+while (n < 9) {
+  n = list[++i];
+}
+</pre>
+        </div>
+      </div>
 
-# until == while not
-# while/until can also accept when guard
-# else clause executes if loops doesn't run
+      <p><code>until</code> is equivalent to <code>while not</code>.
+
+      <p><code>while</code>/<code>until</code> can also accept a <code>when</code> guard, and an optional <code>else</code> clause which runs if the didn't run at all.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
 i = 1
+list = [1 to 10]
 until i > 7 when n isnt 99
   n = list[++i]
 else
   10
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i, list, yet$, n;
+i = 1;
+list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+for (yet$ = true; !(i > 7);) {
+  yet$ = false;
+  if (n !== 99) {
+    n = list[++i];
+  }
+} if (yet$) {
+  10;
+}
+</pre>
+        </div>
+      </div>
 
+      <p>Do while:
 
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 
-# do while loop
 i = 0
+list = [1 to 10]
 do
   i++
 while list[i] < 9 
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i, list;
+i = 0;
+list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+do {
+  i++;
+} while (list[i] < 9);
+</pre>
+        </div>
+      </div>
 
-# while accepts an updated clause
-# can be postfix too
+      <p>While can also accept an update clause.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
 i = 0
+list = [1 to 10]
 while list[i] < 9, i++ then i
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i, list;
+i = 0;
+list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+for (; list[i] < 9; i++) {
+  i;
+}
+</pre>
+        </div>
+      </div>
 
-# while true
+      <p>While true:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
 i = 0
 loop
   \ha
@@ -3220,82 +3362,8 @@ for ever
 </pre>
         </div>
         <div class="example-js">
-          <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var i, val, key, x, r, y, list, n, __ref, __len,
-  __res, __i, __j, __ref1, __len1, __run;
-for (i = 1; i <= 10; i += 3) {
-  i;
-}
-
-
-
-
-for (i = 0, __len = (__ref = [7, 8, 9]).length; 
-    i < __len; ++i) {
-  val = __ref[i];
-  val;
-}
-for (key in __ref = {
-  one: 1,
-  two: 2
-}) {
-  val = __ref[key];
-  key;
-}
-__res = [];
-for (x = 0; x <= 10; x += 2) {
-  if (x !== 4) {
-    __res.push(x + 1);
-  }
-}
-r = __res;
-__res = [];
-for (__i = 0, __len = (__ref = ['a', 'b']).length; __i < __len; ++__i) {
-  x = __ref[__i];
-  for (__j = 0, __len1 = (__ref1 = [1, 2]).length; __j < __len1; ++__j) {
-    y = __ref1[__j];
-    __res.push(x + "" + y);
-  }
-}
-r = __res;
-__res = {};
-for (key in __ref = {
-  a: 1,
-  b: 2
-}) {
-  val = __ref[key];
-  __res[key] = val * 2;
-}
-r = __res;
-i = 0;
-list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-while (n < 9) {
-  n = list[++i];
-}
-
-
-
-i = 1;
-while (!(i > 7)) {
-  __run = true;
-  if (n !== 99) {
-    n = list[++i];
-  }
-} if (!__run) {
-  10;
-}
-i = 0;
-do {
-  i++;
-} while (list[i] !== 9);
-
-
-
-i = 0;
-for (; list[i] !== 9; i++) {
-  i;
-}
+var i;
 i = 0;
 for (;;) {
   'ha';
@@ -3313,7 +3381,9 @@ for (;;) {
 </pre>
         </div>
       </div>
+
     </div>
+
     <div id="switch" class="section">
       <a name="switch"></a>
       <h2>Switch</h2>
