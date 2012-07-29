@@ -365,6 +365,18 @@ function curry$(f, args){
         <tr><td>-v, --version</td><td>display version</td></tr>
         <tr><td>-h, --help</td><td>display this</td></tr>
       </table>
+
+      <h3>Examples</h3>
+
+      <ul>
+        <li>Run a LiveScript file (through node.js): <code>livescript file.ls</code> - you can omit the <code>.ls</code> if you wish.
+        <li>Compile a LiveScript file, creating a <code>file.js</code>: <code>livescript -c file.ls</code>
+        <li>Watch a file and compile on changes: <code>livescript -wc file.ls</code>
+        <li>Compile a directory and output to another directory: <code>livescript -co output src</code>
+        <li>Watch a directory, compile on change into an output directory: <code>livescript -wco output src</code>
+        <li>Compile a one-liner and print the JS: <code>livescript -bpe '[1 to 5]'</code>
+        <li>Start the LiveScript REPL: <code>livescript</code> - <code>Ctrl-D</code> to exit, use <code>Ctrl-J</code> for multiline input.
+      </ul>
     </div>
     <div id="community" class="section">
       <a name="community"></a>
@@ -1605,6 +1617,7 @@ function in$(x, arr){
         </div>
       </div>
 
+      <a name="piping"></a>
       <h3>Piping</h3>
 
       <p>Instead of a series of nested function calls, you can pipe values in. <code>x |> f</code> is equivalent to <code>f(x)</code> and <code>f |> x</code> is equivalent to <code>f(x)</code>.
@@ -1651,6 +1664,7 @@ even(
         </div>
       </div>
 
+      <a name="composing"></a>
       <h3>Function</h3>
 
       <p>Composing allows you to create functions by <em>composing</em> them out of a series of functions. LiveScript has two operators for composing, forward <code>&gt;&gt;</code> and backwards <code>&lt;&lt;</code>.
@@ -2590,6 +2604,8 @@ obj2.bound();
         </div>
       </div>
 
+      <p>Check out the <a href="#oop">OOP</a> section for more on bound functions when used in classes.
+
       <h3>Let, Where, With</h3>
 
       <p><code>let</code> is short for <code>(function(a){...}.call(this, b))</code>.
@@ -2913,6 +2929,10 @@ addThreeNumbers(1, 2, 3);
       </div>
 
       <p>Note that currying won't work in that situation, as the number of declared arguments in <code>addThreeNumbers</code> is 0.
+
+      <h3>More</h3>
+
+      <p>Check out the section on <a href="#composing">composing functions</a>, and <a href="#piping">piping</a> as well.
 
     </div>
 
