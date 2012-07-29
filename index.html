@@ -45,8 +45,8 @@
         <li><a href="#introduction">Introduction</a></li> 
         <li><a href="#literals">Literals</a></li> 
         <li><a href="#operators">Operators</a></li> 
-        <li><a href="#conditions">Conditions</a></li> 
         <li><a href="#functions">Functions</a></li> 
+        <li><a href="#conditions">Conditions</a></li> 
         <li><a href="#loops">Loops and Comprehensions</a></li> 
         <li><a href="#switch">Switch</a></li> 
         <li><a href="#assignment">Assignment</a></li> 
@@ -2075,188 +2075,375 @@ function not$(x){ return !x; }
 
     </div>
 
-
-    <div id="conditions" class="section">
-      <a name="conditions"></a>
-      <h2>Conditions</h2>
-      <div class="example">
-        <div class="example-ls">
-        <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">
-# A bit of setup
-months = 12
-week   = <[ sun mon tues wed thurs fri sat sun ]>
-time   =
-  days:  365
-  hours: 8760
-
-
-
-# Functions defined so that the example can run
-doSomething = -> 'do nothing actually'
-doOtherThing = -> 'do other thing'
-doThirdThing = -> 'do third thing'
-
-
-
-# As expected - 'else if' and 'else' are optional
-# Meanings of == and === are reveresed from JS
-if months == 12 
-  doSomething()
-else if time.hours === '8760'
-  doOtherThing()
-else 
-  doThirdThing()
-
-# 'is not' and 'isnt'
-if time.days is not 366
-and months isnt 13
-then 'both not true!'
-
-# Post 'if'
-doSomething() if months is 12
-  
-# Chained comprehension
-if time.hours < 500 < time.hours then doSomething()
-
-# Formatting, 'if not', and 'in'
-if \sun not in week 
-then doSomething()
-else doOtherThing()
-
-# 'unless' is the same as 'if not', use of 'of'
-doOtherThing() unless \hours of time
-
-# 'that' implicitly refers to 
-# the value of the condition
-halfYear = that / 2 if time.days
-</pre>
-          </div>
-          <div class="example-js">
-          <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">
-var months, week, time, doSomething, doOtherThing, 
-    doThirdThing, that, halfYear;
-months = 12;
-week = ['sun', 'mon', 'tues', 'wed', 
-        'thurs', 'fri', 'sat', 'sun'];
-time = {
-  days: 365,
-  hours: 8760
-};
-doSomething = function(){
-  return 'do nothing actually';
-};
-doOtherThing = function(){
-  return 'do other thing';
-};
-doThirdThing = function(){
-  return 'do third thing';
-};
-if (months === 12) {
-  doSomething();
-} else if (time.hours == '8760') {
-  doOtherThing();
-} else {
-  doThirdThing();
-}
-
-if (time.days !== 366 && months !== 13) {
-  'both not true!';
-}
-
-
-if (months === 12) {
-  doSomething();
-}
-if (time.hours < 500 && 500 < time.hours) {
-  doSomething();
-}
-if (!__in('sun', week)) {
-  doSomething();
-} else {
-  doOtherThing();
-}
-if (!('hours' in time)) {
-  doOtherThing();
-}
-
-if (that = time.days) {
-  halfYear = that / 2;
-}
-function __in(x, arr){
-  var i = 0, l = arr.length >>> 0;
-  while (i < l) if (x === arr[i++]) return true;
-  return false;
-}
-</pre>
-          </div>
-        </div>
-    </div>
     <div id="functions" class="section">
       <a name="functions"></a>
       <h2>Functions</h2>
+
+      <p>Defining functions is very lightweight in LiveScript:
+
       <div class="example">
         <div class="example-ls">
-        <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# Functions auto return
+
+(x, y) -> x + y
 
 
-# Defining functions
-square = (x) -> x * x
+-> # an empty function
 
-# Functions defined this way are curried 
-# by default
-cube(x) = x * x * x
-cube 2 #=> 8
+times = (x, y) ->
+  x * y
+# multiple lines, and be assigned to
+# a var like in JavaScript
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var times;
+(function(x, y){
+  return x + y;
+});
+(function(){});
 
-# Extended parameters
+times = function(x, y){
+  return x * y;
+};
+</pre>
+        </div>
+      </div>
+
+      <p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned.
+
+      <p>You can prepend the function definition with a bang <code>!</code> to suppress automatic returning. The <code>!</code> must go before the entire function literal.
+
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = !-> 2
+f = !(x) -> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Calling</h3>
+
+      <p>You can omit the parentheses when calling a function, and you can omit the comma separating the arguments if the preceding item is not callable, just like in arrays.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+Math.pow x, 3
+Math.pow 2 3
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <p>If you are calling the function with no arguments, you can use a bang <code>!</code> - as well you don't need to use a dot when chaining banged functions.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f!
+[1 2 3].reverse!slice 1 #=> [2,1]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <p><code>and</code>, <code>or</code>, <code>xor</code>, spaced <code>.</code>  or <code>?.</code> all close implicit calls - allowing for parentheses free chaining.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+$ \h1 .find \a .text! #=> LiveScript
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <p>You can use <code>do</code> to call functions with no arguments:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+do -> 3 + 2 #=> 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <p>You can also call functions infix using backticks <code>`</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add = (x, y) -> x + y
+3 `add` 4 #=> 7
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Parameters</h3>
+
+      <p>Extended parameters
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 setPersonParams = (
   person # target object to set params
   person.age
   person.height
 ) -> person
 
-person = setPersonParams {}, 21, 180cm 
+person = setPersonParams {}, 21, 180cm
 #=> {age: 12, height: 180}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
 
-# Bang call
-util! #=> 'available above declaration'
+</pre>
+        </div>
+      </div>
 
-# Creates named function
-function util()
-  'available above declaration'
+      <p>This is especially useful with <code>this</code>.
 
-# Parentheses free chaining
-$ \h1 .find \a .text! #=> LiveScript
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+setText = (@text) -> this
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
 
-# Implicit argument using 'it'
-length = -> it.length
+</pre>
+        </div>
+      </div>
 
-# Do call, calls function with no arguments
-do -> 42
+      <p>You can set default arguments, or indeed use any logic:
 
-# Suppress auto return
-returnNothing = !(param) -> param
-returnNothing \hello # returns nothing
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 
-!alsoReturnsNothing(param) = param
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
 
+</pre>
+        </div>
+      </div>
 
-# Curried functions
+      <p>You can also destructure the arguments and set default arguments on that:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Currying</h3>
+
+      <p>Curried functions are very powerful. Essentially, when called with less arguments than defined with, they return a partially applied function. This means that it returns a function whose arguments are those which you didn't supply, with the values for what you did supply already bound. They are defined in LiveScript using the long arrow. Perhaps an example will make things more clear:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 times = (x, y) --> x * y
-times 2, 3 #=> 6
-timesTwo = times 2
-timesTwo 4 #=> 8
+times 2, 3       #=> 6 (normal use works as expected)
+double = times 2
+double 5         #=> 10
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var times, double;
+times = curry$(function(x, y){
+  return x * y;
+});
+times(2, 3);
+double = times(2);
+double(5);
+function curry$(f, args){
+  return f.length > 1 ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      curry$.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
+</pre>
+        </div>
+      </div>
 
-alsoCurriedTimes(x, y) = x * y
+      <p>You can define bound curried functions with a long wavy arrow: <code>~~&gt;</code>
 
+      <h3>Short Function Syntax</h3>
 
-# Short for (function(a){...}.call(this, b))
+      <p>A shorter way to define functions, which are always curried:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+square(x) -> x * x
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <p>You can prepend the function definition with a <code>~</code> to make it bound.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Named Functions</h3>
+
+      <p>You can create named functions whose definition is hoisted to the top of the scope - this is useful for defining utility functions at the end of the file instead of the top. Name functions are constants, and can't be redefined.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+util!  #=> 'available above declaration'
+util2! #=> 2
+
+function util
+  'available above declaration'
+function util2 then 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <p>You can prepend the function definition with a <code>~</code> to make it a bound function.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <p>You can prepend it with a bang <code>!</code> to suppress returning.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Bound Functions</h3>
+
+      <p>Defined using the wavy arrow <code>~&gt;</code>. Use the long wavy arrow for curried and bound functions <code>~~&gt;</code>. Prepend a <code>~</code> to named functions or the short function syntax to make them bound.
+
+      <p>Bound functions have 'this' lexically bound, not dynamically bound as normally.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+thisParam = (param) ~> this[param]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Let and Where</h3>
+
+      <p>Let is short for (function(a){...}.call(this, b))
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 let $ = jQuery
   $.isArray [] #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
 
+</pre>
+        </div>
+      </div>
+
+      <p>Where is like let, but defined after the body. It also is slightly different.
+
+      <h3>With</h3>
+
+      <p>
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 # Short for (function(){...}.call(x))
 with person
   @age = 22
@@ -2266,127 +2453,30 @@ dog = new
   @name = \spot
   @mutt = true
 
-# Infix application
-add = (x, y) -> x + y
-3 `add` 4 #=> 7
-
-# Implicit function creation for call/lookup 
-# (useful for higher order functions like map)
-(.length)
-
-
-(.join \*)
-
-
-(obj.)
-
-
-# Bound functions using ~> (wavy arrow)
-thisParam = (param) ~> this[param]
-# Bound functions have 'this' lexically bound,
-# not dynamically bound as normally.
-# Notice the __this = this at the top
-# variable declarations in the JS. 
-# Use ~~> for bound and curried functions
-# or thisParam@(param) = this[param]
-# using the alternate definition syntax.
 </pre>
-          </div>
-          <div class="example-js">
-          <h5>JavaScript</h5>
+        </div>
+        <div class="example-js">
 <pre class="prettyprint lang-js">
-var square, cube, setPersonParams, person,
-  length, returnNothing, alsoReturnsNothing,
-  times, timesTwo, alsoCurriedTimes, dog,
-  add, thisParam, __this = this;
-square = function(x){
-  return x * x;
-};
-cube = __curry(function(x){
-  return x * x * x;
-});
-cube(2);
 
-setPersonParams = function(person, age, height){
-  person.age = age;
-  person.height = height;
-  return person;
-};
+</pre>
+        </div>
+      </div>
 
-person = setPersonParams({}, 21, 180);
+      <h3>Access/Call Function Shorthand</h3>
 
+      <p>Useful for higher order functions like map and filter.
 
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+(.length)
+(.join \*)
+(obj.)
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
 
-util();
-
-
-function util(){
-  return 'available above declaration';
-}
-
-$('h1').find('a').text();
-
-length = function(it){
-  return it.length;
-};
-(function(){
-  return 42;
-})();
-
-returnNothing = function(param){
-  param;
-};
-returnNothing('hello');
-alsoReturnsNothing = __curry(function(param){
-  param;
-});
-times = __curry(function(x, y){
-  return x * y;
-});
-times(2, 3);
-timesTwo = times(2);
-timesTwo(4);
-alsoCurriedTimes = __curry(function(x, y){
-  return x * y;
-});
-(function($){
-  $.isArray([]);
-}.call(this, jQuery));
-
-(function(){
-  this.age = 22;
-}.call(person));
-
-dog = new function(){
-  this.name = 'spot';
-  this.mutt = true;
-};
-
-add = function(x, y){ return x + y; };
-add(3, 4);
-
-
-(function(it){
-  return it.length;
-});
-(function(it){
-  return it.join('*');
-});
-(function(it){
-  return obj[it];
-});
-
-thisParam = function(param){
-  return __this[param];
-};
-
-function __curry(f, args){
-  return f.length ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
-  } : f;
-}
 </pre>
         </div>
       </div>
@@ -2516,6 +2606,21 @@ function __curry(f, args){
 
       <h3>Arguments</h3>
 
+      <p>If you have only one argument, you can use <code>it</code> to access it without having to define it.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = -> it + 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+</pre>
+        </div>
+      </div>
+
       <p>You can access the <code>arguments</code> object with the shorthand <code>&</code>. The first argument is <code>&0</code>, the second <code>&1</code>, and so on.
 
       <div class="example">
@@ -2539,6 +2644,124 @@ addThreeNumbers(1, 2, 3);
 
       <p>Note that currying won't work in that situation, as the number of declared arguments in <code>addThreeNumbers</code> is 0.
 
+    </div>
+
+    <div id="conditions" class="section">
+      <a name="conditions"></a>
+      <h2>Conditions</h2>
+      <div class="example">
+        <div class="example-ls">
+        <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+# A bit of setup
+months = 12
+week   = <[ sun mon tues wed thurs fri sat sun ]>
+time   =
+  days:  365
+  hours: 8760
+
+
+
+# Functions defined so that the example can run
+doSomething = -> 'do nothing actually'
+doOtherThing = -> 'do other thing'
+doThirdThing = -> 'do third thing'
+
+
+
+# As expected - 'else if' and 'else' are optional
+# Meanings of == and === are reveresed from JS
+if months == 12 
+  doSomething()
+else if time.hours === '8760'
+  doOtherThing()
+else 
+  doThirdThing()
+
+# 'is not' and 'isnt'
+if time.days is not 366
+and months isnt 13
+then 'both not true!'
+
+# Post 'if'
+doSomething() if months is 12
+  
+# Chained comprehension
+if time.hours < 500 < time.hours then doSomething()
+
+# Formatting, 'if not', and 'in'
+if \sun not in week 
+then doSomething()
+else doOtherThing()
+
+# 'unless' is the same as 'if not', use of 'of'
+doOtherThing() unless \hours of time
+
+# 'that' implicitly refers to 
+# the value of the condition
+halfYear = that / 2 if time.days
+</pre>
+          </div>
+          <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+var months, week, time, doSomething, doOtherThing, 
+    doThirdThing, that, halfYear;
+months = 12;
+week = ['sun', 'mon', 'tues', 'wed', 
+        'thurs', 'fri', 'sat', 'sun'];
+time = {
+  days: 365,
+  hours: 8760
+};
+doSomething = function(){
+  return 'do nothing actually';
+};
+doOtherThing = function(){
+  return 'do other thing';
+};
+doThirdThing = function(){
+  return 'do third thing';
+};
+if (months === 12) {
+  doSomething();
+} else if (time.hours == '8760') {
+  doOtherThing();
+} else {
+  doThirdThing();
+}
+
+if (time.days !== 366 && months !== 13) {
+  'both not true!';
+}
+
+
+if (months === 12) {
+  doSomething();
+}
+if (time.hours < 500 && 500 < time.hours) {
+  doSomething();
+}
+if (!__in('sun', week)) {
+  doSomething();
+} else {
+  doOtherThing();
+}
+if (!('hours' in time)) {
+  doOtherThing();
+}
+
+if (that = time.days) {
+  halfYear = that / 2;
+}
+function __in(x, arr){
+  var i = 0, l = arr.length >>> 0;
+  while (i < l) if (x === arr[i++]) return true;
+  return false;
+}
+</pre>
+          </div>
+        </div>
     </div>
     <div id="loops" class="section">
       <a name="loops"></a>
