@@ -44,11 +44,11 @@
         <li class="divider">
         <li><a href="#introduction">Introduction</a></li> 
         <li><a href="#literals">Literals</a></li> 
+        <li><a href="#operators">Operators</a></li> 
         <li><a href="#conditions">Conditions</a></li> 
         <li><a href="#functions">Functions</a></li> 
         <li><a href="#loops">Loops and Comprehensions</a></li> 
         <li><a href="#switch">Switch</a></li> 
-        <li><a href="#operators">Operators</a></li> 
         <li><a href="#assignment">Assignment</a></li> 
         <li><a href="#property-access">Property Access</a></li> 
         <li><a href="#oop">OOP</a></li> 
@@ -1215,6 +1215,543 @@ throw Error('unimplemented');
       </div>
     </div>
 
+    <div id="operators" class="section">
+      <a name="operators"></a>
+      <h2>Operators</h2>
+
+      <h3>Number</h3>
+
+      <p>The standard math operators:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+1 + 2 #=> 3
+3 - 4 #=> -1
+6 * 2 #=> 12
+8 / 4 #=> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+1 + 2;
+3 - 4;
+6 * 2;
+8 / 4;
+</pre>
+        </div>
+      </div>
+
+      <p>There is a remainder operator, as in JavaScript - but we also add a proper modulo operator.
+
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+-3 % 4  #=> -3
+-3 %% 4 #=> 1
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$;
+-3 % 4;
+((-3) % (ref$ = 4) + ref$) % ref$;
+</pre>
+        </div>
+      </div>
+
+      <p>The power is right associative, and has higher precedence than unary ops. <code>^</code> is an alias for <code>**</code>
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+2 ** 4     #=> 16
+3 ^ 4      #=> 81
+-2 ^ 2 ^ 3 #=> -256
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+Math.pow(2, 4);
+Math.pow(3, 4);
+-Math.pow(2, Math.pow(2, 3));
+</pre>
+        </div>
+      </div>
+
+      <p>Increments and decrements:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+n = 0
+n++ #=> 0
+++n #=> 2
+n-- #=> 2
+--n #=> 0
+x = n++ #=> 0
+x #=> 0
+n #=> 1
+x = ++n #=> 2
+x #=> 2
+n #=> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var n, x;
+n = 0;
+n++;
+++n;
+n--;
+--n;
+x = n++;
+x;
+n;
+x = ++n;
+x;
+n;
+</pre>
+        </div>
+      </div>
+
+      <p>Bitwise and shift operators:
+
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+14 .&. 9   #=> 8
+14 .|. 9   #=> 15
+14 .^. 9   #=> 7
+~9         #=> -10
+9  .<<. 2  #=> 36
+-9 .>>. 2  #=> -3
+-9 .>>>. 2 #=> 1073741821
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+14 & 9;
+14 | 9;
+14 ^ 9;
+~9;
+9 << 2;
+-9 >> 2;
+-9 >>> 2;
+</pre>
+        </div>
+      </div>
+
+      <p>Casting to a number:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
++'4' #=>  4
+-'3' #=> -3
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
++'4';
+-'3';
+</pre>
+        </div>
+      </div>
+
+      <h3>Comparison</h3>
+
+      <p>Strict equality (no type coercion):
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+2 + 4 == 6      #=> true
+\boom is 'boom' #=> true
+
+\boom != null   #=> true
+2 + 2 is not 4  #=> false
+0 + 1 isnt 1    #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+2 + 4 === 6;
+'boom' === 'boom';
+
+'boom' !== null;
+2 + 2 !== 4;
+0 + 1 !== 1;
+</pre>
+        </div>
+      </div>
+
+      <p>Fuzzy equality (with type coercion):
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+2 ~= '2'       #=> true
+\1 !~= 1       #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+2 == '2';
+'1' != 1;
+</pre>
+        </div>
+      </div>
+
+      <p>Greater/less than:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+2 < 4           #=> true
+9 > 7           #=> true
+8 <= 8          #=> true
+7 >= 8          #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+2 < 4;
+9 > 7;
+8 <= 8;
+7 >= 8;
+</pre>
+        </div>
+      </div>
+
+      <p>Chained comparison:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+1 < 2 < 4        #=> true
+1 < 2 == 4/2 > 0 #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$;
+1 < 2 && 2 < 4;
+1 < 2 && 2 === (ref$ = 4 / 2) && ref$ > 0;
+</pre>
+        </div>
+      </div>
+
+      <p>Minimum/maximum - returns the smaller/larger of the two operands.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+4 >? 8     #=> 8
+9 - 5 &lt;? 6 #=> 4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$;
+4 > 8 ? 4 : 8;
+(ref$ = 9 - 5) < 6 ? ref$ : 6;
+</pre>
+        </div>
+      </div>
+
+      <p>When one of the operands of a equals (<code>==</code> or <code>is</code>, and the negatives for that) is a regex literal if will test the other operand against it. Equality compiles to <code>exec</code> so you can use the results, while the negative simply compiles to <code>test</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+/^e(.*)/ is 'enter' #=> ["enter","nter"]
+/^e(.*)/ == 'zx'    #=> null
+/moo/ != 'loo'      #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+/^e(.*)/.exec('enter');
+/^e(.*)/.exec('zx');
+!/moo/.test('loo');
+</pre>
+        </div>
+      </div>
+
+
+      <h3>Logic</h3>
+
+      <p>The basics:</p>
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+true and false #=> false
+true && false  #=> false
+
+true or false  #=> true
+true || false  #=> true
+
+not false      #=> true
+!false         #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+true && false;
+true && false;
+
+true || false;
+true || false;
+
+!false;
+!false;
+</pre>
+        </div>
+      </div>
+
+      <p>A logical operator not commonly seen in other languages - exclusive or:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+false xor true  #=> true
+false xor false #=> false
+1 xor 0         #=> 1
+1 xor 1         #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+((true, false) || true) && !(false && true) && (false || true);
+((false, false) || false) && !(false && false) && (false || false);
+((0, 1) || 0) && !(1 && 0) && (1 || 0);
+((1, 1) || 1) && !(1 && 1) && (1 || 1);
+</pre>
+        </div>
+      </div>
+
+      <p><code>and</code>, <code>or</code>, and <code>xor</code> close implicit calls, while <code>||</code> and <code>&amp;&amp;</code> do not.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+even 0 and 3 #=> 3
+even 0 &&  3 #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+even(0) && 3;
+even(0 && 3);
+</pre>
+        </div>
+      </div>
+
+      <p>You can call logic operators.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+(f or g) 1
+(f and g or h) 3 4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+f(1) || g(1);
+f(3, 4) && g(3, 4) || h(3, 4);
+</pre>
+        </div>
+      </div>
+
+      <h3>In/Of</h3>
+
+      <p>Use <code>in</code> to check if and element is in a list; use <code>of</code> to check if a key is in an object.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+list = [7 8 9]
+2 in [1 2 3 4 5]             #=> true
+3 in list                    #=> false
+\id of id: 23, name: \rogers #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var list;
+list = [7, 8, 9];
+2 == 1 || 2 == 2 || 2 == 3 || 2 == 4 || 2 == 5;
+in$(3, list);
+'id' in {
+  id: 23,
+  name: 'rogers'
+};
+function in$(x, arr){
+  var i = 0, l = arr.length >>> 0;
+  while (i < l) if (x === arr[i++]) return true;
+  return false;
+}
+</pre>
+        </div>
+      </div>
+
+      <h3>Piping</h3>
+
+      <p>Instead of a series of nested function calls, you can pipe values in. <code>x |> f</code> is equivalent to <code>f(x)</code> and <code>f |> x</code> is equivalent to <code>f(x)</code>.
+
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 2 3] |> reverse |> head #=> 3
+
+
+reverse <| [1 2 3]         #=> [3,2,1]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+head(
+reverse(
+[1, 2, 3]));
+reverse([1, 2, 3]);
+</pre>
+        </div>
+      </div>
+
+      <p>You can use newlines to space things out better.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+4
+|> (+ 1)
+|> even
+#=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+even(
+(function(it){
+  return it + 1;
+})(
+4));
+</pre>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+## Function composition
+# '(f >> g) x' is 'g(f(x))' 
+# '(f << g) x' is 'f(g(x))'
+addTwo   = add 2
+timesTwo = -> it * 2
+
+addTwoTimesTwo = addTwo >> timesTwo
+timesTwoAddTwo = addTwo << timesTwo
+
+addTwoTimesTwo 3 #=> 10
+timesTwoAddTwo 3 #=> 8
+
+even = (x) -> x % 2 == 0
+odd  = (not) . even
+
+
+## List 
+list1 = <[ one two three ]>
+list2 = [\four]
+
+# Concat
+list1 +++ list2 #=> ['one', 'two', 'three', 'four']
+
+# List repetition when first is list literal
+[\ha] * 3       #=> ['ha', 'ha', 'ha']
+
+# Join when right operand is a string literal
+list1 * \,      #=> 'one,two,three'
+
+# Unary spread
+# when right is list literal, apply to each item
+neg = -[4 5 6]  #=> [-4, -5, -6]
+
+## String
+'hello' + ' ' + 'world' #=> 'hello world'
+string = 'say '         #=> 'say '
+string += \yeah         #=> 'say yeah'
+
+# String repetition when first is string literal
+'X' * 3      #=> 'XXX'
+
+# String subtraction/division when
+# right is string or regex literal
+string - /h/ #=> 'say yea'
+string / \y  #=> ['sa', ' ', 'eah']
+
+## Min/max - return greater or lesser value
+## Existence/Inexistence 
+bigfoot ? 'grizzly bear'         #=> 'grizzly bear'
+string = \boom if n?             #=> 'boom'
+string = 'say yeah' if bigfoot!? #=> 'say yeah'
+
+document?.title                  #=> 'LiveScript'
+
+
+
+
+
+
+
+## instanceof - list literal to right gets expanded
+new Date() instanceof Date           #=> true
+new Date() instanceof [Date, Object] #=> true
+
+## typeof
+typeof /^/  #=> object
+typeof! /^/ #=> RegEx
+
+## delete - returns original value
+obj = {one: 1, two: 2} 
+one = delete obj.one
+one #=> 1
+
+## Property copy
+# copy enumerable properties from right to left,
+# return left value
+# <<< for own properties
+# import and importAll are aliases
+obj <<< three: 3
+obj #=> {two: 2, three: 3}
+{go: true} <<<< window
+document import obj
+
+## Clone - unary, creates prototypical child value
+child = ^^(new String)
+child.length #=> 0
+
+## Partial application, ops as functions
+(+ 2) 4         #=> 6
+(*) 4 3         #=> 12
+
+(not) true      #=> false
+(in [1 to 3]) 2 #=> true
+</pre>
+        </div>
+      </div>
+    </div>
     <div id="conditions" class="section">
       <a name="conditions"></a>
       <h2>Conditions</h2>
@@ -2056,428 +2593,6 @@ default:
   'go to work';
 }
 
-</pre>
-        </div>
-      </div>
-    </div>
-    <div id="operators" class="section">
-      <a name="operators"></a>
-      <h2>Operators</h2>
-      <div class="example">
-        <div class="example-ls">
-          <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">
-n = 0
-
-
-
-
-## Math
-# The standard
-1 + 2 #=> 3
-3 - 4 #=> -1
-6 * 2 #=> 12
-8 / 4 #=> 2
-
--3 % 4  #=> -3
--3 %% 4 #=> 1
-
-n++    #=> 1
-++n    #=> 2
-n = -n #=> -2
-n = +n #=> 2
-n--    #=> 1
---n    #=> 0
-
-+'23'  #=> 23
-
-# Power - right associative,
-# higher precedence than unary ops
-2 ** 4     #=> 16
-3 ^ 4      #=> 81
--2 ^ 2 ^ 3 #=> -256
-
-## Bitwise and shifts
-14 .&. 9   #=> 8
-14 .|. 9   #=> 15
-14 .^. 9   #=> 7
-~9         #=> -10
-9  .<<. 2  #=> 36
--9 .>>. 2  #=> -3
--9 .>>>. 2 #=> 1073741821
-
-## Comparison
-# Strict equals
-2 + 4 == 6      #=> true
-\boom is 'boom' #=> true
-
-# Fuzzy Equals
-2 === '2'       #=> true
-
-# Strict not equals
-\boom != null   #=> true
-2 + 2 is not 4  #=> false
-n + 1 isnt 1    #=> false
-
-# Fuzzy not equals
-\1 !== 1        #=> false
-
-# Greater/less than
-2 < 4           #=> true
-9 > 7           #=> true
-8 <= 8          #=> true
-7 >= 8          #=> false
-
-# Chained comparison
-1 < 2 < 4        #=> true
-1 < 2 == 4/2 > 0 #=> true
-
-## Logic
-true and false #=> false
-true && false  #=> false
-
-true or false  #=> true
-true || false  #=> true
-
-not false      #=> true
-!false         #=> true
-
-## In/Of
-2 in [1 2 3 4 5] #=> true
-\id of {id: 23, name: \rogers} #=> true
-
-
-## Pipe
-# |> turns 'val |> func' into 'func(val)'
-reverse = -> it.reverse!
-[1 2 3] |> reverse #=> [3, 2, 1]
-
-
-# <| turns 'func <| val' into 'func(val)'
-# useful for avoiding parens
-add = (x, y) --> x + y
-add 4 <| 5 #=> 9 - instead of add(4) 5
-
-## Function composition
-# '(f >> g) x' is 'g(f(x))' 
-# '(f << g) x' is 'f(g(x))'
-addTwo   = add 2
-timesTwo = -> it * 2
-
-addTwoTimesTwo = addTwo >> timesTwo
-timesTwoAddTwo = addTwo << timesTwo
-
-addTwoTimesTwo 3 #=> 10
-timesTwoAddTwo 3 #=> 8
-
-even = (x) -> x % 2 == 0
-odd  = (not) . even
-
-
-## List 
-list1 = <[ one two three ]>
-list2 = [\four]
-
-# Concat
-list1 +++ list2 #=> ['one', 'two', 'three', 'four']
-
-# Concat when first is list literal
-[1] + list2     #=> [1, 'four']
-
-# List repetition when first is list literal
-[\ha] * 3       #=> ['ha', 'ha', 'ha']
-
-# Join when right operand is a string literal
-list1 * \,      #=> 'one,two,three'
-
-# Unary spread
-# when right is list literal, apply to each item
-neg = -[4 5 6]  #=> [-4, -5, -6]
-
-## String
-'hello' + ' ' + 'world' #=> 'hello world'
-string = 'say '         #=> 'say '
-string += \yeah         #=> 'say yeah'
-
-# String repetition when first is string literal
-'X' * 3      #=> 'XXX'
-
-# String subtraction/division when
-# right is string or regex literal
-string - /h/ #=> 'say yea'
-string / \y  #=> ['sa', ' ', 'eah']
-
-## Min/max - return greater or lesser value
-4 >? 8     #=> 8
-9 - 5 &lt;? 6 #=> 4
-
-## Existence/Inexistence 
-bigfoot ? 'grizzly bear'         #=> 'grizzly bear'
-string = \boom if n?             #=> 'boom'
-string = 'say yeah' if bigfoot!? #=> 'say yeah'
-
-document?.title                  #=> 'LiveScript'
-
-
-
-
-
-
-
-## instanceof - list literal to right gets expanded
-new Date() instanceof Date           #=> true
-new Date() instanceof [Date, Object] #=> true
-
-## typeof
-typeof /^/  #=> object
-typeof! /^/ #=> RegEx
-
-## delete - returns original value
-obj = {one: 1, two: 2} 
-one = delete obj.one
-one #=> 1
-
-## Property copy
-# copy enumerable properties from right to left,
-# return left value
-# <<< for own properties
-# import and importAll are aliases
-obj <<< three: 3
-obj #=> {two: 2, three: 3}
-{go: true} <<<< window
-document import obj
-
-## Clone - unary, creates prototypical child value
-child = ^^(new String)
-child.length #=> 0
-
-## Partial application, ops as functions
-(+ 2) 4         #=> 6
-(*) 4 3         #=> 12
-
-(not) true      #=> false
-(in [1 to 3]) 2 #=> true
-</pre>
-        </div>
-        <div class="example-js">
-          <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">
-var n, reverse, add, addTwo, timesTwo,
-    addTwoTimesTwo, timesTwoAddTwo, even, 
-    odd, list1, list2, neg, string, obj,
-    one, child, __ref, __slice = [].slice, 
-    __join = [].join, __replace = ''.replace, 
-    __split = ''.split, __toString = {}.toString;
-n = 0;
-1 + 2;
-3 - 4;
-6 * 2;
-8 / 4;
-
--3 % 4;
-((-3) % (__ref = 4) + __ref) % __ref;
-
-n++;
-++n;
-n = -n;
-n = +n;
-n--;
---n;
-
-+'23';
-
-
-
-Math.pow(2, 4);
-Math.pow(3, 4);
--Math.pow(2, Math.pow(2, 3));
-
-
-14 & 9;
-14 | 9;
-14 ^ 9;
-~9;
-9 << 2;
--9 >> 2;
--9 >>> 2;
-
-
-
-2 + 4 === 6;
-'boom' === 'boom';
-
-
-2 == '2';
-
-
-'boom' !== null;
-2 + 2 !== 4;
-n + 1 !== 1;
-
-
-'1' != 1;
-
-
-2 < 4;
-9 > 7;
-8 <= 8;
-7 >= 8;
-
-
-1 < 2 && 2 < 4;
-1 < 2 && 2 === (__ref = 4 / 2) && __ref > 0;
-
-
-true && false;
-true && false;
-
-true || false;
-true || false;
-
-!false;
-!false;
-
-
-2 == 1 || 2 == 2 || 2 == 3 || 2 == 4 || 2 == 5;
-'id' in {
-  id: 23,
-  name: 'rogers'
-};
-reverse = function(it){
-  return it.reverse();
-};
-reverse([1, 2, 3]);
-
-add = __curry(function(x, y){
-  return x + y;
-});
-add(4)(5);
-
-
-
-addTwo = add(2);
-timesTwo = function(it){
-  return it * 2;
-};
-addTwoTimesTwo = __compose((timesTwo),(addTwo));
-timesTwoAddTwo = __compose((addTwo),(timesTwo));
-
-addTwoTimesTwo(3);
-timesTwoAddTwo(3);
-
-even = function(x){
-  return x % 2 === 0;
-};
-odd = __compose((__not),(even));
-
-list1 = ['one', 'two', 'three'];
-list2 = ['four'];
-
-
-list1.concat(list2);
-
-
-[1].concat(__slice.call(list2));
-
-
-['ha', 'ha', 'ha'];
-
-
-__join.call(list1, ',');
-
-
-
-neg = [-4, -5, -6];
-
-
-'hello' + ' ' + 'world';
-string = 'say ';
-string += 'yeah';
-
-
-'XXX';
-
-
-
-__replace.call(string, /h/, '');
-__split.call(string, 'y');
-
-
-4 > 8 ? 4 : 8;
-(__ref = 9 - 5) < 6 ? __ref : 6;
-
-(typeof bigfoot == 'undefined' || 
-bigfoot === null) && 'grizzly bear';
-if (n != null) {
-  string = 'boom';
-}
-if (typeof bigfoot == 'undefined' || 
-bigfoot === null) {
-  string = 'say yeah';
-}
-if (typeof document != 'undefined' &&
-document !== null) {
-  document.title;
-}
-
-new Date() instanceof Date;
-(__ref = new Date()) instanceof Date || 
-__ref instanceof Object;
-
-typeof /^/;
-__toString.call(/^/).slice(8, -1);
-
-obj = {
-  one: 1,
-  two: 2
-};
-one = obj.one, delete obj.one;
-one;
-
-
-
-
-obj.three = 3;
-obj;
-__importAll({
-  go: true
-}, window);
-__import(document, obj);
-child = __clone(new String);
-child.length;
-
-
-(function(it){ return it + 2; })(4);
-__curry(function(__x, __y){ return __x * __y; })
-  (4, 3);
-__not(true);
-(function(it){ 
-  return it == 1 || it == 2 || it == 3; })(2);
-
-function __curry(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length && arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
-  } : f;
-}
-function __compose(f, g){
-  return function(){ return f(g.apply(this, arguments)); }
-}
-function __not(x){ return !x; }
-function __importAll(obj, src){
-  for (var key in src) obj[key] = src[key];
-  return obj;
-}
-function __import(obj, src){
-  var own = {}.hasOwnProperty;
-  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
-  return obj;
-}
-function __clone(it){
-  function fun(){} fun.prototype = it;
-  return new fun;
-}
 </pre>
         </div>
       </div>
