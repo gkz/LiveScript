@@ -462,7 +462,7 @@ class exports.Chain extends Node
         y = x[key]
         if y instanceof Binary and y.op in logics
         then f y, \first; f y, \second
-        else x[key] = Chain y .auto-compare call.args.0
+        else x[key] = Chain y .auto-compare call.args
       f bi, \first
       f bi, \second
       return bi
@@ -471,11 +471,11 @@ class exports.Chain extends Node
   auto-compare: (target) ->
         test = this.head
         switch
-        | test instanceof Literal                  => Binary \===  test, target
-        | test instanceof Arr, test instanceof Obj => Binary \==== test, target
+        | test instanceof Literal                  => Binary \===  test, target.0
+        | test instanceof Arr, test instanceof Obj => Binary \==== test, target.0
         | test instanceof Var and test.value is \_ => Literal \true
         | otherwise                                =>
-          this .add Call if target then [target] else []
+          this .add Call target or []
 
   flipIt: -> @flip = true; this
 
@@ -2117,7 +2117,7 @@ class exports.Case extends Node
     if type is \match
       for test, i in tests
         tar = Chain target .add Index (Literal i), \., true
-        tests[i] = Chain test .auto-compare (if target then tar else null)
+        tests[i] = Chain test .auto-compare (if target then [tar] else null)
     if bool
       binary = if type is \match then \&& else \||
       [t] = tests; i = 0; while tests[++i] then t = Binary binary, t, that

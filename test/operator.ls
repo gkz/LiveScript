@@ -827,3 +827,5 @@ ok (even or 1) 2
 ok (odd or 2) 2
 ok not (even or 1) 3
 ok ((.length > 4) or [1 2 3]) [1 2 3]
+
+eq 8 ((-> &0 + &1 is 5) and (**)) 2 3
