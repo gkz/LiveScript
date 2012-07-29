@@ -1651,98 +1651,397 @@ even(
         </div>
       </div>
 
+      <h3>Function</h3>
+
+      <p>Composing allows you to create functions by <em>composing</em> them out of a series of functions. LiveScript has two operators for composing, forward <code>&gt;&gt;</code> and backwards <code>&lt;&lt;</code>.
+
+      <p><code>(f &lt;&lt; g) x</code> is equivalent to <code>f(g(x))</code>, and <code>(f &gt;&gt; g) x</code> is equivalent to <code>g(f(x))</code>. For example:
+
       <div class="example">
         <div class="example-ls">
-          <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-## Function composition
-# '(f >> g) x' is 'g(f(x))' 
-# '(f << g) x' is 'f(g(x))'
-addTwo   = add 2
-timesTwo = -> it * 2
 
-addTwoTimesTwo = addTwo >> timesTwo
-timesTwoAddTwo = addTwo << timesTwo
+odd     = (not) << even
+odd 3   #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var odd;
+odd = compose$([not$, even]);
+odd(3);
+function compose$(fs){
+  return function(){
+    var i, args = arguments;
+    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+    return args[0];
+  };
+}
+function not$(x){ return !x; }
+</pre>
+        </div>
+      </div>
+
+      <p>To be a bit more clear about the difference between the two operators:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+addTwoTimesTwo = (+ 2) >> (* 2)
+timesTwoAddTwo = (+ 2) << (* 2)
 
 addTwoTimesTwo 3 #=> 10
 timesTwoAddTwo 3 #=> 8
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var addTwoTimesTwo, timesTwoAddTwo;
+addTwoTimesTwo = compose$([
+  (function(it){
+    return it * 2;
+  }), (function(it){
+    return it + 2;
+  })
+]);
+timesTwoAddTwo = compose$([
+  (function(it){
+    return it + 2;
+  }), (function(it){
+    return it * 2;
+  })
+]);
+addTwoTimesTwo(3);
+timesTwoAddTwo(3);
+function compose$(fs){
+  return function(){
+    var i, args = arguments;
+    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+    return args[0];
+  };
+}
+</pre>
+        </div>
+      </div>
 
-even = (x) -> x % 2 == 0
-odd  = (not) . even
+      <p>You can use a spaced dot as an alias to <code>&lt;&lt;</code>, for example <code>f . g</code>, just as in Haskell.
+
+      <h3>List</h3>
+
+      <p>You can concatenate two lists together:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+<[ one two three ]> +++ [\four]
+#=> ['one','two','three','four']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+['one', 'two', 'three'].concat(['four']);
 
 
-## List 
-list1 = <[ one two three ]>
-list2 = [\four]
+</pre>
+        </div>
+      </div>
 
-# Concat
-list1 +++ list2 #=> ['one', 'two', 'three', 'four']
+      <p>List repetition when first is list literal:
 
-# List repetition when first is list literal
-[\ha] * 3       #=> ['ha', 'ha', 'ha']
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[\ha] * 3 #=> ['ha','ha','ha']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+['ha', 'ha', 'ha'];
+</pre>
+        </div>
+      </div>
 
-# Join when right operand is a string literal
-list1 * \,      #=> 'one,two,three'
+      <p>Join when the right operand is a string literal:
 
-# Unary spread
-# when right is list literal, apply to each item
-neg = -[4 5 6]  #=> [-4, -5, -6]
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+<[ one two three ]> * \|      #=> 'one|two|three'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+['one', 'two', 'three'].join('|');
+</pre>
+        </div>
+      </div>
 
-## String
+      <p>Unary spread - when the operand is a list literal, apply the unary op to each item:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+r = -[4 5 6]  #=> [-4,-5,-6]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var r;
+r = [-4, -5, -6];
+</pre>
+        </div>
+      </div>
+
+      <h3>String</h3>
+
+      <p>String concatenation:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 'hello' + ' ' + 'world' #=> 'hello world'
 string = 'say '         #=> 'say '
 string += \yeah         #=> 'say yeah'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var string;
+'hello' + ' ' + 'world';
+string = 'say ';
+string += 'yeah';
+</pre>
+        </div>
+      </div>
 
-# String repetition when first is string literal
+      <p>String repetition when the first operand is a string literal:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 'X' * 3      #=> 'XXX'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+'XXX';
+</pre>
+        </div>
+      </div>
 
-# String subtraction/division when
-# right is string or regex literal
-string - /h/ #=> 'say yea'
-string / \y  #=> ['sa', ' ', 'eah']
+      <p>String subtraction/division when the right operand is a string or regex literal - subtraction means <code>replace</code>, division is <code>split</code>.
 
-## Min/max - return greater or lesser value
-## Existence/Inexistence 
-bigfoot ? 'grizzly bear'         #=> 'grizzly bear'
-string = \boom if n?             #=> 'boom'
-string = 'say yeah' if bigfoot!? #=> 'say yeah'
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+'say yeah' - /h/ #=> 'say yea'
+'say yeah' / \y  #=> ['sa',' ','eah']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+'say yeah'.replace(/h/, '');
+'say yeah'.split('y');
+</pre>
+        </div>
+      </div>
 
-document?.title                  #=> 'LiveScript'
+      <h3>Existence/Inexistence</h3>
 
+      <p>The <code>?</code> operator can be used in a variety of context to check for existence. The <code>!?</code> is its companion - checking for inexistence.
 
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+bigfoot ? 'grizzly bear'     #=> 'grizzly bear'
+string = \boom if window?    #=> 'boom'
+string = 'yeah' if bigfoot!? #=> 'yeah'
+document?.host               #=> 'gkz.github.com'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var string;
+(typeof bigfoot == 'undefined' || bigfoot === null) && 'grizzly bear';
+if (typeof window != 'undefined' && window !== null) {
+  string = 'boom';
+}
+if (typeof bigfoot == 'undefined' || bigfoot === null) {
+  string = 'yeah';
+}
+if (typeof document != 'undefined' && document !== null) {
+  document.host;
+}
+</pre>
+        </div>
+      </div>
 
+      <h3>Object</h3>
 
+      <p>Instanceof - list literals to the right get expanded:
 
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 
-
-## instanceof - list literal to right gets expanded
 new Date() instanceof Date           #=> true
 new Date() instanceof [Date, Object] #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$;
+new Date() instanceof Date;
+(ref$ = new Date()) instanceof Date || ref$ instanceof Object;
+</pre>
+        </div>
+      </div>
 
-## typeof
+      <p>Typeof - add a bang for a useful alternative:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
 typeof /^/  #=> object
 typeof! /^/ #=> RegEx
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var toString$ = {}.toString;
+typeof /^/;
+toString$.call(/^/).slice(8, -1);
+</pre>
+        </div>
+      </div>
 
-## delete - returns original value
-obj = {one: 1, two: 2} 
-one = delete obj.one
-one #=> 1
+      <p>Delete returns the value of the deleted item:
 
-## Property copy
-# copy enumerable properties from right to left,
-# return left value
-# <<< for own properties
-# import and importAll are aliases
-obj <<< three: 3
-obj #=> {two: 2, three: 3}
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = {one: 1, two: 2}
+r = delete obj.one
+r #=> 1
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj, r;
+obj = {
+  one: 1,
+  two: 2
+};
+r = obj.one, delete obj.one;
+r;
+</pre>
+        </div>
+      </div>
+
+      <p>Property copy - copy enumerable properties from right to left, and evaluate to the left. <code>&lt;&lt;&lt;</code> for own properties, <code>&lt;&lt;&lt;&lt;</code> for all properties. <code>import</code> and <code>importAll</code> are aliases for the two respectively. If you leave out the left operand, <code>this</code> is presumed.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = {one: 1, two: 2}
+obj <<< three: 3 #=> {two: 2, three: 3}
 {go: true} <<<< window
-document import obj
+import obj
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj;
+obj = {
+  one: 1,
+  two: 2
+};
+obj.three = 3;
+importAll$({
+  go: true
+}, window);
+import$(this, obj);
+function importAll$(obj, src){
+  for (var key in src) obj[key] = src[key];
+  return obj;
+}
+function import$(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}
+</pre>
+        </div>
+      </div>
 
-## Clone - unary, creates prototypical child value
-child = ^^(new String)
-child.length #=> 0
+      <p>Clone - creates a prototypical clone of the operand. Ie. the resulting object's prototype is the operand.
 
-## Partial application, ops as functions
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = {one: 1}
+obj2 = ^^obj
+obj2.two = 2
+obj2 #=> {one: 1, two: 2}
+obj  #=> {one: 1}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj, obj2;
+obj = {
+  one: 1
+};
+obj2 = clone$(obj);
+obj2.two = 2;
+obj2;
+obj2.one;
+function clone$(it){
+  function fun(){} fun.prototype = it;
+  return new fun;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>The infix <em>with</em> (aka the <em>cloneport</em>) combines the clone and property copy operators for easy object creation. It is equivalent to <code>^^obj &lt;&lt;&lt; obj2</code>
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+girl = {name: \hanna, age: 22}
+guy  = girl with name: \john
+guy  #=> {name: 'john',  age: 22}
+girl #=> {name: 'hanna', age: 22}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var girl, ref$, guy;
+girl = {
+  name: 'hanna',
+  age: 22
+};
+guy = (ref$ = clone$(girl), ref$.name = 'john', ref$);
+guy;
+guy.age;
+function clone$(it){
+  function fun(){} fun.prototype = it;
+  return new fun;
+}
+</pre>
+        </div>
+      </div>
+
+      <h3>Partial Application, Operators as Functions</h3>
+
+      <p>You can partially apply operators and use them as functions
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
 (+ 2) 4         #=> 6
 (*) 4 3         #=> 12
 
@@ -1750,8 +2049,33 @@ child.length #=> 0
 (in [1 to 3]) 2 #=> true
 </pre>
         </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+(function(it){
+  return it + 2;
+})(4);
+curry$(function(x$, y$){
+  return x$ * y$;
+})(4, 3);
+not$(true);
+(function(it){
+  return it == 1 || it == 2 || it == 3;
+})(2);
+function curry$(f, args){
+  return f.length > 1 ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      curry$.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
+function not$(x){ return !x; }
+</pre>
+        </div>
       </div>
+
     </div>
+
+
     <div id="conditions" class="section">
       <a name="conditions"></a>
       <h2>Conditions</h2>
