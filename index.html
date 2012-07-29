@@ -46,7 +46,7 @@
         <li><a href="#literals">Literals</a></li> 
         <li><a href="#operators">Operators</a></li> 
         <li><a href="#functions">Functions</a></li> 
-        <li><a href="#conditions">Conditions</a></li> 
+        <li><a href="#if-unless">If and Unless</a></li> 
         <li><a href="#loops">Loops and Comprehensions</a></li> 
         <li><a href="#switch">Switch</a></li> 
         <li><a href="#assignment">Assignment</a></li> 
@@ -2936,122 +2936,191 @@ addThreeNumbers(1, 2, 3);
 
     </div>
 
-    <div id="conditions" class="section">
-      <a name="conditions"></a>
-      <h2>Conditions</h2>
+    <div id="if-unless" class="section">
+      <a name="if-unless"></a>
+      <h2>If and Unless</h2>
+
+      <p>There are several ways to format an <code>if</code> statement. (Note that the <code>if</code> statement is actually an expression, and be used as such).
+
+      <p>The standard:
+
+
       <div class="example">
         <div class="example-ls">
-        <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# A bit of setup
-months = 12
-week   = <[ sun mon tues wed thurs fri sat sun ]>
-time   =
-  days:  365
-  hours: 8760
+if 2 + 2 == 4
+  'something'
+else
+  'something else'
+
+if 2 + 2 == 4 then 'something' else 'something else'
 
 
 
-# Functions defined so that the example can run
-doSomething = -> 'do nothing actually'
-doOtherThing = -> 'do other thing'
-doThirdThing = -> 'do third thing'
 
-
-
-# As expected - 'else if' and 'else' are optional
-# Meanings of == and === are reveresed from JS
-if months == 12 
-  doSomething()
-else if time.hours === '8760'
-  doOtherThing()
-else 
-  doThirdThing()
-
-# 'is not' and 'isnt'
-if time.days is not 366
-and months isnt 13
-then 'both not true!'
-
-# Post 'if'
-doSomething() if months is 12
-  
-# Chained comprehension
-if time.hours < 500 < time.hours then doSomething()
-
-# Formatting, 'if not', and 'in'
-if \sun not in week 
-then doSomething()
-else doOtherThing()
-
-# 'unless' is the same as 'if not', use of 'of'
-doOtherThing() unless \hours of time
-
-# 'that' implicitly refers to 
-# the value of the condition
-halfYear = that / 2 if time.days
+if 2 + 2 == 4
+then 'something'
+else 'something else'
 </pre>
-          </div>
-          <div class="example-js">
-          <h5>JavaScript</h5>
+        </div>
+        <div class="example-js">
 <pre class="prettyprint lang-js">
-var months, week, time, doSomething, doOtherThing, 
-    doThirdThing, that, halfYear;
-months = 12;
-week = ['sun', 'mon', 'tues', 'wed', 
-        'thurs', 'fri', 'sat', 'sun'];
+if (2 + 2 === 4) {
+  'something';
+} else {
+  'something else';
+}
+if (2 + 2 === 4) {
+  'something';
+} else {
+  'something else';
+}
+if (2 + 2 === 4) {
+  'something';
+} else {
+  'something else';
+}
+</pre>
+        </div>
+      </div>
+
+      <p>The <code>else</code> is optional, and further <code>else if</code>s can be added.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+if 2 + 2 == 4
+  'something'
+
+if 2 + 2 == 6
+  'something'
+else if 2 + 2  == 5
+  'something else'
+else
+  'the default'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+if (2 + 2 === 4) {
+  'something';
+}
+if (2 + 2 === 6) {
+  'something';
+} else if (2 + 2 === 5) {
+  'something else';
+} else {
+  'the default';
+}
+</pre>
+        </div>
+      </div>
+
+      <p>It can be used as an expression:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+result = if 2 / 2 is 0
+         then 'something'
+         else 'something else'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var result;
+result = 2 / 2 === 0 ? 'something' : 'something else';
+</pre>
+        </div>
+      </div>
+
+      <p>It can also be used postfix - it has a lower precedence than assignment, making this useful:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = 10
+x = 3 if 2 + 2 == 4
+x #=> 3
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 10;
+if (2 + 2 === 4) {
+  x = 3;
+}
+x;
+</pre>
+        </div>
+      </div>
+
+      <p><code>unless</code> is the equivalent to <code>if not</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+unless 2 + 2 == 5
+  'something'
+
+x = 10
+x = 3 unless 2 + 2 == 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+if (2 + 2 !== 5) {
+  'something';
+}
+x = 10;
+if (2 + 2 !== 5) {
+  x = 3;
+}
+</pre>
+        </div>
+      </div>
+
+      <p><code>that</code> refers implicitly to the value of the condition. It will unwrap existence checks.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+time = days: 365
+
+
+
+halfYear = that / 2 if time.days
+#=> 182.5
+
+if /^e(.*)/ == 'enter'
+  that.1   #=> 'nter'
+
+if halfYear?
+  that * 2 #=> 365
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var time, that, halfYear;
 time = {
-  days: 365,
-  hours: 8760
+  days: 365
 };
-doSomething = function(){
-  return 'do nothing actually';
-};
-doOtherThing = function(){
-  return 'do other thing';
-};
-doThirdThing = function(){
-  return 'do third thing';
-};
-if (months === 12) {
-  doSomething();
-} else if (time.hours == '8760') {
-  doOtherThing();
-} else {
-  doThirdThing();
-}
-
-if (time.days !== 366 && months !== 13) {
-  'both not true!';
-}
-
-
-if (months === 12) {
-  doSomething();
-}
-if (time.hours < 500 && 500 < time.hours) {
-  doSomething();
-}
-if (!__in('sun', week)) {
-  doSomething();
-} else {
-  doOtherThing();
-}
-if (!('hours' in time)) {
-  doOtherThing();
-}
-
 if (that = time.days) {
   halfYear = that / 2;
 }
-function __in(x, arr){
-  var i = 0, l = arr.length >>> 0;
-  while (i < l) if (x === arr[i++]) return true;
-  return false;
+if (that = /^e(.*)/.exec('enter')) {
+  that[1];
+}
+if ((that = halfYear) != null) {
+  that * 2;
 }
 </pre>
-          </div>
         </div>
+      </div>
+
     </div>
     <div id="loops" class="section">
       <a name="loops"></a>
