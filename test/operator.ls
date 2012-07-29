@@ -728,14 +728,20 @@ eq 'moo' (0 xor 'moo')
 
 ### Regex overloaded ==
 if /[aeuio]*/ == 'ee'
-  eq 'ee' that.0
-else
-  ok 0
+then eq 'ee' that.0
+else ok 0
+
+if /^e(.*)/ == 'enter'
+then ok 'enter,nter' String that
+else ok 0
+
+if /^e(.*)/ == 'zx'
+then ok 0
+else ok 1
 
 if /moo/ != 'loo'
-  ok 1
-else
-  ok 0
+then ok 1
+else ok 0
 
 ### Deep Equals
 NaN === NaN
