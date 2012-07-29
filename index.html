@@ -2120,12 +2120,18 @@ times = function(x, y){
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 f = !-> 2
-f = !(x) -> 2
+g = !(x) -> x + 2
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var f, g;
+f = function(){
+  2;
+};
+g = function(x){
+  x + 2;
+};
 </pre>
         </div>
       </div>
@@ -2137,13 +2143,18 @@ f = !(x) -> 2
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-Math.pow x, 3
-Math.pow 2 3
+
+x = 4
+Math.pow x, 3 #=> 64
+Math.pow 2 3  #=> 8
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var x;
+x = 4;
+Math.pow(x, 3);
+Math.pow(2, 3);
 </pre>
         </div>
       </div>
@@ -2159,7 +2170,8 @@ f!
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+f();
+[1, 2, 3].reverse().slice(1);
 </pre>
         </div>
       </div>
@@ -2174,7 +2186,7 @@ $ \h1 .find \a .text! #=> LiveScript
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+$('h1').find('a').text();
 </pre>
         </div>
       </div>
@@ -2189,7 +2201,9 @@ do -> 3 + 2 #=> 5
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+(function(){
+  return 3 + 2;
+})();
 </pre>
         </div>
       </div>
@@ -2205,14 +2219,18 @@ add = (x, y) -> x + y
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var add;
+add = function(x, y){
+  return x + y;
+};
+add(3, 4);
 </pre>
         </div>
       </div>
 
       <h3>Parameters</h3>
 
-      <p>Extended parameters
+      <p>Extended parameters:
 
       <div class="example">
         <div class="example-ls">
@@ -2229,7 +2247,13 @@ person = setPersonParams {}, 21, 180cm
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var setPersonParams, person;
+setPersonParams = function(person, age, height){
+  person.age = age;
+  person.height = height;
+  return person;
+};
+person = setPersonParams({}, 21, 180);
 </pre>
         </div>
       </div>
@@ -2244,37 +2268,121 @@ setText = (@text) -> this
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var setText;
+setText = function(text){
+  this.text = text;
+  return this;
+};
 </pre>
         </div>
       </div>
 
-      <p>You can set default arguments, or indeed use any logic:
+      <p>You can set default arguments:
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-
+add = (x = 4, y = 3) -> x + y
+add 1 2 #=> 3
+add 1   #=> 4
+add!    #=> 7
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var add;
+add = function(x, y){
+  x == null && (x = 4);
+  y == null && (y = 3);
+  return x + y;
+};
+add(1, 2);
 </pre>
         </div>
       </div>
 
-      <p>You can also destructure the arguments and set default arguments on that:
+      <p>...or indeed use any logical operator (in parameters, <code>x = 2</code> is just sugar for doing <code>x ? 2</code>):
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-
+add = (x && 4, y || 3) -> x + y
+add 1 2 #=> 6
+add 2 0 #=> 7
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
+var add;
+add = function(x, y){
+  x && (x = 4);
+  y || (y = 3);
+  return x + y;
+};
+add(1, 2);
+add(2, 0);
+</pre>
+        </div>
+      </div>
 
+      <p>You can also destructure the arguments:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+setCords = ({x, y}) -> "#x,#y"
+setCords y: 2, x: 3 #=> '3,2'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var setCords;
+setCords = function(arg$){
+  var x, y;
+  x = arg$.x, y = arg$.y;
+  return x + "," + y;
+};
+setCords({
+  y: 2,
+  x: 3
+});
+</pre>
+        </div>
+      </div>
+
+      <p>...and even set defaults (or use any logic) on those destructured parameters, functioning like Python's keyword arguments.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+setCords = ({x = 1, y = 3} = {}) -> "#x,#y"
+setCords y: 2, x: 3 #=> '3,2'
+setCords x: 2       #=> '2,3'
+setCords y: 7       #=> '1,7'
+setCords!           #=> '1,3'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var setCords;
+setCords = function(arg$){
+  var ref$, ref1$, x, y;
+  ref$ = arg$ != null
+    ? arg$
+    : {}, x = (ref1$ = ref$.x) != null ? ref1$ : 1, y = (ref1$ = ref$.y) != null ? ref1$ : 3;
+  return x + "," + y;
+};
+setCords({
+  y: 2,
+  x: 3
+});
+setCords({
+  x: 2
+});
+setCords({
+  y: 7
+});
+setCords();
 </pre>
         </div>
       </div>
@@ -2321,12 +2429,22 @@ function curry$(f, args){
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-square(x) -> x * x
+add(x, y) = x + y
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var add;
+add = curry$(function(x, y){
+  return x + y;
+});
+function curry$(f, args){
+  return f.length > 1 ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      curry$.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
 </pre>
         </div>
       </div>
@@ -2336,12 +2454,23 @@ square(x) -> x * x
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-
+~setX(val) =
+  @x = val / 2
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var setX, this$ = this;
+setX = curry$(function(val){
+  return this$.x = val / 2;
+});
+function curry$(f, args){
+  return f.length > 1 ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      curry$.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
 </pre>
         </div>
       </div>
@@ -2363,7 +2492,14 @@ function util2 then 2
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+util();
+util2();
+function util(){
+  return 'available above declaration';
+}
+function util2(){
+  return 2;
+}
 </pre>
         </div>
       </div>
@@ -2373,12 +2509,16 @@ function util2 then 2
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-
+~function add x, y
+  @result = x + y
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var this$ = this;
+function add(x, y){
+  return this$.result = x + y;
+}
 </pre>
         </div>
       </div>
@@ -2388,38 +2528,71 @@ function util2 then 2
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-
+util! #=> nothing
+!function util x then x
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+util();
+function util(x){
+  x;
+}
 </pre>
         </div>
       </div>
+
+      <p>You can combine the <code>~</code> and <code>!</code> to make a bound non-returning function if you wish.
 
       <h3>Bound Functions</h3>
 
       <p>Defined using the wavy arrow <code>~&gt;</code>. Use the long wavy arrow for curried and bound functions <code>~~&gt;</code>. Prepend a <code>~</code> to named functions or the short function syntax to make them bound.
 
-      <p>Bound functions have 'this' lexically bound, not dynamically bound as normally.
+      <p>Bound functions have <code>this</code> lexically bound, not dynamically bound as normally. This means that it does not matter in which context they are called, the value of <code>this</code> in their body will always be the value of <code>this</code> where they were defined.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-thisParam = (param) ~> this[param]
+obj = new
+  @x      = 10
+  @normal = -> @x
+  @bound  = ~> @x
+
+obj2 = x: 5
+obj2.normal = obj.normal
+obj2.bound  = obj.bound
+
+obj2.normal! #=> 5
+obj2.bound!  #=> 10
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var obj, obj2;
+obj = new function(){
+  var this$ = this;
+  this.x = 10;
+  this.normal = function(){
+    return this.x;
+  };
+  this.bound = function(){
+    return this$.x;
+  };
+};
+obj2 = {
+  x: 5
+};
+obj2.normal = obj.normal;
+obj2.bound = obj.bound;
+obj2.normal();
+obj2.bound();
 </pre>
         </div>
       </div>
 
-      <h3>Let and Where</h3>
+      <h3>Let, Where, With</h3>
 
-      <p>Let is short for (function(a){...}.call(this, b))
+      <p><code>let</code> is short for <code>(function(a){...}.call(this, b))</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -2430,53 +2603,144 @@ let $ = jQuery
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+(function($){
+  $.isArray([]);
+}.call(this, jQuery));
 </pre>
         </div>
       </div>
 
-      <p>Where is like let, but defined after the body. It also is slightly different.
-
-      <h3>With</h3>
-
-      <p>
+      <p><code>where</code> is like <code>let</code>, but defined after the body. It also is slightly different in that it allows for nested variable declarations.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-# Short for (function(){...}.call(x))
-with person
-  @age = 22
-
-# With new context
-dog = new
-  @name = \spot
-  @mutt = true
-
+result = x + y
+       where x = 4,
+             y = x + 1
+       #=> 9
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
+var result;
+result = (function(x, y){
+  x = 4;
+  y = x + 1;
+  return x + y;
+}.call(this, void 8, void 8));
+</pre>
+        </div>
+      </div>
 
+      <p><code>with</code> is short for <code>(function(){...}.call(x))</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+with document
+  @title = 'LiveScript!'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+(function(){
+  this.title = 'LiveScript!';
+}.call(document));
+</pre>
+        </div>
+      </div>
+
+      <p>With new context:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+dog = new
+  @name = \spot
+  @mutt = true
+#=> {name: 'spot', mutt: true}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var dog;
+dog = new function(){
+  this.name = 'spot';
+  this.mutt = true;
+};
 </pre>
         </div>
       </div>
 
       <h3>Access/Call Function Shorthand</h3>
 
-      <p>Useful for higher order functions like map and filter.
+      <p>There are especially useful for higher order functions like map and filter.
+
+      <p><code>(.prop)</code> is short for <code>(it) -> it.prop</code>.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-(.length)
-(.join \*)
-(obj.)
+map (.length), <[ hello there you ]>
+#=> [5,5,3]
+
+filter (.length < 4), <[ hello there you ]>
+#=> ['you']
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
+map(function(it){
+  return it.length;
+}, ['hello', 'there', 'you']);
+filter(function(it){
+  return it.length < 4;
+}, ['hello', 'there', 'you']);
+</pre>
+        </div>
+      </div>
 
+      <p>You can also use this to call methods:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+map (.join \|), [[1 2 3], [7 8 9]]
+#=> ['1|2|3','7|8|9']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+map(function(it){
+  return it.join('|');
+}, [[1, 2, 3], [7, 8, 9]]);
+</pre>
+        </div>
+      </div>
+
+      <p><code>(obj.)</code> is short for <code>(it) -> obj[it]</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = one: 1, two: 2, three: 3
+map (obj.), <[ one three ]>
+#=> [1,3]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj;
+obj = {
+  one: 1,
+  two: 2,
+  three: 3
+};
+map(function(it){
+  return obj[it];
+}, ['one', 'three']);
 </pre>
         </div>
       </div>
@@ -2520,6 +2784,8 @@ map(function(x){
         </div>
       </div>
 
+      <p>If you want further async functionality, you can use <a href="https://github.com/caolan/async/">async.js</a> with LiveScript.
+
       <h3>Partial Application</h3>
 
       <p>You can partially apply functions using the underscore <code>_</code> as a placeholder. Sometimes, the function you want to deal with isn't curried, or if it is the arguments are not in a good order. In these cases partial application is very useful. 
@@ -2529,29 +2795,27 @@ map(function(x){
 <pre class="prettyprint lang-ls">
 
 filterNums = filter _, [1 to 5]
-
-filterNums even  #=> [2, 4]
-filterNums odd   #=> [1, 3, 5]
-filterNums (< 3) #=> [1, 2]
+filterNums even  #=> [2,4]
+filterNums odd   #=> [1,3,5]
+filterNums (< 3) #=> [1,2]
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var filterNums, __slice = [].slice;
-filterNums = __partialize(filter, [void 8,
-    [1, 2, 3, 4, 5]], [0]);
+var filterNums, slice$ = [].slice;
+filterNums = partialize$(filter, [void 8, [1, 2, 3, 4, 5]], [0]);
 filterNums(even);
 filterNums(odd);
 filterNums((function(it){
   return it < 3;
 }));
-function __partialize(f, args, where){
+function partialize$(f, args, where){
   return function(){
-    var params = __slice.call(arguments), i,
+    var params = slice$.call(arguments), i,
         len = params.length, wlen = where.length,
         ta = args ? args.concat() : [], tw = where ? where.concat() : [];
     for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
-    return len < wlen && len ? __partialize(f, ta, tw) : f.apply(this, ta);
+    return len < wlen && len ? partialize$(f, ta, tw) : f.apply(this, ta);
   };
 }
 </pre>
@@ -2565,63 +2829,69 @@ function __partialize(f, args, where){
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-[1 2 3] 
-  |> _.map _, (* 2) 
-  |> _.reduce _, (+), 0 
-  #=> 12
+[1 2 3]
+|> _.map _, (* 2)
+|> _.reduce _, (+), 0
+#=> 12
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var __slice = [].slice;
-__partialize(_.reduce, [
-  void 8, __curry(function(__x, __y){
-    return __x + __y;
+var slice$ = [].slice;
+partialize$(_.reduce, [
+  void 8, curry$(function(x$, y$){
+    return x$ + y$;
   }), 0
 ], [0])(
-__partialize(_.map, [
-  void 8, (function(it){ return it * 2; })
+partialize$(_.map, [
+  void 8, (function(it){
+    return it * 2;
+  })
 ], [0])(
 [1, 2, 3]));
-function __partialize(f, args, where){
+function partialize$(f, args, where){
   return function(){
-    var params = __slice.call(arguments), i,
+    var params = slice$.call(arguments), i,
         len = params.length, wlen = where.length,
         ta = args ? args.concat() : [], tw = where ? where.concat() : [];
     for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
-    return len < wlen && len ? __partialize(f, ta, tw) : f.apply(this, ta);
+    return len < wlen && len ? partialize$(f, ta, tw) : f.apply(this, ta);
   };
 }
-function __curry(f, args){
+function curry$(f, args){
   return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
     return params.push.apply(params, arguments) < f.length && arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
+      curry$.call(this, f, params) : f.apply(this, params);
   } : f;
 }
-
 </pre>
         </div>
       </div>
 
       <h3>Arguments</h3>
 
-      <p>If you have only one argument, you can use <code>it</code> to access it without having to define it.
+      <p>If you have only one argument, you can use <code>it</code> to access it without having to define an argument.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 f = -> it + 2
+f 3 #=> 5
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-
+var f;
+f = function(it){
+  return it + 2;
+};
+f(3);
 </pre>
         </div>
       </div>
 
-      <p>You can access the <code>arguments</code> object with the shorthand <code>&</code>. The first argument is <code>&0</code>, the second <code>&1</code>, and so on.
+      <p>You can access the <code>arguments</code> object with the shorthand <code>&</code>. The first argument is <code>&0</code>, the second <code>&1</code>, and so on. <code>&</code> alone is <code>arguments</code> as a whole.
 
       <div class="example">
         <div class="example-ls">
