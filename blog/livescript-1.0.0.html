@@ -132,6 +132,44 @@ x$.innerHTML = 'LIVESCRIPT!';
 </div>
 </div>
 
+
+<p>You can now set defaults for destructured parameters, functioning like Python's keyword arguments.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+setCords = ({x = 1, y = 3} = {}) -> "#x,#y"
+setCords y: 2, x: 3 #=> '3,2'
+setCords x: 2       #=> '2,3'
+setCords y: 7       #=> '1,7'
+setCords!           #=> '1,3'
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+var setCords;
+setCords = function(arg$){
+  var ref$, ref1$, x, y;
+  ref$ = arg$ != null
+    ? arg$
+    : {}, x = (ref1$ = ref$.x) != null ? ref1$ : 1, y = (ref1$ = ref$.y) != null ? ref1$ : 3;
+  return x + "," + y;
+};
+setCords({
+  y: 2,
+  x: 3
+});
+setCords({
+  x: 2
+});
+setCords({
+  y: 7
+});
+setCords();
+</pre>
+</div>
+</div>
+
 <p><code>where</code> is like <code>let</code>, but defined after the body. It also is slightly different in that it allows for nested variable declarations.
 
 <div class="example">
