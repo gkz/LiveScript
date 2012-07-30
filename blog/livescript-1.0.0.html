@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>LiveScript 1.0.0 released!</title>
+<meta name='description' content="LiveScript is a language that compiles down to JavaScript. It is a fork of Coco, which is in turn derived from CoffeeScript. LiveScript is Coco that is much more compatible with CoffeeScript, more functional, and more feature rich.">
+
+<link rel="icon" type="image/png" href="../images/icon.png">
+
+<link href="../bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
+<link href="../bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+<script src="../bootstrap/js/bootstrap.js"></script>
+
+<script src="../google-code-prettify/prettify.js"></script>
+<link href="../google-code-prettify/prettify.css" rel="stylesheet">
+<script src="../lang-ls-1.0.0.js"></script>
+
+<link href="styles.css" rel="stylesheet">
+
+<script>
+  if(window.location.host === "gkz.github.com") {
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-7402515-5']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  }
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="span10 content">
+        <h1>LiveScript 1.0.0 released!</h1>
+        <div class="date-author">
+          <span class="date">30 Jul 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+        </div>
+        
+
+<p>After 6 months of work, <a href="http://gkz.github.com/LiveScript/">LiveScript</a> 1.0.0 has been released!
+
+<p>LiveScript is a language which compiles to JavaScript. It is a fork of Coco which is in turn derived from CoffeeScript. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript is Coco but much more compatible with CoffeeScript, more functional, and more feature rich. LiveScript aims for increased expressiveness and code beauty.
+
+<p>While adding features to assist in functional style programming, LiveScript also deeply supports imperative and object oriented programming, and has an optional class system with inheritance, calls to super, and more.
+
+<p>For more information, check out the <a href="http://gkz.github.com/LiveScript/">LiveScript site</a>.
+
+<h3>1.0.0</h3>
+
+<p>The 1.0.0 release means that LiveScript is ready for primetime! It means stability and large advance notice of any backward incompatible changes.
+
+<p>Many people are already using LiveScript! Here is a partial list of some I've found:
+
+<ul>
+<li>
+<a href="https://github.com/audreyt/ethercalc">ethercalc</a> - Node.js version of Multi-user SocialCalc spreadsheet</li>
+<li>
+<a href="https://github.com/audreyt/jscex-jquery">jscex-jquery</a> - Async/Await support for jQuery 1.5+</li>
+<li>
+<a href="https://github.com/audreyt/q-jscex">q-jscex</a> - Async/Await syntax support for Q promises </li>
+<li>
+<a href="https://github.com/audreyt/node-cluster-server">node-cluster-server</a> - Simple multi-CPU cluster server manager for Node 0.6+</li>
+<li>
+<a href="http://github.com/audreyt/letris-solver">letris-solver</a> - Simple web-based solver for Letris (and Draw Something)</li>
+<li>
+<a href="https://github.com/gkz/prelude-ls">prelude.ls</a> - recommended base library for LiveScript</li>
+<li>
+<a href="https://github.com/quarterto/Gusto">Gusto</a> - Tasty MVC for Node.js (see also <a href="https://github.com/quarterto/Gusto-Blank">Gusto-Blank</a>)</li>
+<li>
+<a href="https://github.com/nbqx/okiba">okiba</a> - LiveScript + express sample </li>
+<li>
+<a href="https://github.com/killdream/moros">moros</a> - DOOM processing utilities using multiple-dispatcher functions. Plays nice with NodeLists too</li>
+<li>
+<a href="https://github.com/killdream/slake-build-utils">Slake Build Utilities</a> - Build utilities for Slakefiles</li>
+<li>
+<a href="https://github.com/killdream/jsk-togglable">jsk-togglable</a> - Basic behaviours for togglable elements in a WebPage. </li>
+<li>
+<a href="https://github.com/killdream/jsk-tabs">jsk-tabs</a> - Basic behaviours for Tabbed components in a webpage.</li>
+<li>
+<a href="https://github.com/brunch/brunch/tree/topics/livescript/src">brunch</a> - LiveScript branch - HTML5 applications made easy.</li>
+<li>
+<a href="https://github.com/mizchi/express-livescript-assets">express-livescript-assets</a> - a LiveScript, express, connect-assets sample</li>
+<li>
+<a href="https://github.com/quarterto/LiveShell">LiveShell</a> - Experimental shell written in LiveScript</li>
+</ul>
+
+<p>Have a project written in LiveScript? Add it to the <a href="https://github.com/gkz/LiveScript/wiki/Projects-using-LiveScript">wiki page</a>.
+
+<h3>Changes</h3>
+
+<p>1.0.0 brings many changes - the following is a sample of them, for the full list check out the <a href="http://gkz.github.com/LiveScript/#changelog">changelog</a>.
+
+<p>Cascade - beautiful chaining:
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+a = [2 7 1 8]
+  ..push 3
+  ..shift!
+  ..sort!
+a #=> [1,3,7,8]
+
+document.querySelector \h1
+  ..style
+    ..color    = \red
+    ..fontSize = \large
+  ..innerHTML = 'LIVESCRIPT!'
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+var x$, a, y$;
+x$ = a = [2, 7, 1, 8];
+x$.push(3);
+x$.shift();
+x$.sort();
+a;
+
+x$ = document.querySelector('h1');
+y$ = x$.style;
+y$.color = 'red';
+y$.fontSize = 'large';
+x$.innerHTML = 'LIVESCRIPT!';
+</pre>
+</div>
+</div>
+
+<p><code>where</code> is like <code>let</code>, but defined after the body. It also is slightly different in that it allows for nested variable declarations.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+result = x + y
+       where x = 4,
+             y = x + 1
+       #=> 9
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+var result;
+result = (function(x, y){
+  x = 4;
+  y = x + 1;
+  return x + y;
+}.call(this, void 8, void 8));
+</pre>
+</div>
+</div>
+
+<p>For more see the <a href="http://gkz.github.com/LiveScript/#changelog">changelog</a>.
+
+<h3>Conclusion</h3>
+
+<p>LiveScript would not have been possible without many of your contributions and support. Thank you!
+
+<p>Many people have started using LiveScript in their projects - you can check out a partial list of <a href="https://github.com/gkz/LiveScript/wiki/Projects-using-LiveScript">projects written in LiveScript</a>, and <a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">projects which support LiveScript</a>.
+
+<p>Have any ideas or suggestions? You can <a href="https://github.com/gkz/LiveScript/issues?direction=desc&sort=updated&state=open">create a ticket on GitHub</a> or ask general questions at the <a href="https://groups.google.com/forum/#!forum/livescript">LiveScript Google Group</a>.
+
+<p>And finally, for more information, <strong><a href="http://gkz.github.com/LiveScript/">check out the LiveScript site</a></strong>.
+
+
+        <p class="note">Looking for an intern this fall? <strong><a id="email">Hire me</a></strong>!
+        <hr>
+        <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for more on LiveScript and prelude.ls
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+        if(window.location.host === "gkz.github.com") {
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'livescript'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        }
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+      </div>
+      <div class="span2 sidebar">
+        <h1><a href="http://gkz.github.com/LiveScript/">LiveScript</a><img src="../images/icon.png"></h1>
+        <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="160" height="40"></iframe>
+        <a href="http://gkz.github.com/LiveScript"><div class="btn btn-primary btn-large btn">LiveScript site</div></a>
+        <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn">View on GitHub</div></a>
+        <a href="http://gkz.github.com/prelude-ls"><div class="btn btn-large btn">prelude.ls site</div></a>
+        <div><a href="https://twitter.com/share" class="twitter-share-button" data-via="gkzahariev" data-size="large">Tweet</a></div>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+        <h4>Blog Posts</h4>
+        <ul>
+          <li><a href="livescript-1.0.0.html">LiveScript 1.0.0 Released</a>
+          <li><a href="functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript - Part 2</a>
+          <li><a href="ten-reasons-to-switch-from-coffeescript.html">10 Reasons to Switch from CoffeeScript to LiveScript</a>
+          <li><a href="functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a>
+          <li><a href="livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends</h3>
+        </ul>
+      </div>
+    </div>
+  </div>
+<script>
+  prettyPrint();
+  document.getElementById("email").href = "mailto:z" + "@" + "georgezahariev.com";
+</script>
+</body>
+</html>

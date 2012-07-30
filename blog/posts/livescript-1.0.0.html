@@ -1,0 +1,130 @@
+title: LiveScript 1.0.0 released!
+date:  30 Jul 2012
+author: <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+-----
+
+<p>After 6 months of work, <a href="http://gkz.github.com/LiveScript/">LiveScript</a> 1.0.0 has been released!
+
+<p>LiveScript is a language which compiles to JavaScript. It is a fork of Coco which is in turn derived from CoffeeScript. Like those two it has a relatively straightforward mapping to JavaScript. LiveScript is Coco but much more compatible with CoffeeScript, more functional, and more feature rich. LiveScript aims for increased expressiveness and code beauty.
+
+<p>While adding features to assist in functional style programming, LiveScript also deeply supports imperative and object oriented programming, and has an optional class system with inheritance, calls to super, and more.
+
+<p>For more information, check out the <a href="http://gkz.github.com/LiveScript/">LiveScript site</a>.
+
+<h3>1.0.0</h3>
+
+<p>The 1.0.0 release means that LiveScript is ready for primetime! It means stability and large advance notice of any backward incompatible changes.
+
+<p>Many people are already using LiveScript! Here is a partial list of some I've found:
+
+<ul>
+<li>
+<a href="https://github.com/audreyt/ethercalc">ethercalc</a> - Node.js version of Multi-user SocialCalc spreadsheet</li>
+<li>
+<a href="https://github.com/audreyt/jscex-jquery">jscex-jquery</a> - Async/Await support for jQuery 1.5+</li>
+<li>
+<a href="https://github.com/audreyt/q-jscex">q-jscex</a> - Async/Await syntax support for Q promises </li>
+<li>
+<a href="https://github.com/audreyt/node-cluster-server">node-cluster-server</a> - Simple multi-CPU cluster server manager for Node 0.6+</li>
+<li>
+<a href="http://github.com/audreyt/letris-solver">letris-solver</a> - Simple web-based solver for Letris (and Draw Something)</li>
+<li>
+<a href="https://github.com/gkz/prelude-ls">prelude.ls</a> - recommended base library for LiveScript</li>
+<li>
+<a href="https://github.com/quarterto/Gusto">Gusto</a> - Tasty MVC for Node.js (see also <a href="https://github.com/quarterto/Gusto-Blank">Gusto-Blank</a>)</li>
+<li>
+<a href="https://github.com/nbqx/okiba">okiba</a> - LiveScript + express sample </li>
+<li>
+<a href="https://github.com/killdream/moros">moros</a> - DOOM processing utilities using multiple-dispatcher functions. Plays nice with NodeLists too</li>
+<li>
+<a href="https://github.com/killdream/slake-build-utils">Slake Build Utilities</a> - Build utilities for Slakefiles</li>
+<li>
+<a href="https://github.com/killdream/jsk-togglable">jsk-togglable</a> - Basic behaviours for togglable elements in a WebPage. </li>
+<li>
+<a href="https://github.com/killdream/jsk-tabs">jsk-tabs</a> - Basic behaviours for Tabbed components in a webpage.</li>
+<li>
+<a href="https://github.com/brunch/brunch/tree/topics/livescript/src">brunch</a> - LiveScript branch - HTML5 applications made easy.</li>
+<li>
+<a href="https://github.com/mizchi/express-livescript-assets">express-livescript-assets</a> - a LiveScript, express, connect-assets sample</li>
+<li>
+<a href="https://github.com/quarterto/LiveShell">LiveShell</a> - Experimental shell written in LiveScript</li>
+</ul>
+
+<p>Have a project written in LiveScript? Add it to the <a href="https://github.com/gkz/LiveScript/wiki/Projects-using-LiveScript">wiki page</a>.
+
+<h3>Changes</h3>
+
+<p>1.0.0 brings many changes - the following is a sample of them, for the full list check out the <a href="http://gkz.github.com/LiveScript/#changelog">changelog</a>.
+
+<p>Cascade - beautiful chaining:
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+a = [2 7 1 8]
+  ..push 3
+  ..shift!
+  ..sort!
+a #=> [1,3,7,8]
+
+document.querySelector \h1
+  ..style
+    ..color    = \red
+    ..fontSize = \large
+  ..innerHTML = 'LIVESCRIPT!'
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+var x$, a, y$;
+x$ = a = [2, 7, 1, 8];
+x$.push(3);
+x$.shift();
+x$.sort();
+a;
+
+x$ = document.querySelector('h1');
+y$ = x$.style;
+y$.color = 'red';
+y$.fontSize = 'large';
+x$.innerHTML = 'LIVESCRIPT!';
+</pre>
+</div>
+</div>
+
+<p><code>where</code> is like <code>let</code>, but defined after the body. It also is slightly different in that it allows for nested variable declarations.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+result = x + y
+       where x = 4,
+             y = x + 1
+       #=> 9
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+var result;
+result = (function(x, y){
+  x = 4;
+  y = x + 1;
+  return x + y;
+}.call(this, void 8, void 8));
+</pre>
+</div>
+</div>
+
+<p>For more see the <a href="http://gkz.github.com/LiveScript/#changelog">changelog</a>.
+
+<h3>Conclusion</h3>
+
+<p>LiveScript would not have been possible without many of your contributions and support. Thank you!
+
+<p>Many people have started using LiveScript in their projects - you can check out a partial list of <a href="https://github.com/gkz/LiveScript/wiki/Projects-using-LiveScript">projects written in LiveScript</a>, and <a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">projects which support LiveScript</a>.
+
+<p>Have any ideas or suggestions? You can <a href="https://github.com/gkz/LiveScript/issues?direction=desc&sort=updated&state=open">create a ticket on GitHub</a> or ask general questions at the <a href="https://groups.google.com/forum/#!forum/livescript">LiveScript Google Group</a>.
+
+<p>And finally, for more information, <strong><a href="http://gkz.github.com/LiveScript/">check out the LiveScript site</a></strong>.
+
