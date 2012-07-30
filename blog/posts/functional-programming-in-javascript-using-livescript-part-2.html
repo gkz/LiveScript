@@ -1,5 +1,5 @@
 title: Functional Programming in JavaScript using LiveScript - Part 2
-date: 9 Jul 2012
+date: 9 Jul 2012, updated 30 Jul 2012
 author: <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
 -----
 <p>A couple of weeks ago we discussed functional programming in JavaScript using LiveScript. Since then LiveScript has received many updates<span id="hn-notice"> (including some features suggested by <a href="http://news.ycombinator.com/">Hacker News</a> readers)</span>, so it's now time for Part 2!
@@ -80,24 +80,20 @@ filterNums (< 3) #=> [1, 2]
 </div>
 <div class="example-js">
 <pre class="prettyprint lang-js">
-var filterNums, __slice = [].slice;
-filterNums = __partialize(filter, [void 8,
-    [1, 2, 3, 4, 5]], [0]);
+var filterNums, slice$ = [].slice;
+filterNums = partialize$(filter, [void 8, [1, 2, 3, 4, 5]], [0]);
 filterNums(even);
 filterNums(odd);
 filterNums((function(it){
   return it < 3;
 }));
-function __partialize(f, args, where){
+function partialize$(f, args, where){
   return function(){
-    var params = __slice.call(arguments), i,
+    var params = slice$.call(arguments), i,
         len = params.length, wlen = where.length,
-        ta = args ? args.concat() : [], tw = where ? 
-             where.concat() : [];
-    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; 
-                               tw.shift(); }
-    return len < wlen && len ? __partialize(f, ta, tw) : 
-        f.apply(this, ta);
+        ta = args ? args.concat() : [], tw = where ? where.concat() : [];
+    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
+    return len < wlen && len ? partialize$(f, ta, tw) : f.apply(this, ta);
   };
 }
 </pre>
@@ -116,37 +112,34 @@ function __partialize(f, args, where){
 </div>
 <div class="example-js">
 <pre class="prettyprint lang-js">
-var __slice = [].slice;
-__partialize(_.reduce, [
-  void 8, __curry(function(__x, __y){
-    return __x + __y;
+var slice$ = [].slice;
+partialize$(_.reduce, [
+  void 8, curry$(function(x$, y$){
+    return x$ + y$;
   }), 0
 ], [0])(
-__partialize(_.map, [
-  void 8, (function(it){ return it * 2; })
+partialize$(_.map, [
+  void 8, (function(it){
+    return it * 2;
+  })
 ], [0])(
 [1, 2, 3]));
-function __partialize(f, args, where){
+function partialize$(f, args, where){
   return function(){
-    var params = __slice.call(arguments), i,
+    var params = slice$.call(arguments), i,
         len = params.length, wlen = where.length,
-        ta = args ? args.concat() : [], tw = where ?
-             where.concat() : [];
-    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; 
-                               tw.shift(); }
-    return len < wlen && len ? __partialize(f, ta, tw) :
-        f.apply(this, ta);
+        ta = args ? args.concat() : [], tw = where ? where.concat() : [];
+    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
+    return len < wlen && len ? partialize$(f, ta, tw) : f.apply(this, ta);
   };
 }
-function __curry(f, args){
+function curry$(f, args){
   return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length &&
-        arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      curry$.call(this, f, params) : f.apply(this, params);
   } : f;
 }
-
 </pre>
 </div>
 </div>
@@ -217,12 +210,12 @@ map(function(it){ return it.name; }, data);
 
 filter(function(it){ return it.age > 18; }, data);
 
-map(function(it){ 
-  return it.toUpperCase(); 
+map(function(it){
+  return it.toUpperCase();
 }, ['hi', 'there']);
 
-map(function(it){ 
-  return it.join('-'); 
+map(function(it){
+  return it.join('-');
 }, [[1, 2, 3], [4, 5]]);
 
 m4 = { blength: 15, color: 'black', sites: 'iron' };
@@ -298,8 +291,8 @@ second #=> 2
 </div>
 <div class="example-js">
 <pre class="prettyprint lang-js">
-var first, second, __ref;
-__ref = [1, 2], first = __ref[0], second = __ref[1];
+var ref$, first, second;
+ref$ = [1, 2], first = ref$[0], second = ref$[1];
 first;
 second;
 </pre>
@@ -325,11 +318,11 @@ last   #=> 5
 </div>
 <div class="example-js">
 <pre class="prettyprint lang-js">
-var head, tail, first, middle, last, __ref, __i, __slice = [].slice;
-__ref = [1, 2, 3, 4, 5], head = __ref[0], tail = __slice.call(__ref, 1);
+var ref$, head, tail, first, i$, middle, last, slice$ = [].slice;
+ref$ = [1, 2, 3, 4, 5], head = ref$[0], tail = slice$.call(ref$, 1);
 head;
 tail;
-__ref = [1, 2, 3, 4, 5], first = __ref[0], middle = 1 < (__i = __ref.length - 1) ? __slice.call(__ref, 1, __i) : (__i = 1, []), last = __ref[__i];
+ref$ = [1, 2, 3, 4, 5], first = ref$[0], middle = 1 < (i$ = ref$.length - 1) ? slice$.call(ref$, 1, i$) : (i$ = 1, []), last = ref$[i$];
 first;
 middle;
 last;
@@ -349,12 +342,12 @@ age  #=> 20
 </div>
 <div class="example-js">
 <pre class="prettyprint lang-js">
-var name, age, __ref;
-__ref = {
+var ref$, name, age;
+ref$ = {
   weight: 110,
   name: 'emma',
   age: 20
-}, name = __ref.name, age = __ref.age;
+}, name = ref$.name, age = ref$.age;
 name;
 age;
 </pre>
@@ -377,8 +370,8 @@ list2 #=> [4, 5, 6]
 </div>
 <div class="example-js">
 <pre class="prettyprint lang-js">
-var list1, x, xs, list2, y, ys, __ref, __slice = [].slice;
-__ref = [[1, 2, 3], [4, 5, 6]], list1 = __ref[0], x = list1[0], xs = __slice.call(list1, 1), list2 = __ref[1], y = list2[0], ys = __slice.call(list2, 1);
+var ref$, list1, x, xs, list2, y, ys, slice$ = [].slice;
+ref$ = [[1, 2, 3], [4, 5, 6]], list1 = ref$[0], x = list1[0], xs = slice$.call(list1, 1), list2 = ref$[1], y = list2[0], ys = slice$.call(list2, 1);
 x;
 xs;
 list1;
@@ -465,10 +458,10 @@ take(n, [x, ...xs]:list) =
 </div>
 <div class="example-js">
 <pre class="prettyprint lang-js">
-var take, __slice = [].slice;
-take = __curry(function(n, list){
+var take, slice$ = [].slice;
+take = curry$(function(n, list){
   var x, xs;
-  x = list[0], xs = __slice.call(list, 1);
+  x = list[0], xs = slice$.call(list, 1);
   switch (false) {
   case !(n <= 0):
     return [];
@@ -478,12 +471,11 @@ take = __curry(function(n, list){
     return [x].concat(take(n - 1, xs));
   }
 });
-function __curry(f, args){
+function curry$(f, args){
   return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length 
-        && arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      curry$.call(this, f, params) : f.apply(this, params);
   } : f;
 }
 </pre>
@@ -505,8 +497,12 @@ result #=> 10
 <div class="example-js">
 <pre class="prettyprint lang-js">
 var result;
-result = (function(it){ return it * 2; })(
-(function(it){ return it + 1; })(
+result = (function(it){
+  return it * 2;
+})(
+(function(it){
+  return it + 1;
+})(
 4));
 result;
 </pre>
@@ -524,17 +520,19 @@ map (<| 4, 2), [(+), (*), (/)]
 </div>
 <div class="example-js">
 <pre class="prettyprint lang-js">
-map((function(it){ return it(4, 2); }), [
-  __curry(function(__x, __y){ return __x + __y; }),
-  __curry(function(__x, __y){ return __x * __y; }), 
-  __curry(function(__x, __y){ return __x / __y; })
+map((function(it){
+  return it(4, 2);
+}), [
+  curry$(function(x$, y$){ return x$ + y$; }),
+  curry$(function(x$, y$){ return x$ * y$; }),
+  curry$(function(x$, y$){ return x$ / y$;
+  })
 ]);
-function __curry(f, args){
+function curry$(f, args){
   return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length 
-        && arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      curry$.call(this, f, params) : f.apply(this, params);
   } : f;
 }
 </pre>
