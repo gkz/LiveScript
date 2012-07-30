@@ -4,7 +4,7 @@ test-name = -> it.match /.+\.html$/
 task \build 'build blog posts' build-all
 
 task \watch 'watch for changes, build when they happen' ->
-  watch \post-template.html -> 
+  watch \post-template.html ->
     post-template := slurp \post-template.html
     build-all!
 
@@ -20,14 +20,14 @@ task \watch 'watch for changes, build when they happen' ->
   console.log "BUILDING: #post"
   [head, content] = slurp "posts/#post" .split \-----
   options = {}
-  for line in head.split \\n when match = line.match /([a-z]+): (.+)/
-    options[match.1] = match.2.trim!
-  options.content = content 
+  for line in head.split \\n when result = line.match /([a-z]+): (.+)/
+    options[result.1] = result.2.trim!
+  options.content = content
 
   output = post-template
   for option, value of options
     output = output.replace //{{#option}}//g value
-    
+
   spit post, output
 
 !function watch source, action

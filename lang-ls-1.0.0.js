@@ -1,8 +1,8 @@
 var tint, ident, kwend, interps, regexes;
 tint = function(ext, shortcuts, fallthroughs){
-  var rule, __i, __len;
-  for (__i = 0, __len = shortcuts.length; __i < __len; ++__i) {
-    rule = shortcuts[__i];
+  var i$, len$, rule;
+  for (i$ = 0, len$ = shortcuts.length; i$ < len$; ++i$) {
+    rule = shortcuts[i$];
     if (rule.length < 4) {
       rule.splice(2, 0, 0);
     }
