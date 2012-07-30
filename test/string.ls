@@ -25,6 +25,7 @@ eq "#{hello} #{ 1 + 2 } #{world}", "Hello 3 World"
 eq "#{hello + world}", 'HelloWorld'
 eq "#{hello + ' ' + world + '!'}", 'Hello World!'
 
+eq helloWorld = hello + world, "#hello-world"
 
 eq "\#{Escaping} first", '#{Escaping} first'
 eq "Escaping \#{in} middle", 'Escaping #{in} middle'

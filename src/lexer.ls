@@ -103,15 +103,15 @@ exports import
   doID: (code, index) ->
     [input] = regex-match = (ID <<< lastIndex: index)exec code
     return 0 unless input
-    id = regex-match.1.replace /-+([a-zA-Z0-9$_])/g, -> it.1.toUpperCase!
+    id = camelize regex-match.1
     @check-consistency id, regex-match.1 if /-/.test regex-match.1
     if NONASCII.test id
       try Function "var #id" catch @carp "invalid identifier \"#id\""
     {last} = this
     # `id:_` `_.id` `@id`
-    if regex-match.4 or last.0 is \DOT or @adi!
+    if regex-match.2 or last.0 is \DOT or @adi!
       @token \ID if id in KEYWORDS then Object(id) <<< {+reserved} else id
-      @token \: \: if regex-match.4
+      @token \: \: if regex-match.2
       return input.length
     # keywords
     switch id
@@ -641,19 +641,20 @@ exports import
         parts.push [\S; @countLines str.slice 0 i; @line]
         return parts <<< size: pos + i + end.length
       case \#
-        if id = id-orig = (ID <<< lastIndex: i+1)exec(str)1
-          id.=replace /-+([a-zA-Z0-9$_])/g, -> it.1.toUpperCase!
-          break if id is \this
-          try Function "'use strict'; var #id"; break
-          @carp "invalid variable interpolation \"#id\""
-        continue unless \{ is str.charAt i+1
+        continue unless (id = (ID <<< lastIndex: i+1)exec str .1)
+                     or \{ is str.charAt i+1
       case \\ then ++i; fallthrough
       default continue
       # `"#a#{b || c}"` => `a + "" + (b || c)`
       if i or nested and not stringified
         stringified = parts.push [\S; @countLines str.slice 0 i; @line]
       if id
-        str.=slice delta = i + 1 + id-orig.length
+        {length} = id
+        unless id is \this
+          id = camelize id
+          try Function "'use strict'; var #id" catch
+            @carp "invalid variable interpolation \"#id\""
+        str.=slice delta = i + 1 + length
         parts.push [\TOKENS nested = [[\ID id, @line]]]
       else
         clone  = exports with {+inter, @emender}
@@ -739,7 +740,7 @@ exports import
     if @tokens[* - 2 - (@last.0 in <[NEWLINE INDENT]>)]?0 is \FOR
       import {-seenFor, +seenFrom}
 
-  # Complains on duplicate flag.
+  # Complains on bad regex flag.
   validate: (flag) ->
     if flag and /(.).*\1/exec flag
       @carp "duplicate regex flag `#{that.1}`"
@@ -800,6 +801,9 @@ enslash = replacer /\\/g \\\\
 
 # Quotes slashes unless already quoted.
 reslash = replacer /(\\.)|\//g -> &1 or \\\/
+
+# Transforms hyphenated-words to camelCase.
+camelize = replacer /-[a-z]/ig -> it.char-at 1 .to-upper-case!
 
 # Deletes the first character if newline.
 function lchomp then it.slice 1 + it.lastIndexOf \\n 0
@@ -1119,9 +1123,10 @@ KEYWORDS = KEYWORDS_SHARED +++ KEYWORDS_UNUSED
 ##### Regexes
 # Some of these are given `g` flag and made sure to match empty string
 # so that they can lex from any index by receiving `.lastIndex` beforehand.
-ID = // ( (?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+((\-[a-zA-Z]+)?)* )
-        ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
-    |//g
+ID = //
+  ( (?!\s)[a-z_$\xAA-\uFFDC](?:(?!\s)[\w$\xAA-\uFFDC]|-[a-z])* )
+  ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
+|//ig
 SYMBOL = //
   [-+*/^]= | %%?= | ::?=        # compound assign
 | \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
