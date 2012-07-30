@@ -3610,31 +3610,108 @@ default:
     <div id="assignment" class="section">
       <a name="assignment"></a>
       <h2>Assignment</h2>
+
+      <p>Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. 
+
       <div class="example">
         <div class="example-ls">
-          <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# Basic
-x = 10
-var y # Can declare without initializing
 
-# Nondeclaring assignment using :=
-# := must be used to modify variables
-# in upper scopes unlike in CoffeeScript
+x = 10
+
+
 do ->
   x = 5
+
 x #=> 10
 
 do ->
   x := 2
+
 x #=> 2
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 10;
 
-# Constants
-const z = 3
-# 'z = 2' would result in compile time error
+(function(){
+  var x;
+  return x = 5;
+})();
+x;
 
-# Compound assign
-# (no compound assign for bitwise ops)
+(function(){
+  return x = 2;
+})();
+x;
+</pre>
+        </div>
+      </div>
+
+      <p>Almost everything is an expression, which means you can do things like:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = if 2 + 2 == 4
+    then 10
+    else 0
+x #=> 10
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 2 + 2 === 4 ? 10 : 0;
+
+x;
+</pre>
+        </div>
+      </div>
+
+      <p>Things such as loops, switch statements, and even try/catch statements are all expressions.
+
+      <p>If you want to simply declare a variable and not initialize it, you can use <code>var</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+var x
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+</pre>
+        </div>
+      </div>
+
+      <p>You can also declare constants in LiveScript using <code>const</code>. They are checked at compile time - the compiled JS is no different.
+
+      <p>Attempting to compile the following:
+
+<pre class="prettyprint lang-ls">
+const x = 10
+x = 0
+</pre>
+
+      <p>Results in <code>redeclaration of constant "x" on line 2</code>.
+
+      <p>However, objects are not frozen if declared as constants - you can still modify their properties. You can force all variables to be constants if you compile with the <code>-k</code> or <code>--const</code> flags.
+
+      <h3>Operators</h3>
+
+      <p>Compound assignment:
+
+      <p>(<code>?</code>, <code>!?</code>, <code>||</code>, or <code>&&</code> can prefix any compound assign.)
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+x = 2    #=> 2
 x += 2   #=> 4
 x -= 1   #=> 3
 x *= 3   #=> 9
@@ -3654,104 +3731,22 @@ x        #=> 8
 x ||= 5  #=> 8
 x &&= 5  #=> 5
 
-# ?, !?, ||, or && can prefix any 
-# compound assign
 x &&+= 3 #=> 8
 x ?*= 2
 x        #=> 8
-
-# Unary assignment
-y = \45
-+  = y   #=> 45   (make into number)
-!! = y   #=> true (make into boolean)
--~-~ = y #=> 3    (int-coercing double crement)
-
-# Assignment defaults
-# can use || && ? !?
-x ? y = 10
-y        #=> 10
-
-# Can use = instead of ? in function parameters
-f = (z = 7) -> z
-f 9      #=> 9
-f!       #=> 7
-
-
-
-f = (z && 5) -> z
-f!       #=> (nothing)
-f 3      #=> 5
-
-# Destructering
-one = \boom
-two = \lala
-list = [one, two] #=> ['boom', 'lala']
-[two, one] = list #=> ['lala', 'boom']
-
-[first, ...middle, last] = [1 to 5]
-first  #=> 1
-middle #=> [2, 3, 4]
-last   #=> 5
-
-mitch =
-  age:    21
-  height: 180cm
-  pets:    [\dog, \goldfish]
-  fam:
-    bro: \phile
-
-{age, height, pets: [pet1, pet2], fam: {bro}} = mitch
-height #=> 180
-bro    #=> 'phile'
-pet1   #=> 'dog'
-
-# You can also rename things via :label
-{height:tallness} = mitch
-tallness #=> 180
-
-# Subdestructering - works with lists and objects
-phile = {}
-phile{height, pets} = mitch
-phile.height #=> 180
-phile.pets   #=> ['dog', 'goldfish']
-
-# Soak assign - performs assign only 
-# if right side value exists
-x? = age     
-x #=> 21
 </pre>
         </div>
         <div class="example-js">
-          <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var x, y, f, one, two, list, first, middle, last, 
-  mitch, age, height, pet1, pet2, bro, tallness,
-  phile, __ref, __i, __slice = [].slice;
-
-x = 10;
-
-(function(){
-  var x;
-  return x = 5;
-})();
-x;
-(function(){
-  return x = 2;
-})();
-x;
-
-z = 3;
-
-
-
-
+var x, ref$;
+x = 2;
 x += 2;
 x -= 1;
 x *= 3;
 x /= 3;
 x %= 3;
-x = ((x) % (__ref = 3) + __ref) % __ref;
-x <= (__ref = -1) || (x = __ref);
+x = ((x) % (ref$ = 3) + ref$) % ref$;
+x <= (ref$ = -1) || (x = ref$);
 x >= 2 || (x = 2);
 x = Math.pow(x, 2);
 x = Math.pow(x, 2);
@@ -3764,133 +3759,278 @@ x;
 x || (x = 5);
 x && (x = 5);
 
-
-
 x && (x += 3);
 x == null && (x *= 2);
 x;
+</pre>
+        </div>
+      </div>
 
+      <p>Unary Assignment:
 
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+y = \45
++  = y   #=> 45   (make into number)
+!! = y   #=> true (make into boolean)
+-~-~ = y #=> 3    (int-coercing double crement)
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var y;
 y = '45';
 y = +y;
 y = !!y;
 y = -~-~y;
+</pre>
+        </div>
+      </div>
 
+      <p>Assignment defaults - you can use <code>||</code>, <code>&&</code>, <code>?</code>, and <code>!?</code>.
 
+      <p>You can use <code>=</code> instead of <code>?</code> in function parameters.
 
-x == null && (y = 10);
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x ? y = 10
+y        #=> 10
+
+f = (z = 7) -> z
+f 9      #=> 9
+f!       #=> 7
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var y, f;
+(typeof x == 'undefined' || x === null) && (y = 10);
 y;
-
 f = function(z){
   z == null && (z = 7);
   return z;
 };
 f(9);
 f();
-f = function(z){
-  z && (z = 5);
-  return z;
-};
-f();
-f(3);
-one = 'boom';
-two = 'lala';
-list = [one, two];
-two = list[0], one = list[1];
-__ref = [1, 2, 3, 4, 5], first = __ref[0], middle = 1 < (__i = __ref.length - 1) ? __slice.call(__ref, 1, __i) : (__i = 1, []), last = __ref[__i];
-first;
-middle;
-last;
-mitch = {
-  age: 21,
-  height: 180,
-  pets: ['dog', 'goldfish'],
-  fam: {
-    bro: 'phile'
-  }
-};
-age = mitch.age, height = mitch.height, __ref = mitch.pets, pet1 = __ref[0], pet2 = __ref[1], bro = mitch.fam.bro;
-height;
-bro;
-pet1;
-tallness = mitch.height;
-tallness;
+</pre>
+        </div>
+      </div>
 
-phile = {};
-phile.height = mitch.height, phile.pets = mitch.pets;
-phile.height;
-phile.pets;
+      <p>Soak assign - performs assign only if the right operand exists:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+age = 21
+x? = age
+x #=> 21
 
 
+x? = years
+x #=> 21
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var age, x;
+age = 21;
 if (age != null) {
   x = age;
+}
+x;
+if (typeof years != 'undefined' && years !== null) {
+  x = years;
 }
 x;
 </pre>
         </div>
       </div>
-    </div>
-    <div id="property-access" class="section">
-      <a name="property-access"></a>
-      <h2>Property Access</h2>
+
+      <h3>Destructuring</h3>
+
+      <p>Destructuring is a powerful way to extract values from variables. Rather than assigning to a simple variable, you can assign to data structures, which extract the values. For example:
+
       <div class="example">
         <div class="example-ls">
-          <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# Standard
-[1 2 3][1]     #=> 2
-{a: 1, b: 2}.b #=> 2
-
-# Dot Access - dot operators can accept many
-# more things other than identifiers as their
-# right operand, including numbers, strings,
-# parentheses, brackets, and braces
-x = "hello world": [4 [5 boom: 6]]
-x.'hello world'.1.[0] #=> 5
-
-
-
-
-
-
-# Accessignment using .=
-document.title.=toUpperCase! #=> LIVESCRIPT
-
-# Array slice
-list = [1 2 3 4 5]
-list[2, 4]    #=> [3, 5]
-list[1 to 3]  #=> [2, 3, 4]
-list[1 til 3] #=> [2, 3]
-list[1 til 3] = [7, 8]
-list          #=> [1, 7, 8, 4, 5]
-
-
-
-
-# Object slice
-obj = one: 1, two: 2
-obj{first: one, two} #=> {first: 1, two: 2}
-
-# Length star [*]
-list[*] = 6
-list        #=> [1, 2, 3, 4, 5, 6]
-list[*-1]   #=> 6
-
-# Semiautovivification .@ .@@
-# ensures that the property exists 
-# as an object or as an array
-x.@@'hello world'.1.@1.boom #=> 6
+[first, second] = [1, 2]
+first  #=> 1
+second #=> 2
 </pre>
         </div>
         <div class="example-js">
-          <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var x, list, obj, __ref;
+var ref$, first, second;
+ref$ = [1, 2], first = ref$[0], second = ref$[1];
+first;
+second;
+</pre>
+        </div>
+      </div>
+
+      <p>You can also use splats:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+[head, ...tail] = [1 to 5]
+head #=> 1
+tail #=> [2,3,4,5]
+
+
+
+[first, ...middle, last] = [1 to 5]
+first  #=> 1
+middle #=> [2,3,4]
+last   #=> 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, head, tail, first, i$, middle, last, slice$ = [].slice;
+ref$ = [1, 2, 3, 4, 5], head = ref$[0], tail = slice$.call(ref$, 1);
+head;
+tail;
+ref$ = [1, 2, 3, 4, 5], first = ref$[0], middle = 1 < (i$ = ref$.length - 1) ? slice$.call(ref$, 1, i$) : (i$ = 1, []), last = ref$[i$];
+first;
+middle;
+last;
+</pre>
+        </div>
+      </div>
+
+      <p>...and objects too!
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+{name, age} = {weight: 110, name: 'emma', age: 20}
+name #=> 'emma'
+age  #=> 20
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, name, age;
+ref$ = {
+  weight: 110,
+  name: 'emma',
+  age: 20
+}, name = ref$.name, age = ref$.age;
+name;
+age;
+</pre>
+        </div>
+      </div>
+
+      <p>You can also name the entity which you are destructuring using <code>:label</code>, as well as arbitrarily nest the destructuring.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[[x, ...xs]:list1, [y, ...ys]:list2] = [[1,2,3],[4,5,6]]
+x     #=> 1
+xs    #=> [2,3]
+list1 #=> [1,2,3]
+y     #=> 4
+ys    #=> [5,6]
+list2 #=> [4,5,6]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, list1, x, xs, list2, y, ys, slice$ = [].slice;
+ref$ = [[1, 2, 3], [4, 5, 6]], list1 = ref$[0], x = list1[0], xs = slice$.call(list1, 1), list2 = ref$[1], y = list2[0], ys = slice$.call(list2, 1);
+x;
+xs;
+list1;
+y;
+ys;
+list2;
+</pre>
+        </div>
+      </div>
+
+      <h3>Substructuring</h3>
+
+      <p>Easily set properties of lists and objects.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+mitch =
+  age:    21
+  height: 180cm
+  pets:    [\dog, \goldfish]
+
+
+phile = {}
+phile{height, pets} = mitch
+phile.height #=> 180
+phile.pets   #=> ['dog', 'goldfish']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var mitch, phile;
+mitch = {
+  age: 21,
+  height: 180,
+  pets: ['dog', 'goldfish']
+};
+phile = {};
+phile.height = mitch.height, phile.pets = mitch.pets;
+phile.height;
+phile.pets;
+</pre>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div id="property-access" class="section">
+      <a name="property-access"></a>
+      <h2>Property Access</h2>
+
+      <p>The standard:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 2 3][1]     #=> 2
+{a: 1, b: 2}.b #=> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
 [1, 2, 3][1];
 ({
   a: 1,
   b: 2
 }).b;
+</pre>
+        </div>
+      </div>
+
+      <p> Dot Access - dot operators can accept many more things other than identifiers as their right operand, including numbers, strings, parentheses, brackets, and braces.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = "hello world": [4 [5 boom: 6]]
+x.'hello world'.1.[0] #=> 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
 x = {
   "hello world": [
     4, [
@@ -3901,17 +4041,64 @@ x = {
   ]
 };
 x['hello world'][1][0];
+</pre>
+        </div>
+      </div>
 
+      <p>Accessignment using <code>.=</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+document.title.=toUpperCase! #=> LIVESCRIPT ...
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
 document.title = document.title.toUpperCase();
+</pre>
+        </div>
+      </div>
 
+      <p>Array slice and splice:
 
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+list = [1 2 3 4 5]
+list[2, 4]    #=> [3,5]
+list[1 to 3]  #=> [2,3,4]
+list[1 til 3] #=> [2,3]
+list[1 til 3] = [7 8]
+list          #=> [1,7,8,4,5]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var list, ref$;
 list = [1, 2, 3, 4, 5];
 [list[2], list[4]];
 [list[1], list[2], list[3]];
 [list[1], list[2]];
-__ref = [7, 8], list[1]=__ref[0], list[2]=__ref[1];
+ref$ = [7, 8], list[1] = ref$[0], list[2] = ref$[1];
 list;
+</pre>
+        </div>
+      </div>
 
+      <p>Object slice:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = one: 1, two: 2
+obj{first: one, two} #=> {first: 1, two: 2}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj;
 obj = {
   one: 1,
   two: 2
@@ -3920,17 +4107,98 @@ obj = {
   first: obj.one,
   two: obj.two
 });
-list[list.length] = 6;
-list;
-list[list.length - 1];
-
-
-
-((__ref = (x['hello world'] || (x['hello world'] = []))[1])[1] || (__ref[1] = {})).boom;
 </pre>
         </div>
       </div>
+
+      <p>Length star <code>*</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+list = [1 2 3 4 5]
+list[*] = 6
+list        #=> [1,2,3,4,5,6]
+list[*-1]   #=> 6
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var list;
+list = [1, 2, 3, 4, 5];
+list[list.length] = 6;
+list;
+list[list.length - 1];
+</pre>
+        </div>
+      </div>
+
+      <p> Semiautovivification <code>.@</code>, <code>.@@</code> ensures that the property exists as an object or as an array.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = "hello world": [4 [5 boom: 6]]
+x.@@'hello world'.1.@1.boom #=> 6
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, ref$;
+x = {
+  "hello world": [
+    4, [
+      5, {
+        boom: 6
+      }
+    ]
+  ]
+};
+((ref$ = (x['hello world'] || (x['hello world'] = []))[1])[1] || (ref$[1] = {})).boom;
+</pre>
+        </div>
+      </div>
+
+      <p>Cascade - beautiful chaining:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+a = [2 7 1 8]
+  ..push 3
+  ..shift!
+  ..sort!
+a #=> [1,3,7,8]
+
+document.querySelector \h1
+  ..style
+    ..color    = \red
+    ..fontSize = \large
+  ..innerHTML = 'LIVESCRIPT!'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x$, a, y$;
+x$ = a = [2, 7, 1, 8];
+x$.push(3);
+x$.shift();
+x$.sort();
+a;
+
+x$ = document.querySelector('h1');
+y$ = x$.style;
+y$.color = 'red';
+y$.fontSize = 'large';
+x$.innerHTML = 'LIVESCRIPT!';
+</pre>
+        </div>
+      </div>
+
     </div>
+
+
     <div id="oop" class="section">
       <a name="oop"></a>
       <h2>Object Oriented Programming</h2>
@@ -3952,13 +4220,13 @@ class Item
 Renameable =
   setName: -> @name = it
   getName: -> @name ? @id
- 
+
 class Box extends Item implements Renameable
   (@name) ->
     super ...
 
   type: \cube
- 
+
   # any code
   priv    = \secret
   @static = -> priv
@@ -3969,8 +4237,8 @@ thing.id       #=> (some random number)
 thing.type     #=> 'cube'
 thing.priv     #=> (nothing)
 Box.static!    #=> 'secret'
-Box::type = \block 
-thing.type     #=> 'block' 
+Box::type = \block
+thing.type     #=> 'block'
 
 thing.boundToInstance! #=> 10
 
@@ -3979,18 +4247,17 @@ thing2 = thing with name: \boxahoy
 thing2.name           #=> 'boxahoy'
 thing2.type           #=> 'block'
 thing2 instanceof Box #=> true
-
 </pre>
         </div>
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var Item, Renameable, Box, thing, thing2, __ref;
+var Item, Renameable, Box, thing, ref$, thing2;
 Item = (function(){
   Item.displayName = 'Item';
   var prototype = Item.prototype, constructor = Item;
   function Item(){
-    this.boundToInstance = __bind(this, 'boundToInstance', prototype);
+    this.boundToInstance = bind$(this, 'boundToInstance', prototype);
     this.id = Math.random();
     this.x = 10;
   }
@@ -4006,16 +4273,15 @@ Renameable = {
     return this.name = it;
   },
   getName: function(){
-    var __ref;
-    return (__ref = this.name) != null
-      ? __ref
+    var ref$;
+    return (ref$ = this.name) != null
+      ? ref$
       : this.id;
   }
 };
 Box = (function(superclass){
-  Box.displayName = 'Box';
-  var priv, prototype = __extend(Box, superclass).prototype, constructor = Box;
-  __importAll(prototype, arguments[1]);
+  var priv, prototype = extend$((import$(Box, superclass).displayName = 'Box', Box), superclass).prototype, constructor = Box;
+  importAll$(prototype, arguments[1]);
   function Box(name){
     this.name = name;
     superclass.apply(this, arguments);
@@ -4036,24 +4302,29 @@ Box['static']();
 Box.prototype.type = 'block';
 thing.type;
 thing.boundToInstance();
-thing2 = (__ref = __clone(thing), __ref.name = 'boxahoy', __ref);
+thing2 = (ref$ = clone$(thing), ref$.name = 'boxahoy', ref$);
 thing2.name;
 thing2.type;
 thing2 instanceof Box;
-function __bind(obj, key, target){
+function bind$(obj, key, target){
   return function(){ return (target || obj)[key].apply(obj, arguments) };
 }
-function __extend(sub, sup){
+function extend$(sub, sup){
   function fun(){} fun.prototype = (sub.superclass = sup).prototype;
   (sub.prototype = new fun).constructor = sub;
   if (typeof sup.extended == 'function') sup.extended(sub);
   return sub;
 }
-function __importAll(obj, src){
+function import$(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}
+function importAll$(obj, src){
   for (var key in src) obj[key] = src[key];
   return obj;
 }
-function __clone(it){
+function clone$(it){
   function fun(){} fun.prototype = it;
   return new fun;
 }
