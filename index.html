@@ -3387,96 +3387,22 @@ for (;;) {
     <div id="switch" class="section">
       <a name="switch"></a>
       <h2>Switch</h2>
+
+      <p><code>break</code> is automatically inserted, and multiple conditions are allowed.
+
       <div class="example">
         <div class="example-ls">
-          <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-# Auto breaks, multiple conditions
 switch 6
-case 1   then \hello
-case 2 4 then \boom
-case 6   
+case 1    then \hello
+case 2, 4 then \boom
+case 6
   'here it is'
 default \something
-
-
-
-
-
-
-
-# Switch on nothing switches on true
-switch
-case 5 == 6 
-  \never
-case false
-  'also never'
-case 6 / 2 is 3
-  'here'
-
-# Fallthrough
-# works if last expression of case block
-# is 'fallthrough'
-result = switch 6
-case 6 
-  something = 5
-  fallthrough
-case 4
-  'this is it'
-
-result is 'this is it' #=> true
-
-# Alternate syntax using | and =>
-switch 'moto' 
-| "some thing"     => \hello
-| \explosion \bomb => \boom
-| <[ the moto ? ]> => 'here it is'
-| otherwise        => \something
-
-
-
-
-
-
-
-
-
-
-# Implicit switch after ->, ~>, :, =
-func = (param) ->
-  | param.length < 5 => param.length
-  | otherwise        => param.slice 3
-
-func 'hello' #=> lo
-
-
-
-
-
-# You can also use _ instead of otherwise
-state = | 2 + 2 is 5 => 'I love Big Brother'
-        | _          => 'I love Julia'
-
-
-
-
-
-# CoffeeScript style switches work fine too
-day = \Sun
-switch day
-  when "Mon" then 'go to work'
-  when "Tue" then 'go to a movie'
-  when "Thu" then 'go drinking'
-  when "Fri", "Sat"
-      'go dancing'
-  when "Sun" then 'drink more'
-  else 'go to work'
 </pre>
         </div>
         <div class="example-js">
-          <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var something, result, func, state, day;
 switch (6) {
 case 1:
   'hello';
@@ -3491,6 +3417,26 @@ case 6:
 default:
   'something';
 }
+</pre>
+        </div>
+      </div>
+
+      <p>If you switch on nothing, you switch on true. (It compile to switching on false so it can cast the cases to booleans with one <code>!</code> instead of two.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+switch
+case 5 == 6
+  \never
+case false
+  'also never'
+case 6 / 2 is 3
+  'here'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
 switch (false) {
 case 5 !== 6:
   'never';
@@ -3501,6 +3447,28 @@ case !false:
 case 6 / 2 !== 3:
   'here';
 }
+</pre>
+        </div>
+      </div>
+
+      <p>You can use <code>fallthrough</code> to stop automatic <code>break</code> insertion. It must be the last expression of the case block. As well, you can use a switch statement as an expression.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+result = switch 6
+case 6
+  something = 5
+  fallthrough
+case 4
+  'this is it'
+
+result #=> 'this is it'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var something, result;
 result = (function(){
   switch (6) {
   case 6:
@@ -3510,8 +3478,25 @@ result = (function(){
     return 'this is it';
   }
 }());
-result === 'this is it';
+result;
+</pre>
+        </div>
+      </div>
 
+      <p><code>|</code> is an alias for <code>case</code>, and <code>=&gt;</code> is an alias for <code>then</code>. <code>| otherwise</code> and <code>| _</code> are aliases for <code>default</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+switch 'moto'
+| "some thing"     => \hello
+| \explosion \bomb => \boom
+| <[ the moto ? ]> => 'here it is'
+| otherwise        => \something
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
 switch ('moto') {
 case "some thing":
   'hello';
@@ -3528,6 +3513,32 @@ case '?':
 default:
   'something';
 }
+</pre>
+        </div>
+      </div>
+
+      <p>An implicit <code>switch</code> is added after arrows (eg. <code>-></code>), <code>:</code>, and <code>=</code> if the next token is <code>case</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+func = (param) ->
+  | param.length < 5 => param.length
+  | otherwise        => param.slice 3
+
+func 'hello' #=> lo
+
+
+
+
+
+state = | 2 + 2 is 5 => 'I love Big Brother'
+        | _          => 'I love Julia'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var func, state;
 func = function(param){
   switch (false) {
   case !(param.length < 5):
@@ -3537,7 +3548,6 @@ func = function(param){
   }
 };
 func('hello');
-
 state = (function(){
   switch (false) {
   case 2 + 2 !== 5:
@@ -3546,7 +3556,29 @@ state = (function(){
     return 'I love Julia';
   }
 }());
+</pre>
+        </div>
+      </div>
 
+      <p>You can also use CoffeeScript style <code>switch</code> statements.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+day = \Sun
+switch day
+  when "Mon" then 'go to work'
+  when "Tue" then 'go to a movie'
+  when "Thu" then 'go drinking'
+  when "Fri", "Sat"
+      'go dancing'
+  when "Sun" then 'drink more'
+  else 'go to work'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var day;
 day = 'Sun';
 switch (day) {
 case "Mon":
@@ -3568,11 +3600,13 @@ case "Sun":
 default:
   'go to work';
 }
-
 </pre>
         </div>
       </div>
+
     </div>
+
+
     <div id="assignment" class="section">
       <a name="assignment"></a>
       <h2>Assignment</h2>
