@@ -268,7 +268,7 @@ fs = for a, i in [1 2]
   for b from 3 to 4
     let i = i+5
       -> i + a + b
-sums = [f() for f in fs]
+sums = [f! for f in fs]
 eq sums.1, 10
 eq sums.2, 11
 

@@ -231,6 +231,18 @@ eq(+ +1, - -1)
 eq (-1), - --[2]0
 
 
+### `throw`
+throws 'up' -> throw Error 'up'
+
+# from anywhere.
+try [throw 0] catch
+  eq e, 0
+
+# `null` when empty.
+try throw catch
+  eq e, null
+
+
 ### `do`
 eq '', do do do -> -> -> do String
 eq 1, do -> 1
@@ -716,14 +728,20 @@ eq 'moo' (0 xor 'moo')
 
 ### Regex overloaded ==
 if /[aeuio]*/ == 'ee'
-  eq 'ee' that.0
-else
-  ok 0
+then eq 'ee' that.0
+else ok 0
+
+if /^e(.*)/ == 'enter'
+then ok 'enter,nter' String that
+else ok 0
+
+if /^e(.*)/ == 'zx'
+then ok 0
+else ok 1
 
 if /moo/ != 'loo'
-  ok 1
-else
-  ok 0
+then ok 1
+else ok 0
 
 ### Deep Equals
 NaN === NaN
@@ -809,3 +827,5 @@ ok (even or 1) 2
 ok (odd or 2) 2
 ok not (even or 1) 3
 ok ((.length > 4) or [1 2 3]) [1 2 3]
+
+eq 8 ((-> &0 + &1 is 5) and (**)) 2 3

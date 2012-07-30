@@ -113,5 +113,5 @@ eq '''
 ''', LiveScript.compile '(..., a) ->', {+bare}
 
 
-# Don't call `__slice` on array literals.
+# Don't call `slice$` on array literals.
 eq '[a, a].concat([b]);' LiveScript.compile '[...[a]*2 b]' {+bare}

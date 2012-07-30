@@ -75,11 +75,11 @@ eq 1, [-> it]. 0  1
 eq 1, [-> it].'0' 1
 
 
-# `prototype`/`constructor` shorhands
+# `prototype` shorthand, `constructor` 
 eq Array::toString, Array.prototype.toString
-eq 12345..toString, 123.constructor.toString
+eq 12345.constructor.toString, 123.constructor.toString
 eq 0 (:::0)::
-eq 0 (..:0)..
+eq 0 (constructor:0)constructor
 
 
 # Length Star

@@ -103,7 +103,7 @@ bnf =
     o '( BACKTICK Chain BACKTICK )'            -> Chain $3
     o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
     o '( BACKTICK Chain BACKTICK Expression )'
-    , -> Chain(Chain Var \__flip .add Call [$3]).flipIt!add Call [$5]
+    , -> Chain(Chain Var \flip$ .add Call [$3]).flipIt!add Call [$5]
 
     o '[ Expression TO Expression ]'
     , -> Chain new For from: $2, op: $3, to: $4
@@ -156,13 +156,15 @@ bnf =
 
   # A list of lines, separated by newlines or semicolons.
   Lines:
-    o ''                   -> Block!
+    o ''                   -> L Block!
     o \Line                -> Block $1
     o 'Lines NEWLINE Line' -> $1.add $3
     o 'Lines NEWLINE'
 
   Line:
     o \Expression
+
+    o 'Expression Block' -> new Cascade $1, $2
 
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
     , -> Call.back $2, $6, $5.charAt(1) is \~, $5.length is 3
@@ -180,7 +182,9 @@ bnf =
 
   # All the different types of expressions in our language.
   Expression:
-    o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.let $4, Block [$1]
+    o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.where $4, Block [$1]
+    o 'Expression WHERE Block' -> Chain Call.where $3.lines, Block [$1]
+
     o 'Chain CLONEPORT Expression'
     , -> Import (Unary \^^ $1, prec: \UNARY), $3,         false
     o 'Chain CLONEPORT Block'
@@ -282,7 +286,7 @@ bnf =
     o 'LABEL Block'      ditto
 
     # `var`, `const`, `export`, or `import`
-    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl[$1] $3
+    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl $1, $3, yylineno+1
 
   Exprs:
     o         \Expression  -> [$1]

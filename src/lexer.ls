@@ -220,7 +220,7 @@ exports import
     if tag in <[ COMPARE LOGIC RELATION ]> and last.0 is \(
       tag = if tag is \RELATION then \BIOPR else \BIOP
     @unline! if tag in <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
-                          IN OF FROM TO BY EXTENDS IMPLEMENTS ]>
+                          IN OF FROM TO BY EXTENDS IMPLEMENTS WHERE ]>
     @token tag, id
     input.length
 
@@ -289,9 +289,9 @@ exports import
     comment = if ~end = code.indexOf \*/ index+2
               then code.slice index, end+2
               else code.slice(index) + \*/
-    if @last.0 in <[ NEWLINE INDENT THEN => ]>
-    then @token \COMMENT detab comment, @dent; @token \NEWLINE \\n
-    else @last.spaced = true
+    if @last.0 in <[ NEWLINE INDENT THEN ]>
+      @token \COMMENT detab comment, @dent
+      @token \NEWLINE \\n
     @countLines(comment)length
 
   # Matches a regular expression literal aka _regex_,
@@ -422,6 +422,7 @@ exports import
     case \++ \--         then tag = \CREMENT
     case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
+    case \..             then tag = \LITERAL
     case \.
       create-it-func! if @last.0 is \(
       @last.0 = \? if @last.1 is \?
@@ -540,13 +541,21 @@ exports import
         else break
         return 1
       tag = \UNARY
+    case \&
+      unless able @tokens
+        tag = \LITERAL
+        break
+      fallthrough
+    case \| then tag = \BITWISE
     case \~
       return 1 if @dotcat val
       tag = \UNARY
     case \-> \~> \--> \~~> then up = \->; fallthrough
     case \<- \<~ \<-- \<~~ then @parameters tag = up || \<-
-    case \::     then up = \prototype; fallthrough
-    case \..     then @adi!; tag = \ID; val = up || \constructor
+    case \::
+      @adi!
+      val = \prototype
+      tag = \ID
     default switch val.charAt 0
     case \( then @token \CALL( \(; tag = \)CALL; val = \)
     case \<

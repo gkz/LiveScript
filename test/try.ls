@@ -1,25 +1,42 @@
-# Basic exception throwing.
-throws 'up', -> throw Error 'up'
-
-
-# Basic try/catch.
-eq 5, try throw 'error' catch e then e.length
-
-eq 2, try
-  throw 'up'
-catch e
-  e.length
-
-eq 1, try
-  throw o = i: 0
-catch e
-  ++e.i
+n = 1
+try
+  n *= 2
+  throw \error
+  n *= 3
+catch error
+  n *= 5
 finally
-  ++o.i
-eq o.i, 2
+  n *= 7
+eq n, 70
+
+# Hoist `catch`ee.
+eq error, \error
 
 
-# try/catch with empty clauses still compiles.
+# Allow one-liners.
+try x = 0 catch _ ok false finally ++x
+eq x, 1
+
+
+# Declare `e` by default.
+try throw 0 catch
+eq e, 0
+
+
+# Return results.
+eq 1 let
+  try 1
+  finally 2
+
+eq 2 let
+  try throw 1
+  catch 2
+  finally 3
+
+eq 3 try 3
+
+
+# Tolerate empty blocks.
 try
 
 try catch
@@ -36,12 +53,6 @@ finally
   #!nothing
 
 
-# Nested implicit indentations
+# Tolerate nested implicit blocks.
 eq 1, do -> try 1
 eq 2, do -> try do -> throw 1 catch do -> 2 finally
-
-
-# Empty `throw`
-try throw
-catch
-  eq null e

@@ -54,6 +54,9 @@ eq 3 to
 eq 4 [1 to end].3
 eq 5 [1 to end].length
 
+r = [1 to end]
+eq '1,2,3,4,5' String r
+
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Boolean/Number should be indexable.
 ok 42['toString']
@@ -431,5 +434,20 @@ compileThrows 'bad "by" in range' 2 '\n[0 to 9 by "2"]'
 compileThrows 'bad string in range' 2 '\n["a" to "bc"]'
 
 
-### Misc
+### yadayadayada
 throws \unimplemented -> ...
+
+
+### Cascade
+a = [2 7 1 8]
+  ..push 2
+  ..shift!
+  ..sort!
+eq '1,2,7,8' ''+a
+
+eq 10, do
+  1 + 2
+    .. + 3
+      4 + ..
+
+compileThrows 'stray cascadee' 2 '\n..'

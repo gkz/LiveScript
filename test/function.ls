@@ -124,8 +124,8 @@ eq 4 (new new Function 'this.p = 4')p
 eq 5  new new Function('this.q = 5')()q
 
 # but not to helper functions.
-eq 1, new [...[-> [1]]].0().0             # __slice
-eq 'object', typeof new {f: Number}.~f()  # __bind
+eq 1, new [...[-> [1]]].0().0             # slice$
+eq 'object', typeof new {f: Number}.~f()  # bind$
 
 
 # Chained blocks, with proper indentation levels:
@@ -488,6 +488,27 @@ eq 5 x + y where x = 2, y = 3
 
 eq 5 x + y where x = 2,
                  y = 3
+
+r = x + y where
+  x = 2
+  y = 3
+eq 5 r
+
+r = x + y
+  where
+    x = 2
+    y = 3
+eq 5 r
+
+r = x + y
+  where x = 2,
+        y = 3
+eq 5 r
+
+r = x + y
+  where x = 2,
+        y = x + 1
+eq 5 r
 
 
 ### `with`
