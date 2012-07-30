@@ -1241,8 +1241,7 @@ class exports.Binary extends Node
   compileXor: (o) ->
     left  = Chain @first  .cacheReference o
     right = Chain @second .cacheReference o
-    Binary \&& (Binary \&& (Parens Binary \|| (Block [right.0, left.0]), right.1)
-                         , (Unary \! Binary \&& left.1, right.1))
+    Binary \&& (Binary \!== (Unary \! left.0), (Unary \! right.0))
              , (Parens Binary \|| left.1, right.1) .compile o
 
 #### Assign
