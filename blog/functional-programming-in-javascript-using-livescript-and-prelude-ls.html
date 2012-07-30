@@ -38,7 +38,7 @@
       <div class="span10 content">
         <h1>Functional Programming in JavaScript using LiveScript and prelude.ls</h1>
         <div class="date-author">
-          <span class="date">19 Jun 2012, updated 6 Jul 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+          <span class="date">19 Jun 2012, updated 30 Jul 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
         </div>
         
 <p>JavaScript is a great language, with powerful support for functional style programming. Unfortunately, its abilities are obscured by an awkward syntax and a lack of a good standard library. 
@@ -137,7 +137,7 @@ var times;
 
 (function(){});
 
-times = function(x, y){ 
+times = function(x, y){
   return x * y;
 };
 </pre>
@@ -252,17 +252,15 @@ double 5            #=> 10
   <div class="example-js">
 <pre class="prettyprint lang-js">
 var times, double;
-times = __curry(function(x, y){ return x * y; });
+times = curry$(function(x, y){ return x * y; });
 times(2, 3);
 double = times(2);
 double(5);
-
-function __curry(f, args){
+function curry$(f, args){
   return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length 
-          && arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      curry$.call(this, f, params) : f.apply(this, params);
   } : f;
 }
 </pre>
@@ -307,10 +305,14 @@ odd     = invert << even
 var even, invert, odd;
 even = function(x){ return x % 2 === 0; };
 invert = function(x){ return !x; };
-odd = __compose((invert),(even));
-
-function __compose(f, g){ return function(){
-    return f(g.apply(this, arguments)); } }
+odd = compose$([invert, even]);
+function compose$(fs){
+  return function(){
+    var i, args = arguments;
+    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+    return args[0];
+  };
+}
 </pre>
   </div>
 </div>
@@ -325,10 +327,14 @@ filter (invert << even), [1, 2, 3, 4, 5] #=> [1, 3, 5]
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-filter(__compose((invert),(even)), [1, 2, 3, 4, 5]);
-
-function __compose(f, g){ return function(){
-    return f(g.apply(this, arguments)); } }
+filter(compose$([invert, even]), [1, 2, 3, 4, 5]);
+function compose$(fs){
+  return function(){
+    var i, args = arguments;
+    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+    return args[0];
+  };
+}
 </pre>
   </div>
 </div>
@@ -359,9 +365,16 @@ odd = (not) << even
 var timesTwo, odd;
 timesTwo = (function(it){ return it * 2; });
 timesTwo(4);
-odd = __compose((__not),(even));
-function __compose(f, g){
-  return function(){ return f(g.apply(this, arguments)); }
+
+odd = compose$([not$, even]);
+function compose$(fs){
+  return function(){
+    var i, args = arguments;
+    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+    return args[0];
+  };
+}
+function not$(x){ return !x; }
 </pre>
   </div>
 </div>
@@ -376,30 +389,27 @@ function __compose(f, g){
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
-
-
 [1, 2, 3, 4, 5] |> filter even |> map (* 2) |> fold (+), 0 
 #=> 12
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-fold(__curry(function(__x, __y){
-  return __x + __y;
+fold(curry$(function(x$, y$){
+  return x$ + y$;
 }), 0)(
 map((function(it){
   return it * 2;
 }))(
 filter(even)(
 [1, 2, 3, 4, 5])));
-function __curry(f, args){
+function curry$(f, args){
   return f.length > 1 ? function(){
     var params = args ? args.concat() : [];
     return params.push.apply(params, arguments) < f.length && arguments.length ?
-      __curry.call(this, f, params) : f.apply(this, params);
+      curry$.call(this, f, params) : f.apply(this, params);
   } : f;
 }
-
 </pre>
   </div>
 </div>
@@ -467,8 +477,15 @@ r #=> [3, 5, 6]
 
 
 
+
+
+
 r = {[key, val * 2] for key, val of {a: 1, b: 2}}   
 r #=> {a: 2, b: 4}
+
+
+
+
 
 
 
@@ -479,32 +496,36 @@ r #=> ['1a', '1b', '2a', '2b']
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var x, r, key, val, y, __res, __i, __ref, 
-    __len, __j, __ref1, __len1;
-__res = [];
-for (__i = 0, __len = (__ref = [2, 3, 4, 5]).length; 
-    __i < __len; ++__i) {
-  x = __ref[__i];
-  if (x + 1 !== 4) { __res.push(x + 1); }
-}
-r = __res;
-__res = {};
-for (key in __ref = { a: 1, b: 2 }) {
-  val = __ref[key];
-  __res[key] = val * 2;
-}
-r = __res;
-__res = [];
-for (__i = 0, __len = (__ref = [1, 2]).length; 
-    __i < __len; ++__i) {
-  x = __ref[__i];
-  for (__j = 0, __len1 = (__ref1 = ['a', 'b']).length; 
-      __j < __len1; ++__j) {
-    y = __ref1[__j];
-    __res.push(x + y);
+var res$, i$, ref$, len$, x, r, key, val, j$, ref1$, len1$, y;
+res$ = [];
+for (i$ = 0, len$ = (ref$ = [2, 3, 4, 5]).length; i$ < len$; ++i$) {
+  x = ref$[i$];
+  if (x + 1 !== 4) {
+    res$.push(x + 1);
   }
 }
-r = __res;
+r = res$;
+r;
+res$ = {};
+for (key in ref$ = {
+  a: 1,
+  b: 2
+}) {
+  val = ref$[key];
+  res$[key] = val * 2;
+}
+r = res$;
+r;
+res$ = [];
+for (i$ = 0, len$ = (ref$ = [1, 2]).length; i$ < len$; ++i$) {
+  x = ref$[i$];
+  for (j$ = 0, len1$ = (ref1$ = ['a', 'b']).length; j$ < len1$; ++j$) {
+    y = ref1$[j$];
+    res$.push(x + y);
+  }
+}
+r = res$;
+r;
 </pre>
   </div>
 </div>
@@ -523,8 +544,8 @@ r = __res;
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-([1, 2]).concat([3, 4]);
-([1, 2]).concat(3);
+[1, 2].concat([3, 4]);
+[1, 2].concat(3);
 </pre>
   </div>
 </div>
@@ -550,6 +571,7 @@ take 2, [1 to 5] #=> [1, 2]
 <p>Follow the discussion on <a href="http://news.ycombinator.com/item?id=4135616">Hacker News</a>, <a href="http://www.reddit.com/r/programming/comments/vbxuq/functional_programming_in_javascript_using/">r/programming</a>, and <a href="http://www.reddit.com/r/javascript/comments/vamxh/functional_programming_in_javascript_using/">r/javascript</a>.
 
 <p>Read <strong><a href="functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript - Part 2</a></strong>.
+
 
         <hr>
         <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for more on LiveScript and prelude.ls
