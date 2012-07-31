@@ -1,0 +1,332 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>Powerful jQuery with LiveScript</title>
+<meta name='description' content="LiveScript is a language that compiles down to JavaScript. It is a fork of Coco, which is in turn derived from CoffeeScript. LiveScript is Coco that is much more compatible with CoffeeScript, more functional, and more feature rich.">
+
+<link rel="icon" type="image/png" href="../images/icon.png">
+
+<link href="../bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
+<link href="../bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+<script src="../bootstrap/js/bootstrap.js"></script>
+
+<script src="../google-code-prettify/prettify.js"></script>
+<link href="../google-code-prettify/prettify.css" rel="stylesheet">
+<script src="../lang-ls-1.0.0.js"></script>
+
+<link href="styles.css" rel="stylesheet">
+
+<script>
+  if(window.location.host === "gkz.github.com") {
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-7402515-5']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  }
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="span10 content">
+        <h1>Powerful jQuery with LiveScript</h1>
+        <div class="date-author">
+          <span class="date">30 Jul 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+        </div>
+        
+<p>jQuery is a very useful and powerful library. Unfortunately, its power is sometimes dampened by awkward JavaScript's syntax
+
+<p><a href="http://gkz.github.com/LiveScript/">LiveScript</a> is a language that compiles to JavaScript. It's just JavaScript with some syntax improvements and feature additions, allowing you to use jQuery to its full potential.
+
+<p class="note">Are you familiar with CoffeeScript or LiveScript? If so you can <a href="#chaining">skip ahead</a>.
+
+<p>But first, we'll briefly go over the basics of LiveScript:
+
+
+<h3>A Brief Overview of LiveScript</h3>
+
+<p>Like many modern languages, blocks are delimited by whitespace indentation and newlines are used instead of semicolons to terminate statements (you can still use semicolons if you want to fit more than one statement on a line).
+
+<p>For example (LiveScript on the left, compiled JavaScript on the right):
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+if 2 + 2 == 4
+  doSomething()
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+if (2 + 2 === 4) {
+  doSomething();
+}
+</pre>
+  </div>
+</div>
+
+<p class="note">You can try all these examples for yourself using the LiveScript compiler/repl on the <a href="http://gkz.github.com/LiveScript/">LiveScript site</a>.
+
+<p>To further clear things up, you can omit the parentheses when calling a function.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add 2, 3
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+add(2, 3);
+</pre>
+  </div>
+</div>
+
+<p>And comments are:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+# from here to the end of the line.
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+// from here to the end of the line.
+</pre>
+  </div>
+</div>
+
+<p>Defining functions, which we do often in jQuery for callbacks, can be cumbersome in JavaScript. You have to use an eight letter keyword <code>function</code>, and have to use all those curly braces and semicolons.
+
+<p>Things become a quite a bit lighter in LiveScript:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+(x, y) -> x + y
+
+-> # an empty function
+
+times = (x, y) ->
+  x * y
+# multiple lines, and be assigned to a var like in JavaScript
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var times;
+(function(x, y){ return x + y; });
+
+(function(){});
+
+times = function(x, y){
+  return x * y;
+};
+</pre>
+  </div>
+</div>
+
+<p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned. However, you can still use <code>return</code> to force returns if you want, and you can add a bang to your definitions to suppress auto-returning <code>noRet = !(x) -> ...</code>.
+
+<a name="chaining"></a>
+<h3>Chaining</h3>
+
+<p>jQuery is all about chaining. LiveScript makes chaining beautiful.
+
+<p>Spaced property access closes implicit calls, so you can omit a lot of parentheses. Furthermore, you can use a backslash to denote a single word string.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+$ \h1 .find \img .prop \src
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+$('h1').find('img').prop('src');
+</pre>
+</div>
+</div>
+
+<p>You can call functions with no arguments with a bang <code>!</code>, eg. <code>f!</code>. When you do this and you are chaining you don't need to follow it up with a dot.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+$ \.footer .parent!empty!append content
+
+$ \.article .next!contents!
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+$('.footer').parent().empty().append(content);
+
+$('.article').next().contents();
+</pre>
+</div>
+</div>
+
+<p>Cascading takes chaining a level further. No more annoying <code>ends()</code>.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+$ \.content .parent!
+  ..find \.sidebar
+    ..append newContent
+    ..addClass \highlight
+  ..toggleClass \dark
+  ..prepend newHeader
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+var x$, y$;
+x$ = $('.content').parent();
+y$ = x$.find('.sidebar');
+y$.append(newContent);
+y$.addClass('highlight');
+x$.toggleClass('dark');
+x$.prepend(newHeader);
+</pre>
+</div>
+</div>
+
+<h3>Backcalls</h3>
+
+<p>Backcalls allow you to unnest callback functions. They are like functions, except with the arrow pointing backwards.
+
+<p>First, a common example - annoyed that you have to indent everything because you are waiting for <code>$(document).ready</code>?
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+<-! $
+initializeApp!
+...
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+$(function(){
+  initializeApp();
+  ...
+});
+</pre>
+</div>
+</div>
+
+<p>Backcalls really shine with Ajax.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+data <-! $.get 'ajaxtest'
+$ \.result .html data
+processed <-! $.get 'ajaxprocess', data
+$ \.result .append processed
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+$.get('ajaxtest', function(data){
+  $('.result').html(data);
+  $.get('ajaxprocess', data, function(processed){
+    $('.result').append(processed);
+  });
+});
+</pre>
+</div>
+</div>
+
+<h3>Iteration</h3>
+
+<p>List comprehensions provide a powerful way to iterate through collections.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+values = [input.val! for form in $ \form for input in form]
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+var res$, i$, ref$, len$, form, j$, len1$, input, values;
+res$ = [];
+for(i$=0, len$=(ref$ = $('form')).length; i$ < len$; ++i$){
+  form = ref$[i$];
+  for (j$ = 0, len1$ = form.length; j$ < len1$; ++j$) {
+    input = form[j$];
+    res$.push(input.val());
+  }
+}
+values = res$;
+</pre>
+</div>
+</div>
+
+<h3>Conclusion</h3>
+
+<p>This has been a brief overview of just some of the features available in LiveScript. As you have seen, it provides a rich set of features which expose jQuery's full power.
+
+<p>For more information check out <strong><a href="http://gkz.github.com/LiveScript/">the LiveScript site</a></strong>
+
+        <p class="note">Looking for an intern this fall? <strong><a id="email">Hire me</a></strong>!
+        <hr>
+        <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for more on LiveScript and prelude.ls
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+        if(window.location.host === "gkz.github.com") {
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'livescript'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        }
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+      </div>
+      <div class="span2 sidebar">
+        <h1><a href="http://gkz.github.com/LiveScript/">LiveScript</a><img src="../images/icon.png"></h1>
+        <iframe src="http://markdotto.github.com/github-buttons/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="160" height="40"></iframe>
+        <a href="http://gkz.github.com/LiveScript"><div class="btn btn-primary btn-large btn">LiveScript site</div></a>
+        <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn">View on GitHub</div></a>
+        <a href="http://gkz.github.com/prelude-ls"><div class="btn btn-large btn">prelude.ls site</div></a>
+        <div><a href="https://twitter.com/share" class="twitter-share-button" data-via="gkzahariev" data-size="large">Tweet</a></div>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+        <h4>Blog Posts</h4>
+        <ul>
+          <li><a href="livescript-1.0.0.html">LiveScript 1.0.0 Released</a>
+          <li><a href="functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript - Part 2</a>
+          <li><a href="ten-reasons-to-switch-from-coffeescript.html">10 Reasons to Switch from CoffeeScript to LiveScript</a>
+          <li><a href="functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a>
+          <li><a href="livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends</h3>
+        </ul>
+      </div>
+    </div>
+  </div>
+<script>
+  prettyPrint();
+  document.getElementById("email").href = "mailto:z" + "@" + "georgezahariev.com";
+</script>
+</body>
+</html>

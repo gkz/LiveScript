@@ -1,0 +1,244 @@
+title: Powerful jQuery with LiveScript
+date: 30 Jul 2012
+author: <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+-----
+<p>jQuery is a very useful and powerful library. Unfortunately, its power is sometimes dampened by awkward JavaScript's syntax
+
+<p><a href="http://gkz.github.com/LiveScript/">LiveScript</a> is a language that compiles to JavaScript. It's just JavaScript with some syntax improvements and feature additions, allowing you to use jQuery to its full potential.
+
+<p class="note">Are you familiar with CoffeeScript or LiveScript? If so you can <a href="#chaining">skip ahead</a>.
+
+<p>But first, we'll briefly go over the basics of LiveScript:
+
+
+<h3>A Brief Overview of LiveScript</h3>
+
+<p>Like many modern languages, blocks are delimited by whitespace indentation and newlines are used instead of semicolons to terminate statements (you can still use semicolons if you want to fit more than one statement on a line).
+
+<p>For example (LiveScript on the left, compiled JavaScript on the right):
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+if 2 + 2 == 4
+  doSomething()
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+if (2 + 2 === 4) {
+  doSomething();
+}
+</pre>
+  </div>
+</div>
+
+<p class="note">You can try all these examples for yourself using the LiveScript compiler/repl on the <a href="http://gkz.github.com/LiveScript/">LiveScript site</a>.
+
+<p>To further clear things up, you can omit the parentheses when calling a function.
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add 2, 3
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+add(2, 3);
+</pre>
+  </div>
+</div>
+
+<p>And comments are:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+# from here to the end of the line.
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+// from here to the end of the line.
+</pre>
+  </div>
+</div>
+
+<p>Defining functions, which we do often in jQuery for callbacks, can be cumbersome in JavaScript. You have to use an eight letter keyword <code>function</code>, and have to use all those curly braces and semicolons.
+
+<p>Things become a quite a bit lighter in LiveScript:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+(x, y) -> x + y
+
+-> # an empty function
+
+times = (x, y) ->
+  x * y
+# multiple lines, and be assigned to a var like in JavaScript
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var times;
+(function(x, y){ return x + y; });
+
+(function(){});
+
+times = function(x, y){
+  return x * y;
+};
+</pre>
+  </div>
+</div>
+
+<p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned. However, you can still use <code>return</code> to force returns if you want, and you can add a bang to your definitions to suppress auto-returning <code>noRet = !(x) -> ...</code>.
+
+<a name="chaining"></a>
+<h3>Chaining</h3>
+
+<p>jQuery is all about chaining. LiveScript makes chaining beautiful.
+
+<p>Spaced property access closes implicit calls, so you can omit a lot of parentheses. Furthermore, you can use a backslash to denote a single word string.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+$ \h1 .find \img .prop \src
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+$('h1').find('img').prop('src');
+</pre>
+</div>
+</div>
+
+<p>You can call functions with no arguments with a bang <code>!</code>, eg. <code>f!</code>. When you do this and you are chaining you don't need to follow it up with a dot.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+$ \.footer .parent!empty!append content
+
+$ \.article .next!contents!
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+$('.footer').parent().empty().append(content);
+
+$('.article').next().contents();
+</pre>
+</div>
+</div>
+
+<p>Cascading takes chaining a level further. No more annoying <code>ends()</code>.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+$ \.content .parent!
+  ..find \.sidebar
+    ..append newContent
+    ..addClass \highlight
+  ..toggleClass \dark
+  ..prepend newHeader
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+var x$, y$;
+x$ = $('.content').parent();
+y$ = x$.find('.sidebar');
+y$.append(newContent);
+y$.addClass('highlight');
+x$.toggleClass('dark');
+x$.prepend(newHeader);
+</pre>
+</div>
+</div>
+
+<h3>Backcalls</h3>
+
+<p>Backcalls allow you to unnest callback functions. They are like functions, except with the arrow pointing backwards.
+
+<p>First, a common example - annoyed that you have to indent everything because you are waiting for <code>$(document).ready</code>?
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+<-! $
+initializeApp!
+...
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+$(function(){
+  initializeApp();
+  ...
+});
+</pre>
+</div>
+</div>
+
+<p>Backcalls really shine with Ajax.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+data <-! $.get 'ajaxtest'
+$ \.result .html data
+processed <-! $.get 'ajaxprocess', data
+$ \.result .append processed
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+$.get('ajaxtest', function(data){
+  $('.result').html(data);
+  $.get('ajaxprocess', data, function(processed){
+    $('.result').append(processed);
+  });
+});
+</pre>
+</div>
+</div>
+
+<h3>Iteration</h3>
+
+<p>List comprehensions provide a powerful way to iterate through collections.
+
+<div class="example">
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+values = [input.val! for form in $ \form for input in form]
+</pre>
+</div>
+<div class="example-js">
+<pre class="prettyprint lang-js">
+var res$, i$, ref$, len$, form, j$, len1$, input, values;
+res$ = [];
+for(i$=0, len$=(ref$ = $('form')).length; i$ < len$; ++i$){
+  form = ref$[i$];
+  for (j$ = 0, len1$ = form.length; j$ < len1$; ++j$) {
+    input = form[j$];
+    res$.push(input.val());
+  }
+}
+values = res$;
+</pre>
+</div>
+</div>
+
+<h3>Conclusion</h3>
+
+<p>This has been a brief overview of just some of the features available in LiveScript. As you have seen, it provides a rich set of features which expose jQuery's full power.
+
+<p>For more information check out <strong><a href="http://gkz.github.com/LiveScript/">the LiveScript site</a></strong>
