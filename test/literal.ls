@@ -8,6 +8,12 @@ ok !no
 
 throws 'invalid assign on line 1' -> LiveScript.compile 'yes = 6'
 
+
+### Identifiers
+eq encodeURIComponent, encode-URI-component
+eq ''.toLowerCase, ''.to-lower-case
+
+
 ### Numbers
 
 eq 3-4, -1

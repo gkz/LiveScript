@@ -1,6 +1,6 @@
 {
   "name": "LiveScript",
-  "version": "0.9.12",
+  "version": "1.0.0",
   "description": "LiveScript is a language the compiles down to JavaScript, it is Coco but much more compatible with CoffeeScript, more functional, and more feature rich.",
   "keywords": [
     "language",
@@ -42,7 +42,7 @@
     "url": "git://github.com/gkz/LiveScript.git"
   },
   "dependencies": {
-    "prelude-ls": ">= 0.5.0"
+    "prelude-ls": ">= 0.6.0"
   },
   "devDependencies": {
     "jison": "0.2.1",
