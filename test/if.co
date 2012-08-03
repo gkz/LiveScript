@@ -86,7 +86,7 @@ else
   else 3
 
 
-# Post-condition should accept trailing non-`then` implicit indentation.
+# Post-condition should accept trailing non-`if` block.
 ok true if ->
 
 
