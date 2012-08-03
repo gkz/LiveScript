@@ -1020,4 +1020,4 @@ ARG = CHAIN.concat <[ ... UNARY CREMENT PARAM( FUNCTION
 
 # Tokens that expect INDENT on the right.
 BLOCK_USERS = <[ , : -> ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY
-                 HURL DECL DO LET ]>
+                 HURL DECL DO LET FUNCTION ]>
