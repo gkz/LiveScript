@@ -562,7 +562,7 @@ class exports.Chain extends Node
     {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
       tails.splice 0 i+1
-      |> _.pop!key.toSlice o, Chain(@head, _)unwrap!, assign
+      |> _.pop!key.toSlice o, Chain(@head, _)unwrap!, tail.symbol, assign
       |> @head = _ <<< {@front}
       i = -1
     this
@@ -643,7 +643,7 @@ class exports.Obj extends List
   asObj: THIS
 
   # `base{x: y}` => `{x: base.y}`
-  toSlice: (o, base, assign) ->
+  toSlice: (o, base, symbol, assign) ->
     {items} = this
     if items.length > 1 then [base, ref, temps] = base.cache o else ref = base
     for node, i of items
@@ -662,7 +662,7 @@ class exports.Obj extends List
           [key, node] = [node, key] if assign
           key = Parens key
         else key = node
-        val = chain = Chain base, [Index node.maybeKey!]
+        val = chain = Chain base, [Index node.maybeKey!, symbol]
         val = logic <<< first: val if logic
         items[i] = Prop key, val
       base = ref
@@ -748,13 +748,13 @@ class exports.Arr extends List
   asObj: -> Obj(Prop Literal(i), item for item, i of @items)
 
   # `base[x, ...y]` => `[base[x], ...base[y]]`
-  toSlice: (o, base) ->
+  toSlice: (o, base, symbol) ->
     {items} = this
     if items.length > 1 then [base, ref] = base.cache o else ref = base
     for item, i of items
       item.=it if splat = item instanceof Splat
       continue if item.isEmpty!
-      chain = Chain base, [Index item]
+      chain = Chain base, [Index item, symbol]
       items[i] = if splat then Splat chain else chain
       base = ref
     chain or @carp 'empty slice'
