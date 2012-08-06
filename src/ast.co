@@ -2065,16 +2065,16 @@ Scope::<<<
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->
-    usr = []; tmp = []; asn = []; fun = []
+    vrs = []; asn = []; fun = []
     for name, type in @variables
       name.=slice 0 -1
       if type of <[ var const reuse ]>
-        (if \_ is name.charAt 0 then tmp else usr)push name
+        vrs.push name
       else if type.value
         if ~(val = entab that, tab)lastIndexOf \function( 0
         then fun.push "function #name#{ val.slice 8 }"
         else asn.push "#name = #val"
-    code = "#{tab}var #that;\n#code" if usr.concat(tmp, asn)join ', '
+    code = "#{tab}var #that;\n#code" if vrs.concat asn .join ', '
     if fun.join "\n#tab" then "#code\n#tab#that" else code
 
 ##### Constants
