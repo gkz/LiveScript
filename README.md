@@ -36,6 +36,16 @@ Get [Node.js](http://nodejs.org) and [npm](http://npmjs.org), then:
 - `git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
 ## Changelog
+### 0.8.0
+- Allowed hyphenated alphabets within identifiers as alias to their upper case:
+  `encode-URI-component` => `encodeURIComponent`
+- Added cascade. ([#72](https://github.com/satyr/coco/issues/72)
+- Changed the pipe operator to `|>`.
+- Revised `=>` as another block creation operator.
+- `export`/`import`/`const`/`var` can now appear anywhere.
+- `catch`ed variables are now function-scoped.
+  ([coffee#2422](https://github.com/jashkenas/coffee-script/issues/2422))
+- Generated variables now get postfix `$` rather than prefix `__`.
 
 ### 0.7.6
 - Added `export const`.
