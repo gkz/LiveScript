@@ -4,7 +4,7 @@
 
 require, exports, module <-! define \ace/mode/coco
 
-identifier = /(?!\d)(?:(?!\s)[\w$\xAA-\uFFDC])+/$
+identifier = /(?![\d\s])[$\w\xAA-\uFFDC](?:(?!\s)[$\w\xAA-\uFFDC]|-[A-Za-z])*/$
 
 exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
   ->
@@ -45,7 +45,7 @@ exports.Mode = class CocoMode extends require(\ace/mode/text)Mode
 
 ### Highlight Rules
 
-keywordend = /(?![$\w]|\s*:(?![:=]))/$
+keywordend = /(?![$\w]|-[A-Za-z]|\s*:(?![:=]))/$
 stringfill = token: \string, regex: '.+'
 
 CocoMode.Rules =
@@ -93,7 +93,7 @@ CocoMode.Rules =
       )' + keywordend
 
     * token: \variable.language
-      regex: '(?:t(?:hat|il|o)|f(?:rom|allthrough)|it|by)' + keywordend
+      regex: '(?:t(?:hat|il|o)|f(?:rom|allthrough)|it|by|[e_])' + keywordend
 
     * token: \identifier
       regex: identifier + /\s*:(?![:=])/$
