@@ -1,10 +1,10 @@
 # `.run`s Coco code and calls back, passing error if any.
 Coco.stab = (code, callback, filename, error) ->
-  try Coco.run code, {filename} catch then error = e
-  callback error
+  try Coco.run code, {filename} catch error
+  callback? error
 
 # `.stab`s a remote script via `XMLHttpRequest`.
-Coco.load = (url, callback or ->) ->
+Coco.load = (url, callback) ->
   xhr = new XMLHttpRequest
   xhr.open \GET, url, true
   xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
@@ -12,7 +12,7 @@ Coco.load = (url, callback or ->) ->
     if xhr.readyState is 4
       if xhr.status of [200 0]
       then Coco.stab xhr.responseText, callback, url
-      else callback Error "#url: #{xhr.status} #{xhr.statusText}"
+      else callback? Error "#url: #{xhr.status} #{xhr.statusText}"
   xhr.send null
   xhr
 
