@@ -150,12 +150,12 @@ take(n, [x, ...xs]:list) =
 
 take 2, [1 2 3 4 5] #=> [1, 2]
 
-takeThree = take 3
-takeThree [3 to 8] #=> [3, 4, 5]
+take-three = take 3
+take-three [3 to 8] #=> [3, 4, 5]
 
 # Function composition, 'reverse' from prelude.ls
-lastThree = reverse >> takeThree >> reverse
-lastThree [1 to 8] #=> [6, 7, 8]
+last-three = reverse >> take-three >> reverse
+last-three [1 to 8] #=> [6, 7, 8]
 </pre>
         </div>
         <div class="example-js">
@@ -222,10 +222,10 @@ table2 =
     age: 26
 
 # Implicit access, accessignment
-upCaseName = (.name.=toUpperCase!)
+up-case-name = (.name .= to-upper-case!)
 
 # Curried functions using -->
-sortBy = (prop, list) --> list.sort (a, b) -> 
+sort-by = (prop, list) --> list.sort (a, b) -> 
   | a[prop] < b[prop] => -1
   | a[prop] > b[prop] => 1
   | otherwise         => 0
@@ -238,8 +238,8 @@ sortBy = (prop, list) --> list.sort (a, b) ->
 
 # List comprehensions, destructuring, piping
 [{id:id1, name, age} for {id:id1, name} in table1 for {id:id2, age} in table2 when id1 is id2]
-|> sortBy \id
-|> each upCaseName # using 'each' from prelude.ls
+|> sort-by \id
+|> each up-case-name # using 'each' from prelude.ls
 |> JSON.stringify
 #=>
 #[{"id":1,"name":"GEORGE","age":20},
@@ -1111,7 +1111,7 @@ tree =
         * 10
     * 11
 
-objList =
+obj-list =
   * name: \tessa
     age:  23
   * name: \kendall
@@ -1708,11 +1708,11 @@ function not$(x){ return !x; }
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-addTwoTimesTwo = (+ 2) >> (* 2)
-timesTwoAddTwo = (+ 2) << (* 2)
+add-two-times-two = (+ 2) >> (* 2)
+times-two-add-two = (+ 2) << (* 2)
 
-addTwoTimesTwo 3 #=> 10
-timesTwoAddTwo 3 #=> 8
+add-two-times-two 3 #=> 10
+times-two-add-two 3 #=> 8
 </pre>
         </div>
         <div class="example-js">
@@ -2256,13 +2256,13 @@ add(3, 4);
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-setPersonParams = (
+set-person-params = (
   person # target object to set params
   person.age
   person.height
 ) -> person
 
-person = setPersonParams {}, 21, 180cm
+person = set-person-params {}, 21, 180cm
 #=> {age: 12, height: 180}
 </pre>
         </div>
@@ -2284,7 +2284,7 @@ person = setPersonParams({}, 21, 180);
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-setText = (@text) -> this
+set-text = (@text) -> this
 </pre>
         </div>
         <div class="example-js">
@@ -2351,8 +2351,8 @@ add(2, 0);
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-setCords = ({x, y}) -> "#x,#y"
-setCords y: 2, x: 3 #=> '3,2'
+set-cords = ({x, y}) -> "#x,#y"
+set-cords y: 2, x: 3 #=> '3,2'
 </pre>
         </div>
         <div class="example-js">
@@ -2376,11 +2376,11 @@ setCords({
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-setCords = ({x = 1, y = 3} = {}) -> "#x,#y"
-setCords y: 2, x: 3 #=> '3,2'
-setCords x: 2       #=> '2,3'
-setCords y: 7       #=> '1,7'
-setCords!           #=> '1,3'
+set-cords = ({x = 1, y = 3} = {}) -> "#x,#y"
+set-cords y: 2, x: 3 #=> '3,2'
+set-cords x: 2       #=> '2,3'
+set-cords y: 7       #=> '1,7'
+set-cords!           #=> '1,3'
 </pre>
         </div>
         <div class="example-js">
@@ -2817,10 +2817,10 @@ map(function(x){
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 
-filterNums = filter _, [1 to 5]
-filterNums even  #=> [2,4]
-filterNums odd   #=> [1,3,5]
-filterNums (< 3) #=> [1,2]
+filter-nums = filter _, [1 to 5]
+filter-nums even  #=> [2,4]
+filter-nums odd   #=> [1,3,5]
+filter-nums (< 3) #=> [1,2]
 </pre>
   </div>
   <div class="example-js">
@@ -2920,8 +2920,8 @@ f(3);
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 
-addThreeNumbers = -> &0 + &1 + &2
-addThreeNumbers 1 2 3 #=> 6
+add-three-numbers = -> &0 + &1 + &2
+add-three-numbers 1 2 3 #=> 6
 </pre>
   </div>
   <div class="example-js">
