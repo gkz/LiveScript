@@ -36,6 +36,9 @@ Get [Node.js](http://nodejs.org) and [npm](http://npmjs.org), then:
 - `git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
 ## Changelog
+### 0.8.1
+- Fixed [#162](https://github.com/satyr/coco/issues/162).
+
 ### 0.8.0
 - Allowed hyphenated alphabets within identifiers as alias to their upper case:
   `encode-URI-component` => `encodeURIComponent`
