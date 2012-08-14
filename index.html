@@ -444,7 +444,7 @@ function curry$(f, args){
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 if 2 + 2 == 4
-  doSomething()
+  do-something()
 </pre>
   </div>
   <div class="example-js">
@@ -527,7 +527,7 @@ times = function(x, y){
         </div>
       </div>
 
-      <p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned. However, you can still use <code>return</code> to force returns if you want, and you can add a bang to your definitions to suppress auto-returning <code>noRet = !(x) -> ...</code>.
+      <p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned. However, you can still use <code>return</code> to force returns if you want, and you can add a bang to your definitions to suppress auto-returning <code>no-ret = !(x) -> ...</code>.
 
       <h3>Assignment</h3>
       <p>Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. 
@@ -886,7 +886,7 @@ obj = {prop: 1, thing: 'moo'}
 
 person =
   age:      23
-  eyeColor: \green
+  eye-color: \green
   height:   180cm
 
 oneline = color: \blue, heat: 4
@@ -919,7 +919,7 @@ oneline = {
 <pre class="prettyprint lang-ls">
 obj =
   "#variable": 234
-  (person.eyeColor): false
+  (person.eye-color): false
 </pre>
         </div>
         <div class="example-js">
@@ -1068,12 +1068,12 @@ this.location;
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-myList =
+my-list =
   32 + 1
   person.height
   \beautiful
 
-oneItem =
+one-item =
   1
   ...
 </pre>
@@ -2475,7 +2475,7 @@ function curry$(f, args){
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-~setX(val) =
+~set-x(val) =
   @x = val / 2
 </pre>
         </div>
@@ -2935,7 +2935,7 @@ addThreeNumbers(1, 2, 3);
         </div>
       </div>
 
-      <p>Note that currying won't work in that situation, as the number of declared arguments in <code>addThreeNumbers</code> is 0.
+      <p>Note that currying won't work in that situation, as the number of declared arguments in <code>add-three-numbers</code> is 0.
 
       <h3>More</h3>
 
@@ -3099,13 +3099,13 @@ time = days: 365
 
 
 
-halfYear = that / 2 if time.days
+half-year = that / 2 if time.days
 #=> 182.5
 
 if /^e(.*)/ == 'enter'
   that.1   #=> 'nter'
 
-if halfYear?
+if half-year?
   that * 2 #=> 365
 </pre>
         </div>
@@ -4057,7 +4057,7 @@ x['hello world'][1][0];
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-document.title.=toUpperCase! #=> LIVESCRIPT ...
+document.title .= to-upper-case! #=> LIVESCRIPT ...
 </pre>
         </div>
         <div class="example-js">
@@ -4178,11 +4178,11 @@ a = [2 7 1 8]
   ..sort!
 a #=> [1,3,7,8]
 
-document.querySelector \h1
+document.query-selector \h1
   ..style
     ..color    = \red
-    ..fontSize = \large
-  ..innerHTML = 'LIVESCRIPT!'
+    ..font-size = \large
+  ..inner-HTML = 'LIVESCRIPT!'
 </pre>
         </div>
         <div class="example-js">
@@ -4222,11 +4222,11 @@ class Item
   @static = 'static'
   # properties and methods
   type: \unknown
-  boundToInstance: ~> @x
+  bound-to-instance: ~> @x
 
 Renameable =
-  setName: -> @name = it
-  getName: -> @name ? @id
+  set-name: -> @name = it
+  get-name: -> @name ? @id
 
 class Box extends Item implements Renameable
   (@name) ->
@@ -4239,7 +4239,7 @@ class Box extends Item implements Renameable
   @static = -> priv
 
 thing = new Box \boxy
-thing.getName! #=> \boxy
+thing.get-name! #=> \boxy
 thing.id       #=> (some random number)
 thing.type     #=> 'cube'
 thing.priv     #=> (nothing)
@@ -4247,7 +4247,7 @@ Box.static!    #=> 'secret'
 Box::type = \block
 thing.type     #=> 'block'
 
-thing.boundToInstance! #=> 10
+thing.bound-to-instance! #=> 10
 
 # infix with - "cloneport"
 thing2 = thing with name: \boxahoy
