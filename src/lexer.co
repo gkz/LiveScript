@@ -143,7 +143,7 @@ exports import
       @carp "reserved word \"#id\"" if id of KEYWORDS_UNUSED
       if not last.1 and last.0 of <[ CATCH FUNCTION LABEL ]>
         last <<< {1: id, -spaced}
-        return id.length
+        return input.length
       tag = \ID
       # contextual keywords (reserved only in specific places)
       switch id
