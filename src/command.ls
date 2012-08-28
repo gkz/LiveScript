@@ -146,7 +146,7 @@ switch
 # Attach the appropriate listeners to compile scripts incoming over **stdin**.
 !function compileStdin
   argv.1 = \stdin
-  with process.stdin
+  with process.openStdin!
     code = ''
     @on \data !-> code += it
     @on \end  !-> compileScript '' code
@@ -199,7 +199,7 @@ switch
   argv.1 = \repl
   code   = if repl.infunc then '  ' else ''
   cont   = 0
-  rl     = require(\readline)createInterface process.stdin, process.stdout
+  rl     = require(\readline)createInterface process.openStdin!, process.stdout
   reset  = !->
     rl.line = code := ''
     rl.prompt!
