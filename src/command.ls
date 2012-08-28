@@ -199,7 +199,7 @@ switch
   argv.1 = \repl
   code   = if repl.infunc then '  ' else ''
   cont   = 0
-  rl     = require(\readline)createInterface process.stdin, process.stdout
+  rl     = require(\readline)createInterface process.openStdin!, process.stdout
   reset  = !->
     rl.line = code := ''
     rl.prompt!
