@@ -4,8 +4,8 @@ tint = (ext, shortcuts, fallthroughs) ->
   for rule in shortcuts when rule.length < 4 then rule.splice 2 0 0
   PR.registerLangHandler PR.createSimpleLexer(shortcuts, fallthroughs), [ext]
 
-ident = /(?:(?!\d)(?:(?!\s)[\w$\xAA-\uFFDC][\w$\xAA-\uFFDC-]+))/$
-kwend = /(?!(?!\s)[$\w\xAA-\uFFDC.-])/$
+ident = /(?![\d\s])[$\w\xAA-\uFFDC](?:(?!\s)[$\w\xAA-\uFFDC]|-[A-Za-z])*/$
+kwend = /(?!(?!\s)[$\w\xAA-\uFFDC]|-[A-Za-z])/$
 
 ### Main
 tint \ls [
@@ -47,7 +47,8 @@ tint \ls [
   [\ctx // ^ (?
   : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
-  | it | arguments | eval | by | constructor | prototype | superclass
+  | e(?:val)?
+  | it | arguments | by | constructor | prototype | superclass | _
   ) #kwend //]
   [\glb // ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number

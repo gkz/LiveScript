@@ -653,7 +653,7 @@ class exports.Chain extends Node
     while tail = tails[++i] when tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
       x = tails.splice 0 i+1
-      x = x.pop!key.toSlice o, Chain(@head, x)unwrap!, assign
+      x = x.pop!key.toSlice o, Chain(@head, x)unwrap!, tail.symbol, assign
       @head = x <<< {@front}
       i = -1
     this
@@ -759,7 +759,7 @@ class exports.Obj extends List
   asObj: THIS
 
   # `base{x: y}` => `{x: base.y}`
-  toSlice: (o, base, assign) ->
+  toSlice: (o, base, symbol, assign) ->
     {items} = this
     if items.length > 1 then [base, ref, temps] = base.cache o else ref = base
     for node, i in items
@@ -778,7 +778,7 @@ class exports.Obj extends List
           [key, node] = [node, key] if assign
           key = Parens key
         else key = node
-        val = chain = Chain base, [Index node.maybeKey!]
+        val = chain = Chain base, [Index node.maybeKey!, symbol]
         val = logic <<< first: val if logic
         items[i] = Prop key, val
       base = ref
@@ -868,13 +868,13 @@ class exports.Arr extends List
   asObj: -> Obj([Prop Literal(i), item for item, i in @items])
 
   # `base[x, ...y]` => `[base[x], ...base[y]]`
-  toSlice: (o, base) ->
+  toSlice: (o, base, symbol) ->
     {items} = this
     if items.length > 1 then [base, ref] = base.cache o else ref = base
     for item, i in items
       item.=it if splat = item instanceof Splat
       continue if item.isEmpty!
-      chain = Chain base, [Index item]
+      chain = Chain base, [Index item, symbol]
       items[i] = if splat then Splat chain else chain
       base = ref
     chain or @carp 'empty slice'
@@ -2377,16 +2377,16 @@ Scope ::=
 
   # Concatenates the declarations in this scope.
   emit: (code, tab) ->
-    usr = []; tmp = []; asn = []; fun = []
+    vrs = []; asn = []; fun = []
     for name, type of @variables
       name.=slice 0 -1
       if type in <[ var const reuse ]>
-        (if \_ is name.charAt 0 then tmp else usr)push name
+        vrs.push name
       else if type.value
         if ~(val = entab that, tab)lastIndexOf \function( 0
         then fun.push "function #name#{ val.slice 8 }"
         else asn.push "#name = #val"
-    code = "#{tab}var #that;\n#code" if usr.concat(tmp, asn)join ', '
+    code = "#{tab}var #that;\n#code" if vrs.concat asn .join ', '
     if fun.join "\n#tab" then "#code\n#tab#that" else code
 
 ##### Constants

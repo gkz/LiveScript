@@ -82,8 +82,14 @@ else
   else 3
 
 
-# Post-condition should accept trailing non-`then` implicit indentation.
+# Post-condition should accept trailing non-`if` block.
 ok true if ->
+ok true if do
+   true
+ok true if let
+   true
+ok true if do function f
+   true
 
 
 # [coffee#738](https://github.com/jashkenas/coffee-script/issues/738)

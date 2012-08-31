@@ -13,6 +13,12 @@ throws 'invalid assign on line 1' -> LiveScript.compile 'yes = 6'
 eq encodeURIComponent, encode-URI-component
 eq ''.toLowerCase, ''.to-lower-case
 
+function no-op then
+eq no-op(), void
+eq noOp.length, 0
+
+try throw 0 catch e-r eq eR, 0
+
 
 ### Numbers
 

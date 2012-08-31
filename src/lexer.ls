@@ -181,7 +181,7 @@ exports import
       @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED
       if not last.1 and last.0 in <[ CATCH FUNCTION LABEL ]>
         last <<< {1: id, -spaced}
-        return id.length
+        return input.length
       tag = \ID
       # contextual keywords (reserved only in specific places)
       switch id
@@ -864,7 +864,9 @@ character = if JSON!? then uxxxx else ->
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go it, i
     if tag is \IF
-      it.0 is \INDENT and (it.1 or it.then) or token.0 = \POST_IF
+      token.0 = \POST_IF if it.0 is not \INDENT
+                         or not it.1 and not it.then
+                         or tokens[i-1]0 in BLOCK_USERS
     else unless it.0 is \INDENT
       tokens.splice i, 0 [\INDENT 0 lno = tokens[i-1]2] [\DEDENT 0 lno]
 
@@ -964,9 +966,7 @@ character = if JSON!? then uxxxx else ->
       if seenSwitch then skipBlock := true else return true
     case \INDENT
       return skipBlock := false if skipBlock
-      return pre.0 not in
-        <[ { [ , -> : ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY
-           HURL DECL DO ]>
+      return pre.0 not in BLOCK_USERS
     case \WHILE
       return false if token.done
       fallthrough
@@ -1199,3 +1199,7 @@ CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 # Tokens that can start an argument list.
 ARG = CHAIN +++ <[ ... UNARY CREMENT PARAM( FUNCTION
                       IF SWITCH TRY CLASS RANGE LABEL DECL DO BIOPBP ]>
+
+# Tokens that expect INDENT on the right.
+BLOCK_USERS = <[ , : -> ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY
+                 HURL DECL DO LET FUNCTION ]>
