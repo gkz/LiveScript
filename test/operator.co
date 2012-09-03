@@ -211,6 +211,12 @@ a = "1#{2}3" +
 eq a, '123456'
 
 
+# [coffee#2506](https://github.com/jashkenas/coffee-script/issues/2506)
+a = 0
+eq false, false && a ||= 1
+eq a, 0
+
+
 ### Unary `+`/`-`
 eq  0, +[]
 eq -1, -true
