@@ -44,8 +44,13 @@ let
     d = 4
     [e, f] = [5, 6]
   export const g = 7
-  eq '1,2,3,4,5,6,7' [a, b, c, d, e, f, g]join!
-  ok out.g, g
+  export
+    const h = 8
+    const i = 9
+  eq '1,2,3,4,5,6,7,8,9' ''+[a, b, c, d, e, f, g, h, i]
+  eq out.g, g
+  eq out.h, h
+  eq out.i, i
 
 compileThrows 'redeclaration of constant "a"' 2 '''
   const a = 0

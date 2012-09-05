@@ -1978,6 +1978,9 @@ DECLS =
   export: (lines) ->
     i = -1; out = Util \out
     while node = lines[++i]
+      if node instanceof Block
+        lines.splice i-- 1 ...node.lines
+        continue
       if node instanceof Fun and node.name
         lines.splice i++ 0 Assign Chain(out, [Index Key that]), Var that
         continue
