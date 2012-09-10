@@ -457,6 +457,7 @@ exports import
         | \==  => \===
         | \!=  => \!==
       tag = \COMPARE
+    case <[ <: :> ?> -:> -?> ]> then tag = \EVENT
     case <[ === !== ]> then val += '='; fallthrough
     case <[ < > <= >= <== >== >>= <<= ]> then tag = \COMPARE
     case <[ .<<. .>>. .>>>. <? >? ]> then tag = \SHIFT
@@ -1178,10 +1179,11 @@ KEYWORDS = KEYWORDS_SHARED +++ KEYWORDS_UNUSED
 # so that they can lex from any index by receiving `.lastIndex` beforehand.
 ID = //
   ( (?!\s)[a-z_$\xAA-\uFFDC](?:(?!\s)[\w$\xAA-\uFFDC]|-[a-z])* )
-  ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
+  ( [^\n\S]* : (?![:=>]) )?  # Is this a property name?
 |//ig
 SYMBOL = //
-  [-+*/^]= | %%?= | ::?=        # compound assign
+  <: | -?[:\?]>                 # Event operators
+| [-+*/^]= | %%?= | ::?=        # compound assign
 | \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
 | \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
 | \^\^                          # clone

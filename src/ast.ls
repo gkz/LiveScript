@@ -2444,6 +2444,25 @@ class exports.Vars extends Node
       o.scope.declare value, v
     Literal \void .compile o, level
 
+#### Events
+# Parse appropriate event operations
+class exports.Event extends Node
+  (@target, @observer, @method) ~>
+
+  compileNode: (o) ->
+    t = @target.compile o
+    code = "#{ util \prepareHandler }(#t = #t || {});\n"
+    ops =
+      \<: : \trigger
+      \:> : \observe
+      \-:> : \off
+      \?> : \advise
+      \-?> : \unadvise
+    op = ops[@method]
+
+    code + "#{ util op }(#{ @target.compile o }, #{ @observer.compile o, LEVEL_LIST });"
+
+
 #### Parser Utils
 # Helpers for modifying nodes in [parser](../lib/parser.js).
 
@@ -2733,6 +2752,58 @@ UTILS =
       return result;
     }
   }'''
+
+  ## Eventing utility methods
+  # Bind callback to object
+  observe: '''function(observer, callback) {
+    return observer.__event_handler.push(callback);
+  };'''
+
+  off: '''function(o, e) {
+    var t, _ref;
+    if ((t = o.__event_handler.indexOf(e)) > -1) {
+      return ([].splice.apply(o.__event_handler, [t, t - t + 1].concat(_ref = [])), _ref);
+    }
+  }'''
+  advise: '''function(o, advisor) {
+    return o.__event_advisor.push(advisor);
+  };'''
+  unadvise: '''function(o, e) {
+    var t, _ref;
+    if ((t = o.__event_advisor.indexOf(e)) > -1) {
+      return ([].splice.apply(o.__event_advisor, [t, t - t + 1].concat(_ref = [])), _ref);
+    }
+  };'''
+  trigger: '''function(o, e, p) {
+    var advice, callback, _e, _i, _j, _len, _len1, _ref, _ref1;
+    o.last = {
+      event: e,
+      exception: null
+    };
+    _ref = o.__event_advisor;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      advice = _ref[_i];
+      try {
+        _e = advice.call(p, e);
+        if (_e) {
+          o.last.event = e = _e;
+        }
+      } catch (ex) {
+        o.last.exception = ex;
+        return false;
+      }
+    }
+    _ref1 = o.__event_handler;
+    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+      callback = _ref1[_j];
+      callback.call(p, e);
+    }
+    return true;
+  }'''
+  prepareHandler: '''function(o) {
+    o.__event_handler = o.__event_handler || [];
+    o.__event_advisor = o.__event_advisor || [];
+  };'''
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"

@@ -199,6 +199,8 @@ bnf =
     o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.where $4, Block [$1]
     o 'Expression WHERE Block' -> Chain Call.where $3.lines, Block [$1]
 
+    o 'Expression EVENT Expression' -> Event $1, $3, $2
+
     o 'Chain CLONEPORT Expression'
     , -> Import (Unary \^^ $1, prec: \UNARY), $3,         false
     o 'Chain CLONEPORT Block'
@@ -239,6 +241,7 @@ bnf =
     o 'Expression BITWISE Expression' ditto
     o 'Expression CONCAT  Expression' ditto
     o 'Expression COMPOSE Expression' ditto
+
 
     o 'Expression RELATION Expression' ->
       *if \! is $2.charAt 0 then Binary $2.slice(1), $1, $3 .invert!
@@ -433,6 +436,7 @@ operators =
   <[ right    BACKPIPE     ]>
   <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL WHERE ]>
   <[ left     PIPE         ]>
+  <[ left     EVENT        ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
