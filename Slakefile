@@ -40,8 +40,14 @@ task \build 'build lib/ from src/' ->
     \src/ + file if ext.test file
   run [\-bco \lib] +++ sources
 
+task \clean 'clean lib/ to start with good compiler' ->
+  shell 'git checkout -- lib/'
+
 task \build:full 'build twice and run tests' ->
   shell 'bin/slake build && bin/slake build && bin/slake test'
+
+task \build:all 'clean, build twice with parser and run tests' ->
+  shell 'bin/slake clean && bin/slake build && bin/slake build:parser && bin/slake build && bin/slake test'
 
 task \build:parser 'build lib/parser.js from lib/grammar.js' ->
   spit \lib/parser.js,
