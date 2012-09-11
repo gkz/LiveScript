@@ -2451,7 +2451,6 @@ class exports.Event extends Node
 
   compileNode: (o) ->
     t = @target.compile o
-    code = "#{ util \prepareHandler }(#t = #t || {});\n"
     ops =
       \<: : \trigger
       \:> : \observe
@@ -2459,8 +2458,7 @@ class exports.Event extends Node
       \?> : \advise
       \-?> : \unadvise
     op = ops[@method]
-
-    code + "#{ util op }(#{ @target.compile o }, #{ @observer.compile o, LEVEL_LIST });"
+    "#{ util op }.call(#{ @target.compile o }, #{ @observer.compile o, LEVEL_LIST })"
 
 
 #### Parser Utils
@@ -2768,7 +2766,7 @@ UTILS =
     !(e) ->
       prepareHandler$ @
       if (t = @__event_handler.indexOf(e)) > -1
-        @__event_handler[t til t] = []
+        @__event_handler[t to t] = []
 
   advise: ->
     util \prepareHandler
@@ -2782,7 +2780,7 @@ UTILS =
     !(e) ->
       prepareHandler$ @
       if (t = @__event_advisor.indexOf(e)) > -1
-        @__event_advisor[t til t] = []
+        @__event_advisor[t to t] = []
 
   # Trigger callbacks for object.
   trigger: ->
