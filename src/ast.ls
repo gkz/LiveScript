@@ -2458,7 +2458,10 @@ class exports.Event extends Node
       \?> : \advise
       \-?> : \unadvise
     op = ops[@method]
-    "#{ util op }.call(#{ @target.compile o }, #{ @observer.compile o, LEVEL_LIST })"
+    base = t.split \.
+    if base.length > 1 then base.pop!
+    base.join \.
+    "#{ util op }.call(#t = #t || {}, #{ @observer.compile o, LEVEL_LIST }, #base)"
 
 
 #### Parser Utils
