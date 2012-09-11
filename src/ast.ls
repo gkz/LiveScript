@@ -2755,55 +2755,56 @@ UTILS =
 
   ## Eventing utility methods
   # Bind callback to object
-  observe: '''function(observer, callback) {
-    return observer.__event_handler.push(callback);
-  };'''
+  observe: ->
+    util \prepareHandler
+    !(callback) ->
+      prepareHandler$ @
+      @__event_handler.push(callback)
 
-  off: '''function(o, e) {
-    var t, _ref;
-    if ((t = o.__event_handler.indexOf(e)) > -1) {
-      return ([].splice.apply(o.__event_handler, [t, t - t + 1].concat(_ref = [])), _ref);
-    }
-  }'''
-  advise: '''function(o, advisor) {
-    return o.__event_advisor.push(advisor);
-  };'''
-  unadvise: '''function(o, e) {
-    var t, _ref;
-    if ((t = o.__event_advisor.indexOf(e)) > -1) {
-      return ([].splice.apply(o.__event_advisor, [t, t - t + 1].concat(_ref = [])), _ref);
-    }
-  };'''
-  trigger: '''function(o, e, p) {
-    var advice, callback, _e, _i, _j, _len, _len1, _ref, _ref1;
-    o.last = {
-      event: e,
-      exception: null
-    };
-    _ref = o.__event_advisor;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      advice = _ref[_i];
-      try {
-        _e = advice.call(p, e);
-        if (_e) {
-          o.last.event = e = _e;
-        }
-      } catch (ex) {
-        o.last.exception = ex;
-        return false;
-      }
-    }
-    _ref1 = o.__event_handler;
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      callback = _ref1[_j];
-      callback.call(p, e);
-    }
-    return true;
-  }'''
-  prepareHandler: '''function(o) {
-    o.__event_handler = o.__event_handler || [];
-    o.__event_advisor = o.__event_advisor || [];
-  };'''
+  # Remove callback from object
+  off: ->
+    util \prepareHandler
+    util \splice
+    !(e) ->
+      prepareHandler$ @
+      if (t = @__event_handler.indexOf(e)) > -1
+        @__event_handler[t til t] = []
+
+  advise: ->
+    util \prepareHandler
+    !(advisor) ->
+      prepareHandler$ @
+      @__event_advisor.push(advisor)
+
+  unadvise: ->
+    util \prepareHandler
+    util \splice
+    !(e) ->
+      prepareHandler$ @
+      if (t = @__event_advisor.indexOf(e)) > -1
+        @__event_advisor[t til t] = []
+
+  # Trigger callbacks for object.
+  trigger: ->
+    util \prepareHandler
+    (e, p) ->
+      prepareHandler$ @
+      @last = {event: e, exception: null}
+      for advice in @__event_advisor
+        try
+          _e = advice.call(p, e)
+          if _e then @last.event = e = _e # Advice *may*, not *must*, return an updated event trigger.
+        catch ex
+          @last.exception = ex
+          return false
+      for callback in @__event_handler
+        callback.call(p, e)
+      true
+
+  prepareHandler: ->
+    !(o) ->
+      o.__event_handler = o.__event_handler || []
+      o.__event_advisor = o.__event_advisor || []
 
   # Shortcuts to speed up the lookup time for native methods.
   split    : "''.split"
@@ -2841,6 +2842,9 @@ SIMPLENUM = /^\d+$/
 ##### Helpers
 
 # Declares a utility function at the top level.
-function util then Scope.root.assign it+\$ UTILS[it]
+function util
+  func = UTILS[it]
+  if {}.toString.call(func) == '[object Function]' then func = func()
+  Scope.root.assign it+\$ func.toString!
 
 function entab code, tab then code.replace /\n/g \\n + tab
