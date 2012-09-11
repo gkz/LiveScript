@@ -2460,7 +2460,7 @@ class exports.Event extends Node
     op = ops[@method]
     base = t.split \.
     if base.length > 1 then base.pop!
-    base.join \.
+    base = base.join \.
     "#{ util op }.call(#t = #t || {}, #{ @observer.compile o, LEVEL_LIST }, #base)"
 
 
