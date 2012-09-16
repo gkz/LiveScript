@@ -114,6 +114,15 @@ source.event ?> add
 source.event <: {}
 equal source.pass, 2
 
+source = new ->
+	@pass = 0
+	@
+add = -> @pass++
+source[event] :> add
+source[event] ?> add
+source[event] <: {}
+equal source.pass, 2
+
 /* "Observers and Advisors trigger in correct deep context" */
 source = {}
 source.child = new ->

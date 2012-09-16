@@ -2449,6 +2449,13 @@ class exports.Vars extends Node
 class exports.Event extends Node
   (@target, @observer, @method) ~>
 
+  findBase: (target) ->
+    # source[event] or source.event
+    if target.charAt(target.length - 1) == \]
+      target.substring 0, target.lastIndexOf \[
+    else
+      target.substring 0, target.lastIndexOf \.
+
   compileNode: (o) ->
     t = @target.compile o
     ops =
@@ -2458,9 +2465,7 @@ class exports.Event extends Node
       \?> : \advise
       \-?> : \unadvise
     op = ops[@method]
-    base = t.split \.
-    if base.length > 1 then base.pop!
-    base = base.join \.
+    base = @findBase t
     "#{ util op }.call(#t = #t || {}, #{ @observer.compile o, LEVEL_LIST }, #base)"
 
 
