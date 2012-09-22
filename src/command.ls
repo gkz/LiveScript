@@ -78,19 +78,21 @@ switch
 # compile them. If a directory is passed, recursively compile all
 # _.ls_ files in it and all subdirectories.
 !function compileScripts
-  $args.forEach !-> walk it, , true
-  !function walk source, base ? path.normalize(source), top
+  $args.forEach !-> walk it, path.normalize(it), true
+  !function walk source, base, top
     !function work
       fshoot \readFile source, !-> compileScript source, "#it", base
     e, stats <-! fs.stat source
     if e
-      return walk "#source.ls" if top and not /\.ls$/test source
-      die "Can't find: #source"
+      die "Can't find: #source" if not top or /(?:\.ls|\/)$/test source
+      walk "#source.ls" base
+      return
     if stats.isDirectory!
-      <-! fshoot \readdir source
-      <-! it.forEach
-      walk path.join(source, it), base
-    else if top or path.extname(source)toLowerCase! is \.ls
+      unless o.run
+        fshoot \readdir source, !-> it.forEach !-> walk "#source/#it" base
+        return
+      source += \/index.ls
+    if top or \.ls is source.slice -3
       if o.watch then watch source, work else work!
 
 # Compile a single source script, containing the given code, according to the

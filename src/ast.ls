@@ -1330,6 +1330,8 @@ class exports.Assign extends Node
     if left instanceof Var and @logic in <[ ? !? ]> and @op is \=
       o.scope.declare left.value, left
     lefts = Chain(left)cacheReference o
+    # Deal with `a && b ||= c`.
+    o.level += LEVEL_OP < o.level
     morph = Binary @logic, lefts.0, @<<<{-logic, left: lefts.1}
     (morph <<< {@void})compileNode o
 
@@ -2288,6 +2290,9 @@ DECLS =
   export: (lines) ->
     i = -1; out = Util \out
     while node = lines[++i]
+      if node instanceof Block
+        lines.splice i-- 1 ...node.lines
+        continue
       if node instanceof Fun and node.name
         lines.splice i++ 0 Assign Chain(out, [Index Key that]), Var that
         continue
