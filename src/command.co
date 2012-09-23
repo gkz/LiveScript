@@ -11,7 +11,7 @@ global import
   say  : !-> process.stdout.write it + \\n
   warn : !-> process.stderr.write it + \\n
   die  : !->
-    console.warn '%s\n' it
+    fs.writeSync process.stderr.fd, it + \\n
     process.exit 1
   p    : !-> []forEach.call @@, console.dir
   pp   : !(x, showHidden, depth) ->
