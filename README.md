@@ -36,6 +36,13 @@ Get [Node.js](http://nodejs.org) and [npm](http://npmjs.org), then:
 - `git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
 ## Changelog
+### 0.8.2
+- Fixed:
+  - [#165](https://github.com/satyr/coco/issues/165)
+  - [#168](https://github.com/satyr/coco/issues/168)
+  - [coffee#2496](https://github.com/jashkenas/coffee-script/issues/2496)
+  - [coffee#2506](https://github.com/jashkenas/coffee-script/issues/2506)
+
 ### 0.8.1
 - Fixed [#162](https://github.com/satyr/coco/issues/162).
 

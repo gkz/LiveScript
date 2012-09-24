@@ -1,6 +1,6 @@
 {
   "name": "coco",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Unfancy CoffeeScript",
   "keywords": [
     "language",
@@ -38,6 +38,6 @@
   },
   "devDependencies": {
     "jison": "0.2.1",
-    "uglify-js": "1.2.6"
+    "uglify-js": "1.3.3"
   }
 }
