@@ -40,4 +40,4 @@ dependencies:
 
 devDependencies:
   jison       : \0.2.1
-  \uglify-js  : \1.2.6
+  \uglify-js  : \1.3.3

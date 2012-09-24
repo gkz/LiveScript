@@ -275,7 +275,7 @@ eq sums.2, 11
 fs = for x, y of {2 3 5} then let z = 7 then -> x * y * z
 eq 63 fs.1()
 
-os = for n in [11 13] then new -> import n: -> n
+os = for [_]:n in [11 13] then new -> import n: -> n
 eq 11 os.0.n()
 
 

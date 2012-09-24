@@ -2002,6 +2002,7 @@ class exports.For extends While
     {index, item} = this
     if index and not dup params, index
       call.args.push params.* = Var index
+    item = Var that if item instanceof List and item.name
     if item instanceof Var and not dup params, item.value
       call.args.push params.* = item
 

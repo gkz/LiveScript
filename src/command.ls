@@ -9,7 +9,9 @@ global import
   util : require \util
   say  : !-> process.stdout.write it + \\n
   warn : !-> process.stderr.write it + \\n
-  die  : !-> warn it; process.exit 1
+  die  : !->
+    fs.writeSync process.stderr.fd, it + \\n
+    process.exit 1
   p    : !-> []forEach.call arguments, console.dir
   pp   : !(x, showHidden, depth) ->
     say util.inspect x, showHidden, depth, !process.env.NODE_DISABLE_COLORS
