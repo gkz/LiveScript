@@ -2453,8 +2453,10 @@ class exports.Event extends Node
     # source[event] or source.event
     if target.charAt(target.length - 1) == \]
       target.substring 0, target.lastIndexOf \[
-    else
+    else if target.indexOf(\.) > 0
       target.substring 0, target.lastIndexOf \.
+    else
+      target
 
   compileNode: (o) ->
     t = @target.compile o
@@ -2466,7 +2468,8 @@ class exports.Event extends Node
       \-?> : \unadvise
     op = ops[@method]
     base = @findBase t
-    "#{ util op }.call(#t = #t || {}, #{ @observer.compile o, LEVEL_LIST }, #base)"
+    assign = if "this" == t then t else "#t = #t || {}"
+    "#{ util op }.call(#assign, #{ @observer.compile o, LEVEL_LIST }, #base)"
 
 
 #### Parser Utils

@@ -123,6 +123,27 @@ source[event] ?> add
 source[event] <: {}
 equal source.pass, 2
 
+/* "Observers and Advisors remove in correct context" */
+source = new -> 
+	@pass = 0
+	@
+add = -> @pass++
+source.event :> add
+source.event ?> add
+source.event -:> add
+source.event <: {}
+equal source.pass, 1
+
+source = new ->
+	@pass = 0
+	@
+
+source[event] :> add = -> @pass++
+source[event] -:> add
+source[event] ?> add
+source[event] <: {}
+equal source.pass, 1
+
 /* "Observers and Advisors trigger in correct deep context" */
 source = {}
 source.child = new ->
@@ -134,3 +155,9 @@ source.child.event :> add
 source.child.event ?> add
 source.child.event <: {}
 equal source.child.pass, 2
+
+/* Use `this` as event source */
+pass = false
+@ :> -> pass := true
+@ <: {}
+ok pass
