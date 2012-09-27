@@ -375,6 +375,14 @@ eq o[7], void
 compileThrows 'invalid delete' 1 'delete a'
 compileThrows 'invalid delete' 1 'delete a.=b'
 
+### `jsdelete`
+
+x =
+    a: 1
+
+ok delete! x.1
+ok not delete! Math.PI
+
 
 ### [[Class]] sniffing
 eq \RegExp typeof! /^/

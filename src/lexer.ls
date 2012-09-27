@@ -538,6 +538,8 @@ exports import
           @token \)CALL \)
         else if @last.1 is \typeof
           @last.1 = \classof
+        else if @last.1 is \delete
+          @last.1 = \jsdelete
         else break
         return 1
       tag = \UNARY

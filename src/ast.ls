@@ -972,6 +972,7 @@ class exports.Unary extends Node
         @carp "#{ crement op } of #that \"#{it.value}\"" ReferenceError
       it{front} = this if @post
     case \^^ then return "#{ util \clone }(#{ it.compile o, LEVEL_LIST })"
+    case \jsdelete then return "delete #{ it.compile o, LEVEL_LIST }"
     case \classof
       return "#{ util \toString }.call(
               #{ it.compile o, LEVEL_LIST }).slice(8, -1)"
