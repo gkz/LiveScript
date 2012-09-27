@@ -1961,6 +1961,29 @@ r;
         </div>
       </div>
 
+      <p><code>delete!</code> is like <code>delete</code> in JavaScript, and returns false only if the property exists and can't be deleted, otherwise returns true.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = {one: 1, two: 2}
+delete! obj.one #=> true
+delete! Math.PI #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj;
+obj = {
+  one: 1,
+  two: 2
+};
+delete obj.one;
+delete Math.PI;
+</pre>
+        </div>
+      </div>
+
       <p>Property copy - copy enumerable properties from right to left, and evaluate to the left. <code>&lt;&lt;&lt;</code> for own properties, <code>&lt;&lt;&lt;&lt;</code> for all properties. <code>import</code> and <code>importAll</code> are aliases for the two respectively. If you leave out the left operand, <code>this</code> is presumed.
 
       <div class="example">
@@ -4487,11 +4510,16 @@ TOTAL    851 ms
       <li>Removed the constructor shorthand. Rationale: rarely useful, use it for cascade instead.
       <li>Changed cascade op from <code>&</code> to <code>..</code>. Rationale: like in other languages.
       <li>Added match statement and deep compare. Rationale: experimental, will see if good.
+      <li>Added <code>delete!</code> which acts like the <code>delete</code> statement in JavaScript. Rationale: for the case when you need to know if the property is deletable or not.
       </ul>
     </div>
     <div id="changelog" class="section">
       <a name="changelog"></a>
       <h2>Changelog</h2>
+      <h3>1.0.2</h3>
+      <ul>
+          <li>Added <code>delete!</code> statement, like <code>delete</code> in JavaScript.
+      </ul>
       <h3>1.0.1</h3>
       <ul>
         <li>Bug fixes.
