@@ -438,4 +438,7 @@ eq 10, do
     & + 3
       4 + &
 
+ok
+  & true
+
 compileThrows 'stray cascadee' 2 '\n&'

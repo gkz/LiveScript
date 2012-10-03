@@ -424,8 +424,8 @@ exports import
       tag = \UNARY
     case \&
       unless able @tokens
-        tag = \LITERAL
-        break
+        @token \LITERAL \& true
+        return 1
       fallthrough
     case \| then tag = \BITWISE
     case \~
