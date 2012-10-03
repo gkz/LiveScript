@@ -1853,7 +1853,10 @@ class exports.While extends Node
   ::isStatement = ::isArray = YES
 
   makeComprehension: (toAdd, loops) ->
-    while loops.length then toAdd = loops.pop!addBody Block toAdd
+    @is-comprehension = true
+    while loops.length
+      toAdd = loops.pop!addBody Block toAdd
+      toAdd <<< {+in-comprehension} if not toAdd.is-comprehension
     @addBody Block toAdd
 
   getJump: (ctx or {}) ->
@@ -1877,8 +1880,12 @@ class exports.While extends Node
       else
         unless @body or @index
           @addBody Block Var @index = \ridx$
-        @body.makeReturn it
-        @else?makeReturn it
+        last = @body.lines?[*-1]
+        if (@is-comprehension or @in-comprehension) and not last?is-comprehension
+          @body.makeReturn it
+          @else?makeReturn it
+        else
+          @res-var = it
     else
       @getJump! or @returns = true
     this
@@ -1900,16 +1907,36 @@ class exports.While extends Node
   compileBody: (o) ->
     o.break = o.continue = true
     {body: {lines}, yet, tab} = this
-    code = ret = ''
+    code = ret = mid = ''
+    empty = if @objComp then '{}' else '[]'
+    last = lines?[*-1]
+    unless (@is-comprehension or @in-comprehension) and not last?is-comprehension
+      var has-loop
+      @traverseChildren !-> if it instanceof While then has-loop := true
+      if @returns and not @res-var
+        @res-var = res = o.scope.assign \results$ empty
+      if @res-var and (last instanceof While or has-loop)
+        temp = o.scope.temporary \lresult
+        lines.unshift Assign (Var temp), Arr!, \=
+        lines[*-1]?=makeReturn temp
+        mid += "#TAB#{Chain Var @res-var
+          .add Index (Key \push), \., true
+          .add Call [Chain Var temp] .compile o };\n#{@tab}"
+      else
+        @has-returned = true
+        if @res-var
+          @body.makeReturn @res-var
+          @else?makeReturn!
     if @returns
       @body = Block @body.makeObjReturn \results$ if @objComp
       @body = If @guard, @body if @guard and @objComp
-      empty = if @objComp then '{}' else '[]'
-      lines[*-1]?=makeReturn res = o.scope.assign \results$ empty
-      ret = "\n#{@tab}return #{ res or empty };"
+      if (not last instanceof While and not @has-returned) or @is-comprehension or @in-comprehension
+        lines[*-1]?=makeReturn res = o.scope.assign \results$ empty
+      ret += "\n#{@tab}return #{ res or empty };"
       @else?makeReturn!
     yet and lines.unshift JS "#yet = false;"
     code += "\n#that\n#tab" if @body.compile o, LEVEL_TOP
+    code += mid
     code += \}
     code += " while (#{ @test.compile o<<<{tab} LEVEL_PAREN });" if @post
     if yet
@@ -2111,11 +2138,12 @@ class exports.Case extends Node
     this
 
   compileCase: (o, tab, nobr, bool, type, target) ->
-    tests = for test in @tests
+    tests = []
+    for test in @tests
       test.=expandSlice(o)unwrap!
       if test instanceof Arr and type isnt \match
-        for t in test.items then t
-      else test
+        for t in test.items then tests.push t
+      else tests.push test
     tests.length or tests.push Literal \void
     if type is \match
       for test, i in tests

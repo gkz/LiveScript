@@ -106,9 +106,9 @@ bnf =
     , -> Chain(Chain Var \flip$ .add Call [$3]).flipIt!add Call [$5]
 
     o '[ Expression TO Expression ]'
-    , -> Chain new For from: $2, op: $3, to: $4
+    , -> Chain new For from: $2, op: $3, to: $4, in-comprehension: true
     o '[ Expression TO Expression BY Expression ]'
-    , -> Chain new For from: $2, op: $3, to: $4, step: $6
+    , -> Chain new For from: $2, op: $3, to: $4, step: $6, in-comprehension: true
 
     o 'Chain DOT [ Expression TO Expression ]'
     , -> Chain Slice type: $5, target: $1, from: $4, to: $6

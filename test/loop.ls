@@ -1,3 +1,11 @@
+## utils
+flatten = (x) ->
+  | typeof! x isnt 'Array' => x
+  | x.length is 1          => x.0
+  | otherwise              => x.0 +++ flatten x.slice 1
+
+##
+
 i = 5
 list = while i -= 1
   i * 2
@@ -132,8 +140,11 @@ eq evens + '', '4,6,8'
 odds = [num for num in [0, 1, 2, 3, 4, 5] by -2]
 eq odds + '', '5,3,1'
 
+# Multiline nested loops result in nested output
+eq 9 (for x from 3 to 5
+  for y from 3 to 5
+    x * y).0.0
 
-# Nested comprehensions.
 multiLiner =
   for x from 3 to 5
     for y from 3 to 5
@@ -141,15 +152,48 @@ multiLiner =
 
 singleLiner = [x * y for y from 3 to 5 for x from 3 to 5]
 
-eq multiLiner.length, singleLiner.length
-eq 25,  multiLiner[*-1]
+eq 3 multiLiner.length
+eq 9 singleLiner.length
+
+eq 25,  multiLiner[*-1][*-1]
 eq 25, singleLiner[*-1]
 
-comp = ["#x#y" for x in [1 2 3] for y in [\a \b \c]] 
+xs = for x to 5
+  for y to 5
+    if x is y
+      for z to 2
+        x + y + z
+    else
+      for z from 10 to 15
+        x + y + z
+eq 6 xs.length
+eq 6 xs.0.length
+eq 3 xs.0.0.length
+eq 6 xs.0.1.length
+
+# Nested comprehensions.
+comp = ["#x#y" for x in [1 2 3] for y in [\a \b \c]]
 eq "#comp", '1a,1b,1c,2a,2b,2c,3a,3b,3c'
 
 pythagoreanTriples = [[x,y,z] for x in [1 to 20] for y in [x to 20] for z in [y to 20] when x^2 + y^2 == z^2]
 eq "#{ pythagoreanTriples * \_ }", '3,4,5_5,12,13_6,8,10_8,15,17_9,12,15_12,16,20'
+
+
+# Comprehensions in comprehensions
+zs = [[x + y for y til 5] for x til 5]
+eq 5 zs.length
+eq 8 zs.4.4
+
+obs = [{[x, i + y] for x, i in <[ one two ]>} for y to 5]
+eq 6 obs.length
+eq 0 obs.0.one
+eq 6 obs[*-1].two
+
+# Comprehensions in loops
+xs = for x to 5
+  [x + y for y to 5]
+eq 6 xs.length
+eq 10 xs[*-1][*-1]
 
 # Comprehensions within parentheses.
 result = null
@@ -189,7 +233,7 @@ func = ->
   for i from 1 to 2
     break if i is 2
     for j in [3] then i * j
-eq func()[0], 3
+eq func!0.0, 3
 
 i = 6
 odds = while i--
@@ -268,7 +312,7 @@ fs = for a, i in [1 2]
   for b from 3 to 4
     let i = i+5
       -> i + a + b
-sums = [f! for f in fs]
+sums = [f! for f in flatten fs]
 eq sums.1, 10
 eq sums.2, 11
 
@@ -345,7 +389,9 @@ r = for i from 0 to 9
     break
   else if i .&. 2
     i
-eq '2,6' ''+r
+
+console.log r
+eq '2,6' flatten(r).to-string!
 
 r = for i til 1 then i else [9]
 eq 0 r.0
@@ -371,4 +417,3 @@ while i < evens.length, ++i when evens[i] * 2 is 8
   eq 4 evens[i] 
 
 eq '1 3 7 9' [y for y from 1 to 10 when y isnt 5 by 2].join ' '
-
