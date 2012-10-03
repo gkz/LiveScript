@@ -71,6 +71,7 @@ bnf =
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 
     o '[ Expression LoopHeads ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1
+    o '[ Expression LoopHeads DEDENT ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1
     o '{ [ ArgList OptComma ] LoopHeads }'
     , -> Chain $6.0.addObjComp!makeComprehension (L Arr $3), $6.slice 1
 
@@ -387,6 +388,8 @@ bnf =
   LoopHeads:
     o 'LoopHead'           -> [$1]
     o 'LoopHeads LoopHead' -> $1 +++ $2
+    o 'LoopHeads NEWLINE LoopHead' -> $1 +++ $3
+    o 'LoopHeads INDENT LoopHead'  -> $1 +++ $3
 
   Cases:
     o       'CASE Exprs Block' -> [new Case $2, $3]

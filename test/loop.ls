@@ -189,11 +189,42 @@ eq 6 obs.length
 eq 0 obs.0.one
 eq 6 obs[*-1].two
 
+
 # Comprehensions in loops
 xs = for x to 5
   [x + y for y to 5]
 eq 6 xs.length
 eq 10 xs[*-1][*-1]
+
+
+# Multiline comprehensions
+res = [x + y for x to 4
+             for y to 3]
+eq 7 res[*-1]
+
+res = [x + y for x to 4
+             for y to 3
+]
+eq 7 res[*-1]
+
+res = [x + y + z for x to 4
+                 for y to 3
+                 for z to 2]
+eq 9 res[*-1]
+res = [x + y + z for x to 4
+                 for y to 3
+                 for z to 2
+]
+eq 9 res[*-1]
+
+res = [(
+  a = 1
+  b = a + 2
+  a + b + x + y + z
+  ) for x to 4
+    for y to 3
+    for z to 2]
+eq 13 res[*-1]
 
 # Comprehensions within parentheses.
 result = null
