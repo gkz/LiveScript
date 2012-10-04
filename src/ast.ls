@@ -2248,7 +2248,6 @@ class exports.Label extends Node
       else it.compile o
 
 #### Cascade
-#
 class exports.Cascade extends Node
   (@target, @block) ->
 
@@ -2274,6 +2273,45 @@ class exports.JS extends Node
   ::isAssignable = ::isCallable = -> not @comment
 
   compile: -> if @literal then entab @code, it.indent else @code
+
+#### Require
+class exports.Require extends Node
+  (@list) ~>
+
+  children: <[ list ]>
+
+  compile: (o) ->
+    strip-string = (val) ->
+      if val == //^['"](.*)['"]$// then that.1 else val
+    get-file-name = (val) ->
+      (strip-string val .split '/')[*-1].split '.' .0
+
+    out = for item in @list.items
+      [asg, value] = switch
+      | item instanceof Key     => [item.name, item.name]
+      | item instanceof Var     => [item.value, item.value]
+      | item instanceof Prop    => [
+        if item.key instanceof Key
+        then item.key.name
+        else get-file-name item.key.value
+
+        if item.val instanceof Var
+          item.val.value
+        else if item.val instanceof Chain
+          chain = item.val.tails
+          strip-string if item.val.head instanceof Key
+            then item.val.head.name
+            else item.val.head.value
+        else
+          strip-string item.val.value
+        ]
+      | item instanceof Literal =>
+        [get-file-name item.value; strip-string item.value]
+      | otherwise               => @carp 'unsupported require type'
+
+      main = Chain Var 'require' .add Call [Literal "'#value'"]
+      Assign (Var asg), (if chain then Chain main, chain else main) .compile o
+    out.join ";\n#{o.indent}"
 
 #### Util
 # A wrapper node for utility functions.

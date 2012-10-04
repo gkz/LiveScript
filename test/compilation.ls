@@ -184,3 +184,36 @@ eq 'compose$([f, g, h, j]);' (bare 'f << g << h << j').split(\\n).0
 
 # destructuring assign sugar
 compileThrows 'invalid assign' 1 '{a **= b} = c'
+
+# require!
+eq "var a;\na = require('a');" bare 'require! [a]'
+eq "var a;\na = require('a');" bare 'require! <[a]>'
+eq "var a;\na = require('a');" bare 'require! {a}'
+eq '''var a, b, c, e, g, file, file2, file3, i, j, k, bar, baz;
+a = require('a');
+b = require('b');
+c = require('d');
+e = require('f');
+g = require('h');
+file = require('file.js');
+file2 = require('./file2.js');
+file3 = require('./asdf/safd/sa/file3.js');
+i = require('file.js');
+j = require('./file.js');
+k = require('./asdf/safd/sa/file.js');
+bar = require('foo').bar;
+baz = require('./file.js').baz;''' bare '''require! {
+  a
+  'b'
+  c: d
+  e: 'f'
+  'g': h
+  'file.js'
+  './file2.js'
+  './asdf/safd/sa/file3.js'
+  i: 'file.js'
+  j: './file.js'
+  k: './asdf/safd/sa/file.js'
+  foo.bar
+  './file.js'.baz
+}'''

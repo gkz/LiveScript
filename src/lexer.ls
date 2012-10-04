@@ -533,7 +533,10 @@ exports import
       return 1
     case \!
       switch then unless @last.spaced
-        if able @tokens, null true
+        if @last.1 is \require
+          @last.0 = \REQUIRE
+          @last.1 = \require!
+        else if able @tokens, null true
           @token \CALL( \!
           @token \)CALL \)
         else if @last.1 is \typeof
