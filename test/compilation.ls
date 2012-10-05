@@ -217,3 +217,6 @@ baz = require('./file.js').baz;''' bare '''require! {
   foo.bar
   './file.js'.baz
 }'''
+
+# JS literal
+eq 'some js code!' bare '``some js code!``'
