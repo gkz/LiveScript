@@ -381,3 +381,104 @@ class C extends B
   @stat = -> 2 + super!
 
 eq 4 C.stat!
+
+
+# Super outside of class defintions
+class A
+  meth: -> it + 5
+  @stat = -> it + 5
+
+a = new A
+eq 10 a.meth 5
+eq 10 A.stat 5
+
+class B extends A
+
+b = new B
+eq 10 b.meth 5
+eq 10 B.stat 5
+
+B::meth = -> super it + 2
+B.stat = -> super it + 2
+
+eq 12 b.meth 5
+eq 12 B.stat 5
+
+B::meth = (x) ->
+  func = ->
+    super x + 2
+  func!
+B.stat = (x) ->
+  func = ->
+    super x + 2
+  func!
+eq 12 b.meth 5
+eq 12 B.stat 5
+
+
+### The following are modified from CoffeeScript - test/classes.coffee
+
+# classes with a four-level inheritance chain
+class Base
+  func: (string) ->
+    "zero/#string"
+
+  @static = (string) ->
+    "static/#string"
+
+class FirstChild extends Base
+  func: (string) ->
+    super('one/') + string
+
+SecondChild = class extends FirstChild
+  func: (string) ->
+    super('two/') + string
+
+thirdCtor = ->
+  @array = [1, 2, 3]
+
+class ThirdChild extends SecondChild
+  -> thirdCtor.call this
+
+  # Gratuitous comment for testing.
+  func: (string) ->
+    super('three/') + string
+
+result = (new ThirdChild).func 'four'
+
+eq 'zero/one/two/three/four' result
+eq 'static/word' Base.static 'word'
+
+FirstChild::func = (string) ->
+  super 'one/' .length + string
+
+result = (new ThirdChild).func 'four'
+
+eq '9two/three/four' result
+
+eq '1 2 3' (new ThirdChild).array.join ' '
+
+# constructors with inheritance and super
+identity = (f) -> f
+
+class TopClass
+  (arg) ->
+    @prop = 'top-' + arg
+
+class SuperClass extends TopClass
+  (arg) ->
+    identity super 'super-' + arg
+
+class SubClass extends SuperClass
+  ->
+    identity super 'sub'
+
+eq 'top-super-sub' (new SubClass).prop
+
+# anonymous classes
+obj =
+  klass: class
+    method: -> 'value'
+
+instance = new obj.klass
+eq \value instance.method!

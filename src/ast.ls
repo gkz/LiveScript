@@ -1306,6 +1306,13 @@ class exports.Assign extends Node
     lvar = left instanceof Var
     sign = op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
+    if left instanceof Chain and right instanceof Fun
+      proto-split = name.split '.prototype.'
+      dot-split = name.split \.
+      if proto-split.length > 1
+        right.in-class = proto-split.0
+      else if dot-split.length > 1
+        right.in-class-static = dot-split[til -1].join ''
     code = if not o.level and right instanceof While and not right.else and
               (lvar or left.isSimpleAccess!)
       # Optimize `a = while ...`.
@@ -1719,6 +1726,10 @@ class exports.Super extends Node
       result = that
       return \superclass.prototype + Index that .compile o if result.meth
       return \superclass           + Index that .compile o if result.stat
+      if scope.fun.in-class
+        return "#that.superclass.prototype.#{scope.fun.name}"
+      else if scope.fun.in-class-static
+        return "#that.superclass.#{scope.fun.name}"
     \superclass
 
 #### Parens
