@@ -57,6 +57,23 @@ class SubClass extends SuperClass
 
 eq 'top-super-sub' (new SubClass).prop
 
+#Overriding the static property new doesn't clobber Function::new
+class OneClass
+  (name) -> @name = name
+  @new = 'new'
+  function: 'function'
+
+class TwoClass extends OneClass
+delete TwoClass.new
+
+Function.prototype.new = -> new this ...arguments
+
+eq \three (TwoClass.new('three')).name
+eq \function (new OneClass).function
+eq \new OneClass.new
+
+delete Function.prototype.new
+
 # anonymous classes
 obj =
   klass: class

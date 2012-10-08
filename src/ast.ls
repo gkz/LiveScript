@@ -565,6 +565,16 @@ class exports.Chain extends Node
         .add Call [this; Arr partial.args; Arr partial.partialized]), post).compile o
     @carp 'invalid callee' if tails.0 instanceof Call and not head.isCallable!
     @expandSlice o; @expandBind o; @expandSplat o; @expandStar o
+    if @splatted-new-args
+      idt = o.indent + TAB
+      func = Chain @head, tails.slice 0 -1
+      return """
+        (function(func, args, ctor) {
+        #{idt}ctor.prototype = func.prototype;
+        #{idt}var child = new ctor, result = func.apply(child, args);
+        #{idt}return (t = typeof result)  == "object" || t == "function" ? result || child : child;
+        #{TAB}})(#{ func.compile o}, #{@splatted-new-args}, function(){})
+      """
     return @head.compile o unless @tails.length
     base = @head.compile o, LEVEL_CALL; news = rest = ''
     for t in @tails
@@ -615,11 +625,13 @@ class exports.Chain extends Node
       continue unless args = call.args
       ctx = call.method is \.call and (args.=concat!)shift!
       continue unless args = Splat.compileArray o, args, true
-      @carp 'splatting "new"' if call.new
-      if not ctx and tails[i-1] instanceof Index
-        [@head, ctx] = Chain(@head, tails.splice 0 i-1)cache o, true
-        i = 0
-      call <<< method: \.apply, args: [ctx or Literal \null; JS args]
+      if call.new
+        @splatted-new-args = args
+      else
+        if not ctx and tails[i-1] instanceof Index
+          [@head, ctx] = Chain(@head, tails.splice 0 i-1)cache o, true
+          i = 0
+        call <<< method: \.apply, args: [ctx or Literal \null; JS args]
 
   expandBind: !(o) ->
     {tails} = this; i = -1; while tails[++i]
