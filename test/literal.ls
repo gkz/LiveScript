@@ -59,6 +59,10 @@ eq '1,5'       String [start to  end by 4    ]
 eq '5,3'       String [5     til 1   by -step]
 eq '1,3,5'     String [start to  5   by 2    ]
 eq '1,3,5'     String [1     to  5   by 2    ]
+eq '0,1,2,3'   String [to 3]
+eq '0,1,2'     String [til 3]
+eq '0,2,4'     String [to 4 by 2]
+eq '0,2'       String [til 4 by 2]
 
 to = 3
 eq 3 to
