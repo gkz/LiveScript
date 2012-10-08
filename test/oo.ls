@@ -416,6 +416,14 @@ eq 12 b.meth 5
 eq 12 B.stat 5
 
 
+# can define external constructor
+f = -> @y = @x + it
+class A
+  x: 8
+  constructor$$: f
+
+eq 13 (new A 5).y
+
 ### The following are modified from CoffeeScript - test/classes.coffee
 
 # classes with a four-level inheritance chain
@@ -482,3 +490,29 @@ obj =
 
 instance = new obj.klass
 eq \value instance.method!
+
+#1182: a subclass should be able to set its constructor to an external function
+ctor = ->
+  @val = 1
+class A
+class B extends A
+  constructor$$: ctor
+eq 1 (new B).val
+
+#1182: external constructors continued
+ctor = ->
+class A
+class B extends A
+  method: ->
+  constructor$$: ctor
+ok B::method
+
+#1182: external constructors with bound functions
+fn = ->
+  {one: 1}
+  this
+class B
+class A
+  constructor$$: fn
+  method: ~> this instanceof A
+ok (new A).method.call(new B)

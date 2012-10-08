@@ -1667,12 +1667,23 @@ class exports.Class extends Node
     name = decl or @name
     if ID.test name || '' then fun.cname = name else name = \constructor
     proto = Var \prototype
+    const ctor-name = \constructor$$
     for node, i in lines
       if node instanceof Obj
         lines[i] = Import proto, node
-        for prop in node.items
+        for prop, j in node.items
+          continue unless prop
           if prop.key instanceof [Key, Literal]
-            if prop.val instanceof Fun
+            if (prop.key instanceof Key and prop.key.name is ctor-name)
+            or (prop.key instanceof Literal and prop.key.value is "'#ctor-name'")
+              node.carp 'redundant constructor' if ctor
+              ctor = prop.val
+              node.items.splice j--, 1
+              if node.items.length
+                lines[i] = Import proto, node if node.items.length
+              else
+                lines.splice i--, 1
+            else if prop.val instanceof Fun
               prop.val.meth = prop.key
               if prop.val.bound
                 bound-funcs.push prop.key
@@ -1688,6 +1699,9 @@ class exports.Class extends Node
     ctor ||= lines.* = if @sup and @sup instanceof [Fun, Var]
                     then  Fun [] Block Chain(new Super).add Call [Splat Literal \arguments]
                     else Fun!
+    unless ctor instanceof Fun
+      lines.unshift Assign (Var ctor-name), ctor
+      lines.unshift ctor = Fun [] Block Chain(Var ctor-name).add Call [Splat \arguments true]
     ctor <<< {name, +ctor, +statement}
     for f in bound-funcs
       ctor.body.lines.unshift do
