@@ -34,6 +34,7 @@
   "main": "./lib/livescript",
   "bin": {
     "livescript": "./bin/livescript",
+    "lsc": "./bin/livescript",
     "slake": "./bin/slake"
   },
   "preferGlobal": true,
