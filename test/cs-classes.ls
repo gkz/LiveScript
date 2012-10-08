@@ -74,14 +74,6 @@ eq \new OneClass.new
 
 delete Function.prototype.new
 
-# anonymous classes
-obj =
-  klass: class
-    method: -> 'value'
-
-instance = new obj.klass
-eq \value instance.method!
-
 #basic classes, again, but in the manual prototype style
 Base = ->
 Base::func = (string) ->
@@ -128,6 +120,156 @@ SuperClass extends TopClass
 SubClass extends SuperClass
 
 eq 'top-super-sub' (new SubClass).prop
+
+#'@' referring to the current instance, and not being coerced into a call
+class ClassName
+  amI: ->
+    @ instanceof ClassName
+
+obj = new ClassName
+ok obj.amI!
+
+#super() calls in constructors of classes that are defined as object properties
+class Hive
+  (name) -> @name = name
+
+class Hive.Bee extends Hive
+  (name) -> super ...
+
+maya = new Hive.Bee 'Maya'
+eq 'Maya' maya.name
+
+#classes with JS-keyword properties
+class Class
+  class: 'class'
+  name: -> @class
+
+instance = new Class
+eq \class instance.class
+eq \class instance.name!
+
+#Classes with methods that are pre-bound to the instance, or statically, to the class
+class Dog
+  (name) ->
+    @name = name
+
+  bark: ~>
+    "#{@name} woofs!"
+
+  @static = ~>
+    new this('Dog')
+
+spark = new Dog('Spark')
+fido  = new Dog('Fido')
+fido.bark = spark.bark
+
+eq 'Spark woofs!' fido.bark!
+
+obj = func: Dog.static
+
+eq 'Dog' obj.func!name
+
+#a bound function in a bound function
+class Mini
+  num: 10
+  generate: ~>
+    for i in [1 to 3]
+      ~>
+        @num
+
+m = new Mini
+eq '10 10 10' [func! for func in m.generate!].join ' '
+
+
+#contructor called with varargs
+class Connection
+  (one, two, three) ->
+    [@one, @two, @three] = [one, two, three]
+
+  out: ->
+    "#{@one}-#{@two}-#{@three}"
+
+list = [3, 2, 1]
+conn = new Connection ...list
+ok conn instanceof Connection
+ok '3-2-1' conn.out!
+
+#calling super and passing along all arguments
+class Parent
+  method: (...args) -> @args = args
+
+class Child extends Parent
+  method: -> super ...
+
+c = new Child
+c.method 1, 2, 3, 4
+eq '1 2 3 4' c.args.join ' '
+
+#classes wrapped in decorators
+func = (klass) ->
+  klass::prop = 'value'
+  klass
+
+func class Test
+  prop2: 'value2'
+
+eq 'value'  (new Test).prop
+eq 'value2' (new Test).prop2
+
+# anonymous classes
+obj =
+  klass: class
+    method: -> 'value'
+
+instance = new obj.klass
+eq \value instance.method!
+
+#Implicit objects as static properties
+class Static
+  @static =
+    one: 1
+    two: 2
+
+eq 1 Static.static.one
+eq 2 Static.static.two
+
+#nothing classes
+c = class
+ok c instanceof Function
+
+#classes with static-level implicit objects
+class A
+  @static = one: 1
+  two: 2
+
+class B
+  @static = one: 1, two: 2
+
+eq A.static.one, 1
+eq A.static.two, undefined
+eq (new A).two, 2
+
+eq B.static.one, 1
+eq B.static.two, 2
+eq (new B).two, undefined
+
+#classes with value'd constructors
+counter = 0
+classMaker = ->
+  inner = ++counter
+  ->
+    @value = inner
+
+class One
+  constructor$$: classMaker!
+
+class Two
+  constructor$$: classMaker!
+
+eq 1 (new One).value
+eq 2 (new Two).value
+eq 1 (new One).value
+eq 2 (new Two).value
 
 
 
