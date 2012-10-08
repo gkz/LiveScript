@@ -82,6 +82,56 @@ obj =
 instance = new obj.klass
 eq \value instance.method!
 
+#basic classes, again, but in the manual prototype style
+Base = ->
+Base::func = (string) ->
+  'zero/' + string
+Base::['func-func'] = (string) ->
+  "dynamic-#{string}"
+
+FirstChild = ->
+SecondChild = ->
+ThirdChild = ->
+  @array = [1, 2, 3]
+  this
+
+ThirdChild extends SecondChild extends FirstChild extends Base
+
+FirstChild::func = (string) ->
+  super('one/') + string
+
+SecondChild::func = (string) ->
+  super('two/') + string
+
+ThirdChild::func = (string) ->
+  super('three/') + string
+
+result = (new ThirdChild).func 'four'
+
+eq 'zero/one/two/three/four' result
+eq 'dynamic-thing' (new ThirdChild)['func-func']('thing')
+
+#super with plain ol' functions as the original constructors
+TopClass = (arg) ->
+  @prop = 'top-' + arg
+  this
+
+SuperClass = (arg) ->
+  super 'super-' + arg
+  this
+
+SubClass = ->
+  super 'sub'
+  this
+
+SuperClass extends TopClass
+SubClass extends SuperClass
+
+eq 'top-super-sub' (new SubClass).prop
+
+
+
+
 #1182: a subclass should be able to set its constructor to an external function
 ctor = ->
   @val = 1

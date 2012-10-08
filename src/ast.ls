@@ -1756,6 +1756,7 @@ class exports.Super extends Node
         return "#that.superclass.prototype.#{scope.fun.name}"
       else if scope.fun.in-class-static
         return "#that.superclass.#{scope.fun.name}"
+    return "#that.superclass" if o.scope.fun?name
     \superclass
 
 #### Parens
