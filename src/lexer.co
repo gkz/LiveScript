@@ -660,7 +660,7 @@ function heretabs doc
   dent = 0/0
   dent <?= that.0.length - 1 while TABS.exec doc
   dent
-TABS = /\n[^\n\S]*(?!$)/mg
+TABS = /\n(?!$)[^\n\S]*/mg
 
 # Erases all external indentations up to specified length.
 function detab str, len
