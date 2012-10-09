@@ -467,15 +467,16 @@ class C
 eq nonce,  C.boundStaticColon().id
 eq nonce2, C.boundStaticEqual().id
 
-# FAIL
 #1009: classes with reserved words as determined names
-/*
 (->
+  # had to modify from using word boundaries because we use the $ and CS uses _
+  b = '[^a-zA-Z$]'
+  ok //#{b}eval#b//.test 'function eval(){}'
+  ok not //#{b}eval#b//.test 'function $eval(){}'
   eq 'function' typeof (class @for)
-  ok not /\beval\b/.test (class @eval).toString!
-  ok not /\barguments\b/.test (class @arguments).toString!
+  ok not //#{b}eval#b//.test (class @eval).toString!
+  ok not //#{b}arguments#b//.test (class @arguments).toString!
 ).call {}
-*/
 
 #1482: classes can extend expressions
 id = (x) -> x
