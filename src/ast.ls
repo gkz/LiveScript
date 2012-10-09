@@ -1680,34 +1680,39 @@ class exports.Class extends Node
     if ID.test name || '' then fun.cname = name else name = \constructor
     proto = Var \prototype
     const ctor-name = \constructor$$
+    var ctor
+    import-proto-obj = (node) ->
+      for prop, j in node.items
+        continue unless prop
+        if prop.key instanceof [Key, Literal]
+          if (prop.key instanceof Key and prop.key.name is ctor-name)
+          or (prop.key instanceof Literal and prop.key.value is "'#ctor-name'")
+            node.carp 'redundant constructor' if ctor
+            ctor := prop.val
+            node.items.splice j--, 1
+          else if prop.val instanceof Fun
+            prop.val.meth = prop.key
+            if prop.val.bound
+              bound-funcs.push prop.key
+              prop.val.bound = false
+          else if prop.accessor
+            for f in prop.val then f.meth = prop.key
+      if node.items.length then Import proto, node else Literal 'void'
     for node, i in lines
       if node instanceof Obj
-        lines[i] = Import proto, node
-        for prop, j in node.items
-          continue unless prop
-          if prop.key instanceof [Key, Literal]
-            if (prop.key instanceof Key and prop.key.name is ctor-name)
-            or (prop.key instanceof Literal and prop.key.value is "'#ctor-name'")
-              node.carp 'redundant constructor' if ctor
-              ctor = prop.val
-              node.items.splice j--, 1
-              if node.items.length
-                lines[i] = Import proto, node if node.items.length
-              else
-                lines.splice i--, 1
-            else if prop.val instanceof Fun
-              prop.val.meth = prop.key
-              if prop.val.bound
-                bound-funcs.push prop.key
-                prop.val.bound = false
-            else if prop.accessor
-              for f in prop.val then f.meth = prop.key
+        lines[i] = import-proto-obj node
       else if node instanceof Fun and not node.statement
         ctor and node.carp 'redundant constructor'
         ctor = node
       else if node instanceof Assign and node.left instanceof Chain
       and node.left.head.value is \this and node.right instanceof Fun
         node.right.stat = node.left.tails.0.key
+      else
+        node.traverseChildren !->
+          if it instanceof Block
+            for child, i in it.lines when child instanceof Obj
+              it.lines[i] = import-proto-obj child
+
     ctor ||= lines.* = if @sup and @sup instanceof [Fun, Var]
                     then  Fun [] Block Chain(new Super).add Call [Splat Literal \arguments]
                     else Fun!
