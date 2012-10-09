@@ -1929,6 +1929,7 @@ class exports.While extends Node
           @else?makeReturn it
         else
           @res-var = it
+          @else?makeReturn it
     else
       @getJump! or @returns = true
     this
@@ -1969,7 +1970,6 @@ class exports.While extends Node
         @has-returned = true
         if @res-var
           @body.makeReturn @res-var
-          @else?makeReturn!
     if @returns
       @body = Block @body.makeObjReturn \results$ if @objComp
       @body = If @guard, @body if @guard and @objComp

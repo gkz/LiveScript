@@ -752,7 +752,7 @@ exports import
 
   # Checks FOR for FROM/TO.
   forange: ->
-    if @tokens[* - 2 - (@last.0 in <[NEWLINE INDENT]>)]?0 is \FOR
+    if @tokens[* - 2 - (@last.0 in <[NEWLINE INDENT]>)]?0 is \FOR or @last.0 is \FOR
       import {-seenFor, +seenFrom}
 
   # Complains on bad regex flag.

@@ -376,8 +376,12 @@ bnf =
 
     o 'FOR ID FROM Expression TO Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6
+    o 'FOR FROM Expression TO Expression'
+    , -> new For            from: $3, op: $4, to: $5
     o 'FOR ID FROM Expression TO Expression CASE Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, guard: $8
+    o 'FOR FROM Expression TO Expression CASE Expression'
+    , -> new For            from: $3, op: $4, to: $5, guard: $7
     o 'FOR ID FROM Expression TO Expression BY Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, step: $8
     o 'FOR ID FROM Expression TO Expression BY Expression CASE Expression'

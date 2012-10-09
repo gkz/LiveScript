@@ -1,9 +1,14 @@
 ## utils
 flatten = (x) ->
-  | typeof! x isnt 'Array' => x
-  | x.length is 1          => x.0
-  | otherwise              => x.0 +++ flatten x.slice 1
-
+  result = []
+  f = (x) ->
+    | 'Array' isnt typeof! x => result.push x
+    | x.length is 1          => f x.0
+    | x.length > 1           =>
+      f x.0
+      f (x.slice 1)
+  f x
+  result
 ##
 
 i = 5
@@ -421,7 +426,6 @@ r = for i from 0 to 9
   else if i .&. 2
     i
 
-console.log r
 eq '2,6' flatten(r).to-string!
 
 r = for i til 1 then i else [9]
@@ -429,7 +433,6 @@ eq 0 r.0
 
 r = for i til 0 then i else [9]
 eq 9 r.0
-
 
 ### Omission of `for`'s first assignment
 for    , i in [0] => eq i, 0 
@@ -448,3 +451,20 @@ while i < evens.length, ++i when evens[i] * 2 is 8
   eq 4 evens[i] 
 
 eq '1 3 7 9' [y for y from 1 to 10 when y isnt 5 by 2].join ' '
+
+### No vars at all
+i = 0
+f = -> i++
+
+for til 2 then f!
+eq 2 i
+
+i = 0
+for from 2 to 5 then f!
+eq 4 i
+
+i = 0
+eq '0 1 2 3' [f! for til 4].join ' '
+
+i = 0
+eq '2 4 6' [f! for til 4 when f!].join ' '
