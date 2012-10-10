@@ -796,6 +796,21 @@ variable = "world";
         </div>
       </div>
 
+      <p>Prefixing your interpolated string with <code>%</code> returns and the raw parts as an array. This allows you to join the result as you wish.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+%"#x #y"
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+[x, " ", y];
+</pre>
+        </div>
+      </div>
+
       <p>Multiline strings (can also do the same but with double quotes for use with interpolation):
 
       <div class="example">
