@@ -2842,6 +2842,34 @@ map(function(x){
         </div>
       </div>
 
+      <p>If you wish to have further code after your backcalls, you can set them aside with a <code>do</code> statement.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+do
+  data <-! $.get 'ajaxtest'
+  $ \.result .html data
+  processed <-! $.get 'ajaxprocess', data
+  $ \.result .append processed
+
+alert 'hi'
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+$.get('ajaxtest', function(data){
+  $('.result').html(data);
+  $.get('ajaxprocess', data, function(processed){
+    $('.result').append(processed);
+  });
+});
+alert('hi');
+</pre>
+        </div>
+      </div>
+
+
       <p>If you want further async functionality, you can use <a href="https://github.com/caolan/async/">async.js</a> with LiveScript.
 
       <h3>Partial Application</h3>
