@@ -23,6 +23,7 @@ task \watch 'watch for changes, build when they happen' ->
   for line in head.split \\n when result = line.match /([a-z]+): (.+)/
     options[result.1] = result.2.trim!
   options.content = content
+  options.url = post
 
   output = post-template
   for option, value of options
