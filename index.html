@@ -2443,6 +2443,29 @@ setCords();
         </div>
       </div>
 
+      <p>You can also use splats in your parameters:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = (x, ...ys) -> x + ys.1
+f 1 2 3 4 #=> 4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var f, slice$ = [].slice;
+f = function(x){
+  var ys;
+  ys = slice$.call(arguments, 1);
+  return x + ys[1];
+};
+f(1, 2, 3, 4);
+</pre>
+        </div>
+      </div>
+
+
       <h3>Currying</h3>
 
       <p>Curried functions are very powerful. Essentially, when called with less arguments than defined with, they return a partially applied function. This means that it returns a function whose arguments are those which you didn't supply, with the values for what you did supply already bound. They are defined in LiveScript using the long arrow. Perhaps an example will make things more clear:
