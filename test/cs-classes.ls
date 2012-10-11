@@ -432,6 +432,7 @@ counter = 0
 makeFn = (n) -> eq n, ++counter; ->
 class B extends (makeFn 1)
   @B = makeFn 2
+  constructor$$: makeFn 3
 
 #1182: external constructors with bound functions
 fn = ->

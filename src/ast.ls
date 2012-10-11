@@ -1680,8 +1680,8 @@ class exports.Class extends Node
     if ID.test name || '' then fun.cname = name else name = \constructor
     proto = Var \prototype
     const ctor-name = \constructor$$
-    var ctor
-    import-proto-obj = (node) ->
+    var ctor, ctor-place
+    import-proto-obj = (node, i) ->
       for prop, j in node.items
         continue unless prop
         if prop.key instanceof [Key, Literal]
@@ -1690,6 +1690,7 @@ class exports.Class extends Node
             node.carp 'redundant constructor' if ctor
             ctor := prop.val
             node.items.splice j--, 1
+            ctor-place := i
           else if prop.val instanceof Fun
             prop.val.meth = prop.key
             if prop.val.bound
@@ -1700,7 +1701,7 @@ class exports.Class extends Node
       if node.items.length then Import proto, node else Literal 'void'
     for node, i in lines
       if node instanceof Obj
-        lines[i] = import-proto-obj node
+        lines[i] = import-proto-obj node, i
       else if node instanceof Fun and not node.statement
         ctor and node.carp 'redundant constructor'
         ctor = node
@@ -1710,14 +1711,14 @@ class exports.Class extends Node
       else
         node.traverseChildren !->
           if it instanceof Block
-            for child, i in it.lines when child instanceof Obj
-              it.lines[i] = import-proto-obj child
+            for child, k in it.lines when child instanceof Obj
+              it.lines[k] = import-proto-obj child, i
 
     ctor ||= lines.* = if @sup and @sup instanceof [Fun, Var]
                     then  Fun [] Block Chain(new Super).add Call [Splat Literal \arguments]
                     else Fun!
     unless ctor instanceof Fun
-      lines.unshift Assign (Var ctor-name), ctor
+      lines.splice ctor-place + 1, 0, Assign (Var ctor-name), ctor
       lines.unshift ctor = Fun [] Block Chain(Var ctor-name).add Call [Splat \arguments true]
     ctor <<< {name, +ctor, +statement}
     for f in bound-funcs
