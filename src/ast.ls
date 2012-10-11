@@ -571,7 +571,7 @@ class exports.Chain extends Node
       return """
         (function(func, args, ctor) {
         #{idt}ctor.prototype = func.prototype;
-        #{idt}var child = new ctor, result = func.apply(child, args);
+        #{idt}var child = new ctor, result = func.apply(child, args), t;
         #{idt}return (t = typeof result)  == "object" || t == "function" ? result || child : child;
         #{TAB}})(#{ func.compile o}, #{@splatted-new-args}, function(){})
       """
