@@ -409,3 +409,10 @@ compileThrows 'accidental shadow of "a"' 4 '''
     a := 2
     a  = 3
 '''
+
+## Function redfines iteself
+change-me = ->
+  change-me := 2
+eq \function typeof changeMe
+eq 2 changeMe!
+eq 2 changeMe

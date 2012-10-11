@@ -1315,9 +1315,15 @@ class exports.Assign extends Node
       op    = \:=
     op = (op.slice 1 -2) + \= if op in <[ .&.= .|.= .^.= .<<.= .>>.= .>>>.= ]>
     (right.=unparen!)ripName left.=unwrap!
-    lvar = left instanceof Var
     sign = op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
+    if lvar = left instanceof Var
+      del = right.op is \delete
+      if op is \=
+        o.scope.declare name, left,
+          (@const or not @defParam and o.const and \$ isnt name.slice -1)
+      else if o.scope.checkReadOnly name
+        left.carp "assignment to #that \"#name\"" ReferenceError
     if left instanceof Chain and right instanceof Fun
       proto-split = name.split '.prototype.'
       dot-split = name.split \.
@@ -1334,13 +1340,6 @@ class exports.Assign extends Node
          #{@tab}#name #sign #{ o.scope.free res }"""
     else
       "#name #sign " + (right <<< {+assigned})compile o, LEVEL_LIST
-    if lvar
-      del = right.op is \delete
-      if op is \=
-        o.scope.declare name, left,
-          (@const or not @defParam and o.const and \$ isnt name.slice -1)
-      else if o.scope.checkReadOnly name
-        left.carp "assignment to #that \"#name\"" ReferenceError
     if o.level
       code += ", #name" if del
       code  = "(#code)" if that > (if del then LEVEL_PAREN else LEVEL_LIST)
