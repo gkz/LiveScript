@@ -544,13 +544,10 @@ result = ident class B extends A
 
 eq result, B
 
-# FAIL
 #1966: external constructors should produce their return value
-/*
 ctor = -> {}
 class A then constructor$$: ctor
 ok (new A) not instanceof A
-*/
 
 #1980: regression with an inherited class with static function members
 class A

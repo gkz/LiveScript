@@ -1718,7 +1718,7 @@ class exports.Class extends Node
                     else Fun!
     unless ctor instanceof Fun
       lines.splice ctor-place + 1, 0, Assign (Var ctor-name), ctor
-      lines.unshift ctor = Fun [] Block Chain(Var ctor-name).add Call [Splat \arguments true]
+      lines.unshift ctor = Fun [] Block Return Chain(Var ctor-name).add Call [Splat \arguments true]
     ctor <<< {name, +ctor, +statement}
     for f in bound-funcs
       ctor.body.lines.unshift do
