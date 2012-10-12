@@ -397,12 +397,14 @@ class exports.Chain extends Node
       {@head, @tails} = Chain @head.it
       it.soak = true
     @tails.push it
-    if it instanceof Call and not it.method
-    and @head instanceof Super and not @head.called
-      it.method = \.call
-      it.args.unshift Literal \this
-      @head.called = true
-    else if delete it.vivify
+    if @head instanceof Super
+      if not @head.called and it instanceof Call and not it.method
+        it.method = \.call
+        it.args.unshift Literal \this
+        @head.called = true
+      else if not @tails.1 and it.key?name is \prototype
+        @head.sproto = true
+    if delete it.vivify
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
     this
 
@@ -1447,8 +1449,9 @@ class exports.Super extends Node
   isCallable: YES
 
   compile: ({scope}:o) ->
-    while not scope.get \superclass and scope.fun, scope.=parent
-      return \superclass.prototype + Index that .compile o if that.meth
+    unless @sproto
+      while not scope.get \superclass and scope.fun, scope.=parent
+        return \superclass.prototype + Index that .compile o if that.meth
     \superclass
 
 #### Parens
