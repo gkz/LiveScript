@@ -1310,7 +1310,7 @@ class exports.Fun extends Node
 
   children: <[ params body ]>
 
-  show: -> @bound
+  show: -> [@name] + ["~#that" if @bound]
 
   named: -> import {name: it, +statement}
 
