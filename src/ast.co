@@ -1034,7 +1034,7 @@ class exports.Assign extends Node
 
   children: <[ left right ]>
 
-  show: -> (@logic or '') + @op
+  show: -> [,]concat(@unaries)reverse!join(' ') + [@logic] + @op
 
   assigns: -> @left.assigns it
 
