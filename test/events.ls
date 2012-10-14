@@ -50,9 +50,9 @@ ok pass
 /* "Advise failure" */
 pass = true
 source = {}
-source.event :> -> pass = false
-source.event ?> -> throw {}
-source.event <: {} 
+source.event :> !-> pass = false
+source.event ?> !-> throw {}
+source.event <: {}
 ok pass
 
 /* "Advise updates event" */
@@ -161,3 +161,16 @@ pass = false
 @ :> -> pass := true
 @ <: {}
 ok pass
+
+source = {}
+source.count = 0
+reminc = !->
+	source -:> reminc
+	source.count += 1
+inc = !->
+	source.count += 1
+source :> reminc
+source :> inc
+source :> reminc
+source <: {}
+equal source.count, 3

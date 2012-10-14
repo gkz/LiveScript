@@ -2799,15 +2799,17 @@ UTILS =
     (e, p) ->
       prepareHandler$ @
       @last = {event: e, exception: null}
-      for advice in @__event_advisor
+      advisors = @__event_advisor.length
+      while (advisors -= 1) >= 0
         try
-          _e = advice.call(p, e)
+          _e = @__event_advisor[advisors].call(p, e)
           if _e then @last.event = e = _e # Advice *may*, not *must*, return an updated event trigger.
         catch ex
           @last.exception = ex
           return false
-      for callback in @__event_handler
-        callback.call(p, e)
+      handlers = @__event_handler.length
+      while (handlers -= 1) >= 0
+        @__event_handler[handlers].call p, e
       true
 
   prepareHandler: ->
