@@ -608,10 +608,12 @@ class exports.Call extends Node
 
   @let = (args, body) ->
     params = for a, i of args
-      if a.op is \= and not a.logic
-      then args[i] = a.right; a.left
+      if a.op is \= and not a.logic and a.right
+        args[i] = that
+        continue if i is 0 and gotThis = a.left.value is \this
+        a.left
       else Var a.varName! || a.carp 'invalid "let" argument'
-    args.unshift Literal \this
+    gotThis or args.unshift Literal \this
     @block Fun(params, body), args, \.call
 
 #### List

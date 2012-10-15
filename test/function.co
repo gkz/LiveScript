@@ -445,6 +445,9 @@ eq '''
 ok let [it] = [ok]
   it is ok
 
+let this = eq
+  this eq, this
+
 
 ### `with`
 with o = {}
