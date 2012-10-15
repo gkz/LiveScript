@@ -123,7 +123,7 @@ for i to 0
 for by in [1] then by
 ok by
 for by til 1 then by
-ok by
+ok not by
 
 
 # With range comprehensions, you can loop in steps.
@@ -310,7 +310,7 @@ ok true, while 0 then
 ok [] = for i to 0 then
 
 for i from Number 2 to Number 3 by Number 4 then void
-eq 6 i
+eq 2 i
 
 let i, j = i
   eq ...for k to 1 then i
@@ -468,3 +468,10 @@ eq '0 1 2 3' [f! for til 4].join ' '
 
 i = 0
 eq '2 4 6' [f! for til 4 when f!].join ' '
+
+# index var outside loop
+for v, k in [1]
+  void
+ok v
+ok not k
+

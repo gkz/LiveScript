@@ -247,7 +247,10 @@ class exports.Block extends Node
 
   # Finds the right position for inserting variable declarations.
   neck: ->
-    for x, pos in @lines then break unless x.comment or x instanceof Literal
+    pos = 0
+    for x in @lines
+      break unless x.comment or x instanceof Literal
+      ++pos
     pos
 
   isComplex: -> @lines.length > 1 or @lines.0?isComplex!
@@ -712,7 +715,10 @@ class exports.Call extends Node
     node.=it if not fun.void and fun.void = node.op is \!
     node.getCall!?partialized = null
     {args} = node.getCall! or (node = Chain node .add Call!)getCall!
-    for a, index in args when a.placeholder then break
+    index = 0
+    for a in args
+      break if a.placeholder
+      ++index
     node <<< back: (args[index] = fun)body
 
   @let = (args, body) ->
@@ -1681,8 +1687,9 @@ class exports.Class extends Node
     const ctor-name = \constructor$$
     var ctor, ctor-place
     import-proto-obj = (node, i) ->
-      for prop, j in node.items
-        continue unless prop
+      j = 0
+      while j < node.items.length, j++
+        prop = node.items[j]
         if prop.key instanceof [Key, Literal]
           if (prop.key instanceof Key and prop.key.name is ctor-name)
           or (prop.key instanceof Literal and prop.key.value is "'#ctor-name'")
@@ -1807,7 +1814,10 @@ class exports.Splat extends Node
   # Compiles a list of nodes mixed with splats to a proper array.
   @compileArray = (o, list, apply) ->
     expand list
-    for node, index in list then break if node instanceof Splat
+    index = 0
+    for node in list
+      break if node instanceof Splat
+      ++index
     return '' if index >= list.length
     unless list.1
       return (if apply then Object else ensureArray) list.0.it
@@ -2003,8 +2013,8 @@ class exports.For extends While
   compileNode: (o) ->
     o.loop = true
     temps = @temps = []
-    if idx = @index
-    then o.scope.declare idx, this
+    if @object and @index
+    then o.scope.declare idx = @index
     else temps.push idx = o.scope.temporary \i
     @addBody Block Var idx if not @body
     unless @object
@@ -2052,11 +2062,14 @@ class exports.For extends While
     head += ') {'
     @infuseIIFE!
     o.indent += TAB
+    if @index and not @object
+      head += \\n + o.indent +
+        Assign(Var @index; JS idx).compile(o, LEVEL_TOP) + \;
     if @item and not @item.isEmpty!
       head += \\n + o.indent +
         Assign(@item, JS "#svar[#idx]")compile(o, LEVEL_TOP) + \;
     body  = @compileBody o
-    head += \\n + @tab if @item and \} is body.charAt 0
+    head += \\n + @tab if (@item or (@index and not @object)) and \} is body.charAt 0
     head + body
 
   # Makes IIFE constructions (such as `let`) capture the loop variables.

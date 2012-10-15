@@ -30,7 +30,9 @@ module.exports = (
   # specified options, and returning it. `options.$args` will be an array
   # containing the remaining non-option arguments.
   FLAG = /^-[-\w]+$/; unknowns = []
-  :ARGS for arg, i in args
+  i = 0; len = args.length
+  :ARGS while i < len, i++
+    arg = args[i]
     # __--__ marks the end of options.
     if arg is \-- then ++i; break
     :ARG for a in expand arg
