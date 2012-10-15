@@ -2554,8 +2554,8 @@ UTILS =
   }'''
 
   in: '''function(x, arr){
-    var i = 0, l = arr.length >>> 0;
-    while (i < l) if (x === arr[i++]) return true;
+    var i = -1, l = arr.length >>> 0;
+    while (++i < l) if (x === arr[i] && i in arr) return true;
     return false;
   }'''
 

@@ -94,7 +94,7 @@ eq true, 4 not in array
 eq true, 1 not in []
 eq true, [3]pop() in [0, ...array]
 eq true, [4]pop() in [...array, 4]
-eq true, void in length: 1
+ok void not in length: 1
 
 eq 1, +( 0 in [0])
 eq 0, +(10 in [ ])
