@@ -1612,7 +1612,7 @@ class exports.Fun extends Node
       pscope.add name, \function, this
     if @statement or name and @labeled
       code += ' ' + scope.add name, \function, this
-    @void or @ctor or @newed or body.makeReturn!
+    @void or @ctor or body.makeReturn!
     code += "(#{ @compileParams scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
