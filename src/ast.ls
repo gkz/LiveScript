@@ -1660,7 +1660,7 @@ class exports.Fun extends Node
         else if df
           assigns.push Assign vr, p.second, \=, p.op, true
         names.push name = scope.add vr.value, \arg, p
-        p.carp "duplicate parameter \"#name\"" unless dic"#name." = dic"#name." .^. 1
+        p.carp "duplicate parameter \"#name\"" unless dic"#name." .^.= 1
     if rest
       while splace-- then rest.unshift Arr!
       assigns.push Assign Arr(rest), Literal \arguments
