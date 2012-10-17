@@ -440,6 +440,7 @@ eq 10, do
 
 eq
   & &, &
+  (->) &(&, &)
   ok &valueOf!
 
 compileThrows 'stray cascadee' 2 '\n&'

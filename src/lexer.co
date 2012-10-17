@@ -581,16 +581,12 @@ exports import
   # Supplies an implicit DOT if applicable.
   adi: ->
     return if @last.spaced
-    switch @last.0
-    case \!?
+    if @last.0 is \!?
       @last.0 = \CALL(
       @token \)CALL ''
       @token \? \?
-    case \BITWISE
-      return unless @last.1 is \& and @tokens[*-2]spaced
-      @last.0 = \LITERAL
-    default
-      return unless able @tokens
+    else unless able @tokens
+      return
     @token \DOT \.
 
   # Resolves `.~` etc.
@@ -644,9 +640,11 @@ function carp msg, lno then throw SyntaxError "#msg on line #{-~lno}"
 # Checks whether or not the previous token is {index,`call`}able.
 function able tokens, i ? tokens.length, call
   [tag] = token = tokens[i-1]
-  tag of <[ ID ] ? ]> or if call
-    then token.callable or tag of <[ ) )CALL ]> and token.1
-    else tag of <[ } ) )CALL STRNUM LITERAL WORDS ]>
+  return true if tag of <[ ID ] ? ]>
+              or tag is \BITWISE and token.1 is \& and
+                 not token.spaced and tokens[i-2]spaced
+  if call then token.callable or tag of <[ ) )CALL ]> and token.1
+          else tag of <[ } ) )CALL STRNUM LITERAL WORDS ]>
 
 #### String Manipulators
 # Constructs a string literal by (un)escaping quotes etc.
