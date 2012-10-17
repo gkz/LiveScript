@@ -323,7 +323,9 @@ class exports.Literal extends Atom
     case \debugger then if level
       return "(function(){\n#TAB#{o.indent}debugger;\n#{o.indent}}())"
     case \* then @carp 'stray star'
-    case \& then @carp 'stray cascadee' unless val = o.cascadee
+    case \&
+      @carp 'stray cascadee' unless val = o.cascadee
+      val.referred = true
     val
 
 #### Var
@@ -1911,7 +1913,7 @@ class exports.Label extends Node
       else it.compile o
 
 #### Cascade
-#
+# A construction that allows `&`-references to target expression.
 class exports.Cascade extends Node
   (@target, @block) ->
 
@@ -1919,10 +1921,15 @@ class exports.Cascade extends Node
 
   terminator: ''
 
+  makeReturn: -> @block.makeReturn it; this
+
   compileNode: (o) ->
     @temps = [ref = o.scope.temporary \x]
     t = ref + ' = ' + @target.compile o, LEVEL_LIST
-    b = @block.compile o <<< cascadee: ref
+    o.level &&= LEVEL_PAREN
+    o.cascadee = new String ref
+    b = @block.compile o
+    o.cascadee.referred or @carp 'unreferred cascadee'
     if o.level then "(#t, #b)" else "#t;\n#b"
 
 #### JS
