@@ -2094,8 +2094,6 @@ class exports.For extends While
 # Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Node
   (@attempt, @thrown, @recovery, @ensure) ->
-    if @recovery
-      @recovery.lines.unshift Assign (@thrown or Var \e), Literal 'e$'
 
   children: <[ attempt recovery ensure ]>
 
@@ -2118,6 +2116,7 @@ class exports.Try extends Node
     if @recovery or not @ensure
       code += ' catch (e$) {'
       if @recovery
+        code += "\n#{ o.indent }#{ Assign (@thrown or Var \e), Literal \e$ .compile o };"
         code += \\n + that if @recovery.compile o
         code += \\n + @tab
       code += \}
