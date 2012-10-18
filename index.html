@@ -1809,19 +1809,37 @@ function compose$(fs){
         </div>
       </div>
 
-      <p>Unary spread - when the operand is a list literal, apply the unary op to each item:
+      <p>Unary spread - when the operand is a list literal, apply the unary op to each item:<br />
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-
-r = -[4 5 6]  #=> [-4,-5,-6]
+r = +[4 5 6]        #=> [+4, +5, +6]
+t = typeof! [\b 5 {}] #=> ["String", "Number", "Object"]
+c = ~[4, 5]         #=> [-5, -6]
+++player<[strength hp]>
+# also works with -, --, typeof, ! and delete!
+i = new [some, classes]
+c = ^^[copy, these, {}]
+delete list[1, 2, 3]
+do [a, b, c]
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var r;
-r = [-4, -5, -6];
+var r, t, c, i, toString$ = {}.toString;
+r = [+4, +5, +6];
+t = [toString$.call('b').slice(8, -1), toString$.call(5).slice(8, -1), toString$.call({}).slice(8, -1)];
+c = [~4, ~5];
+++player['strength'], ++player['hp'];
+i = [new some, new classes];
+c = [clone$(copy), clone$(these), clone$({})];
+delete list[1], delete list[2], delete list[3];
+a(), b(), c();
+function clone$(it){
+  function fun(){} fun.prototype = it;
+  return new fun;
+}
 </pre>
         </div>
       </div>
@@ -4318,6 +4336,10 @@ class Box extends Item implements Renameable
   (@name) ->
     super ...
 
+  dimensions:~ # using Object.defineProperty
+    -> @d      # getter
+    ([width, height]) -> @d = "#{width}x#height" #setter
+
   type: \cube
 
   # any code
@@ -4325,13 +4347,15 @@ class Box extends Item implements Renameable
   @static = -> priv
 
 thing = new Box \boxy
-thing.get-name! #=> \boxy
-thing.id       #=> (some random number)
-thing.type     #=> 'cube'
-thing.priv     #=> (nothing)
-Box.static!    #=> 'secret'
+thing.get-name!  #=> \boxy
+thing.id         #=> (some random number)
+thing.type       #=> 'cube'
+thing.priv       #=> (nothing)
+thing.dimensions = [40, 50]
+thing.dimensions #=> "40x50"
+Box.static!      #=> 'secret'
 Box::type = \block
-thing.type     #=> 'block'
+thing.type       #=> 'block'
 
 thing.bound-to-instance! #=> 10
 
@@ -4379,6 +4403,18 @@ Box = (function(superclass){
     this.name = name;
     superclass.apply(this, arguments);
   }
+  Object.defineProperty(prototype, 'dimensions', {
+    get: function(){
+      return this.d;
+    },
+    set: function(arg$){
+      var width, height;
+      width = arg$[0], height = arg$[1];
+      this.d = width + "x" + height;
+    },
+    configurable: true,
+    enumerable: true
+  });
   prototype.type = 'cube';
   priv = 'secret';
   Box['static'] = function(){
@@ -4391,6 +4427,8 @@ thing.getName();
 thing.id;
 thing.type;
 thing.priv;
+thing.dimensions = [40, 50];
+thing.dimensions;
 Box['static']();
 Box.prototype.type = 'block';
 thing.type;
