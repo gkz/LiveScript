@@ -126,7 +126,7 @@ function runTests global.LiveScript
   global <<<
     eq: strictEqual
     throws: !(msg, fun) ->
-      try do fun catch return eq e?message, msg
+      try do fun catch then return eq e?message, msg
       ok false "should throw: #msg"
     compileThrows: !(msg, lno, code) ->
       throws "#msg on line #lno" !-> LiveScript.compile code

@@ -277,10 +277,12 @@ bnf =
     o 'SWITCH       Cases ELSE    Block' -> new Switch $1, null $2, $4
     o 'SWITCH                     Block' -> new Switch $1, null [], $2
 
-    o 'TRY Block'                           -> new Try $2
-    o 'TRY Block CATCH Block'               -> new Try $2, $3, $4
-    o 'TRY Block CATCH Block FINALLY Block' -> new Try $2, $3, $4, $6
-    o 'TRY Block             FINALLY Block' -> new Try $2, null null $4
+    o 'TRY Block'                               -> new Try $2
+    o 'TRY Block CATCH Block'                   -> new Try $2, , $4
+    o 'TRY Block CATCH Block FINALLY Block'     -> new Try $2, , $4, $6
+    o 'TRY Block CATCH Arg Block'               -> new Try $2, $4, $5
+    o 'TRY Block CATCH Arg Block FINALLY Block' -> new Try $2, $4, $5, $7
+    o 'TRY Block             FINALLY Block'     -> new Try $2, null null $4
 
     o 'CLASS Chain OptExtends OptImplements Block'
     , -> new Class title: $2.unwrap!, sup: $3, mixins: $4, body: $5

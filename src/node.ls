@@ -18,13 +18,13 @@ module.exports = !(LiveScript) ->
     main.paths = main.constructor._nodeModulePaths dirname
     main <<< {filename}
     js or code = LiveScript.compile code, {...options, +bare}
-    try main._compile code, filename catch throw hackTrace e, code, filename
+    try main._compile code, filename catch then throw hackTrace e, code, filename
 
   LiveScript import all require(\events)EventEmitter::
 
   require.extensions\.ls = (module, filename) ->
     js = LiveScript.compile fs.readFileSync(filename, \utf8), {filename, +bare}
-    try module._compile js, filename catch throw hackTrace e, js, filename
+    try module._compile js, filename catch then throw hackTrace e, js, filename
 
 # Weave the source into stack trace.
 function hackTrace {stack}:error?, js, filename

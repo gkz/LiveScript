@@ -135,7 +135,7 @@ switch
     if o.print or not filename
     then say t.output.trimRight!
     else writeJS filename, t.output, base
-  catch if e?
+  catch then if e?
     if LiveScript.listeners(\failure)length
       LiveScript.emit \failure e, t
     else

@@ -110,7 +110,7 @@ exports import
     id = camelize regex-match.1
     @check-consistency id, regex-match.1 if /-/.test regex-match.1
     if NONASCII.test id
-      try Function "var #id" catch @carp "invalid identifier \"#id\""
+      try Function "var #id" catch then @carp "invalid identifier \"#id\""
     {last} = this
     # `id:_` `_.id` `@id`
     if regex-match.2 or last.0 is \DOT or @adi!
@@ -183,7 +183,7 @@ exports import
     default
       break if id in KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED
-      if not last.1 and last.0 in <[ CATCH FUNCTION LABEL ]>
+      if not last.1 and last.0 in <[ FUNCTION LABEL ]>
         last <<< {1: id, -spaced}
         return input.length
       tag = \ID
@@ -711,7 +711,7 @@ exports import
 
   # Records a regex token.
   regex: (body, flag) ->
-    try RegExp body catch @carp e.message
+    try RegExp body catch then @carp e.message
     return @strnum @string \' enslash body if flag is \$
     @token \LITERAL "/#{ body or '(?:)' }/#{ @validate flag }"
 
@@ -875,7 +875,7 @@ character = if JSON!? then uxxxx else ->
 # - Fill in empty blocks for bodyless `class`es.
 !function rewriteBlockless tokens
   for [tag]:token, i in tokens
-    detectEnd tokens, i+1, ok, go if tag in <[ IF CLASS ]>
+    detectEnd tokens, i+1, ok, go if tag in <[ IF CLASS CATCH ]>
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go it, i
     if tag is \IF
@@ -891,7 +891,7 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[++i]
     [tag] = token
     continue unless tag in
-      <[ -> THEN ELSE DEFAULT TRY CATCH FINALLY DECL ]>
+      <[ -> THEN ELSE DEFAULT TRY FINALLY DECL ]>
     switch next = tokens[i+1]0
     case \IF then continue if tag is \ELSE
     case \INDENT \THEN
@@ -1218,5 +1218,5 @@ ARG = CHAIN +++ <[ ... UNARY CREMENT PARAM( FUNCTION
                       IF SWITCH TRY CLASS RANGE LABEL DECL DO BIOPBP ]>
 
 # Tokens that expect INDENT on the right.
-BLOCK_USERS = <[ , : -> ELSE ASSIGN IMPORT UNARY DEFAULT TRY CATCH FINALLY
+BLOCK_USERS = <[ , : -> ELSE ASSIGN IMPORT UNARY DEFAULT TRY FINALLY
                  HURL DECL DO LET FUNCTION ]>

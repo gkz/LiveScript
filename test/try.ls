@@ -14,7 +14,7 @@ eq error, \error
 
 
 # Allow one-liners.
-try x = 0 catch _ ok false finally ++x
+try x = 0 catch _ then ok false finally ++x
 eq x, 1
 
 
@@ -30,7 +30,7 @@ eq 1 let
 
 eq 2 let
   try throw 1
-  catch 2
+  catch then 2
   finally 3
 
 eq 3 try 3
@@ -43,11 +43,11 @@ try catch
 
 try finally
 
-try catch finally
+try catch then finally
 
 try
   #!nothing
-catch
+catch then
   #!nothing
 finally
   #!nothing
@@ -55,4 +55,12 @@ finally
 
 # Tolerate nested implicit blocks.
 eq 1, do -> try 1
-eq 2, do -> try do -> throw 1 catch do -> 2 finally
+eq 2, do -> try do -> throw 1 catch then do -> 2 finally
+
+
+# Destructure
+try
+  throw {msg: 'error', val: 99}
+catch {msg, val}
+  eq \error msg
+  eq 99 val

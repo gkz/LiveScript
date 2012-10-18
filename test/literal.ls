@@ -17,7 +17,7 @@ function no-op then
 eq no-op(), void
 eq noOp.length, 0
 
-try throw 0 catch e-r eq eR, 0
+try throw 0 catch e-r then eq eR, 0
 
 
 ### Numbers
