@@ -115,14 +115,6 @@ eq 25,  multiLiner[*-1]
 eq 25, singleLiner[*-1]
 
 
-# Comprehensions within parentheses.
-result = null
-store = -> result := it
-store (x * 2 for x of [3, 2, 1])
-
-ok result.join(' ') is '6 4 2'
-
-
 # Closure-wrapped comprehensions that refer to the "arguments" object.
 expr = ->
   result = (item * item for item of arguments)
@@ -200,6 +192,19 @@ eq 6 i
 let i, j = i
   ok ... for k to 0
   eq ...for k to 1 then i
+
+
+# Non-variable assignees.
+o = i: 0, count: -> @i++
+
+eq o.p, +i for o.p, i of [0]
+eq o.p, +i for i, o.p in [0]
+
+continue for o.count!_ of [1 2]
+eq o.i, 2
+
+continue for, o.count!_ in [1 2]
+eq o.i, 4
 
 
 ### Line folding before/after `for` prepositions
