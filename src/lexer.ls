@@ -976,7 +976,7 @@ character = if JSON!? then uxxxx else ->
     case \DOT \?
       return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
     case \SWITCH                         then seenSwitch := true; fallthrough
-    case \IF \CLASS \FUNCTION \LET \WITH then skipBlock  := true
+    case \IF \CLASS \FUNCTION \LET \WITH \CATCH then skipBlock  := true
     case \CASE
       if seenSwitch then skipBlock := true else return true
     case \INDENT

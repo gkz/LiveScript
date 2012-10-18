@@ -64,3 +64,12 @@ try
 catch {msg, val}
   eq \error msg
   eq 99 val
+
+
+# Call result
+f = (x) -> x
+r = f try
+  throw 0
+catch
+  10
+eq 10 r
