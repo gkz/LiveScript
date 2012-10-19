@@ -68,7 +68,7 @@ bnf =
 
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
-    o 'WITH Expression Block' -> new Cascade $2, $3
+    o 'WITH Expression Block' -> Chain new Cascade $2, $3
 
   # An array or object
   List:

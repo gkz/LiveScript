@@ -432,7 +432,8 @@ a = with [2 7 1 8 2]
   &sort!
     &shift!
   &pop!
-eq '2,2,3,7' ''+a
+.join ''
+eq \2237 a
 
 eq
   & &, &
