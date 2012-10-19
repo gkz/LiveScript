@@ -427,16 +427,12 @@ throws \unimplemented -> ...
 
 
 ### Cascade
-a = [2 7 1 8 2]
+a = with [2 7 1 8 2]
   &push 3
-  &shift!
   &sort!
-eq '1,2,3,7,8' ''+a
-
-eq 10, do
-  1 + 2
-    & + 3
-      4 + &
+    &shift!
+  &pop!
+eq '2,2,3,7' ''+a
 
 eq
   & &, &

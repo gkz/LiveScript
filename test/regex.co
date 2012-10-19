@@ -68,7 +68,7 @@ eq \01234 // 0 #{
   // 1 #{ //2//source } 3 //source
 } 4 //source
 
-with \THIS
+let this = \THIS
   ok //^ \\##this $//test //\#THIS//source
 
 

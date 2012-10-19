@@ -1913,20 +1913,22 @@ class exports.Label extends Node
 #### Cascade
 # A construction that allows `&`-references to target expression.
 class exports.Cascade extends Node
-  (@target, @block) ->
+  (@target, @body) ->
 
-  children: <[ target block ]>
+  children: <[ target body ]>
 
   terminator: ''
 
-  makeReturn: -> @block.makeReturn it; this
+  makeReturn: (@ret) -> this
 
   compileNode: (o) ->
     @temps = [ref = o.scope.temporary \x]
     t = ref + ' = ' + @target.compile o, LEVEL_LIST
-    o.level &&= LEVEL_PAREN
+    if \ret in this
+    then @body.add Var(ref)makeReturn @ret
+    else o.level and not @void and @body.add Var ref
     o.cascadee = new String ref
-    b = @block.compile o
+    b = @body.compile o, o.level && LEVEL_PAREN
     o.cascadee.referred or @carp 'unreferred cascadee'
     if o.level then "(#t, #b)" else "#t;\n#b"
 
@@ -2164,7 +2166,7 @@ LEVEL_OP     = 4  # !...
 LEVEL_CALL   = 5  # ...()
 
 # Operator precedances.
-with PREC = {unary: 0.9}
+let this = PREC = {unary: 0.9}
   @\&& = @\||                                    = 0.2
   @\&  = @\^  = @\|                              = 0.3
   @\== = @\!= = @\=== = @\!==                    = 0.4
