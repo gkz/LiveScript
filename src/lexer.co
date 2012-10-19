@@ -894,6 +894,8 @@ character = if JSON!? then uxxxx else ->
       by = 1
       if byp = tokens[i+2]?0 is \RANGE_BY
         carp 'bad "by" in range' tokens[i+2]2 unless by = +tokens[i+3]?1
+      else if from > to
+        by = -1
       ts  = []
       enc = if char then character else String
       add = !->

@@ -67,6 +67,9 @@ eq '3,6,9,-20,-19,-18,4,4,4,4', '' + nums.concat negs.slice(0, 3), four
 eq '123', (i for i from 1 til 4     ).join ''
 eq '036', (i for i from 0 til 9 by 3).join ''
 
+# Auto-descend when obvious.
+eq '0,-1,-2' ''+for i til -3 then i
+
 
 # all/from/to/by aren't reserved off-context.
 all = from = to = by = 1

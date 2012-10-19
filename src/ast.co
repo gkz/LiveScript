@@ -1661,14 +1661,16 @@ class exports.For extends While
       pvar is step or temps.push pvar
     if @from
       [tvar, tail] = @to.compileLoopReference o, \to
-      vars = "#idx = #{ @from.compile o, LEVEL_LIST }"
+      fvar = @from.compile o, LEVEL_LIST
+      vars = "#idx = #fvar"
       unless tail is tvar
         vars += ", #tail"
         temps.push tvar
+      pvar = step = -1 if not @step and +fvar > +tvar
       eq   = if @op is \til then '' else \=
       cond = if +pvar
-      then "#idx #{ if pvar < 0 then \> else \< }#eq #tvar"
-      else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
+        then "#idx #{ '<>'charAt pvar < 0 }#eq #tvar"
+        else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
     else
       if @item or @object and @own
         [svar, srcPart] = @source.compileLoopReference o, \ref, not @object
