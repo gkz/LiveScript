@@ -424,22 +424,3 @@ compileThrows 'bad string in range' 2 '\n"a" to "bc"'
 
 ### yadayadayada
 throws \unimplemented -> ...
-
-
-### Cascade
-a = with [2 7 1 8 2]
-  &push 3
-  &sort!
-    &shift!
-  &pop!
-.join ''
-eq \2237 a
-
-eq
-  & &, &
-  (->) &(&, &)
-  ok &valueOf!
-
-compileThrows 'stray cascadee' 2 '\n&'
-
-compileThrows 'unreferred cascadee' 1 'a\n b'

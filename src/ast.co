@@ -214,8 +214,6 @@ class exports.Block extends Node
     @lines.splice @neck!, 0, ...arguments
     this
 
-  pipe: -> @lines.push Assign(Var \_; @lines.pop!), it; this
-
   unwrap: -> if @lines.length is 1 then @lines.0 else this
 
   # Removes trailing comment nodes.
@@ -324,8 +322,8 @@ class exports.Literal extends Atom
       return "(function(){\n#TAB#{o.indent}debugger;\n#{o.indent}}())"
     case \* then @carp 'stray star'
     case \&
-      @carp 'stray cascadee' unless val = o.cascadee
-      val.referred = true
+      @carp 'stray reference' unless val = o.ref
+      @cascadee or val.erred = true
     val
 
 #### Var
@@ -565,9 +563,9 @@ class exports.Chain extends Node
   expandSlice: (o, assign) ->
     {tails} = this; i = -1; while tail = tails[++i] then if tail.key?items
       tail.carp 'calling a slice' if tails[i+1] instanceof Call
-      tails.splice 0 i+1
-      |> _.pop!key.toSlice o, Chain(@head, _)unwrap!, tail.symbol, assign
-      |> @head = _ <<< {@front}
+      _ = tails.splice 0 i+1
+      _ = _.pop!key.toSlice o, Chain(@head, _)unwrap!, tail.symbol, assign
+      @head = _ <<< {@front}
       i = -1
     this
 
@@ -843,9 +841,9 @@ class exports.Unary extends Node
     case \new then it.isCallable! or it.carp 'invalid constructor'
     case \do
       # `do f?` => `f?()`
-      Parens if it instanceof Existence and not it.negated
+      _ = Parens if it instanceof Existence and not it.negated
         then Chain(it)add Call! else Call.make it
-      |> return (_ <<< {@front, @newed})compile o
+      return (_ <<< {@front, @newed})compile o
     case \delete
       @carp 'invalid delete' if it instanceof Var or not it.isAssignable!
       return @compilePluck o if o.level and not @void
@@ -965,13 +963,13 @@ class exports.Binary extends Node
 
   compileExistence: (o) ->
     if @op is \!?
-      If(Existence @first; @second) <<< {@cond, @void or not o.level}
-      |> return _.compileExpression o
+      _ = If(Existence @first; @second) <<< {@cond, @void or not o.level}
+      return _.compileExpression o
     if @void or not o.level
-      Binary \&& Existence(@first, true), @second
-      |> return (_ <<< {+void})compileNode o
-    @first.cache o, true
-    |> If(Existence _.0; _.1)addElse(@second)compileExpression o
+      _ = Binary \&& Existence(@first, true), @second
+      return (_ <<< {+void})compileNode o
+    _ = @first.cache o, true
+    If(Existence _.0; _.1)addElse(@second)compileExpression o
 
   # `x instanceof [A, B]` => `x instanceof A || x instanceof B`
   compileAnyInstanceOf: (o, items) ->
@@ -983,8 +981,8 @@ class exports.Binary extends Node
   compileMinMax: (o) ->
     lefts = @first .cache o, true
     rites = @second.cache o, true
-    Binary @op.charAt!, lefts.0, rites.0
-    |> If _, lefts.1 .addElse rites.1 .compileExpression o
+    _ = Binary @op.charAt!, lefts.0, rites.0
+    If _, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
     args = [@second]concat arg || []
@@ -1910,27 +1908,43 @@ class exports.Label extends Node
       then o.indent += TAB; @compileBlock o, it
       else it.compile o
 
-#### Cascade
-# A construction that allows `&`-references to target expression.
-class exports.Cascade extends Node
-  (@target, @body) ->
+#### Pipe
+# Passes input to output via `&`-references.
+class exports.Pipe extends Node
+  (@input, @output, @cascade) ->
 
-  children: <[ target body ]>
+  show: -> @cascade and \=>
+
+  children: <[ input output ]>
 
   terminator: ''
 
+  ::delegate <[ isCallable isArray isString isRegex ]> -> @output[it]!
+
+  getJump: -> @output.getJump it
+
   makeReturn: (@ret) -> this
 
-  compileNode: (o) ->
-    @temps = [ref = o.scope.temporary \x]
-    t = ref + ' = ' + @target.compile o, LEVEL_LIST
+  compileNode: ({level}:o) ->
+    {input, output, ref} = this
+    if @cascade and (\ret in this or level and not @void)
+      output.add (Literal \& => &cascadee = true)
     if \ret in this
-    then @body.add Var(ref)makeReturn @ret
-    else o.level and not @void and @body.add Var ref
-    o.cascadee = new String ref
-    b = @body.compile o, o.level && LEVEL_PAREN
-    o.cascadee.referred or @carp 'unreferred cascadee'
-    if o.level then "(#t, #b)" else "#t;\n#b"
+      output.=makeReturn @ret
+    if ref
+    then output = Assign (if @cascade then Arr! else JS ref), output
+    else @temps = [ref = o.scope.temporary \x]
+    if input instanceof Pipe
+    then input <<< {ref}
+    else input = Assign JS(ref), input
+    o.level &&= LEVEL_PAREN
+    code = input.compile o
+    o.ref = new String ref
+    out = Block output .compile o
+    o.ref.erred or @carp "unreferred #{ if @cascade then \cascad else \pip }ee"
+    return "#code#{input.terminator}\n#out" unless level
+    code += ", #out"
+    if level > LEVEL_PAREN then "(#code)" else code
 
 #### JS
 # Embedded JavaScript snippets.

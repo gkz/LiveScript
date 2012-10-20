@@ -779,7 +779,7 @@ character = if JSON!? then uxxxx else ->
 !function addImplicitParentheses tokens
   i = 0; brackets = []
   while token = tokens[++i]
-    if token.1 is \do and tokens[i+1]?0 is \INDENT
+    if token.1 is \do and tokens[i+1]0 is \INDENT
       endi = indexOfPair tokens, i+1
       if tokens[endi+1]0 is \NEWLINE and tokens[endi+2]?0 is \WHILE
         token.0 = \DO
@@ -794,15 +794,14 @@ character = if JSON!? then uxxxx else ->
     brackets.push prev.0 is \DOT if tag is \[
     if prev.0 is \]
       if brackets.pop! then prev.index = true else continue
+    if tag is \BITWISE and token.1 is \& and tokens[i+1]0 not of ARG
+      tag = token.0 = \LITERAL
     continue unless prev.0 of <[ FUNCTION LET ]>
                  or prev.spaced and able tokens, i, true
     if token.doblock
       token.0 = \CALL(
       tpair.0 = \)CALL
       continue
-    if tag is \BITWISE and token.1 is \& and
-       not (token.spaced and tokens[i+1]0 of ARG)
-      tag = token.0 = \LITERAL
     continue unless tag of ARG or not token.spaced and tag of <[ +- ^ ]>
     if tag is \CREMENT
       continue if token.spaced or tokens[i+1]?0 not of CHAIN

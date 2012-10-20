@@ -48,7 +48,7 @@ tint \co [
   : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
   | e(?:val)?
-  | it | arguments | by | constructor | prototype | superclass | _
+  | it | arguments | by | constructor | prototype | superclass
   ) #kwend //]
   [\glb // ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number
