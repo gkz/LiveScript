@@ -62,6 +62,10 @@ eq i, 2
 eq 2, do -> if 0 then -> 1 else 2
 
 
+# Outer `then` should skip `else`.
+eq 3, if 1 then if 0 then 2 else 3
+
+
 # With suppressed indentations.
 eq 6,
   if 0 then 1 \
@@ -78,8 +82,14 @@ else
   else 3
 
 
-# Post-condition should accept trailing non-`then` implicit indentation.
+# Post-condition should accept trailing non-`if` block.
 ok true if ->
+ok true if do
+   true
+ok true if let
+   true
+ok true if do function f
+   true
 
 
 # [coffee#738](https://github.com/jashkenas/coffee-script/issues/738)
@@ -96,6 +106,20 @@ throws "Parse error on line 2: Unexpected 'ELSE'", -> LiveScript.ast '''
 
 eq 2, [if 1 then 2       , 3].0
 eq 2, [if 0 then 1 else 2, 3].0
+
+
+# Compile conditonal expression chains neatly.
+eq '''
+var r;
+r = a
+  ? b
+  : c
+    ? d
+    : e();
+''' LiveScript.compile '''
+r =    if a then b
+  else if c then d else e!
+''' {+bare}
 
 
 ### Anaphoric `if`

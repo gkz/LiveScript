@@ -1,18 +1,18 @@
-bare = {+bare}
+bare = -> LiveScript.compile it, {+bare}
 
 # Ensure that carriage returns don't break compilation on Windows.
-eq 'one;\ntwo;', LiveScript.compile 'one\r\ntwo' bare
+eq 'one;\ntwo;', bare 'one\r\ntwo'
 
 
 # Tab characters should work.
-eq '_(__);', LiveScript.compile '\n\t_\t__\t\n' bare
+eq '_(__);', bare '\n\t_\t__\t\n'
 
 
 # `{\eval}` forces the last value to be returned.
 eq 1, Function('return ' + LiveScript.compile 'delete @1' {\eval}).call {1}
 eq '''
-var __ref;
-__ref = o.k, delete o.k, __ref;
+var ref$;
+ref$ = o.k, delete o.k, ref$;
 ''' LiveScript.compile 'delete o.k' {\eval, +bare}
 
 
@@ -40,11 +40,11 @@ throws '''
 eq '''
 var k;
 for (k in o) {}
-''' LiveScript.compile 'for k of o then' {+bare}
+''' bare 'for k of o then'
 
 
 
-eq "a['in'] = this['in'];", LiveScript.compile 'a import {@in}' bare
+eq "a['in'] = this['in'];", bare 'a import {@in}'
 
 
 eq '''
@@ -54,7 +54,7 @@ while (0) {
     break;
   }
 }
-''', LiveScript.compile 'while 0 then while 0 then {} = ({}; {}); break' bare
+''', bare 'while 0 then while 0 then {} = ({}; {}); break'
 
 
 
@@ -99,7 +99,7 @@ NEWLINE,
 
 
 # Indentation on line 1 should be valid.
-eq '1;\n2;', LiveScript.compile '  1\n  2' bare
+eq '1;\n2;', bare '  1\n  2'
 
 
 eq '''
@@ -107,15 +107,15 @@ eq '''
   var k;
   try {
     for (k in o) {
-      (__fn.call(this, k));
+      (fn$.call(this, k));
     }
-  } catch (__e) {}
-  function __clone(it){
+  } catch (e$) {}
+  function clone$(it){
     function fun(){} fun.prototype = it;
     return new fun;
   }
-  function __fn(k){
-    __clone(this);
+  function fn$(k){
+    clone$(this);
   }
 }).call(this);
 
@@ -128,30 +128,23 @@ eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' LiveScript.tokens('''
 ''').slice(0 3).join ' '
 
 
-eq '''
-(function(){
-  var __ref;
-  throw a < (__ref = +b) && __ref < c;
-}());
-''', LiveScript.compile '* throw a < +b < c' bare
 
-
-eq '!a;', LiveScript.compile '!!!a' bare
+eq '!a;', bare '!!!a'
 
 
 eq '''
 +(function(){
   debugger;
 }());
-''' LiveScript.compile '+debugger' bare
+''' bare '+debugger'
 
 
-eq '1;\n2;\n3;\n4;', LiveScript.compile '''
+eq '1;\n2;\n3;\n4;', bare '''
   1
   2
 3
 4
-''' bare
+'''
 
 
 # `__proto__` should be available as a variable name.
@@ -167,11 +160,11 @@ compileThrows 'invalid identifier "♪"' 1 'ƒ　♪　♯'
 
 # - [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)
 # - Ignore top-level `void`s.
-eq '(function(){});' LiveScript.compile '''
+eq '(function(){});' bare '''
   -> void;
   void;
   void
-''' bare
+'''
 
 # Dash seperated identifiers
 throws "Parse error on line 1: Unexpected 'ID'" -> LiveScript.compile 'a--b = 1'
@@ -180,7 +173,50 @@ throws "Inconsistent use of encodeURL as encode-u-r-l on line 1" -> LiveScript.c
 
 
 # Optimize concat [#72](https://github.com/gkz/LiveScript/issues/72)
-eq '[1].concat([2], [3], [4]);' LiveScript.compile '[1] +++ [2] +++ [3] +++ [4]' bare
+eq '[1].concat([2], [3], [4]);' bare '[1] +++ [2] +++ [3] +++ [4]'
 
 # Error when attempting to curry a funciton using splats [#91](https://github.com/gkz/LiveScript/issues/91)
 compileThrows 'cannot curry a function with a variable number of arguments' 1 '(...args) --> args[0]'
+
+# Optimize/clean compose [#101](https://github.com/gkz/LiveScript/issues/101)
+eq 'compose$([j, h, g, f]);' (bare 'f >> g >> h >> j').split(\\n).0
+eq 'compose$([f, g, h, j]);' (bare 'f << g << h << j').split(\\n).0
+
+# destructuring assign sugar
+compileThrows 'invalid assign' 1 '{a **= b} = c'
+
+# require!
+eq "var a;\na = require('a');" bare 'require! [a]'
+eq "var a;\na = require('a');" bare 'require! <[a]>'
+eq "var a;\na = require('a');" bare 'require! {a}'
+eq '''var a, b, c, e, g, file, file2, file3, i, j, k, bar, baz;
+a = require('a');
+b = require('b');
+c = require('d');
+e = require('f');
+g = require('h');
+file = require('file.js');
+file2 = require('./file2.js');
+file3 = require('./asdf/safd/sa/file3.js');
+i = require('file.js');
+j = require('./file.js');
+k = require('./asdf/safd/sa/file.js');
+bar = require('foo').bar;
+baz = require('./file.js').baz;''' bare '''require! {
+  a
+  'b'
+  c: d
+  e: 'f'
+  'g': h
+  'file.js'
+  './file2.js'
+  './asdf/safd/sa/file3.js'
+  i: 'file.js'
+  j: './file.js'
+  k: './asdf/safd/sa/file.js'
+  foo.bar
+  './file.js'.baz
+}'''
+
+# JS literal
+eq 'some js code!' bare '``some js code!``'

@@ -7,7 +7,7 @@ class Base
     "static/#{string}"
 
 class FirstChild extends Base
-  func: -> super('one/') + it
+  func: -> super('one/').concat it
 
 SecondChild = class extends FirstChild
   func: -> (super).call(this, 'two/') + it
@@ -98,7 +98,7 @@ eq [func() for func in new Mini().generate()] + '', '10,20,30'
 # A bound function in a bound method with secondary function syntax
 class Mini2
   ->
-    @generate@! =
+    @.~generate! =
       for i from 1 to 3 then let
         ~> @num * i
   num: 10
@@ -141,12 +141,12 @@ Namespace = {}
 Class     = null
 
 # but undeclared.
-Namespace.Class = class then
+Namespace.Class = class
 eq Namespace.Class.displayName, 'Class'
 eq Class, null
 
 # and declared.
-class Namespace.Class then
+class Namespace.Class
 eq Class, Namespace.Class
 
 
@@ -182,8 +182,8 @@ eq ns.method2(2).length, 2
 # [coffee#1009](https://github.com/jashkenas/coffee-script/issues/1009)
 # Class names are "$"-prefixed when reserved.
 new
-  class @in   then
-  class @eval then
+  class @in
+  class @eval
   ok $in?
   ok $eval?
 
@@ -210,10 +210,10 @@ eq oss[5.67](), oss
 eq oss['""'](), oss
 
 
-eq \declared (class declared then)displayName
+eq \declared (class declared)displayName
 ok declared?
 
-eq \named  (new -> return @named = class then)displayName
+eq \named  (new -> return @named = class)displayName
 ok named!? 'should not leak to global when undeclared'
 
 
@@ -235,12 +235,11 @@ ok new Sup.Sub instanceof Sup
 new class extends Object
   eq ::, prototype
   eq ::, @::
-  eq .., constructor
-  eq .., @
+  eq constructor, @
   ok super is superclass is Object
   ->
-    eq ::, @..::
-    eq .., @..
+    eq ::, @constructor::
+    eq constructor, @constructor
 
 
 # `extended` hook
@@ -251,7 +250,7 @@ class NameEater
     @subnames.push it.displayName
 
 class A extends NameEater
-  (class B then) extends NameEater
+  (class B) extends NameEater
 
 eq 'A,B' ''+NameEater.subnames
 
@@ -318,3 +317,109 @@ ok not donaldo.fly()
 
 ok ^^new Number instanceof Number
 eq (^^new Number)constructor, Number
+
+# Inherit constructors
+class A
+  -> @x = 5
+
+class B extends A
+  getX: -> @x
+
+eq 5 (new B)getX!
+
+# No body
+class C extends B
+
+eq 5 (new C)getX!
+
+class D
+  extends C
+eq 5 (new D)getX!
+
+# Bound methods are bound to instance not class, 
+# however bound static funcs are still bound to class
+class G
+  ->
+    @x = 5
+    @y = 6
+  getX: -> @x
+  getY: ~> @y
+  @x = \staticX
+  @y = \staticY
+  @getStatX = -> @x
+  @getStatY = ~> @y
+
+g = new G
+obj = x: 0, y: 0
+obj{getX, getY} = g
+obj{getStatY, getStatX} = G
+
+eq 0 obj.getStatX!
+eq \staticY obj.getStatY!
+
+eq 0 obj.getX!
+eq 6 obj.getY!
+
+class H extends G
+
+h = new H
+obj = x: 0, y: 0
+obj{getX, getY} = h
+
+eq 0 obj.getX!
+eq 6 obj.getY!
+
+# Inherit static
+class A
+  @stat = -> 2
+
+class B extends A
+
+eq 2 B.stat!
+
+class C extends B
+  @stat = -> 2 + super!
+
+eq 4 C.stat!
+
+
+# Super outside of class defintions
+class A
+  meth: -> it + 5
+  @stat = -> it + 5
+
+a = new A
+eq 10 a.meth 5
+eq 10 A.stat 5
+
+class B extends A
+
+b = new B
+eq 10 b.meth 5
+eq 10 B.stat 5
+
+B::meth = -> super it + 2
+B.stat = -> super it + 2
+
+eq 12 b.meth 5
+eq 12 B.stat 5
+
+B::meth = (x) ->
+  func = ->
+    super x + 2
+  func!
+B.stat = (x) ->
+  func = ->
+    super x + 2
+  func!
+eq 12 b.meth 5
+eq 12 B.stat 5
+
+
+# can define external constructor
+f = -> @y = @x + it
+class A
+  x: 8
+  constructor$$: f
+
+eq 13 (new A 5).y

@@ -1,10 +1,10 @@
 # `.run`s LiveScript code and calls back, passing error if any.
 LiveScript.stab = (code, callback, filename, error) ->
-  try LiveScript.run code, {filename} catch then error = e
-  callback error
+  try LiveScript.run code, {filename} catch then error
+  callback? error
 
 # `.stab`s a remote script via `XMLHttpRequest`.
-LiveScript.load = (url, callback or ->) ->
+LiveScript.load = (url, callback) ->
   xhr = new XMLHttpRequest
   xhr.open \GET, url, true
   xhr.overrideMimeType \text/plain if \overrideMimeType in xhr
@@ -12,7 +12,7 @@ LiveScript.load = (url, callback or ->) ->
     if xhr.readyState is 4
       if xhr.status in [200 0]
       then LiveScript.stab xhr.responseText, callback, url
-      else callback Error "#url: #{xhr.status} #{xhr.statusText}"
+      else callback? Error "#url: #{xhr.status} #{xhr.statusText}"
   xhr.send null
   xhr
 

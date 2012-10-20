@@ -75,11 +75,11 @@ eq 1, [-> it]. 0  1
 eq 1, [-> it].'0' 1
 
 
-# `prototype`/`constructor` shorhands
+# `prototype` shorthand, `constructor` 
 eq Array::toString, Array.prototype.toString
-eq 12345..toString, 123.constructor.toString
+eq 12345.constructor.toString, 123.constructor.toString
 eq 0 (:::0)::
-eq 0 (..:0)..
+eq 0 (constructor:0)constructor
 
 
 # Length Star
@@ -100,6 +100,7 @@ parent =
 eq 42, do(0; parent.child.~method)
 eq 42, do(0; parent.child~"me#{'th'}od")
 eq 42, parent.child. ~ [\method] null
+eq 42, parent.child.~{method}.method!
 
 compileThrows 'invalid assign' 1 'o~m=g'
 
@@ -134,6 +135,47 @@ compileThrows 'empty slice' 1 'o[,,]'
 
 if 0 then @front{ne,ss}
 
+x = 3
+y = 1
+l = [1 to 5]
+eq '2,3,4' "#{ l[1 to  x] }"
+eq '2,3'   "#{ l[1 til x] }"
+
+eq '2,3,4' "#{ l[y to  3] }"
+eq '2,3'   "#{ l[y til 3] }"
+
+eq '2,3,4' "#{ l[y to  x] }"
+eq '2,3'   "#{ l[y til x] }"
+
+eq '3,4,5' "#{ l[2 til] }"
+eq '1,2'   "#{ l[til 2] }"
+
+z = 2
+eq '3,4,5' "#{ l[z til] }"
+eq '1,2'   "#{ l[til z] }"
+
+eq '1,2,3,4,5' "#{ l[to] }"
+
+eq '1,2,3' "#{ l[til -2] }"
+eq '2,3' "#{ l[1 til -2] }"
+
+eq '1,2,3,4,5' "#{ l[to  -1] }"
+eq '1,2,3,4'   "#{ l[til -1] }"
+
+# splice
+l = [1 to 5]
+x = 3
+eq '8,9' "#{ l[2 to x] = [8 9] }"
+eq '1,2,8,9,5' "#{ l }"
+
+y = -> 2
+l = [1 to 5]
+eq '8,9' "#{ l[y! til 4] = [8 9] }"
+eq '1,2,8,9,5' "#{ l }"
+
+l = [1 to 5]
+eq '8,9' "#{ l[2 to 3] = [8 9] }"
+eq '1,2,8,9,5' "#{ l }"
 
 # Automatic Dot Insertion
 eq @toString, @\toString

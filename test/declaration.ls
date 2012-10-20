@@ -4,9 +4,10 @@ out = exports ? this
 
 a = random!
 export a
-export b = random!
 eq out.a, a
-eq out.b, b
+eq do
+  export b = random!
+  out.b
 
 export class C
   @d = random!
@@ -42,7 +43,14 @@ let
   const
     d = 4
     [e, f] = [5, 6]
-  eq '1,2,3,4,5,6' [a, b, c, d, e, f]join!
+  export const g = 7
+  export
+    const h = 8
+    const i = 9
+  eq '1,2,3,4,5,6,7,8,9' ''+[a, b, c, d, e, f, g, h, i]
+  eq out.g, g
+  eq out.h, h
+  eq out.i, i
 
 compileThrows 'redeclaration of constant "a"' 2 '''
   const a = 0
@@ -75,9 +83,11 @@ let
     d
     e
   ok a is b is c is d is e is void
+  eq void var f
 
 compileThrows 'invalid variable declaration' 2 'var\n  0'
 compileThrows 'redeclaration of "a"'         2 '(a) ->\n  var a'
+compileThrows 'empty var'                    2 '\nvar'
 
 
 ### with const flag
@@ -92,3 +102,6 @@ eq '''(function(n){
   n == null && (n = 2);
   return n + 1;
 });''' LiveScript.compile '(n = 2) -> n + 1' {+\const, +bare}
+
+eq '''var ref$;
+1 < 2 && 2 === (ref$ = 4 / 2) && ref$ > 0;''' LiveScript.compile '1 < 2 == 4/2 > 0' {+\const, +bare}

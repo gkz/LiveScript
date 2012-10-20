@@ -8,6 +8,18 @@ ok !no
 
 throws 'invalid assign on line 1' -> LiveScript.compile 'yes = 6'
 
+
+### Identifiers
+eq encodeURIComponent, encode-URI-component
+eq ''.toLowerCase, ''.to-lower-case
+
+function no-op then
+eq no-op(), void
+eq noOp.length, 0
+
+try throw 0 catch e-r then eq eR, 0
+
+
 ### Numbers
 
 eq 3-4, -1
@@ -32,6 +44,7 @@ eq 3000c, 30$ * 100
 eq 36rpm 36
 
 
+# Ranges
 start = 1
 end   = 5
 step  = 2
@@ -46,9 +59,19 @@ eq '1,5'       String [start to  end by 4    ]
 eq '5,3'       String [5     til 1   by -step]
 eq '1,3,5'     String [start to  5   by 2    ]
 eq '1,3,5'     String [1     to  5   by 2    ]
+eq '0,1,2,3'   String [to 3]
+eq '0,1,2'     String [til 3]
+eq '0,2,4'     String [to 4 by 2]
+eq '0,2'       String [til 4 by 2]
 
 to = 3
 eq 3 to
+
+eq 4 [1 to end].3
+eq 5 [1 to end].length
+
+r = [1 to end]
+eq '1,2,3,4,5' String r
 
 # [coffee#764](https://github.com/jashkenas/coffee-script/issues/764)
 # Boolean/Number should be indexable.
@@ -86,6 +109,7 @@ eq 'c', result.1.b
 eq '<[ quoted words ]>', <[ <[ quoted words ]\> ]>.join ' '
 eq \\ <[\]>0
 eq 0  <[ ]>length
+eq \1 [String]<[0]> 1
 
 
 #### Implicit arrays
@@ -125,7 +149,7 @@ a = [] <<<
 a +=
   4
   5
-eq '0,1,2,3,4,5' ''+a
+eq '0,1,2,34,5' a
 
 eq '0,1' ''+ do ->
   return
@@ -338,7 +362,7 @@ obj = {
   (--i) or 'default value'
   /*      splat       */
   ...o
-  ...{splatMe: 'too'}
+  ...: splatMe: 'too'
   /*   normal keys    */
   key: ok
   's': ok
@@ -384,31 +408,6 @@ eq a * b, 21
 
 eq 11, ((, a) -> a)(, 11)
 
-### String/Array multiplication
-x = \x
-n = 4
-eq ''    'x'*0
-eq \x    'x'*1
-eq \xx   "x"*2
-eq \xxx  \x *3
-eq \xxxx \x *n
-eq ''    "#{x}" * 0
-eq \x    "#{x}" * 1
-eq \xx   "#{x}" * 2
-eq \xxx  "#{x}" * 3
-eq \xxxx "#{x}" * n
-
-i = -1
-eq ''    ''+ [i++]*0
-eq '0'   ''+ [i++]*1
-eq '1,1' ''+ [i++]*2
-eq '2,3,2,3,2,3' ''+ [i++, i++] * 3
-eq '4,5,4,5,4,5' ''+ [i++, i++] * (n-1)
-
-a = [1]
-eq '0,1,0,1' ''+ [0 ...a] * 2
-eq '1,1,1,1' ''+ [  ...a] * n
-
 
 ### ACI
 eq null null
@@ -451,5 +450,20 @@ compileThrows 'bad "by" in range' 2 '\n[0 to 9 by "2"]'
 compileThrows 'bad string in range' 2 '\n["a" to "bc"]'
 
 
-### Misc
+### yadayadayada
 throws \unimplemented -> ...
+
+
+### Cascade
+a = [2 7 1 8]
+  ..push 2
+  ..shift!
+  ..sort!
+eq '1,2,7,8' ''+a
+
+eq 10, do
+  1 + 2
+    .. + 3
+      4 + ..
+
+compileThrows 'stray cascadee' 2 '\n..'

@@ -1,3 +1,16 @@
+## utils
+flatten = (x) ->
+  result = []
+  f = (x) ->
+    | 'Array' isnt typeof! x => result.push x
+    | x.length is 1          => f x.0
+    | x.length > 1           =>
+      f x.0
+      f (x.slice 1)
+  f x
+  result
+##
+
 i = 5
 list = while i -= 1
   i * 2
@@ -51,16 +64,18 @@ eq void, do -> while 0 then return
 
 
 # Basic array comprehensions.
-nums    = for n in [1, 2, 3] then n * n if n &&& 1
+nums    = for n in [1, 2, 3] then n * n if n .&. 1
 results = [n * 2 for n in nums]
 
 eq results + '', '2,18'
+
+eq 11 [x for x to 10]length
 
 
 # Basic 'of' comprehensions.
 obj   = {one: 1, two: 2, three: 3}
 names = [prop + '!' for prop of obj]
-odds  = for prop, value of obj then prop + '!' if value &&& 1
+odds  = for prop, value of obj then prop + '!' if value .&. 1
 
 eq names.join(' '), 'one! two! three!'
 eq odds. join(' '), 'one! three!'
@@ -108,7 +123,7 @@ for i to 0
 for by in [1] then by
 ok by
 for by til 1 then by
-ok by
+ok not by
 
 
 # With range comprehensions, you can loop in steps.
@@ -130,8 +145,11 @@ eq evens + '', '4,6,8'
 odds = [num for num in [0, 1, 2, 3, 4, 5] by -2]
 eq odds + '', '5,3,1'
 
+# Multiline nested loops result in nested output
+eq 9 (for x from 3 to 5
+  for y from 3 to 5
+    x * y).0.0
 
-# Nested comprehensions.
 multiLiner =
   for x from 3 to 5
     for y from 3 to 5
@@ -139,15 +157,79 @@ multiLiner =
 
 singleLiner = [x * y for y from 3 to 5 for x from 3 to 5]
 
-eq multiLiner.length, singleLiner.length
-eq 25,  multiLiner[*-1]
+eq 3 multiLiner.length
+eq 9 singleLiner.length
+
+eq 25,  multiLiner[*-1][*-1]
 eq 25, singleLiner[*-1]
 
-comp = ["#x#y" for x in [1 2 3] for y in [\a \b \c]] 
+xs = for x to 5
+  for y to 5
+    if x is y
+      for z to 2
+        x + y + z
+    else
+      for z from 10 to 15
+        x + y + z
+eq 6 xs.length
+eq 6 xs.0.length
+eq 3 xs.0.0.length
+eq 6 xs.0.1.length
+
+# Nested comprehensions.
+comp = ["#x#y" for x in [1 2 3] for y in [\a \b \c]]
 eq "#comp", '1a,1b,1c,2a,2b,2c,3a,3b,3c'
 
 pythagoreanTriples = [[x,y,z] for x in [1 to 20] for y in [x to 20] for z in [y to 20] when x^2 + y^2 == z^2]
 eq "#{ pythagoreanTriples * \_ }", '3,4,5_5,12,13_6,8,10_8,15,17_9,12,15_12,16,20'
+
+
+# Comprehensions in comprehensions
+zs = [[x + y for y til 5] for x til 5]
+eq 5 zs.length
+eq 8 zs.4.4
+
+obs = [{[x, i + y] for x, i in <[ one two ]>} for y to 5]
+eq 6 obs.length
+eq 0 obs.0.one
+eq 6 obs[*-1].two
+
+
+# Comprehensions in loops
+xs = for x to 5
+  [x + y for y to 5]
+eq 6 xs.length
+eq 10 xs[*-1][*-1]
+
+
+# Multiline comprehensions
+res = [x + y for x to 4
+             for y to 3]
+eq 7 res[*-1]
+
+res = [x + y for x to 4
+             for y to 3
+]
+eq 7 res[*-1]
+
+res = [x + y + z for x to 4
+                 for y to 3
+                 for z to 2]
+eq 9 res[*-1]
+res = [x + y + z for x to 4
+                 for y to 3
+                 for z to 2
+]
+eq 9 res[*-1]
+
+res = [(
+  a = 1
+  b = a + 2
+  a + b + x + y + z
+  ) for x to 4
+    for y to 3
+    for z to 2]
+eq 13 res[*-1]
 
 # Comprehensions within parentheses.
 result = null
@@ -187,11 +269,11 @@ func = ->
   for i from 1 to 2
     break if i is 2
     for j in [3] then i * j
-eq func()[0], 3
+eq func!0.0, 3
 
 i = 6
 odds = while i--
-  continue unless i &&& 1
+  continue unless i .&. 1
   i
 eq '5,3,1', '' + odds
 
@@ -228,7 +310,7 @@ ok true, while 0 then
 ok [] = for i to 0 then
 
 for i from Number 2 to Number 3 by Number 4 then void
-eq 6 i
+eq 2 i
 
 let i, j = i
   eq ...for k to 1 then i
@@ -266,14 +348,14 @@ fs = for a, i in [1 2]
   for b from 3 to 4
     let i = i+5
       -> i + a + b
-sums = [f() for f in fs]
+sums = [f! for f in flatten fs]
 eq sums.1, 10
 eq sums.2, 11
 
 fs = for x, y of {2 3 5} then let z = 7 then -> x * y * z
 eq 63 fs.1()
 
-os = for n in [11 13] then new -> import n: -> n
+os = for [_]:n in [11 13] then new -> import n: -> n
 eq 11 os.0.n()
 
 
@@ -321,7 +403,7 @@ i = 0; evens = [i while i < 9, i += 2]
 eq '0,2,4,6,8' ''+evens
 
 i = 1; odds = until i > 9, ++i
-  continue unless i &&& 1
+  continue unless i .&. 1
   i
 eq '1,3,5,7,9' ''+odds
 
@@ -338,19 +420,19 @@ for cond in [true false]
   else
     ok not cond
 
-r = for i from 0 to 3
-  while i &&& 1
+r = for i from 0 to 9
+  while i .&. 1
     break
-  else
+  else if i .&. 2
     i
-eq '0,2' ''+r
+
+eq '2,6' flatten(r).to-string!
 
 r = for i til 1 then i else [9]
 eq 0 r.0
 
 r = for i til 0 then i else [9]
 eq 9 r.0
-
 
 ### Omission of `for`'s first assignment
 for    , i in [0] => eq i, 0 
@@ -369,4 +451,27 @@ while i < evens.length, ++i when evens[i] * 2 is 8
   eq 4 evens[i] 
 
 eq '1 3 7 9' [y for y from 1 to 10 when y isnt 5 by 2].join ' '
+
+### No vars at all
+i = 0
+f = -> i++
+
+for til 2 then f!
+eq 2 i
+
+i = 0
+for from 2 to 5 then f!
+eq 4 i
+
+i = 0
+eq '0 1 2 3' [f! for til 4].join ' '
+
+i = 0
+eq '2 4 6' [f! for til 4 when f!].join ' '
+
+# index var outside loop
+for v, k in [1]
+  void
+ok v
+ok not k
 

@@ -46,9 +46,6 @@ ok x is not o.x , 'should copy o.x'
 ok y is not o[y], 'should copy o[y]'
 
 
-compileThrows 'splatting "new"' 1 'new C ...a'
-compileThrows 'splatting "new"' 1 'new C ...'
-
 compileThrows 'multiple splat in an assignment' 1 '[...a, ...b] = c'
 
 
@@ -113,5 +110,26 @@ eq '''
 ''', LiveScript.compile '(..., a) ->', {+bare}
 
 
-# Don't call `__slice` on array literals.
+# Don't call `slice$` on array literals.
 eq '[a, a].concat([b]);' LiveScript.compile '[...[a]*2 b]' {+bare}
+
+# splatted new
+class A
+  (x, y = 0, z = 0) -> @res = x  + y + z
+
+eq 6 (new A ...[1 2 3]).res
+arg = [1 2 3]
+eq 6 (new A ...arg).res
+
+eq 5 (new A ...[5]).res
+x = [5]
+eq 5 (new A ...x).res
+eq 8 (new A 3 ...x).res
+eq 9 (new A 3 ...x, 1).res
+
+a = {}
+a.b = {}
+class a.b.A
+  (x, y, z) -> @res = x + y + z
+
+eq 6 (new a.b.A ...[1 2 3]).res

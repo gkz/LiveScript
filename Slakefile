@@ -126,7 +126,7 @@ function runTests global.LiveScript
   global <<<
     eq: strictEqual
     throws: !(msg, fun) ->
-      try do fun catch return eq e?message, msg
+      try do fun catch then return eq e?message, msg
       ok false "should throw: #msg"
     compileThrows: !(msg, lno, code) ->
       throws "#msg on line #lno" !-> LiveScript.compile code
@@ -144,7 +144,7 @@ function runTests global.LiveScript
       return say e unless stk = e?stack
       msg = e.message or ''+ /^[^]+?(?=\n    at )/exec stk
       if m = /^(AssertionError:) "(.+)" (===) "(.+)"$/exec msg
-        for i in [2 4] then m[i] = tint m[i]replace(/\\n/g \\n), bold 
+        for i in [2 4] then m[i] = tint m[i]replace(/\\n/g \\n), bold
         msg  = m.slice(1)join \\n
       [, row, col]? = //#filename:(\d+):(\d+)\)?$//m.exec stk
       if row and col

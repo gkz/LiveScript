@@ -25,6 +25,7 @@ eq "#{hello} #{ 1 + 2 } #{world}", "Hello 3 World"
 eq "#{hello + world}", 'HelloWorld'
 eq "#{hello + ' ' + world + '!'}", 'Hello World!'
 
+eq helloWorld = hello + world, "#hello-world"
 
 eq "\#{Escaping} first", '#{Escaping} first'
 eq "Escaping \#{in} middle", 'Escaping #{in} middle'
@@ -197,9 +198,13 @@ throws "Parse error on line 1: Unexpected ')'" -> LiveScript.compile '"(#{+})"'
 
 compileThrows 'invalid variable interpolation "if"' 1 '"#if"'
 
+compileThrows 'malformed character escape sequence' 1 '"\\x"'
+compileThrows 'malformed character escape sequence' 1 '"\\u"'
+
 hi-there = 'Hi there!'
 one-two-three = 123
 
+# Dash separated var interpolation
 eq 'Hi there! How are you?' "#hi-there How are you?"
 eq 'ha 123 ha' "ha #one-two-three ha"
 
@@ -238,10 +243,10 @@ eq \2 '1'.replace "#{1}" -> 2
 # Safe Octals
 let
   'use strict'
-  '\1'
-  '\02'
-  '\377'
-  '\08\09'
+  eq '\1'     '\x01'
+  eq '\02'    '\x02'
+  eq '\377'   '\xFF'
+  eq '\08\09' '\x008\x009'
 
 
 # Unjoined

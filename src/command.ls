@@ -9,7 +9,9 @@ global import
   util : require \util
   say  : !-> process.stdout.write it + \\n
   warn : !-> process.stderr.write it + \\n
-  die  : !-> warn it; process.exit 1
+  die  : !->
+    fs.writeSync process.stderr.fd, it + \\n
+    process.exit 1
   p    : !-> []forEach.call arguments, console.dir
   pp   : !(x, showHidden, depth) ->
     say util.inspect x, showHidden, depth, !process.env.NODE_DISABLE_COLORS
@@ -19,6 +21,8 @@ global import
 {$args} = o = require(\./optparse) do
   interactive : 'start REPL; use ^J for multiline input'
   compile     : 'compile to JavaScript and save as .js files'
+  prelude     :['automatically import prelude.ls' '' \d]
+  const       :['compile all variables as constants' '' \k]
   output      :['compile into the specified directory' \DIR]
   watch       : 'watch scripts for changes, and repeat'
   stdin       : 'read stdin'
@@ -33,8 +37,6 @@ global import
   nodejs      :['pass options through to the "node" binary' \ARGS+ '']
   version     : 'display version'
   help        : 'display this'
-  prelude     :['automatically import prelude.ls' '' \d]
-  const       :['compile all variables as constants' '' \k]
 
 die "Unrecognized option(s): #that\n\n#{help!}" if o.$unknowns * ' '
 
@@ -78,19 +80,21 @@ switch
 # compile them. If a directory is passed, recursively compile all
 # _.ls_ files in it and all subdirectories.
 !function compileScripts
-  $args.forEach !-> walk it, , true
-  !function walk source, base ? path.normalize(source), top
+  $args.forEach !-> walk it, path.normalize(it), true
+  !function walk source, base, top
     !function work
       fshoot \readFile source, !-> compileScript source, "#it", base
     e, stats <-! fs.stat source
     if e
-      return walk "#source.ls" if top and not /\.ls$/test source
-      die "Can't find: #source"
+      die "Can't find: #source" if not top or /(?:\.ls|\/)$/test source
+      walk "#source.ls" base
+      return
     if stats.isDirectory!
-      <-! fshoot \readdir source
-      <-! it.forEach
-      walk path.join(source, it), base
-    else if top or path.extname(source)toLowerCase! is \.ls
+      unless o.run
+        fshoot \readdir source, !-> it.forEach !-> walk "#source/#it" base
+        return
+      source += \/index.ls
+    if top or \.ls is source.slice -3
       if o.watch then watch source, work else work!
 
 # Compile a single source script, containing the given code, according to the
@@ -106,7 +110,7 @@ switch
       throw
     LiveScript.emit \parse t
     t.ast = LiveScript.ast t.tokens
-    if o.prelude 
+    if o.prelude
       t.ast.lines.unshift LiveScript.ast LiveScript.tokens '''if   window?
           then prelude.installPrelude window
           else (require 'prelude-ls').installPrelude global'''
@@ -131,7 +135,7 @@ switch
     if o.print or not filename
     then say t.output.trimRight!
     else writeJS filename, t.output, base
-  catch if e?
+  catch then if e?
     if LiveScript.listeners(\failure)length
       LiveScript.emit \failure e, t
     else
@@ -156,7 +160,7 @@ switch
 !function watch source, action
   :repeat let ptime = 0
     {mtime} <-! fshoot \stat source
-    do action if ptime ^^^ mtime
+    do action if ptime .^. mtime
     setTimeout repeat, 500ms, mtime
 
 # Write out a JavaScript source file with the compiled code. By default, files
@@ -185,7 +189,7 @@ switch
   lines = []
   for [tag, val, lno] in tokens
     lines@@[lno]push if tag.toLowerCase! is val then tag else "#tag:#val"
-  for l in lines then say(if l then l.join(' ')replace /\n/g \\\n else '') 
+  for l in lines then say(if l then l.join(' ')replace /\n/g \\\n else '')
 
 # A Read-Eval-Print-Loop.
 # Good for simple tests or poking around the
@@ -213,10 +217,11 @@ switch
   prompt += " -#that" if \b * !!o.bare + \c * !!o.compile
   LiveScript.history = rl.history if LiveScript?
   unless o.compile
-    module.paths = module.._nodeModulePaths \
+    module.paths = module.constructor._nodeModulePaths \
       module.filename = process.cwd! + \/repl
     vm = require \vm
     global <<< {module, exports, require}
+    global <<< require \prelude-ls if o.prelude
     server = require(\repl)REPLServer:: with
       context: global, commands: [], useGlobal: true
       useColors: process.env.NODE_DISABLE_COLORS

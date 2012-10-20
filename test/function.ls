@@ -124,8 +124,8 @@ eq 4 (new new Function 'this.p = 4')p
 eq 5  new new Function('this.q = 5')()q
 
 # but not to helper functions.
-eq 1, new [...[-> [1]]].0().0             # __slice
-eq 'object', typeof new {f: Number}.~f()  # __bind
+eq 1, new [...[-> [1]]].0().0             # slice$
+eq 'object', typeof new {f: Number}.~f()  # bind$
 
 
 # Chained blocks, with proper indentation levels:
@@ -312,6 +312,12 @@ eq 1, f 1, 0
 eq 6, f 1, 1
 eq 2, f 0, 0
 
+f = (a ||= 2, b &&= 5) -> a + b
+eq 7, f 0, 1
+eq 1, f 1, 0
+eq 6, f 1, 1
+eq 2, f 0, 0
+
 do (a ? I(1)) -> eq a, 1
 
 eq 1, do []= (a || 0 || 1) -> a
@@ -477,6 +483,34 @@ ok let [it] = [ok]
   it is ok
 
 
+### `where`
+eq 5 x + y where x = 2, y = 3
+
+eq 5 x + y where x = 2,
+                 y = 3
+
+r = x + y where
+  x = 2
+  y = 3
+eq 5 r
+
+r = x + y
+  where
+    x = 2
+    y = 3
+eq 5 r
+
+r = x + y
+  where x = 2,
+        y = 3
+eq 5 r
+
+r = x + y
+  where x = 2,
+        y = x + 1
+eq 5 r
+
+
 ### `with`
 with o = {}
   @a = 1
@@ -528,22 +562,13 @@ obj =
 
 eq obj.add(1, 2), 3
 
-!nothing(x) = x
-eq void, nothing true
-
 class Multiplier
   (@num) ->
 
   multiply(x, y): x * y
   xSix!: @num * 6
-  !zip(x): x
-  !zip2@!: true
   bound!:
-    f@! = @num * 2
-
-  @!zip3@! = true
-
-eq void Multiplier.zip3!
+    ~f! = @num * 2
 
 multi = new Multiplier 3
 
@@ -555,8 +580,10 @@ eq 6 sometin.hooloo!
 
 eq 6    multi.multiply(3, 2)
 eq 18   multi.xSix!
-eq void multi.zip true
-eq void multi.zip2!
+
+
+Multiplier::~func(x) = x
+eq 5 multi.func(5)
 
 ### auto currying magic
 times = (x, y) --> x * y
@@ -584,9 +611,6 @@ minus(x, y) = y - x
 minusTwo = minus 2
 eq 5 minusTwo 7 
 
-!plus! = true
-eq void plus!
-
 boom(x, y) = x + (y ? 0)
 boom2 = boom 2
 eq 6 boom2 4
@@ -601,10 +625,8 @@ class Divider
   ->
 
   @divide1(x, y) = x / y
-  @!divide2(x, y) = x / y
 
 eq 2    Divider.divide1 6 3
-eq void Divider.divide2 2 4
 
 f4 = ((a, b, c, d) --> a * b * c * d)(2)(3)
 g = f4 5

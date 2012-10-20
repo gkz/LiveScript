@@ -70,9 +70,10 @@ bnf =
 
     o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
 
-    o '[ Expression LoopHeads ]'  -> Chain new Parens $3.0.makeComprehension $2, $3.slice 1 
+    o '[ Expression LoopHeads ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1
+    o '[ Expression LoopHeads DEDENT ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1
     o '{ [ ArgList OptComma ] LoopHeads }'
-    , -> Chain new Parens $6.0.addObjComp!makeComprehension (L Arr $3), $6.slice 1
+    , -> Chain $6.0.addObjComp!makeComprehension (L Arr $3), $6.slice 1
 
     o '( BIOP )'            -> Chain Binary $2
     o '( BIOP Expression )' -> Chain Binary $2, , $3
@@ -88,7 +89,7 @@ bnf =
                else Binary $2, , $3
     o '( Expression BIOPR )'
     , -> Chain if   \! is $3.charAt 0
-               then Binary $3.slice(1), $2 .invertIt!   
+               then Binary $3.slice(1), $2 .invertIt!
                else Binary $3, $2
 
     o '( BIOPBP )'                              -> Chain Binary $2
@@ -102,8 +103,26 @@ bnf =
 
     o '( BACKTICK Chain BACKTICK )'            -> Chain $3
     o '( Expression BACKTICK Chain BACKTICK )' -> Chain $4.add Call [$2]
-    o '( BACKTICK Chain BACKTICK Expression )' 
-    , -> Chain(Chain Var \__flip .add Call [$3]).flipIt!add Call [$5]
+    o '( BACKTICK Chain BACKTICK Expression )'
+    , -> Chain(Chain Var \flip$ .add Call [$3]).flipIt!add Call [$5]
+
+    o '[ Expression TO Expression ]'
+    , -> Chain new For from: $2, op: $3, to: $4, in-comprehension: true
+    o '[ Expression TO Expression BY Expression ]'
+    , -> Chain new For from: $2, op: $3, to: $4, step: $6, in-comprehension: true
+    o '[ TO Expression ]'
+    , -> Chain new For from: (Chain Literal 0), op: $2, to: $3, in-comprehension: true
+    o '[ TO Expression BY Expression ]'
+    , -> Chain new For from: (Chain Literal 0), op: $2, to: $3, step: $5, in-comprehension: true
+
+    o 'Chain DOT [ Expression TO Expression ]'
+    , -> Chain Slice type: $5, target: $1, from: $4, to: $6
+    o 'Chain DOT [ Expression TO ]'
+    , -> Chain Slice type: $5, target: $1, from: $4
+    o 'Chain DOT [ TO Expression ]'
+    , -> Chain Slice type: $4, target: $1, to: $5
+    o 'Chain DOT [ TO ]'
+    , -> Chain Slice type: $4, target: $1
 
   # An array or object
   List:
@@ -142,7 +161,7 @@ bnf =
 
   # A list of lines, separated by newlines or semicolons.
   Lines:
-    o ''                   -> Block!
+    o ''                   -> L Block!
     o \Line                -> Block $1
     o 'Lines NEWLINE Line' -> $1.add $3
     o 'Lines NEWLINE'
@@ -150,17 +169,17 @@ bnf =
   Line:
     o \Expression
 
+    o 'Expression Block' -> new Cascade $1, $2
+
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
     , -> Call.back $2, $6, $5.charAt(1) is \~, $5.length is 3
-
-    # `var`, `const`, `export`, or `import`
-    o 'DECL Exprs'                          -> Decl[$1] $2
-    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl[$1] $3
 
     o \COMMENT -> L JS $1, true true
 
     # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm)
     o \... -> L Throw JS "Error('unimplemented')"
+
+    o 'REQUIRE List' -> Require $2
 
   # An indented block of expressions.
   # Note that [Lexer](#lexer) rewrites some single-line forms into blocks.
@@ -170,9 +189,12 @@ bnf =
 
   # All the different types of expressions in our language.
   Expression:
-    o 'Chain CLONEPORT Expression' 
+    o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.where $4, Block [$1]
+    o 'Expression WHERE Block' -> Chain Call.where $3.lines, Block [$1]
+
+    o 'Chain CLONEPORT Expression'
     , -> Import (Unary \^^ $1, prec: \UNARY), $3,         false
-    o 'Chain CLONEPORT Block' 
+    o 'Chain CLONEPORT Block'
     , -> Import (Unary \^^ $1, prec: \UNARY), $3.unwrap!, false
 
     o 'Expression BACKTICK Chain BACKTICK Expression' -> $3.add Call [$1, $5]
@@ -221,22 +243,20 @@ bnf =
     o 'Chain !?' -> Existence $1.unwrap!, true
 
     # The function literal can be either anonymous with `->`,
-    o 'PARAM( ArgList OptComma )PARAM -> Block' 
+    o 'PARAM( ArgList OptComma )PARAM -> Block'
     , -> L Fun $2, $6, $5.charAt(0) is \~, $5.length is 3
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
 
-    # The full complement of `if` and `unless` expressions,
-    # including postfix one-liners.
-    o \IfBlock
-    o 'IfBlock ELSE Block'            -> $1.addElse $3
+    # The full complement of `if` and `unless` expressions
+    o 'IF Expression Block Else'      -> If $2, $3, $1 is \unless .addElse $4
+    # and their postfix forms.
     o 'Expression POST_IF Expression' -> If $3, $1, $2 is \unless
 
     # Loops can either be normal with a block of expressions to execute
-    o 'LoopHead Block'            -> $1.addBody $2
     # and an optional `else` clause,
-    o 'LoopHead Block ELSE Block' -> $1.addBody $2 .addElse $4
-
+    o 'LoopHead Block Else' -> $1.addBody $2 .addElse $3
+    # postfix with a single expression,
     o 'DO Block WHILE Expression'
     , -> new While($4, $3 is \until, true)addBody $2
 
@@ -249,33 +269,33 @@ bnf =
     o \JUMP     -> L new Jump $1
     o 'JUMP ID' -> L new Jump $1, $2
 
-    o 'SWITCH Expression Cases'               -> new Switch $2, $3
-    o 'SWITCH Expression Cases DEFAULT Block' -> new Switch $2, $3, $5
-    o 'SWITCH Expression Cases ELSE    Block' -> new Switch $2, $3, $5
-    o 'SWITCH            Cases'               -> new Switch null $2
-    o 'SWITCH            Cases DEFAULT Block' -> new Switch null $2, $4
-    o 'SWITCH            Cases ELSE    Block' -> new Switch null $2, $4
-    o 'SWITCH                          Block' -> new Switch null [], $2
+    o 'SWITCH Exprs Cases'               -> new Switch $1, $2, $3
+    o 'SWITCH Exprs Cases DEFAULT Block' -> new Switch $1, $2, $3, $5
+    o 'SWITCH Exprs Cases ELSE    Block' -> new Switch $1, $2, $3, $5
+    o 'SWITCH       Cases'               -> new Switch $1, null $2
+    o 'SWITCH       Cases DEFAULT Block' -> new Switch $1, null $2, $4
+    o 'SWITCH       Cases ELSE    Block' -> new Switch $1, null $2, $4
+    o 'SWITCH                     Block' -> new Switch $1, null [], $2
 
-    o 'TRY Block'                           -> new Try $2
-    o 'TRY Block CATCH Block'               -> new Try $2, $3, $4
-    o 'TRY Block CATCH Block FINALLY Block' -> new Try $2, $3, $4, $6
-    o 'TRY Block             FINALLY Block' -> new Try $2, null null $4
+    o 'TRY Block'                               -> new Try $2
+    o 'TRY Block CATCH Block'                   -> new Try $2, , $4
+    o 'TRY Block CATCH Block FINALLY Block'     -> new Try $2, , $4, $6
+    o 'TRY Block CATCH Arg Block'               -> new Try $2, $4, $5
+    o 'TRY Block CATCH Arg Block FINALLY Block' -> new Try $2, $4, $5, $7
+    o 'TRY Block             FINALLY Block'     -> new Try $2, null null $4
 
     o 'CLASS Chain OptExtends OptImplements Block'
-    , -> new Class $2.unwrap!, $3, $4, $5
+    , -> new Class title: $2.unwrap!, sup: $3, mixins: $4, body: $5
     o 'CLASS       OptExtends OptImplements Block'
-    , -> new Class null      , $2, $3, $4
+    , -> new Class                    sup: $2, mixins: $3, body: $4
 
     o 'Chain EXTENDS Expression' -> Util.Extends $1.unwrap!, $3
 
     o 'LABEL Expression' -> new Label $1, $2
     o 'LABEL Block'      ditto
 
-    o '[ Expression TO Expression ]'
-    , -> new Parens new For from: $2, op: $3, to: $4
-    o '[ Expression TO Expression BY Expression ]'
-    , -> new Parens new For from: $2, op: $3, to: $4, step: $6 
+    # `var`, `const`, `export`, or `import`
+    o 'DECL INDENT ArgList OptComma DEDENT' -> Decl $1, $3, yylineno+1
 
   Exprs:
     o         \Expression  -> [$1]
@@ -294,7 +314,8 @@ bnf =
     o 'Key : INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($4)
 
     o \KeyValue
-    o 'KeyValue LOGIC Expression' -> Binary $2, $1, $3
+    o 'KeyValue LOGIC Expression'  -> Binary $2, $1, $3
+    o 'KeyValue ASSIGN Expression' -> Binary $2, $1, $3, true
 
     o '+- Key'     -> Prop $2.maybeKey!   , L Literal $1 is \+
     o '+- LITERAL' -> Prop L(Key $2, true), L Literal $1 is \+
@@ -320,11 +341,10 @@ bnf =
     o \Block
     o 'Block NEWLINE Lines' -> $1.add $3
 
-  # The most basic form of `if` is a condition and an action. The following
-  # `if`-related rules are broken up along these lines to avoid ambiguity.
-  IfBlock:
-    o              'IF Expression Block' ->            If $2, $3, $1 is \unless
-    o 'IfBlock ELSE IF Expression Block' -> $1.addElse If $4, $5, $3 is \unless
+  Else:
+    o ''                              -> null
+    o 'ELSE Block'                    -> $2
+    o 'ELSE IF Expression Block Else' -> If $3, $4, $2 is \unless .addElse $5
 
   LoopHead:
     # The source of a `for`-loop is an array, object, or range.
@@ -358,8 +378,12 @@ bnf =
 
     o 'FOR ID FROM Expression TO Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6
+    o 'FOR FROM Expression TO Expression'
+    , -> new For            from: $3, op: $4, to: $5
     o 'FOR ID FROM Expression TO Expression CASE Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, guard: $8
+    o 'FOR FROM Expression TO Expression CASE Expression'
+    , -> new For            from: $3, op: $4, to: $5, guard: $7
     o 'FOR ID FROM Expression TO Expression BY Expression'
     , -> new For index: $2, from: $4, op: $5, to: $6, step: $8
     o 'FOR ID FROM Expression TO Expression BY Expression CASE Expression'
@@ -376,6 +400,8 @@ bnf =
   LoopHeads:
     o 'LoopHead'           -> [$1]
     o 'LoopHeads LoopHead' -> $1 +++ $2
+    o 'LoopHeads NEWLINE LoopHead' -> $1 +++ $3
+    o 'LoopHeads INDENT LoopHead'  -> $1 +++ $3
 
   Cases:
     o       'CASE Exprs Block' -> [new Case $2, $3]
@@ -398,7 +424,7 @@ operators =
   # Listed from lower precedence.
   <[ left     POST_IF FOR WHILE ]>
   <[ right    BACKPIPE     ]>
-  <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
+  <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL WHERE ]>
   <[ left     PIPE         ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>

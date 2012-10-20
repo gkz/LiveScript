@@ -1,8 +1,8 @@
-ok(if mySpecialVariable? then false else true)
+ok not mySpecialVariable?
 
 mySpecialVariable = false
 
-ok(if mySpecialVariable? then true else false)
+ok mySpecialVariable?
 
 
 # Existential assignment.
@@ -30,7 +30,7 @@ getNextNode = ->
 eq true, getNextNode()?
 
 
-# Existence chains, soaking up undefined properties:
+# Existence chains, soaking up undefined properties.
 obj =
   prop: "hello"
 
@@ -42,7 +42,7 @@ eq void,
   obj? .prop?. nonexistent? .property
 
 
-# Soaks and caches method calls as well.
+# Soak and cache method calls as well.
 arr = ["--", "----"]
 
 eq arr.pop()?.length, 4
@@ -51,7 +51,7 @@ eq arr.pop()?.length, void
 eq arr.pop()?.length?.non?.existent()?.property, void
 
 
-# Soaks method calls safely.
+# Soak method calls safely.
 value = null
 eq value?.toString().toLowerCase(), void
 
@@ -76,7 +76,7 @@ ident = (obj) -> obj
 eq ident(non?.existent().method()), void, 'soaks inner values'
 
 
-# Soaks constructor invocations.
+# Soak constructor invocations.
 a = 0
 class Foo
   -> a += 1
@@ -102,7 +102,7 @@ duration = if options?.animated then 150 else 0
 eq duration, 0
 
 
-# Function soaks.
+### Soak Call
 plus1 = (x) -> x + 1
 count = 0
 obj = {
@@ -128,8 +128,8 @@ eq (maybe_close plus1, 41)?(), 42
 eq (maybe_close 'string', 41)?(), void
 
 eq JSON?(3), void
-eq new Number?(42) ||| 0, 42
-eq new Bumper?(42) ||| 0, 0
+eq new Number?(42) .|. 0, 42
+eq new Bumper?(42) .|. 0, 0
 
 
 # [coffee#726](https://github.com/jashkenas/coffee-script/issues/726)
