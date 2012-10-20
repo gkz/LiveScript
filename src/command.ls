@@ -229,7 +229,6 @@ switch
       context: repl-ctx, commands: [], useGlobal: false
       useColors: process.env.NODE_DISABLE_COLORS
       eval: !(code,ctx,, cb) ->
-        console.log ctx
         try res = vm.runInNewContext code, ctx, \repl catch then err = e
         cb err, res
     rl.completer = server~complete
