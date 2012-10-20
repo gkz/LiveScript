@@ -69,7 +69,7 @@ tint \co [
 ]
 
 ### Subrules
-interps = [\lang-co // ^# ({[\S\s]*?} | #ident) // \#]
+interps = [\lang-co // ^# ({[\S\s]*?} | #ident | [@&]) // \#]
 regexes = [\lit /^[\S\s]+?/]
 
 tint \co-qq [interps] [[\str /^[\S\s]+?/]]

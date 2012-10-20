@@ -520,8 +520,9 @@ exports import
         parts.push [\S; @countLines str.slice 0 i; @line]
         return parts <<< size: pos + i + end.length
       case \#
-        continue unless (id = (ID <<< lastIndex: i+1)exec str .1)
-                     or \{ is str.charAt i+1
+        c1 = str.charAt i+1
+        id = c1 of <[ @ & ]> and c1 or (ID <<< lastIndex: i+1)exec str .1
+        continue unless id or c1 is \{
       case \\ then ++i; fallthrough
       default continue
       # `"#a#{b || c}"` => `a + "" + (b || c)`
@@ -529,12 +530,16 @@ exports import
         stringified = parts.push [\S; @countLines str.slice 0 i; @line]
       if id
         {length} = id
-        unless id is \this
+        id = \this if id is \@
+        if id of <[ this & ]>
+          tag = \LITERAL
+        else
           id = camelize id
           try Function "'use strict'; var #id" catch
             @carp "invalid variable interpolation \"#id\""
+          tag = \ID
         str.=slice delta = i + 1 + length
-        parts.push [\TOKENS nested = [[\ID id, @line]]]
+        parts.push [\TOKENS nested = [[tag, id, @line]]]
       else
         clone  = ^exports <<< {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}

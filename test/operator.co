@@ -420,7 +420,7 @@ eq o.c * o.d, 14
 ### Pipe / Cascade
 Array 0 |> &concat 1, 2
         |> & <<<  {3: 4}
-        |> eq '1,2,,4' "#{&}"
+        |> eq '1,2,,4' "#&"
 
 String 0
 |> if & then &+& else &*&

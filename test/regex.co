@@ -69,7 +69,7 @@ eq \01234 // 0 #{
 } 4 //source
 
 let this = \THIS
-  ok //^ \\##this $//test //\#THIS//source
+  ok //^ \\##@#this $//test //\#THISTHIS//source
 
 
 # [coffee#584](https://github.com/jashkenas/coffee-script/issues/584)
