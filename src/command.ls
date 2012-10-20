@@ -2,20 +2,20 @@
 
 {argv} = process
 
-global import
-  LiveScript : require \./livescript
-  fs   : require \fs
-  path : require \path
-  util : require \util
-  say  : !-> process.stdout.write it + \\n
-  warn : !-> process.stderr.write it + \\n
-  die  : !->
-    fs.writeSync process.stderr.fd, it + \\n
-    process.exit 1
-  p    : !-> []forEach.call arguments, console.dir
-  pp   : !(x, showHidden, depth) ->
-    say util.inspect x, showHidden, depth, !process.env.NODE_DISABLE_COLORS
-  ppp  : !-> pp it, true, null
+LiveScript = require \./livescript
+path = require \path
+fs = require \fs
+util = require \util
+
+!function say => process.stdout.write it + \\n
+!function warn => process.stderr.write it + \\n
+!function die
+  fs.writeSync process.stderr.fd, it + \\n
+  process.exit 1
+!function p => []forEach.call arguments, console.dir
+!function pp x, showHidden, depth
+  say util.inspect x, showHidden, depth, !process.env.NODE_DISABLE_COLORS
+!function ppp => pp it, true, null
 
 # Use the [option parser](#optparse).
 {$args} = o = require(\./optparse) do
@@ -220,13 +220,16 @@ switch
     module.paths = module.constructor._nodeModulePaths \
       module.filename = process.cwd! + \/repl
     vm = require \vm
-    global <<< {module, exports, require}
-    global <<< require \prelude-ls if o.prelude
+
+    repl-ctx = {LiveScript, path, fs, util, say, warn, die, p, pp, ppp}
+    repl-ctx <<< global
+    repl-ctx <<< {module, exports, require}
+    repl-ctx <<< require \prelude-ls if o.prelude
     server = require(\repl)REPLServer:: with
-      context: global, commands: [], useGlobal: true
+      context: repl-ctx, commands: [], useGlobal: false
       useColors: process.env.NODE_DISABLE_COLORS
-      eval: !(code,,, cb) ->
-        try res = vm.runInThisContext code, \repl catch then err = e
+      eval: !(code,ctx,, cb) ->
+        try res = vm.runInNewContext code, ctx, \repl catch then err = e
         cb err, res
     rl.completer = server~complete
   rl.on \SIGCONT rl.prompt
@@ -256,8 +259,8 @@ switch
       else
         ops = {\eval, +bare, saveScope:LiveScript}
         ops = {+bare} if code.match(/^\s*!?function/)
-        x  = vm.runInThisContext LiveScript.compile(code, ops), \repl
-        x !? global <<< {_:x}
+        x  = vm.runInNewContext LiveScript.compile(code, ops), repl-ctx, \repl
+        x !? repl-ctx <<< {_:x}
         pp  x
         say x if typeof x is \function
     catch then say e
