@@ -446,6 +446,8 @@ n = 1
 eq 1, n&n
 eq 1, n& n
 eq 1, n & n
+eq 1, n&-n
+eq 1, n & -n
 
 compileThrows 'stray reference' 2 '\n&'
 

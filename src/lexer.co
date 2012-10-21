@@ -796,10 +796,10 @@ character = if JSON!? then uxxxx else ->
         token.doblock = true
         tokens.splice i, 1
     [tag] = token; prev = tokens[i-1]
-    brackets.push prev.0 is \DOT if tag is \[
+    tag is \[ and brackets.push prev.0 is \DOT
     if prev.0 is \]
       if brackets.pop! then prev.index = true else continue
-    if tag is \BITWISE and token.1 is \& and tokens[i+1]0 not of ARG
+    if tag is \BITWISE and token.1 is \& and not exp tokens[i+1]
       tag = token.0 = \LITERAL
     continue unless prev.0 of <[ FUNCTION LET ]>
                  or prev.spaced and able tokens, i, true
@@ -807,12 +807,15 @@ character = if JSON!? then uxxxx else ->
       token.0 = \CALL(
       tpair.0 = \)CALL
       continue
-    continue unless tag of ARG or not token.spaced and tag of <[ +- ^ ]>
+    continue unless exp token
     if tag is \CREMENT
-      continue if token.spaced or tokens[i+1]?0 not of CHAIN
+      continue if token.spaced or tokens[i+1]0 not of CHAIN
     skipBlock = seenSwitch = false
     tokens.splice i++, 0 [\CALL( '' token.2]
     detectEnd tokens, i, ok, go
+  # Does the token start an expression?
+  function exp [tag]:token
+    tag of ARG or not token.spaced and tag of <[ +- ^ ]>
   function ok token, i
     tag = token.0
     return true if tag of <[ |> POST_IF ]>
