@@ -4657,7 +4657,7 @@ TOTAL    851 ms
 
 <script src="livescript-1.0.1.js"></script>
 <script>
-  document.getElementById("email").href = "mailto:z" + "@" + "georgezahariev.com";
+  (document.getElementById("email") || {}).href = "mailto:z" + "@" + "georgezahariev.com";
 </script>
 </body>
 </html>

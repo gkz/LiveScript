@@ -618,7 +618,7 @@ take 2, [1 to 5] #=> [1, 2]
   </div>
 <script>
   prettyPrint();
-  document.getElementById("email").href = "mailto:z" + "@" + "georgezahariev.com";
+  (document.getElementById("email") || {}).href = "mailto:z" + "@" + "georgezahariev.com";
 </script>
 </body>
 </html>
