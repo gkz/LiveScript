@@ -242,6 +242,15 @@ new class extends Object
     eq constructor, @constructor
 
 
+# `super::method`
+class
+  method: -> true
+  class C extends this
+    method: -> false
+    test  : -> super::method!
+  ok new C!test!
+
+
 # `extended` hook
 class NameEater
   @subnames = []

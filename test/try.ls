@@ -35,6 +35,8 @@ eq 2 let
 
 eq 3 try 3
 
+eq 4 try throw 4 catch
+
 
 # Tolerate empty blocks.
 try

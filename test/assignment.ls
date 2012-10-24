@@ -238,6 +238,9 @@ eq v, 3
 [z] = [0] ? [1]
 eq 0 z
 
+# [coffee#1188](https://github.com/jashkenas/coffee-script/issues/1188)
+coffee1188 = coffee1188 := ok ok
+
 
 ### Accessign
 parent = child: str: 'test'

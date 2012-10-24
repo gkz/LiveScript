@@ -482,6 +482,9 @@ eq '''
 ok let [it] = [ok]
   it is ok
 
+let this = eq
+  this eq, this
+
 
 ### `where`
 eq 5 x + y where x = 2, y = 3
@@ -511,17 +514,6 @@ r = x + y
 eq 5 r
 
 
-### `with`
-with o = {}
-  @a = 1
-  @b = 2
-eq o.a + o.b, 3
-eq ok, with ok then this
-x = with ok
-  this is ok
-ok x
-
-
 ### `&`
 let 0
   eq & , arguments
@@ -531,7 +523,7 @@ let 0
 
 ### thisplat
 f = (x, y) -> [this, x, y]
-with 0 then let x = 1, y = 2
+let @ = 0, x = 1, y = 2
   eq '0,1,2' ''+ f ...
   eq ','     ''+ f(...[])slice 1
 

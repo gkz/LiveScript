@@ -132,10 +132,10 @@ exports import
     case \in \of
       if @seenFor
         @seenFor = false
-        # OF holds the index variable.
         if id is \in
-          id = ''; @wantBy = true
-          if last.0 is \ID and @tokens[*-2]0 is not \FOR
+          @wantBy = true
+          id = ''
+          if last.0 is \ID and @tokens[*-2]0 in <[ , ] } ]>
             id = @tokens.pop!1
             @tokens.pop! if @tokens[*-1]0 is \,
         break
@@ -379,11 +379,10 @@ exports import
       @dedent -delta
       @newline!
     else
-      if tabs and (@emender ||= //[^#{ tabs.charAt 0 }]//)exec tabs
-        @carp "contaminated indent #{ escape that }"
-      if (tag = last.0) is \ASSIGN and ''+last.1 not in <[ = := += ]>
-      or tag in <[ +- PIPE BACKPIPE DOT LOGIC MATH COMPARE RELATION SHIFT BITWISE
-                   IN OF TO BY FROM EXTENDS IMPLEMENTS]>
+      [tag, val] = last
+      if tag is \ASSIGN  and val+'' not in <[ = := += ]>
+      or tag in <[ +- PIPE BACKPIPE DOT LOGIC MATH COMPARE RELATION SHIFT
+                   IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
         return length
       if delta then @indent delta else @newline!
     @wantBy = false
@@ -432,7 +431,9 @@ exports import
     case \++ \--         then tag = \CREMENT
     case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
-    case \..             then tag = \LITERAL
+    case \..
+      @token \LITERAL \.. true
+      return 2
     case \.
       create-it-func! if @last.0 is \(
       @last.0 = \? if @last.1 is \?
@@ -559,8 +560,6 @@ exports import
     case \&
       unless able @tokens
         tag = \LITERAL
-        break
-      fallthrough
     case \| then tag = \BITWISE
     case \~
       return 1 if @dotcat val
@@ -656,8 +655,9 @@ exports import
         parts.push [\S; @countLines str.slice 0 i; @line]
         return parts <<< size: pos + i + end.length
       case \#
-        continue unless (id = (ID <<< lastIndex: i+1)exec str .1)
-                     or \{ is str.charAt i+1
+        c1 = str.charAt i+1
+        id = c1 in <[ @ ]> and c1 or (ID <<< lastIndex: i+1)exec str .1
+        continue unless id or c1 is \{
       case \\ then ++i; fallthrough
       default continue
       # `"#a#{b || c}"` => `a + "" + (b || c)`
@@ -665,12 +665,16 @@ exports import
         stringified = parts.push [\S; @countLines str.slice 0 i; @line]
       if id
         {length} = id
-        unless id is \this
+        id = \this if id is \@
+        if id in <[ this ]>
+          tag = \LITERAL
+        else
           id = camelize id
           try Function "'use strict'; var #id" catch
             @carp "invalid variable interpolation \"#id\""
+          tag = \ID
         str.=slice delta = i + 1 + length
-        parts.push [\TOKENS nested = [[\ID id, @line]]]
+        parts.push [\TOKENS nested = [[tag, id, @line]]]
       else
         clone  = exports with {+inter, @emender}
         nested = clone.tokenize str.slice(i+2), {@line, +raw}
@@ -719,8 +723,12 @@ exports import
   adi: ->
     return if @last.spaced
     if @last.0 is \!?
-      @last.0 = \CALL(; @tokens.push [\)CALL '' @line] [\? \? @line]
-    @token \DOT \. if able @tokens
+      @last.0 = \CALL(
+      @token \)CALL ''
+      @token \? \?
+    else unless able @tokens
+      return
+    @token \DOT \.
 
   # Resolves `.~` etc.
   dotcat: -> @last.1 += it if @last.1 is \. or @adi!
@@ -799,7 +807,7 @@ function heretabs doc
   dent = 0/0
   while TABS.exec doc then dent <?= that.0.length - 1
   dent
-TABS = /\n[^\n\S]*(?!$)/mg
+TABS = /\n(?!$)[^\n\S]*/mg
 
 # Erases all external indentations up to specified length.
 function detab str, len
@@ -936,7 +944,7 @@ character = if JSON!? then uxxxx else ->
 !function addImplicitParentheses tokens
   i = 0; brackets = []
   while token = tokens[++i]
-    if token.1 is \do and tokens[i+1]?0 is \INDENT
+    if token.1 is \do and tokens[i+1]0 is \INDENT
       endi = indexOfPair tokens, i+1
       if tokens[endi+1]0 is \NEWLINE and tokens[endi+2]?0 is \WHILE
         token.0 = \DO
@@ -948,7 +956,7 @@ character = if JSON!? then uxxxx else ->
         token.doblock = true
         tokens.splice i, 1
     [tag] = token; prev = tokens[i-1]
-    brackets.push prev.0 is \DOT if tag is \[
+    tag is \[ and brackets.push prev.0 is \DOT
     if prev.0 is \]
       if brackets.pop! then prev.index = true else continue
     continue unless prev.0 in <[ FUNCTION LET WHERE ]>
@@ -957,12 +965,15 @@ character = if JSON!? then uxxxx else ->
       token.0 = \CALL(
       tpair.0 = \)CALL
       continue
-    continue unless tag in ARG or not token.spaced and tag in <[ +- CLONE ]>
+    continue unless exp token
     if tag is \CREMENT
       continue if token.spaced or tokens[i+1]?0 not in CHAIN
     skipBlock = seenSwitch = false
     tokens.splice i++, 0 [\CALL( '' token.2]
     detectEnd tokens, i, ok, go
+  # Does the token start an expression?
+  function exp [tag]:token
+    tag in ARG or not token.spaced and tag in <[ +- CLONE ]>
   function ok token, i
     tag = token.0
     return true if tag in <[ POST_IF PIPE BACKPIPE ]>
@@ -1051,10 +1062,12 @@ character = if JSON!? then uxxxx else ->
         and  tokens[i+4]?0 is \]))
         [fromNum, char] = decode token.1, lno
         [toNum, tochar] = decode tokens[i+1].1, lno
-        carp 'bad "to" in range' lno if char .^. tochar
+        carp 'bad "to" in range' lno if toNum!? or char .^. tochar
         byNum = 1
         if byp = tokens[i+2]?0 is \RANGE_BY
           carp 'bad "by" in range' tokens[i+2]2 unless byNum = +tokens[i+3]?1
+        else if fromNum > toNum
+          byNum = -1
         ts  = []
         enc = if char then character else String
         add = !->

@@ -427,6 +427,7 @@ show = -> it * ' '
 
 eq '-1 0 1 2' show [-1 to +2]
 eq '1 0 -1'   show [+1 to -1 by -1]
+eq '4 3 2'    show [4 to 2]
 
 eq '999 1000' show [999     til 1001]
 eq '1e-9'     show [1e-9    til 1e-8]
@@ -442,7 +443,6 @@ eq 'y u q m i e' show [\y til \a by -4]
 ok [\\u2028 to \\u2029]
 
 compileThrows 'range limit exceeded' 2 '\n[0 to 1 by 1e-5]'
-compileThrows 'empty range' 2 '\n[1 to 0]'
 compileThrows 'empty range' 2 '\n[1 til 1]'
 compileThrows 'empty range' 2 '\n[2 to 3 by -1]'
 compileThrows 'bad "to" in range' 2 '\n[0 to "q"]'
@@ -452,18 +452,3 @@ compileThrows 'bad string in range' 2 '\n["a" to "bc"]'
 
 ### yadayadayada
 throws \unimplemented -> ...
-
-
-### Cascade
-a = [2 7 1 8]
-  ..push 2
-  ..shift!
-  ..sort!
-eq '1,2,7,8' ''+a
-
-eq 10, do
-  1 + 2
-    .. + 3
-      4 + ..
-
-compileThrows 'stray cascadee' 2 '\n..'

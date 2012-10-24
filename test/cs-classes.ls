@@ -557,7 +557,7 @@ class B extends A
 
 eq \value B.static!
 
-## NOTE: this test is actually supposed to be after the following one, but INDENT DEDENT aren't added after class A for some reason if it is after and it fails to compile - very weird 
+## NOTE: this test is actually supposed to be after the following one, but INDENT DEDENT aren't added after class A for some reason if it is after and it fails to compile - very weird
 #2052: classes should work in strict mode
 try
   do ->
@@ -569,12 +569,14 @@ catch
 #1534: class then 'use strict'
 # [14.1 Directive Prologues and the Use Strict Directive](http://es5.github.com/#x14.1)
 throws = ->
-  try it!
+  try
+    it!
     ok 0
   catch
     ok 1
 does-not-throw = ->
-  try it!
+  try
+    it!
     ok 1
   catch
     ok 0

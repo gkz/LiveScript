@@ -93,7 +93,7 @@ LiveScriptMode.Rules =
       )' + keywordend
 
     * token: \variable.language
-      regex: '(?:t(?:hat|il|o)|f(?:rom|allthrough)|it|by|[e_])' + keywordend
+      regex: '(?:t(?:hat|il|o)|f(?:rom|allthrough)|it|by|e)' + keywordend
 
     * token: \identifier
       regex: identifier + /\s*:(?![:=])/$

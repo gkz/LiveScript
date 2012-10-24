@@ -112,6 +112,11 @@ eq '3,6,9,-20,-19,-18,4,4,4,4', '' + nums.concat negs.slice(0, 3), four
 eq '123', [i for i from 1 til 4     ].join ''
 eq '036', [i for i from 0 til 9 by 3].join ''
 
+
+# Auto-descend when obvious.
+eq '0,-1,-2' String [i for i til -3]
+
+
 # Almost never mess with binary `in`/`of` and variable `by`.
 all = from = to = by = 1
 
@@ -314,6 +319,18 @@ eq 2 i
 
 let i, j = i
   eq ...for k to 1 then i
+
+# Non-variable assignees.
+o = i: 0, count: -> @i++
+
+for o.p, i in [0] then eq o.p, +i
+for i, o.p of [0] then eq o.p, +i
+
+for o.count!_ in [1 2] then continue
+eq o.i, 2
+
+for, o.count!_ of [1 2] then continue
+eq o.i, 4
 
 
 ### Line folding before/after `for` prepositions

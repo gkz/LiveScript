@@ -68,8 +68,8 @@ eq \01234 // 0 #{
   // 1 #{ //2//source } 3 //source
 } 4 //source
 
-with \THIS
-  ok //^ \\##this $//test //\#THIS//source
+let this = \THIS
+  ok //^ \\##@#this $//test //\#THISTHIS//source
 
 
 # [coffee#584](https://github.com/jashkenas/coffee-script/issues/584)

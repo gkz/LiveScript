@@ -34,7 +34,7 @@ compileThrows 'missing `)CALL`' 1 'f('
 throws '''
   empty range on line 1
   at filename
-''' -> LiveScript.compile '[1 to 0]' {\filename}
+''' -> LiveScript.compile '[0 til 0]' {\filename}
 
 
 eq '''

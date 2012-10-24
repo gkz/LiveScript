@@ -150,10 +150,10 @@ switch
 # Attach the appropriate listeners to compile scripts incoming over **stdin**.
 !function compileStdin
   argv.1 = \stdin
-  with process.openStdin!
+  process.openStdin!
     code = ''
-    @on \data !-> code += it
-    @on \end  !-> compileScript '' code
+    ..on \data !-> code += it
+    ..on \end  !-> compileScript '' code
 
 # Watch a source LiveScript file using `setTimeout`, taking an `action` every
 # time the file is updated.
@@ -226,8 +226,8 @@ switch
       context: global, commands: [], useGlobal: true
       useColors: process.env.NODE_DISABLE_COLORS
       eval: !(code,,, cb) ->
-        try res = vm.runInThisContext code, \repl catch then err = e
-        cb err, res
+        try res = vm.runInThisContext code, \repl catch
+        cb e, res
     rl.completer = server~complete
   rl.on \SIGCONT rl.prompt
   rl.on \SIGINT !->

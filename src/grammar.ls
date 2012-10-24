@@ -68,7 +68,7 @@ bnf =
 
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
-    o 'WITH Expression Block' -> Chain Call.block Fun([] $3), [$2] \.call
+    o 'WITH Expression Block' -> Chain new Cascade $2, $3
 
     o '[ Expression LoopHeads ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1
     o '[ Expression LoopHeads DEDENT ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1
@@ -169,6 +169,7 @@ bnf =
   Line:
     o \Expression
 
+    # Cascade without `with`
     o 'Expression Block' -> new Cascade $1, $2
 
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
@@ -279,10 +280,10 @@ bnf =
 
     o 'TRY Block'                               -> new Try $2
     o 'TRY Block CATCH Block'                   -> new Try $2, , $4
-    o 'TRY Block CATCH Block FINALLY Block'     -> new Try $2, , $4, $6
+    o 'TRY Block CATCH Block     FINALLY Block' -> new Try $2, , $4, $6
     o 'TRY Block CATCH Arg Block'               -> new Try $2, $4, $5
     o 'TRY Block CATCH Arg Block FINALLY Block' -> new Try $2, $4, $5, $7
-    o 'TRY Block             FINALLY Block'     -> new Try $2, null null $4
+    o 'TRY Block                 FINALLY Block' -> new Try $2, , , $4
 
     o 'CLASS Chain OptExtends OptImplements Block'
     , -> new Class title: $2.unwrap!, sup: $3, mixins: $4, body: $5

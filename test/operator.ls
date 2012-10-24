@@ -135,6 +135,12 @@ eq n, true
 eq m, null
 
 
+# does not work in REPL if not on first line
+never-used-before ?= 3
+
+eq never-used-before, 3
+
+
 # Conditional assignments should be careful about caching variables.
 count = 0
 list = []
@@ -419,7 +425,8 @@ u <?= 9
 u >?= 0
 eq 9, u
 
-eq 99, u >?= 99
+eq 99, u >?= 33*3
+eq 99, u <?= 33*4
 eq 99, u
 
 o = a: 9, b: 0
@@ -843,3 +850,22 @@ ok not (even or 1) 3
 ok ((.length > 4) or [1 2 3]) [1 2 3]
 
 eq 8 ((-> &0 + &1 is 5) and (**)) 2 3
+
+
+### Cascade
+a = with [2 7 1 8 2]
+  ..push 3
+  ..sort!
+    ..shift!
+  ..pop!
+.join ''
+eq \2237 a
+
+ok
+  .. .., ..
+  (->) ..(.., ..)
+  ok ..value-of!
+
+compileThrows 'stray reference' 2 '\n..'
+compileThrows 'unreferred cascadee' 1 'a\n b'
+

@@ -47,9 +47,4 @@ function helper
   #o
 """
 
-eq 37, helper.toString().indexOf("livescript")
-
-# does not work in REPL if not on first line
-x ?= 3
-
-eq x, 3
+eq 36, helper.toString().indexOf("livescript")

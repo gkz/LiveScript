@@ -355,7 +355,9 @@ class exports.Literal extends Atom
     | \on \yes   => val = 'true'
     | \off \no   => val = 'false'
     | \*         => @carp 'stray star'
-    | \..        => @carp 'stray cascadee' unless val = o.cascadee
+    | \..        =>
+      @carp 'stray reference' unless val = o.ref
+      @cascadee or val.erred = true
     | \debugger  => if level
       return "(function(){\n#TAB#{o.indent}debugger;\n#{o.indent}}())"
     val
@@ -451,11 +453,13 @@ class exports.Chain extends Node
     bi = if @head instanceof Parens and @head.it instanceof Binary
          and not @head.it.partial then @head.it
          else if @head instanceof Binary and not @head.partial then @head
-    if it instanceof Call and not it.method
-    and @head instanceof Super and not @head.called
-      it.method = \.call
-      it.args.unshift Literal \this
-      @head.called = true
+    if @head instanceof Super
+      if not @head.called and it instanceof Call and not it.method
+        it.method = \.call
+        it.args.unshift Literal \this
+        @head.called = true
+      else if not @tails.1 and it.key?name is \prototype
+        @head.sproto = true
     else if delete it.vivify
       @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
     else if it instanceof Call and @tails.length is 1
@@ -723,10 +727,12 @@ class exports.Call extends Node
 
   @let = (args, body) ->
     params = for a, i in args
-      if a.op is \= and not a.logic
-      then args[i] = a.right; a.left
+      if a.op is \= and not a.logic and a.right
+        args[i] = that
+        continue if i is 0 and gotThis = a.left.value is \this
+        a.left
       else Var a.varName! || a.carp 'invalid "let" argument'
-    args.unshift Literal \this
+    gotThis or args.unshift Literal \this
     @block Fun(params, body), args, \.call
 
   @where = (args, body) ->
@@ -995,6 +1001,9 @@ class exports.Unary extends Node
       return "#{ util \toString }.call(
               #{ it.compile o, LEVEL_LIST }).slice(8, -1)"
     code = it.compile o, LEVEL_OP + PREC.unary
+    unless code
+      console.log it
+      console.log it.prototype
     if @post then code += op else
       op += ' ' if op in <[ new typeof delete ]>
                 or op in <[ + - ]> and op is code.charAt!
@@ -1272,7 +1281,7 @@ class exports.Assign extends Node
 
   children: <[ left right ]>
 
-  show: -> (@logic or '') + @op
+  show: -> [,]concat(@unaries)reverse!join(' ') + [@logic] + @op
 
   assigns: -> @left.assigns it
 
@@ -1368,7 +1377,7 @@ class exports.Assign extends Node
     # `a <?= b` => `a <= b || a = b `
     return Parens(Binary \|| test, put)compile o if @void or not o.level
     # `r = a <?= b` => `r = if a <= b then a else a = b`
-    [test.second, left] = test.second.cache o, true
+    [test.first, left] = test.first.cache o, true
     If test, left .addElse put .compileExpression o
 
   # Implementation of recursive destructuring,
@@ -1570,7 +1579,7 @@ class exports.Fun extends Node
 
   children: <[ params body ]>
 
-  show: -> @bound
+  show: -> [@name] + ["~#that" if @bound]
 
   named: -> import {name: it, +statement}
 
@@ -1760,15 +1769,16 @@ class exports.Super extends Node
   isCallable: YES
 
   compile: ({scope}:o) ->
-    while not scope.get \superclass and scope.fun, scope.=parent
-      result = that
-      return \superclass.prototype + Index that .compile o if result.meth
-      return \superclass           + Index that .compile o if result.stat
-      if scope.fun.in-class
-        return "#that.superclass.prototype.#{scope.fun.name}"
-      else if scope.fun.in-class-static
-        return "#that.superclass.#{scope.fun.name}"
-    return "#that.superclass" if o.scope.fun?name
+    unless @sproto
+      while not scope.get \superclass and scope.fun, scope.=parent
+        result = that
+        return \superclass.prototype + Index that .compile o if result.meth
+        return \superclass           + Index that .compile o if result.stat
+        if scope.fun.in-class
+          return "#that.superclass.prototype.#{scope.fun.name}"
+        else if scope.fun.in-class-static
+          return "#that.superclass.#{scope.fun.name}"
+      return "#that.superclass" if o.scope.fun?name
     \superclass
 
 #### Parens
@@ -2022,14 +2032,16 @@ class exports.For extends While
       pvar is step or temps.push pvar
     if @from
       [tvar, tail] = @to.compileLoopReference o, \to
-      vars = "#idx = #{ @from.compile o, LEVEL_LIST }"
+      fvar = @from.compile o, LEVEL_LIST
+      vars = "#idx = #fvar"
       unless tail is tvar
         vars += ", #tail"
         temps.push tvar
+      pvar = step = -1 if not @step and +fvar > +tvar
       eq   = if @op is \til then '' else \=
       cond = if +pvar
-      then "#idx #{ if pvar < 0 then \> else \< }#eq #tvar"
-      else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
+        then "#idx #{ '<>'charAt pvar < 0 }#eq #tvar"
+        else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
     else
       if @item or @object and @own
         [svar, srcPart] = @source.compileLoopReference o, \ref, not @object
@@ -2094,6 +2106,7 @@ class exports.For extends While
 # Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Node
   (@attempt, @thrown, @recovery, @ensure) ->
+    @recovery?lines.unshift Assign (@thrown or Var \e), Var \e$
 
   children: <[ attempt recovery ensure ]>
 
@@ -2113,14 +2126,10 @@ class exports.Try extends Node
   compileNode: (o) ->
     o.indent += TAB
     code = 'try ' + @compileBlock o, @attempt
-    if @recovery or not @ensure
-      code += ' catch (e$) {'
-      if @recovery
-        code += "\n#{ o.indent }#{ Assign (@thrown or Var \e), Literal \e$ .compile o };"
-        code += \\n + that if @recovery.compile o
-        code += \\n + @tab
-      code += \}
-    code += ' finally ' + @compileBlock o, that if @ensure
+    if @recovery or not @ensure and JS ''
+      code += ' catch (e$) ' + @compileBlock o, that
+    if @ensure
+      code += ' finally '    + @compileBlock o, that
     code
 
 #### Switch
@@ -2304,17 +2313,38 @@ class exports.Label extends Node
 
 #### Cascade
 class exports.Cascade extends Node
-  (@target, @block) ->
+  (@input, @output) ->
 
-  children: <[ target block ]>
+  children: <[ input output ]>
 
   terminator: ''
 
-  compileNode: (o) ->
-    @temps = [ref = o.scope.temporary \x]
-    t = ref + ' = ' + @target.compile o, LEVEL_LIST
-    b = @block.compile o <<< cascadee: ref
-    if o.level then "(#t, #b)" else "#t;\n#b"
+  ::delegate <[ isCallable isArray isString isRegex ]> -> @output[it]!
+
+  getJump: -> @output.getJump it
+
+  makeReturn: (@ret) -> this
+
+  compileNode: ({level}:o) ->
+    {input, output, ref} = this
+    if \ret of this or level and not @void
+      output.add (Literal \..) <<< cascadee: true
+    if \ret of this
+      output.=makeReturn @ret
+    if ref
+    then output = Assign Arr!, output
+    else @temps = [ref = o.scope.temporary \x]
+    if input instanceof Cascade
+    then input <<< {ref}
+    else input = Assign JS(ref), input
+    o.level &&= LEVEL_PAREN
+    code = input.compile o
+    o.ref = new String ref
+    out = Block output .compile o
+    o.ref.erred or @carp "unreferred cascadee"
+    return "#code#{input.terminator}\n#out" unless level
+    code += ", #out"
+    if level > LEVEL_PAREN then "(#code)" else code
 
 #### JS
 # Embedded JavaScript snippets.
@@ -2707,7 +2737,8 @@ LEVEL_OP     = 4  # !...
 LEVEL_CALL   = 5  # ...()
 
 # Operator precedances.
-with PREC = {unary: 0.9}
+PREC = {unary: 0.9}
+(->
   @\&& = @\|| = @\xor                                    = 0.2
   @\.&.  = @\.^.  = @\.|.                                = 0.3
   @\== = @\!= = @\~= = @\!~= = @\=== = @\!==             = 0.4
@@ -2716,6 +2747,7 @@ with PREC = {unary: 0.9}
   @\.<<. = @\.>>. = @\.>>>.                              = 0.6
   @\+  = @\-                                             = 0.7
   @\*  = @\/  = @\%                                      = 0.8
+).call PREC
 
 TAB = ' ' * 2
 

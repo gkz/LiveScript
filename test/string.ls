@@ -160,13 +160,22 @@ eq '''here's an apostrophe''', "here's an apostrophe"
 
 
 # Blank lines are ignored for indentation detection.
-a = """
-    one
+eq """
+   one
 
-    two
+  zero
 
-    """
-ok a, "one\n\ntwo\n"
+   """, " one\n\nzero\n"
+
+# Space only lines count as indentation.
+eq '" one\\n \\nzero\\n";' LiveScript.compile '''
+  """
+     one
+     \
+    zero
+    \
+  """
+''' {+bare}
 
 
 eq ''' line 0
