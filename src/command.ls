@@ -188,7 +188,7 @@ switch
 !function printTokens tokens
   lines = []
   for [tag, val, lno] in tokens
-    lines@@[lno]push if tag.toLowerCase! is val then tag else "#tag:#val"
+    (lines[lno] ?= [])push if tag.toLowerCase! is val then tag else "#tag:#val"
   for l in lines then say(if l then l.join(' ')replace /\n/g \\\n else '')
 
 # A Read-Eval-Print-Loop.

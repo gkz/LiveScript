@@ -536,9 +536,22 @@ exports import
             or @last.0 is \CREMENT and able @tokens, @tokens.length-1
             or @last.0 is \(
             then \MATH else \STRNUM
-    case \@ \@@
-      @dotcat val or if val is \@ then @token \LITERAL \this true
-      return val.length
+    case \@
+      @adi!
+      if @last.0 is \DOT and @last.1 is \.
+      and @tokens[*-2].0 is \ID and @tokens[*-2].1 is \constructor
+        @tokens.pop!
+        @tokens.pop!
+        @token \LITERAL \this true
+        @adi!
+        @token \ID \constructor true
+      else
+        @token \LITERAL \this true
+      return 1
+    case \@@
+      @adi!
+      @token \ID \constructor true
+      return 2
     case \&
       @token \LITERAL \arguments
       return 1
@@ -1170,7 +1183,7 @@ SYMBOL = //
 | <[-~]                         # backcall
 | [!=]==?                       # strict equality, deep equals
 | !?\~=                         # fuzzy equality
-| @@                            # autovivification
+| @@?                           # this / constructor
 | <\[(?:[\s\S]*?\]>)?           # words
 | <<<<?                         # import
 | <\|                           # backpipe

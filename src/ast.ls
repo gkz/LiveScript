@@ -1869,11 +1869,11 @@ class exports.Jump extends Node
 
   getJump: (ctx or {}) ->
     return this unless ctx[@verb]
-    return that not in ctx@@labels and this if @label
+    return that not in (ctx.labels ?= []) and this if @label
 
   compileNode: (o) ->
     if @label
-    then that in o@@labels or @carp "unknown label \"#that\""
+    then that in (o.labels ?= []) or @carp "unknown label \"#that\""
     else o[@verb]          or @carp "stray #{@verb}"
     @show! + \;
 
@@ -2296,7 +2296,7 @@ class exports.Label extends Node
   isStatement: YES
 
   getJump: (ctx or {}) ->
-    ctx@@labels.push @label
+    (ctx.labels ?= []).push @label
     @it.getJump ctx <<< {+\break}
 
   makeReturn: -> @it.=makeReturn it; this

@@ -77,9 +77,9 @@ eq 1, [-> it].'0' 1
 
 # `prototype` shorthand, `constructor` 
 eq Array::toString, Array.prototype.toString
-eq 12345.constructor.toString, 123.constructor.toString
+eq 12345@@toString, 123@@toString
 eq 0 (:::0)::
-eq 0 (constructor:0)constructor
+eq 0 (@@:0)@@
 
 
 # Length Star
@@ -195,16 +195,6 @@ eq void v?=y.z
 eq void v
 eq \z   x?=y.z
 eq \z   x
-
-
-# Semiautovivification
-o = {}
-o.@a.@@b .push 0 1
-o.a@c@@d .push 2 3
-o?.@a?.@@b?@e?@@f.4 = 5
-eq '0,1' ''+o.a.b
-eq '2,3' ''+o.a.c.d
-eq 5 o.a.b.e.f.4
 
 
 # Bang Call

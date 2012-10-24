@@ -222,7 +222,7 @@ class Sup
   class @Sub extends this
     eq super, Sup
   method: function
-    class extends @constructor
+    class extends @.@@
       eq super, Sup
       method: ->
         eq super, method
@@ -235,11 +235,11 @@ ok new Sup.Sub instanceof Sup
 new class extends Object
   eq ::, prototype
   eq ::, @::
-  eq constructor, @
+  eq @@, @
   ok super is superclass is Object
   ->
-    eq ::, @constructor::
-    eq constructor, @constructor
+    eq ::, @.@@::
+    eq @@, @.@@
 
 
 # `super::method`
@@ -325,7 +325,7 @@ ok duck.fly()
 ok not donaldo.fly()
 
 ok ^^new Number instanceof Number
-eq (^^new Number)constructor, Number
+eq (^^new Number)@@, Number
 
 # Inherit constructors
 class A
@@ -432,3 +432,18 @@ class A
   constructor$$: f
 
 eq 13 (new A 5).y
+
+
+# using @@ to reference static props
+class A
+  @static = 2
+
+  meth: ->
+    @@static * 2
+
+eq 4 (new A).meth!
+
+
+# @@@ references @.@@ rather than the nonsensical @@.@
+let @ = constructor: 10
+  eq 10 @@@

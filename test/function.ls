@@ -92,8 +92,8 @@ eq a+'' '0,1,2,3'
 
 # Assignment to an inner variable that shares a name with
 # an `Object.prototype` member should not leak.
-(-> constructor = 'word')()
-ok constructor is not 'word'
+(-> @@ = 'word')()
+ok @@ is not 'word'
 
 
 # Implicit call including an implicit object and a trailing function.
@@ -159,7 +159,7 @@ func = ->
 eq func(), 101
 
 
-ok new Date().constructor is Date
+ok new Date!@@ is Date
 , '`new` should not add extra parens'
 
 ok new (Object C: Number).C instanceof Number
