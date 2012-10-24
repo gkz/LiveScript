@@ -188,8 +188,14 @@ bnf =
     o 'INDENT Lines DEDENT' -> $2.chomp!
     ...
 
+  Cascade:
+    o 'Chain CASCADE' -> [$1]
+    o 'Cascade Chain CASCADE' -> $1 +++ $2
+
   # All the different types of expressions in our language.
   Expression:
+    o 'Cascade Chain'
+    , -> new Cascade $1.0, Block $1.slice(1) +++ $2
     o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.where $4, Block [$1]
     o 'Expression WHERE Block' -> Chain Call.where $3.lines, Block [$1]
 

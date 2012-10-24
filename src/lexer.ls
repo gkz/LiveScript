@@ -432,6 +432,8 @@ exports import
     case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
     case \..
+      if able @tokens
+        @token \CASCADE \..
       @token \LITERAL \.. true
       return 2
     case \.
@@ -870,6 +872,8 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[++i]
     [tag, val, line] = token
     switch
+    case tag is \CASCADE and val is \..
+      tokens.splice i, 1 unless tokens[i+2].0 is \DOT
     case val is \. and token.spaced and prev.spaced
       tokens[i] = [\COMPOSE \<< line]
     case tag is \) and prev.1 is \.
@@ -997,7 +1001,7 @@ character = if JSON!? then uxxxx else ->
     switch tag
     case \NEWLINE
       return pre.0 is not \,
-    case \DOT \?
+    case \DOT \? \CASCADE
       return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
     case \SWITCH                         then seenSwitch := true; fallthrough
     case \IF \CLASS \FUNCTION \LET \WITH \CATCH then skipBlock  := true
