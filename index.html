@@ -4611,7 +4611,7 @@ TOTAL    851 ms
       <li>Removed the constructor shorthand. Rationale: rarely useful, use it for cascade instead.
       <li>Changed cascade op from <code>&</code> to <code>..</code>. Rationale: like in other languages.
       <li>Added match statement and deep compare. Rationale: experimental, will see if good.
-      <li>Added <code>delete!</code> which acts like the <code>delete</code> statement in JavaScript. Rationale: for the case when you need to know if the property is deletable or not.
+      <li>For changes after 1.0.0, see the <a href="#changelog">changelog</a> section.
       </ul>
     </div>
     <div id="changelog" class="section">
@@ -4619,6 +4619,23 @@ TOTAL    851 ms
       <h2>Changelog</h2>
       <h3>1.1.0</h3>
       <ul>
+        <li><code>lsc</code> is now an alias for the <code>livescript</code> command, as <code>livescript</code> is quite long. Think "LiveScript Compiler".
+        <li>Added single line cascades. Eg. <code>[1 2 3]..push 3 ..shift!..sort!</code>
+        <li>Cascades are callable, eg.
+<pre>
+(+)
+  .. 2 3
+</pre>
+        <li>Removed previous usage of <code>with</code>, use <code>let @ = x</code> instead.
+        <li><code>with</code> can be used to specify the part of the expression to cascade. Eg.
+<pre>
+x = with [1 2 3]
+  ..push 3
+</pre>
+        <li>An empty catch <code>try x catch</code> returns its catchee.
+        <li><code>by -1</code> is not required in ranges where it is obvious.
+        <li>Added shorthand for <code>constructor</code>: <code>@@</code>
+        <li>Changed semiautovivification from using <code>x@y</code> and <code>x@@y</code> to using <code>x{}y</code> and <code>x[]y</code>
         <li>Nested loops (not comprehensions) no longer return flattened results when used as an expression.
 <pre>
 res = for x to 2
@@ -4638,7 +4655,7 @@ res = [[x + y for x to 2] for y to 3]
 res #=> [ [0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5] ]
 </pre>
         now returns an array of arrays as expected. If you were relying on this behavior, simply remove the brackets of the inner comprehension to make it a nested comprehension.
-        <li>Added <code>require!</code>, which takes either a object or array literal and creates a series of require statements. See <a href="#require">documentation</a>.
+        <li>Added <code>require!</code>, which takes either a object, array, or string literal and creates a series of require statements. See <a href="#require">documentation</a>.
         <li>Added the ability to call <code>super</code> outside of the class body, when adding static or instance methods to a class. Eg.
 <pre>
 class A extends B
@@ -4650,7 +4667,6 @@ A.stat -> super ...
 r = [to 3]  #=> [0, 1, 2, 3]
 r = [til 3] #=> [0, 1, 2]
 </pre>
-        <li><code>lsc</code> is now an alias for the <code>livescript</code> command, as <code>livescript</code> is quite long. Think "LiveScript Compiler".
         <li>You can now define an external constructor in a class. This is mostly for compatibility with CoffeeScript, and for higher level libraries and frameworks. It is defined with <code>constructor$$:</code>. eg.
 <pre>
 class A
@@ -4679,6 +4695,10 @@ for til 3 then f!
 delete! x.y
 </pre>
         <li>Added back JavaScript code literals, for the sole purpose of allowing CoffeeScript to LiveScript compilation compatibility. Not to be used in regular code. JS literals are denoted with two backticks. <code>``js code``</code>
+        <li><code>for</code> loop and comprehension indices are immutable. Use a <code>while</code> loop if you want to mutate indices. Also, the last value of the index is the last value it has in the loop.
+        <li>You can destructure the <code>catch</code> parameter.
+        <li><code>in</code> works on sparse arrays for compatibility with CoffeeScript.
+        <li>Bug fixes.
       </ul>
       <h3>1.0.1</h3>
       <ul>
