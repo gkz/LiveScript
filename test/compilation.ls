@@ -185,38 +185,34 @@ eq 'compose$([f, g, h, j]);' (bare 'f << g << h << j').split(\\n).0
 # destructuring assign sugar
 compileThrows 'invalid assign' 1 '{a **= b} = c'
 
+
 # require!
 eq "var a;\na = require('a');" bare 'require! [a]'
 eq "var a;\na = require('a');" bare 'require! <[a]>'
 eq "var a;\na = require('a');" bare 'require! {a}'
-eq '''var a, b, c, e, g, file, file2, file3, i, j, k, bar, baz;
-a = require('a');
-b = require('b');
-c = require('d');
-e = require('f');
-g = require('h');
-file = require('file.js');
-file2 = require('./file2.js');
-file3 = require('./asdf/safd/sa/file3.js');
-i = require('file.js');
-j = require('./file.js');
-k = require('./asdf/safd/sa/file.js');
-bar = require('foo').bar;
-baz = require('./file.js').baz;''' bare '''require! {
-  a
-  'b'
-  c: d
-  e: 'f'
-  'g': h
-  'file.js'
-  './file2.js'
-  './asdf/safd/sa/file3.js'
-  i: 'file.js'
-  j: './file.js'
-  k: './asdf/safd/sa/file.js'
-  foo.bar
-  './file.js'.baz
-}'''
+eq "var b;\nb = require('b');" bare "require! {'b'}"
+
+eq "var c;\nc = require('d');" bare "require! c: d"
+eq "var e;\ne = require('f');" bare "require! e: 'f'"
+eq "var g;\ng = require('h');" bare "require! 'g': h"
+
+eq "var file;\nfile = require('file.js');" bare "require! 'file.js'"
+eq "var file;\nfile = require('./file.js');" bare "require! './file.js'"
+eq "var file;\nfile = require('./a/b/c/file.js');" bare "require! './a/b/c/file.js'"
+
+eq "var a;\na = require('file.js');" bare "require! a: 'file.js'"
+eq "var b;\nb = require('./file.js');" bare "require! b: './file.js'"
+eq "var c;\nc = require('./a/b/c/file.js');" bare "require! c: './a/b/c/file.js'"
+
+eq "var bar;\nbar = require('foo').bar;" bare "require! { foo.bar }"
+eq "var bar;\nbar = require('./file.js').bar;" bare "require! { './file.js'.bar }"
+
+eq "var preludeLs;\npreludeLs = require('prelude-ls');" bare "require! 'prelude-ls'"
+
+eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 'require! [a, b, c]'
+eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 'require! <[ a b c ]>'
+eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 'require! { a, b, c }'
+
 
 # JS literal
 eq 'some js code!' bare '``some js code!``'

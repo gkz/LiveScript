@@ -2362,17 +2362,18 @@ class exports.JS extends Node
 
 #### Require
 class exports.Require extends Node
-  (@list) ~>
+  (@body) ~>
 
-  children: <[ list ]>
+  children: <[ body ]>
 
   compile: (o) ->
     strip-string = (val) ->
       if val == //^['"](.*)['"]$// then that.1 else val
     get-file-name = (val) ->
-      (strip-string val .split '/')[*-1].split '.' .0
+      strip-string val .split '/' .[*-1].split '.' .0
+        .replace /-[a-z]/ig, -> it.char-at 1 .to-upper-case!
 
-    out = for item in @list.items
+    process-item = (item) ->
       [asg, value] = switch
       | item instanceof Key     => [item.name, item.name]
       | item instanceof Var     => [item.value, item.value]
@@ -2397,7 +2398,11 @@ class exports.Require extends Node
 
       main = Chain Var 'require' .add Call [Literal "'#value'"]
       Assign (Var asg), (if chain then Chain main, chain else main) .compile o
-    out.join ";\n#{o.indent}"
+
+    if @body.items?
+      [process-item item for item in @body.items].join ";\n#{o.indent}"
+    else
+      process-item @body
 
 #### Util
 # A wrapper node for utility functions.
