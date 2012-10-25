@@ -210,7 +210,7 @@ which "just works" and supports LiveScript cleanly.</p>
   </div>
 <script>
   prettyPrint();
-  document.getElementById("email").href = "mailto:z" + "@" + "georgezahariev.com";
+  (document.getElementById("email") || {}).href = "mailto:z" + "@" + "georgezahariev.com";
 </script>
 </body>
 </html>
