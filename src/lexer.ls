@@ -541,7 +541,8 @@ exports import
     case \@
       @adi!
       if @last.0 is \DOT and @last.1 is \.
-      and @tokens[*-2].0 is \ID and @tokens[*-2].1 is \constructor
+      and @tokens[*-2].0 is \ID
+      and @tokens[*-2].1 is \constructor
         @tokens.pop!
         @tokens.pop!
         @token \LITERAL \this true
@@ -872,6 +873,12 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[++i]
     [tag, val, line] = token
     switch
+    case tag is \DOT and prev.0 is \] and tokens[i-2].0 is \[ and tokens[i-3].0 is \DOT
+      tokens.splice i-2, 3
+      tokens[i-3].1 = '[]'
+    case tag is \DOT and prev.0 is \} and tokens[i-2].0 is \{ and tokens[i-3].0 is \DOT
+      tokens.splice i-2, 3
+      tokens[i-3].1 = '{}'
     case tag is \CASCADE and val is \..
       tokens.splice i, 1 unless tokens[i+2].0 is \DOT
     case val is \. and token.spaced and prev.spaced

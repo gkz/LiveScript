@@ -398,11 +398,12 @@ class exports.Index extends Node
   (key, symbol or \., init) ~>
     if init and key instanceof Arr
       switch key.items.length
-      | 0 => key = Key \__proto__
       | 1 => key = Parens k unless (k = key.items.0) instanceof Splat
-    switch symbol.slice -1
-    | \= => @assign = symbol.slice 1
-    | \@ => @vivify = (if symbol.length > 2 then Arr else Obj)
+    switch symbol
+    | '[]' => @vivify = Arr
+    | '{}' => @vivify = Obj
+    | _    =>
+      @assign = symbol.slice 1 if \= is symbol.slice -1
     import {key, symbol}
 
   children: [\key]

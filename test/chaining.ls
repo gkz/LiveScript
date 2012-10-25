@@ -196,6 +196,14 @@ eq void v
 eq \z   x?=y.z
 eq \z   x
 
+# Semiautovivification
+o = {}
+o.{}a.[]b .push 0 1
+o.a{}c[]d .push 2 3
+o?.{}a?.[]b?{}e?{}f.4 = 5
+eq '0,1' ''+o.a.b
+eq '2,3' ''+o.a.c.d
+eq 5 o.a.b.e.f.4
 
 # Bang Call
 eq '' String!
