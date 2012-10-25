@@ -2,11 +2,11 @@
 # [tokenizing](#lexer), [parsing](#grammar), and [compiling](#ast)
 # LiveScript source into JavaScript.
 
-lexer = require \./lexer
+require! \./lexer
 
 # Override Jison's default lexer, so that it can accept
 # the generic stream of tokens our lexer produces.
-{parser} = require \./parser
+require! { './parser'.parser }
 parser import
   yy    : require \./ast
   lexer :

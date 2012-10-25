@@ -2373,7 +2373,7 @@ class exports.Require extends Node
       strip-string val .split '/' .[*-1].split '.' .0
         .replace /-[a-z]/ig, -> it.char-at 1 .to-upper-case!
 
-    process-item = (item) ->
+    process-item = (item) ~>
       [asg, value] = switch
       | item instanceof Key     => [item.name, item.name]
       | item instanceof Var     => [item.value, item.value]

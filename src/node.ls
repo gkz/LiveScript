@@ -4,8 +4,7 @@
 # - Register _.ls extension.
 
 module.exports = !(LiveScript) ->
-  fs   = require \fs
-  path = require \path
+  require! [fs, path]
 
   LiveScript.run = (code, {filename}:options?, js) ->
     {main} = require

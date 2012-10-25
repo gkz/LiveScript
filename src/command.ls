@@ -2,10 +2,12 @@
 
 {argv} = process
 
-LiveScript = require \./livescript
-path = require \path
-fs = require \fs
-util = require \util
+require! {
+  LiveScript: \./livescript
+  path
+  fs
+  util
+}
 
 !function say => process.stdout.write it + \\n
 !function warn => process.stderr.write it + \\n
