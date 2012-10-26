@@ -2320,6 +2320,35 @@ do -> 3 + 2 #=> 5
         </div>
       </div>
 
+      <p>If you use <code>do</code> on a named function, when the <code>do</code> is not used as an expression, the named function will remain a function statement.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+i = 0
+f 9 #=> 9
+i   #=> 1
+do function f x
+  ++i
+  x
+i   #=> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i;
+i = 0;
+f(9);
+i;
+function f(x){
+  ++i;
+  return x;
+} f();
+i;
+</pre>
+        </div>
+      </div>
+
       <p>You can also call functions infix using backticks <code>`</code>.
 
       <div class="example">
