@@ -217,7 +217,9 @@ sort-by = (prop, list) --> list.sort (a, b) ->
 
 
 # List comprehensions, destructuring, piping
-[{id:id1, name, age} for {id:id1, name} in table1 for {id:id2, age} in table2 when id1 is id2]
+[{id:id1, name, age} for {id:id1, name} in table1
+                     for {id:id2, age} in table2
+                     when id1 is id2]
 |> sort-by \id
 |> each up-case-name # using 'each' from prelude.ls
 |> JSON.stringify
