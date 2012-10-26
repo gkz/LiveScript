@@ -2636,7 +2636,7 @@ obj2.bound();
 
       <p>Check out the <a href="#oop">OOP</a> section for more on bound functions when used in classes.
 
-      <h3>Let, Where, With</h3>
+      <h3>Let, Where, New</h3>
 
       <p><code>let</code> is short for <code>(function(a){...}.call(this, b))</code>.
 
@@ -2652,6 +2652,30 @@ let $ = jQuery
 (function($){
   $.isArray([]);
 }.call(this, jQuery));
+</pre>
+        </div>
+      </div>
+
+      <p>You can also define <code>this</code> (aka <code>@</code>) with <code>let</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = let @ = a: 1, b: 2
+  @b ^ 3
+x #=> 8
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = (function(){
+  return Math.pow(this.b, 3);
+}.call({
+  a: 1,
+  b: 2
+}));
+x;
 </pre>
         </div>
       </div>
@@ -2675,24 +2699,6 @@ result = (function(x, y){
   y = x + 1;
   return x + y;
 }.call(this, void 8, void 8));
-</pre>
-        </div>
-      </div>
-
-      <p><code>with</code> is short for <code>(function(){...}.call(x))</code>.
-
-      <div class="example">
-        <div class="example-ls">
-<pre class="prettyprint lang-ls">
-with document
-  @title = 'LiveScript!'
-</pre>
-        </div>
-        <div class="example-js">
-<pre class="prettyprint lang-js">
-(function(){
-  this.title = 'LiveScript!';
-}.call(document));
 </pre>
         </div>
       </div>
