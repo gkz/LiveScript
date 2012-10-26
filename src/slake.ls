@@ -52,7 +52,7 @@ fs.exists filename, :rec(affirmative) ->
       process.exit 1
     process.chdir \..
     return fs.exists filename, rec
-  optparse = require \./optparse
+  require! \./optparse
   LiveScript.run slurp(filename), {filename}
   Options := optparse Flags, args
   if args.length

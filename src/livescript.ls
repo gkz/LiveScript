@@ -6,7 +6,7 @@ require! \./lexer
 
 # Override Jison's default lexer, so that it can accept
 # the generic stream of tokens our lexer produces.
-require! { './parser'.parser }
+require! './parser'.parser
 parser import
   yy    : require \./ast
   lexer :
