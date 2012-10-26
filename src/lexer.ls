@@ -491,6 +491,7 @@ exports import
         @token \CALL( \(
         @token \)CALL \)
       else if @last.0 is \)CALL
+        console?warn "WARNING on line #{ @line }: `func(x) = ...` type functions are deprecated and will be removed in a future LiveScript release. Please use long arrows --> for your curried functions instead."
         tag = \ASSIGN if val is \=
         arrow = \-->
         @tokens.pop! # remove the )CALL

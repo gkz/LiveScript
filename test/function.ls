@@ -540,43 +540,6 @@ eq void do
 
 eq false !!->
 
-### new function syntax
-area(a, b) = a * b
-eq 6 area 2 3
-
-diff(a,
-  b) = 
-  a - b
-eq -1 diff 2, 3
-
-obj = 
-  add(x, y): x + y
-
-eq obj.add(1, 2), 3
-
-class Multiplier
-  (@num) ->
-
-  multiply(x, y): x * y
-  xSix!: @num * 6
-  bound!:
-    ~f! = @num * 2
-
-multi = new Multiplier 3
-
-sometin =
-  num:    7
-  hooloo: multi.bound!
-
-eq 6 sometin.hooloo!
-
-eq 6    multi.multiply(3, 2)
-eq 18   multi.xSix!
-
-
-Multiplier::~func(x) = x
-eq 5 multi.func(5)
-
 ### auto currying magic
 times = (x, y) --> x * y
 timesTwo = times 2
@@ -596,29 +559,8 @@ eq 10 threeParams 2 3 4 5
 multByTwo = threeParams 2
 eq 7 multByTwo(3)(1)
 
-addNine = threeParams 3 3 
+addNine = threeParams 3 3
 eq 16 addNine 7
-
-minus(x, y) = y - x
-minusTwo = minus 2
-eq 5 minusTwo 7 
-
-boom(x, y) = x + (y ? 0)
-boom2 = boom 2
-eq 6 boom2 4
-eq 2 boom2!
-
-defArgs(x, y = 4) = x + y
-defArgs2 = defArgs 2
-eq 8 defArgs2 6
-eq 6 defArgs2!
-
-class Divider
-  ->
-
-  @divide1(x, y) = x / y
-
-eq 2    Divider.divide1 6 3
 
 f4 = ((a, b, c, d) --> a * b * c * d)(2)(3)
 g = f4 5
@@ -627,12 +569,6 @@ h = f4 7
 eq 330 g 11
 eq 546 h 13
 
-multiLine(x) =
-  4
-
-  x
-
-eq 1 multiLine 1
 
 ### explicit naming
 let
