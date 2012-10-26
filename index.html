@@ -109,30 +109,12 @@
         <p>Featured blog post: <strong><a href="blog/powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript</a></strong>
         <p>Double-click an example to load it into the compiler/repl. CoffeeScript users check out the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
       <h3>Some Examples</h3>
-      <p>Unnested callbacks and parentheses free chaining:
-      <div class="example">
-        <div class="example-ls">
-        <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">
-<-! $ \h1 .on \click
-alert \boom!
-</pre>
-        </div>
-        <div class="example-js">
-        <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">
-$('h1').on('click', function(){
-  alert('boom!');
-});
-</pre>
-        </div>
-      </div>
-      <p>Curried functions, implicit switch, the concat operator, and function composition:
+      <p>Curried functions, implicit switch, concat operator, and function composition:
       <div class="example">
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-take(n, [x, ...xs]:list) =
+take = (n, [x, ...xs]:list) -->
   | n <= 0     => []
   | empty list => []
   | otherwise  => [x] +++ take n - 1, xs
@@ -330,6 +312,24 @@ function curry$(f, args){
       curry$.call(this, f, params) : f.apply(this, params);
   } : f;
 }
+</pre>
+        </div>
+      </div>
+      <p>Unnested callbacks and parentheses free chaining:
+      <div class="example">
+        <div class="example-ls">
+        <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+<-! $ \h1 .on \click
+alert \boom!
+</pre>
+        </div>
+        <div class="example-js">
+        <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+$('h1').on('click', function(){
+  alert('boom!');
+});
 </pre>
         </div>
       </div>
