@@ -53,6 +53,7 @@
         <li><a href="#switch">Switch</a></li> 
         <li><a href="#assignment">Assignment</a></li> 
         <li><a href="#property-access">Property Access</a></li> 
+        <li><a href="#exceptions">Exceptions</a></li> 
         <li><a href="#oop">OOP</a></li> 
         <li class="divider">
         <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li> 
@@ -4326,6 +4327,115 @@ x = (x$ = {
   b: 2
 }, x$.a = 7, x$.b += 9, x$);
 x;
+</pre>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="exceptions" class="section">
+      <a name="exceptions"></a>
+      <h2>Exceptions</h2>
+
+      <p>You can throw exceptions with the aptly named <code>throw</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+throw new Error 'an error has occurred!'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+throw new Error('an error has occurred!');
+</pre>
+        </div>
+      </div>
+
+      <p>You can catch and deal with exceptions with the <code>try</code> <code>catch</code> <code>finally</code> block. Both <code>catch</code> and <code>finally</code> are optional.
+
+      <p>The <code>try</code> block is attempted. If an exception occurs, the <code>catch</code> block is executed. It is supplied with the exception object. If you do not specify the name of this variable it will default to <code>e</code>. Unlike JavaScript, the exception variable is scoped to the nearest function, not the <code>catch</code> block. You can destructure the exception object if you wish.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+try
+  ...
+
+try
+  ...
+catch
+  2 + 2
+e.message
+
+x = try
+  ...
+catch {message}
+  message
+
+x #=> unimplemented
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var e, x, message;
+try {
+  throw Error('unimplemented');
+} catch (e$) {}
+try {
+  throw Error('unimplemented');
+} catch (e$) {
+  e = e$;
+  2 + 2;
+}
+e.message;
+x = (function(){
+  try {
+    throw Error('unimplemented');
+  } catch (e$) {
+    message = e$.message;
+    return message;
+  }
+}());
+x;
+</pre>
+        </div>
+      </div>
+
+      <p>The <code>finally</code> block is executed after the <code>try</code> or <code>catch</code>, regardless of what has happened.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+try
+  ...
+catch
+  handle-exception e
+finally
+  do-something!
+
+try
+  ...
+finally
+  do-something!
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var e;
+try {
+  throw Error('unimplemented');
+} catch (e$) {
+  e = e$;
+  handleException(e);
+} finally {
+  doSomething();
+}
+try {
+  throw Error('unimplemented');
+} finally {
+  doSomething();
+}
 </pre>
         </div>
       </div>
