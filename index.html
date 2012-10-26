@@ -4815,14 +4815,14 @@ res #=> [ ['00', '01', '02', '03'], ['10', '11', '12', '13'], ['20', '21', '22',
 </pre>
         Use comprehensions instead if you want a flattened result. To make things easier, comprehensions can now be multiline.
 <pre>
-res = ["#x#y" for x to 2
+["#x#y" for x to 2
               for y to 3]
-res #=> ['00', '01', '02', '03', '10', '11', '12', '13', '20', '21', '22', '23']
+#=> ['00', '01', '02', '03', '10', '11', '12', '13', '20', '21', '22', '23']
 </pre>
         <li>Fixed bug where comprehensions inside comprehensions were returning flattened results, eg.
 <pre>
-res = [[x + y for x to 2] for y to 3]
-res #=> [ [0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5] ]
+[[x + y for x to 2] for y to 3]
+#=> [ [0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5] ]
 </pre>
         now returns an array of arrays as expected. If you were relying on this behavior, simply remove the brackets of the inner comprehension to make it a nested comprehension.
         <li>Added <code>require!</code>, which takes either a object, array, or string literal and creates a series of require statements. See <a href="#require">documentation</a>.
@@ -4834,8 +4834,8 @@ A.stat -> super ...
 </pre>
         <li>The 'from' number in a range can be omitted, to be consistent with for loops. If the number is omitted, it is assumed to be <code>0</code>.
 <pre>
-r = [to 3]  #=> [0, 1, 2, 3]
-r = [til 3] #=> [0, 1, 2]
+[to 3]  #=> [0, 1, 2, 3]
+[til 3] #=> [0, 1, 2]
 </pre>
         <li>You can now define an external constructor in a class. This is mostly for compatibility with CoffeeScript, and for higher level libraries and frameworks. It is defined with <code>constructor$$:</code>. eg.
 <pre>
