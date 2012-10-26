@@ -4235,28 +4235,26 @@ list[list.length - 1];
         </div>
       </div>
 
-      <p> Semiautovivification <code>.@</code>, <code>.@@</code> ensures that the property exists as an object or as an array.
+      <p> Semiautovivification <code>.{}</code>, <code>.[]</code> ensures that the property exists as an object or as an array.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 x = "hello world": [4 [5 boom: 6]]
-x.@@'hello world'.1.@1.boom #=> 6
+x.[]'hello world'.1.{}1.boom #=> 6
+
+
+x.[]arr.{}1.y = 9
+x.arr.1.y #=> 9
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var x, ref$;
-x = {
-  "hello world": [
-    4, [
-      5, {
-        boom: 6
-      }
-    ]
-  ]
-};
+x = { "hello world": [ 4, [ 5, { boom: 6 } ] ] };
+
 ((ref$ = (x['hello world'] || (x['hello world'] = []))[1])[1] || (ref$[1] = {})).boom;
+((ref$ = x.arr || (x.arr = []))[1] || (ref$[1] = {})).y = 9;
 </pre>
         </div>
       </div>
