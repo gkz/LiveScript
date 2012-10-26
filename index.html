@@ -2519,59 +2519,6 @@ function curry$(f, args){
 
       <p>You can define bound curried functions with a long wavy arrow: <code>~~&gt;</code>
 
-      <h3>Short Function Syntax</h3>
-
-      <p>A shorter way to define functions, which are always curried:
-
-      <div class="example">
-        <div class="example-ls">
-<pre class="prettyprint lang-ls">
-add(x, y) = x + y
-</pre>
-        </div>
-        <div class="example-js">
-<pre class="prettyprint lang-js">
-var add;
-add = curry$(function(x, y){
-  return x + y;
-});
-function curry$(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length && arguments.length ?
-      curry$.call(this, f, params) : f.apply(this, params);
-  } : f;
-}
-</pre>
-        </div>
-      </div>
-
-      <p>You can prepend the function definition with a <code>~</code> to make it bound.
-
-      <div class="example">
-        <div class="example-ls">
-<pre class="prettyprint lang-ls">
-~set-x(val) =
-  @x = val / 2
-</pre>
-        </div>
-        <div class="example-js">
-<pre class="prettyprint lang-js">
-var setX, this$ = this;
-setX = curry$(function(val){
-  return this$.x = val / 2;
-});
-function curry$(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length && arguments.length ?
-      curry$.call(this, f, params) : f.apply(this, params);
-  } : f;
-}
-</pre>
-        </div>
-      </div>
-
       <h3>Named Functions</h3>
 
       <p>You can create named functions whose definition is hoisted to the top of the scope - this is useful for defining utility functions at the end of the file instead of the top. Name functions are constants, and can't be redefined.
