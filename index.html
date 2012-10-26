@@ -4217,7 +4217,12 @@ x = {
         </div>
       </div>
 
-      <p>Cascade - beautiful chaining:
+
+      <h3>Cascades</h3>
+
+      <p>A cascade always evaluates to the item being accessed, and not to the return value of the accessing operations.
+
+      <p>Beautiful chaining:
 
       <div class="example">
         <div class="example-ls">
@@ -4231,7 +4236,7 @@ a #=> [1,3,7,8]
 
 document.query-selector \h1
   ..style
-    ..color    = \red
+    ..color = \red
     ..font-size = \large
   ..inner-HTML = 'LIVESCRIPT!'
 </pre>
@@ -4254,8 +4259,72 @@ x$.innerHTML = 'LIVESCRIPT!';
         </div>
       </div>
 
-    </div>
+      <p>Single line cascades:
 
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[2 7 1 8]..push 3 ..shift!..sort! #=> [1,3,7,8]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x$;
+x$ = [2, 7, 1, 8];
+x$.push(3);
+x$.shift();
+x$.sort();
+</pre>
+        </div>
+      </div>
+
+      <p>Cascades are callable, and can include arbitrary code.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+console.log
+  x = 1
+  y = 2
+  .. x, y
+# prints `1 2` to the console
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x$, x, y;
+x$ = console.log;
+x = 1;
+y = 2;
+x$(x, y);
+</pre>
+        </div>
+      </div>
+
+      <p>You can use <code>with</code> to specify the part of the preceding expression to cascade.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = with {a: 1, b: 2}
+  ..a = 7
+  ..b += 9
+x #=>  {a: 7, b: 11}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, x$;
+x = (x$ = {
+  a: 1,
+  b: 2
+}, x$.a = 7, x$.b += 9, x$);
+x;
+</pre>
+        </div>
+      </div>
+
+    </div>
 
     <div id="oop" class="section">
       <a name="oop"></a>
