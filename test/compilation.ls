@@ -207,6 +207,10 @@ eq "var c;\nc = require('./a/b/c/file.js');" bare "require! c: './a/b/c/file.js'
 eq "var bar;\nbar = require('foo').bar;" bare "require! { foo.bar }"
 eq "var bar;\nbar = require('./file.js').bar;" bare "require! { './file.js'.bar }"
 
+eq "var bar;\nbar = require('foo').bar;" bare "require! foo.bar"
+eq "var baz;\nbaz = require('foo').bar.baz;" bare "require! foo.bar.baz"
+eq "var bar;\nbar = require('./file.js').bar;" bare "require! './file.js'.bar"
+
 eq "var preludeLs;\npreludeLs = require('prelude-ls');" bare "require! 'prelude-ls'"
 
 eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 'require! [a, b, c]'

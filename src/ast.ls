@@ -2367,34 +2367,35 @@ class exports.Require extends Node
   children: <[ body ]>
 
   compile: (o) ->
+    var chain
     strip-string = (val) ->
       if val == //^['"](.*)['"]$// then that.1 else val
     get-file-name = (val) ->
       strip-string val .split '/' .[*-1].split '.' .0
         .replace /-[a-z]/ig, -> it.char-at 1 .to-upper-case!
-
-    process-item = (item) ~>
+    get-value = (item) ~>
+      | item instanceof Key     => item.name
+      | item instanceof Var     => item.value
+      | item instanceof Literal => item.value
+      | item instanceof Index   => get-value item.key
+      | item instanceof Chain   =>
+        if item.tails?length
+          chain := item.tails
+        get-value item.head
+      | otherwise               => item
+    process-item = (item) ->
       [asg, value] = switch
-      | item instanceof Key     => [item.name, item.name]
-      | item instanceof Var     => [item.value, item.value]
-      | item instanceof Prop    => [
-        if item.key instanceof Key
-        then item.key.name
-        else get-file-name item.key.value
-
-        if item.val instanceof Var
-          item.val.value
-        else if item.val instanceof Chain
-          chain = item.val.tails
-          strip-string if item.val.head instanceof Key
-            then item.val.head.name
-            else item.val.head.value
+      | item instanceof Prop    => [get-value item.key; item.val]
+      | item instanceof Chain   =>
+        if item.tails?length
+          chain := item.tails
+          [item.tails[*-1], item.head]
         else
-          strip-string item.val.value
-        ]
-      | item instanceof Literal =>
-        [get-file-name item.value; strip-string item.value]
-      | otherwise               => @carp 'unsupported require type'
+          [item.head, item.head]
+      | otherwise               => [item, item]
+
+      asg = get-file-name get-value asg
+      value = strip-string get-value value
 
       main = Chain Var 'require' .add Call [Literal "'#value'"]
       Assign (Var asg), (if chain then Chain main, chain else main) .compile o

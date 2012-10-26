@@ -180,9 +180,7 @@ bnf =
     # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm)
     o \... -> L Throw JS "Error('unimplemented')"
 
-    o 'REQUIRE List'   -> Require $2
-    o 'REQUIRE STRNUM' -> Require Literal $2
-    o 'REQUIRE Literal'   ditto
+    o 'REQUIRE Chain'   -> Require $2.unwrap!
 
   # An indented block of expressions.
   # Note that [Lexer](#lexer) rewrites some single-line forms into blocks.
