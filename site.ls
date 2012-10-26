@@ -1,4 +1,4 @@
-import prelude
+prelude.installPrelude window
 $ ->
   for example in $ '.example .example-ls'
     src = $ example .find \.lang-ls .html!
@@ -6,9 +6,10 @@ $ ->
 
   prettyPrint!
 
-  !boom(action) = 
+  boom = (action) ->
     source = $ '.compiler textarea' .val!
-    result = try 
+    result = try
+      source = "<- (do)\n#source" if action is \run
       func = if action is \run then \compile else action
       LiveScript[func](source, {+bare})
     catch e
@@ -25,19 +26,18 @@ $ ->
       if action in <[ lex tokens ]>
         lns = []
         for [tag, val, line]  in result
-          lns[line] ?= [] 
+          lns[line] ?= []
           lns[line].push if val is tag.toLowerCase! then tag else "#tag:#val"
-        for line, i in lns 
+        for line, i in lns
           lns[i] = line?join(' ')replace /\n/g \\\n or ''
         result = lns * \\n
-      if action is \run and 
+      if action is \run and
       (typeof! result is \Array or typeof! result  is \Object)
-        result = JSON.stringify result 
-      result = _.escape result 
+        result = JSON.stringify result
+      result = _.escape result
       result = result.replace /\n/g, '<br>' .replace /\ /g, \&nbsp;
       if action is \compile and not error
         result = prettyPrintOne result, 'lang-js', false
-
 
       toPrepend = if error
         """<div>
