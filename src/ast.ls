@@ -984,6 +984,8 @@ class exports.Unary extends Node
     case \new then it.isCallable! or it.carp 'invalid constructor'
     case \do
       # `do f?` => `f?()`
+      if o.level is LEVEL_TOP and it instanceof Fun and it.is-statement!
+        return "#{ it.compile o } #{ Unary \do Var it.name .compile o }"
       x = Parens if it instanceof Existence and not it.negated
                  then Chain(it)add Call!
                  else Call.make it

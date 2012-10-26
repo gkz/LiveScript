@@ -724,4 +724,15 @@ eq 6 f 2
 
 eq 9 (6 |> obj.three-add 1, _, 2)
 
+# do a named func
+do ->
+  i = 0
+  ok named-func
+  eq 1 named-func 1
+  eq 1 i
+  do function named-func x
+    ++i
+    x
+  eq 2 i
+
 function map f, xs then [f x for x in xs]
