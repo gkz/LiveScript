@@ -345,7 +345,7 @@ function curry$(f, args){
     <div id="usage" class="section">
       <a name="usage"></a>
       <h2>Usage</h2>
-      <p>Usage: <code>livescript [options] [files] [arguments]</code></p>
+      <p>Usage: <code>lsc [options] [files] [arguments]</code></p>
       <h3>Options</h3>
       <table class="usage-options table table-striped table-bordered">
         <tr><td>-i, --interactive</td><td>start REPL; use ^J for multiline input</td></tr>
@@ -371,13 +371,13 @@ function curry$(f, args){
       <h3>Examples</h3>
 
       <ul>
-        <li>Run a LiveScript file (through node.js): <code>livescript file.ls</code> - you can omit the <code>.ls</code> if you wish.
-        <li>Compile a LiveScript file, creating a <code>file.js</code>: <code>livescript -c file.ls</code>
-        <li>Watch a file and compile on changes: <code>livescript -wc file.ls</code>
-        <li>Compile a directory and output to another directory: <code>livescript -co output src</code>
-        <li>Watch a directory, compile on change into an output directory: <code>livescript -wco output src</code>
-        <li>Compile a one-liner and print the JS: <code>livescript -bpe '[1 to 5]'</code>
-        <li>Start the LiveScript REPL: <code>livescript</code> - <code>Ctrl-D</code> to exit, use <code>Ctrl-J</code> for multiline input.
+        <li>Run a LiveScript file (through node.js): <code>lsc file.ls</code> - you can omit the <code>.ls</code> if you wish.
+        <li>Compile a LiveScript file, creating a <code>file.js</code>: <code>lsc -c file.ls</code>
+        <li>Watch a file and compile on changes: <code>lsc -wc file.ls</code>
+        <li>Compile a directory and output to another directory: <code>lsc -co output src</code>
+        <li>Watch a directory, compile on change into an output directory: <code>lsc -wco output src</code>
+        <li>Compile a one-liner and print the JS: <code>lsc -bpe '[1 to 5]'</code>
+        <li>Start the LiveScript REPL: <code>lsc -i</code> - <code>Ctrl-D</code> to exit, use <code>Ctrl-J</code> for multiline input.
       </ul>
     </div>
     <div id="community" class="section">
