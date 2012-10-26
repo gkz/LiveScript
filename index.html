@@ -1249,6 +1249,25 @@ label: {
         </div>
       </div>
 
+      <p><code>constructor</code> shorthand.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+@@
+@@x
+x@@y
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+constructor;
+constructor.x;
+x.constructor.y;
+</pre>
+        </div>
+      </div>
+
       <p>Yaddayaddayadda - a placeholder:
 
       <div class="example">
@@ -4477,6 +4496,8 @@ class Item
   # properties and methods
   type: \unknown
   bound-to-instance: ~> @x
+  access-static: ->
+    @@static + ' prop'
 
 Renameable =
   set-name: -> @name = it
@@ -4500,6 +4521,7 @@ thing = new Box \boxy
 thing.get-name!  #=> \boxy
 thing.id         #=> (some random number)
 thing.type       #=> 'cube'
+thing.access-static! #=> 'static prop'
 thing.priv       #=> (nothing)
 thing.dimensions = [40, 50]
 thing.dimensions #=> "40x50"
