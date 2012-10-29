@@ -52,7 +52,6 @@
         <li><a href="#oop">OOP</a></li> 
         <li class="divider">
         <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li> 
-        <li><a href="#speed">Speed</a></li> 
         <li><a href="#changes">Changes from Coco</a></li> 
         <li><a href="#changelog">Changelog</a></li> 
         <li class="divider">
@@ -5329,30 +5328,6 @@ f do
       <li>Change any dually spaced property access, eg. <code>x . y</code> to be either spaced on only one side or not at all. A dually spaced dot is now used to compose functions.
       <li>Change any non spaced identifier subtraction, eg. <code>a-b</code> to spaced <code>a - b</code>. <code>a-1</code> and <code>1-b</code> are still fine. This is because <code>a-b</code> is a valid identifier in LiveScript, equivalent to its camel case, <code>aB</code>.
       </ul>
-    </div>
-    <div id="speed" class="section">
-      <a name="speed"></a>
-      <h2>Speed</h2>
-      <p>Harder, better, <strong>faster</strong>, stronger.
-      <h5>CoffeeScript (1.3.1)</h5>
-<pre>
-$ cake bench
-Lex     1365 ms (24146 tokens)
-Rewrite  120 ms (26886 tokens)
-Parse    277 ms
-Compile  189 ms (149436 chars)
-total   1951 ms
-</pre>
-      <h5>LiveScript</h5>
-<pre>
-$ slake bench
-Lex      241 ms (27289 tokens)
-Rewrite   98 ms (32717 tokens)
-Parse    266 ms (27910 nodes)
-Compile  246 ms (181132 chars)
-TOTAL    851 ms
-</pre>
-      <p>For more improvements see <a href="https://github.com/satyr/coco/wiki/improvements">Coco's list of improvements</a>.
     </div>
     <div class="section" id="changes">
       <a name="changes"></a>
