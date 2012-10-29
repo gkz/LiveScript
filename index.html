@@ -2203,6 +2203,107 @@ function not$(x){ return !x; }
         </div>
       </div>
 
+      <a name="require"></a>
+      <h3>require!</h3>
+
+      <p>Having to require a series of modules results in a lot of cruft. You can get rid of that cruft by using <code>require!</code>, which takes an ID, or a string, array, or object literal.
+
+      <p>If you are requiring a module with dashes in its name, you must use a string literal.
+
+      <p>You can rename what you are requiring by using an object literal.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+require! lib
+require! 'lib1'
+
+require! prelude-ls # no
+require! 'prelude-ls'
+
+require! [fs, path]
+require! <[ fs path ]>
+
+
+
+require! $: jQuery
+
+require! {
+  fs
+  path
+  lib: lib4
+}
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var lib, lib1, preludeLs, fs, path, $;
+lib = require('lib');
+lib1 = require('lib1');
+
+preludeLs = require('preludeLs');
+preludeLs = require('prelude-ls');
+
+fs = require('fs');
+path = require('path');
+fs = require('fs');
+path = require('path');
+
+$ = require('jQuery');
+
+fs = require('fs');
+path = require('path');
+lib = require('lib4');
+</pre>
+        </div>
+      </div>
+
+      <p>You can also easily require parts of modules.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+require! lib.part
+
+require! {
+  lib
+  lib.part1
+}
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var part, lib, part1;
+part = require('lib').part;
+
+lib = require('lib');
+part1 = require('lib').part1;
+
+
+</pre>
+        </div>
+      </div>
+
+      <p>Filenames are automatically extracted.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+require! 'lib.js'
+require! './dir/lib1.js'
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var lib, lib1;
+lib = require('lib.js');
+lib1 = require('./dir/lib1.js');
+</pre>
+        </div>
+      </div>
+
     </div>
 
     <div id="functions" class="section">
