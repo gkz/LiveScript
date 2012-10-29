@@ -184,7 +184,7 @@ function compose$(fs){
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
 
-# Easy listing of implicit objects using asterisks
+# Easy listing of implicit objects
 table1 =
   * id: 1
     name: \george
@@ -1108,35 +1108,47 @@ oneItem = [1];
         </div>
       </div>
 
-      <p>Listing using asterisks:
+      <p>When implicitly listing, you can use an asterisk <code>*</code> to disambiguate implicit structures such as implicit objects and implicit lists. The asterisk does not denote an item of the list, but merely sets aside an implicit structure so that it is not muddled with the other ones being listed.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 tree =
-  * * 1
-    * * 2
-      * 3
-    * 4
-  * * 5
-    * 6
-    * * 7
-      * 8
-      * * 9
-        * 10
-    * 11
+  * 1
+    * 2
+      3
+    4
+  * 5
+    6
+    * 7
+      8
+      * 9
+        10
+    11
 
 obj-list =
   * name: \tessa
     age:  23
   * name: \kendall
     age:  19
+
+
+obj =
+  * name: \tessa
+    age:  23
+
+obj-one-list =
+  * name: \tessa
+    age:  23
+  ...
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var tree, objList;
+var tree, objList, obj, objOneList;
 tree = [[1, [2, 3], 4], [5, 6, [7, 8, [9, 10]], 11]];
+
+
 
 
 
@@ -1153,6 +1165,14 @@ objList = [
     age: 19
   }
 ];
+obj = {
+  name: 'tessa',
+  age: 23
+};
+objOneList = [{
+  name: 'tessa',
+  age: 23
+}];
 </pre>
         </div>
       </div>
