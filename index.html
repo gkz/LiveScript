@@ -1537,7 +1537,7 @@ var ref$;
         </div>
       </div>
 
-      <p>When one of the operands of a equals (<code>==</code> or <code>is</code>, and the negatives for that) is a regex literal if will test the other operand against it. Equality compiles to <code>exec</code> so you can use the results, while the negative simply compiles to <code>test</code>.
+      <p>When one of the operands of a equals (<code>==</code> or <code>is</code>, and the negatives for that) is a regex literal it will test the other operand against it. Equality compiles to <code>exec</code> so you can use the results, while the negative simply compiles to <code>test</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -2659,7 +2659,7 @@ function util(x){
 
       <h3>Bound Functions</h3>
 
-      <p>Defined using the wavy arrow <code>~&gt;</code>. Use the long wavy arrow for curried and bound functions <code>~~&gt;</code>. Prepend a <code>~</code> to named functions or the short function syntax to make them bound.
+      <p>Defined using the wavy arrow <code>~&gt;</code>. Use the long wavy arrow for curried and bound functions <code>~~&gt;</code>. Prepend a <code>~</code> to named functions to make them bound.
 
       <p>Bound functions have <code>this</code> lexically bound, not dynamically bound as normally. This means that it does not matter in which context they are called, the value of <code>this</code> in their body will always be the value of <code>this</code> where they were defined.
 
