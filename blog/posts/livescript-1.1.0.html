@@ -1,0 +1,85 @@
+title: LiveScript 1.1.0 released!
+date:  29 Oct 2012
+author: <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+-----
+
+<p>LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
+
+<p>For more information, check out the <a href="http://livescript.net">LiveScript site</a>.
+
+<h3>1.1.0</h3>
+
+<p>LiveScript 1.1.0 adds new features, fixes bugs, and as a whole has greatly improved compatibility with CoffeeScript, particularly with the class system.
+
+<h4>lsc</h4>
+
+<p>As typing out <code>livescript</code> in the terminal can be a hassle, an alias, <code>lsc</code> has been added.
+
+<h4>require!</h4>
+
+<p><code>require!</code> removes the boilerplate of requiring modules. Some examples:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+require! lib
+
+require! [fs, path]
+
+
+require! $: jQuery
+
+require! {
+  module
+  _: underscore
+  './path/to/lib.js'
+}
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var lib, fs, path, $, module, _;
+lib = require('lib');
+
+fs = require('fs');
+path = require('path');
+
+$ = require('jQuery');
+
+
+module = require('module');
+_ = require('underscore');
+lib = require('./path/to/lib.js');
+
+
+</pre>
+  </div>
+</div>
+
+<p><a href="http://livescript.net#require">More on require!</a>
+
+<h4>Cascades</h4>
+
+<p>Cascades can now be one liners, allowing powerful and expressive object manipulation:
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[2 7 1 8]..push 3 ..shift!..sort! #=> [1,3,7,8]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x$;
+x$ = [2, 7, 1, 8];
+x$.push(3);
+x$.shift();
+x$.sort();
+</pre>
+  </div>
+</div>
+
+<p>For more changes view the <a href="http://livescript.net#changelog">changelog</a>.
+
+<p>For more information on LiveScript, check out the <a href="http://livescript.net">LiveScript site</a>.
