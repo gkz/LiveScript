@@ -1,7 +1,8 @@
 name    : \LiveScript
 version : \1.0.1
 
-description : 'LiveScript is a language the compiles down to JavaScript, it is Coco but much more compatible with CoffeeScript, more functional, and more feature rich.'
+description : 'LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.'
+
 keywords    :
   \language
   \compiler
@@ -10,7 +11,7 @@ keywords    :
   \javascript
 
 author   : 'George Zahariev <z@georgezahariev.com>'
-homepage : \http://gkz.github.com/LiveScript/
+homepage : 'http://livescript.net'
 bugs     : \https://github.com/gkz/LiveScript/issues
 licenses :
   type: \MIT, url: \https://raw.github.com/gkz/LiveScript/master/LICENSE
@@ -29,6 +30,7 @@ files       :
 main : \./lib/livescript
 bin  :
   livescript: \./bin/livescript
+  lsc: \./bin/lsc
   slake: \./bin/slake
 
 preferGlobal: true
