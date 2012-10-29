@@ -5253,6 +5253,32 @@ b.dimensions = [10 5]
 b.dimensions #=> '10x5'
 </pre>
         </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var Box, b;
+Box = (function(){
+  Box.displayName = 'Box';
+  var prototype = Box.prototype, constructor = Box;
+  Object.defineProperty(prototype, 'dimensions', {
+    get: function(){
+      return this.d;
+    },
+    set: function(arg$){
+      var width, height;
+      width = arg$[0], height = arg$[1];
+      this.d = width + "x" + height;
+    },
+    configurable: true,
+    enumerable: true
+  });
+  function Box(){}
+  return Box;
+}());
+b = new Box;
+b.dimensions = [10, 5];
+b.dimensions;
+</pre>
+        </div>
       </div>
 
     </div>
