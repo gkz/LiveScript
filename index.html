@@ -5263,7 +5263,7 @@ b.dimensions #=> '10x5'
       <ul>
         <li>Change all your fat arrows <code>=></code> to wavy arrows <code>~></code>
         <li>Change all your block comments <code>### ###</code> to <code>/* */</code>
-        <li>Change any range syntax creating lists from <code>[x..y]</code> to <code>[x to y]</code> and change <code>[x...y]</code> to <code>[x til y]</code>
+        <li>Change any range syntax creating lists from <code>[x..y]</code> to <code>[x to y]</code> and change <code>[x...y]</code> to <code>[x til y]</code>. If your range goes downwards, ie. from a larger number to a smaller number, and it is not obvious (the from and to are not literals), then you must add <code>by -1</code>, eg. <code>[x to -3 by -1]</code>
         <li>Similarly, change any range syntax in for loops from <code>for i in [x..y]</code> to <code>for i from x to y</code> and change <code>for i in [x...y]</code> to <code>for i from x til y</code>
         <li>Change any list comprehensions from <code>(x for x in list)</code> to <code>[x for x in list]</code>. Any postfix loops which you do not want returning a list, change to not postfixed, eg. change <code>increase x for x in list</code> to <code>for x in list then increase x</code>. You can shave characters if you wish by using the alias to <code>then</code>, the fat arrow <code>=></code>
         <li>Change any number literals starting with a dot, eg. <code>.5</code> to start with a zero <code>0.5</code>
@@ -5277,8 +5277,9 @@ class Item
 </pre> to simply being functions at the top level of your class body, eg.
 <pre>
 class Item
-  -> 
+  ->
 </pre>
+        If your constructor is an external function, define it with the special property <code>constructor$$</code>.
         <li>Change any calls to super from <code>super</code> to <code>super ...</code> - this is because <code>super</code> is a direct reference to the parent function rather than a call itself.
         <li>Change any bitwise operators to themselves surrounded by dots. Eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is now <code>.&gt;&gt;.</code>
         <li>If you are modifying variables in upper scopes at any time, eg.
@@ -5292,14 +5293,24 @@ x = 10
 do ->
   x := 5
 </pre> if you wanted to modify <code>x</code>
-      <li>If you are using nested list comprehensions (eg. <code>(x + y for x in [1, 2] for y in [3, 4])</code>, you will need to change how you handle the result as instead of being a lists within a list as in CoffeScript (the result of the example would be <code>[[4,5],[5,6]]</code>), the result is flattened (the result of the example in LiveScript would be <code>[4,5,5,6]</code>) 
+      <li>If you are using nested list comprehensions (eg. <code>(x + y for x in [1, 2] for y in [3, 4])</code>, you will need to change this to a regular (non-postfixed) nested loop, as instead of the result being a lists within a list as in CoffeScript (the result of the example would be <code>[[4,5],[5,6]]</code>), the result is flattened (the result of the example in LiveScript would be <code>[4,5,5,6]</code>). Eg. change
+<pre>
+result = (x + y for x in [1, 2] for y in [3, 4])
+</pre>
+      to
+<pre>
+result = for x in [1, 2]
+  for y in [3, 4]
+    x + y
+</pre>
+      in order to get the non-flattened result.
       <li>Change the name of any of your variables named <code>it</code>, <code>that</code>, <code>fallthrough</code>, or <code>otherwise</code>. Those are terrible names for variables so you should change them anyway. This technically isn't required in all cases, but will be less confusing if you do so in all cases. <code>it</code> is used as the implicit argument of functions defined with no parameters, eg. <code>reverse = -> it.reverse!</code>. <code>that</code> refers to the value of the condition, for instance <code>that + 2 if (x + 10)/(y - 18)</code>, <code>that == (x + 10)/(y-18)</code>. <code>fallthrough</code>, if used at the end of a case block makes that block fallthrough to the next case. <code>otherwise</code>, if used directly after case, turns that case into default.
       <li>If you have any multiline strings non triple quoted strings (using <code>"string"</code> or <code>'string'</code>), eg.
 <pre>
 text = "hi 
         there"
 </pre> you will have to change them as in CoffeeScript this would be <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> while LiveScript ignores indentation after newlines so it would be <code>"hi there"</code>
-      <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript.
+      <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript. You can use <code>||</code> instead of <code>or</code> and <code>&amp;&amp;</code> instead of <code>and</code> as those versions do not close implicit calls.
       <li>Change any <code>do</code>s special casing function literals to using <code>let</code>. Eg. in CoffeScript <code>do ($ = jQuery) -> $</code> change to
 <pre>
 let $ = jQuery
@@ -5314,7 +5325,7 @@ f
 f do
   a: b
 </pre>
-      <li>Remove any JavaScript code literals, eg. <code>`js code here`</code>. That functionality is no longer availible in LiveScript. Rewrite the code to use LiveScript instead. 
+      <li>Change any JavaScript code literals, eg. <code>`js code here`</code> to <code>``js code here``</code>
       <li>Change any dually spaced property access, eg. <code>x . y</code> to be either spaced on only one side or not at all. A dually spaced dot is now used to compose functions.
       <li>Change any non spaced identifier subtraction, eg. <code>a-b</code> to spaced <code>a - b</code>. <code>a-1</code> and <code>1-b</code> are still fine. This is because <code>a-b</code> is a valid identifier in LiveScript, equivalent to its camel case, <code>aB</code>.
       </ul>
