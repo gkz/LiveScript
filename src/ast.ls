@@ -479,10 +479,15 @@ class exports.Chain extends Node
   auto-compare: (target) ->
         test = this.head
         switch
-        | test instanceof Literal                  => Binary \===  test, target.0
-        | test instanceof Arr, test instanceof Obj => Binary \==== test, target.0
-        | test instanceof Var and test.value is \_ => Literal \true
-        | otherwise                                =>
+        | test instanceof Literal
+          Binary \===  test, target.0
+        | test instanceof Unary and test.it instanceof Literal
+          Binary \===  test, target.0
+        | test instanceof Arr, test instanceof Obj
+          Binary \==== test, target.0
+        | test instanceof Var and test.value is \_
+          Literal \true
+        | otherwise
           this .add Call target or []
 
   flipIt: -> @flip = true; this
