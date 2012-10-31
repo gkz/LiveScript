@@ -1911,7 +1911,7 @@ class exports.Label extends Node
 #### Pipe
 # Passes input to output via `&`-references.
 class exports.Pipe extends Node
-  (@input, @output, @cascade) ->
+  (@input, @output, @cascade, @implicit) ->
 
   show: -> @cascade and \=>
 
@@ -1941,7 +1941,7 @@ class exports.Pipe extends Node
     code = input.compile o
     o.ref = new String ref
     out = Block output .compile o
-    o.ref.erred or @carp "unreferred #{ if @cascade then \cascad else \pip }ee"
+    @carp "unreferred cascadee" if @implicit and not o.ref.erred
     return "#code#{input.terminator}\n#out" unless level
     code += ", #out"
     if level > LEVEL_PAREN then "(#code)" else code

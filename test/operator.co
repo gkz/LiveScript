@@ -417,7 +417,7 @@ o.d >?= 7
 eq o.c * o.d, 14
 
 
-### Pipe / Cascade
+### Pipe / `with` / Cascade
 Array 0 |> &concat 1, 2
         |> & <<<  {3: 4}
         |> eq '1,2,,4' "#&"
@@ -451,7 +451,6 @@ eq 1, n & -n
 
 compileThrows 'stray reference' 2 '\n&'
 
-compileThrows 'unreferred pipee'    1 'a |> b'
 compileThrows 'unreferred cascadee' 1 'a => b'
 
 
