@@ -31,34 +31,34 @@
     <div class="span2 sidebar">
       <h1><a href="#">LiveScript</a><img src="images/icon.png"></h1>
       <ul class="nav nav-list">
-        <li class="active"><a href="#overview">Overview</a></li> 
+        <li class="active"><a href="#overview">Vue d'ensemble</a></li> 
         <li class="divider">
         <li><a href="#installation">Installation</a></li> 
-        <li><a href="#usage">Usage</a></li> 
-        <li><a href="#community">Community</a></li> 
-        <li><a href="#editor-support">Text Editor Support</a></li> 
-        <li><a href="#prelude-ls">Standard Library</a></li>
+        <li><a href="#usage">Utilisation</a></li> 
+        <li><a href="#community">Communauté</a></li> 
+        <li><a href="#editor-support">&Eacute;diteurs de texte</a></li> 
+        <li><a href="#prelude-ls">Bibliothèque standard</a></li>
         <li class="divider">
         <li><a href="#introduction">Introduction</a></li> 
-        <li><a href="#literals">Literals</a></li> 
-        <li><a href="#operators">Operators</a></li> 
-        <li><a href="#functions">Functions</a></li> 
-        <li><a href="#if-unless">If and Unless</a></li> 
-        <li><a href="#loops">Loops and Comprehensions</a></li> 
+        <li><a href="#literals">Littéraux</a></li> 
+        <li><a href="#operators">Opérateurs</a></li> 
+        <li><a href="#functions">Fonctions</a></li> 
+        <li><a href="#if-unless">If et Unless</a></li> 
+        <li><a href="#loops">Boucles et Compréhensions</a></li> 
         <li><a href="#switch">Switch</a></li> 
-        <li><a href="#assignment">Assignment</a></li> 
-        <li><a href="#property-access">Property Access</a></li> 
+        <li><a href="#assignment">Attribution</a></li> 
+        <li><a href="#property-access">Accès Propriétés</a></li> 
         <li><a href="#exceptions">Exceptions</a></li> 
-        <li><a href="#oop">OOP</a></li> 
+        <li><a href="#oop">POO</a></li> 
         <li class="divider">
-        <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li> 
-        <li><a href="#changes">Changes from Coco</a></li> 
+        <li><a href="#coffee-to-ls">Conversion depuis CoffeeScript</a></li> 
+        <li><a href="#changes">Conversion depuis Coco</a></li> 
         <li><a href="#changelog">Changelog</a></li> 
         <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
-        <li><a href="#name">Name</a></li> 
-        <li><a href="#thanks">Thanks</a></li> 
-        <li><a href="#contributing">Contributing Guide</a></li> 
+        <li><a href="#name">Nom</a></li> 
+        <li><a href="#thanks">Remerciements</a></li> 
+        <li><a href="#contributing">Guide du contributeur</a></li> 
       </ul>
     </div>
     <div class="span4 compiler">
@@ -87,9 +87,9 @@
     <div class="span6 content">
       <div id="overview" class="section">
         <a name="overview"></a>
-        <h2>Overview</h2>
-        <p>LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
-        <p>LiveScript is a fork of <a href="http://satyr.github.com/coco/">Coco</a> and an indirect descendant of CoffeeScript, with which it has much <a href="#coffee-to-ls">compatibility</a>.
+        <h2>Vue d'ensemble</h2>
+        <p>LiveScript est un langage qui compile en JavaScript. Il a un rapport direct avec JavaScript, et vous permet d'écrire des applications considérables en JavaScript, sans répétitivité. LiveScript ajoute non seulement des fonctionnalités pour écrire du code fonctionnel, mais possède aussi nombre d'améliorations pour la programmation orientée objet et la programmation impérative.
+        <p>LiveScript est un descendant indirect de <a href="http://coffeescript.org/">CoffeeScript</a>, direct de <a href="http://satyr.github.com/coco/">Coco</a> avec beaucoup plus de <a href="#coffee-to-ls">compatibilité</a>.
         <div class="major-actions">
           <h3 class="download">1.1.0:</h3>
           <a href="https://github.com/gkz/LiveScript/zipball/1.1.0"><div class="btn btn-large btn">zip</div></a>
@@ -99,12 +99,12 @@
           <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://livescript.net/" data-text="LiveScript - functional CoffeeScript" data-size="large" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
         </div>
-<p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for updates on LiveScript. 
+<p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Suivez @gkzahariev (EN)</a> pour vous tenir au courant. 
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-        <p>Featured blog post: <strong><a href="blog/powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript</a></strong>
-        <p>Double-click an example to load it into the compiler/repl.
-      <h3>Some Examples</h3>
-      <p>Curried functions, implicit switch, concat operator, and function composition:
+        <p>Dernier article: <strong><a href="blog/powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript (EN)</a></strong></p>
+        <p>Double-cliquez un exemple pour le compiler.
+      <h3>Examples</h3>
+      <p>Fonctions currifiées, switch implicite, opérateur de concaténation, et composition de fonctions :
       <div class="example">
         <div class="example-ls">
           <h5>LiveScript</h5>
@@ -127,7 +127,7 @@ take 2, [1 2 3 4 5] #=> [1, 2]
 take-three = take 3
 take-three [3 to 8] #=> [3, 4, 5]
 
-# Function composition, 'reverse' from prelude.ls
+# Composition, 'reverse' de prelude.ls
 last-three = reverse >> take-three >> reverse
 last-three [1 to 8] #=> [6, 7, 8]
 </pre>
@@ -178,7 +178,7 @@ function compose$(fs){
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
 
-# Easy listing of implicit objects
+# Listage facile, objets implicites
 table1 =
   * id: 1
     name: \george
@@ -195,10 +195,10 @@ table2 =
   * id: 3
     age: 26
 
-# Implicit access, accessignment
+# Accès implicite, accessignment
 up-case-name = (.name .= to-upper-case!)
 
-# Curried functions using -->
+# Fonctions currifiées -->
 sort-by = (prop, list) --> list.sort (a, b) -> 
   | a[prop] < b[prop] => -1
   | a[prop] > b[prop] => 1
@@ -210,12 +210,12 @@ sort-by = (prop, list) --> list.sort (a, b) ->
 
 
 
-# List comprehensions, destructuring, piping
+# Compréhensions, déstructuration, piping
 [{id:id1, name, age} for {id:id1, name} in table1
                      for {id:id2, age} in table2
                      when id1 is id2]
 |> sort-by \id
-|> each up-case-name # using 'each' from prelude.ls
+|> each up-case-name # 'each' de prelude.ls
 |> JSON.stringify
 #=>
 #[{"id":1,"name":"GEORGE","age":20},
@@ -236,9 +236,9 @@ sort-by = (prop, list) --> list.sort (a, b) ->
 
 
 
-# operators as functions, backpipe
+# Opérateurs en tant que fonctions, pipe inversée
 map (.age), table2 |> fold1 (+)
-#=> 67 ('fold1' and 'map' from prelude.ls)
+#=> 67 ('fold1' et 'map' de prelude.ls)
 </pre>
         </div>
         <div class="example-js">
@@ -312,13 +312,13 @@ function curry$(f, args){
 </pre>
         </div>
       </div>
-      <p>Unnested callbacks and parentheses free chaining:
+      <p>Rappels désimbriqués, chaînage sans parenthèses :
       <div class="example">
         <div class="example-ls">
         <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-<-! $ \h1 .on \click
-alert \boom!
+<-! $ 'h1' .on \click
+alert 'boom!'
 </pre>
         </div>
         <div class="example-js">
@@ -335,106 +335,106 @@ $('h1').on('click', function(){
     <div id="installation" class="section">
       <a name="installation"></a>
       <h2>Installation</h2>
-      <p>You can install LiveScript through the <a href="http://npmjs.org">Node Package Manager</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
-      <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.1.0">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.1.0">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
-      <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates. If you use this, your LiveScript scripts must be inline (not linked to with the <code>src</code> attribute), be placed after the included <code>livescript.js</code> file, and the script tags must have the attribute <code>type="text/ls"</code>.
+      <p>Vous pouvez installer LiveScript depuis <a href="http://npmjs.org">Node Package Manager (EN)</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
+      <p>Vous pouvez aussi le télécharger (<a href="https://github.com/gkz/LiveScript/zipball/1.1.0">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.1.0">tar.gz</a>), ouvrir le dossier, et éxecuter <code>sudo bin/slake install</code>. En utilisant Git pour télécharger : <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> doit être installé sur votre machine.</p>
+      <p>Vous pouvez aussi l'inclure directement dans le navigateur en incluant le fichier <code>LiveScript/extras/livescript.js</code> via une balise script. C'est en fait la technique utilisée sur cette page. Si vous utilisez cette méthode, vos scripts LiveScript doivent être à même la page (sans utiliser l'attribut <code>src</code>), être placés après l'inclusion de <code>livescript.js</code>, et la balise script doit avoir l'attribut <code>type="text/ls"</code>.
     </div>
     <div id="usage" class="section">
       <a name="usage"></a>
-      <h2>Usage</h2>
-      <p>Usage: <code>lsc [options] [files] [arguments]</code></p>
+      <h2>Utilisation</h2>
+      <p>Utilisation: <code>lsc [options] [fichiers] [arguments]</code></p>
       <h3>Options</h3>
       <table class="usage-options table table-striped table-bordered">
-        <tr><td>-i, --interactive</td><td>start REPL; use ^J for multiline input</td></tr>
-        <tr><td>-c, --compile</td><td>compile to JavaScript and save as .js files</td></tr>
-        <tr><td>-d, --prelude</td><td>automatically import prelude.ls</td></tr>
-        <tr><td>-k, --const</td><td>compile all variables as constants</td></tr>
-        <tr><td>-o, --output DIR</td><td>compile into the specified directory</td></tr>
-        <tr><td>-w, --watch</td><td>watch scripts for changes, and repeat</td></tr>
-        <tr><td>-s, --stdin</td><td>read stdin</td></tr>
-        <tr><td>-e, --eval</td><td>read command line arguments as script</td></tr>
-        <tr><td>-r, --require FILE+</td><td>require libraries before executing</td></tr>
-        <tr><td>-b, --bare</td><td>compile without the top-level function wrapper</td></tr>
-        <tr><td>-p, --print</td><td>print the result to stdout</td></tr>
-        <tr><td>-l, --lex</td><td>print the tokens the lexer produces</td></tr>
-        <tr><td>-t, --tokens</td><td>print the tokens the rewriter produces</td></tr>
-        <tr><td>-a, --ast</td><td>print the syntax tree the parser produces</td></tr>
-        <tr><td>-j, --json</td><td>print/compile as JSON</td></tr>
-        <tr><td>-n, --nodejs ARGS+</td><td>pass options through to the "node" binary</td></tr>
-        <tr><td>-v, --version</td><td>display version</td></tr>
-        <tr><td>-h, --help</td><td>display this</td></tr>
+        <tr><td>-i, --interactive</td><td>lance le compileur intéractif, utilisez ^J pour du multiligne</td></tr>
+        <tr><td>-c, --compile</td><td>compile en JavaScript et sauvegarde en .js</td></tr>
+        <tr><td>-d, --prelude</td><td>importe automatiquement prelude.ls</td></tr>
+        <tr><td>-k, --const</td><td>compile toutes les variables en tant que constantes</td></tr>
+        <tr><td>-o, --output DIR</td><td>compile dans le dossier de sortie précisé</td></tr>
+        <tr><td>-w, --watch</td><td>surveille les scripts lors de changements et relance</td></tr>
+        <tr><td>-s, --stdin</td><td>lis le flux stdin</td></tr>
+        <tr><td>-e, --eval</td><td>lis les arguments CLI comme script</td></tr>
+        <tr><td>-r, --require FILE+</td><td>inclus des bibliothèques avant l'éxecution</td></tr>
+        <tr><td>-b, --bare</td><td>compile sans l'IIFE globale</td></tr>
+        <tr><td>-p, --print</td><td>affiche le résultat dans stdout</td></tr>
+        <tr><td>-l, --lex</td><td>affiche les tokens que le lexer produit</td></tr>
+        <tr><td>-t, --tokens</td><td>affiche les tokens que le rewriter produit</td></tr>
+        <tr><td>-a, --ast</td><td>affiche l'arbre syntaxique abstrait que le parser produit</td></tr>
+        <tr><td>-j, --json</td><td>affiche/compile en tant que JSON</td></tr>
+        <tr><td>-n, --nodejs ARGS+</td><td>passe les options à nodejs</td></tr>
+        <tr><td>-v, --version</td><td>affiche la version</td></tr>
+        <tr><td>-h, --help</td><td>affiche ceci</td></tr>
       </table>
 
-      <h3>Examples</h3>
+      <h3>Exemples</h3>
 
       <ul>
-        <li>Run a LiveScript file (through node.js): <code>lsc file.ls</code> - you can omit the <code>.ls</code> if you wish.
-        <li>Compile a LiveScript file, creating a <code>file.js</code>: <code>lsc -c file.ls</code>
-        <li>Watch a file and compile on changes: <code>lsc -wc file.ls</code>
-        <li>Compile a directory and output to another directory: <code>lsc -co output src</code>
-        <li>Watch a directory, compile on change into an output directory: <code>lsc -wco output src</code>
-        <li>Compile a one-liner and print the JS: <code>lsc -bpe '[1 to 5]'</code>
-        <li>Start the LiveScript REPL: <code>lsc -i</code> - <code>Ctrl-D</code> to exit, use <code>Ctrl-J</code> for multiline input.
+        <li>Lancer un fichier LiveScript (via node.js): <code>lsc file.ls</code> - le <code>.ls</code> est optionnel.
+        <li>Compile un fichier LiveScript, créant un fichier .js : <code>lsc -c file.ls</code>
+        <li>Surveille un fichier LiveScript et le compile lors de changements : <code>lsc -wc file.ls</code>
+        <li>Compile un dossier entier vers un autre dossier : <code>lsc -co output src</code>
+        <li>Surveille un dossier, le compile vers un autre dossier lors de changements : <code>lsc -wco output src</code>
+        <li>Compile un petit extrait et affiche le résultat dans la console : <code>lsc -bpe '[1 to 5]'</code>
+        <li>Lance le compilateur intéractif : <code>lsc -i</code> - <code>Ctrl-D</code> pour quitter, utilisez <code>Ctrl-J</code> pour du multiligne.
       </ul>
     </div>
     <div id="community" class="section">
       <a name="community"></a>
-      <h2>Community</h2>
+      <h2>Commauté</h2>
       <ul>
-        <li><a href="https://github.com/gkz/LiveScript/issues">LiveScript GitHub issues section</a>
+        <li><a href="https://github.com/gkz/LiveScript/issues">Issues (GitHub)</a>
         <li><a href="https://groups.google.com/forum/#!forum/livescript">Google Groups</a>
         <li><a href="http://www.reddit.com/r/livescript/">r/livescript</a>
-        <li>Find us at #livescript on freenode.
+        <li>Retrouvez-nous sur #livescript@freenode.
       </ul>
       <a name="blog"></a>
       <h3>Blog</h3>
       <ul>
-        <li><a href="blog/livescript-1.1.0.html">LiveScript 1.1.0 Released!</a>
-        <li><a href="blog/powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript</a>
-        <li><a href="blog/livescript-1.0.0.html">LiveScript 1.0.0 Released</a>
-        <li><a href="blog/functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript - Part 2</a>
-        <li><a href="blog/ten-reasons-to-switch-from-coffeescript.html">10 Reasons to Switch from CoffeeScript to LiveScript</a>
-        <li><a href="blog/functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a>
-        <li><a href="blog/livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends</a>
+        <li><a href="blog/livescript-1.1.0.html">LiveScript 1.1.0 Released! (EN)</a>
+        <li><a href="blog/powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript (EN)</a>
+        <li><a href="blog/livescript-1.0.0.html">LiveScript 1.0.0 Released (EN)</a>
+        <li><a href="blog/functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript - Part 2 (EN)</a>
+        <li><a href="blog/ten-reasons-to-switch-from-coffeescript.html">10 Reasons to Switch from CoffeeScript to LiveScript (EN)</a>
+        <li><a href="blog/functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls (EN)</a>
+        <li><a href="blog/livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends (EN)</a>
       </ul>
-      <h3>In the Wild</h3>
+      <h3>Sur le web</h3>
       <ul>
-        <li><a href="https://github.com/gkz/LiveScript/wiki/Projects-using-LiveScript">Projects using LiveScript</a>
-        <li><a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">Projects supporting LiveScript</a>
+        <li><a href="https://github.com/gkz/LiveScript/wiki/Projects-using-LiveScript">Projets utilisant LiveScript (EN)</a>
+        <li><a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">Projets supportant LiveScript (EN)</a>
       </ul>
-      <p>Add your own projects to the lists!
+      <p>Ajoutez vos propres projets à la liste !
     </div>
     <div id="editor-support" class="section">
       <a name="editor-support"></a>
-      <h2>Text Editor Support</h2>
+      <h2>&Eacute;diteurs de texte</h2>
       <ul>
-        <li>Vim users check out <a href="https://github.com/gkz/vim-ls">vim-ls</a>.
-        <li>TextMate, Chocolat, and Sublime Text bundle for LiveScript: <a href="https://github.com/paulmillr/LiveScript.tmbundle">LiveScript.tmbundle</a>.
-        <li>Emacs basic LiveScript support: <a href="https://github.com/tensai-cirno/livescript-mode">livescript-mode</a>
+        <li>Utilisateurs de Vim, voici <a href="https://github.com/gkz/vim-ls">vim-ls</a>.
+        <li>Bundle TextMate, Chocolat, et Sublime Text pour LiveScript : <a href="https://github.com/paulmillr/LiveScript.tmbundle">LiveScript.tmbundle</a>.
+        <li>Support basique dans Emacs : <a href="https://github.com/tensai-cirno/livescript-mode">livescript-mode</a>
       </ul>
-      <p>Add yours to the <a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">wiki page</a>.
+      <p>Ajoutez le votre dans le <a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">wiki (EN)</a>.
     </div>
     <div id="prelude-ls" class="section">
       <a name="prelude-ls">
-      <h2>Standard Library</h2>
-      <p><a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> is the recommended base library when using LiveScript. It allows you to do things such as:
+      <h2>Bibliothèque standard</h2>
+      <p><a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> est la bibliothèque recommandée pour utiliser avec LiveScript. Elle vous permet de faire des choses telles que :
 
 <pre class="prettyprint lang-ls">
 [1 2 3] |> map (* 2) |> filter (> 3) |> fold1 (+) 
 #=> 10
 </pre>
 
-      <p>You can automatically import prelude.ls when compiling or using the repl by using the <code>-d</code> or <code>--prelude</code> options.
+      <p>Vous pouvez importer automatiquement prelude.ls en compilant ou avec le compilateur intéractif via l'option <code>-d</code> (ou <code>--prelude</code>).
 
-      <p>Prelude is loaded on this page and you can use it when running things in the compiler/repl to the right.
+      <p>Prelude.ls est chargé sur cette page, vous pouvez en utiliser les fonctions dans le compilateur (panneau droite).
     </div>
     <hr>
     <div id="introduction" class="section">
       <a name="introduction"></a>
       <h2>Introduction</h2>
-      <p>Like many modern languages, blocks are delimited by whitespace indentation and newlines are used instead of semicolons to terminate statements (you can still use semicolons if you want to fit more than one statement on a line).
+      <p>Comme beaucoup de langages modernes, les blocs sont délimités par l'indentation avec des espaces/tabulations et les instructions sont séparées par des lignes plutôt que par des points-virgules (vous pouvez toujours utilisez des points-virgules pour avoir plus d'une instruction sur une ligne).
 
-      <p>For example (LiveScript on the left, compiled JavaScript on the right):
+      <p>Par exemple (LiveScript sur la gauche, JavaScript compilé sur la droite):
 
       <div class="example">
         <div class="example-ls">
@@ -452,9 +452,9 @@ if (2 + 2 === 4) {
         </div>
       </div>
 
-      <p class="note">You can try all these examples for yourself using the LiveScript compiler/repl to the right.
+      <p class="note">Vous pouvez tester tous ces exemples en utilisant le compilateur sur la droite.
 
-      <p>To further clear things up, you can omit the parentheses when calling a function.
+      <p>Pour nettoyer votre code, vous pouvez omettre les parenthèses quand vous appelez une fonction.
 
       <div class="example">
         <div class="example-ls">
@@ -469,29 +469,29 @@ add(2, 3);
         </div>
       </div>
 
-      <p>And comments are:
+      <p>Les commentaires sont :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-# from here to the end of the line.
+# d'ici à la fin de la ligne.
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-// from here to the end of the line.
+// d'ici à la fin de la ligne.
 </pre>
         </div>
       </div>
 
-      <p class="note">Lisp hackers, you may be pleased to know that you can use dashes in the name of your variables and functions. The names are equivalent to, and are compiled to, camel case. Eg. <code>my-value = 42</code> == <code>myValue = 42</code>.
+      <p class="note">Amis de Lisp, vous serez heureux d'apprendre que vous pouvez utiliser les tirets dans vos noms de variables et de fonctions. Ces noms sont identiques à - et compilés vers - leur équivalent camelCase. <code>my-value = 42</code> == <code>myValue = 42</code>.
 
-      <p>The file extension for LiveScript is <code>.ls</code>.
+      <p>L'extension est <code>.ls</code>.
 
 
-      <h3>Defining Functions</h3>
+      <h3>Définir une fonction</h3>
 
-      <p>Defining functions is very lightweight in LiveScript:
+      <p>La définition de fonction est très simple en LiveScript :
 
       <div class="example">
         <div class="example-ls">
@@ -499,12 +499,12 @@ add(2, 3);
 
 (x, y) -> x + y 
 
--> # an empty function 
+-> # une fonction vide
 
 times = (x, y) ->
   x * y
-# multiple lines, and be assigned to 
-# a var like in JavaScript
+# multiligne, assignée à une variable
+# comme en JavaScript
 </pre>
   </div>
   <div class="example-js">
@@ -523,10 +523,10 @@ times = function(x, y){
         </div>
       </div>
 
-      <p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned. However, you can still use <code>return</code> to force returns if you want, and you can add a bang to your definitions to suppress auto-returning <code>no-ret = !(x) -> ...</code>.
+      <p>Comme vous pouvez le voir, les déclarations sont bien plus courtes. Vous pouvez aussi voir que le <code>return</code> est implicite. En LiveScript, presque tout est une expression et la dernière est automatiquement retournée. Cependant, vous pouvez toujours utiliser <code>return</code> pour forcer un retour, ou ajouter un point d'exclamation à la définition pour supprimer le retour implicite <code>no-ret = !(x) -> ...</code>.
 
-      <h3>Assignment</h3>
-      <p>Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. 
+      <h3>Attribution</h3>
+      <p>L'attribution basique est comme vous vous y attendez, <code>variable = value</code>, et il n'y a pas besoin de déclarer les variables. Cependant, contrairement à CoffeeScript, vous devez utiliser <code>:=</code> pour modifier les variables dans des portées supérieures. 
 
       <div class="example">
         <div class="example-ls">
@@ -565,7 +565,7 @@ x;
         </div>
       </div>
       
-      <p>Almost everything is an expression, which means you can do things like:
+      <p>Presque tout est une expression, ce qui signifie que vous pouvez faire des choses comme :
 
       <div class="example">
         <div class="example-ls">
@@ -586,9 +586,9 @@ x;
         </div>
       </div>
 
-      <p>Things such as loops, switch statements, and even try/catch statements are all expressions. 
+      <p>Même les boucles, switch, voire les try/catch sont des expressions. 
 
-      <p>If you want to simply declare a variable and not initialize it, you can use <code>var</code>.
+      <p>Si vous voulez simplement déclarer une variable sans l'initialiser, utilisez <code>var</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -603,32 +603,32 @@ var x;
         </div>
       </div>
 
-      <p>You can also declare constants in LiveScript using <code>const</code>. They are checked at compile time - the compiled JS is no different.
+      <p>Vous pouvez aussi déclarer des constantes avec le mot-clef <code>const</code>. Les vérifications sont faites à la compilation - le JavaScript compilé est le même.
       
-      <p>Attempting to compile the following:
+      <p>Essayer de compiler le code suivant :
 
 <pre class="prettyprint lang-ls">
 const x = 10
 x = 0
 </pre>
 
-      <p>Results in <code>redeclaration of constant "x" on line 2</code>. 
+      <p>Donnera l'erreur suivante : <code>redeclaration of constant "x" on line 2</code> (<code>re-déclaration de la constante "x" ligne 2</code>). 
 
-      <p>However, objects are not frozen if declared as constants - you can still modify their properties. You can force all variables to be constants if you compile with the <code>-k</code> or <code>--const</code> flags.
+      <p>&Agrave; l'inverse, les objets ne sont pas "gêlés" - vous pouvez quand même modifier leurs propriétés. Vous pouvez forcer toutes les variables à être des constantes à l'aide de l'option <code>-k</code> (ou <code>--const</code>).
 
 
-      <h3>Info</h3>
+      <h3>Infos</h3>
 
-      <p>For differences from CoffeeScript, see the <a href="#coffee-to-ls">CoffeeScript to LiveScript Conversion Guide</a>.
-      <p>You can double click any of the examples to load the LiveScript code into the compiler to the right, or you can play around and try out your own code. Press run to execute the compiled JavaScript. Note that LiveScript wraps compiled JS in a safety wrapper <code>(function(){...contents...}).call(this);</code> - this wrapper has been omitted in all examples and this page's compiler output for conciseness.
+      <p>Pour voir les différences avec CoffeeScript, allez au paragraphe <a href="#coffee-to-ls">Conversion depuis CoffeeScript</a>.
+      <p>Vous pouvez double-cliquer n'importe quel exemple pour le charger dans le compilateur à droite, ou vous pouvez charger votre propre code. Notez que LiveScript entoure le JavaScript dans une IIFE <code>(function(){...contenu...}).call(this);</code> - retiré des exemples et des résultats du compilateur pour la concision.
     </div>
     <div id="literals" class="section">
       <a name="literal"></a>
-      <h2>Literals</h2>
+      <h2>Littéraux</h2>
 
-      <h3>Numbers</h3>
+      <h3>Numbres</h3>
 
-      <p><code>.4</code> is not valid, it must be preceded with a zero, eg. <code>0.4</code>.
+      <p><code>.4</code> est invalide, vous devez le précéder d'un zero : <code>0.4</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -647,7 +647,7 @@ x = 0
         </div>
       </div>
 
-      <p>Underscores and appended letters are ignored.
+      <p>Les traits de soulignement (underscores) et autres lettres sont ignorées :
 
       <div class="example">
         <div class="example-ls">
@@ -662,7 +662,7 @@ x = 0
         </div>
       </div>
 
-      <p>Any base can be used from 2 to 36 using <code>~</code>.
+      <p>Vous pouvez utiliser n'importe quelle base de 2 à 36 en utilisant <code>~</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -681,9 +681,9 @@ x = 0
         </div>
       </div>
 
-      <h3>Booleans, Undefined, Null</h3>
+      <h3>Booléens, Undefined, Null</h3>
 
-      <p>Aliases as in CoffeeScript.
+      <p>Alias comme en CoffeeScript :
 
       <div class="example">
         <div class="example-ls">
@@ -708,9 +708,9 @@ false;
         </div>
       </div>
 
-      <p>In JavaScript, <code>undefined</code> can be redefined, so it is prudent to use the <code>void</code> operator which produces the undefined value, always.
+      <p>En JavaScript, <code>undefined</code> peut être redéfini, il est donc plus prudent d'utiliser <code>void</code> qui produira toujours undefined.
 
-      <p><code>void</code> at the top level compiles to nothing (for use as a placeholder) - it must be used as a value to compile.
+      <p><code>void</code> ne se compile en rien (utilisé comme espace réservé) - il peut cependant être utilisé comme valeur :
 
       <div class="example">
         <div class="example-ls">
@@ -735,9 +735,9 @@ null;
         </div>
       </div>
 
-      <h3>Strings</h3>
+      <h3>Chaînes</h3>
 
-      <p>You can use double or single quotes.
+      <p>Vous pouvez utiliser des apostrophes ou des guillemets :
 
       <div class="example">
         <div class="example-ls">
@@ -755,7 +755,7 @@ null;
       </div>
 
 
-      <p>Strings without whitespace can be written with a preceding backslash instead of quotes.
+      <p>Les chaînes sans espaces peuvent être écrites avec un anti-slash :
 
       <div class="example">
         <div class="example-ls">
@@ -770,7 +770,7 @@ null;
         </div>
       </div>
 
-      <p>Double quoted strings allow interpolation. Single quoted strings are passed through as-is. Simple variables can be interpolated without curly braces.
+      <p>Les chaînes entre guillemets acceptent les interpolations. Les variables simples peuvent être interpolées sans accolades.
 
       <div class="example">
         <div class="example-ls">
@@ -795,7 +795,7 @@ variable = "world";
         </div>
       </div>
 
-      <p>Prefixing your interpolated string with <code>%</code> returns and the raw parts as an array. This allows you to join the result as you wish.
+      <p>Préfixer une interpolation avec <code>%</code> retourne les parties en tant que liste, vous permettant de les joindre comme bon vous semble.
 
       <div class="example">
         <div class="example-ls">
@@ -810,30 +810,29 @@ variable = "world";
         </div>
       </div>
 
-      <p>Multiline strings (can also do the same but with double quotes for use with interpolation):
+      <p>Chaînes multilignes (vous pouvez aussi utiliser des guillemets pour utiliser les interpolations) :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-multiline = 'string can be multiline 
-            and go on and on 
-            beginning whitespace is 
-            ignored'
+multiline = 'les chaînes peuvent être multilignes
+            en continuant tant que nécessaire
+            les espaces précédant sont
+            ignorés'
 heredoc = '''
-            string can be multiline
-            with newlines
-            and go on and on
-            beginning whitespace is
-            ignored
+            les chaînes peuvent être multilignes
+            en continuant tant que nécessaire
+            les espaces précédant sont
+            ignorés
 '''
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var multiline, heredoc;
-multiline = 'string can be multiline and go on and on beginning whitespace is ignored';
+multiline = 'les chaînes peuvent être multilignes en continuant tant que nécessaire les espaces précédant sont ignorés';
 
-heredoc = 'string can be multiline\nwith newlines\nand go on and on\nbeginning whitespace is\nignored';
+heredoc = 'les chaînes peuvent être multilignes\nen continuant tant que nécessaire\nles espaces précédant sont\nignorés';
 
 
 
@@ -844,14 +843,14 @@ heredoc = 'string can be multiline\nwith newlines\nand go on and on\nbeginning w
         </div>
       </div>
 
-      <h3>Comments</h3>
+      <h3>Commentaires</h3>
 
-      <p>Single line comments start off with a <code>#</code>. They are not passed through to the compiled output.
+      <p>Les commentaires monoligne commencent avec un <code>#</code>. Ils ne sont pas gardés dans la version compilée.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-# single line comment
+# commentaire
 </pre>
         </div>
         <div class="example-js">
@@ -862,30 +861,30 @@ heredoc = 'string can be multiline\nwith newlines\nand go on and on\nbeginning w
         </div>
       </div>
 
-      <p>Multiline comments are preserved in the output.
+      <p>Les commentaires multiligne sont gardés
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-/* multiline comments
-   use this format and are preserved
-   in the output unlike single line ones
+/* Utilisez ce format
+   pour conserver
+   vos commentaires
 */
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-/* multiline comments
-   use this format and are preserved
-   in the output unlike single line ones
+/* Utilisez ce format
+   pour conserver
+   vos commentaires
 */
 </pre>
         </div>
       </div>
 
-      <h3>Objects</h3>
+      <h3>Objets</h3>
 
-      <p>Braces are optional:
+      <p>Les accolades sont optionnelles :
 
       <div class="example">
         <div class="example-ls">
@@ -923,7 +922,7 @@ oneline = {
         </div>
       </div>
 
-      <p>Dynamic keys:
+      <p>Clefs dynamiques :
 
       <div class="example">
         <div class="example-ls">
@@ -941,7 +940,7 @@ obj = (ref$ = {}, ref$[variable + ""] = 234, ref$[person.eyeColor] = false, ref$
         </div>
       </div>
 
-      <p>Property setting shorthand - easily set properties with variables if you want the property name to be the same as the variable name.
+      <p>Raccourci pour les paramètres - vous permet d'utiliser plus rapidement des variables quand la clef est le nom de la variable en valeur :
 
       <div class="example">
         <div class="example-ls">
@@ -964,7 +963,7 @@ obj = {
         </div>
       </div>
 
-      <p>Flagging shorthand - easily set boolean properties.
+      <p>Raccourci pour les booléens :
 
       <div class="example">
         <div class="example-ls">
@@ -982,7 +981,7 @@ obj = {
         </div>
       </div>
 
-      <p>This - no need to use a dot <code>.</code> to access properties.
+      <p>This - Pas besoin d'utiliser de <code>.</code> pour accéder aux propriétés.
 
       <div class="example">
         <div class="example-ls">
@@ -1001,9 +1000,9 @@ this.location;
         </div>
       </div>
 
-      <h3>Regular Expressions</h3>
+      <h3>Expressions régulières</h3>
 
-      <p>Regular regex delineated with a single <code>/</code>.
+      <p>Les expressions régulières sont délimitées avec un simple <code>/</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -1018,15 +1017,15 @@ this.location;
         </div>
       </div>
 
-      <p>Delineated with <code>//</code> - multiline, comments, spacing!
+      <p>Lorsque délimitées avec <code>//</code>, vous permettent d'utiliser des espaces, des interpolations et du multiligne !
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 //
-| [!=]==?             # equality
+| [!=]==?             # équalité
 | @@                  # arguments
-| <\[(?:[\s\S]*?\]>)? # words
+| <\[(?:[\s\S]*?\]>)? # mots
 //g
 </pre>
         </div>
@@ -1042,9 +1041,9 @@ this.location;
         </div>
       </div>
 
-      <h3>Lists</h3>
+      <h3>Listes</h3>
 
-      <p>Regular list literal delineated with brackets:
+      <p>Les listes normales sont entre crochets :
 
       <div class="example">
         <div class="example-ls">
@@ -1059,7 +1058,7 @@ this.location;
         </div>
       </div>
 
-      <p>Commas are not needed if the item preceding is not callable:
+      <p>Les virgules ne sont pas nécessaires si l'élément précédent n'est pas appellable :
 
       <div class="example">
         <div class="example-ls">
@@ -1074,7 +1073,7 @@ this.location;
         </div>
       </div>
 
-      <p>Implicit lists created with an indented block. They need at least two items for it to work. If you have only one item, you can add a yaddayaddayadda <code>...</code> to force the implicit list.
+      <p>Vous pouvez créer des listes implicites en indentant un bloc. Vous devez avoir au moins deux éléments pour que cela fonctionne. Si vous n'en avez qu'un, utilisez le yaddayaddayadda <code>...</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -1104,7 +1103,7 @@ oneItem = [1];
         </div>
       </div>
 
-      <p>When implicitly listing, you can use an asterisk <code>*</code> to disambiguate implicit structures such as implicit objects and implicit lists. The asterisk does not denote an item of the list, but merely sets aside an implicit structure so that it is not muddled with the other ones being listed.
+      <p>Quand vous utilisez des listes implicites, vous pouvez utiliser un astérisque <code>*</code> pour désambiguïser entre les structures. L'astérique ne représente pas un élément de la liste, mais décale en fait une structure implicite pour ne pas qu'elle soit mélangée avec les autres.
 
       <div class="example">
         <div class="example-ls">
@@ -1173,7 +1172,7 @@ objOneList = [{
         </div>
       </div>
 
-      <p>Lists of words:
+      <p>Liste de mots :
 
       <div class="example">
         <div class="example-ls">
@@ -1190,13 +1189,13 @@ objOneList = [{
 
       <h3>Ranges</h3>
 
-      <p><code>to</code> means up to and <em>including</em> the number. <code>til</code> means up <em>until</em> but not including the number.
+      <p><code>to</code> signifie <em>à</em>, et inclu le nombre à droite. <code>til</code> signifie <em>jusqu'à</em> et n'inclue pas le nombre.
 
-      <p>You can optionally add a <code>by</code> which defines the step of the range.
+      <p>Vous pouvez optionnellement ajouter un <code>by</code> qui définira l'étape.
 
-      <p>If you omit the first number, it is assumed to be <code>0</code>.
+      <p>Si vous omettez le premier nombre, il sera <code>0</code>.
 
-      <p>With number/string literals:
+      <p>Avec des nombres/chaînes littéraux :
 
       <div class="example">
         <div class="example-ls">
@@ -1224,7 +1223,7 @@ for (i$ = 0; i$ <= 5; ++i$) {
         </div>
       </div>
 
-      <p>With any expression - if your range uses expressions, and you want it to go downwards (ie. from a larger number to a smaller one) you must explicitly set <code>by -1</code>.
+      <p>Avec n'importe quelle expression - si vous voulez aller vers le bas (d'un nombre à un autre plus petit), vous devez le préciser explicitement avec <code>by -1</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -1248,9 +1247,9 @@ for (i$ = x; i$ >= 0; --i$) {
         </div>
       </div>
 
-      <h3>Misc</h3>
+      <h3>Autres</h3>
 
-      <p>Labels (useful for nested loops):
+      <p>Labels (utile pour les boucles imbriquées) :
 
       <div class="example">
         <div class="example-ls">
@@ -1267,7 +1266,7 @@ label: {
         </div>
       </div>
 
-      <p><code>constructor</code> shorthand.
+      <p>Raccourci pour <code>constructor</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -1286,7 +1285,7 @@ x.constructor.y;
         </div>
       </div>
 
-      <p>Yaddayaddayadda - a placeholder:
+      <p>Yaddayaddayadda - un espace réservé :
 
       <div class="example">
         <div class="example-ls">
@@ -1304,11 +1303,11 @@ throw Error('unimplemented');
 
     <div id="operators" class="section">
       <a name="operators"></a>
-      <h2>Operators</h2>
+      <h2>Opérateurs</h2>
 
-      <h3>Number</h3>
+      <h3>Nombre</h3>
 
-      <p>The standard math operators:
+      <p>Les opérateurs mathématiques standarts :
 
       <div class="example">
         <div class="example-ls">
@@ -1329,7 +1328,7 @@ throw Error('unimplemented');
         </div>
       </div>
 
-      <p>There is a remainder operator, as in JavaScript - but we also add a proper modulo operator.
+      <p>Il y a aussi un opérateur pour le reste, comme en JavaScript - ainsi que le modulo :
 
 
       <div class="example">
@@ -1349,7 +1348,7 @@ var ref$;
         </div>
       </div>
 
-      <p>The power is right associative, and has higher precedence than unary ops. <code>^</code> is an alias for <code>**</code>
+      <p>L'opérateur de puissance est associatif à droite, et a une plus haute précédence que les opérateurs unaires. <code>^</code> est un alias pour <code>**</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -1368,7 +1367,7 @@ Math.pow(3, 4);
         </div>
       </div>
 
-      <p>Increments and decrements:
+      <p>Incrémentation, décrementation :
 
       <div class="example">
         <div class="example-ls">
@@ -1405,7 +1404,7 @@ n;
         </div>
       </div>
 
-      <p>Bitwise and shift operators:
+      <p>Opérateurs de bits et de décalage :
 
 
       <div class="example">
@@ -1433,7 +1432,7 @@ n;
         </div>
       </div>
 
-      <p>Casting to a number:
+      <p>Casting vers un nombre :
 
       <div class="example">
         <div class="example-ls">
@@ -1450,9 +1449,9 @@ n;
         </div>
       </div>
 
-      <h3>Comparison</h3>
+      <h3>Comparaison</h3>
 
-      <p>Strict equality (no type coercion):
+      <p>&Eacute;galité stricte (pas de conversion de type) :
 
       <div class="example">
         <div class="example-ls">
@@ -1477,7 +1476,7 @@ n;
         </div>
       </div>
 
-      <p>Fuzzy equality (with type coercion):
+      <p>&Eacute;galité simple (avec conversion de type) :
 
       <div class="example">
         <div class="example-ls">
@@ -1494,7 +1493,7 @@ n;
         </div>
       </div>
 
-      <p>Greater/less than:
+      <p>Supérieur/inférieur à :
 
       <div class="example">
         <div class="example-ls">
@@ -1515,7 +1514,7 @@ n;
         </div>
       </div>
 
-      <p>Chained comparison:
+      <p>Enchaînement de comparaisons :
 
       <div class="example">
         <div class="example-ls">
@@ -1534,7 +1533,7 @@ var ref$;
         </div>
       </div>
 
-      <p>Minimum/maximum - returns the smaller/larger of the two operands.
+      <p>Minimum/maximum - retourne le minimum/maximum des deux opérandes :
 
       <div class="example">
         <div class="example-ls">
@@ -1553,7 +1552,7 @@ var ref$;
         </div>
       </div>
 
-      <p>When one of the operands of a equals (<code>==</code> or <code>is</code>, and the negatives for that) is a regex literal it will test the other operand against it. Equality compiles to <code>exec</code> so you can use the results, while the negative simply compiles to <code>test</code>.
+      <p>Quand une des deux opérandes d'une comparaison (<code>==</code> ou <code>is</code>, ainsi que les versions inversées) est une expression régulière littérale, elle sera testée contre l'autre opérande. Une égalité donne un appel d'<code>exec</code> pour que vous puissiez utiliser les résultats, alors qu'une inégalité utilise <code>test</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -1573,9 +1572,9 @@ var ref$;
       </div>
 
 
-      <h3>Logic</h3>
+      <h3>Logique</h3>
 
-      <p>The basics:</p>
+      <p>Les bases :</p>
 
       <div class="example">
         <div class="example-ls">
@@ -1604,7 +1603,7 @@ true || false;
         </div>
       </div>
 
-      <p>A logical operator not commonly seen in other languages - exclusive or:
+      <p>Ou exclusif - un opérateur peu vu dans d'autres langages:
 
       <div class="example">
         <div class="example-ls">
@@ -1625,7 +1624,7 @@ false xor false #=> false
         </div>
       </div>
 
-      <p><code>and</code>, <code>or</code>, and <code>xor</code> close implicit calls, while <code>||</code> and <code>&amp;&amp;</code> do not.
+      <p><code>and</code>, <code>or</code>, et <code>xor</code> ferment les appels implicites, contrairement à <code>||</code> et <code>&amp;&amp;</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -1642,7 +1641,7 @@ even(0 && 3);
         </div>
       </div>
 
-      <p>You can call logic operators.
+      <p>Vous pouvez appeler les opérateurs logiques :
 
       <div class="example">
         <div class="example-ls">
@@ -1661,7 +1660,7 @@ f(3, 4) && g(3, 4) || h(3, 4);
 
       <h3>In/Of</h3>
 
-      <p>Use <code>in</code> to check if and element is in a list; use <code>of</code> to check if a key is in an object.
+      <p>Utilisez <code>in</code> pour savoir si un élément est dans une liste, et <code>of</code> pour savoir si l'objet contient une clef :
 
       <div class="example">
         <div class="example-ls">
@@ -1695,7 +1694,7 @@ function in$(x, arr){
       <a name="piping"></a>
       <h3>Piping</h3>
 
-      <p>Instead of a series of nested function calls, you can pipe values in. <code>x |> f</code> and <code>f <| x</code> are equivalent to <code>f(x)</code>.
+      <p>&Eacute; la place d'une série d'appels imbriqués, vous pouvez utiliser le piping. <code>x |> f</code> et <code>f <| x</code> sont équivalents à <code>f(x)</code>.
 
 
       <div class="example">
@@ -1717,7 +1716,7 @@ reverse([1, 2, 3]);
         </div>
       </div>
 
-      <p>You can use newlines to space things out better.
+      <p>Vous pouvez ajouter des nouvelles lignes pour clarifier :
 
       <div class="example">
         <div class="example-ls">
@@ -1740,11 +1739,11 @@ even(
       </div>
 
       <a name="composing"></a>
-      <h3>Function</h3>
+      <h3>Composition</h3>
 
-      <p>Composing allows you to create functions by <em>composing</em> them out of a series of functions. LiveScript has two operators for composing, forward <code>&gt;&gt;</code> and backwards <code>&lt;&lt;</code>.
+      <p>La composition vous permet de créer des fonctions <em>composées</em> d'autres fonctions. LiveScript a deux opérateurs : en avant (<code>&gt;&gt;</code>) et en arrière (<code>&lt;&lt;</code>).
 
-      <p><code>(f &lt;&lt; g) x</code> is equivalent to <code>f(g(x))</code>, and <code>(f &gt;&gt; g) x</code> is equivalent to <code>g(f(x))</code>. For example:
+      <p><code>(f &lt;&lt; g) x</code> est pareil que <code>f(g(x))</code>, et <code>(f &gt;&gt; g) x</code> est équivalent à <code>g(f(x))</code>. Par exemple :
 
       <div class="example">
         <div class="example-ls">
@@ -1771,7 +1770,7 @@ function not$(x){ return !x; }
         </div>
       </div>
 
-      <p>To be a bit more clear about the difference between the two operators:
+      <p>Pour être un peu plus clear à propos des différences entre les deux opérateurs :
 
       <div class="example">
         <div class="example-ls">
@@ -1813,29 +1812,29 @@ function compose$(fs){
         </div>
       </div>
 
-      <p>You can use a spaced dot as an alias to <code>&lt;&lt;</code>, for example <code>f . g</code>, just as in Haskell.
+      <p>Vous pouvez aussi utiliser un point espacé comme alias pour <code>&lt;&lt;</code>, par exemple <code>f . g</code>, comme en Haskell.
 
-      <h3>List</h3>
+      <h3>Liste</h3>
 
-      <p>You can concatenate two lists together:
+      <p>Vous pouvez concaténer deux listes ensemble :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-<[ one two three ]> +++ [\four]
-#=> ['one','two','three','four']
+<[ un deux trois ]> +++ [\quatre]
+#=> ['un','deux','trois','quatre']
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-['one', 'two', 'three'].concat(['four']);
+['un', 'deux', 'trois'].concat(['quatre']);
 
 
 </pre>
         </div>
       </div>
 
-      <p>List repetition when first is list literal:
+      <p>Répétition :
 
       <div class="example">
         <div class="example-ls">
@@ -1850,7 +1849,7 @@ function compose$(fs){
         </div>
       </div>
 
-      <p>Join when the right operand is a string literal:
+      <p>Jointure :
 
       <div class="example">
         <div class="example-ls">
@@ -1865,7 +1864,7 @@ function compose$(fs){
         </div>
       </div>
 
-      <p>Unary spread - when the operand is a list literal, apply the unary op to each item:<br />
+      <p>Propagation unaire - quand l'opérande est une liste littérale, l'opérateur unaire est appliqué à tous les éléments :<br />
 
       <div class="example">
         <div class="example-ls">
@@ -1874,7 +1873,8 @@ r = +[4 5 6]        #=> [+4, +5, +6]
 t = typeof! [\b 5 {}] #=> ["String", "Number", "Object"]
 c = ~[4, 5]         #=> [-5, -6]
 ++player<[strength hp]>
-# also works with -, --, typeof, ! and delete!
+# marche aussi avec -, --, typeof, ! et delete!
+# ou -~-~
 i = new [some, classes]
 c = ^^[copy, these, {}]
 delete list[1, 2, 3]
@@ -1900,9 +1900,9 @@ function clone$(it){
         </div>
       </div>
 
-      <h3>String</h3>
+      <h3>Chaîne</h3>
 
-      <p>String concatenation:
+      <p>Concaténation :
 
       <div class="example">
         <div class="example-ls">
@@ -1922,7 +1922,7 @@ string += 'yeah';
         </div>
       </div>
 
-      <p>String repetition when the first operand is a string literal:
+      <p>Répétition :
 
       <div class="example">
         <div class="example-ls">
@@ -1937,7 +1937,7 @@ string += 'yeah';
         </div>
       </div>
 
-      <p>String subtraction/division when the right operand is a string or regex literal - subtraction means <code>replace</code>, division is <code>split</code>.
+      <p>Soustraction / division de chaînes - soustraction pour <code>replace</code>, division pour <code>split</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -1956,7 +1956,7 @@ string += 'yeah';
 
       <h3>Existence/Inexistence</h3>
 
-      <p>The <code>?</code> operator can be used in a variety of context to check for existence. The <code>!?</code> is its companion - checking for inexistence.
+      <p>L'opérateur <code>?</code> peut être utilisé dans de nombreux contextes pour vérifier une présence. L'opérateur <code>!?</code> est son inverse, vérifiant l'inexistance.
 
       <div class="example">
         <div class="example-ls">
@@ -1984,9 +1984,9 @@ if (typeof document != 'undefined' && document !== null) {
         </div>
       </div>
 
-      <h3>Object</h3>
+      <h3>Objet</h3>
 
-      <p>Instanceof - list literals to the right get expanded:
+      <p>Instanceof - les listes littérales sur la droite sont étendues :
 
       <div class="example">
         <div class="example-ls">
@@ -2005,7 +2005,7 @@ new Date() instanceof Date;
         </div>
       </div>
 
-      <p>Typeof - add a bang for a useful alternative:
+      <p>Typeof - ainsi que la variante avec un point d'exclamation :
 
       <div class="example">
         <div class="example-ls">
@@ -2024,7 +2024,7 @@ toString$.call(/^/).slice(8, -1);
         </div>
       </div>
 
-      <p>Delete returns the value of the deleted item:
+      <p>Delete retourne la valeur de l'élément supprimé :
 
       <div class="example">
         <div class="example-ls">
@@ -2047,7 +2047,7 @@ r;
         </div>
       </div>
 
-      <p><code>delete!</code> is like <code>delete</code> in JavaScript, and returns false only if the property exists and can't be deleted, otherwise returns true.
+      <p><code>delete!</code> est l'équivalent de <code>delete</code> en JavaScript, et retourne <code>false</code> uniquement si la propriété existe mais ne peut être supprimée :
 
       <div class="example">
         <div class="example-ls">
@@ -2070,7 +2070,7 @@ delete Math.PI;
         </div>
       </div>
 
-      <p>Property copy - copy enumerable properties from right to left, and evaluate to the left. <code>&lt;&lt;&lt;</code> for own properties, <code>&lt;&lt;&lt;&lt;</code> for all properties. <code>import</code> and <code>importAll</code> are aliases for the two respectively. If you leave out the left operand, <code>this</code> is presumed.
+      <p>Copie de propriétés - de la droite vers la gauche. <code>&lt;&lt;&lt;</code> pour les propriétés propres (<code>Object.hasOwnProperty</code>), <code>&lt;&lt;&lt;&lt;</code> pour toutes les propriétés. <code>import</code> et <code>importAll</code> sont des alias. Si vous omettez l'opérande gauche, <code>this</code> est utilisé :
 
       <div class="example">
         <div class="example-ls">
@@ -2106,7 +2106,7 @@ function import$(obj, src){
         </div>
       </div>
 
-      <p>Clone - creates a prototypical clone of the operand. Ie. the resulting object's prototype is the operand.
+      <p>Clonage - clone le prototype de l'opérande :
 
       <div class="example">
         <div class="example-ls">
@@ -2136,7 +2136,7 @@ function clone$(it){
         </div>
       </div>
 
-      <p>The infix <em>with</em> (aka the <em>cloneport</em>) combines the clone and property copy operators for easy object creation. It is equivalent to <code>^^obj &lt;&lt;&lt; obj2</code>
+      <p>Le <em>with</em> infixe (ou <em>cloneport</em>) combine le clonage et la copie de propriétés. Il est équivalent à <code>^^obj &lt;&lt;&lt; obj2</code>
 
       <div class="example">
         <div class="example-ls">
@@ -2165,9 +2165,9 @@ function clone$(it){
         </div>
       </div>
 
-      <h3>Partial Application, Operators as Functions</h3>
+      <h3>Application partielle, opérateurs en tant que fonctions</h3>
 
-      <p>You can partially apply operators and use them as functions
+      <p>Vous pouvez "appliquer partiellement" les opérateurs pour les utiliser en tant que fonctions :
 
       <div class="example">
         <div class="example-ls">
@@ -2206,11 +2206,11 @@ function not$(x){ return !x; }
       <a name="require"></a>
       <h3>require!</h3>
 
-      <p>Having to require a series of modules results in a lot of cruft. You can get rid of that cruft by using <code>require!</code>, which takes an ID, or a string, array, or object literal.
+      <p>Avoir beaucoup de module signifie beaucoup de redondance dans les inclusions. Avec <code>require!</code>, qui prend identifieur, chaîne, liste ou objet, vous pouvez éviter cette redondance.
 
-      <p>If you are requiring a module with dashes in its name, you must use a string literal.
+      <p>Si vous voulez inclure un module avec des tirets, vous devez utiliser une chaîne.
 
-      <p>You can rename what you are requiring by using an object literal.
+      <p>Vous pouvez renommer ce que vous require-ez en utilisant un objet littéral.
 
       <div class="example">
         <div class="example-ls">
@@ -2259,7 +2259,7 @@ lib = require('lib4');
         </div>
       </div>
 
-      <p>You can also easily require parts of modules.
+      <p>Vous pouvez aussi inclure des parties de modules :
 
       <div class="example">
         <div class="example-ls">
@@ -2285,7 +2285,7 @@ part1 = require('lib').part1;
         </div>
       </div>
 
-      <p>Filenames are automatically extracted.
+      <p>Les noms de fichier sont extraits :
 
       <div class="example">
         <div class="example-ls">
@@ -2308,23 +2308,22 @@ lib1 = require('./dir/lib1.js');
 
     <div id="functions" class="section">
       <a name="functions"></a>
-      <h2>Functions</h2>
+      <h2>Function</h2>
 
-      <p>Defining functions is very lightweight in LiveScript:
+      <p>La définition de fonction est très simple en LiveScript : 
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 
-(x, y) -> x + y
+(x, y) -> x + y 
 
-
--> # an empty function
+-> # une fonction vide
 
 times = (x, y) ->
   x * y
-# multiple lines, and be assigned to
-# a var like in JavaScript
+# multiligne, assignée à une variable
+# comme en JavaScript
 </pre>
   </div>
   <div class="example-js">
@@ -2342,9 +2341,7 @@ times = function(x, y){
         </div>
       </div>
 
-      <p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned.
-
-      <p>You can prepend the function definition with a bang <code>!</code> to suppress automatic returning. The <code>!</code> must go before the entire function literal.
+      <p>Comme vous pouvez le voir, les déclarations sont bien plus courtes. Vous pouvez aussi voir que le <code>return</code> est implicite. En LiveScript, presque tout est une expression et la dernière est automatiquement retournée. Cependant, vous pouvez toujours utiliser <code>return</code> pour forcer un retour, ou ajouter un point d'exclamation à la définition pour supprimer le retour implicite <code>no-ret = !(x) -> ...</code>.
 
 
       <div class="example">
@@ -2367,9 +2364,9 @@ g = function(x){
         </div>
       </div>
 
-      <h3>Calling</h3>
+      <h3>Appel</h3>
 
-      <p>You can omit the parentheses when calling a function, and you can omit the comma separating the arguments if the preceding item is not callable, just like in arrays.
+      <p>vous pouvez omettre les parenthèses quand vous appelez une fonction, et comme pour les listes, vous pouvez omettre la virgule entre les arguments si l'argument précédent n'est pas appellable :
 
       <div class="example">
         <div class="example-ls">
@@ -2390,7 +2387,7 @@ Math.pow(2, 3);
         </div>
       </div>
 
-      <p>If you are calling the function with no arguments, you can use a bang <code>!</code> - as well you don't need to use a dot when chaining banged functions.
+      <p>Si vous appelez une fonction sans arguments, vous pouvez utiliser <code>!</code> - vous n'avez pas besoin on plus de point pour enchaîner les fonctions ainsi appelées.
 
       <div class="example">
         <div class="example-ls">
@@ -2407,12 +2404,12 @@ f();
         </div>
       </div>
 
-      <p><code>and</code>, <code>or</code>, <code>xor</code>, spaced <code>.</code>  or <code>?.</code> all close implicit calls - allowing for parentheses free chaining.
+      <p><code>and</code>, <code>or</code>, <code>xor</code>, un <code>.</code> espacé ou <code>?.</code> ferment les appels implcites - permettant d'enchaîner les appels sans parenthèses.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-$ \h1 .find \a .text! #=> LiveScript
+$ 'h1' .find 'a' .text! #=> LiveScript
 </pre>
         </div>
         <div class="example-js">
@@ -2422,24 +2419,31 @@ $('h1').find('a').text();
         </div>
       </div>
 
-      <p>You can use <code>do</code> to call functions with no arguments:
+      <p>Vous pouvez utiliser <code>do</code> pour transformer un bloc de code en un appel (et appeler une fonction sans arguments) :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 do -> 3 + 2 #=> 5
+calc =
+  five: do
+    3 + 2
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
+var calc;
 (function(){
   return 3 + 2;
 })();
+calc = {
+  five: 3 + 2
+};
 </pre>
         </div>
       </div>
 
-      <p>If you use <code>do</code> on a named function, when the <code>do</code> is not used as an expression, the named function will remain a function statement.
+      <p>Si vous utilisez <code>do</code> sur une fonction nommée, et que le <code>do</code> n'est pas utilisé en tant qu'expression, l'appel appellera la fonction directement :
 
       <div class="example">
         <div class="example-ls">
@@ -2468,7 +2472,7 @@ i;
         </div>
       </div>
 
-      <p>You can also call functions infix using backticks <code>`</code>.
+      <p>Vous pouvez appeler des fonctions infixes avec <code>`</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -2488,15 +2492,15 @@ add(3, 4);
         </div>
       </div>
 
-      <h3>Parameters</h3>
+      <h3>Paramètres</h3>
 
-      <p>Extended parameters:
+      <p>Paramètres étendus :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 set-person-params = (
-  person # target object to set params
+  person # objet cible
   person.age
   person.height
 ) -> person
@@ -2518,7 +2522,7 @@ person = setPersonParams({}, 21, 180);
         </div>
       </div>
 
-      <p>This is especially useful with <code>this</code>.
+      <p>Particulièrement utile avec <code>this</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -2537,7 +2541,7 @@ setText = function(text){
         </div>
       </div>
 
-      <p>You can set default arguments:
+      <p>Vous pouvez donner des valeurs par défault aux arguments :
 
       <div class="example">
         <div class="example-ls">
@@ -2561,7 +2565,7 @@ add(1, 2);
         </div>
       </div>
 
-      <p>...or indeed use any logical operator (in parameters, <code>x = 2</code> is just sugar for doing <code>x ? 2</code>):
+      <p>... ou utiliser n'importe quel opérateur logique (dans les paramètres, <code>x = 2</code> est la même chose que<code>x ? 2</code>):
 
       <div class="example">
         <div class="example-ls">
@@ -2585,7 +2589,7 @@ add(2, 0);
         </div>
       </div>
 
-      <p>You can also destructure the arguments:
+      <p>Vous pouvez aussi déstructurer les arguments :
 
       <div class="example">
         <div class="example-ls">
@@ -2610,7 +2614,7 @@ setCords({
         </div>
       </div>
 
-      <p>...and even set defaults (or use any logic) on those destructured parameters, functioning like Python's keyword arguments.
+      <p>... et aller jusqu'à donner des valeurs par défaults, ou utiliser n'importe quel opérateur logique dans ces paramètres déstructurés :
 
       <div class="example">
         <div class="example-ls">
@@ -2647,7 +2651,7 @@ setCords();
         </div>
       </div>
 
-      <p>You can also use splats in your parameters:
+      <p>Vous pouvez aussi obtenir le reste des paramètres :
 
       <div class="example">
         <div class="example-ls">
@@ -2670,15 +2674,15 @@ f(1, 2, 3, 4);
       </div>
 
 
-      <h3>Currying</h3>
+      <h3>Currification</h3>
 
-      <p>Curried functions are very powerful. Essentially, when called with less arguments than defined with, they return a partially applied function. This means that it returns a function whose arguments are those which you didn't supply, with the values for what you did supply already bound. They are defined in LiveScript using the long arrow. Perhaps an example will make things more clear:
+      <p>Les fonctions currifiées sont très puissantes. Pour faire simple, les fonctions appelées avec moins d'arguments qu'elles n'en ont retourne une fonction partiellement appliquée que vous pourez appeler avec le reste des arguments. En LiveScript, ces fonctions sont définiés avec une longue flèche :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 times = (x, y) --> x * y
-times 2, 3       #=> 6 (normal use works as expected)
+times 2, 3       #=> 6 (fonctionnement normal)
 double = times 2
 double 5         #=> 10
 </pre>
@@ -2703,20 +2707,20 @@ function curry$(f, args){
         </div>
       </div>
 
-      <p>You can define bound curried functions with a long wavy arrow: <code>~~&gt;</code>
+      <p>Vous pouvez définir des fonctions liées avec une longue flèche ondulée : <code>~~&gt;</code>
 
-      <h3>Named Functions</h3>
+      <h3>Fonctions nommées</h3>
 
-      <p>You can create named functions whose definition is hoisted to the top of the scope - this is useful for defining utility functions at the end of the file instead of the top. Name functions are constants, and can't be redefined.
+      <p>Vous pouvez créer des fonctions nommées, utilisable n'importe où dans le fichier même si définies à la fin. Ces fonctions sont constantes et ne peuvent être redéfinies.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-util!  #=> 'available above declaration'
+util!  #=> 'disponible avant déclaration'
 util2! #=> 2
 
 function util
-  'available above declaration'
+  'disponible avant déclaration'
 function util2 then 2
 </pre>
         </div>
@@ -2725,7 +2729,7 @@ function util2 then 2
 util();
 util2();
 function util(){
-  return 'available above declaration';
+  return 'disponible avant déclaration';
 }
 function util2(){
   return 2;
@@ -2734,7 +2738,7 @@ function util2(){
         </div>
       </div>
 
-      <p>You can prepend the function definition with a <code>~</code> to make it a bound function.
+      <p>Vous pouvez lié la fonction en ajoutant un <code>~</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -2753,13 +2757,14 @@ function add(x, y){
         </div>
       </div>
 
-      <p>You can prepend it with a bang <code>!</code> to suppress returning.
+      <p>Vous pouvez aussi ajouter un <code>!</code> pour supprimer le <code>return</code> implicite :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 util! #=> nothing
-!function util x then x
+!function util(x)
+  x
 </pre>
         </div>
         <div class="example-js">
@@ -2772,13 +2777,13 @@ function util(x){
         </div>
       </div>
 
-      <p>You can combine the <code>~</code> and <code>!</code> to make a bound non-returning function if you wish.
+      <p>Vous pouvez bien sûr combiner <code>~</code> et <code>!</code> pour créer une fonction liée qui ne retourne rien.
 
-      <h3>Bound Functions</h3>
+      <h3>Fonctions liées</h3>
 
-      <p>Defined using the wavy arrow <code>~&gt;</code>. Use the long wavy arrow for curried and bound functions <code>~~&gt;</code>. Prepend a <code>~</code> to named functions to make them bound.
+      <p>Les fonctions liées sont définies avec une flèche ondulée <code>~&gt;</code>. Utilisez la version longue pour les fonctions liées et currifiées <code>~~&gt;</code>.
 
-      <p>Bound functions have <code>this</code> lexically bound, not dynamically bound as normally. This means that it does not matter in which context they are called, the value of <code>this</code> in their body will always be the value of <code>this</code> where they were defined.
+      <p>Les fonctions liées ont leur <code>this</code> lié lexicalement, pas dynamiquement, ce qui signifie que leur <code>this</code> restera l'original, quel que soit le contexte.
 
       <div class="example">
         <div class="example-ls">
@@ -2820,11 +2825,11 @@ obj2.bound();
         </div>
       </div>
 
-      <p>Check out the <a href="#oop">OOP</a> section for more on bound functions when used in classes.
+      <p>Référez-vous au paragraphe sur la <a href="#oop">POO</a> pour plus d'informations sur les fonctions liées dans les classes.
 
       <h3>Let, Where, New</h3>
 
-      <p><code>let</code> is short for <code>(function(a){...}.call(this, b))</code>.
+      <p><code>let</code> est un raccourci pour <code>(function(a){...}.call(this, b))</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -2842,7 +2847,7 @@ let $ = jQuery
         </div>
       </div>
 
-      <p>You can also define <code>this</code> (aka <code>@</code>) with <code>let</code>.
+      <p>Vous pouvez aussi définir le <code>this</code> (ou <code>@</code>) avec <code>let</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -2866,7 +2871,7 @@ x;
         </div>
       </div>
 
-      <p><code>where</code> is like <code>let</code>, but defined after the body. It also is slightly different in that it allows for nested variable declarations.
+      <p><code>where</code> est comme <code>let</code>, mais après l'expression. Cette syntaxe vous permet aussi d'avoir des déclarations complexes
 
       <div class="example">
         <div class="example-ls">
@@ -2889,7 +2894,7 @@ result = (function(x, y){
         </div>
       </div>
 
-      <p>With new context:
+      <p>Avec un nouveau contexte :
 
       <div class="example">
         <div class="example-ls">
@@ -2912,11 +2917,11 @@ dog = new function(){
         </div>
       </div>
 
-      <h3>Access/Call Function Shorthand</h3>
+      <h3>Fonctions implicites</h3>
 
-      <p>There are especially useful for higher order functions like map and filter.
+      <p>Particulièrement utile avec des fonctions de haut niveau telles que <code>map</code> et <code>filter</code>.
 
-      <p><code>(.prop)</code> is short for <code>(it) -> it.prop</code>.
+      <p><code>(.prop)</code> est un raccourci pour <code>(it) -> it.prop</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -2940,7 +2945,7 @@ filter(function(it){
         </div>
       </div>
 
-      <p>You can also use this to call methods:
+      <p>Vous pouvez bien sûr appeler des méthodes :
 
       <div class="example">
         <div class="example-ls">
@@ -2958,7 +2963,7 @@ map(function(it){
         </div>
       </div>
 
-      <p><code>(obj.)</code> is short for <code>(it) -> obj[it]</code>.
+      <p><code>(obj.)</code> est un raccourci pour <code>(it) -> obj[it]</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -2983,15 +2988,16 @@ map(function(it){
         </div>
       </div>
 
-      <h3>Backcalls</h3>
+      <a name="backcalls"></a>
+      <h3>Backball</h3>
 
-      <p>Backcalls are very useful. They allow you to unnest callbacks. They are defined using arrows pointed to the left. All the syntax is the same as regular arrows for defining bound functions (<code><~</code>), curried functions (<code><--, <~~</code>), suppressing return (<code><-!</code>) - except that it is just pointing the other way.
+      <p>Les backcalls sont très utiles. Ils vous permettent de désimbriquer vos rappels. La syntaxe est la même que pour les fonctions, mais avec la flèche vers la gauche (<code><~</code>, <code><--</code>, <code><~~</code>, <code><-!</code>) :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 <- $
-alert \boom
+alert 'boom'
 </pre>
   </div>
   <div class="example-js">
@@ -3003,7 +3009,7 @@ $(function(){
         </div>
       </div>
 
-      <p>They can take arguments, and you can specify a placeholder for where you want it to go.
+      <p>Vous pouvez ajouter des arguments, et réserver l'espace si l'ordre des arguments ne vous convient pas :
 
       <div class="example">
         <div class="example-ls">
@@ -3022,16 +3028,16 @@ map(function(x){
         </div>
       </div>
 
-      <p>If you wish to have further code after your backcalls, you can set them aside with a <code>do</code> statement.
+      <p>Si vous voulez avoir plus de code après, vous pouvez décaler vos backcalls avec <code>do</code>.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 do
   data <-! $.get 'ajaxtest'
-  $ \.result .html data
+  $ '.result' .html data
   processed <-! $.get 'ajaxprocess', data
-  $ \.result .append processed
+  $ '.result' .append processed
 
 alert 'hi'
 </pre>
@@ -3050,11 +3056,11 @@ alert('hi');
       </div>
 
 
-      <p>If you want further async functionality, you can use <a href="https://github.com/caolan/async/">async.js</a> with LiveScript.
+      <p>Si vous voulez des fonctionnalités asynchrones avancées, vous pouvez utiliser <a href="https://github.com/caolan/async/">async.js</a> avec LiveScript.
 
-      <h3>Partial Application</h3>
+      <h3>Application partielle</h3>
 
-      <p>You can partially apply functions using the underscore <code>_</code> as a placeholder. Sometimes, the function you want to deal with isn't curried, or if it is the arguments are not in a good order. In these cases partial application is very useful. 
+      <p>Vous pouvez appliquer partiellement des fonctions avec <code>_</code> comme espace réservé, si l'ordre des arguments ne vous convient pas ou si la fonction n'est pas currifiée :
 
       <div class="example">
         <div class="example-ls">
@@ -3088,9 +3094,9 @@ function partialize$(f, args, where){
         </div>
       </div>
 
-      <p>If you call a partially applied function with no arguments, it will execute as is instead of returning itself, allowing you to use default arguments.
+      <p>Si vous appelez une fonction partiellement appliquée sans arguments, elle sera éxecutée plutôt que de se retourner elle-même, vous permettant d'utiliser des arguments par défaut
 
-      <p>Partially applied functions are also really useful for piping if the functions you are using don't have a nice argument order and aren't curried (like in underscore.js for instance).
+      <p>Cette syntaxe est particulièrement intéressante avec le piping lorsqu'utilisée avec des bibliothèques n'ayant pas une syntaxe adaptée (comme underscore.js).
 
       <div class="example">
         <div class="example-ls">
@@ -3137,7 +3143,7 @@ function curry$(f, args){
 
       <h3>Arguments</h3>
 
-      <p>If you have only one argument, you can use <code>it</code> to access it without having to define an argument.
+      <p>Si vous n'avez qu'un seul argument, vous pouvez utiliser <code>it</code> pour y accéder sans avoir à le lister :
 
       <div class="example">
         <div class="example-ls">
@@ -3157,7 +3163,7 @@ f(3);
         </div>
       </div>
 
-      <p>You can access the <code>arguments</code> object with the shorthand <code>&</code>. The first argument is <code>&0</code>, the second <code>&1</code>, and so on. <code>&</code> alone is <code>arguments</code> as a whole.
+      <p>Vous pouvez accéder à l'objet <code>arguments</code> avec le raccourci <code>&</code>. Le premier argument est <code>&0</code>, le second <code>&1</code>, etc. <code>&</code> seul correspond à <code>arguments</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -3178,19 +3184,19 @@ addThreeNumbers(1, 2, 3);
         </div>
       </div>
 
-      <p>Note that currying won't work in that situation, as the number of declared arguments in <code>add-three-numbers</code> is 0.
+      <p>Notez que la currification ne marche pas dans cette situation, car le nombre d'arguments déclarés de <code>add-three-numbers</code> est 0.
 
-      <h3>More</h3>
+      <h3>Plus</h3>
 
-      <p>Check out the section on <a href="#composing">composing functions</a>, and <a href="#piping">piping</a> as well.
+      <p>Référez-vous au paragraphe sur la <a href="#composing">composition de fnctions</a>, ainsi que sur le <a href="#piping">piping</a>.
 
     </div>
 
     <div id="if-unless" class="section">
       <a name="if-unless"></a>
-      <h2>If and Unless</h2>
+      <h2>If et Unless</h2>
 
-      <p>There are several ways to format an <code>if</code> statement. (Note that the <code>if</code> statement is actually an expression, and be used as such).
+      <p>Il y a plusieurs manières de formater un <code>if</code> (en fait une expression).
 
       <p>The standard:
 
@@ -3199,92 +3205,92 @@ addThreeNumbers(1, 2, 3);
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 if 2 + 2 == 4
-  'something'
+  'quelque chose'
 else
-  'something else'
+  'quelque chose d\'autre'
 
-if 2 + 2 == 4 then 'something' else 'something else'
+if 2 + 2 == 4 then 'quelque chose' else 'quelque chose d\'autre'
 
 
 
 
 if 2 + 2 == 4
-then 'something'
-else 'something else'
+then 'quelque chose'
+else 'quelque chose d\'autre'
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
 if (2 + 2 === 4) {
-  'something';
+  'quelque chose';
 } else {
-  'something else';
+  'quelque chose d\'autre';
 }
 if (2 + 2 === 4) {
-  'something';
+  'quelque chose';
 } else {
-  'something else';
+  'quelque chose d\'autre';
 }
 if (2 + 2 === 4) {
-  'something';
+  'quelque chose';
 } else {
-  'something else';
+  'quelque chose d\'autre';
 }
 </pre>
         </div>
       </div>
 
-      <p>The <code>else</code> is optional, and further <code>else if</code>s can be added.
+      <p>Le <code>else</code> est bien sûr optionnel, et ovus pouvez ajouter des <code>else if</code>.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 if 2 + 2 == 4
-  'something'
+  'quelque chose'
 
 if 2 + 2 == 6
-  'something'
+  'quelque chose'
 else if 2 + 2  == 5
-  'something else'
+  'quelque chose d\'autre'
 else
-  'the default'
+  'par défaut'
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
 if (2 + 2 === 4) {
-  'something';
+  'quelque chose';
 }
 if (2 + 2 === 6) {
-  'something';
+  'quelque chose';
 } else if (2 + 2 === 5) {
-  'something else';
+  'quelque chose d\'autre';
 } else {
-  'the default';
+  'par défaut';
 }
 </pre>
         </div>
       </div>
 
-      <p>It can be used as an expression:
+      <p>Aussi utilisable en tant qu'expression :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 result = if 2 / 2 is 0
-         then 'something'
-         else 'something else'
+         then 'quelque chose'
+         else 'quelque chose d\'autre'
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var result;
-result = 2 / 2 === 0 ? 'something' : 'something else';
+result = 2 / 2 === 0 ? 'quelque chose' : 'quelque chose d\'autre';
 </pre>
         </div>
       </div>
 
-      <p>It can also be used postfix - it has a lower precedence than assignment, making this useful:
+      <p>Aussi utilisable après une expression - ayant une précédence plus basse que l'égalité, rendant ceci possible :
 
       <div class="example">
         <div class="example-ls">
@@ -3306,14 +3312,14 @@ x;
         </div>
       </div>
 
-      <p><code>unless</code> is the equivalent to <code>if not</code>.
+      <p><code>unless</code> est l'équivalent de <code>if not</code>.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 
 unless 2 + 2 == 5
-  'something'
+  'quelque chose'
 
 x = 10
 x = 3 unless 2 + 2 == 5
@@ -3323,7 +3329,7 @@ x = 3 unless 2 + 2 == 5
 <pre class="prettyprint lang-js">
 var x;
 if (2 + 2 !== 5) {
-  'something';
+  'quelque chose';
 }
 x = 10;
 if (2 + 2 !== 5) {
@@ -3333,7 +3339,7 @@ if (2 + 2 !== 5) {
         </div>
       </div>
 
-      <p><code>that</code> refers implicitly to the value of the condition. It will unwrap existence checks.
+      <p><code>that</code> réfère implicitement la valeur de la condition - ignorant les vérifications d'existences (<code>?</code>).
 
       <div class="example">
         <div class="example-ls">
@@ -3374,14 +3380,14 @@ if ((that = halfYear) != null) {
     </div>
     <div id="loops" class="section">
       <a name="loops"></a>
-      <h2>Loops and Comprehensions</h2>
+      <h2>Boucles et Compréhensions</h2>
 
-      <p><code>for</code> loops have the structure <code>for (from) (to|til) (by) (when)</code> - (everything is optional).
-      <p><code>by</code> is the step value, the default is <code>1</code>.
-      <p><code>from</code>, if omitted defaults to <code>0</code>.
-      <p><code>when</code>, (alias <code>case</code>, <code>|</code>) is an optional guard.
-      <p>Use <code>in</code> to iterate through lists, and <code>of</code> to iterate through objects.
-      <p>If used as an expression, loops will evaluate to a list.
+      <p>Les boucles <code>for</code> ont la structure suivante : <code>for (from) (to|til) (by) (when)</code> - (tout est optionnel).
+      <p><code>by</code> est l'étape, par défaut <code>1</code>.
+      <p><code>from</code>, si omis, est <code>0</code>.
+      <p><code>when</code>, (alias <code>case</code>, <code>|</code>) est un guard optionnel.
+      <p>Utilisez <code>in</code> pour itérer dans une liste, <code>of</code> et of dans un objet.
+      <p>Si utilisé comme expression, les boucles renvoient des listes.
 
       <div class="example">
         <div class="example-ls">
@@ -3424,7 +3430,7 @@ for (key in ref$ = {
         </div>
       </div>
 
-      <p>Regular nested loops will evaluate to a list of lists.
+      <p>Les boucles normalses imbriquées renvoient des listes de listes :
 
       <div class="example">
         <div class="example-ls">
@@ -3454,7 +3460,7 @@ result;
         </div>
       </div>
 
-      <p>You can omit one or both variables in <code>in</code>/<code>of</code> loops.
+      <p>Vous pouvez omettre une ou les deux variable dans une boucle <code>in</code>/<code>of</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -3489,7 +3495,7 @@ for (i$ = 0; i$ < 3; ++i$) {
         </div>
       </div>
 
-      <p>List comprehensions always produce a list. Nested comprehensions produce a flattened list.
+      <p>Les compréhensions de listes, même multiples, renvoient des listes :
 
       <div class="example">
         <div class="example-ls">
@@ -3527,7 +3533,7 @@ for (i$ = 0, len$ = (ref$ = ['a', 'b']).length; i$ < len$; ++i$) {
         </div>
       </div>
 
-      <p>You can use whitespace to better format comprehensions.
+      <p>Vous pouvez formater vos compréhensions avec de l'identation :
 
       <div class="example">
         <div class="example-ls">
@@ -3557,7 +3563,7 @@ for (i$ = 0, len$ = (ref$ = table1).length; i$ < len$; ++i$) {
         </div>
       </div>
 
-      <p>Object comprehensions produce an object.
+      <p>Les compréhensions d'objets renvoient des objets :
 
       <div class="example">
         <div class="example-ls">
@@ -3580,7 +3586,7 @@ for (key in ref$ = {
         </div>
       </div>
 
-      <p><code>while</code> loops:
+      <p>Boucles <code>while</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -3604,9 +3610,9 @@ while (n < 9) {
         </div>
       </div>
 
-      <p><code>until</code> is equivalent to <code>while not</code>.
+      <p><code>until</code> est l'équivalent de <code>while not</code>.
 
-      <p><code>while</code>/<code>until</code> can also accept a <code>when</code> guard, and an optional <code>else</code> clause which runs if the didn't run at all.
+      <p><code>while</code>/<code>until</code> acceptent aussi une clause <code>when</code>, guard optionnel, <code>else</code> ainsi qu'un block <code>else</code> si la boucle n'a pas été évalué.
 
       <div class="example">
         <div class="example-ls">
@@ -3637,7 +3643,7 @@ for (yet$ = true; !(i > 7);) {
         </div>
       </div>
 
-      <p>Do while:
+      <p><code>do while</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -3662,7 +3668,7 @@ do {
         </div>
       </div>
 
-      <p>While can also accept an update clause.
+      <p><code>while</code> accepte aussi une clause exécutée à chaque itération.
 
       <div class="example">
         <div class="example-ls">
@@ -3685,7 +3691,7 @@ for (; list[i] < 9; i++) {
         </div>
       </div>
 
-      <p>While true:
+      <p><code>while true</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -3732,7 +3738,7 @@ for (;;) {
       <a name="switch"></a>
       <h2>Switch</h2>
 
-      <p><code>break</code> is automatically inserted, and multiple conditions are allowed.
+      <p><code>break</code> est automatiquement inséré, et les conditions multiples sont autorisées :
 
       <div class="example">
         <div class="example-ls">
@@ -3765,7 +3771,7 @@ default:
         </div>
       </div>
 
-      <p>If you switch on nothing, you switch on true. (It compile to switching on false so it can cast the cases to booleans with one <code>!</code> instead of two.
+      <p>Si vous ne donnez pas d'opérance à <code>switch</code>, elle sera <code>true</code>. (le code compile à <code>switch (false)</code> pour permettre une conversion booléenne via un simple <code>!</code> plutôt que deux)
 
       <div class="example">
         <div class="example-ls">
@@ -3795,7 +3801,7 @@ case 6 / 2 !== 3:
         </div>
       </div>
 
-      <p>You can use <code>fallthrough</code> to stop automatic <code>break</code> insertion. It must be the last expression of the case block. As well, you can use a switch statement as an expression.
+      <p>Vous pouvez utiliser <code>fallthrough</code> pour e^mpêcher l'insertion d'un <code>break</code> implicite, et doit être la dernière expression du <code>case</code>. Aussi, vous pouvez un <code>switch</code> en tant qu'expression :
 
       <div class="example">
         <div class="example-ls">
@@ -3827,41 +3833,41 @@ result;
         </div>
       </div>
 
-      <p><code>|</code> is an alias for <code>case</code>, and <code>=&gt;</code> is an alias for <code>then</code>. <code>| otherwise</code> and <code>| _</code> are aliases for <code>default</code>.
+      <p><code>|</code> est un alias pour <code>case</code>, et <code>=&gt;</code> est un alias pour <code>then</code>. <code>| otherwise</code> et <code>| _</code> sont des alias pour <code>default</code> :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 switch 'moto'
-| "some thing"     => \hello
+| "quelque chose"  => \coucou
 | \explosion \bomb => \boom
-| <[ the moto ? ]> => 'here it is'
-| otherwise        => \something
+| <[ la moto ? ]> => 'ici !'
+| otherwise        => \quelquechose
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
 switch ('moto') {
-case "some thing":
-  'hello';
+case "quelque chose":
+  'coucou';
   break;
 case 'explosion':
 case 'bomb':
   'boom';
   break;
-case 'the':
+case 'la':
 case 'moto':
 case '?':
-  'here it is';
+  'ici !';
   break;
 default:
-  'something';
+  'quelquechose';
 }
 </pre>
         </div>
       </div>
 
-      <p>An implicit <code>switch</code> is added after arrows (eg. <code>-></code>), <code>:</code>, and <code>=</code> if the next token is <code>case</code>.
+      <p>Un <code>switch</code> implicite est ajouté après les flèches (comme <code>-></code>), <code>:</code>, et <code>=</code> si un <code>case</code> (ou <code>|</code>) est trouvé :
 
       <div class="example">
         <div class="example-ls">
@@ -3870,14 +3876,14 @@ func = (param) ->
   | param.length < 5 => param.length
   | otherwise        => param.slice 3
 
-func 'hello' #=> lo
+func 'coucou' #=> cou
 
 
 
 
 
-state = | 2 + 2 is 5 => 'I love Big Brother'
-        | _          => 'I love Julia'
+state = | 2 + 2 is 5 => "I love Big Brother"
+        | _          => "I love Julia"
 </pre>
         </div>
         <div class="example-js">
@@ -3904,45 +3910,45 @@ state = (function(){
         </div>
       </div>
 
-      <p>You can also use CoffeeScript style <code>switch</code> statements.
+      <p>Vous pouvez aussi utiliser les <code>switch</code> de CoffeeScript.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-day = \Sun
+day = \Sum
 switch day
-  when "Mon" then 'go to work'
-  when "Tue" then 'go to a movie'
-  when "Thu" then 'go drinking'
-  when "Fri", "Sat"
-      'go dancing'
-  when "Sun" then 'drink more'
-  else 'go to work'
+  when "Lun" then 'Au boulot'
+  when "Mar" then 'Au ciné'
+  when "Mer" then 'Au café'
+  when "Ven", "Sam"
+      'Au bingo'
+  when "Dim" then 'Toujours au café'
+  else 'Au boulot'
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var day;
-day = 'Sun';
+day = 'Sum';
 switch (day) {
-case "Mon":
-  'go to work';
+case "Lun":
+  'Au boulot';
   break;
-case "Tue":
-  'go to a movie';
+case "Mar":
+  'Au ciné';
   break;
-case "Thu":
-  'go drinking';
+case "Mer":
+  'Au café';
   break;
-case "Fri":
-case "Sat":
-  'go dancing';
+case "Ven":
+case "Sam":
+  'Au bingo';
   break;
-case "Sun":
-  'drink more';
+case "Dim":
+  'Toujours au café';
   break;
 default:
-  'go to work';
+  'Au boulot';
 }
 </pre>
         </div>
@@ -3953,9 +3959,9 @@ default:
 
     <div id="assignment" class="section">
       <a name="assignment"></a>
-      <h2>Assignment</h2>
+      <h2>Attribution</h2>
 
-      <p>Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. 
+      <p>L'assignement basique est comme vous vous y attendez, <code>variable = value</code>, et il n'y a pas besoin de déclarer les variables. Cependant, contrairement à CoffeeScript, vous devez utiliser <code>:=</code> pour modifier les variables dans des portées supérieures.
 
       <div class="example">
         <div class="example-ls">
@@ -3994,7 +4000,7 @@ x;
         </div>
       </div>
 
-      <p>Almost everything is an expression, which means you can do things like:
+      <p>Presque tout est une expression, ce qui signifie que vous pouvez faire des choses comme :
 
       <div class="example">
         <div class="example-ls">
@@ -4015,9 +4021,9 @@ x;
         </div>
       </div>
 
-      <p>Things such as loops, switch statements, and even try/catch statements are all expressions.
+      <p> Même les boucles, switch, voire les try/catch sont des expressions.
 
-      <p>If you want to simply declare a variable and not initialize it, you can use <code>var</code>.
+      <p> Si vous voulez simplement déclarer une variable sans l'initialiser, utilisez <code>var</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -4032,24 +4038,25 @@ var x;
         </div>
       </div>
 
-      <p>You can also declare constants in LiveScript using <code>const</code>. They are checked at compile time - the compiled JS is no different.
+      <p>Vous pouvez aussi déclarer des constantes avec le mot-clef <code>const</code>. Les vérifications sont faites à la compilation - le JavaScript compilé est le même.
 
-      <p>Attempting to compile the following:
+      <p>Essayer de compiler le code suivant : 
 
 <pre class="prettyprint lang-ls">
 const x = 10
 x = 0
 </pre>
 
+      <p>Donnera l'erreur suivante : <code>redeclaration of constant "x" on line 2</code> (re-déclaration de la constante "x" ligne 2).
+
+      <p>À l'inverse, les objets ne sont pas "gêlés" - vous pouvez quand même modifier leurs propriétés. Vous pouvez forcer toutes les variables à être des constantes à l'aide de l'option <code>-k</code> (ou <code>--const</code>). 
       <p>Results in <code>redeclaration of constant "x" on line 2</code>.
 
-      <p>However, objects are not frozen if declared as constants - you can still modify their properties. You can force all variables to be constants if you compile with the <code>-k</code> or <code>--const</code> flags.
+      <h3>Opérateurs</h3>
 
-      <h3>Operators</h3>
+      <p>Assignation composée :
 
-      <p>Compound assignment:
-
-      <p>(<code>?</code>, <code>!?</code>, <code>||</code>, or <code>&&</code> can prefix any compound assign.)
+      <p>(<code>?</code>, <code>!?</code>, <code>||</code>, or <code>&&</code> peut préfixer n'importe quelle assignation.)
 
       <div class="example">
         <div class="example-ls">
@@ -4110,16 +4117,16 @@ x;
         </div>
       </div>
 
-      <p>Unary Assignment:
+      <p>Assignation unaire :
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 
 y = \45
-+  = y   #=> 45   (make into number)
-!! = y   #=> true (make into boolean)
--~-~ = y #=> 3    (int-coercing double crement)
++  = y   #=> 45   (conversion en nombre)
+!! = y   #=> true (conversion en booléen)
+-~-~ = y #=> 3    (conversion en entier doublement incrémentale)
 </pre>
         </div>
         <div class="example-js">
@@ -4133,9 +4140,9 @@ y = -~-~y;
         </div>
       </div>
 
-      <p>Assignment defaults - you can use <code>||</code>, <code>&&</code>, <code>?</code>, and <code>!?</code>.
+      <p>Valeur par défaut - vous pouvez utiliser <code>||</code>, <code>&&</code>, <code>?</code>, et <code>!?</code>.
 
-      <p>You can use <code>=</code> instead of <code>?</code> in function parameters.
+      <p>Vous pouvez utiliser <code>=</code> à la place de <code>?</code> dans les paramètres et les destructurations :
 
       <div class="example">
         <div class="example-ls">
@@ -4163,7 +4170,7 @@ f();
         </div>
       </div>
 
-      <p>Soak assign - performs assign only if the right operand exists:
+      <p>Assignation conditionnelle - n'assigne que si l'opérande de droite existe :
 
       <div class="example">
         <div class="example-ls">
@@ -4194,9 +4201,9 @@ x;
         </div>
       </div>
 
-      <h3>Destructuring</h3>
+      <h3>Destructuration</h3>
 
-      <p>Destructuring is a powerful way to extract values from variables. Rather than assigning to a simple variable, you can assign to data structures, which extract the values. For example:
+      <p>La déstructuration est une manière puissante d'extraire des valeurs depuis des listes et des objets, vous permettant de lire directement des structures :
 
       <div class="example">
         <div class="example-ls">
@@ -4216,7 +4223,7 @@ second;
         </div>
       </div>
 
-      <p>You can also use splats:
+      <p>Vous pouvez aussi obtenir la partie restante :
 
       <div class="example">
         <div class="example-ls">
@@ -4248,7 +4255,7 @@ last;
         </div>
       </div>
 
-      <p>...and objects too!
+      <p>La déstructuration marche aussi avec les objets :
 
       <div class="example">
         <div class="example-ls">
@@ -4273,7 +4280,7 @@ age;
         </div>
       </div>
 
-      <p>You can also name the entity which you are destructuring using <code>:label</code>, as well as arbitrarily nest the destructuring.
+      <p>Vous pouvez aussi labeller les structures avec <code>:label</code>, ou imbriquer les déstructurations :
 
       <div class="example">
         <div class="example-ls">
@@ -4301,9 +4308,9 @@ list2;
         </div>
       </div>
 
-      <h3>Substructuring</h3>
+      <h3>Sous-déstructuration</h3>
 
-      <p>Easily set properties of lists and objects.
+      <p>Permet de lire et écrire aisément les propriétés d'objets :
 
       <div class="example">
         <div class="example-ls">
@@ -4341,9 +4348,9 @@ phile.pets;
 
     <div id="property-access" class="section">
       <a name="property-access"></a>
-      <h2>Property Access</h2>
+      <h2>Accès propriétés</h2>
 
-      <p>The standard:
+      <p>Le standard :
 
       <div class="example">
         <div class="example-ls">
@@ -4363,7 +4370,7 @@ phile.pets;
         </div>
       </div>
 
-      <p> Dot Access - dot operators can accept many more things other than identifiers as their right operand, including numbers, strings, parentheses, brackets, and braces.
+      <p>L'accès avec un point - le point accepte bien plus qu'un simple identifieur comme opérande de droite, vous pouvez aussi donner des nombres, chaînes, parenthèses, etc :
 
       <div class="example">
         <div class="example-ls">
@@ -4389,7 +4396,7 @@ x['hello world'][1][0];
         </div>
       </div>
 
-      <p>Accessignment using <code>.=</code>.
+      <p>Accessignation avec <code>.=</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -4404,7 +4411,7 @@ document.title = document.title.toUpperCase();
         </div>
       </div>
 
-      <p>Array slice and splice:
+      <p>Récupérer ou assigner une partie de liste :
 
       <div class="example">
         <div class="example-ls">
@@ -4431,7 +4438,7 @@ list;
         </div>
       </div>
 
-      <p>Object slice:
+      <p>Une partie d'un objet :
 
       <div class="example">
         <div class="example-ls">
@@ -4455,7 +4462,7 @@ obj = {
         </div>
       </div>
 
-      <p>Length star <code>*</code>.
+      <p>L'étoile de longueur <code>*</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -4477,7 +4484,7 @@ list[list.length - 1];
         </div>
       </div>
 
-      <p> Semiautovivification <code>.{}</code>, <code>.[]</code> ensures that the property exists as an object or as an array.
+      <p>Semi-autovivification <code>.{}</code> (objet), <code>.[]</code> (liste) permet de s'assurer que la propriété est un objet ou une liste :
 
       <div class="example">
         <div class="example-ls">
@@ -4502,11 +4509,12 @@ x = { "hello world": [ 4, [ 5, { boom: 6 } ] ] };
       </div>
 
 
+      <a name="cascades"></a>
       <h3>Cascades</h3>
 
-      <p>A cascade always evaluates to the item being accessed, and not to the return value of the accessing operations.
+      <p>Une cascade retourne l'objet accédé, et non pas les opérations 
 
-      <p>Beautiful chaining:
+      <p>Enchaînement via cascades :
 
       <div class="example">
         <div class="example-ls">
@@ -4543,7 +4551,7 @@ x$.innerHTML = 'LIVESCRIPT!';
         </div>
       </div>
 
-      <p>Single line cascades:
+      <p>Cascade monoligne :
 
       <div class="example">
         <div class="example-ls">
@@ -4562,7 +4570,7 @@ x$.sort();
         </div>
       </div>
 
-      <p>Cascades are callable, and can include arbitrary code.
+      <p>Les cascades sont appellables, et peuvent contenir n'importe quel code :
 
       <div class="example">
         <div class="example-ls">
@@ -4571,7 +4579,7 @@ console.log
   x = 1
   y = 2
   .. x, y
-# prints `1 2` to the console
+# affiche `1 2` dans la console
 </pre>
         </div>
         <div class="example-js">
@@ -4585,7 +4593,7 @@ x$(x, y);
         </div>
       </div>
 
-      <p>You can use <code>with</code> to specify the part of the preceding expression to cascade.
+      <p>Vous pouvez utiliser <code>with</code> pour effectuer la cascade avant l'assignation :
 
       <div class="example">
         <div class="example-ls">
@@ -4614,24 +4622,24 @@ x;
       <a name="exceptions"></a>
       <h2>Exceptions</h2>
 
-      <p>You can throw exceptions with the aptly named <code>throw</code>.
+      <p>Vous pouvez lancer des exceptions avec <code>throw</code>.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-throw new Error 'an error has occurred!'
+throw new Error 'Une erreur est survenue !'
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-throw new Error('an error has occurred!');
+throw new Error('Une erreur est survenue !');
 </pre>
         </div>
       </div>
 
-      <p>You can catch and deal with exceptions with the <code>try</code> <code>catch</code> <code>finally</code> block. Both <code>catch</code> and <code>finally</code> are optional.
+      <p>Vous pouvez attraper les exceptions avec <code>try</code> - <code>catch</code> - <code>finally</code>. Les blocs <code>catch</code> et <code>finally</code> sont optionnels.
 
-      <p>The <code>try</code> block is attempted. If an exception occurs, the <code>catch</code> block is executed. It is supplied with the exception object. If you do not specify the name of this variable it will default to <code>e</code>. Unlike JavaScript, the exception variable is scoped to the nearest function, not the <code>catch</code> block. You can destructure the exception object if you wish.
+      <p>Le bloc <code>try</code> est éxecuté. Si une exception est lancée, le bloc <code>catch</code> est éxecuté, avec l'objet. Contrairement au JavaScript, l'exception est liée à la portée de la fonction la plus propche, non pas au bloc <code>catch</code>. Vous pouvez même déstructurer l'exception si vous le voulez :
 
       <div class="example">
         <div class="example-ls">
@@ -4679,7 +4687,7 @@ x;
         </div>
       </div>
 
-      <p>The <code>finally</code> block is executed after the <code>try</code> or <code>catch</code>, regardless of what has happened.
+      <p>Le bloc <code>finally</code> est éxecuté après le bloc <code>try</code> ou le bloc <code>catch</code>, peu importe qu'il y ait eu une exception ou non.
 
       <div class="example">
         <div class="example-ls">
@@ -4721,13 +4729,13 @@ try {
 
     <div id="oop" class="section">
       <a name="oop"></a>
-      <h2>Object Oriented Programming</h2>
+      <h2>Programmation orientée objets</h2>
 
-      <p>Classes are simple sugar for the definition of constructor functions and the setting of their prototype.
+      <p>Les classes sont simplement une syntaxe offerte pour définir un constructeur et les fonctions du prototype.
 
-      <p>The constructor function is defined as function literal at the top level of the class definition.
+      <p>Le constructeur est une fonction déclarée directement dans la classe.
 
-      <p>Properties of its prototype are defined by object literals at the top level.
+      <p>Les propriétés du prototypes sont définies avec la même syntaxe que les objets.
 
       <div class="example">
         <div class="example-ls">
@@ -4768,7 +4776,7 @@ a.method(6);
         </div>
       </div>
 
-      <p>Static properties (properties attached to the constructor) are defined by adding properties to <code>this</code> at the top level. These properties can be accessed in methods by accessing <code>constructor</code> (shorthand <code>@@</code>).
+      <p>Les propriétés statiques (attachées au constructeur) sont définies en préfixant le nom de la propriété par un <code>this</code> (ou <code>@</code>). Ces propriétés peuvent être accédées via le <code>constructor</code> (ou <code>@@</code>) :
 
       <div class="example">
         <div class="example-ls">
@@ -4803,7 +4811,7 @@ a.getStatic();
         </div>
       </div>
 
-      <p>Private static properties are defined as just regular variables in the class body. (note: private instance properties are not possible in JavaScript, and thus, LiveScript.)
+      <p>Les propriétés privées statiques sont juste définies comme des variables dans le bloc de la classe. (note : les propriétés privées pour une instance sont impossibles en JavaScript, et par conséquent, en LiveScript.)
 
       <div class="example">
         <div class="example-ls">
@@ -4837,7 +4845,7 @@ a.getSecret();
         </div>
       </div>
 
-      <p>You can define bound methods (using <code>~></code>, which have their definition of <code>this</code> bound to the instance.
+      <p>Vous pouvez définir des méthodes liées (using <code>~></code>, qui auront alors leur <code>this</code> lié à l'instance :
 
       <div class="example">
         <div class="example-ls">
@@ -4892,7 +4900,7 @@ function bind$(obj, key, target){
         </div>
       </div>
 
-      <p>You can easily set properties in constructor functions and in methods using the object setting parameter shorthand.
+      <p>Vous pouvez facilement modifier les propriétés dans les fonctions et dans le constructeur via le raccourci depuis les paramètres :
 
       <div class="example">
         <div class="example-ls">
@@ -4932,7 +4940,7 @@ a.y;
         </div>
       </div>
 
-      <p>If you define the constructor as a bound function <code>~></code>, you don't need to use <code>new</code> when making a new instance.
+      <p>Si vous définissez le constructeur en tant que fonction liée (<code>~></code>), vous n'aurez pas besoin d'utiliser <code>new</code> pour l'instanciation :
 
       <div class="example">
         <div class="example-ls">
@@ -4963,7 +4971,7 @@ a.x;
         </div>
       </div>
 
-      <p>For higher level libraries and frameworks, there is the ability to define the constructor as an external function, by setting the property <code>constructor$$</code>. This is not recommended for regular coding.
+      <p>Pour les bibliothèques haut niveau et autres, vous pouvez assigner le constructeur à une fonction externe, en assignant <code>constructor$$</code>. Ce n'est pas recommandé cependant.
 
       <div class="example">
         <div class="example-ls">
@@ -4998,7 +5006,7 @@ a.x;
         </div>
       </div>
 
-      <p>You can inherit with <code>extends</code>
+      <p>Vous pouvez hériter avec <code>extends</code> :
 
       <div class="example">
         <div class="example-ls">
@@ -5061,7 +5069,7 @@ function import$(obj, src){
         </div>
       </div>
 
-      <p>This is especially useful with <code>super</code>. If bare, <code>super</code> is a reference to the appropriate function. If you want to call it will all arguments, use <code>super ...</code>.
+      <p>Vous pouvez utiliser avec <code>super</code>. Si seul, <code>super</code> est une référence à la fonction appropriée. Si vous voulez l'appeler en passant les arguments, utilisez <code>super ...</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -5128,7 +5136,7 @@ function import$(obj, src){
         </div>
       </div>
 
-      <p>You can use mixins through <code>implements</code>. You can only inherit from one class, but can mixin as many objects as you like.
+      <p>Vous pouvez utiliser des mixins via <code>implements</code>. Vous ne pouvez hériter que d'une classe, mais vous pouvez avoir autant de mixins que vous le voulez :
 
       <div class="example">
         <div class="example-ls">
@@ -5182,7 +5190,7 @@ function importAll$(obj, src){
         </div>
       </div>
 
-      <p>To modify the prototype, you can use the shorthand <code>::</code>, and you can use the <code>::=</code> operator if you wish to modify several properties.
+      <p>Pour modifier le prototype, vous pouvez utiliser le raccourci <code>::</code>, et vous pouvez utiliser <code>::=</code> pour modifier plusieurs propriétés :
 
       <div class="example">
         <div class="example-ls">
@@ -5238,7 +5246,7 @@ b.f();
         </div>
       </div>
 
-      <p>If you don't wish to support older browsers, and desire the use of <code>Object.defineProperty</code>, you can use the following shorthand:
+      <p>Si vous ne souhaitez pas supporter les anciens navigateurs et voulez utiliser <code>Object.defineProperty</code>, la syntaxe suivante est à votre disposition :
 
       <div class="example">
         <div class="example-ls">
@@ -5285,386 +5293,101 @@ b.dimensions;
     <hr>
     <div class="section" id="coffee-to-ls">
       <a name="coffee-to-ls"></a>
-      <h2>CoffeeScript to LiveScript Conversion Guide</h2>
+      <h2>Conversion depuis CoffeeScript</h2>
       <ul>
-        <li>Change all your fat arrows <code>=></code> to wavy arrows <code>~></code>
-        <li>Change all your block comments <code>### ###</code> to <code>/* */</code>
-        <li>Change any range syntax creating lists from <code>[x..y]</code> to <code>[x to y]</code> and change <code>[x...y]</code> to <code>[x til y]</code>. If your range goes downwards, ie. from a larger number to a smaller number, and it is not obvious (the from and to are not literals), then you must add <code>by -1</code>, eg. <code>[x to -3 by -1]</code>
-        <li>Similarly, change any range syntax in for loops from <code>for i in [x..y]</code> to <code>for i from x to y</code> and change <code>for i in [x...y]</code> to <code>for i from x til y</code>
-        <li>Change any list comprehensions from <code>(x for x in list)</code> to <code>[x for x in list]</code>. Any postfix loops which you do not want returning a list, change to not postfixed, eg. change <code>increase x for x in list</code> to <code>for x in list then increase x</code>. You can shave characters if you wish by using the alias to <code>then</code>, the fat arrow <code>=></code>
-        <li>Change any number literals starting with a dot, eg. <code>.5</code> to start with a zero <code>0.5</code>
-        <li>Change any regular expression literals from <code>/// ///</code> to <code>// //</code>
-        <li>Change any splats you are using from <code>(args...) -></code> to be prefixed like <code>(...args) -></code>
-        <li>Remove the parentheses from function definitions with no parameters, <code>() -></code> simply becomes <code>-></code> - this is because <code>()</code> is always a call.
-        <li>Change your constructor functions in your classes from being defined as 
+        <li>Changez toutes vos flèches doublées <code>=></code> pour des flèches ondulées <code>~></code>
+        <li>Changez tous vos blocs de commentaires <code>### ###</code> pour <code>/* */</code>
+        <li>Changez toutes vos ranges <code>[x..y]</code> pour <code>[x to y]</code> et changez <code>[x...y]</code> en <code>[x til y]</code>. Si votre range descend, et que ce n'est pas évident (le from et le to ne sont pas littéraux), vous devez ajouter  <code>by -1</code>, par exemple <code>[x to -3 by -1]</code>
+        <li>De manière similaire, changez vos <code>for</code> utilisant la syntaxe <code>for i in [x..y]</code> pour <code>for i from x to y</code>, de même pour <code>for i in [x...y]</code> à transformer en <code>for i from x til y</code>
+        <li>Changez vos compréhensions de listes <code>(x for x in list)</code> pour <code>[x for x in list]</code>. Toutes les boucles suffixes qui ne doivent pas retourner des listes ne doivent pas être en suffixes, par exemple, changez <code>increase x for x in list</code> pour <code>for x in list then increase x</code>. Vous pouvez économiser des caractères en utilisant l'alias de <code>then</code>, la flèche doublée <code>=></code>
+        <li>Changez les nombre littéraux commençant avec un point, transformez <code>.5</code> en ajoutant un zéro <code>0.5</code>
+        <li>Changez vos expressions régulières avancées de <code>/// ///</code> vers <code>// //</code>
+        <li>L'opérateur de reste (<code>...</code>) est en préfixe, non pas en suffixe (<code>(...args) -></code>)
+        <li>Retirez les parenthèses pour les arguments d'une fonction sans paramètres, <code>() -></code> doit être <code>-></code> - <code>()</code> est toujours un appel.
+        <li>Changez vos constructeurs de : 
 <pre>
 class Item
   constructor: ->
-</pre> to simply being functions at the top level of your class body, eg.
+</pre> Pour :
 <pre>
 class Item
   ->
 </pre>
-        If your constructor is an external function, define it with the special property <code>constructor$$</code>.
-        <li>Change any calls to super from <code>super</code> to <code>super ...</code> - this is because <code>super</code> is a direct reference to the parent function rather than a call itself.
-        <li>Change any bitwise operators to themselves surrounded by dots. Eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is now <code>.&gt;&gt;.</code>
-        <li>If you are modifying variables in upper scopes at any time, eg.
+        Si votre constructeur est une fonction externe, assignez <code>constructor$$</code>.
+        <li>Changez vos appels à super de <code>super</code> à) <code>super ...</code> - this is because <code>super</code> is a direct reference to the parent function rather than a call itself.
+        <li>Entourez vos opérateurs de bits de points, <code>&amp;</code> est <code>.&amp;.</code> et <code>&gt;&gt;</code> est <code>.&gt;&gt;.</code> (etc)
+        <li>Si vous voulez modifier des variables dans des portées supérieures
 <pre>
 x = 10
 do ->
   x = 5
-</pre> you must use <code>:=</code> instead of just <code>=</code> as that will declare a new (shadowing) variable in LiveScript. Thus, the above code would need to be
+</pre> vous douvez utiliser l'opérateur <code>:=</code> au lieu du simple <code>=</code> car ce dernier est toujours utilisé pour déclarer une variable (shadowing). Le code ci-dessus devrait être
 <pre>
 x = 10
 do ->
   x := 5
-</pre> if you wanted to modify <code>x</code>
-      <li>If you are using nested list comprehensions (eg. <code>(x + y for x in [1, 2] for y in [3, 4])</code>, you will need to change this to a regular (non-postfixed) nested loop, as instead of the result being a lists within a list as in CoffeScript (the result of the example would be <code>[[4,5],[5,6]]</code>), the result is flattened (the result of the example in LiveScript would be <code>[4,5,5,6]</code>). Eg. change
-<pre>
-result = (x + y for x in [1, 2] for y in [3, 4])
 </pre>
-      to
-<pre>
-result = for x in [1, 2]
-  for y in [3, 4]
-    x + y
-</pre>
-      in order to get the non-flattened result.
-      <li>Change the name of any of your variables named <code>it</code>, <code>that</code>, <code>fallthrough</code>, or <code>otherwise</code>. Those are terrible names for variables so you should change them anyway. This technically isn't required in all cases, but will be less confusing if you do so in all cases. <code>it</code> is used as the implicit argument of functions defined with no parameters, eg. <code>reverse = -> it.reverse!</code>. <code>that</code> refers to the value of the condition, for instance <code>that + 2 if (x + 10)/(y - 18)</code>, <code>that == (x + 10)/(y-18)</code>. <code>fallthrough</code>, if used at the end of a case block makes that block fallthrough to the next case. <code>otherwise</code>, if used directly after case, turns that case into default.
-      <li>If you have any multiline strings non triple quoted strings (using <code>"string"</code> or <code>'string'</code>), eg.
+      <li>N'utilisez pas <code>it</code>, <code>that</code>, <code>fallthrough</code>, ou <code>otherwise</code> pour vos variables. Cela peut ne pas être techniquement requis dans tous les cas, mais sera moins confus. Référez-vous à la documentation ci-dessus pour leurs utilisations.
+      <li>LiveScript ignore l'indentation dans les chaînes multilignes avec entourées de guillements simples (non triplés, <code>"string"</code> ou <code>'string'</code>)
 <pre>
 text = "hi 
         there"
-</pre> you will have to change them as in CoffeeScript this would be <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> while LiveScript ignores indentation after newlines so it would be <code>"hi there"</code>
-      <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript. You can use <code>||</code> instead of <code>or</code> and <code>&amp;&amp;</code> instead of <code>and</code> as those versions do not close implicit calls.
-      <li>Change any <code>do</code>s special casing function literals to using <code>let</code>. Eg. in CoffeScript <code>do ($ = jQuery) -> $</code> change to
+</pre> devra être changé car produit, en CoffeeScript, <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> mais <code>"hi there"</code> en LiveScript.
+      <li><code>and</code>, <code>or</code> et les versions espacées de <code>.</code> and <code>?.</code> ferment les appels implicites : <code>f a .g b or h c</code> est <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript. You can use <code>||</code> instead of <code>or</code> and <code>&amp;&amp;</code> instead of <code>and</code> as those versions do not close implicit calls.
+      <li>Changez vos <code>do</code>s-bloc pour utiliser <code>let</code>. Par exemple : en CoffeScript <code>do ($ = jQuery) -> $</code> à changer pour
 <pre>
 let $ = jQuery
   $
 </pre>
-      <li>Change any implicit calls against blocks starting with an implicit objects to use <code>do</code>. Eg. change 
+      <li>Utilisez le <code>do</code> pour les appels implicites suivis d'un bloc :
 <pre>
 f
   a: b
-</pre> into
+</pre> à transformer en
 <pre>
 f do
   a: b
 </pre>
-      <li>Change any JavaScript code literals, eg. <code>`js code here`</code> to <code>``js code here``</code>
-      <li>Change any dually spaced property access, eg. <code>x . y</code> to be either spaced on only one side or not at all. A dually spaced dot is now used to compose functions.
-      <li>Change any non spaced identifier subtraction, eg. <code>a-b</code> to spaced <code>a - b</code>. <code>a-1</code> and <code>1-b</code> are still fine. This is because <code>a-b</code> is a valid identifier in LiveScript, equivalent to its camel case, <code>aB</code>.
+      <li>Changez vos interpolations JavaScript de <code>`js code here`</code> pour <code>``js code here``</code>
+      <li>N'espacez jamais vos accès des deux côtés (exemple <code>x . y</code>), c'est l'opérateur de composition de fonctions en LiveScript
+      <li>Espacez vos opérations, comme <code>a-b</code> pour <code>a - b</code>. <code>a-1</code> et <code>1-b</code> sont toujours valides (mais déconseillés), car <code>a-b</code> est un identifieur valide en LiveScript, qui se compile en camelCase : <code>aB</code>.
       </ul>
     </div>
     <div class="section" id="changes">
-      <a name="changes"></a>
-      <h2>Changes from Coco: Detail and Rationale</h2>
-      <ul>
-      <li>Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other projects are named LiveScript. Slake because lake was taken and lsake sounds bad. 
-      <li>Switched so that <code>==</code> compiles into <code>===</code>, and also for the negatives. Rationale: Most people would want to use the JavaScript <code>===</code> more often than <code>==</code> and less typing is better, also this makes things more similar to CoffeeScript which compiles <code>==</code> to <code>===</code> so there is less code for people to change coming from CoffeeScript. The compilation of <code>is</code> to <code>===</code> stays the same.
-      <li>Switched <code>in</code> and <code>of</code> so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: People have to change less of their CoffeeScript code, they're used to it, and using <code>in</code> for checking if a value is in an array just seems right, using <code>of</code> just feels weird.
-      <li>All bitwise operators except <code>~</code> have changed to be surrounded by dots, eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>. Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. 
-      <li><code>=></code>, the pipe operator using <code>_</code>, is removed. Free up => (for <code>then</code> alias), (<code>|</code> is used as an alias for case). Use other pipes (<code>|></code>) and partial application instead.
-      <li><code>|</code> is an alias for <code>case</code> (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
-      <li><code>=></code> is an alias for <code>then</code>. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with <code>|</code>, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
-      <li>Added <code>otherwise</code> and underscore <code>_</code> as a contextual keyword, when used after <code>case</code> or <code>|</code>, making that the default statement. Rationale: same as in Haskell (otherwise), underscore as in Scala - and shorter. It allows <code>| otherwise => 4 + 9</code>, which fits in with the rest of the structure.
-      <li>Added implicit <code>switch</code> after <code>-></code>, <code>~></code>, <code>:</code>, or an assign when they are followed by case tokens (either <code>case</code> or <code>|</code>). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
-      <li>Added list concat operator, <code>+++</code>. Eg. <code>xs +++ ys</code> is <code>xs.concat(ys)</code>. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
-      <li><code>^</code> is now an alias to <code>**</code>, the power operator. Rationale: it was available, and is used in other languages. 
-      <li>Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell. 
-      <li>Power operator is now right associative. eg. 2^2^3 == 2^(2^3) == 256. Rationale: follwing Haskell's and many other languages lead on this one.
-      <li>Added magic auto curried functions, defined using <code>--></code> and <code>~~></code>. With this you can do <code>times = (x, y) --> x * y</code>, <code>timesTwo = times 2</code>, <code>timesTwo 4 #=> 8</code>. If you call a curried function with no arguments, it calls itself as is, instead of returning itself (you can just reference it if you want it itself). Rationale: more Haskell like, useful functionality. 
-      <li>Added new function definition syntax, eg. <code>add(x, y) = x + y</code> == <code>add = (x, y) --> x + y</code>. You can also use it in object literals and class definitions eg. <code>add(x, y): x + y</code> == <code>add: (x, y) --> x + y</code>. You can also suppress return on both by starting with a bang, eg. <code>!nothingness(params) = true</code> will not return anything. As well you can have lexically bound this using <code>id@(param) = something</code> which is suger for <code>id = (param) ~~> something</code> (notice the wavy arrow). You can go crazy and do something like this if you wish: <code>@!func@! = something</code> which is a function assigned to this, which takes no parameters and returns nothing, while being lexically bound to this. All functions defined using this syntax are curried. Rationale: more beautiful, less typing, more Haskell like.
-      <li>Added <code>obj ::= obj2</code> as alias to <code>obj::&lt;&lt;&lt;obj2</code>. Rationale: seems to be the intuitive behavior expected, looks cleaner.
-      <li>Added <code>yes / on</code> as aliases to <code>true</code> and <code>no / off</code> as aliases to <code>false</code>. Added <code>undefined</code> as an alias to <code>void</code>, and aliased <code>isnt</code> to <code>is not</code>. Rationale: ease transition from CoffeeScript, which has all these features, to LiveScript. 
-      <li>Added <code>when</code> as alias to <code>case</code> (and <code>|</code>). Rationale: ease transition from CoffeeScript. 
-      <li>Allowed guards in loops using case statement, eg. <code>x for x from 1 to 10 when x % 2 is 0</code>. Rationale: ease transition from CoffeeScript and have guards in comprehensions like other languages (Haskell).
-      <li>Added the use of <code>else</code> for default in switch. Rationale: ease transition from CoffeeScript.
-      <li>Added <code>loop</code> as alias for <code>while true</code>. Rationale: ease transition from CoffeeScript. 
-      <li>Added pipe operator <code>|></code> ala F#, <code>val |> func</code> is the same as <code>func(val)</code>. Very useful in combination with curried functions. Rationale: useful, as in F#.
-      <li>Added backwards pipe operator <code><|</code> ala F#: <code>f <| x</code> is the same as <code>f x</code>. This is more useful than it looks, and can help you avoid parens. For instance for a definition of toCase that returns a function that either uppercases or lowercases a word, <code>toCase \up <| \hello</code> rather than <code>toCase(\up) \hello</code>. Rationale: useful as per above, as in F#.
-      <li>Added function composition operators ala F#. <code>&gt;&gt;</code> and <code>&lt;&lt;</code>. <code>(f &gt;&gt; g) x</code> is <code>g(f(x))</code> and <code>(f &lt;&lt; g) x</code> is <code>f(g(x))</code>. Rationale: very useful, especially with curried functions. As in F# (and Haskell, there it's the dot operator).
-      <li>Added <code>%%</code> operator (and corresponding <code>%%=</code> operator), <code>x %% y</code> is <code>(x % y + y) % y</code>. Eg. <code>-3 % 4 == -3; -3 %% 4 == 1</code>. Rationale: this is how the <code>%</code> op behaves in other languages such as Python and Ruby.
-      <li>Changed number base format from <code>7r4</code> to <code>7~4</code>. This is because using <code>r</code> causes ambiguity with number comments. For instance, <code>36rpm</code> - is that the number <code>36</code> with the number comment <code>rpm</code> or is it <code>pm</code> base <code>36</code> (922). Also now accept any number as radix, so that a better error can be thrown when that radix is not 2-36. Rationale: fixes ambiguity.
-      <li>Allowed expression in range syntax, eg. <code>[x to y/2]</code> instead of just number literals. This has the side effect of removing naked ranges, eg. <code>2 to 5</code> without enclosing brackets (for loops remain unchanged). Rationale: expressions in ranges are useful, much more than naked ranges which have really limited use. Also closer to CoffeeScript, easing transition again. 
-      <li>Changed CLI to bare compilation so that defined variables are attached to global scope. Improved repl to continue when lines end with <code>-></code>, <code>~></code>, or <code>=</code>
-      <li>Added list comprehensions (eg. <code>[x for x in list when x is \something]</code>) and removed postfix loops (eg. <code>something x for x in list</code>). Comprehensions always return a list. Nested list comprehensions behave properly, ie. the last for is the inner most loop. Rationale: following Haskell and Python. More consistent behavior. Easier to deal with in your head. More intuitive. 
-      <li>Changed JS literals to use two backticks, eg. <code>``js code here``</code> instead of <code>`js code here`</code>. Rationale: it was seldom needed; frees up backticks for infix function application.
-      <li>Add infix function application, eg. <code>3 `add` 2</code>. Rationale: as in Haskell. This allows for partial application of their second argument, like operators eg. <code>(`times` 2)</code>.
-      <li>Changed unary clone operator from <code>^</code> to <code>^^</code>. Rationale: disambiguate with partial application of power operator.
-      <li>Added partial application of operators. Eg. <code>(+ 2)</code> returns a function which adds 2 to its argument. Also allowed is simply <code>(*)</code> which is a function which multiplies its two arguments. <code>(+x)</code> and <code>(-x)</code> still mean the application of those unary operators - the operator must be spaced to be the partial application of that operator. Using the length star <code>*</code> is no longer allowed within parens (sometimes used when setting dynamic keys), due to ambiguity with the partially applied multiplication operator. Rationale: awesome. As in Haskell.
-      <li>Added unary operators as functions. Eg. you can use <code>(not)</code> as a function, compose it, etc. Rationale: very useful, as in Haskell.
-      <li>Added <code>.</code> as alias to <code>&lt;&lt;</code> in composing functions. This disallows property access in the style of <code>x . y</code>. Rationale: as in Haskell. Dually spaced property access should never be used anyway. 
-      <li>Added object comprehensions. Eg. <code>{[key, val * 2] for key, val of obj}</code> would return an object with all the values double of the original. The first part of the array literal gets translated into the key, the second part into the value. Rationale: very useful when dealing with objects. Can now map and filter objects back into objects.
-      <li>Dashes are now supported in identifiers, they get converted into camel case. Eg. <code>get-room</code> is equivalent to <code>getRoom</code>, <code>encode-URI</code> is <code>encodeURI</code>. Rationale: enable different styles which other people may enjoy. As in the lisp family of languages. 
-      <li>Added implicit call/lookup eg. <code>(.length)</code> is equivalent to <code>-> it.length</code> and <code>(.join \*)</code> is equivalent to <code>-> it.join \*</code>. <code>(obj.)</code> is <code>-> obj[it]</code>. Rationale: useful when mapping, filtering, etc. 
-      <li>Added infix <code>with</code> operator ("cloneport"). Eg. <code>personA = personB with name: \alice</code> is equivalent to <code>personA = ^^personB &lt;&lt;&lt; name: \alice</code>. Ie. it clones the head and imports the tail into that new object. <code>personB</code> is unmodified. Rationale: really nice may to create new objects out of old ones.
-      <li>Add partial application, <code>_</code> is the placeholder. Eg. <code>f = add-three-numbers 1, _, 3</code> then <code>f 2 #=> 6</code>. Can be multiple times, and like curried functions if called with no args will invoke, allowing use of default args. Rationale: really useful, for when function args aren't in a nice order so you can use a curried version.
-      <li>Changed backcall <code>&lt;-</code> placeholder to underscore <code>_</code>. Rationale: fit in with partial application placeholder.
-      <li>Changed <code>arguments</code> alias to <code>&</code>, removed <code>@@</code> as that alias. Eg. <code>-> &amp;0 + &amp;1</code>. Rationale: shorter - less typing.
-      <li>Added <code>-d, --prelude</code> option for automatically adding prelude.ls. Rationale: make it easier to use prelude.ls.
-      <li>Added <code>-k, --const</code> option for compiling as if all variables as constants. Rationale: some people coming from languages with all immutable values may find this nice.
-      <li>Allowed arbitrary expressions in slicing syntax, eg. <code>list[1 to x]</code>. Rationale: useful.
-      <li>Changed so that constructors are inherited. Rationale: useful, and more like in CoffeeScript.
-      <li>Allowed empty class definitions, ie. with no block. Rationale: useful and more like CoffeeScript.
-      <li>Bound methods are bound to the instance, not the class. Rationale: seems pretty useless to be bound to the class, so this is more useful. Also more like CoffeeScript.
-      <li>Added function keyword arguments like in python. Rationale: useful.
-      <li>Added a exclusive or <code>xor</code> operator. Rationale: logic completeness.
-      <li>Binary logic is callable. Ratioanle: useful.
-      <li>Allow splicing like in CoffeeScript. Rationale: easier transition, useful.
-      <li>Overloaded equals when using regex to mean exec/test. Rationale: shorter.
-      <li>Static functions are inherited. Rationale: as in CoffeeScript - ease transition.
-      <li>Removed the constructor shorthand. Rationale: rarely useful, use it for cascade instead.
-      <li>Changed cascade op from <code>&</code> to <code>..</code>. Rationale: like in other languages.
-      <li>Added match statement and deep compare. Rationale: experimental, will see if good.
-      <li>For changes after 1.0.0, see the <a href="#changelog">changelog</a> section.
-      </ul>
+      <a name="changes" href="http://livescript.net/index.html#changes">Changes from Coco: Detail and Rationale (EN)</a>
     </div>
     <div id="changelog" class="section">
-      <a name="changelog"></a>
-      <h2>Changelog</h2>
-      <h3>1.1.0</h3>
-      <ul>
-        <li><code>lsc</code> is now an alias for the <code>livescript</code> command, as <code>livescript</code> is quite long. Think "LiveScript Compiler".
-        <li>Added single line cascades. Eg. <code>[1 2 3]..push 3 ..shift!..sort!</code>
-        <li>Cascades are callable, eg.
-<pre>
-(+)
-  .. 2 3
-</pre>
-        <li>Removed previous usage of <code>with</code>, use <code>let @ = x</code> instead.
-        <li><code>with</code> can be used to specify the part of the expression to cascade. Eg.
-<pre>
-x = with [1 2 3]
-  ..push 3
-</pre>
-        <li>An empty catch <code>try x catch</code> returns its catchee.
-        <li><code>by -1</code> is not required in ranges where it is obvious.
-        <li>Added shorthand for <code>constructor</code>: <code>@@</code>
-        <li>Changed semiautovivification from using <code>x@y</code> and <code>x@@y</code> to using <code>x{}y</code> and <code>x[]y</code>
-        <li>Nested loops (not comprehensions) no longer return flattened results when used as an expression.
-<pre>
-res = for x to 2
-  for y to 3
-    "#x#y"
-res #=> [ ['00', '01', '02', '03'], ['10', '11', '12', '13'], ['20', '21', '22', '23'] ]
-</pre>
-        Use comprehensions instead if you want a flattened result. To make things easier, comprehensions can now be multiline.
-<pre>
-["#x#y" for x to 2
-              for y to 3]
-#=> ['00', '01', '02', '03', '10', '11', '12', '13', '20', '21', '22', '23']
-</pre>
-        <li>Fixed bug where comprehensions inside comprehensions were returning flattened results, eg.
-<pre>
-[[x + y for x to 2] for y to 3]
-#=> [ [0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5] ]
-</pre>
-        now returns an array of arrays as expected. If you were relying on this behavior, simply remove the brackets of the inner comprehension to make it a nested comprehension.
-        <li>Added <code>require!</code>, which takes either a object, array, or string literal and creates a series of require statements. See <a href="#require">documentation</a>.
-        <li>Added the ability to call <code>super</code> outside of the class body, when adding static or instance methods to a class. Eg.
-<pre>
-class A extends B
-A::meth -> super ...
-A.stat -> super ...
-</pre>
-        <li>The 'from' number in a range can be omitted, to be consistent with for loops. If the number is omitted, it is assumed to be <code>0</code>.
-<pre>
-[to 3]  #=> [0, 1, 2, 3]
-[til 3] #=> [0, 1, 2]
-</pre>
-        <li>You can now define an external constructor in a class. This is mostly for compatibility with CoffeeScript, and for higher level libraries and frameworks. It is defined with <code>constructor$$:</code>. eg.
-<pre>
-class A
-  constructor$$: some-external-func
-</pre>
-        <li>You can now splat <code>new</code> eg. <code>new A ...a</code>
-        <li>Class bodies are now executable. You can do things like:
-<pre>
-class A
-  if condition
-    method: -> ...
-  else
-    method2: -> ...
-
-  for key of obj
-    (key): -> ...
-</pre>
-        <li>If you <code>do</code> a named function, and the <code>do</code> statement is not being used as an expression, the function retains its hoisting. Eg.
-<pre>
-f 1 #=> 1
-do function f x
-  x
-</pre>
-        compiles to
-<pre>
-f(1);
-function f(x){
-  return x;
-} f();
-</pre>
-        <li>You can now omit all variables from for loop definitions over a range. Eg.
-<pre>
-[1 for til 3] #=> [1, 1, 1]
-for til 3 then f!
-[f! for from 1 to 5]
-</pre>
-        <li>Added <code>delete!</code> statement, like <code>delete</code> in JavaScript. This is slightly different from <code>delete</code> in LiveScript, which returns the deleted item if used as an expression.
-<pre>
-delete! x.y
-</pre>
-        <li>Added back JavaScript code literals, for the sole purpose of allowing CoffeeScript to LiveScript compilation compatibility. Not to be used in regular code. JS literals are denoted with two backticks. <code>``js code``</code>
-        <li><code>for</code> loop and comprehension indices are immutable. Use a <code>while</code> loop if you want to mutate indices. Also, the last value of the index is the last value it has in the loop.
-        <li>You can destructure the <code>catch</code> parameter.
-        <li><code>in</code> works on sparse arrays for compatibility with CoffeeScript.
-        <li>Bug fixes.
-      </ul>
-      <h3>1.0.1</h3>
-      <ul>
-        <li>Bug fixes.
-      </ul>
-      <h3>1.0.0</h3>
-      <ul>
-        <li>Nicer compilation for the compose op
-        <li>The <code>--prelude</code>/<code>-d</code> flags work for the repl
-        <li>New func syntax eg. <code>f(x) = x</code> now uses <code>~</code> for bound funcs, liked named funcs, eg. <code>~f(x) = x</code>
-        <li>Removed no return option for new func syntax
-        <li>Added function keyword arguments ala python, eg. <code>f = ({x = 2, y = 3}) -> x + y</code>, and then application with <code>f y: 4</code>
-        <li>Removed overloading of <code>+</code> for list concatination (just use <code>+++</code>)
-        <li>Readded bitwise compound assign, eg. <code>.&.=</code>
-        <li>Added <code>where</code>, like <code>let</code> but comes after instead of before - also allows for nested assignments
-        <li>Changed fuzzy equals (<code>==</code> in JS) to <code>~=</code>, <code>!~=</code> for the negation
-        <li>Added <code>xor</code> operator, exclusive or - true if only one side or the other is true
-        <li>Doing equals on a regex literal will compile to an exec, eg. <code>x == /[ae]/g</code> is <code>/[ae]/g.exec(x)</code> - you can use <code>that</code> to get the results if used in an if statement. The negation simply uses test.
-        <li>Binary logic is callable, eg. <code>(f or g) x</code> is <code>f(x) || g(x)</code>
-        <li>Allow splicing like in CoffeeScript, eg. <code>list[1 to x] = [1 2 3]</code>
-        <li>Static functions are now inherited and support calls to <code>super</code>
-        <li>Generated reference variables are now named with a <code>$</code> after them instead of <code>__</code> preceding. eg. <code>ref$</code> instead of <code>__ref</code>
-        <li>Removed constructor shorthand, just use <code>constructor</code>
-        <li>Added cascade op from coco <code>..</code>
-        <li>Added deep compare, allows the comparison of objects, arrays, and more. <code>===</code> - experimental
-        <li>Added <code>match</code> statement - experimental
-      </ul>
-      <h3>0.9.12</h3>
-      <ul>
-        <li>Changed bitwise/shift operator syntax to be more clear. Now simply as in JS, but surrounded by dots. Eg. <code>&</code> is <code>.&.</code>, and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>
-        <li>Speed improvements
-        <li>Allowed arbitrary expressions in slicing syntax, eg. <code>list[1 to x]</code>
-        <li>Made classes work more like in CoffeeScript - details:
-        <li>Constructors are now inherited
-        <li>Allowed empty class definitions, eg. <code>class A extends B</code>
-        <li>Bound methods (eg. <code>f: ~></code>) are bound to the instance, not to the class
-      </ul>
-      <h3>0.9.11</h3>
-      <ul>
-        <li>Bug fixes
-        <li>Updated to work with node 0.8.x
-        <li>Added partial application of funcs using <code>_</code> placeholder
-        <li>Added infix <code>with</code> "cloneport", clones head and imports tail into that
-        <li>Allow partial application of pipe <code>|&gt;</code> and backpipe <code>&lt;|</code> and use as function
-        <li>Better compilation of various operators-as-functions
-        <li>Added existential soak implicit call/lookup, eg. <code>(?length)</code>
-        <li>Allow partially applied assign - <code>=</code>, <code>+=</code>, etc.
-        <li>Removed <code>|&gt;&gt;</code> pipe operator - use normal pipes and partial application now
-        <li>Changed backcall placeholder to underscore <code>_</code>
-        <li>Added underscore <code>_</code> as alias to <code>otherwise</code> in switch statements
-        <li>Added <code>--prelude</code> or <code>-d</code> option to automatically include <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> in compiled files
-        <li>Added <code>--const</code> or <code>-k</code> option to compile as if all variables are constants
-        <li>Added partial application of property accessor eg. <code>(obj.)</code>
-        <li>Removed cons <code>&</code> operator
-        <li>Added <code>&</code> as alias to <code>arguments</code>, allowing <code>-> &0 + &1</code> etc. 
-        <li>Removed <code>@@</code> as alias to <code>arguments</code>
-        <li>Increased precedence of the pipe <code>|&gt;</code> operator to allow assignment of the entire thing without parens, not just of the first section
-        <li>Added mixin feature <code>implements</code> thanks to Coco, eg. <code>class Cow extends Animal implements Mooer</code>, which does <code>::<<< Mooer</code> in the class body.
-      </ul>
-      <h3>0.9.10</h3>
-      <ul>
-        <li>Now have `const` and `var` thanks to Coco
-        <li>Implicit access and call functions, eg. <code>(.length)</code> and <code>(.join \|)</code> - useful for mapping/filtering, etc.
-        <li>Bug fixes
-        <li>Improved repl
-      </ul>
-      <h3>0.9.9</h3>
-      <ul>
-        <li>Various bug fixes
-        <li>Calling a curried funciton with no args calls it as is rather than returning itself
-        <li>Allow partial application of second arg for infix functions
-      </ul>
-      <h3>0.9.8</h3>
-      <ul>
-        <li>Object comprehensions added
-        <li>Dashes in identifiers allowed (transformed to camel case)
-      </ul>
-      <h3>0.9.7</h3>
-      <ul>
-        <li>Bug fixes
-        <li>Precedence change of <code>&</code> and <code>+++</code>
-        <li>Nicer pipe <code>|></code> compilation
-      </ul>
-      <h3>0.9.6</h3>
-      <ul>
-        <li>Partially applied operators
-        <li>Operators as functions
-      </ul>
-      <h3>0.9.5</h3>
-      <ul>
-        <li>Infix function calls added
-        <li>JS literals removed
-        <li>Improved CLI
-      </ul>
-      <h3>0.9.4</h3>
-      <ul>
-        <li>Added proper list comprehensions
-        <li>Removed post-fix loops
-      </ul>
-      <h3>0.9.3</h3>
-      <ul>
-        <li>Changed node requirements
-      </ul>
-      <h3>0.9.2</h3>
-      <ul>
-        <li>Improved CLI
-        <li>Enabled expressions in range syntax
-      </ul>
-      <h3>0.9.1</h3>
-      <ul>
-        <li>Changed number radix symbol to <code>~</code>
-        <li>Added <code>%%=</code>
-      </ul>
-      <h3>0.9.0</h3>
-      <ul>
-        <li>Initial public release, many changes. See <a href="#changes">Changes from Coco</a> for more details.
-      </ul>
-      <p>For more details see <a href="#changes">Changes from Coco</a>.
+      <a name="changelog" href="http://livescript.net/index.html#changelog">ChangeLog (EN)</a>
     </div>
     <hr>
     <div id="inspiration" class="section">
       <a name="inspiration"></a>
       <h2>Inspiration</h2>
         <ul>
-          <li>Functional languages in general
+          <li>Les langages fonctionnels en général
           <li>Haskell
           <li>F#
         </ul>
     </div>
     <div id="name" class="section">
       <a name="name"></a>
-      <h2>Name</h2>
-        <p>LiveScript was one of the original names for JavaScript, so it seemed fitting. It's an inside joke for those who know JavaScript well.
+      <h2>Nom</h2>
+        <p>LiveScript était l'un des premiers noms du JavaScript, c'est une référence.
     </div>
     <div id="thanks" class="section">
       <a name="thanks"></a>
-      <h2>Thanks</h2>
-      <p>You can find the full list of contributors <a href="https://github.com/gkz/LiveScript/graphs/contributors">here</a>. That list includes contributors to LiveScript and its predecessors. 
-      <p>People who have contributed directly to LiveScript include <a href="https://github.com/gkz">George Zahariev</a>, <a href="https://github.com/satyr">Satoshi Murakami</a>, <a href="https://github.com/josher19">Joshua Weinstein</a>, <a href="https://github.com/goatslacker">Josh Perez</a>, and <a href="https://github.com/paulmillr">Paul Miller</a>.
-      <p>An extra special thanks to Satoshi, as this project is a fork of his project <a href="https://github.com/satyr/coco">Coco</a> and would not be possible without it. It has been a pleasure to work off of his beautiful Coco compiler. 
+      <h2>Remerciements</h2>
+      <p>Vous pouvez trouver la liste des contributeurs <a href="https://github.com/gkz/LiveScript/graphs/contributors">ici</a>. Cette liste inclue aussi les contributeurs aux précédesseurs. 
+      <p>Les personnes qui ont contribuées directement, incluant <a href="https://github.com/gkz">George Zahariev</a>, <a href="https://github.com/satyr">Satoshi Murakami</a>, <a href="https://github.com/josher19">Joshua Weinstein</a>, <a href="https://github.com/goatslacker">Josh Perez</a>, et <a href="https://github.com/paulmillr">Paul Miller</a>.
+      <p>Un remerciement spécial pour Satoshi car ce projet est un dérivé de son langage <a href="https://github.com/satyr/coco">Coco</a> et ne serait possible sans.
+      <p>Traduction par <a href="https://github.com/Nami-Doc">Vendethiel</a>. 
     </div>
     <div id="contributing" class="section">
       <a name="contributing"></a>
-      <h2>Contributing Guide</h2>
-      <p>Fork <a href="https://github.com/gkz/LiveScript">LiveScript</a> and make your changes. Always write tests first (in the <code>/test</code> directory).
-      <p>Run <code>bin/slake</code> to see available commands. Always make sure you can <code>bin/slake build:full</code> - ie. build the compiler itself. Useful: <code>git checkout -- lib && bin/slake build:full</code>: cleans out your <code>lib</code> and compiles twice and tests. Only send a pull requests if all tests pass. If you are hacking on the grammar, you will need to <code>git checkout -- lib && bin/slake build && bin/slake build:parser && bin/slake test</code>. Once all tests pass, rewrite any of the compiler that needs rewriting, and then <code>bin/slake build:full</code>.
-      <p>Don't submit patches with a built browser file (<code>extras/livescript.js</code>) created by <code>bin/slake build:browser</code>. This file is only built before releasing a new version. 
+      <h2>Guide du contributeur</h2>
+      <p>Créez un fork de <a href="https://github.com/gkz/LiveScript">LiveScript</a> et effectuez vos modifications, sans oublier les tests (dossier <code>/test</code>).
+      <p>&Eacute;xecutez <code>bin/slake</code> pour voir les commandes disponibles. Assurez-vous de pouvoir lancer <code>bin/slake build:full</code> - à savoir, recompiler le compilateur. Utile : <code>git checkout -- lib && bin/slake build:full</code> : nettoie votre <code>lib</code> et compile ainsi que lance vos tests. N'envoyez une Pull Request que si tous vos tests passant. Si vous modifiez la grammaire, vous devrez lancer <code>git checkout -- lib && bin/slake build && bin/slake build:parser && bin/slake test</code>. Une fois que tous les tests sont passés, modifiez les parties du compilateur à modifier, puis éxecutez <code>bin/slake build:full</code>.
+      <p>Ne recompilez pas (<code>extras/livescript.js</code>) (créé par <code>bin/slake build:browser</code>). Ce fichier n'est regénéré que lors de nouvelles versions.
     </div>
   </div>
 </div>
