@@ -278,7 +278,7 @@ switch
 # to it, preserving the other options.
 !function forkNode
   args = argv.slice 1; i = 0
-  while args[++i] when that is \--nodejs then args.splice i-- 2
+  while args[++i] when that is \--nodejs or that is \-n then args.splice i-- 2
   require(\child_process)spawn do
     process.execPath
     o.nodejs.join(' ')trim!split(/\s+/)concat args
