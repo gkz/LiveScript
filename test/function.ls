@@ -536,6 +536,7 @@ eq void do
   <~! M
   !function C then C
   ok new C instanceof C
+  eq void do not function f => f
   true
 
 eq false !!->

@@ -718,11 +718,11 @@ class exports.Call extends Node
 
   @back = (params, node, bound, curried) ->
     fun = Fun params,, bound, curried
-    node.=it if fun.void = node.op is \!
+    node.=it if fun.hushed = node.op is \!
     if node instanceof Label
       fun <<< {name: node.label, +labeled}
       node.=it
-    node.=it if not fun.void and fun.void = node.op is \!
+    node.=it if not fun.hushed and fun.hushed = node.op is \!
     node.getCall!?partialized = null
     {args} = node.getCall! or (node = Chain node .add Call!)getCall!
     index = 0
@@ -862,7 +862,7 @@ class exports.Prop extends Node
     if val.getAccessors!
       @val = that
       for fun in that
-        fun.x = if fun.void = fun.params.length then \s else \g
+        fun.x = if fun.hushed = fun.params.length then \s else \g
       import {\accessor}
 
   children: <[ key val ]>
@@ -934,7 +934,7 @@ class exports.Unary extends Node
       switch op
       case \!
         break if flag
-        return it <<< {+void} if it instanceof Fun and not it.void
+        return it <<< {+hushed} if it instanceof Fun and not it.hushed
         return it.invert!
       case \++ \-- then @post = true if flag
       case \new
@@ -1629,7 +1629,7 @@ class exports.Fun extends Node
       pscope.add name, \function, this
     if @statement or name and @labeled
       code += ' ' + scope.add name, \function, this
-    @void or @ctor or body.makeReturn!
+    @hushed or @ctor or body.makeReturn!
     code += "(#{ @compileParams scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
@@ -1808,7 +1808,7 @@ class exports.Parens extends Node
   compile: (o, level ? o.level) ->
     {it} = this
     it{cond, \void} ||= this
-    it.head.void = true if @calling and (not level or @void)
+    it.head.hushed = true if @calling and (not level or @void)
     unless @keep or @newed or level >= LEVEL_OP + PREC[it.op]
       return (it <<< {@front})compile o, level || LEVEL_PAREN
     if it.isStatement!
@@ -2321,7 +2321,7 @@ class exports.Label extends Node
 
 #### Cascade
 class exports.Cascade extends Node
-  (@input, @output) ->
+  (@input, @output, @implicit) ->
 
   children: <[ input output ]>
 
@@ -2349,7 +2349,7 @@ class exports.Cascade extends Node
     code = input.compile o
     o.ref = new String ref
     out = Block output .compile o
-    o.ref.erred or @carp "unreferred cascadee"
+    @carp "unreferred cascadee" if @implicit and not o.ref.erred
     return "#code#{input.terminator}\n#out" unless level
     code += ", #out"
     if level > LEVEL_PAREN then "(#code)" else code
