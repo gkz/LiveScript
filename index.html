@@ -1187,9 +1187,9 @@ objOneList = [{
         </div>
       </div>
 
-      <h3>Ranges</h3>
+      <h3>Séries</h3>
 
-      <p><code>to</code> signifie <em>à</em>, et inclu le nombre à droite. <code>til</code> signifie <em>jusqu'à</em> et n'inclue pas le nombre.
+      <p>Dans une série, <code>to</code> signifie <em>à</em>, et inclu le nombre à droite. <code>til</code> signifie <em>jusqu'à</em> et n'inclue pas le nombre.
 
       <p>Vous pouvez optionnellement ajouter un <code>by</code> qui définira l'étape.
 
@@ -5297,7 +5297,7 @@ b.dimensions;
       <ul>
         <li>Changez toutes vos flèches doublées <code>=></code> pour des flèches ondulées <code>~></code>
         <li>Changez tous vos blocs de commentaires <code>### ###</code> pour <code>/* */</code>
-        <li>Changez toutes vos ranges <code>[x..y]</code> pour <code>[x to y]</code> et changez <code>[x...y]</code> en <code>[x til y]</code>. Si votre range descend, et que ce n'est pas évident (le from et le to ne sont pas littéraux), vous devez ajouter  <code>by -1</code>, par exemple <code>[x to -3 by -1]</code>
+        <li>Changez toutes vos séries <code>[x..y]</code> pour <code>[x to y]</code> et changez <code>[x...y]</code> en <code>[x til y]</code>. Si votre série descend, et que ce n'est pas évident (le from et le to ne sont pas littéraux), vous devez ajouter  <code>by -1</code>, par exemple <code>[x to -3 by -1]</code>
         <li>De manière similaire, changez vos <code>for</code> utilisant la syntaxe <code>for i in [x..y]</code> pour <code>for i from x to y</code>, de même pour <code>for i in [x...y]</code> à transformer en <code>for i from x til y</code>
         <li>Changez vos compréhensions de listes <code>(x for x in list)</code> pour <code>[x for x in list]</code>. Toutes les boucles suffixes qui ne doivent pas retourner des listes ne doivent pas être en suffixes, par exemple, changez <code>increase x for x in list</code> pour <code>for x in list then increase x</code>. Vous pouvez économiser des caractères en utilisant l'alias de <code>then</code>, la flèche doublée <code>=></code>
         <li>Changez les nombre littéraux commençant avec un point, transformez <code>.5</code> en ajoutant un zéro <code>0.5</code>
