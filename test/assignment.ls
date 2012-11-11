@@ -60,6 +60,15 @@ eq 4 x
 x ^= 2
 eq 16 x
 
+# Concat
+a = [1 2 3]
+a ++= [4 5]
+eq '1,2,3,4,5' String a
+
+a ++= 6
+eq '1,2,3,4,5,6' String a
+
+
 # obj ::= obj2 as alias to obj::<<<obj2
 lala = ->
 lala ::= prop: true

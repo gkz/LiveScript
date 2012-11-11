@@ -1331,7 +1331,7 @@ class exports.Assign extends Node
     return @compileConditional   o, left if @logic
     {op, right} = this
     return @compileMinMax  o, left, right if op in <[ <?= >?= ]>
-    if op in <[ **= ^= %%= ]>
+    if op in <[ **= ^= %%= ++= ]>
     or op is \*= and right.isString!
     or op in <[ -= /= ]> and right.isMatcher!
       [left, reft] = Chain(left)cacheReference o

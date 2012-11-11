@@ -514,7 +514,7 @@ exports import
         @token tag, val
         return sym.length
       fallthrough
-    case <[ := += -= *= /= %= %%= <?= >?= **= ^= .&.= .|.= .^.= .<<.= .>>.= .>>>.= ]>
+    case <[ := += -= *= /= %= %%= <?= >?= **= ^= .&.= .|.= .^.= .<<.= .>>.= .>>>.= ++= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
         @last.1 += val
         return val.length
@@ -1187,7 +1187,7 @@ ID = //
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 |//ig
 SYMBOL = //
-  [-+*/^]= | %%?= | ::?=        # compound assign
+  [-/^]= | [%+:*]{1,2}=         # compound assign
 | \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
 | \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
 | \^\^                          # clone
@@ -1212,7 +1212,7 @@ SYMBOL = //
 | \|>                           # pipe
 | \|                            # case
 | =>                            # then
-| \*\*=? | \^                   # pow
+| \*\* | \^                     # pow
 | `                             # backticks
 | [^\s#]?
 //g
