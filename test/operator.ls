@@ -355,10 +355,6 @@ ok ++a.0
 eq(-- a[0], a[0] ++)
 eq 1 a.0
 
-# ACI applies on postcrement.
-eq a.0 ++  -- a.0
-eq 1 a.0
-
 # Infix after postcrement.
 eq a.0++ *  2, 2
 eq a.0-- /  2, 1
@@ -524,12 +520,19 @@ eq '1,1,1,1' ''+ a[0 ...] * n
 eq '0,1,0,1' ''+ [i for i to 1] * 2
 eq '0,0,0,0' ''+ [i for i to 0] * n
 
+##### +++
 a = [0 1]
 c = [2 3]
 
-##### +++
 eq '0,1,2,3' String a +++ c
 eq '0,1,5'   String a +++ 5
+
+##### ++ concat
+eq '0,1,2,3' String a ++ c
+eq '0,1,2,3' String a++c
+eq '0,1,5'   String a ++ 5
+eq '0,1,5'   String a++5
+
 
 ### Mod
 eq -3, -3 % 4

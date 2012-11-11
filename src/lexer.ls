@@ -884,6 +884,12 @@ character = if JSON!? then uxxxx else ->
       tokens.splice i, 1 unless tokens[i+2].0 is \DOT
     case val is \. and token.spaced and prev.spaced
       tokens[i] = [\COMPOSE \<< line]
+    case val is \++
+      break unless next = tokens[i+1]
+      ts = <[ ID LITERAL STRNUM ]>
+      if (prev.spaced and token.spaced)
+      or (not (prev.spaced or token.spaced) and (prev.0 in ts and next.0 in ts))
+        tokens[i].0 = 'CONCAT'
     case tag is \) and prev.1 is \.
       tokens.splice i, 0,
         [\[  \[  line]

@@ -1112,7 +1112,7 @@ class exports.Binary extends Node
     case \** \^   then return @compilePow o
     case \<? \>?  then return @compileMinMax o
     case \<< \>>  then return @compileCompose o
-    case \+++     then return @compileConcat o
+    case \+++ \++ then return @compileConcat o
     case \%%      then return @compileMod o
     case \xor     then return @compileXor o
     case \&& \||
@@ -1228,7 +1228,8 @@ class exports.Binary extends Node
 
   compileConcat: (o) ->
     f = (x) ->
-      | x instanceof Binary and x.op is \+++ => (f x.first) +++ (f x.second)
+      | x instanceof Binary and x.op in <[ +++ ++ ]> =>
+        (f x.first) +++ (f x.second)
       | otherwise                            => [x]
     Chain @first .add Index (Key \concat), \., true .add Call(f @second) .compile o
 
@@ -2752,14 +2753,14 @@ LEVEL_CALL   = 5  # ...()
 
 # Operator precedances.
 let @ = PREC = {unary: 0.9}
-  @\&& = @\|| = @\xor                                    = 0.2
-  @\.&.  = @\.^.  = @\.|.                                = 0.3
-  @\== = @\!= = @\~= = @\!~= = @\=== = @\!==             = 0.4
-  @\<  = @\>  = @\<=  = @\>= = @of = @instanceof = @\+++ = 0.5
-  @\<<= = @\>>= = @\<== = @\>==                          = 0.5
-  @\.<<. = @\.>>. = @\.>>>.                              = 0.6
-  @\+  = @\-                                             = 0.7
-  @\*  = @\/  = @\%                                      = 0.8
+  @\&& = @\|| = @\xor                             = 0.2
+  @\.&.  = @\.^.  = @\.|.                         = 0.3
+  @\== = @\!= = @\~= = @\!~= = @\=== = @\!==      = 0.4
+  @\<  = @\>  = @\<=  = @\>= = @of = @instanceof  = 0.5
+  @\<<= = @\>>= = @\<== = @\>== = @\+++ = @\++    = 0.5
+  @\.<<. = @\.>>. = @\.>>>.                       = 0.6
+  @\+  = @\-                                      = 0.7
+  @\*  = @\/  = @\%                               = 0.8
 
 TAB = ' ' * 2
 
