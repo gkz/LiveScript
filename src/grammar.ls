@@ -146,8 +146,8 @@ bnf =
   ArgList:
     o ''                                                -> []
     o \Arg                                              -> [$1]
-    o 'ArgList , Arg'                                   -> $1 +++ $3
-    o 'ArgList OptComma NEWLINE Arg'                    -> $1 +++ $4
+    o 'ArgList , Arg'                                   -> $1 ++ $3
+    o 'ArgList OptComma NEWLINE Arg'                    -> $1 ++ $4
     o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ditto
   Arg:
     o     \Expression
@@ -190,12 +190,12 @@ bnf =
 
   Cascade:
     o 'Chain CASCADE' -> [$1]
-    o 'Cascade Chain CASCADE' -> $1 +++ $2
+    o 'Cascade Chain CASCADE' -> $1 ++ $2
 
   # All the different types of expressions in our language.
   Expression:
     o 'Cascade Chain'
-    , -> new Cascade $1.0, Block $1.slice(1) +++ $2
+    , -> new Cascade $1.0, Block $1.slice(1) ++ $2
     o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.where $4, Block [$1]
     o 'Expression WHERE Block' -> Chain Call.where $3.lines, Block [$1]
 
@@ -306,7 +306,7 @@ bnf =
 
   Exprs:
     o         \Expression  -> [$1]
-    o 'Exprs , Expression' -> $1 +++ $3
+    o 'Exprs , Expression' -> $1 ++ $3
 
   # The various forms of property.
   KeyValue:
@@ -335,8 +335,8 @@ bnf =
   Properties:
     o ''                                     -> []
     o \Property                              -> [$1]
-    o 'Properties , Property'                -> $1 +++ $3
-    o 'Properties OptComma NEWLINE Property' -> $1 +++ $4
+    o 'Properties , Property'                -> $1 ++ $3
+    o 'Properties OptComma NEWLINE Property' -> $1 ++ $4
     o 'INDENT Properties OptComma DEDENT'    -> $2
 
   Parenthetical:
@@ -406,13 +406,13 @@ bnf =
 
   LoopHeads:
     o 'LoopHead'           -> [$1]
-    o 'LoopHeads LoopHead' -> $1 +++ $2
-    o 'LoopHeads NEWLINE LoopHead' -> $1 +++ $3
-    o 'LoopHeads INDENT LoopHead'  -> $1 +++ $3
+    o 'LoopHeads LoopHead' -> $1 ++ $2
+    o 'LoopHeads NEWLINE LoopHead' -> $1 ++ $3
+    o 'LoopHeads INDENT LoopHead'  -> $1 ++ $3
 
   Cases:
     o       'CASE Exprs Block' -> [new Case $2, $3]
-    o 'Cases CASE Exprs Block' -> $1 +++ new Case $3, $4
+    o 'Cases CASE Exprs Block' -> $1 ++ new Case $3, $4
 
   OptExtends:
     o 'EXTENDS Expression' -> $2

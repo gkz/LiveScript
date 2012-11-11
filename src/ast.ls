@@ -748,7 +748,7 @@ class exports.Call extends Node
       then args[i] = Literal \void; a.left
       else Var a.varName! || a.carp 'invalid "let" argument'
     args.unshift Literal \this
-    @block Fun(params, Block lines +++ body.lines), args, \.call
+    @block Fun(params, Block lines ++ body.lines), args, \.call
 
 #### List
 # An abstract node for a list of comma-separated items.
@@ -1184,7 +1184,7 @@ class exports.Binary extends Node
     If x, lefts.1 .addElse rites.1 .compileExpression o
 
   compileMethod: (o, klass, method, arg) ->
-    args = [@second] +++ (arg || [])
+    args = [@second] ++ (arg || [])
     if @first"is#klass"!
       Chain(@first, [Index Key method; Call args])compile o
     else
@@ -1229,15 +1229,15 @@ class exports.Binary extends Node
   compileConcat: (o) ->
     f = (x) ->
       | x instanceof Binary and x.op in <[ +++ ++ ]> =>
-        (f x.first) +++ (f x.second)
+        (f x.first) ++ (f x.second)
       | otherwise                            => [x]
     Chain @first .add Index (Key \concat), \., true .add Call(f @second) .compile o
 
   compileCompose: (o) ->
     f = (x) ->
-      | x instanceof Binary and x.op in [\<< \>>] => (f x.first) +++ (f x.second)
+      | x instanceof Binary and x.op in [\<< \>>] => (f x.first) ++ (f x.second)
       | otherwise                                 => [x]
-    args = ([@first] +++ f @second)
+    args = ([@first] ++ f @second)
     args.=reverse! if @op is \>>
     Chain Var (util \compose) .add Call([Arr args]) .compile o
 
@@ -1464,7 +1464,7 @@ class exports.Assign extends Node
 class exports.Import extends Node
   (@left, @right, @all and \All) ~>
     if not all and left instanceof Obj and right.items
-      return Obj left.items +++ right.asObj!items
+      return Obj left.items ++ right.asObj!items
 
   children: <[ left right ]>
 
@@ -2185,7 +2185,7 @@ class exports.Switch extends Node
     [target-node, target] = Chain @target .cacheReference o if @target
     topic = if @type is \match
       t = if target then [target-node] else []
-      Block (t +++ [Literal \false]) .compile o, LEVEL_PAREN
+      Block (t ++ [Literal \false]) .compile o, LEVEL_PAREN
     else
       !!@topic and @anaphorize!compile o, LEVEL_PAREN
     code  = "switch (#topic) {\n"
