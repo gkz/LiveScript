@@ -427,7 +427,9 @@ exports import
       then create-it-func!
       else tag = \LOGIC if @last.spaced
     case \/ \% \%%       then tag = \MATH
-    case \+++            then tag = \CONCAT
+    case \+++
+      console?warn "WARNING on line #{ @line }: the `+++` concat operator is deprecated and will be removed in a future LiveScript release. Please use a spaced `++` for concatenation instead."
+      tag = \CONCAT
     case \++ \--         then tag = \CREMENT
     case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false

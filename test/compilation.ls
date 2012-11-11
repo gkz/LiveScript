@@ -173,7 +173,7 @@ throws "Inconsistent use of encodeURL as encode-u-r-l on line 1" -> LiveScript.c
 
 
 # Optimize concat [#72](https://github.com/gkz/LiveScript/issues/72)
-eq '[1].concat([2], [3], [4]);' bare '[1] +++ [2] +++ [3] +++ [4]'
+eq '[1].concat([2], [3], [4]);' bare '[1] ++ [2] ++ [3] ++ [4]'
 
 # Error when attempting to curry a funciton using splats [#91](https://github.com/gkz/LiveScript/issues/91)
 compileThrows 'cannot curry a function with a variable number of arguments' 1 '(...args) --> args[0]'

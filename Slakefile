@@ -10,7 +10,7 @@ tint = (text, color ? green) -> color + text + reset
 
 # Run our node/livescript interpreter.
 run = (args) ->
-  proc = spawn \node [\bin/livescript] +++ args
+  proc = spawn \node [\bin/livescript] ++ args
   proc.stderr.on \data say
   proc       .on \exit -> process.exit it if it
 
@@ -38,7 +38,7 @@ task \build 'build lib/ from src/' ->
   ext = /\.ls$/
   sources = for file in dir \src
     \src/ + file if ext.test file
-  run [\-bco \lib] +++ sources
+  run [\-bco \lib] ++ sources
 
 task \build:full 'build twice and run tests' ->
   shell 'bin/slake build && bin/slake build && bin/slake test'

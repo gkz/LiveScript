@@ -258,7 +258,7 @@ take = (n, [x, ...xs]:list) ->
   match n, list
   | (<= 0), _  => []
   | _     , [] => []
-  | otherwise  => [x] +++ take n - 1, xs
+  | otherwise  => [x] ++ take n - 1, xs
 
 eq '1,2,3' "#{ take 3, [1 to 10] }"
 
