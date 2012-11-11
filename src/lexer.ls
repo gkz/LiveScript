@@ -887,9 +887,13 @@ character = if JSON!? then uxxxx else ->
     case val is \++
       break unless next = tokens[i+1]
       ts = <[ ID LITERAL STRNUM ]>
-      if (prev.spaced and token.spaced)
-      or (not (prev.spaced or token.spaced) and (prev.0 in ts and next.0 in ts))
+      if prev.spaced and token.spaced
+      or not (prev.spaced or token.spaced) and prev.0 in ts and next.0 in ts
         tokens[i].0 = 'CONCAT'
+      if prev.0 is \( and next.0 is \)
+      or prev.0 is \( and token.spaced
+      or next.0 is \) and prev.spaced
+        tokens[i].0 = 'BIOP'
     case tag is \) and prev.1 is \.
       tokens.splice i, 0,
         [\[  \[  line]

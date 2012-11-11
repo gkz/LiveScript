@@ -696,14 +696,17 @@ eq '4,2' "#{ (/ '') 42 }"
 x = 10
 eq 12 (x +) 2
 
+a = [1 2]
+eq '1,2,3,4' String (++) a, [3 4]
+eq '3,4,1,2' String (++ a) [3 4]
+eq '1,2,3,4' String (a ++) [3 4]
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)
 
 x = 3
-eq 4 (++) x # does not actually modify x
 eq 2 (--) x
-eq 4 (++).call(null, x)
 
 eq '1,3,5' "#{ filter (not) << even, [1 to 5] }"
 
