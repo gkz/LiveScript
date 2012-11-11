@@ -181,11 +181,11 @@ function compose$(fs){
 # Easy listing of implicit objects
 table1 =
   * id: 1
-    name: \george
+    name: 'george'
   * id: 2
-    name: \mike
+    name: 'mike'
   * id: 3
-    name: \donald
+    name: 'donald'
 
 table2 =
   * id: 2
@@ -199,7 +199,7 @@ table2 =
 up-case-name = (.name .= to-upper-case!)
 
 # Curried functions using -->
-sort-by = (prop, list) --> list.sort (a, b) -> 
+sort-by = (prop, list) --> list.sort (a, b) ->
   | a[prop] < b[prop] => -1
   | a[prop] > b[prop] => 1
   | otherwise         => 0
@@ -214,7 +214,7 @@ sort-by = (prop, list) --> list.sort (a, b) ->
 [{id:id1, name, age} for {id:id1, name} in table1
                      for {id:id2, age} in table2
                      when id1 is id2]
-|> sort-by \id
+|> sort-by 'id'
 |> each up-case-name # using 'each' from prelude.ls
 |> JSON.stringify
 #=>
@@ -317,8 +317,8 @@ function curry$(f, args){
         <div class="example-ls">
         <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-<-! $ \h1 .on \click
-alert \boom!
+<-! $ 'h1' .on 'click'
+alert 'boom!'
 </pre>
         </div>
         <div class="example-js">
@@ -897,10 +897,10 @@ obj = {prop: 1, thing: 'moo'}
 
 person =
   age:      23
-  eye-color: \green
+  eye-color: 'green'
   height:   180cm
 
-oneline = color: \blue, heat: 4
+oneline = color: 'blue', heat: 4
 </pre>
         </div>
         <div class="example-js">
@@ -1082,7 +1082,7 @@ this.location;
 my-list =
   32 + 1
   person.height
-  \beautiful
+  'beautiful'
 
 one-item =
   1
@@ -1123,18 +1123,18 @@ tree =
     11
 
 obj-list =
-  * name: \tessa
+  * name: 'tessa'
     age:  23
-  * name: \kendall
+  * name: 'kendall'
     age:  19
 
 
 obj =
-  * name: \tessa
+  * name: 'tessa'
     age:  23
 
 obj-one-list =
-  * name: \tessa
+  * name: 'tessa'
     age:  23
   ...
 </pre>
