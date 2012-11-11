@@ -1009,9 +1009,6 @@ class exports.Unary extends Node
       return "#{ util \toString }.call(
               #{ it.compile o, LEVEL_LIST }).slice(8, -1)"
     code = it.compile o, LEVEL_OP + PREC.unary
-    unless code
-      console.log it
-      console.log it.prototype
     if @post then code += op else
       op += ' ' if op in <[ new typeof delete ]>
                 or op in <[ + - ]> and op is code.charAt!
