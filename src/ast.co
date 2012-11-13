@@ -1933,14 +1933,13 @@ class exports.Pipe extends Node
       output.=makeReturn @ret
     if ref
     then output = Assign (if @cascade then Arr! else JS ref), output
-    else @temps = [ref = o.scope.temporary \x]
+    else ref = o.scope.temporary \x
     if input instanceof Pipe
     then input <<< {ref}
     else input = Assign JS(ref), input
     o.level &&= LEVEL_PAREN
     code = input.compile o
-    o.ref = new String ref
-    out = Block output .compile o
+    out  = Block output .compile o <<< ref: new String ref
     @carp "unreferred cascadee" if @implicit and not o.ref.erred
     return "#code#{input.terminator}\n#out" unless level
     code += ", #out"

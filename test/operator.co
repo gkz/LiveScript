@@ -449,6 +449,11 @@ eq 1, n & n
 eq 1, n&-n
 eq 1, n & -n
 
+funs =
+   2 |> -> &
+   3 |> -> &
+eq 6, funs.0! * funs.1!
+
 compileThrows 'stray reference' 2 '\n&'
 
 compileThrows 'unreferred cascadee' 1 'a => b'
