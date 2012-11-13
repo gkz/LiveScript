@@ -439,7 +439,6 @@ exports import
       @token \LITERAL \.. true
       return 2
     case \.
-      create-it-func! if @last.0 is \(
       @last.0 = \? if @last.1 is \?
       tag = \DOT
     case \,
@@ -896,23 +895,33 @@ character = if JSON!? then uxxxx else ->
       or prev.0 is \( and token.spaced
       or next.0 is \) and prev.spaced
         tokens[i].0 = 'BIOP'
-    case tag is \) and prev.1 is \.
-      tokens.splice i, 0,
-        [\[  \[  line]
-        [\ID \it line]
-        [\]  \]  line]
-      parens = 1
-      :LOOP for j from i to 0 by -1
-        switch tokens[j].0
-        | \) => ++parens
-        | \( =>
-          if --parens is 0
-            tokens.splice j+1, 0,
-              [\PARAM( \(  line]
-              [\ID     \it line]
-              [\)PARAM \)  line]
-              [\->     \-> line]
-            break LOOP
+    case tag is \DOT and val is \.
+      next = tokens[i+1]
+      if prev.0 is \( and next.0 is \)
+        tokens[i].0 = \BIOP
+      else if prev.0 is \(
+        tokens.splice i, 0,
+          * \PARAM( \(  line
+          * \)PARAM \)  line
+          * \->     \-> line
+          * \ID     \it line
+      else if next.0 is \)
+        tokens.splice i+1, 0,
+          [\[  \[  line]
+          [\ID \it line]
+          [\]  \]  line]
+        parens = 1
+        :LOOP for j from i+1 to 0 by -1
+          switch tokens[j].0
+          | \) => ++parens
+          | \( =>
+            if --parens is 0
+              tokens.splice j+1, 0,
+                [\PARAM( \(  line]
+                [\ID     \it line]
+                [\)PARAM \)  line]
+                [\->     \-> line]
+              break LOOP
     prev = token
     continue
 
