@@ -1366,20 +1366,26 @@ class exports.Fun extends Node
     if @front and not @statement then "(#code)" else code
 
   compileParams: (scope) ->
-    {params, body} = this; names = []; assigns = []
+    {{length}:params, body} = this
+    # Remove trailing placeholders.
+    for p of params by -1
+      break unless p.isEmpty! or p.filler
+      --params.length
     for p, i of params
-      if p instanceof Splat then splace = i
+      if p instanceof Splat
+        splace = i
       # `(a = x) ->` => `(a ? x) ->`
       else if p.op is \= and not p.logic
         params[i] = Binary \? p.left, p.right
     # `(a, ...b, c) ->` => `(a) -> [[] ...b, c] = @@`
     if splace?
       rest = params.splice splace, 9e9
-      rest = 0 if not rest.1 and rest.0.it.isEmpty!  # ignore trailing `...`
     else if @accessor
       that.carp 'excess accessor parameter' if params.1
-    else unless params.length or @wrapper
+    else unless length or @wrapper
       params.0 = Var \it if body.traverseChildren -> it.value is \it or null
+    names   = []
+    assigns = []
     if params.length
       for p of params
         vr = p
@@ -1393,7 +1399,7 @@ class exports.Fun extends Node
           vr = v
         else if df
           assigns.push Assign vr, p.second, \=, p.op
-        names.push name = scope.add vr.value, \arg, p
+        names.push scope.add vr.value, \arg, p
     if rest
       rest.unshift Arr! while splace--
       assigns.push Assign Arr(rest), Literal \arguments

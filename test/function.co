@@ -337,6 +337,10 @@ eq 0, I(-> it()) -> 0
 eq void Function() ->
 
 
+# Ignore trailing placeholder parameters.
+eq 0 ((,,...,,...,,) -> it)length
+
+
 ### Invalid call detection
 compileThrows 'invalid callee'      1 '[]()'
 compileThrows 'invalid constructor' 1 'new 42'
