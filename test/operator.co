@@ -417,48 +417,6 @@ o.d >?= 7
 eq o.c * o.d, 14
 
 
-### Pipe / `with` / Cascade
-Array 0 |> &concat 1, 2
-        |> & <<<  {3: 4}
-        |> eq '1,2,,4' "#&"
-
-String 0
-|> if & then &+& else &*&
-|> eq \00 &
-
-eq void,
-  -> |> & & |> &
-
-a = with [2 7 1 8 2]
-  &push 3
-  &sort!
-    &shift!
-  &pop!
-.join ''
-eq \2237 a
-
-eq
-  & &, &
-  (->) &(&, &)
-  ok &valueOf!
-
-n = 1
-eq 1, n&n
-eq 1, n& n
-eq 1, n & n
-eq 1, n&-n
-eq 1, n & -n
-
-funs =
-   2 |> -> &
-   3 |> -> &
-eq 6, funs.0! * funs.1!
-
-compileThrows 'stray reference' 2 '\n&'
-
-compileThrows 'unreferred cascadee' 1 'a => b'
-
-
 ### Listar
 * 0, 1
   ok 2

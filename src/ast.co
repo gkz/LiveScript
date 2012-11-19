@@ -1676,6 +1676,8 @@ class exports.For extends While
         then "#idx #{ '<>'charAt pvar < 0 }#eq #tvar"
         else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
     else
+      if @pipe
+        @item = Var o.scope.temporary \x
       if @item or @object and @own
         [svar, srcPart] = @source.compileLoopReference o, \ref, not @object
         svar is srcPart or temps.push svar
@@ -1707,7 +1709,9 @@ class exports.For extends While
     head += ') {'
     @infuseIIFE!
     o.indent += TAB
-    if @item and not @item.isEmpty!
+    if @pipe
+      @body = Block Pipe(JS "#svar[#idx]"; @body) <<< {ref: @item.value, +map}
+    else if @item and not @item.isEmpty!
       head += \\n + o.indent +
         Assign(@item, JS "#svar[#idx]")compile(o, LEVEL_TOP) + \;
     body  = @compileBody o
@@ -1917,36 +1921,37 @@ class exports.Label extends Node
 #### Pipe
 # Passes input to output via `&`-references.
 class exports.Pipe extends Node
-  (@input, @output, @cascade, @implicit) ->
+  (@input, @output, @prog1) ~>
 
-  show: -> @cascade and \=>
+  show: -> @prog1
 
   children: <[ input output ]>
 
   terminator: ''
 
-  ::delegate <[ isCallable isArray isString isRegex ]> -> @output[it]!
+  ::delegate <[ isCallable isArray isString isRegex ]> ->
+    @[if @prog1 then \input else \output][it]!
 
   getJump: -> @output.getJump it
 
   makeReturn: (@ret) -> this
 
   compileNode: ({level}:o) ->
-    {input, output, ref} = this
-    if @cascade and (\ret in this or level and not @void)
+    {input, output, prog1, ref} = this
+    if prog1 and (\ret in this or level and not @void)
       output.add (Literal \& => &cascadee = true)
     if \ret in this
       output.=makeReturn @ret
     if ref
-    then output = Assign (if @cascade then Arr! else JS ref), output
+    then prog1 or @map or output = Assign JS(ref), output
     else ref = o.scope.temporary \x
     if input instanceof Pipe
     then input <<< {ref}
-    else input = Assign JS(ref), input
+    else input &&= Assign JS(ref), input
     o.level &&= LEVEL_PAREN
     code = input.compile o
     out  = Block output .compile o <<< ref: new String ref
-    @carp "unreferred cascadee" if @implicit and not o.ref.erred
+    @carp "unreferred cascadee" if prog1 is \cascade and not o.ref.erred
     return "#code#{input.terminator}\n#out" unless level
     code += ", #out"
     if level > LEVEL_PAREN then "(#code)" else code

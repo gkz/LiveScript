@@ -68,7 +68,8 @@ bnf =
 
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
-    o 'WITH Expression Block' -> Chain new Pipe $2, $3, true
+    o 'WITH Expression Block' -> Chain Pipe $2, $3, \with
+    o 'FOR  Expression Block' -> Chain new For source: $2, body: $3, pipe: true
 
   # An array or object
   List:
@@ -114,8 +115,8 @@ bnf =
   Line:
     o \Expression
 
-    # Implicit `with` on top level
-    o 'Expression Block' -> new Pipe $1, $2, true true
+    # Cascade: an implicit `with`.
+    o 'Expression Block' -> Pipe $1, $2, \cascade
 
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
     , -> Call.back $2, $6, $5 is \<~
@@ -169,7 +170,7 @@ bnf =
       *if \! is $2.charAt 0 then Binary $2.slice(1), $1, $3 .invert!
                             else Binary $2         , $1, $3
 
-    o 'Expression |> Expression' -> new Pipe $1, $3
+    o 'Expression |> Expression' -> Pipe $1, $3
 
     o 'Chain !?' -> Existence $1.unwrap!, true
 
