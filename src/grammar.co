@@ -129,7 +129,7 @@ bnf =
   # An indented block of expressions.
   # Note that [Lexer](#lexer) rewrites some single-line forms into blocks.
   Block:
-    o 'INDENT Lines DEDENT' -> $2.chomp!
+    o 'INDENT Lines DEDENT' -> $2
     ...
 
   # All the different types of expressions in our language.

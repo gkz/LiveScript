@@ -237,6 +237,7 @@ class exports.Block extends Node
   # **Block** does not return its entire body, rather it
   # ensures that the final line is returned.
   makeReturn: ->
+    @chomp!
     if @lines[*-1]?=makeReturn it
       --@lines.length if that instanceof Return and not that.it
     this
@@ -278,7 +279,7 @@ class exports.Block extends Node
 
   # Compile to a comma-separated list of expressions.
   compileExpressions: (o, level) ->
-    {lines} = this; i = -1
+    {lines} = @chomp!; i = -1
     lines.splice i-- 1 if that.comment while lines[++i]
     lines.push Literal \void unless lines.length
     lines.0 <<< {@front}; lines[*-1] <<< {@void}

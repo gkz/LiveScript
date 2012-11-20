@@ -378,6 +378,13 @@ eq 3 do
 
 eq 6 (a <- g 6; a)
 
+# [#192](https://github.com/satyr/coco/issues/192)
+eq '192' do
+  <- '081'replace /./g
+  -~it
+  /* ignore trailing */
+  /* block comments */
+
 
 ### `function`
 new
