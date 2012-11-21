@@ -1344,7 +1344,7 @@ class exports.Fun extends Node
     if @bound is \this$
       if @ctor
         scope.assign \this$ 'this instanceof ctor$ ? this : new ctor$'
-        body.add Return Literal \this$
+        body.lines.push Return Literal \this$
       else if sscope.fun?bound
       then @bound = that
       else sscope.assign \this$ \this

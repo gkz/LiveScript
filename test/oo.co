@@ -147,7 +147,11 @@ class BoundCtor extends (-> {@attr})
     eq super(...).attr, @attr
     @method = ~> this
 
-class BoundChild extends BoundCtor then ~> super ...
+class BoundChild extends BoundCtor
+  ~>
+    super ...
+    # Auto-`return this` even with backcall.
+    <- Object
 
 for C of [BoundCtor, BoundChild]
   bc = C 'attr'
