@@ -438,3 +438,10 @@ eq 4 (new A).meth!
 # @@@ references @.@@ rather than the nonsensical @@.@
 let @ = constructor: 10
   eq 10 @@@
+
+# Executable class bodies and let
+class A
+  let b = 2
+    a: b
+
+eq 2 (new A).a

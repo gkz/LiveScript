@@ -1731,10 +1731,11 @@ class exports.Class extends Node
       and node.left.head.value is \this and node.right instanceof Fun
         node.right.stat = node.left.tails.0.key
       else
-        node.traverseChildren !->
+        node.traverseChildren (!->
           if it instanceof Block
             for child, k in it.lines when child instanceof Obj
               it.lines[k] = import-proto-obj child, i
+        ), true
 
     ctor ||= lines.* = if @sup and @sup instanceof [Fun, Var]
                     then  Fun [] Block Chain(new Super).add Call [Splat Literal \arguments]
