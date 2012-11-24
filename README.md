@@ -36,6 +36,28 @@ Get [Node.js](http://nodejs.org) and [npm](http://npmjs.org), then:
 - `git clone git://github.com/satyr/coco.git && cd coco && bin/coke i`
 
 ## Changelog
+### 0.9.0
+- Literal `&` is now used to reference several new targets:
+  - Left hand of `|>` (in place of `_`).
+  - Current item of newly added quick map: `for [0 1] => &+2  # [2 3]`
+  - Subject of new `with` as proposed
+    in [#172](https://github.com/satyr/coco/issues/172).
+- Made cascade, now `with` in disguise, require at least one `&` in body.
+  ([#179](https://github.com/satyr/coco/issues/179))
+- Made `let` accept `this =` on the first assignment to substitute old `with`.
+- Made bodyless `catch` return the catchee.
+- Made `by -1` implied on downward ranges.
+- Made interpolation apply to `#&` and `#@`.
+- Quit expanding `super` followed by `::` to parent method,
+  so that call to `super::anotherMethod` works as expected.
+- Fixed:
+  - [#175](https://github.com/satyr/coco/issues/175)
+  - [#178](https://github.com/satyr/coco/issues/178)
+  - [#185](https://github.com/satyr/coco/issues/185)
+  - [#190](https://github.com/satyr/coco/issues/190)
+  - [#192](https://github.com/satyr/coco/issues/192)
+  - [coffee#1188](https://github.com/jashkenas/coffee-script/issues/1188)
+
 ### 0.8.2
 - Fixed:
   - [#165](https://github.com/satyr/coco/issues/165)
