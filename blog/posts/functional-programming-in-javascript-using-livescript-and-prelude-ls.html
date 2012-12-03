@@ -519,7 +519,7 @@ r;
 <p>This has been a brief overview of some of the features available in <a href="http://gkz.github.com/LiveScript/">LiveScript</a> and <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> to assist in functional style programming. Both have many more powerful and useful features - to give you a taste:
 
 <pre class="prettyprint lang-ls">
-take(n, [x, ...xs]:list) =
+take = (n, [x, ...xs]:list) -->
   | n <= 0     => []
   | empty list => []
   | otherwise  => [x] +++ (take n - 1, xs)

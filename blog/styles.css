@@ -53,13 +53,16 @@ code {
   background-color: #fff;
 }
 .content p,
-.content li {
+.content li,
+.content blockquote {
   font-size: 16px;
   line-height: 30px;
 }
 .content p,
 .content li,
-.content pre {
+.content pre,
+.content ol,
+.content ul {
   padding-left: 10px;
 }
 .content pre {
@@ -109,8 +112,8 @@ code {
   padding-top: 12px;
   padding-left: 10px;
 }
-.content .example .example-ls  > pre,
-.content .example .example-js  > pre {
+.content .example .example-ls > pre,
+.content .example .example-js > pre {
   padding: 10px;
   height: 100%;
   border: none;

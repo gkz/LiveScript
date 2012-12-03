@@ -558,7 +558,7 @@ r;
 <p>This has been a brief overview of some of the features available in <a href="http://gkz.github.com/LiveScript/">LiveScript</a> and <a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> to assist in functional style programming. Both have many more powerful and useful features - to give you a taste:
 
 <pre class="prettyprint lang-ls">
-take(n, [x, ...xs]:list) =
+take = (n, [x, ...xs]:list) -->
   | n <= 0     => []
   | empty list => []
   | otherwise  => [x] +++ (take n - 1, xs)
@@ -574,7 +574,7 @@ take 2, [1 to 5] #=> [1, 2]
 
 
         <hr>
-        <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for more on LiveScript and prelude.ls
+        <p>For more on LiveScript and prelude.ls, <a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">follow @gkzahariev</a>.
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
         <div id="disqus_thread"></div>
         <script type="text/javascript">
