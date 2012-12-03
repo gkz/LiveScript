@@ -1,5 +1,5 @@
 post-template = slurp \post-template.html
-test-name = -> it.match /.+\.html$/
+test-name = -> (.match /.+\.html$/)
 
 task \build 'build blog posts' build-all
 
@@ -8,7 +8,7 @@ task \watch 'watch for changes, build when they happen' ->
     post-template := slurp \post-template.html
     build-all!
 
-  dir \posts .forEach (post) ->
+  dir \posts .for-each (post) ->
     if test-name post
       watch "posts/#post", -> build post
 
