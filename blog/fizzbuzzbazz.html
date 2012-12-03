@@ -1,0 +1,327 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>The shortest FizzBuzzBazz - can you do better?</title>
+
+<link rel="canonical" href="http://livescript.net/blog/fizzbuzzbazz.html">
+<link rel="icon" type="image/png" href="../images/icon.png">
+
+<link href="../bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
+<link href="../bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+<script src="../bootstrap/js/bootstrap.js"></script>
+
+<script src="../google-code-prettify/prettify.js"></script>
+<link href="../google-code-prettify/prettify.css" rel="stylesheet">
+<script src="../lang-ls-1.1.0.js"></script>
+
+<link href="styles.css" rel="stylesheet">
+
+<script>
+  if(window.location.host && window.location.host !== "localhost") {
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-7402515-5']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  }
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="span10 content">
+        <h1>The shortest FizzBuzzBazz - can you do better?</h1>
+        <div class="date-author">
+          <span class="date">3 Dec 2012</span> - <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahariev</a>
+        </div>
+        
+
+<p><a href="http://www.codinghorror.com/blog/2007/02/why-cant-programmers-program.html">FizzBuzz</a> is very simple problem, and as such its concise solutions are often not extendible and use few abstractions - making them less interesting when comparing solutions across different languages.
+
+<p>FizzBuzzBazz is a variant of FizzBuzz which adds on additional rule - for multiples of 7, print <code>Bazz</code>. As such instead of the number 35, one would print <code>BuzzBazz</code>, as it is both a multiple of 5, and a multiple of 7. This adds just enough complexity as to make its different solutions interesting for comparison.
+
+<p><strong>I challenge you</strong> to implement FizzBuzzBazz in the language of your choice, and find the shortest correct program you can come up with. Post your solution in the comments - I will update this page to show the shortest program submitted.
+
+<p class="note"><a href="#current-winner">Current winner</a>: 64 characters.</p>
+
+<p>The rules of FizzBuzzBazz stand as follows:
+
+<ul>
+  <li>Print a list from 1 to 100 - except in the following cases, where instead of the number you should print:
+  <li>For multiples of 3, print <code>Fizz</code>.
+  <li>For multiples of 5, print <code>Buzz</code>.
+  <li>For multiples of 7, print <code>Bazz</code>.
+  <li>For any combination of the above, print the combined string, in the above order. Thus instead of 21, print <code>FizzBazz</code>, at is both a multiple of 3, and a multiple of 7.
+  <li>An expression which evaluates to a list of the results is acceptable and in fact preferred.
+</ul>
+
+<h3>Solution in LiveScript</h3>
+<p>My solution in LiveScript is 64 characters (can you beat that in the language of your choice?):
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100]map ->[k+\zz for k,v of{Fi:3,Bu:5,Ba:7}|it%v&lt;1]*''||it
+</pre>
+</div>
+
+<p>The solution is not in the recommended style, but in the interest of brevity I have removed optional characters.
+
+<p><a href="http://livescript.net">LiveScript</a> is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
+
+<p>Now, for an <strong>explanation</strong>:
+
+<ol>
+<li>
+<p>We have to print a list 100 items in a accordance with a certain set of rules. Our starting point is thus a list of the numbers from 1 to 100. To do this we will use a range literal:
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100]
+</pre>
+</div>
+
+<li>
+<p>We want to create a new list of the same amount of items by applying the same rule to each member of the list. For this we can use the <code>map</code> function, which is a property of all arrays in the newer versions of JavaScript (and thus LiveScript).
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map(...)
+</pre>
+</div>
+
+<li>
+<p><code>map</code> takes a function as its argument, which it applies to each of member of the inputted list. The function which <code>map</code> takes must have a single argument, and return a value which will be in corresponding value in the outputted list. In LiveScript, functions are defined with an arrow, pointing from the arguments to the function body.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map((x) -> ...)
+</pre>
+</div>
+
+<li>
+<p>But how will decide what to return for each input to our map function?
+
+<p>The rules stipulate that for multiples of 3, we print Fizz, for multiples of 5, we print Buzz, and for multiples of 7, we print Bazz. We can represent this relationship with an object literal:
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+{Fizz: 3, Buzz: 5, Bazz: 7}
+</pre>
+</div>
+
+<li>
+<p>We need to transform this set of rules into output. As it is possible to have a number which is a multiple of more than one of those numbers, it is possible for more than one of the rules to pass. Thus, we must filter the object and produce a list of the results. An empty list will be the case when none of the rules pass.
+
+<p>To do this we can use a list comprehension over the object. Using <code>of</code> gives us both the key and value for each item in the object. We want to output the key (eg. <code>Fizz</code>) by filtering using a certain set of rules upon the value (eg. 3). The format is <code>[output for values of input when condition]</code>
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[key for key, value of {Fizz: 3, Buzz: 5, Bazz: 7} when ...]
+</pre>
+</div>
+
+<li>
+<p>The condition is fairly straight forward, a number is a multiple of another if there is no remainder when divided. (Remember <code>x</code> is the value we are mapping over.)
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[key for key, value of {Fizz: 3, Buzz: 5, Bazz: 7} when x % value == 0]
+</pre>
+</div>
+
+<li>
+<p>This results in a list, but we do not want a list, we need a string. We thus join the list.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[key for key, value of {Fizz: 3, Buzz: 5, Bazz: 7} when x % value == 0].join('')
+</pre>
+</div>
+
+<li>
+<p>Putting together what we have so far - note that LiveScript implicitly returns the last expression in the function body (unless otherwise specified), so no <code>return</code> statement is required.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map((x) ->
+  [key for key, value of {Fizz: 3, Buzz: 5, Bazz: 7} when x % value == 0].join('')
+)
+</pre>
+</div>
+
+<li>
+<p>The above doesn't give us what we want though - instead of printing an empty string when none of the rule pass, we want to print the number being inputted. In JavaScript, an empty string is "falsy". Thus, we can use the <code>or</code> operator - it evaluates to the left hand side when the left is truthy, and the right hand side when the left is falsy.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map((x) ->
+  [key for key, value of {Fizz: 3, Buzz: 5, Bazz: 7} when x % value == 0].join('') or x
+)
+</pre>
+</div>
+
+<p>It works! The above evaluates to a list with the proper results. However, it is a bit long, 109 characters, so we can shorten it up a bit.
+
+<li>
+<p>First, parentheses are not required when calling a function in most cases.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map (x) ->
+  [key for key, value of {Fizz: 3, Buzz: 5, Bazz: 7} when x % value == 0].join('') or x
+</pre>
+</div>
+
+<li>
+<p>We can also shorten up the variable names we are using:
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map (x) ->
+  [k for k, v of {Fizz: 3, Buzz: 5, Bazz: 7} when x % v == 0].join('') or x
+</pre>
+</div>
+
+<li>
+<p>When a function has only one argument, we can use <code>it</code> to implicitly refer to that argument without explicitly defining it. Thus <code>it</code> replaces <code>x</code> in this case.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map ->
+  [k for k, v of {Fizz: 3, Buzz: 5, Bazz: 7} when it % v == 0].join('') or it
+</pre>
+</div>
+
+<li>
+<p>If the right hand side of the multiplication op <code>*</code> is a string literal, than it acts to join the list on the left hand side. We can thus replace <code>.join('')</code>.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map ->
+  [k for k, v of {Fizz: 3, Buzz: 5, Bazz: 7} when it % v == 0] * '' or it
+</pre>
+</div>
+
+<li>
+<p><code>|</code> is an alias for <code>when</code>.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map ->
+  [k for k, v of {Fizz: 3, Buzz: 5, Bazz: 7} | it % v == 0] * '' or it
+</pre>
+</div>
+
+<li>
+<p>For our purposes we do not need worry about negative numbers, and we are dealing with only integers, so <code>&lt; 1</code> is equivalent to <code>== 0</code>.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100].map ->
+  [k for k, v of {Fizz: 3, Buzz: 5, Bazz: 7} | it % v &lt; 1] * '' or it
+</pre>
+</div>
+
+<li>
+<p>We're doing pretty good, but we can go further. Dots are optional in unambiguous situations, so we can shorten up the <code>map</code> property access.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100]map ->
+  [k for k, v of {Fizz: 3, Buzz: 5, Bazz: 7} | it % v &lt; 1] * '' or it
+</pre>
+</div>
+
+<li>
+<p>Factoring out the <code>zz</code> found in all our rules, using a a word literal in the form of <code>\word</code>, leaves us with:
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100]map ->
+  [k + \zz for k, v of {Fi: 3, Bu: 5, Ba: 7} | it % v &lt; 1] * '' or it
+</pre>
+</div>
+
+<li>
+<p>Finally, we can remove a bunch of whitespace. Because <code>or</code> requires whitespace around it, we can swap it out for <code>||</code> which does not.
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100]map ->[k+\zz for k,v of{Fi:3,Bu:5,Ba:7}|it%v&lt;1]*''||it
+</pre>
+</div>
+</ol>
+
+<p>The final result of our code golf efforts: a total of 64 characters.
+
+<p>Note that our solution is easily extensible as our rules are stated as data rather than imperative code.
+
+<a name="current-winner"></a>
+<h2>Current Winner - LiveScript - 64 Characters</h2>
+
+<div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 100]map ->[k+\zz for k,v of{Fi:3,Bu:5,Ba:7}|it%v&lt;1]*''||it
+</pre>
+</div>
+
+<p>So far, the <a href="http://livescript.net">LiveScript</a> solution of <strong>64</strong> characters is the shortest working FizzBuzzBazz program. Think you can beat it in the language of your choice? Enter your attempt in the comments below. If a shorter program is found, I'll update this section with the new results.
+
+For more information on LiveScript, check out its <a href="http://livescript.net">official site</a>. If you are interested in functional programming, you may want to check out <a href="functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a>.
+
+        <hr>
+        <p>For more on LiveScript and prelude.ls, <a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">follow @gkzahariev</a>.
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+        if(window.location.host && window.location.host !== "localhost") {
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'livescript'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        }
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+        
+      </div>
+      <div class="span2 sidebar">
+        <h1><a href="http://livescript.net">LiveScript</a><img src="../images/icon.png"></h1>
+        <iframe src="http://ghbtns.com/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="160" height="40"></iframe>
+        <a href="http://livescript.net"><div class="btn btn-primary btn-large btn">LiveScript site</div></a>
+        <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn">View on GitHub</div></a>
+        <a href="http://gkz.github.com/prelude-ls"><div class="btn btn-large btn">prelude.ls site</div></a>
+        <div><a href="https://twitter.com/share" class="twitter-share-button" data-via="gkzahariev" data-size="large">Tweet</a></div>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+        <h4>Blog Posts</h4>
+        <ul>
+          <li><a href="fizzbuzzbazz.html">The shortest FizzBuzzBazz - can you do better?</a>
+          <li><a href="livescript-1.1.0.html">LiveScript 1.1.0 Released!</a>
+          <li><a href="powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript</a>
+          <li><a href="livescript-1.0.0.html">LiveScript 1.0.0 Released</a>
+          <li><a href="functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript - Part 2</a>
+          <li><a href="ten-reasons-to-switch-from-coffeescript.html">10 Reasons to Switch from CoffeeScript to LiveScript</a>
+          <li><a href="functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a>
+          <li><a href="livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends</h3>
+        </ul>
+      </div>
+    </div>
+  </div>
+<script>
+  prettyPrint();
+  (document.getElementById("email") || {}).href = "mailto:z" + "@" + "georgezahariev.com";
+</script>
+</body>
+</html>
