@@ -3,13 +3,9 @@ date:  3 Dec 2012
 author: <a href="https://github.com/Nami-Doc" class="author">Vendethiel</a>
 -----
 
-<p>LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
+<p>LiveScript, like any other language, has a lot of tips and tricks and hidden syntactic sugars
 
-<p>For more information, check out the <a href="http://livescript.net">LiveScript site</a>.
-
-<h2>10 things you didn't know LiveScript can do</h3>
-
-<p>LiveScript, like any other language, has a lot of tips and tricks you can use to write less, faster (and cooler !)
+<p>We'll see in this blog post how you can take advantages of them !
 
 <h3>Operator Overloading</h4>
 
@@ -79,9 +75,9 @@ RegExp('my?' + normal + [interpolation], flag);
   </div>
 </div>
 
-<h3>Context creation with <code>new</code></h3>
+<h3>Context creation with&nbsp;<code>new</code></h3>
 
-<p>You can use new alone to create a new context
+<p>You can use <code>new</code> alone to create a new context
 
 <div class="example">
   <div class="example-ls">
@@ -118,25 +114,25 @@ flip = function(obj){
 
 <h3>Dynamic keys</h3>
 
-<p>JavaScript's object notation doesn't allow dynamic keys, because they're not quoted as in JSON
+<p>JavaScript doesn't allow dynamic keys, because they're not quoted as in JSON
 
 <p>With LiveScript, you can use parenthesis to get dynamic properties
 
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
-foo = 'dynakey'
-bar = {(foo): 5} #=> {'dynakey': 5}
+foo = 'key'
+bar = {(foo): 5, "dyna#foo": 6} #=> {'key': 5, 'dynakey': 6}
 
-# even in destructuring
+# in destructuring
 {(+* .>>. 1): middle} = [1 to 7] #middle = 4
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
 var foo, bar, ref$, middle;
-foo = 'dynakey';
-bar = (ref$ = {}, ref$[foo] = 5, ref$);
+foo = 'key';
+bar = (ref$ = {}, ref$[foo] = 5, ref$["dyna" + foo] = 6, ref$);
 
 middle = [1, 2, 3, 4, 5, 6, 7][+[1, 2, 3, 4, 5, 6, 7].length >> 1];
 </pre>
@@ -145,7 +141,7 @@ middle = [1, 2, 3, 4, 5, 6, 7][+[1, 2, 3, 4, 5, 6, 7].length >> 1];
 
 <h3>Destructuring defaults</h3>
 
-<p>When you need to do a destructuring, you may need default values. With LiveScript, you can use any logic operator, the existence operator (aliased as <code>=</code>), and even chain them like in any other situation :
+<p>When you do a destructuring, you may want default values. With LiveScript, you can use any logic operator, the existence operator (aliased as <code>=</code>), and even chain them like in any other situation :
 
 <div class="example">
   <div class="example-ls">
@@ -165,19 +161,20 @@ secure = ref$.secure && 'https' || 'http';
 
 <h3>Extended parameters</h3>
 
-<p>In LiveScript, parameters accept much more than simple literals. You can not only assign properties, but you can do more complex things, like use semiautovivification
+<p>In LiveScript, parameters accept much more than simple literals. You can assign properties, but also do more complex things, like semiautovivification
 
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
 class Person
-  set-first-name: (@[]names.0) -> #defaults @name to [], and assigns the first element
-  add-name: (@[]names[*]) -> #defaults @name to [], and adds the element (* being the array's length)
-  set-hair-color: (@{}hair.color) -> #defaults @hair to {}, and assigns color
-
-
-
-
+  #defaults @name to [], and assigns the first element
+  set-first-name: (@[]names.0) ->
+  
+  #defaults @name to [], and adds the element (* being the array's length)
+  add-name: (@[]names[*]) ->
+  
+  #defaults @hair to {}, and assigns color
+  set-hair-color: (@{}hair.color) ->
 
 
 
@@ -232,9 +229,9 @@ p.names;
   </div>
 </div>
 
-<h3>Array and Object Slicing</h3>
+<h3>Array and Object Splatting</h3>
 
-<p>Array and Object can be sliced in pretty much any way. You probably know the `a[0 1]` and we saw `a<[foo bar]>`, but you can do much more. For example, you can use splats
+<p>Array and Object can be sliced in pretty much any way. You probably know the <code>a[0 1]</code> and we saw <code>a<[foo bar]></code>, but you can do much more. For example, you can use splats
 
 <div class="example">
   <div class="example-ls">
@@ -243,7 +240,7 @@ posts['op' ...'replies'] = thread
 
 
 
-# or even with objects
+# even with objects
 extended = {...base, +extended}
 </pre>
   </div>
@@ -301,18 +298,31 @@ pages.appendChild((x$ = node('ul', {
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
-td = node 'td' class: 'informations' data-type: 'info' innerHTML: do
+td = node 'td' class: 'informations' innerHTML: do
   i18n.get-translation 'informations' .format-for @user
+
+
+
+
+
+# use do and backcall
+promises =
+  value: do
+    <- $.get 'a'
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var td;
+var td, promises;
 td = node('td', {
   'class': 'informations',
   dataType: 'info',
   innerHTML: i18n.getTranslation('informations').formatFor(this.user)
 });
+
+promises = {
+  value: $.get('a', function(){})
+};
 </pre>
   </div>
 </div>
@@ -401,7 +411,7 @@ a = (, b) -> b #b is a's second argument
 
 
 
-# forces the closure's argument list to be ampty
+# forces the closure's argument list to be empty
 test 'it works' (...) ->
  it #it wasn't shadowed
 </pre>
