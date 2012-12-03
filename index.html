@@ -181,11 +181,11 @@ function compose$(fs){
 # Listage facile, objets implicites
 table1 =
   * id: 1
-    name: \george
+    name: 'george'
   * id: 2
-    name: \mike
+    name: 'mike'
   * id: 3
-    name: \donald
+    name: 'donald'
 
 table2 =
   * id: 2
@@ -214,7 +214,7 @@ sort-by = (prop, list) --> list.sort (a, b) ->
 [{id:id1, name, age} for {id:id1, name} in table1
                      for {id:id2, age} in table2
                      when id1 is id2]
-|> sort-by \id
+|> sort-by 'id'
 |> each up-case-name # 'each' de prelude.ls
 |> JSON.stringify
 #=>
@@ -317,7 +317,7 @@ function curry$(f, args){
         <div class="example-ls">
         <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-<-! $ 'h1' .on \click
+<-! $ 'h1' .on 'click'
 alert 'boom!'
 </pre>
         </div>
