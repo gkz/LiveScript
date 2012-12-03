@@ -1,0 +1,436 @@
+title: 10 things you didn't know LiveScript can do
+date:  3 Dec 2012
+author: <a href="https://github.com/Nami-Doc" class="author">Vendethiel</a>
+-----
+
+<p>LiveScript, like any other language, has a lot of tips and tricks and hidden syntactic sugars
+
+<p>We'll see in this blog post how you can take advantages of them !
+
+<h3>Operator Overloading</h4>
+
+<p>LiveScript offers some basic operator overloading with arrays and strings :
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+# when the left one is an array literal
+['a' 'b'] * 2 #array repetition
+# when the right one is a string literal
+<[foo bar]> * ', ' #array joining
+
+# or when the left one is a string
+y = 2
+'z' * y #string repetition
+words = text / ' ' #string division
+
+# or even when the right one is either a string or a regexp
+unspaced = text - /\s+/
+[\a to \e] * '' - 'b'
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var y, words, unspaced, split$ = ''.split, replace$ = ''.replace;
+['a', 'b', 'a', 'b'];
+['foo', 'bar'].join(', ');
+
+
+y = 2;
+repeatString$('z', y);
+words = split$.call(text, ' ');
+
+
+unspaced = replace$.call(text, /\s+/, '');
+["a", "b", "c", "d", "e"].join('').replace('b', '');
+function repeatString$(str, n){
+  for (var r = ''; n > 0; (n >>= 1) && (str += str)) if (n & 1) r += str;
+  return r;
+}
+
+</pre>
+  </div>
+</div>
+
+<h3>Heregex dynamic flagging</h3>
+
+<p>For Heregexes, you can dynamically flag them with the ?
+<p>In this case, the last interpolation will be used
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+//
+  my?
+  #normal
+  #{[interpolation]}
+  #flag
+//?
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+RegExp('my?' + normal + [interpolation], flag);
+</pre>
+  </div>
+</div>
+
+<h3>Context creation with&nbsp;<code>new</code></h3>
+
+<p>You can use <code>new</code> alone to create a new context
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+paul = new
+  @name = 'paul'
+  @age = 25
+
+# LiveScript got real object comprehensions
+flip = (obj) -> new
+  for own k, v of obj then @[v] = k 
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var paul, flip;
+paul = new function(){
+  this.name = 'paul';
+  return this.age = 25;
+};
+flip = function(obj){
+  return new function(){
+    var k, ref$, v, own$ = {}.hasOwnProperty, results$ = [];
+    for (k in ref$ = obj) if (own$.call(ref$, k)) {
+      v = ref$[k];
+      results$.push(this[v] = k);
+    }
+    return results$;
+  };
+};
+</pre>
+  </div>
+</div>
+
+<h3>Dynamic keys</h3>
+
+<p>JavaScript doesn't allow dynamic keys, because they're not quoted as in JSON
+
+<p>With LiveScript, you can use parenthesis to get dynamic properties
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+foo = 'key'
+bar = {(foo): 5, "dyna#foo": 6} #=> {'key': 5, 'dynakey': 6}
+
+# in destructuring
+{(+* .>>. 1): middle} = [1 to 7] #middle = 4
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var foo, bar, ref$, middle;
+foo = 'key';
+bar = (ref$ = {}, ref$[foo] = 5, ref$["dyna" + foo] = 6, ref$);
+
+middle = [1, 2, 3, 4, 5, 6, 7][+[1, 2, 3, 4, 5, 6, 7].length >> 1];
+</pre>
+  </div>
+</div>
+
+<h3>Destructuring defaults</h3>
+
+<p>When you do a destructuring, you may want default values. With LiveScript, you can use any logic operator, the existence operator (aliased as <code>=</code>), and even chain them like in any other situation :
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+{username ? 'root', password || '', secure && 'https' || 'http'} = config<[USERNAME PASSWORD SECURE]>
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, username, ref1$, password, secure;
+ref$ = [config['USERNAME'], config['PASSWORD'], config['SECURE']],
+username = (ref1$ = ref$.username) != null ? ref1$ : 'root', password = ref$.password || '',
+secure = ref$.secure && 'https' || 'http';
+</pre>
+  </div>
+</div>
+
+<h3>Extended parameters</h3>
+
+<p>In LiveScript, parameters accept much more than simple literals. You can assign properties, but also do more complex things, like semiautovivification
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class Person
+  #defaults @name to [], and assigns the first element
+  set-first-name: (@[]names.0) ->
+  
+  #defaults @name to [], and adds the element (* being the array's length)
+  add-name: (@[]names[*]) ->
+  
+  #defaults @hair to {}, and assigns color
+  set-hair-color: (@{}hair.color) ->
+
+
+
+
+
+
+
+p = new Person
+p.hair # undefined
+p.set-hair-color "#8b0000"
+p.hair.color # "#8b0000"
+
+p.names # undefined
+p.add-name 'George'
+p.add-name 'Jean'
+p.names # ["George", "Jean"]
+p.set-first-name "Paul"
+p.names # ["Paul", "Jean"]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var Person, p;
+Person = (function(){
+  Person.displayName = 'Person';
+  var prototype = Person.prototype, constructor = Person;
+  prototype.setFirstName = function($0){
+    (this.names || (this.names = []))[0] = $0;
+  };
+  prototype.addName = function(arg$){
+    var ref$;
+    (ref$ = this.names || (this.names = []))[ref$.length] = arg$;
+  };
+  prototype.setHairColor = function(color){
+    (this.hair || (this.hair = {})).color = color;
+  };
+  function Person(){}
+  return Person;
+}());
+p = new Person;
+p.hair;
+p.setHairColor("#8b0000");
+p.hair.color;
+
+p.names;
+p.addName('George');
+p.addName('Jean');
+p.names;
+p.setFirstName("Paul");
+p.names;
+</pre>
+  </div>
+</div>
+
+<h3>Array and Object Splatting</h3>
+
+<p>Array and Object can be sliced in pretty much any way. You probably know the <code>a[0 1]</code> and we saw <code>a<[foo bar]></code>, but you can do much more. For example, you can use splats
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+posts['op' ...'replies'] = thread
+
+
+
+# even with objects
+extended = {...base, +extended}
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var the, end, extended, ref$, slice$ = [].slice;
+posts['op'] = thread[0], posts['replies'] = slice$.call(thread, 1);
+
+extended = (ref$ = {}, import$(ref$, base), ref$.extended = true, ref$);
+function import$(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}
+</pre>
+  </div>
+</div>
+
+<h3>Low-precedence backpipe and do</h3>
+
+<p>The low-precedence backpipe can be used to function evaluation, not only to chain arguments without parenthesis but much more, it can (for example) allow you to use do
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+# basic backpipe usage
+toCase \up <| \hello
+
+# let's say that, if we have no page, we need to create an un element
+# with a li element containing 1
+pages.appendChild <| do
+  node 'ul' className: 'ui-pagination'
+    ..appendChild node 'li' innerHTML: '1'
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x$;
+toCase('up')('hello');
+
+
+
+
+pages.appendChild((x$ = node('ul', {
+  className: 'ui-pagination'
+}), x$.appendChild(node('li', {
+  innerHTML: '1'
+})), x$));
+</pre>
+  </div>
+</div>
+
+<p>Do can be used to change the order or to give you more space to write some complex expressions
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+td = node 'td' class: 'informations' innerHTML: do
+  i18n.get-translation 'informations' .format-for @user
+
+
+
+
+
+# use do and backcall
+promises =
+  value: do
+    <- $.get 'a'
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var td, promises;
+td = node('td', {
+  'class': 'informations',
+  dataType: 'info',
+  innerHTML: i18n.getTranslation('informations').formatFor(this.user)
+});
+
+promises = {
+  value: $.get('a', function(){})
+};
+</pre>
+  </div>
+</div>
+
+<h3>Thisplat</h3>
+
+<p>You often need to defer a call to a function, keeping the same context and arguments. You can use the thisplat for that
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+call = -> call-instead ...
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var call;
+call = function(){
+  return callInstead.apply(this, arguments);
+};
+</pre>
+  </div>
+</div>
+
+<h3>Labeling</h3>
+
+<p>If you need to use labels, you can use them with a block or an expression
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+#labeling a function gives it a name
+:refresh let
+    wait '10s' !->
+      console.log 'timeout !'
+      refresh!
+
+
+
+# label a for
+:serie for i to 100
+  for j to 100
+    if (Math.floor Math.random! * 11) > 8
+      continue serie
+
+    console.log "#i:#j"
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var i$, i, j$, j;
+(function refresh(){
+  wait('10s', function(){
+    console.log('timeout !');
+    refresh();
+  });
+}.call(this));
+
+serie: for (i$ = 0; i$ <= 100; ++i$) {
+  i = i$;
+  for (j$ = 0; j$ <= 100; ++j$) {
+    j = j$;
+    if (Math.floor(Math.random() * 11) > 8) {
+      continue serie;
+    }
+    console.log(i + ":" + j);
+  }
+}
+</pre>
+  </div>
+</div>
+
+<h3>No-op literal and splat</h3>
+
+<p>You can use <code>,</code> to mean a no-op literal
+<p>And splat arrays or arguments
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[a, b, c, ,, d] = foo
+[the, ..., end] = my-friend
+
+a = (, b) -> b #b is a's second argument
+
+
+
+
+# forces the closure's argument list to be empty
+test 'it works' (...) ->
+ it #it wasn't shadowed
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var a, b, c, d, the, end;
+a = foo[0], b = foo[1], c = foo[2], d = foo[5];
+the = myFriend[0], end = myFriend[myFriend.length - 1];
+
+a = function(arg$, b){
+  return b;
+};
+
+test('it works', function(){
+  return it;
+});
+</pre>
+  </div>
+</div>
+
+<p>For more information on LiveScript, check out the <a href="http://livescript.net">LiveScript site</a>.
