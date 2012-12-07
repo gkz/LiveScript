@@ -101,7 +101,7 @@ eq 42, do(0; parent.child.~method)
 eq 42, do(0; parent.child~"me#{'th'}od")
 eq 42, parent.child. ~ [\method] null
 eq 42, parent.child.~{method}.method!
-eq 42, 42~toString!
+eq "42" 42~toString!
 
 compileThrows 'invalid assign' 1 'o~m=g'
 
