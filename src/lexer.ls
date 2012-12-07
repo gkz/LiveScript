@@ -242,7 +242,10 @@ exports import
         @carp "invalid number base #radix (with number #rnum), 
                base must be from 2 to 36"
       if isNaN num or num is parseInt rnum.slice(0 -1), radix
-        @carp "invalid number #rnum in base #radix"
+        @strnum regex-match.1
+        @token \DOT \~
+        @token \ID regex-match.2
+        return input.length
       num += ''
     else
       num = (regex-match.3 or input)replace NUMBER_OMIT, ''
