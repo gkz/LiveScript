@@ -238,17 +238,11 @@ exports import
       return regex-match.4.length
     if radix = regex-match.1
       num = parseInt rnum = regex-match.2.replace(NUMBER_OMIT, ''), radix
-      bound = false
       if radix > 36 or radix < 2
-        if rnum is /[0-9]/
-          @carp "invalid number base #radix (with number #rnum), 
-                 base must be from 2 to 36"
-        else bound = true
-      if bound or isNaN num or num is parseInt rnum.slice(0 -1), radix
-        @strnum regex-match.1
-        @token \DOT \.~
-        @token \ID regex-match.2
-        return input.length
+        @carp "invalid number base #radix (with number #rnum),
+               base must be from 2 to 36"
+      if isNaN num or num is parseInt rnum.slice(0 -1), radix
+        @carp "invalid number #rnum in base #radix"
       num += ''
     else
       num = (regex-match.3 or input)replace NUMBER_OMIT, ''
