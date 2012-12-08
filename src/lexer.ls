@@ -1114,7 +1114,6 @@ character = if JSON!? then uxxxx else ->
       fallthrough
     case \RANGE
       lno = token.2
-      #console.log tokens[i+1], tokens[i]
       if   fromNum? or (tokens[i-1]0 is \[
       and  tokens[i+1]0 is \STRNUM
       and ((tokens[i+2]0 is \]
