@@ -1426,12 +1426,13 @@ class exports.Class extends Node
     for node, i of lines
       if node instanceof Obj
         lines[i] = Import proto, node
-        for prop of node.items
-          if prop.key instanceof [Key, Literal]
-            if prop.val instanceof Fun
-              prop.val.meth = prop.key
-            else if prop.accessor
-              f.meth = prop.key for f of prop.val
+        for {key}:prop of node.items
+          continue unless prop.val instanceof Fun or prop.accessor
+          if key.isComplex!
+            key = Var o.scope.temporary \key
+            prop.key = Assign key, prop.key
+          for []concat prop.val
+            &meth = key
       else if node instanceof Fun and not node.statement
         ctor and node.carp 'redundant constructor'
         ctor = node
