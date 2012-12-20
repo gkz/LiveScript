@@ -199,6 +199,22 @@ eq 6 obs.length
 eq 0 obs.0.one
 eq 6 obs[*-1].two
 
+# Comprehensions returned
+
+xs = do -> [[x for x to 1] for y to 1]
+eq 2 xs.length
+eq 2 xs.1.length
+
+ys = let
+  for y to 1
+    for x to 1
+      x
+eq 2 ys.length
+eq 2 ys.1.length
+
+zs = do -> [x + y for x to 1 for y to 1]
+eq 4 zs.length
+eq '0,1,1,2' String zs
 
 # Comprehensions in loops
 xs = for x to 5

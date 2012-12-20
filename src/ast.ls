@@ -1944,6 +1944,7 @@ class exports.While extends Node
   addObjComp: (@objComp = true) -> this
 
   makeReturn: ->
+    return this if @has-returned
     if it
       if @objComp
         @body = Block @body.makeObjReturn it
@@ -1955,6 +1956,7 @@ class exports.While extends Node
         if (@is-comprehension or @in-comprehension) and not last?is-comprehension
           @body.makeReturn it
           @else?makeReturn it
+          @has-returned = true
         else
           @res-var = it
           @else?makeReturn it
