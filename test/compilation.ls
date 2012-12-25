@@ -62,7 +62,6 @@ compileThrows 'invalid use of null' 1 'null.po'
 
 
 compileThrows 'deprecated octal literal 0666' 1 '0666'
-compileThrows 'invalid number 8 in base 8'    1 '8~8'
 
 
 

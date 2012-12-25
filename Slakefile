@@ -10,7 +10,7 @@ tint = (text, color ? green) -> color + text + reset
 
 # Run our node/livescript interpreter.
 run = (args) ->
-  proc = spawn \node [\bin/livescript] ++ args
+  proc = spawn \node [\lib/command] ++ args
   proc.stderr.on \data say
   proc       .on \exit -> process.exit it if it
 
