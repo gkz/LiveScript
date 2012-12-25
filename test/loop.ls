@@ -222,6 +222,33 @@ xs = for x to 5
 eq 6 xs.length
 eq 10 xs[*-1][*-1]
 
+xs = for x to 5
+  if x % 2 is 0
+    [x + y for y to 2]
+  else
+    [x + y for y to 5]
+eq 6 xs.length
+eq 6 xs[*-2][*-1]
+eq 10 xs[*-1][*-1]
+
+xs = for x to 5
+  if x % 2 is 0
+    w = [x + y for y to 2]
+    w
+  else
+    v = [x + y for y to 5]
+    v
+eq 6 xs.length
+eq 6 xs[*-2][*-1]
+eq 10 xs[*-1][*-1]
+
+xs = for x to 1
+  [y] = [z for z from 1 to 2]
+  y
+eq 2 xs.length
+eq 1 xs.0
+eq 1 xs.1
+
 
 # Multiline comprehensions
 res = [x + y for x to 4
