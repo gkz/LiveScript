@@ -2394,6 +2394,7 @@ class exports.Require extends Node
         get-value item.head
       | otherwise               => item
     process-item = (item) ->
+      chain := null
       [asg, value] = switch
       | item instanceof Prop    => [get-value item.key; item.val]
       | item instanceof Chain   =>
