@@ -241,10 +241,11 @@ exports import
       bound = false
       if radix > 36 or radix < 2
         if rnum is /[0-9]/
-          @carp "invalid number base #radix (with number #rnum), 
+          @carp "invalid number base #radix (with number #rnum),
                  base must be from 2 to 36"
-        else bound = true
-      if bound or isNaN num or num is parseInt rnum.slice(0 -1), radix
+        else
+          bound = true
+      if isNaN num or num is parseInt rnum.slice(0 -1), radix
         @strnum regex-match.1
         @token \DOT \.~
         @token \ID regex-match.2
@@ -857,7 +858,7 @@ function lchomp then it.slice 1 + it.lastIndexOf \\n 0
 
 function decode val, lno
   return [+val] unless isNaN val
-  val = if val.length > 8 then \ng else do Function \return + val
+  val = if val.length > 8 then \ng else do Function 'return ' + val
   val.length is 1 or carp 'bad string in range' lno
   [val.charCodeAt!, true]
 
@@ -1095,6 +1096,7 @@ character = if JSON!? then uxxxx else ->
 # - Insert `, ` after each non-callable token facing an argument token.
 !function expandLiterals tokens
   i = 0
+  var fromNum
   while token = tokens[++i]
     switch token.0
     case \STRNUM
@@ -1102,17 +1104,33 @@ character = if JSON!? then uxxxx else ->
         token.1.=slice 1
         tokens.splice i++ 0 [\+- sig, token.2]
       continue if token.callable
+    case \TO \TIL
+      unless tokens[i-1]0 is \[
+      and ((tokens[i+2]0 is \]
+        and (tokens[i+1]1.charAt(0) in [\' \"]
+          or +tokens[i+1]1 >= 0))
+        or (tokens[i+2]0 is \BY
+        and tokens[i+3]?0 is \STRNUM
+        and tokens[i+4]?0 is \]))
+        continue
+      
+      if tokens[i+2]0 is \BY
+        tokens[i+2]0 = \RANGE_BY
+      token.op = token.1
+      fromNum = 0
+      fallthrough
     case \RANGE
       lno = token.2
-      if   tokens[i-1]0 is \[
+      if   fromNum? or (tokens[i-1]0 is \[
       and  tokens[i+1]0 is \STRNUM
       and ((tokens[i+2]0 is \]
         and (tokens[i+1]1.charAt(0) in [\' \"]
           or +tokens[i+1]1 >= 0))
         or  (tokens[i+2]0 is \RANGE_BY
         and  tokens[i+3]?0 is \STRNUM
-        and  tokens[i+4]?0 is \]))
-        [fromNum, char] = decode token.1, lno
+        and  tokens[i+4]?0 is \])))
+        unless fromNum?
+          [fromNum, char] = decode token.1, lno
         [toNum, tochar] = decode tokens[i+1].1, lno
         carp 'bad "to" in range' lno if toNum!? or char .^. tochar
         byNum = 1
@@ -1137,6 +1155,7 @@ character = if JSON!? then uxxxx else ->
         if tokens[i+2]?0 is \RANGE_BY
           tokens.splice i+2, 1, [\BY \by lno]
         tokens.splice i+1, 0, [\TO, token.op, lno]
+      fromNum = null
     case \WORDS
       ts = [[\[ \[ lno = token.2]]
       for word in token.1.match /\S+/g or ''
