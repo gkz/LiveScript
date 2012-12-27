@@ -852,35 +852,3 @@ ok not (even or 1) 3
 ok ((.length > 4) or [1 2 3]) [1 2 3]
 
 eq 8 ((-> &0 + &1 is 5) and (**)) 2 3
-
-
-### Cascade
-a = with [2 7 1 8 2]
-  ..push 3
-  ..sort!
-    ..shift!
-  ..pop!
-.join ''
-eq \2237 a
-
-ok
-  .. .., ..
-  (->) ..(.., ..)
-  ..value-of! <| ok
-
-# single line
-eq '2,3,4,5' String [2 5 1 6 3]..push(4)..sort!..shift!..pop!
-eq '2,3,4,5' String([2 5 1 6 3]..push 4 ..sort!..shift!..pop!)
-
-# combined
-b = with [2 7 1 8 2]..push 9
-  ..push 3
-  ..sort!
-    ..shift!
-  ..pop!
-.join ''
-eq \22378 b
-
-# errors
-compileThrows 'stray reference' 2 '\n..'
-compileThrows 'unreferred cascadee' 1 'a\n b'

@@ -347,6 +347,10 @@ eq 0, I(-> it()) -> 0
 eq void Function() ->
 
 
+# Ignore trailing placeholder parameters.
+eq 0 ((,,...,,...,,) -> it)length
+
+
 ### Invalid call detection
 compileThrows 'invalid callee'      1 '[]()'
 compileThrows 'invalid constructor' 1 'new 42'
@@ -383,6 +387,13 @@ eq 3 do
   3
 
 eq 6 (a <- g 6; a)
+
+# [#192](https://github.com/satyr/coco/issues/192)
+eq '192' do
+  <- '081'replace /./g
+  -~it
+  /* ignore trailing */
+  /* block comments */
 
 
 addArr = do 

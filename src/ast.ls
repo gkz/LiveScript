@@ -262,6 +262,7 @@ class exports.Block extends Node
   # **Block** does not return its entire body, rather it
   # ensures that the final line is returned.
   makeReturn: ->
+    @chomp!
     if @lines[*-1]?=makeReturn it
       --@lines.length if that instanceof Return and not that.it
     this
@@ -305,7 +306,7 @@ class exports.Block extends Node
 
   # Compile to a comma-separated list of expressions.
   compileExpressions: (o, level) ->
-    {lines} = this; i = -1
+    {lines} = @chomp!; i = -1
     while lines[++i] then lines.splice i-- 1 if that.comment
     lines.push Literal \void unless lines.length
     lines.0 <<< {@front}; lines[*-1] <<< {@void}
@@ -1617,7 +1618,7 @@ class exports.Fun extends Node
     if @bound is \this$
       if @ctor
         scope.assign \this$ 'this instanceof ctor$ ? this : new ctor$'
-        body.add Return Literal \this$
+        body.lines.push Return Literal \this$
       else if sscope.fun?bound
       then @bound = that
       else sscope.assign \this$ \this
@@ -1634,7 +1635,7 @@ class exports.Fun extends Node
     code += \}
     curry-code-check = ~>
       if @curried
-        if @hasSplats
+        if @has-splats
           @carp 'cannot curry a function with a variable number of arguments'
         "#{ util \curry }(#code)"
       else code
@@ -1647,20 +1648,27 @@ class exports.Fun extends Node
     if @front and not @statement then "(#code)" else code
 
   compileParams: (scope) ->
-    {params, body} = this; names = []; assigns = []
+    {{length}:params, body} = this
+    # Remove trailing placeholders.
+    for p in params by -1
+      break unless p.isEmpty! or p.filler
+      --params.length
     for p, i in params
-      if p instanceof Splat then splace = i; @hasSplats = true
+      if p instanceof Splat
+        @has-splats = true
+        splace = i
       # `(a = x) ->` => `(a ? x) ->`
       else if p.op is \=
         params[i] = Binary (p.logic or \?), p.left, p.right
     # `(a, ...b, c) ->` => `(a) -> [[] ...b, c] = @@`
     if splace?
       rest = params.splice splace, 9e9
-      rest = 0 if not rest.1 and rest.0.it.isEmpty!  # ignore trailing `...`
     else if @accessor
       that.carp 'excess accessor parameter' if params.1
-    else unless params.length or @wrapper
+    else unless length or @wrapper
       params.0 = Var \it if body.traverseChildren -> it.value is \it or null
+    names   = []
+    assigns = []
     if params.length
       dic = {}
       for p in params
@@ -1675,8 +1683,7 @@ class exports.Fun extends Node
           vr = v
         else if df
           assigns.push Assign vr, p.second, \=, p.op, true
-        names.push name = scope.add vr.value, \arg, p
-        p.carp "duplicate parameter \"#name\"" unless dic"#name." .^.= 1
+        names.push scope.add vr.value, \arg, p
     if rest
       while splace-- then rest.unshift Arr!
       assigns.push Assign Arr(rest), Literal \arguments
@@ -1706,21 +1713,24 @@ class exports.Class extends Node
       j = 0
       while j < node.items.length, j++
         prop = node.items[j]
-        if prop.key instanceof [Key, Literal]
-          if (prop.key instanceof Key and prop.key.name is ctor-name)
-          or (prop.key instanceof Literal and prop.key.value is "'#ctor-name'")
-            node.carp 'redundant constructor' if ctor
-            ctor := prop.val
-            node.items.splice j--, 1
-            ctor-place := i
-          else if prop.val instanceof Fun
-            prop.val.meth = prop.key
-            if prop.val.bound
-              bound-funcs.push prop.key
-              prop.val.bound = false
-          else if prop.accessor
-            for f in prop.val then f.meth = prop.key
+        key = prop.key
+        if (key instanceof Key and key.name is ctor-name)
+        or (key instanceof Literal and key.value is "'#ctor-name'")
+          node.carp 'redundant constructor' if ctor
+          ctor := prop.val
+          node.items.splice j--, 1
+          ctor-place := i
+        continue unless prop.val instanceof Fun or prop.accessor
+        if key.isComplex!
+          key = Var o.scope.temporary \key
+          prop.key = Assign key, prop.key
+        if prop.val.bound
+          bound-funcs.push prop.key
+          prop.val.bound = false
+        for v in [] ++ prop.val
+          v.meth = key
       if node.items.length then Import proto, node else Literal 'void'
+
     for node, i in lines
       if node instanceof Obj
         lines[i] = import-proto-obj node, i
@@ -2054,6 +2064,8 @@ class exports.For extends While
         then "#idx #{ '<>'charAt pvar < 0 }#eq #tvar"
         else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
     else
+      if @cascade
+        @item = Var o.scope.temporary \x
       if @item or @object and @own
         [svar, srcPart] = @source.compileLoopReference o, \ref, not @object
         svar is srcPart or temps.push svar
@@ -2088,7 +2100,9 @@ class exports.For extends While
     if @index and not @object
       head += \\n + o.indent +
         Assign(Var @index; JS idx).compile(o, LEVEL_TOP) + \;
-    if @item and not @item.isEmpty!
+    if @cascade
+      @body = Block Cascade(JS "#svar[#idx]"; @body) <<< {ref: @item.value, +map}
+    else if @item and not @item.isEmpty!
       head += \\n + o.indent +
         Assign(@item, JS "#svar[#idx]")compile(o, LEVEL_TOP) + \;
     body  = @compileBody o
@@ -2324,35 +2338,37 @@ class exports.Label extends Node
 
 #### Cascade
 class exports.Cascade extends Node
-  (@input, @output, @implicit) ->
+  (@input, @output, @prog1) ~>
+
+  show: -> @prog1
 
   children: <[ input output ]>
 
   terminator: ''
 
-  ::delegate <[ isCallable isArray isString isRegex ]> -> @output[it]!
+  ::delegate <[ isCallable isArray isString isRegex ]> ->
+    @[if @prog1 then \input else \output][it]!
 
   getJump: -> @output.getJump it
 
   makeReturn: (@ret) -> this
 
   compileNode: ({level}:o) ->
-    {input, output, ref} = this
-    if \ret of this or level and not @void
-      output.add (Literal \..) <<< cascadee: true
+    {input, output, prog1, ref} = this
+    if prog1 and (\ret of this or level and not @void)
+      output.add (Literal(\..) <<< {+cascadee})
     if \ret of this
       output.=makeReturn @ret
     if ref
-    then output = Assign Arr!, output
-    else @temps = [ref = o.scope.temporary \x]
+    then prog1 or @map or output = Assign JS(ref), output
+    else ref = o.scope.temporary \x
     if input instanceof Cascade
     then input <<< {ref}
-    else input = Assign JS(ref), input
+    else input &&= Assign JS(ref), input
     o.level &&= LEVEL_PAREN
     code = input.compile o
-    o.ref = new String ref
-    out = Block output .compile o
-    @carp "unreferred cascadee" if @implicit and not o.ref.erred
+    out  = Block output .compile o <<< ref: new String ref
+    @carp "unreferred cascadee" if prog1 is \cascade and not o.ref.erred
     return "#code#{input.terminator}\n#out" unless level
     code += ", #out"
     if level > LEVEL_PAREN then "(#code)" else code

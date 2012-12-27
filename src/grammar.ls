@@ -68,8 +68,6 @@ bnf =
 
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
-    o 'WITH Expression Block' -> Chain new Cascade $2, $3
-
     o '[ Expression LoopHeads ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1
     o '[ Expression LoopHeads DEDENT ]'  -> Chain $3.0.makeComprehension $2, $3.slice 1
     o '{ [ ArgList OptComma ] LoopHeads }'
@@ -124,6 +122,9 @@ bnf =
     o 'Chain DOT [ TO ]'
     , -> Chain Slice type: $4, target: $1
 
+    o 'WITH Expression Block' -> Chain Cascade $2, $3, \with
+    o 'FOR  Expression Block' -> Chain new For source: $2, body: $3, cascade: true
+
   # An array or object
   List:
     o '[ ArgList    OptComma ]' -> L Arr $2
@@ -170,7 +171,7 @@ bnf =
     o \Expression
 
     # Cascade without `with`
-    o 'Expression Block' -> new Cascade $1, $2, true
+    o 'Expression Block' -> Cascade $1, $2, \cascade
 
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
     , -> Call.back $2, $6, $5.charAt(1) is \~, $5.length is 3
@@ -185,7 +186,7 @@ bnf =
   # An indented block of expressions.
   # Note that [Lexer](#lexer) rewrites some single-line forms into blocks.
   Block:
-    o 'INDENT Lines DEDENT' -> $2.chomp!
+    o 'INDENT Lines DEDENT' -> $2
     ...
 
   Cascade:
@@ -195,7 +196,8 @@ bnf =
   # All the different types of expressions in our language.
   Expression:
     o 'Cascade Chain'
-    , -> new Cascade $1.0, Block $1.slice(1) ++ $2
+    , -> Cascade $1.0, (Block $1.slice(1) ++ $2), \cascade
+
     o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.where $4, Block [$1]
     o 'Expression WHERE Block' -> Chain Call.where $3.lines, Block [$1]
 

@@ -131,10 +131,11 @@ obj = {
    *  ^
    */
 };
-if (1) {
+(function(){
   /* no semicolon at end -> */
-  2;
-}
+  1;
+  return 2;
+});
 /* trailing top level comment */
 ''', LiveScript.compile '''
 /* leading block comments */
@@ -148,11 +149,12 @@ obj = {
     *  ^
     */
 }
-if 1
+->
   /* no semicolon at end -> */
+  1
   2
-  /* trailing comments in a block */
-  /* are removed */
+  /* trailing block comments are  */
+  /* removed when returning value */
 /* trailing top level comment */
 ''', {+bare}
 

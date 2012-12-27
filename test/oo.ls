@@ -17,9 +17,11 @@ thirdCtor = -> @array = [1, 2, 3]
 class ThirdChild extends SecondChild
   -> thirdCtor ...
 
-  func: ->
+  name = -> 'func'
+
+  # `super` from a dynamically named method and an inner function.
+  (name!): ->
     let it
-      # `super` from inner function
       super('three/') + it
 
 eq (new ThirdChild).func('four'), 'zero/one/two/three/four'
@@ -147,7 +149,11 @@ class BoundCtor extends (-> {@attr})
     eq super(...).attr, @attr
     @method = ~> this
 
-class BoundChild extends BoundCtor then ~> super ...
+class BoundChild extends BoundCtor
+  ~>
+    super ...
+    # Auto-`return this` even with backcall.
+    <- Object
 
 for C in [BoundCtor, BoundChild]
   bc = C 'attr'
