@@ -216,6 +216,20 @@ zs = do -> [x + y for x to 1 for y to 1]
 eq 4 zs.length
 eq '0,1,1,2' String zs
 
+# Comprehensions with cascade
+eq '3,4,5' String [.. + 2 for [1 2 3]]
+eq '3,5'   String [.. + 2 for [1 2 3] when .. % 2 isnt 0]
+eq '5,4,3' String [.. + 2 for [1 2 3] by -1]
+eq '5,3'   String [.. + 2 for [1 2 3] by -1 when .. % 2 isnt 0]
+
+list-of-obj =
+  * ha: 1
+    mo: 8
+  * ha: 4
+    la: 2
+
+eq '1,4' String [..ha for list-of-obj]
+
 # Comprehensions in loops
 xs = for x to 5
   [x + y for y to 5]

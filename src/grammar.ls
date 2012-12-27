@@ -368,6 +368,15 @@ bnf =
     o 'FOR Chain IN Expression BY Expression CASE Expression'
     , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6, guard: $8
 
+    o 'FOR Expression'
+    , -> new For source: $2, cascade: true
+    o 'FOR Expression CASE Expression'
+    , -> new For source: $2, cascade: true, guard: $4
+    o 'FOR Expression BY Expression'
+    , -> new For source: $2, cascade: true, step: $4
+    o 'FOR Expression BY Expression CASE Expression'
+    , -> new For source: $2, cascade: true, step: $4, guard: $6
+
     o 'FOR     ID         OF Expression'
     , -> new For {+object,       index: $2,                   source: $4}
     o 'FOR     ID         OF Expression CASE Expression'
