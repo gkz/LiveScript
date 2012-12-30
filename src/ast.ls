@@ -574,8 +574,10 @@ class exports.Chain extends Node
         else pre .push t
       [partial, ...post] = rest if rest?
       @tails = pre
+      context = if pre.length then Chain head, pre[til -1] else Literal \this
       return (Chain (Chain Var util \partialize
-        .add Call [this; Arr partial.args; Arr partial.partialized]), post).compile o
+        .add Index Key \apply
+        .add Call [context, Arr [this; Arr partial.args; Arr partial.partialized]]), post).compile o
     @carp 'invalid callee' if tails.0 instanceof Call and not head.isCallable!
     @expandSlice o; @expandBind o; @expandSplat o; @expandStar o
     if @splatted-new-args
@@ -2676,12 +2678,14 @@ UTILS =
   }'''
 
   partialize: '''function(f, args, where){
+    var context = this;
     return function(){
       var params = slice$.call(arguments), i,
           len = params.length, wlen = where.length,
           ta = args ? args.concat() : [], tw = where ? where.concat() : [];
       for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
-      return len < wlen && len ? partialize$(f, ta, tw) : f.apply(this, ta);
+      return len < wlen && len ?
+        partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
     };
   }'''
   not: '''function(x){ return !x; }'''

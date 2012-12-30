@@ -675,6 +675,13 @@ eq 6 f 2
 
 eq 9 (6 |> obj.three-add 1, _, 2)
 
+# preserve context of partially applied function
+obj =
+    offset: 5
+    add: (x, y) -> @offset + x + y
+
+eq 16 (10 |> obj.add _, 1)
+
 # do a named func
 do ->
   i = 0
