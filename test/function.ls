@@ -711,5 +711,21 @@ eq 'head,haha,tail' obj.fn \tail
 obj.fn3 = obj.fn2 \h
 eq 'h,haha,t' obj.fn3 \t
 
+# unary ops in parameters
+f = (!x) -> x
+ok f false
+
+g = (+x) -> x
+eq 1 g '1'
+
+h = (^^x) -> x <<< a: 9, c: 6
+obj = a: 1, b: 2
+obj2 = h obj
+eq 9 obj2.a
+eq 6 obj2.c
+eq 1 obj.a # original obj hasn't been modified
+ok not obj.c
+
+
 ## util funcs
 function map f, xs then [f x for x in xs]

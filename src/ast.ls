@@ -1679,6 +1679,10 @@ class exports.Fun extends Node
         vr.=first if df = vr.getDefault!
         if vr.isEmpty!
           vr = Var scope.temporary \arg
+        else if vr instanceof Unary
+          vvar = Var vr.it.value
+          assigns.push Assign vvar, vr
+          vr = vvar
         else if vr not instanceof Var
           v = Var delete (vr.it || vr)name || vr.varName! ||
                   scope.temporary \arg
