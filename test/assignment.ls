@@ -433,6 +433,3 @@ eq 2 changeMe
 compileThrows 'cannot assign to reserved word "match"' 1 '''
   match = 1
 '''
-compileThrows 'cannot assign to reserved word "where"' 1 '''
-  where = 1
-'''

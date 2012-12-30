@@ -497,34 +497,6 @@ let this = eq
   this eq, this
 
 
-### `where`
-eq 5 x + y where x = 2, y = 3
-
-eq 5 x + y where x = 2,
-                 y = 3
-
-r = x + y where
-  x = 2
-  y = 3
-eq 5 r
-
-r = x + y
-  where
-    x = 2
-    y = 3
-eq 5 r
-
-r = x + y
-  where x = 2,
-        y = 3
-eq 5 r
-
-r = x + y
-  where x = 2,
-        y = x + 1
-eq 5 r
-
-
 ### `&`
 let 0
   eq & , arguments

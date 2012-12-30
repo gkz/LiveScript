@@ -128,7 +128,8 @@ exports import
     case \for  then @seenFor = true; fallthrough
     case \then then @wantBy  = false
     case \catch \function then id = ''
-    case \where then
+    case \where
+      console?warn "WARNING on line #{@line}: the `where` statement is deprecated and will be removed in a future LiveScript release. Please use `let` or local variables instead."
     case \in \of
       if @seenFor
         @seenFor = false
