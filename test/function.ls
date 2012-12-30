@@ -726,6 +726,14 @@ eq 6 obj2.c
 eq 1 obj.a # original obj hasn't been modified
 ok not obj.c
 
+k = (!!x) -> x
+eq true k 1
+
+l = (!!@x) -> x
+obj = {-x}
+l.call obj, 'hello'
+eq true obj.x
+
 
 ## util funcs
 function map f, xs then [f x for x in xs]

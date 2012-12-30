@@ -1678,14 +1678,18 @@ class exports.Fun extends Node
         vr.=first if df = vr.getDefault!
         if vr.isEmpty!
           vr = Var scope.temporary \arg
-        else if vr instanceof Unary
-          vvar = Var vr.it.value
-          assigns.push Assign vvar, vr
-          vr = vvar
         else if vr not instanceof Var
+          unaries = []
+          while vr instanceof Unary
+            has-unary = true
+            unaries.push vr
+            vr.=it
           v = Var delete (vr.it || vr)name || vr.varName! ||
                   scope.temporary \arg
-          assigns.push Assign vr, if df then Binary p.op, v, p.second else v
+          assigns.push Assign vr, switch
+            | df        => Binary p.op, v, p.second
+            | has-unary => fold ((x, y) -> y.it = x; y), v, unaries.reverse!
+            | otherwise => v
           vr = v
         else if df
           assigns.push Assign vr, p.second, \=, p.op, true
@@ -2807,3 +2811,7 @@ SIMPLENUM = /^\d+$/
 function util then Scope.root.assign it+\$ UTILS[it]
 
 function entab code, tab then code.replace /\n/g \\n + tab
+
+function fold f, memo, xs
+  for x in xs then memo = f memo, x
+  memo
