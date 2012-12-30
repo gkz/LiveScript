@@ -120,6 +120,8 @@ exports import
     # keywords
     switch id
     case <[ true false on off yes no null void undefined arguments debugger ]>
+      if id is \undefined
+        console?warn "WARNING on line #{@line}: `undefined` as an alias to `void` is deprecated and will be removed in a future LiveScript release. Please use `void` instead."
       tag = \LITERAL
     case \new \do \typeof \delete                      then tag = \UNARY
     case \return \throw                                then tag = \HURL

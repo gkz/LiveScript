@@ -246,12 +246,12 @@ class B
   @static = one: 1, two: 2
 
 eq A.static.one, 1
-eq A.static.two, undefined
+eq A.static.two, void
 eq (new A).two, 2
 
 eq B.static.one, 1
 eq B.static.two, 2
-eq (new B).two, undefined
+eq (new B).two, void
 
 #classes with value'd constructors
 counter = 0
