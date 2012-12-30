@@ -2184,7 +2184,7 @@ class exports.Switch extends Node
 
   isCallable: ->
     for c in @cases when not c.isCallable! then return false
-    @default?isCallable!
+    if @default then @default.isCallable! else true
 
   getJump: (ctx or {}) ->
     ctx.break = true
