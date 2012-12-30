@@ -686,4 +686,30 @@ do ->
     x
   eq 2 i
 
+# bound and curried
+class A
+  (@list = \middle) ->
+
+  enclose: (head, tail) ~~>
+    [head, @list, tail].join!
+
+  enclose-not-bound: (head, tail) -->
+    [head, @list, tail].join!
+
+a = new A
+
+fn = a.enclose \head
+curried = fn \tail
+eq 'head,middle,tail' curried
+
+# not bound
+obj =
+  list: \haha
+  fn: a.enclose-not-bound \head
+  fn2: a.enclose-not-bound
+eq 'head,haha,tail' obj.fn \tail
+obj.fn3 = obj.fn2 \h
+eq 'h,haha,t' obj.fn3 \t
+
+## util funcs
 function map f, xs then [f x for x in xs]

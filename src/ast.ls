@@ -1637,7 +1637,10 @@ class exports.Fun extends Node
       if @curried
         if @has-splats
           @carp 'cannot curry a function with a variable number of arguments'
-        "#{ util \curry }(#code)"
+        "#{ util \curry }" + if @bound or @class-bound
+          "((#code), true)"
+        else
+          "(#code)"
       else code
     if inLoop then return pscope.assign pscope.temporary(\fn), curry-code-check!
     if @returns
@@ -1727,6 +1730,8 @@ class exports.Class extends Node
         if prop.val.bound
           bound-funcs.push prop.key
           prop.val.bound = false
+          # need to know whether bound param of curry$ should be true
+          prop.val.class-bound = true
         for v in [] ++ prop.val
           v.meth = key
       if node.items.length then Import proto, node else Literal 'void'
@@ -2637,12 +2642,18 @@ UTILS =
 
   out: '''typeof exports != 'undefined' && exports || this'''
 
-  curry: '''function(f, args){
-    return f.length > 1 ? function(){
-      var params = args ? args.concat() : [];
-      return params.push.apply(params, arguments) < f.length && arguments.length ?
-        curry$.call(this, f, params) : f.apply(this, params);
-    } : f;
+  curry: '''function(f, bound){
+    var context,
+    _curry = function(args) {
+      return f.length > 1 ? function(){
+        var params = args ? args.concat() : [];
+        context = bound ? context || this : this;
+        return params.push.apply(params, arguments) <
+            f.length && arguments.length ?
+          _curry.call(context, params) : f.apply(context, params);
+      } : f;
+    };
+    return _curry();
   }'''
 
   compose: '''function(fs){
