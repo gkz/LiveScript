@@ -114,7 +114,7 @@ exports import
     {last} = this
     # `id:_` `_.id` `@id`
     if regex-match.2 or last.0 is \DOT or @adi!
-      @token \ID if id in KEYWORDS then Object(id) <<< {+reserved} else id
+      @token \ID if id in JS_KEYWORDS then Object(id) <<< {+reserved} else id
       @token \: \: if regex-match.2
       return input.length
     # keywords
@@ -882,6 +882,8 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[++i]
     [tag, val, line] = token
     switch
+    case tag is \ASSIGN and prev.1 in LS_KEYWORDS and tokens[i-2].0 isnt \DOT
+      carp "cannot assign to reserved word \"#{prev.1}\"" line
     case tag is \DOT and prev.0 is \] and tokens[i-2].0 is \[ and tokens[i-3].0 is \DOT
       tokens.splice i-2, 3
       tokens[i-3].1 = '[]'
@@ -1217,7 +1219,9 @@ KEYWORDS_SHARED = <[
 KEYWORDS_UNUSED =
   <[ enum interface package private protected public static yield ]>
 
-KEYWORDS = KEYWORDS_SHARED ++ KEYWORDS_UNUSED
+JS_KEYWORDS = KEYWORDS_SHARED ++ KEYWORDS_UNUSED
+
+LS_KEYWORDS = <[ xor match where ]>
 
 ##### Regexes
 # Some of these are given `g` flag and made sure to match empty string

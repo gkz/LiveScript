@@ -428,3 +428,11 @@ change-me = ->
 eq \function typeof changeMe
 eq 2 changeMe!
 eq 2 changeMe
+
+## Error when assigning to reserved LS word
+compileThrows 'cannot assign to reserved word "match"' 1 '''
+  match = 1
+'''
+compileThrows 'cannot assign to reserved word "where"' 1 '''
+  where = 1
+'''
