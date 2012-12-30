@@ -622,6 +622,10 @@ ok (instanceof) (new String \h), String
 ok (instanceof String) (new String \h)
 ok ((new String \h) instanceof) String
 
+ok not (not instanceof) (new String \h), String
+ok not (not instanceof String) (new String \h)
+ok not ((new String \h) not instanceof) String
+
 ok (in) 5 [1 to 10]
 ok (in [1 to 5]) 3
 ok (3 in) [1 to 5]

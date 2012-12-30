@@ -150,8 +150,7 @@
   invert: -> Unary \! this, true
 
   invertCheck: ->
-    if it.inverted then @invert!
-    this
+    if it.inverted then @invert! else this
 
   addElse: (@else) -> this
 
