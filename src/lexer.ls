@@ -430,9 +430,13 @@ exports import
     case \^^             then tag = \CLONE
     case \** \^          then tag = \POWER
     case \?  \!?
-      if   @last.0 is \(
-      then create-it-func!
-      else tag = \LOGIC if @last.spaced
+      if @last.0 is \(
+        @token \PARAM( \(
+        @token \)PARAM \)
+        @token \->     \->
+        @token \ID     \it
+      else
+        tag = \LOGIC if @last.spaced
     case \/ \% \%%       then tag = \MATH
     case \+++
       console?warn "WARNING on line #{ @line }: the `+++` concat operator is deprecated and will be removed in a future LiveScript release. Please use a spaced `++` for concatenation instead."
@@ -606,11 +610,6 @@ exports import
       tag = if tag is \BACKPIPE then \BIOPBP else \BIOP
     @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE 
                           MATH POWER IMPORT SHIFT BITWISE ]>
-    ~function create-it-func
-      @token \PARAM( \(
-      @token \)PARAM \)
-      @token \->     \->
-      @token \ID     \it
     @token tag, val
     sym.length
 
