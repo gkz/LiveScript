@@ -451,3 +451,18 @@ class A
     a: b
 
 eq 2 (new A).a
+
+# complex extends and auto super
+x =
+  A: class
+    -> @y = \ha
+
+class B extends x.A
+  y: \no
+
+eq \ha (new B).y
+
+class C extends NON-EXISTANT ? (->)
+  y: 4
+
+eq 4 (new C).y

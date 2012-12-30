@@ -1747,7 +1747,7 @@ class exports.Class extends Node
               it.lines[k] = import-proto-obj child, i
         ), true
 
-    ctor ||= lines.* = if @sup and @sup instanceof [Fun, Var]
+    ctor ||= lines.* = if @sup
                     then  Fun [] Block Chain(new Super).add Call [Splat Literal \arguments]
                     else Fun!
     unless ctor instanceof Fun
