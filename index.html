@@ -5403,9 +5403,11 @@ b.dimensions;
     <div class="section" id="coffee-to-ls">
       <a name="coffee-to-ls"></a>
       <h2>CoffeeScript to LiveScript Conversion Guide</h2>
+      <p><a href="https://github.com/gkz/coffee2ls">coffee2ls</a>, a CoffeeScript to LiveScript compiler is currently in development.
       <ul>
         <li>Change all your fat arrows <code>=></code> to wavy arrows <code>~></code>
         <li>Change all your block comments <code>### ###</code> to <code>/* */</code>
+        <li>Change all <code>undefined</code> to <code>void</code>
         <li>Change any range syntax creating lists from <code>[x..y]</code> to <code>[x to y]</code> and change <code>[x...y]</code> to <code>[x til y]</code>. If your range goes downwards, ie. from a larger number to a smaller number, and it is not obvious (the from and to are not literals), then you must add <code>by -1</code>, eg. <code>[x to -3 by -1]</code>
         <li>Similarly, change any range syntax in for loops from <code>for i in [x..y]</code> to <code>for i from x to y</code> and change <code>for i in [x...y]</code> to <code>for i from x til y</code>
         <li>Change any list comprehensions from <code>(x for x in list)</code> to <code>[x for x in list]</code>. Any postfix loops which you do not want returning a list, change to not postfixed, eg. change <code>increase x for x in list</code> to <code>for x in list then increase x</code>. You can shave characters if you wish by using the alias to <code>then</code>, the fat arrow <code>=></code>
