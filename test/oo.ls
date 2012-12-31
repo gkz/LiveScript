@@ -211,7 +211,7 @@ eq \declared (class declared)displayName
 ok declared?
 
 eq \named  (new -> return @named = class)displayName
-ok named!? 'should not leak to global when undeclared'
+ok not named? 'should not leak to global when undeclared'
 
 
 # `super` with nested classes

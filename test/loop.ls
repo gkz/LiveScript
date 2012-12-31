@@ -100,7 +100,7 @@ eq 4 obj.b
 
 r = {[key, val] for key, val of {a:1, b:2} when val isnt 2}
 eq 1 r.a
-ok r.b!?
+ok not r.b?
 
 
 # Basic range comprehensions.

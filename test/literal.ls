@@ -204,11 +204,10 @@ new
   eq x.3, \3
   eq x.4, true
   eq x.5, false
-  c = null; d = 0; y = {a || 1, @b && 2, c ? 3, d !? 4}
+  c = null; d = 0; y = {a || 1, @b && 2, c ? 3}
   eq y.a, 1
   eq y.b, 2
   eq y.c, 3
-  eq y.d, 4
   z = {true, false, on, off, yes, no, null, void, this, arguments, eval, -super, +debugger}
   eq z.true      , true
   eq z.false     , false

@@ -262,7 +262,7 @@ switch
         ops = {\eval, +bare, saveScope:LiveScript}
         ops = {+bare} if code.match(/^\s*!?function/)
         x  = vm.runInNewContext LiveScript.compile(code, ops), repl-ctx, \repl
-        x !? repl-ctx <<< {_:x}
+        repl-ctx <<< {_:x} if x?
         pp  x
         say x if typeof x is \function
     catch then say e

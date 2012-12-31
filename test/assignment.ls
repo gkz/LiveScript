@@ -317,12 +317,12 @@ eq 1 a.1
 
 ### Destructuring Default
 new
-  [x ? 2, [y] || [3], @p && 5, @q !? 7] = [null, false, true, 0]
-  eq x * y * @p * @q, 210
+  [x ? 2, [y] || [3], @p && 5] = [null, false, true]
+  eq x * y * @p, 30
 
   @p = @q = void
-  [x = 2, [y] ||= [3], @p &&= 5, @q !? 7] = [null, false, true, 0]
-  eq x * y * @p * @q, 210
+  [x = 2, [y] ||= [3], @p &&= 5] = [null, false, true]
+  eq x * y * @p, 30
 
   {a or 2, _: b or 3, @p or 5} = {}
   eq a * b * @p, 30

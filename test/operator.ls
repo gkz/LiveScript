@@ -18,8 +18,7 @@ eq 32,
 if  false
 or  true
 and null
-?   false
-!?  true
+?   true
   eq 3 1
      .&. 2
      .|. 3
@@ -60,14 +59,6 @@ ok a isnt b
 ok true is     true
 ok true is not false
 ok true isnt false
-
-
-# (In)existence
-let a = void
-  eq a?, false
-  eq a!? true
-
-(ok !? ok) true
 
 
 # `and`/`or` closes implicit calls,
@@ -127,12 +118,9 @@ one  &&= 'one'
 eq zero, 0
 eq one , 'one'
 
-n = m = null
 n  ?= void
 n  ?= true
-m !?= true
 eq n, true
-eq m, null
 
 
 # does not work in REPL if not on first line
@@ -653,7 +641,7 @@ eq 2 obj2.b
 withObj2 = (with obj2)
 obj3 = withObj2 d: 6
 
-ok obj2.d!?
+ok not obj2.d?
 eq 6 obj3.d
 eq 9 obj3.a
 
@@ -733,7 +721,7 @@ eq 19      personC.age
 eq \blonde personC.hair
 eq \matias personA.name
 eq 20      personA.age
-ok personA.hair!?
+ok not personA.hair?
 
 
 ### xor

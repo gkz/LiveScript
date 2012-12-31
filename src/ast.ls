@@ -163,7 +163,7 @@
       base = this.lines.0
       base.=then.lines.0 if this.lines.0 instanceof If
       items = base.items
-      if items.0!? or items.1!?
+      if not items.0? or not items.1?
         @carp 'must specify both key and value for object comprehension'
       Assign (Chain Var arref).add(Index items.0, \., true), items.1
     else Return this
@@ -957,7 +957,7 @@ class exports.Unary extends Node
 
   show: -> [\@ if @post] + @op
 
-  isCallable: -> @op in <[ do new delete ]> or @it!?
+  isCallable: -> @op in <[ do new delete ]> or not @it?
 
   isArray: -> @it instanceof Arr   and @it.items.length
            or @it instanceof Chain and @it.isArray!
@@ -983,7 +983,7 @@ class exports.Unary extends Node
   function crement then {'++':\in '--':\de}[it] + \crement
 
   compileNode: (o) ->
-    return @compileAsFunc o if @it!?
+    return @compileAsFunc o if not @it?
     return that if @compileSpread o
     {op, it} = this
     switch op
@@ -1056,7 +1056,7 @@ class exports.Binary extends Node
       op = | logic    => that
            | op is \= => \?
            | _        => \=
-    @partial = first!? or second!?
+    @partial = not first? or not second?
     if not @partial
       if \= is op.charAt op.length-1 and op.charAt(op.length-2) not in <[ = < > ! ]>
         return Assign first.unwrap!, second, op
@@ -1250,7 +1250,7 @@ class exports.Binary extends Node
   compilePartial: (o) ->
     vit = Var \it
     switch
-    case  @first!? and @second!?
+    case  not @first? and not @second?
       x = Var \x$; y = Var \y$
       (Fun [x, y], Block((Binary @op, x, y).invertCheck this), false, true).compile o
     case @first?

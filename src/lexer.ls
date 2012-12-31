@@ -865,7 +865,7 @@ function decode val, lno
   [val.charCodeAt!, true]
 
 function uxxxx then \"\\u + (\000 + it.toString 16)slice(-4) + \"
-character = if JSON!? then uxxxx else ->
+character = if not JSON? then uxxxx else ->
   switch it | 0x2028 0x2029 => uxxxx it
   default JSON.stringify String.fromCharCode it
 
@@ -884,6 +884,8 @@ character = if JSON!? then uxxxx else ->
   while token = tokens[++i]
     [tag, val, line] = token
     switch
+    case tag is \!? or tag is \LOGIC and val is \!?
+      console?warn "WARNING on line #line: the `!?` inexistance operator is deprecated and will be removed in a future LiveScript release. Please use a negated existance instead, eg. change `x!?` to `not x?`. For its use as a logic operator, change `x !? y` to `if x? then y else void`."
     case tag is \ASSIGN and prev.1 in LS_KEYWORDS and tokens[i-2].0 isnt \DOT
       carp "cannot assign to reserved word \"#{prev.1}\"" line
     case tag is \DOT and prev.0 is \] and tokens[i-2].0 is \[ and tokens[i-3].0 is \DOT
@@ -1136,7 +1138,7 @@ character = if JSON!? then uxxxx else ->
         unless fromNum?
           [fromNum, char] = decode token.1, lno
         [toNum, tochar] = decode tokens[i+1].1, lno
-        carp 'bad "to" in range' lno if toNum!? or char .^. tochar
+        carp 'bad "to" in range' lno if not toNum? or char .^. tochar
         byNum = 1
         if byp = tokens[i+2]?0 is \RANGE_BY
           carp 'bad "by" in range' tokens[i+2]2 unless byNum = +tokens[i+3]?1
