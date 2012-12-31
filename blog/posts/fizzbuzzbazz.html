@@ -9,7 +9,7 @@ author: <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahari
 
 <p><strong>I challenge you</strong> to implement FizzBuzzBazz in the language of your choice, and find the shortest correct program you can come up with. Post your solution in the comments below, or tweet with the hashtag #fizzbuzzbazz - I will update this page to show the shortest program submitted.
 
-<p class="note"><a href="#current-winner">Current winner</a>: 64 characters.</p>
+<p class="note"><a href="#current-winner">Current winner</a>: 62 characters.</p>
 
 <p>The rules of FizzBuzzBazz stand as follows:
 
@@ -224,14 +224,17 @@ author: <a href="https://twitter.com/#!/gkzahariev" class="author">George Zahari
 <p>Note that our solution is easily extensible as our rules are stated as data rather than imperative code.
 
 <a name="current-winner"></a>
-<h2>Current Winner - LiveScript - 64 Characters</h2>
+<h2>Current Winner - LiveScript - 62 Characters</h2>
+
+<p>Thank you to Ian Barfield for creating an even shorter solution in LiveScript!
 
 <div class="example-ls">
 <pre class="prettyprint lang-ls">
-[1 to 100]map ->[k+\zz for k,v of{Fi:3,Bu:5,Ba:7}|it%v&lt;1]*''||it
+[++x>?[k+\zz for k,v of{Fi:3,Bu:5,Ba:7}|x%v<1]*'' for x to 99]
 </pre>
 </div>
 
-<p>So far, the <a href="http://livescript.net">LiveScript</a> solution of <strong>64</strong> characters is the shortest working FizzBuzzBazz program. Think you can beat it in the language of your choice? Enter your attempt in the comments below, or tweet with the hashtag #fizzbuzzbazz. If a shorter program is found, I'll update this section with the new results.
+
+<p>So far, the <a href="http://livescript.net">LiveScript</a> solution of <strong>62</strong> characters is the shortest working FizzBuzzBazz program. Think you can beat it in the language of your choice? Enter your attempt in the comments below, or tweet with the hashtag #fizzbuzzbazz. If a shorter program is found, I'll update this section with the new results.
 
 For more information on LiveScript, check out its <a href="http://livescript.net">official site</a>. If you are interested in functional programming, you may want to check out <a href="functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls</a>.
