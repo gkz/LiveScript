@@ -1,5 +1,5 @@
 post-template = slurp \post-template.html
-test-name = -> (.match /.+\.html$/)
+test-name = (.match /.+\.html$/)
 
 task \build 'build blog posts' build-all
 
