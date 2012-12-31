@@ -4081,11 +4081,15 @@ x &&= 5  #=> 5
 x &&+= 3 #=> 8
 x ?*= 2
 x        #=> 8
+
+xs = [1 2]
+xs ++= [3]
+xs #=> [1 2 3]
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var x, ref$;
+var x, ref$, xs;
 x = 2;
 x += 2;
 x -= 1;
@@ -4109,6 +4113,10 @@ x && (x = 5);
 x && (x += 3);
 x == null && (x *= 2);
 x;
+
+xs = [1, 2];
+xs = xs.concat([3]);
+xs;
 </pre>
         </div>
       </div>
