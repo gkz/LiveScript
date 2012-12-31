@@ -52,13 +52,13 @@
         <li><a href="#oop">OOP</a></li> 
         <li class="divider">
         <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li> 
-        <li><a href="#changes">Changes from Coco</a></li> 
         <li><a href="#changelog">Changelog</a></li> 
         <li class="divider">
         <li><a href="#inspiration">Inspiration</a></li> 
         <li><a href="#name">Name</a></li> 
         <li><a href="#thanks">Thanks</a></li> 
         <li><a href="#contributing">Contributing Guide</a></li> 
+        <li><a href="#changes">Changes from Coco</a></li> 
       </ul>
     </div>
     <div class="span4 compiler">
@@ -5368,70 +5368,6 @@ f do
       <li>Change any non spaced identifier subtraction, eg. <code>a-b</code> to spaced <code>a - b</code>. <code>a-1</code> and <code>1-b</code> are still fine. This is because <code>a-b</code> is a valid identifier in LiveScript, equivalent to its camel case, <code>aB</code>.
       </ul>
     </div>
-    <div class="section" id="changes">
-      <a name="changes"></a>
-      <h2>Changes from Coco: Detail and Rationale</h2>
-      <ul>
-      <li>Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other projects are named LiveScript. Slake because lake was taken and lsake sounds bad. 
-      <li>Switched so that <code>==</code> compiles into <code>===</code>, and also for the negatives. Rationale: Most people would want to use the JavaScript <code>===</code> more often than <code>==</code> and less typing is better, also this makes things more similar to CoffeeScript which compiles <code>==</code> to <code>===</code> so there is less code for people to change coming from CoffeeScript. The compilation of <code>is</code> to <code>===</code> stays the same.
-      <li>Switched <code>in</code> and <code>of</code> so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: People have to change less of their CoffeeScript code, they're used to it, and using <code>in</code> for checking if a value is in an array just seems right, using <code>of</code> just feels weird.
-      <li>All bitwise operators except <code>~</code> have changed to be surrounded by dots, eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>. Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. 
-      <li><code>=></code>, the pipe operator using <code>_</code>, is removed. Free up => (for <code>then</code> alias), (<code>|</code> is used as an alias for case). Use other pipes (<code>|></code>) and partial application instead.
-      <li><code>|</code> is an alias for <code>case</code> (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
-      <li><code>=></code> is an alias for <code>then</code>. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with <code>|</code>, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
-      <li>Added <code>otherwise</code> and underscore <code>_</code> as a contextual keyword, when used after <code>case</code> or <code>|</code>, making that the default statement. Rationale: same as in Haskell (otherwise), underscore as in Scala - and shorter. It allows <code>| otherwise => 4 + 9</code>, which fits in with the rest of the structure.
-      <li>Added implicit <code>switch</code> after <code>-></code>, <code>~></code>, <code>:</code>, or an assign when they are followed by case tokens (either <code>case</code> or <code>|</code>). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
-      <li>Added list concat operator, <code>+++</code>. Eg. <code>xs +++ ys</code> is <code>xs.concat(ys)</code>. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
-      <li><code>^</code> is now an alias to <code>**</code>, the power operator. Rationale: it was available, and is used in other languages. 
-      <li>Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell. 
-      <li>Power operator is now right associative. eg. 2^2^3 == 2^(2^3) == 256. Rationale: follwing Haskell's and many other languages lead on this one.
-      <li>Added magic auto curried functions, defined using <code>--></code> and <code>~~></code>. With this you can do <code>times = (x, y) --> x * y</code>, <code>timesTwo = times 2</code>, <code>timesTwo 4 #=> 8</code>. If you call a curried function with no arguments, it calls itself as is, instead of returning itself (you can just reference it if you want it itself). Rationale: more Haskell like, useful functionality. 
-      <li>Added new function definition syntax, eg. <code>add(x, y) = x + y</code> == <code>add = (x, y) --> x + y</code>. You can also use it in object literals and class definitions eg. <code>add(x, y): x + y</code> == <code>add: (x, y) --> x + y</code>. You can also suppress return on both by starting with a bang, eg. <code>!nothingness(params) = true</code> will not return anything. As well you can have lexically bound this using <code>id@(param) = something</code> which is suger for <code>id = (param) ~~> something</code> (notice the wavy arrow). You can go crazy and do something like this if you wish: <code>@!func@! = something</code> which is a function assigned to this, which takes no parameters and returns nothing, while being lexically bound to this. All functions defined using this syntax are curried. Rationale: more beautiful, less typing, more Haskell like.
-      <li>Added <code>obj ::= obj2</code> as alias to <code>obj::&lt;&lt;&lt;obj2</code>. Rationale: seems to be the intuitive behavior expected, looks cleaner.
-      <li>Added <code>yes / on</code> as aliases to <code>true</code> and <code>no / off</code> as aliases to <code>false</code>. Added <code>undefined</code> as an alias to <code>void</code>, and aliased <code>isnt</code> to <code>is not</code>. Rationale: ease transition from CoffeeScript, which has all these features, to LiveScript. 
-      <li>Added <code>when</code> as alias to <code>case</code> (and <code>|</code>). Rationale: ease transition from CoffeeScript. 
-      <li>Allowed guards in loops using case statement, eg. <code>x for x from 1 to 10 when x % 2 is 0</code>. Rationale: ease transition from CoffeeScript and have guards in comprehensions like other languages (Haskell).
-      <li>Added the use of <code>else</code> for default in switch. Rationale: ease transition from CoffeeScript.
-      <li>Added <code>loop</code> as alias for <code>while true</code>. Rationale: ease transition from CoffeeScript. 
-      <li>Added pipe operator <code>|></code> ala F#, <code>val |> func</code> is the same as <code>func(val)</code>. Very useful in combination with curried functions. Rationale: useful, as in F#.
-      <li>Added backwards pipe operator <code><|</code> ala F#: <code>f <| x</code> is the same as <code>f x</code>. This is more useful than it looks, and can help you avoid parens. For instance for a definition of toCase that returns a function that either uppercases or lowercases a word, <code>toCase \up <| \hello</code> rather than <code>toCase(\up) \hello</code>. Rationale: useful as per above, as in F#.
-      <li>Added function composition operators ala F#. <code>&gt;&gt;</code> and <code>&lt;&lt;</code>. <code>(f &gt;&gt; g) x</code> is <code>g(f(x))</code> and <code>(f &lt;&lt; g) x</code> is <code>f(g(x))</code>. Rationale: very useful, especially with curried functions. As in F# (and Haskell, there it's the dot operator).
-      <li>Added <code>%%</code> operator (and corresponding <code>%%=</code> operator), <code>x %% y</code> is <code>(x % y + y) % y</code>. Eg. <code>-3 % 4 == -3; -3 %% 4 == 1</code>. Rationale: this is how the <code>%</code> op behaves in other languages such as Python and Ruby.
-      <li>Changed number base format from <code>7r4</code> to <code>7~4</code>. This is because using <code>r</code> causes ambiguity with number comments. For instance, <code>36rpm</code> - is that the number <code>36</code> with the number comment <code>rpm</code> or is it <code>pm</code> base <code>36</code> (922). Also now accept any number as radix, so that a better error can be thrown when that radix is not 2-36. Rationale: fixes ambiguity.
-      <li>Allowed expression in range syntax, eg. <code>[x to y/2]</code> instead of just number literals. This has the side effect of removing naked ranges, eg. <code>2 to 5</code> without enclosing brackets (for loops remain unchanged). Rationale: expressions in ranges are useful, much more than naked ranges which have really limited use. Also closer to CoffeeScript, easing transition again. 
-      <li>Changed CLI to bare compilation so that defined variables are attached to global scope. Improved repl to continue when lines end with <code>-></code>, <code>~></code>, or <code>=</code>
-      <li>Added list comprehensions (eg. <code>[x for x in list when x is \something]</code>) and removed postfix loops (eg. <code>something x for x in list</code>). Comprehensions always return a list. Nested list comprehensions behave properly, ie. the last for is the inner most loop. Rationale: following Haskell and Python. More consistent behavior. Easier to deal with in your head. More intuitive. 
-      <li>Changed JS literals to use two backticks, eg. <code>``js code here``</code> instead of <code>`js code here`</code>. Rationale: it was seldom needed; frees up backticks for infix function application.
-      <li>Add infix function application, eg. <code>3 `add` 2</code>. Rationale: as in Haskell. This allows for partial application of their second argument, like operators eg. <code>(`times` 2)</code>.
-      <li>Changed unary clone operator from <code>^</code> to <code>^^</code>. Rationale: disambiguate with partial application of power operator.
-      <li>Added partial application of operators. Eg. <code>(+ 2)</code> returns a function which adds 2 to its argument. Also allowed is simply <code>(*)</code> which is a function which multiplies its two arguments. <code>(+x)</code> and <code>(-x)</code> still mean the application of those unary operators - the operator must be spaced to be the partial application of that operator. Using the length star <code>*</code> is no longer allowed within parens (sometimes used when setting dynamic keys), due to ambiguity with the partially applied multiplication operator. Rationale: awesome. As in Haskell.
-      <li>Added unary operators as functions. Eg. you can use <code>(not)</code> as a function, compose it, etc. Rationale: very useful, as in Haskell.
-      <li>Added <code>.</code> as alias to <code>&lt;&lt;</code> in composing functions. This disallows property access in the style of <code>x . y</code>. Rationale: as in Haskell. Dually spaced property access should never be used anyway. 
-      <li>Added object comprehensions. Eg. <code>{[key, val * 2] for key, val of obj}</code> would return an object with all the values double of the original. The first part of the array literal gets translated into the key, the second part into the value. Rationale: very useful when dealing with objects. Can now map and filter objects back into objects.
-      <li>Dashes are now supported in identifiers, they get converted into camel case. Eg. <code>get-room</code> is equivalent to <code>getRoom</code>, <code>encode-URI</code> is <code>encodeURI</code>. Rationale: enable different styles which other people may enjoy. As in the lisp family of languages. 
-      <li>Added implicit call/lookup eg. <code>(.length)</code> is equivalent to <code>-> it.length</code> and <code>(.join \*)</code> is equivalent to <code>-> it.join \*</code>. <code>(obj.)</code> is <code>-> obj[it]</code>. Rationale: useful when mapping, filtering, etc. 
-      <li>Added infix <code>with</code> operator ("cloneport"). Eg. <code>personA = personB with name: \alice</code> is equivalent to <code>personA = ^^personB &lt;&lt;&lt; name: \alice</code>. Ie. it clones the head and imports the tail into that new object. <code>personB</code> is unmodified. Rationale: really nice may to create new objects out of old ones.
-      <li>Add partial application, <code>_</code> is the placeholder. Eg. <code>f = add-three-numbers 1, _, 3</code> then <code>f 2 #=> 6</code>. Can be multiple times, and like curried functions if called with no args will invoke, allowing use of default args. Rationale: really useful, for when function args aren't in a nice order so you can use a curried version.
-      <li>Changed backcall <code>&lt;-</code> placeholder to underscore <code>_</code>. Rationale: fit in with partial application placeholder.
-      <li>Changed <code>arguments</code> alias to <code>&</code>, removed <code>@@</code> as that alias. Eg. <code>-> &amp;0 + &amp;1</code>. Rationale: shorter - less typing.
-      <li>Added <code>-d, --prelude</code> option for automatically adding prelude.ls. Rationale: make it easier to use prelude.ls.
-      <li>Added <code>-k, --const</code> option for compiling as if all variables as constants. Rationale: some people coming from languages with all immutable values may find this nice.
-      <li>Allowed arbitrary expressions in slicing syntax, eg. <code>list[1 to x]</code>. Rationale: useful.
-      <li>Changed so that constructors are inherited. Rationale: useful, and more like in CoffeeScript.
-      <li>Allowed empty class definitions, ie. with no block. Rationale: useful and more like CoffeeScript.
-      <li>Bound methods are bound to the instance, not the class. Rationale: seems pretty useless to be bound to the class, so this is more useful. Also more like CoffeeScript.
-      <li>Added function keyword arguments like in python. Rationale: useful.
-      <li>Added a exclusive or <code>xor</code> operator. Rationale: logic completeness.
-      <li>Binary logic is callable. Ratioanle: useful.
-      <li>Allow splicing like in CoffeeScript. Rationale: easier transition, useful.
-      <li>Overloaded equals when using regex to mean exec/test. Rationale: shorter.
-      <li>Static functions are inherited. Rationale: as in CoffeeScript - ease transition.
-      <li>Removed the constructor shorthand. Rationale: rarely useful, use it for cascade instead.
-      <li>Changed cascade op from <code>&</code> to <code>..</code>. Rationale: like in other languages.
-      <li>Added match statement and deep compare. Rationale: experimental, will see if good.
-      <li>For changes after 1.0.0, see the <a href="#changelog">changelog</a> section.
-      </ul>
-    </div>
     <div id="changelog" class="section">
       <a name="changelog"></a>
       <h2>Changelog</h2>
@@ -5691,6 +5627,71 @@ delete! x.y
       <p>Fork <a href="https://github.com/gkz/LiveScript">LiveScript</a> and make your changes. Always write tests first (in the <code>/test</code> directory).
       <p>Run <code>bin/slake</code> to see available commands. Always make sure you can <code>bin/slake build:full</code> - ie. build the compiler itself. Useful: <code>git checkout -- lib && bin/slake build:full</code>: cleans out your <code>lib</code> and compiles twice and tests. Only send a pull requests if all tests pass. If you are hacking on the grammar, you will need to <code>git checkout -- lib && bin/slake build && bin/slake build:parser && bin/slake test</code>. Once all tests pass, rewrite any of the compiler that needs rewriting, and then <code>bin/slake build:full</code>.
       <p>Don't submit patches with a built browser file (<code>extras/livescript.js</code>) created by <code>bin/slake build:browser</code>. This file is only built before releasing a new version. 
+    </div>
+    <div class="section" id="changes">
+      <a name="changes"></a>
+      <h2>Changes from Coco: Detail and Rationale</h2>
+      <p>This section is has not been updated since 1.0.x
+      <ul>
+      <li>Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other projects are named LiveScript. Slake because lake was taken and lsake sounds bad. 
+      <li>Switched so that <code>==</code> compiles into <code>===</code>, and also for the negatives. Rationale: Most people would want to use the JavaScript <code>===</code> more often than <code>==</code> and less typing is better, also this makes things more similar to CoffeeScript which compiles <code>==</code> to <code>===</code> so there is less code for people to change coming from CoffeeScript. The compilation of <code>is</code> to <code>===</code> stays the same.
+      <li>Switched <code>in</code> and <code>of</code> so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: People have to change less of their CoffeeScript code, they're used to it, and using <code>in</code> for checking if a value is in an array just seems right, using <code>of</code> just feels weird.
+      <li>All bitwise operators except <code>~</code> have changed to be surrounded by dots, eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>. Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. 
+      <li><code>=></code>, the pipe operator using <code>_</code>, is removed. Free up => (for <code>then</code> alias), (<code>|</code> is used as an alias for case). Use other pipes (<code>|></code>) and partial application instead.
+      <li><code>|</code> is an alias for <code>case</code> (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
+      <li><code>=></code> is an alias for <code>then</code>. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with <code>|</code>, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
+      <li>Added <code>otherwise</code> and underscore <code>_</code> as a contextual keyword, when used after <code>case</code> or <code>|</code>, making that the default statement. Rationale: same as in Haskell (otherwise), underscore as in Scala - and shorter. It allows <code>| otherwise => 4 + 9</code>, which fits in with the rest of the structure.
+      <li>Added implicit <code>switch</code> after <code>-></code>, <code>~></code>, <code>:</code>, or an assign when they are followed by case tokens (either <code>case</code> or <code>|</code>). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
+      <li>Added list concat operator, <code>+++</code>. Eg. <code>xs +++ ys</code> is <code>xs.concat(ys)</code>. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
+      <li><code>^</code> is now an alias to <code>**</code>, the power operator. Rationale: it was available, and is used in other languages. 
+      <li>Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell. 
+      <li>Power operator is now right associative. eg. 2^2^3 == 2^(2^3) == 256. Rationale: follwing Haskell's and many other languages lead on this one.
+      <li>Added magic auto curried functions, defined using <code>--></code> and <code>~~></code>. With this you can do <code>times = (x, y) --> x * y</code>, <code>timesTwo = times 2</code>, <code>timesTwo 4 #=> 8</code>. If you call a curried function with no arguments, it calls itself as is, instead of returning itself (you can just reference it if you want it itself). Rationale: more Haskell like, useful functionality. 
+      <li>Added new function definition syntax, eg. <code>add(x, y) = x + y</code> == <code>add = (x, y) --> x + y</code>. You can also use it in object literals and class definitions eg. <code>add(x, y): x + y</code> == <code>add: (x, y) --> x + y</code>. You can also suppress return on both by starting with a bang, eg. <code>!nothingness(params) = true</code> will not return anything. As well you can have lexically bound this using <code>id@(param) = something</code> which is suger for <code>id = (param) ~~> something</code> (notice the wavy arrow). You can go crazy and do something like this if you wish: <code>@!func@! = something</code> which is a function assigned to this, which takes no parameters and returns nothing, while being lexically bound to this. All functions defined using this syntax are curried. Rationale: more beautiful, less typing, more Haskell like.
+      <li>Added <code>obj ::= obj2</code> as alias to <code>obj::&lt;&lt;&lt;obj2</code>. Rationale: seems to be the intuitive behavior expected, looks cleaner.
+      <li>Added <code>yes / on</code> as aliases to <code>true</code> and <code>no / off</code> as aliases to <code>false</code>. Added <code>undefined</code> as an alias to <code>void</code>, and aliased <code>isnt</code> to <code>is not</code>. Rationale: ease transition from CoffeeScript, which has all these features, to LiveScript. 
+      <li>Added <code>when</code> as alias to <code>case</code> (and <code>|</code>). Rationale: ease transition from CoffeeScript. 
+      <li>Allowed guards in loops using case statement, eg. <code>x for x from 1 to 10 when x % 2 is 0</code>. Rationale: ease transition from CoffeeScript and have guards in comprehensions like other languages (Haskell).
+      <li>Added the use of <code>else</code> for default in switch. Rationale: ease transition from CoffeeScript.
+      <li>Added <code>loop</code> as alias for <code>while true</code>. Rationale: ease transition from CoffeeScript. 
+      <li>Added pipe operator <code>|></code> ala F#, <code>val |> func</code> is the same as <code>func(val)</code>. Very useful in combination with curried functions. Rationale: useful, as in F#.
+      <li>Added backwards pipe operator <code><|</code> ala F#: <code>f <| x</code> is the same as <code>f x</code>. This is more useful than it looks, and can help you avoid parens. For instance for a definition of toCase that returns a function that either uppercases or lowercases a word, <code>toCase \up <| \hello</code> rather than <code>toCase(\up) \hello</code>. Rationale: useful as per above, as in F#.
+      <li>Added function composition operators ala F#. <code>&gt;&gt;</code> and <code>&lt;&lt;</code>. <code>(f &gt;&gt; g) x</code> is <code>g(f(x))</code> and <code>(f &lt;&lt; g) x</code> is <code>f(g(x))</code>. Rationale: very useful, especially with curried functions. As in F# (and Haskell, there it's the dot operator).
+      <li>Added <code>%%</code> operator (and corresponding <code>%%=</code> operator), <code>x %% y</code> is <code>(x % y + y) % y</code>. Eg. <code>-3 % 4 == -3; -3 %% 4 == 1</code>. Rationale: this is how the <code>%</code> op behaves in other languages such as Python and Ruby.
+      <li>Changed number base format from <code>7r4</code> to <code>7~4</code>. This is because using <code>r</code> causes ambiguity with number comments. For instance, <code>36rpm</code> - is that the number <code>36</code> with the number comment <code>rpm</code> or is it <code>pm</code> base <code>36</code> (922). Also now accept any number as radix, so that a better error can be thrown when that radix is not 2-36. Rationale: fixes ambiguity.
+      <li>Allowed expression in range syntax, eg. <code>[x to y/2]</code> instead of just number literals. This has the side effect of removing naked ranges, eg. <code>2 to 5</code> without enclosing brackets (for loops remain unchanged). Rationale: expressions in ranges are useful, much more than naked ranges which have really limited use. Also closer to CoffeeScript, easing transition again. 
+      <li>Changed CLI to bare compilation so that defined variables are attached to global scope. Improved repl to continue when lines end with <code>-></code>, <code>~></code>, or <code>=</code>
+      <li>Added list comprehensions (eg. <code>[x for x in list when x is \something]</code>) and removed postfix loops (eg. <code>something x for x in list</code>). Comprehensions always return a list. Nested list comprehensions behave properly, ie. the last for is the inner most loop. Rationale: following Haskell and Python. More consistent behavior. Easier to deal with in your head. More intuitive. 
+      <li>Changed JS literals to use two backticks, eg. <code>``js code here``</code> instead of <code>`js code here`</code>. Rationale: it was seldom needed; frees up backticks for infix function application.
+      <li>Add infix function application, eg. <code>3 `add` 2</code>. Rationale: as in Haskell. This allows for partial application of their second argument, like operators eg. <code>(`times` 2)</code>.
+      <li>Changed unary clone operator from <code>^</code> to <code>^^</code>. Rationale: disambiguate with partial application of power operator.
+      <li>Added partial application of operators. Eg. <code>(+ 2)</code> returns a function which adds 2 to its argument. Also allowed is simply <code>(*)</code> which is a function which multiplies its two arguments. <code>(+x)</code> and <code>(-x)</code> still mean the application of those unary operators - the operator must be spaced to be the partial application of that operator. Using the length star <code>*</code> is no longer allowed within parens (sometimes used when setting dynamic keys), due to ambiguity with the partially applied multiplication operator. Rationale: awesome. As in Haskell.
+      <li>Added unary operators as functions. Eg. you can use <code>(not)</code> as a function, compose it, etc. Rationale: very useful, as in Haskell.
+      <li>Added <code>.</code> as alias to <code>&lt;&lt;</code> in composing functions. This disallows property access in the style of <code>x . y</code>. Rationale: as in Haskell. Dually spaced property access should never be used anyway. 
+      <li>Added object comprehensions. Eg. <code>{[key, val * 2] for key, val of obj}</code> would return an object with all the values double of the original. The first part of the array literal gets translated into the key, the second part into the value. Rationale: very useful when dealing with objects. Can now map and filter objects back into objects.
+      <li>Dashes are now supported in identifiers, they get converted into camel case. Eg. <code>get-room</code> is equivalent to <code>getRoom</code>, <code>encode-URI</code> is <code>encodeURI</code>. Rationale: enable different styles which other people may enjoy. As in the lisp family of languages. 
+      <li>Added implicit call/lookup eg. <code>(.length)</code> is equivalent to <code>-> it.length</code> and <code>(.join \*)</code> is equivalent to <code>-> it.join \*</code>. <code>(obj.)</code> is <code>-> obj[it]</code>. Rationale: useful when mapping, filtering, etc. 
+      <li>Added infix <code>with</code> operator ("cloneport"). Eg. <code>personA = personB with name: \alice</code> is equivalent to <code>personA = ^^personB &lt;&lt;&lt; name: \alice</code>. Ie. it clones the head and imports the tail into that new object. <code>personB</code> is unmodified. Rationale: really nice may to create new objects out of old ones.
+      <li>Add partial application, <code>_</code> is the placeholder. Eg. <code>f = add-three-numbers 1, _, 3</code> then <code>f 2 #=> 6</code>. Can be multiple times, and like curried functions if called with no args will invoke, allowing use of default args. Rationale: really useful, for when function args aren't in a nice order so you can use a curried version.
+      <li>Changed backcall <code>&lt;-</code> placeholder to underscore <code>_</code>. Rationale: fit in with partial application placeholder.
+      <li>Changed <code>arguments</code> alias to <code>&</code>, removed <code>@@</code> as that alias. Eg. <code>-> &amp;0 + &amp;1</code>. Rationale: shorter - less typing.
+      <li>Added <code>-d, --prelude</code> option for automatically adding prelude.ls. Rationale: make it easier to use prelude.ls.
+      <li>Added <code>-k, --const</code> option for compiling as if all variables as constants. Rationale: some people coming from languages with all immutable values may find this nice.
+      <li>Allowed arbitrary expressions in slicing syntax, eg. <code>list[1 to x]</code>. Rationale: useful.
+      <li>Changed so that constructors are inherited. Rationale: useful, and more like in CoffeeScript.
+      <li>Allowed empty class definitions, ie. with no block. Rationale: useful and more like CoffeeScript.
+      <li>Bound methods are bound to the instance, not the class. Rationale: seems pretty useless to be bound to the class, so this is more useful. Also more like CoffeeScript.
+      <li>Added function keyword arguments like in python. Rationale: useful.
+      <li>Added a exclusive or <code>xor</code> operator. Rationale: logic completeness.
+      <li>Binary logic is callable. Ratioanle: useful.
+      <li>Allow splicing like in CoffeeScript. Rationale: easier transition, useful.
+      <li>Overloaded equals when using regex to mean exec/test. Rationale: shorter.
+      <li>Static functions are inherited. Rationale: as in CoffeeScript - ease transition.
+      <li>Removed the constructor shorthand. Rationale: rarely useful, use it for cascade instead.
+      <li>Changed cascade op from <code>&</code> to <code>..</code>. Rationale: like in other languages.
+      <li>Added match statement and deep compare. Rationale: experimental, will see if good.
+      <li>For changes after 1.0.0, see the <a href="#changelog">changelog</a> section.
+      </ul>
     </div>
   </div>
 </div>
