@@ -42,26 +42,29 @@
         </div>
         
 
-<p>LiveScript, like any other language, has a lot of tips and tricks and hidden syntactic sugars
 
-<p>We'll see in this blog post how you can take advantages of them !
+<p class="note">The following is a guest post by Vendethial. You can submit a guest post as well, just send a pull request.
+
+<p>LiveScript has a lot of tips and tricks which you may not know about.
+
+<p>We'll see in this blog post how you can take advantages of them!
 
 <h3>Operator Overloading</h4>
 
-<p>LiveScript offers some basic operator overloading with arrays and strings :
+<p>LiveScript offers some basic operator overloading with arrays and strings:
 
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
 # when the left one is an array literal
-['a' 'b'] * 2 #array repetition
+['a' 'b'] * 2 # array repetition
 # when the right one is a string literal
-<[foo bar]> * ', ' #array joining
+&lt;[ foo bar ]&gt; * ', ' # array joining
 
 # or when the left one is a string
 y = 2
-'z' * y #string repetition
-words = text / ' ' #string division
+'z' * y # string repetition
+words = text / ' ' # string division
 
 # or even when the right one is either a string or a regexp
 unspaced = text - /\s+/
@@ -93,8 +96,8 @@ function repeatString$(str, n){
 
 <h3>Heregex dynamic flagging</h3>
 
-<p>For Heregexes, you can dynamically flag them with the ?
-<p>In this case, the last interpolation will be used
+<p>You can dynamically flag Heregexes with ?
+<p>In this case, the last interpolation will be used:
 
 <div class="example">
   <div class="example-ls">
@@ -125,9 +128,9 @@ paul = new
   @name = 'paul'
   @age = 25
 
-# LiveScript got real object comprehensions
+# LiveScript has real object comprehensions
 flip = (obj) -> new
-  for own k, v of obj then @[v] = k 
+  for own k, v of obj then @[v] = k
 </pre>
   </div>
   <div class="example-js">
@@ -153,9 +156,9 @@ flip = function(obj){
 
 <h3>Dynamic keys</h3>
 
-<p>JavaScript doesn't allow dynamic keys, because they're not quoted as in JSON
+<p>JavaScript doesn't allow dynamic keys, because they're not quoted as in JSON.
 
-<p>With LiveScript, you can use parenthesis to get dynamic properties
+<p>With LiveScript, you can use parenthesis to get dynamic properties:
 
 <div class="example">
   <div class="example-ls">
@@ -164,7 +167,7 @@ foo = 'key'
 bar = {(foo): 5, "dyna#foo": 6} #=> {'key': 5, 'dynakey': 6}
 
 # in destructuring
-{(+* .>>. 1): middle} = [1 to 7] #middle = 4
+{(+* .>>. 1): middle} = [1 to 7] # middle = 4
 </pre>
   </div>
   <div class="example-js">
@@ -180,12 +183,12 @@ middle = [1, 2, 3, 4, 5, 6, 7][+[1, 2, 3, 4, 5, 6, 7].length >> 1];
 
 <h3>Destructuring defaults</h3>
 
-<p>When you do a destructuring, you may want default values. With LiveScript, you can use any logic operator, the existence operator (aliased as <code>=</code>), and even chain them like in any other situation :
+<p>When you destructure you may want default values. With LiveScript, you can use any logic operator, the existence operator (aliased as <code>=</code>), and even chain them like in any other situation:
 
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
-{username ? 'root', password || '', secure && 'https' || 'http'} = config<[USERNAME PASSWORD SECURE]>
+{username ? 'root', password || '', secure && 'https' || 'http'} = config<[ USERNAME PASSWORD SECURE ]>
 </pre>
   </div>
   <div class="example-js">
@@ -200,19 +203,19 @@ secure = ref$.secure && 'https' || 'http';
 
 <h3>Extended parameters</h3>
 
-<p>In LiveScript, parameters accept much more than simple literals. You can assign properties, but also do more complex things, like semiautovivification
+<p>In LiveScript, parameters accept much more than simple literals. You can assign properties, but also do more complex things, like semiautovivification:
 
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
 class Person
-  #defaults @name to [], and assigns the first element
+  # defaults @name to [], and assigns the first element
   set-first-name: (@[]names.0) ->
   
-  #defaults @name to [], and adds the element (* being the array's length)
+  # defaults @name to [], and adds the element (* being the array's length)
   add-name: (@[]names[*]) ->
   
-  #defaults @hair to {}, and assigns color
+  # defaults @hair to {}, and assigns color
   set-hair-color: (@{}hair.color) ->
 
 
@@ -270,7 +273,7 @@ p.names;
 
 <h3>Array and Object Splatting</h3>
 
-<p>Array and Object can be sliced in pretty much any way. You probably know the <code>a[0 1]</code> and we saw <code>a<[foo bar]></code>, but you can do much more. For example, you can use splats
+<p>Array and Object can be sliced in pretty much any way. You probably know the <code>a[0 1]</code>, and we saw <code>a<[foo bar]></code>, but you can do much more. For example, you can use splats:
 
 <div class="example">
   <div class="example-ls">
@@ -300,7 +303,7 @@ function import$(obj, src){
 
 <h3>Low-precedence backpipe and do</h3>
 
-<p>The low-precedence backpipe can be used to function evaluation, not only to chain arguments without parenthesis but much more, it can (for example) allow you to use do
+<p>The low-precedence backpipe can be used for function evaluation, not only to chain arguments without parenthesis but much more, it can (for example) allow you to use do:
 
 <div class="example">
   <div class="example-ls">
@@ -368,7 +371,7 @@ promises = {
 
 <h3>Thisplat</h3>
 
-<p>You often need to defer a call to a function, keeping the same context and arguments. You can use the thisplat for that
+<p>You often need to defer a call to a function, keeping the same context and arguments. You can use the thisplat for that:
 
 <div class="example">
   <div class="example-ls">
@@ -388,12 +391,12 @@ call = function(){
 
 <h3>Labeling</h3>
 
-<p>If you need to use labels, you can use them with a block or an expression
+<p>If you need to use labels, you can use them with a block or an expression:
 
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
-#labeling a function gives it a name
+# labeling a function gives it a name
 :refresh let
     wait '10s' !->
       console.log 'timeout !'
@@ -445,14 +448,14 @@ serie: for (i$ = 0; i$ <= 100; ++i$) {
 [a, b, c, ,, d] = foo
 [the, ..., end] = my-friend
 
-a = (, b) -> b #b is a's second argument
+a = (, b) -> b # b is a's second argument
 
 
 
 
 # forces the closure's argument list to be empty
 test 'it works' (...) ->
- it #it wasn't shadowed
+ it # it wasn't shadowed
 </pre>
   </div>
   <div class="example-js">
