@@ -716,6 +716,8 @@ false;
 
       <p><code>void</code> at the top level compiles to nothing (for use as a placeholder) - it must be used as a value to compile.
 
+      <p class="note">The use of <code>undefined</code> as an alias to <code>void</code> is deprecated and will be removed in the next major LiveScript release. Please use <code>void</code> instead.
+
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
@@ -1823,6 +1825,8 @@ function compose$(fs){
 
       <p>You can concatenate two lists together:
 
+      <p class="note">The old concatenate operator, <code>+++</code>, is deprecated and will be removed in the next major LiveScript release, please use <code>++</code> instead.
+
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
@@ -1961,6 +1965,8 @@ string += 'yeah';
       <h3>Existence/Inexistence</h3>
 
       <p>The <code>?</code> operator can be used in a variety of context to check for existence. The <code>!?</code> is its companion - checking for inexistence.
+
+      <p class="note">The <code>!?</code> operator is deprecated and will be removed in the next major LiveScript release. When used postfix, please negate the existence operator instead, eg. change <code>x!?</code> to <code>not x?</code>. If used as a logic operator, please use an if statement and the existence operator instead, eg. change <code>x !? f!</code> to <code>f! if x?</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -2930,6 +2936,8 @@ x;
       </div>
 
       <p><code>where</code> is like <code>let</code>, but defined after the body. It also is slightly different in that it allows for nested variable declarations.
+
+      <p class="note">The <code>where</code> statement is deprecated and will be removed in the next major LiveScript release. Please use <code>let</code> and/or local variables instead.
 
       <div class="example">
         <div class="example-ls">
@@ -4153,7 +4161,7 @@ x = 0
 
       <p>Compound assignment:
 
-      <p>(<code>?</code>, <code>!?</code>, <code>||</code>, or <code>&&</code> can prefix any compound assign.)
+      <p>(<code>?</code>, <code>||</code>, or <code>&&</code> can prefix any compound assign.)
 
       <div class="example">
         <div class="example-ls">
@@ -4173,10 +4181,8 @@ x ^= 2   #=> 16
 
 x ?= 10
 x        #=> 16
-x !?= 8
-x        #=> 8
 
-x ||= 5  #=> 8
+x ||= 5  #=> 16
 x &&= 5  #=> 5
 
 x &&+= 3 #=> 8
@@ -4204,8 +4210,6 @@ x = Math.pow(x, 2);
 x = Math.pow(x, 2);
 
 x == null && (x = 10);
-x;
-x != null && (x = 8);
 x;
 
 x || (x = 5);
@@ -4245,7 +4249,7 @@ y = -~-~y;
         </div>
       </div>
 
-      <p>Assignment defaults - you can use <code>||</code>, <code>&&</code>, <code>?</code>, and <code>!?</code>.
+      <p>Assignment defaults - you can use <code>||</code>, <code>&&</code>, and <code>?</code>.
 
       <p>You can use <code>=</code> instead of <code>?</code> in function parameters.
 
@@ -5483,7 +5487,7 @@ f do
         <li>Deprecated the <code>+++</code> array concatenation operator, please use <code>++</code> instead. <code>+++</code> will be removed in the next major LiveScript release.
         <li>Deprecated the <code>where</code> statement. Please use <code>let</code> and/or local variables instead. <code>where</code> will be removed in the next major LiveScript release.
         <li>Deprecated <code>undefined</code> as an alias to <code>void</code>. Please use <code>void</code> instead. <code>undefined</code> will be removed in the next major LiveScript release.
-        <li>Deprecated the <code>!?</code> inexistence operator. When used postfix, please negate the existence operator instead, eg. change <code>x!?</code> to <code>not x?</code>. If used as a logic operator, please use and if statement and the existence operator instead, eg. change <code>x !? f!</code> to <code>f! if x?</code>. <code>!?</code> will be removed in the next major LiveScript release.
+        <li>Deprecated the <code>!?</code> inexistence operator. When used postfix, please negate the existence operator instead, eg. change <code>x!?</code> to <code>not x?</code>. If used as a logic operator, please use an if statement and the existence operator instead, eg. change <code>x !? f!</code> to <code>f! if x?</code>. <code>!?</code> will be removed in the next major LiveScript release.
         <li>Please also remember that the short function syntax is also currently deprecated and will be removed in the next major LiveScript release. Eg. <code>f(x) = ...</code> type functions - please use the long arrow to defined curried functions instead, eg. <code>f = (x) --> ...</code>.
       </ul>
       <h3>1.1.0</h3>
