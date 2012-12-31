@@ -157,12 +157,18 @@ takeThree([3, 4, 5, 6, 7, 8]);
 
 lastThree = compose$([reverse, takeThree, reverse]);
 lastThree([1, 2, 3, 4, 5, 6, 7, 8]);
-function curry$(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length && arguments.length ?
-      curry$.call(this, f, params) : f.apply(this, params);
-  } : f;
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
 }
 function compose$(fs){
   return function(){
@@ -303,12 +309,18 @@ fold1(curry$(function(x$, y$){
 map(function(it){
   return it.age;
 }, table2));
-function curry$(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length && arguments.length ?
-      curry$.call(this, f, params) : f.apply(this, params);
-  } : f;
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
 }
 </pre>
         </div>
@@ -1222,9 +1234,7 @@ var i$;
 [1, 2, 3, 4];
 [1, 3, 5, 7, 9];
 [4, 3, 2, 1];
-for (i$ = 0; i$ <= 5; ++i$) {
-  i$;
-}
+[0, 1, 2, 3, 4, 5];
 ["A", "B", "C", "D"];
 </pre>
         </div>
@@ -2201,12 +2211,18 @@ not$(true);
 (function(it){
   return it == 1 || it == 2 || it == 3;
 })(2);
-function curry$(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length && arguments.length ?
-      curry$.call(this, f, params) : f.apply(this, params);
-  } : f;
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
 }
 function not$(x){ return !x; }
 </pre>
@@ -2761,12 +2777,18 @@ times = curry$(function(x, y){
 times(2, 3);
 double = times(2);
 double(5);
-function curry$(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length && arguments.length ?
-      curry$.call(this, f, params) : f.apply(this, params);
-  } : f;
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
 }
 </pre>
         </div>
@@ -3141,19 +3163,21 @@ filter-nums (< 3) #=> [1,2]
   <div class="example-js">
 <pre class="prettyprint lang-js">
 var filterNums, slice$ = [].slice;
-filterNums = partialize$(filter, [void 8, [1, 2, 3, 4, 5]], [0]);
+filterNums = partialize$.apply(this, [filter, [void 8, [1, 2, 3, 4, 5]], [0]]);
 filterNums(even);
 filterNums(odd);
 filterNums((function(it){
   return it < 3;
 }));
 function partialize$(f, args, where){
+  var context = this;
   return function(){
     var params = slice$.call(arguments), i,
         len = params.length, wlen = where.length,
         ta = args ? args.concat() : [], tw = where ? where.concat() : [];
     for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
-    return len < wlen && len ? partialize$(f, ta, tw) : f.apply(this, ta);
+    return len < wlen && len ?
+      partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
   };
 }
 </pre>
@@ -3176,32 +3200,36 @@ function partialize$(f, args, where){
   <div class="example-js">
 <pre class="prettyprint lang-js">
 var slice$ = [].slice;
-partialize$(_.reduce, [
-  void 8, curry$(function(x$, y$){
-    return x$ + y$;
-  }), 0
-], [0])(
-partialize$(_.map, [
-  void 8, (function(it){
-    return it * 2;
-  })
-], [0])(
+partialize$.apply(_, [
+  _.reduce, [ void 8, curry$(function(x$, y$){ return x$ + y$; }), 0 ], [0]
+])(
+partialize$.apply(_, [
+  _.map, [ void 8, (function(it){ return it * 2; }) ], [0]
+])(
 [1, 2, 3]));
 function partialize$(f, args, where){
+  var context = this;
   return function(){
     var params = slice$.call(arguments), i,
         len = params.length, wlen = where.length,
         ta = args ? args.concat() : [], tw = where ? where.concat() : [];
     for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
-    return len < wlen && len ? partialize$(f, ta, tw) : f.apply(this, ta);
+    return len < wlen && len ?
+      partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
   };
 }
-function curry$(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length && arguments.length ?
-      curry$.call(this, f, params) : f.apply(this, params);
-  } : f;
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
 }
 </pre>
         </div>
@@ -5813,13 +5841,13 @@ delete! x.y
 <script src="bootstrap/js/bootstrap-scrollspy.js"></script>
 
 <script src="google-code-prettify/prettify.js"></script>
-<script src="lang-ls-1.1.0.js"></script>
+<script src="lang-ls-1.1.1.js"></script>
 
 <script src="underscore-min.js"></script>
 <script src="prelude-browser-min-0.6.0.js"></script>
 <script src="site.js"></script>
 
-<script src="livescript-1.1.0.js"></script>
+<script src="livescript-1.1.1.js"></script>
 <script>
   (document.getElementById("email") || {}).href = "mailto:z" + "@" + "georgezahariev.com";
 </script>
