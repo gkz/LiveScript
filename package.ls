@@ -33,6 +33,10 @@ bin  :
   lsc: \./bin/lsc
   slake: \./bin/slake
 
+scripts:
+  pretest: "bin/slake build && bin/slake build:parser && bin/slake build"
+  test: "bin/slake test"
+
 preferGlobal: true
 
 repository: type: \git, url: \git://github.com/gkz/LiveScript.git
