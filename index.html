@@ -2671,6 +2671,65 @@ f(1, 2, 3, 4);
         </div>
       </div>
 
+      <a name="params-unary-ops"></a>
+
+      <p>You can even use unary operators in your parameters. You could use <code>+</code> and <code>!!</code> to cast your parameters to a number or boolean respectively, or use the clone operator <code>^^</code> to make sure any changes you make to the object are not reflected in the original. 
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+f = (!!x) -> x
+f 'truthy string' #=> true
+
+
+
+
+g = (+x) -> x
+g '' #=> 0
+
+
+
+
+obj = {prop: 1}
+h = (^^x) ->
+  x.prop = 99
+  x
+h obj
+obj.prop #=> 1
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var f, g, obj, h;
+f = function(x){
+  x = !!x;
+  return x;
+};
+f('truthy string');
+
+g = function(x){
+  x = +x;
+  return x;
+};
+g('');
+
+obj = { prop: 1 };
+h = function(x){
+  x = clone$(x);
+  x.prop = 99;
+  return x;
+};
+h(obj);
+obj.prop;
+
+function clone$(it){
+  function fun(){} fun.prototype = it;
+  return new fun;
+}
+</pre>
+        </div>
+      </div>
 
       <h3>Currying</h3>
 
@@ -3560,6 +3619,46 @@ for (i$ = 0, len$ = (ref$ = table1).length; i$ < len$; ++i$) {
         </div>
       </div>
 
+      <a name="cascade-implicit-map"></a>
+      <p>You can use the cascade to implicit refer to the value being mapped.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+[.. + 1 for [1 2 3]] #=> [2, 3, 4]
+
+
+
+list-of-obj =
+  * name: 'Alice'
+    age: 23
+  * name: 'Betty'
+    age: 26
+
+[..name for list-of-obj] #=> ['Alice', 'Betty']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i$, x$, ref$, len$, listOfObj, y$;
+for (i$ = 0, len$ = (ref$ = [1, 2, 3]).length; i$ < len$; ++i$) {
+  x$ = ref$[i$];
+  x$ + 1;
+}
+listOfObj = [
+  { name: 'Alice',
+    age: 23 },
+  { name: 'Betty',
+    age: 26 }
+];
+for (i$ = 0, len$ = listOfObj.length; i$ < len$; ++i$) {
+  y$ = listOfObj[i$];
+  y$.name;
+}
+</pre>
+        </div>
+      </div>
       <p>Object comprehensions produce an object.
 
       <div class="example">
@@ -5376,8 +5475,8 @@ f do
         <li>Fix/close <a href="https://github.com/gkz/LiveScript/issues/194">#194</a>, <a href="https://github.com/gkz/LiveScript/issues/206">#206</a>, <a href="https://github.com/gkz/LiveScript/issues/150">#150</a>, <a href="https://github.com/gkz/LiveScript/issues/217">#217</a>, <a href="https://github.com/gkz/LiveScript/issues/236">#236</a>, <a href="https://github.com/gkz/LiveScript/issues/238">#238</a>, <a href="https://github.com/gkz/LiveScript/issues/151">#151</a>, <a href="https://github.com/gkz/LiveScript/issues/215">#215</a>, <a href="https://github.com/gkz/LiveScript/issues/213">#213</a>, <a href="https://github.com/gkz/LiveScript/issues/237">#237</a>, <a href="https://github.com/gkz/LiveScript/issues/232">#232</a>, <a href="https://github.com/gkz/LiveScript/issues/161">#161</a>, <a href="https://github.com/gkz/LiveScript/issues/241">#241</a>
         <li>Added <code>++</code> as array concat operator, to replace <code>+++</code> (which is now deprecated).
         <li>Added <code>++=</code> operator to complement the above.
-        <li>Added quick map in comprehensions, using cascade reference. For example, instead of doing <code>[x + 1 for x in xs]</code> you can now write <code>[.. + 1 for xs]</code>, <code>..</code> being the implicit value.
-        <li>Added the ability to have unary operators in parameters. Eg. <code>(!x) -&gt; ...</code> desugars to <code>(x) -&gt; x = !x; ...</code>. You can use this to cast parameters to either booleans <code>(!!x) -&gt;</code> or numbers <code>(+x) -&gt;</code>. You can also clone objects so that you don't modify the original: <code>(^^x) -&gt;</code>.
+        <li>Added quick map in comprehensions, using cascade reference. For example, instead of doing <code>[x + 1 for x in xs]</code> you can now write <code>[.. + 1 for xs]</code>, <code>..</code> being the implicit value. See <a href="#cascade-implicit-map">section for more details</a>.
+        <li>Added the ability to have unary operators in parameters. Eg. <code>(!x) -&gt; ...</code> desugars to <code>(x) -&gt; x = !x; ...</code>. You can use this to cast parameters to either booleans <code>(!!x) -&gt;</code> or numbers <code>(+x) -&gt;</code>. You can also clone objects so that you don't modify the original: <code>(^^x) -&gt;</code>. See <a href="#params-unary-ops">section for more</a>.
         <li>Bound curried functions <code>~~&gt;</code> actually work now, and partially applied functions, eg. <code>f _, 1</code> are bound at the first time they are partially applied.
         <li>Deprecated the <code>+++</code> array concatenation operator, please use <code>++</code> instead. <code>+++</code> will be removed in the next major LiveScript release.
         <li>Deprecated the <code>where</code> statement. Please use <code>let</code> and/or local variables instead. <code>where</code> will be removed in the next major LiveScript release.
