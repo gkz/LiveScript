@@ -113,7 +113,7 @@
 take = (n, [x, ...xs]:list) -->
   | n <= 0     => []
   | empty list => []
-  | otherwise  => [x] +++ take n - 1, xs
+  | otherwise  => [x] ++ take n - 1, xs
 
 
 
@@ -1824,7 +1824,7 @@ function compose$(fs){
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-<[ one two three ]> +++ [\four]
+<[ one two three ]> ++ [\four]
 #=> ['one','two','three','four']
 </pre>
         </div>
