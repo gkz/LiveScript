@@ -230,6 +230,10 @@ list-of-obj =
 
 eq '1,4' String [..ha for list-of-obj]
 
+eq '1,3' String [.. for [0 1 2 3] when ..%2]
+
+ok 1 in [1] # see #244
+
 # Comprehensions in loops
 xs = for x to 5
   [x + y for y to 5]

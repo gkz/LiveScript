@@ -405,6 +405,8 @@ exports import
 
   # Used from both doLiteral (|) and doID (case): adds swtich if required
   doCase: ->
+    @seenFor = false 
+    
     if @last.0 in <[ ASSIGN -> : ]>
     or (@last.0 is \INDENT and @tokens[*-2].0 in <[ ASSIGN -> : ]>)
       @token \SWITCH \switch
@@ -492,6 +494,8 @@ exports import
         return 9e9
       fallthrough
     case \] \)
+      if tag is \] and (@tokens[*-2].1 is \for or @tokens[*-2].1 is \by)
+        @seenFor = false 
       if tag is \) and @last.0 in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
                                COMPOSE RELATION PIPE BACKPIPE IMPORT CLONEPORT ASSIGN ]>
         @tokens[*-1].0 = switch @last.0
