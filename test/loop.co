@@ -210,6 +210,14 @@ continue for, o.count!_ in [1 2]
 eq o.i, 4
 
 
+# [#195](https://github.com/satyr/coco/issues/195)
+for [0]
+  ok 0 in {0}
+  for [1] then ok 1 of [1]
+  for [2] =>   ok 2 of [2]
+  ok 3 not in []
+
+
 ### Line folding before/after `for` prepositions
 for x
 in   {2}
