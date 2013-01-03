@@ -69,7 +69,7 @@ bnf =
     o 'LET CALL( ArgList OptComma )CALL Block' -> Chain Call.let $3, $6
 
     o 'WITH Expression Block' -> Chain Pipe $2, $3, \with
-    o 'FOR  Expression Block' -> Chain new For source: $2, body: $3, pipe: true
+    o 'FOR  Expression Block' -> Chain new For source: $2, body: $3, ref: true
 
   # An array or object
   List:
