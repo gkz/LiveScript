@@ -1093,7 +1093,7 @@ class exports.Assign extends Node
         left.carp "assignment to #that \"#name\""
     code += " #{ op - \: } "
     code = if not o.level and right instanceof While and not right.else and
-              (lvar or left.isSimpleAccess!)
+              (lvar or left instanceof Chain and left.isSimpleAccess!)
       # Optimize `a = while ...`.
       """#{ res = o.scope.temporary \res } = [];
          #{@tab}#{ right.makeReturn(res)compile o }
@@ -1945,11 +1945,11 @@ class exports.Pipe extends Node
     if \ret in this
       output.=makeReturn @ret
     if ref
-    then prog1 or @map or output = Assign JS(ref), output
+    then prog1 or @map or output = Assign Var(ref), output
     else ref = o.scope.temporary \x
     if input instanceof Pipe
     then input <<< {ref}
-    else input &&= Assign JS(ref), input
+    else input &&= Assign Var(ref), input
     o.level &&= LEVEL_PAREN
     code = input.compile o
     out  = Block output .compile o <<< ref: new String ref
