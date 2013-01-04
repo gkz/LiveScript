@@ -104,7 +104,7 @@
         <p>Dernier article: <strong><a href="blog/powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript (EN)</a></strong></p>
         <p>Double-cliquez un exemple pour le compiler.
       <h3>Examples</h3>
-      <p>Fonctions currifiées, switch implicite, opérateur de concaténation, et composition de fonctions :
+      <p>Fonction currifiée, switch implicite, opérateur de concaténation, et composition de fonctions :
       <div class="example">
         <div class="example-ls">
           <h5>LiveScript</h5>
@@ -112,7 +112,7 @@
 take = (n, [x, ...xs]:list) -->
   | n <= 0     => []
   | empty list => []
-  | otherwise  => [x] +++ take n - 1, xs
+  | otherwise  => [x] ++ take n - 1, xs
 
 
 
@@ -324,7 +324,7 @@ function curry$(f, bound){
 </pre>
         </div>
       </div>
-      <p>Rappels désimbriqués, chaînage sans parenthèses :
+      <p>Rappels (<i>backcall</i>) désimbriqués, chaînage sans parenthèses :
       <div class="example">
         <div class="example-ls">
         <h5>LiveScript</h5>
@@ -380,13 +380,13 @@ $('h1').on('click', function(){
       <h3>Exemples</h3>
 
       <ul>
-        <li>Lancer un fichier LiveScript (via node.js): <code>lsc file.ls</code> - le <code>.ls</code> est optionnel.
+        <li>Lance un fichier LiveScript (via node.js): <code>lsc file.ls</code> — le <code>.ls</code> est optionnel.
         <li>Compile un fichier LiveScript, créant un fichier .js : <code>lsc -c file.ls</code>
         <li>Surveille un fichier LiveScript et le compile lors de changements : <code>lsc -wc file.ls</code>
         <li>Compile un dossier entier vers un autre dossier : <code>lsc -co output src</code>
-        <li>Surveille un dossier, le compile vers un autre dossier lors de changements : <code>lsc -wco output src</code>
+        <li>Surveille un dossier, compile les fichiers vers un autre dossier : <code>lsc -wco output src</code>
         <li>Compile un petit extrait et affiche le résultat dans la console : <code>lsc -bpe '[1 to 5]'</code>
-        <li>Lance le compilateur intéractif : <code>lsc -i</code> - <code>Ctrl-D</code> pour quitter, utilisez <code>Ctrl-J</code> pour du multiligne.
+        <li>Lance le compilateur intéractif : <code>lsc -i</code> — f<code>Ctrl-D</code> pour quitter, utilisez <code>Ctrl-J</code> pour du multiligne.
       </ul>
     </div>
     <div id="community" class="section">
@@ -404,7 +404,7 @@ $('h1').on('click', function(){
         <li><a href="blog/livescript-1.1.0.html">LiveScript 1.1.0 Released! (EN)</a>
         <li><a href="blog/powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript (EN)</a>
         <li><a href="blog/livescript-1.0.0.html">LiveScript 1.0.0 Released (EN)</a>
-        <li><a href="blog/functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript - Part 2 (EN)</a>
+        <li><a href="blog/functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript — Part 2 (EN)</a>
         <li><a href="blog/ten-reasons-to-switch-from-coffeescript.html">10 Reasons to Switch from CoffeeScript to LiveScript (EN)</a>
         <li><a href="blog/functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls (EN)</a>
         <li><a href="blog/livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends (EN)</a>
@@ -420,9 +420,9 @@ $('h1').on('click', function(){
       <a name="editor-support"></a>
       <h2>&Eacute;diteurs de texte</h2>
       <ul>
-        <li>Utilisateurs de Vim, voici <a href="https://github.com/gkz/vim-ls">vim-ls</a>.
+        <li>Utilisateurs de Vim, il y a <a href="https://github.com/gkz/vim-ls">vim-ls</a>.
         <li>Bundle TextMate, Chocolat, et Sublime Text pour LiveScript : <a href="https://github.com/paulmillr/LiveScript.tmbundle">LiveScript.tmbundle</a>.
-        <li>Support basique dans Emacs : <a href="https://github.com/tensai-cirno/livescript-mode">livescript-mode</a>
+        <li>Support basique dans Emacs via <a href="https://github.com/tensai-cirno/livescript-mode">livescript-mode</a>
       </ul>
       <p>Ajoutez le votre dans le <a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">wiki (EN)</a>.
     </div>
@@ -438,7 +438,7 @@ $('h1').on('click', function(){
 
       <p>Vous pouvez importer automatiquement prelude.ls en compilant ou avec le compilateur intéractif via l'option <code>-d</code> (ou <code>--prelude</code>).
 
-      <p>Prelude.ls est chargé sur cette page, vous pouvez en utiliser les fonctions dans le compilateur (panneau droite).
+      <p>Prelude.ls est chargé sur cette page, vous pouvez en utiliser les fonctions dans le compilateur (panneau de droite).
     </div>
     <hr>
     <div id="introduction" class="section">
@@ -496,14 +496,14 @@ add(2, 3);
         </div>
       </div>
 
-      <p class="note">Amis de Lisp, vous serez heureux d'apprendre que vous pouvez utiliser les tirets dans vos noms de variables et de fonctions. Ces noms sont identiques à - et compilés vers - leur équivalent camelCase. <code>my-value = 42</code> == <code>myValue = 42</code>.
+      <p class="note">Amis de Lisp, vous serez heureux d'apprendre que vous pouvez utiliser les tirets dans vos noms de variables et de fonctions. Ces noms sont identiques à — et compilés vers — leur équivalent camelCase. <code>my-value = 42</code> == <code>myValue = 42</code>.
 
       <p>L'extension est <code>.ls</code>.
 
 
       <h3>Définir une fonction</h3>
 
-      <p>La définition de fonction est très simple en LiveScript :
+      <p>Définir une fonction est très simple en LiveScript :
 
       <div class="example">
         <div class="example-ls">
@@ -538,7 +538,7 @@ times = function(x, y){
       <p>Comme vous pouvez le voir, les déclarations sont bien plus courtes. Vous pouvez aussi voir que le <code>return</code> est implicite. En LiveScript, presque tout est une expression et la dernière est automatiquement retournée. Cependant, vous pouvez toujours utiliser <code>return</code> pour forcer un retour, ou ajouter un point d'exclamation à la définition pour supprimer le retour implicite <code>no-ret = !(x) -> ...</code>.
 
       <h3>Attribution</h3>
-      <p>L'attribution basique est comme vous vous y attendez, <code>variable = value</code>, et il n'y a pas besoin de déclarer les variables. Cependant, contrairement à CoffeeScript, vous devez utiliser <code>:=</code> pour modifier les variables dans des portées supérieures. 
+      <p>L'attribution basique est tout simplement <code>variable = value</code>, et il n'y a pas besoin de déclarer les variables. Cependant, contrairement à CoffeeScript, vous devez utiliser <code>:=</code> pour modifier les variables dans des portées supérieures. 
 
       <div class="example">
         <div class="example-ls">
@@ -577,7 +577,7 @@ x;
         </div>
       </div>
       
-      <p>Presque tout est une expression, ce qui signifie que vous pouvez faire des choses comme :
+      <p>Tout (ou presque) étant une expression, vos attributions peuvent être complexes.
 
       <div class="example">
         <div class="example-ls">
@@ -615,7 +615,9 @@ var x;
         </div>
       </div>
 
-      <p>Vous pouvez aussi déclarer des constantes avec le mot-clef <code>const</code>. Les vérifications sont faites à la compilation - le JavaScript compilé est le même.
+      <p>Vous pouvez aussi déclarer des constantes avec le mot-clef <code>const</code>.
+
+      <p>Les vérifications sont faites à la compilation — le JavaScript compilé est le même.
       
       <p>Essayer de compiler le code suivant :
 
@@ -626,13 +628,13 @@ x = 0
 
       <p>Donnera l'erreur suivante : <code>redeclaration of constant "x" on line 2</code> (<code>re-déclaration de la constante "x" ligne 2</code>). 
 
-      <p>&Agrave; l'inverse, les objets ne sont pas "gêlés" - vous pouvez quand même modifier leurs propriétés. Vous pouvez forcer toutes les variables à être des constantes à l'aide de l'option <code>-k</code> (ou <code>--const</code>).
+      <p>&Agrave; l'inverse, les objets ne sont pas "gêlés" — vous pouvez quand même modifier leurs propriétés. Vous pouvez forcer toutes les variables à être des constantes à l'aide de l'option <code>-k</code> (ou <code>--const</code>).
 
 
       <h3>Infos</h3>
 
       <p>Pour voir les différences avec CoffeeScript, allez au paragraphe <a href="#coffee-to-ls">Conversion depuis CoffeeScript</a>.
-      <p>Vous pouvez double-cliquer n'importe quel exemple pour le charger dans le compilateur à droite, ou vous pouvez charger votre propre code. Notez que LiveScript entoure le JavaScript dans une IIFE <code>(function(){...contenu...}).call(this);</code> - retiré des exemples et des résultats du compilateur pour la concision.
+      <p>Vous pouvez double-cliquer n'importe quel exemple pour le charger dans le compilateur à droite, ou vous pouvez charger votre propre code. Notez que LiveScript entoure le JavaScript dans une IIFE <code>(function(){...contenu...}).call(this);</code> — retiré des exemples et des résultats du compilateur pour la concision.
     </div>
     <div id="literals" class="section">
       <a name="literal"></a>
@@ -722,7 +724,7 @@ false;
 
       <p>En JavaScript, <code>undefined</code> peut être redéfini, il est donc plus prudent d'utiliser <code>void</code> qui produira toujours undefined.
 
-      <p><code>void</code> ne se compile en rien (utilisé comme espace réservé) - il peut cependant être utilisé comme valeur :
+      <p><code>void</code> seul n'est pas inclus dans la compilation (utilisé comme espace réservé) — il peut cependant être utilisé comme valeur :
 
       <div class="example">
         <div class="example-ls">
@@ -747,6 +749,8 @@ null;
         </div>
       </div>
 
+      <p class="note">L'utilisation de <code>undefined</code> comme alias pour <code>void</code> est déprécié et sera retiré dans la prochaine version de LiveScript. Utilisez <code>void</code> à la place.
+
       <h3>Chaînes</h3>
 
       <p>Vous pouvez utiliser des apostrophes ou des guillemets :
@@ -767,7 +771,7 @@ null;
       </div>
 
 
-      <p>Les chaînes sans espaces peuvent être écrites avec un anti-slash :
+      <p>Les chaînes sans espaces peuvent être écrites précédées d'un anti-slash :
 
       <div class="example">
         <div class="example-ls">
@@ -822,7 +826,7 @@ variable = "world";
         </div>
       </div>
 
-      <p>Chaînes multilignes (vous pouvez aussi utiliser des guillemets pour utiliser les interpolations) :
+      <p>Avec des chaînes multilignes (vous pouvez aussi utiliser des guillemets pour utiliser les interpolations) :
 
       <div class="example">
         <div class="example-ls">
@@ -857,7 +861,7 @@ heredoc = 'les chaînes peuvent être multilignes\nen continuant tant que néces
 
       <h3>Commentaires</h3>
 
-      <p>Les commentaires monoligne commencent avec un <code>#</code>. Ils ne sont pas gardés dans la version compilée.
+      <p>Les commentaires monoligne commencent avec un <code>#</code>. Ils sont supprimés à la compilation.
 
       <div class="example">
         <div class="example-ls">
@@ -934,7 +938,7 @@ oneline = {
         </div>
       </div>
 
-      <p>Clefs dynamiques :
+      <p>Les clefs peuvent être dynamiques :
 
       <div class="example">
         <div class="example-ls">
@@ -952,7 +956,7 @@ obj = (ref$ = {}, ref$[variable + ""] = 234, ref$[person.eyeColor] = false, ref$
         </div>
       </div>
 
-      <p>Raccourci pour les paramètres - vous permet d'utiliser plus rapidement des variables quand la clef est le nom de la variable en valeur :
+      <p>Raccourci pour les propriétés — vous permet d'utiliser plus rapidement des variables quand la clef est le nom de la variable en valeur :
 
       <div class="example">
         <div class="example-ls">
@@ -993,7 +997,7 @@ obj = {
         </div>
       </div>
 
-      <p>This - Pas besoin d'utiliser de <code>.</code> pour accéder aux propriétés.
+      <p>This — pas besoin d'utiliser de <code>.</code> pour accéder aux propriétés.
 
       <div class="example">
         <div class="example-ls">
@@ -1029,14 +1033,14 @@ this.location;
         </div>
       </div>
 
-      <p>Lorsque délimitées avec <code>//</code>, vous permettent d'utiliser des espaces, des interpolations et du multiligne !
+      <p>Lorsque délimitées avec <code>//</code>, vous pouvez utiliser des espaces, des interpolations et les écrire sur plusieurs lignes
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 //
 | [!=]==?             # équalité
-| @@                  # arguments
+| @@                  # constructor
 | <\[(?:[\s\S]*?\]>)? # mots
 //g
 </pre>
@@ -1055,7 +1059,7 @@ this.location;
 
       <h3>Listes</h3>
 
-      <p>Les listes normales sont entre crochets :
+      <p>Les listes simples sont entre crochets :
 
       <div class="example">
         <div class="example-ls">
@@ -1115,7 +1119,9 @@ oneItem = [1];
         </div>
       </div>
 
-      <p>Quand vous utilisez des listes implicites, vous pouvez utiliser un astérisque <code>*</code> pour désambiguïser entre les structures. L'astérique ne représente pas un élément de la liste, mais décale en fait une structure implicite pour ne pas qu'elle soit mélangée avec les autres.
+      <p>Quand vous utilisez des listes implicites, vous pouvez utiliser un astérisque <code>*</code> pour désambiguïser entre les structures.
+
+      <p>L'astérique ne représente pas un élément de la liste, mais indente en fait une structure implicite pour ne pas qu'elle soit mélangée avec les autres.
 
       <div class="example">
         <div class="example-ls">
@@ -1201,7 +1207,7 @@ objOneList = [{
 
       <h3>Séries</h3>
 
-      <p>Dans une série, <code>to</code> signifie <em>à</em>, et inclu le nombre à droite. <code>til</code> signifie <em>jusqu'à</em> et n'inclue pas le nombre.
+      <p>Dans une série, <code>to</code> signifie <em>à</em>, et inclus le nombre à droite. <code>til</code> signifie <em>jusqu'à</em> et n'inclus pas le nombre.
 
       <p>Vous pouvez optionnellement ajouter un <code>by</code> qui définira l'étape.
 
@@ -1233,7 +1239,7 @@ var i$;
         </div>
       </div>
 
-      <p>Avec n'importe quelle expression - si vous voulez aller vers le bas (d'un nombre à un autre plus petit), vous devez le préciser explicitement avec <code>by -1</code>.
+      <p>Avec n'importe quelle expression — si vous voulez aller vers le bas (d'un nombre à un autre plus petit), vous devez le préciser explicitement avec <code>by -1</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -1259,7 +1265,7 @@ for (i$ = x; i$ >= 0; --i$) {
 
       <h3>Autres</h3>
 
-      <p>Labels (utile pour les boucles imbriquées) :
+      <p>Labels (utile pour les boucles imbriquées ainsi qu'avec les blocs comme <code>let</code>) :
 
       <div class="example">
         <div class="example-ls">
@@ -1295,7 +1301,7 @@ x.constructor.y;
         </div>
       </div>
 
-      <p>Yaddayaddayadda - un espace réservé :
+      <p>Yaddayaddayadda — un espace réservé :
 
       <div class="example">
         <div class="example-ls">
@@ -1338,7 +1344,7 @@ throw Error('unimplemented');
         </div>
       </div>
 
-      <p>Il y a aussi un opérateur pour le reste, comme en JavaScript - ainsi que le modulo :
+      <p>Il y a aussi un opérateur pour obtenir le reste d'une division, comme en JavaScript — ainsi que le modulo :
 
 
       <div class="example">
@@ -1442,7 +1448,7 @@ n;
         </div>
       </div>
 
-      <p>Casting vers un nombre :
+      <p>Conversion vers un nombre :
 
       <div class="example">
         <div class="example-ls">
@@ -1543,7 +1549,7 @@ var ref$;
         </div>
       </div>
 
-      <p>Minimum/maximum - retourne le minimum/maximum des deux opérandes :
+      <p>Minimum/maximum — retourne le minimum/maximum des deux opérandes :
 
       <div class="example">
         <div class="example-ls">
@@ -1562,7 +1568,9 @@ var ref$;
         </div>
       </div>
 
-      <p>Quand une des deux opérandes d'une comparaison (<code>==</code> ou <code>is</code>, ainsi que les versions inversées) est une expression régulière littérale, elle sera testée contre l'autre opérande. Une égalité donne un appel d'<code>exec</code> pour que vous puissiez utiliser les résultats, alors qu'une inégalité utilise <code>test</code> :
+      <p>Quand une des deux opérandes d'une comparaison (<code>==</code> ou <code>is</code>, ainsi que les versions inversées) est une expression régulière littérale, elle sera testée contre l'autre opérande.
+
+      <p>Une égalité donne un appel d'<code>exec</code> pour que vous puissiez utiliser les résultats, alors qu'une inégalité utilise <code>test</code> pour les performances.
 
       <div class="example">
         <div class="example-ls">
@@ -1613,7 +1621,7 @@ true || false;
         </div>
       </div>
 
-      <p>Ou exclusif - un opérateur peu vu dans d'autres langages:
+      <p>Ou exclusif — un opérateur peu vu dans d'autres langages.
 
       <div class="example">
         <div class="example-ls">
@@ -1668,6 +1676,21 @@ f(3, 4) && g(3, 4) || h(3, 4);
         </div>
       </div>
 
+      <p class="note">Vous n'êtes pas limités aux variables ici ! Vous pouvez utiliser les littéraux.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+('a' || /b/ && f) c
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+'a' === c || /b/.exec(c) && f(c);
+</pre>
+        </div>
+      </div>
+
       <h3>In/Of</h3>
 
       <p>Utilisez <code>in</code> pour savoir si un élément est dans une liste, et <code>of</code> pour savoir si l'objet contient une clef :
@@ -1704,7 +1727,7 @@ function in$(x, arr){
       <a name="piping"></a>
       <h3>Piping</h3>
 
-      <p>&Eacute; la place d'une série d'appels imbriqués, vous pouvez utiliser le piping. <code>x |> f</code> et <code>f <| x</code> sont équivalents à <code>f(x)</code>.
+      <p>&Agrave; la place d'une série d'appels imbriqués, vous pouvez utiliser le piping. <code>x |> f</code> et <code>f <| x</code> sont équivalents à <code>f(x)</code>.
 
 
       <div class="example">
@@ -1726,7 +1749,7 @@ reverse([1, 2, 3]);
         </div>
       </div>
 
-      <p>Vous pouvez ajouter des nouvelles lignes pour clarifier :
+      <p>Le piping est bien sûr multiligne, pour plus de clarté.
 
       <div class="example">
         <div class="example-ls">
@@ -1748,12 +1771,44 @@ even(
         </div>
       </div>
 
+      <p class="note">Vous pouvez utiliser le piping directement après une expression, comme par exemple un <code>for</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+for a in <[fi bu ba]>
+  "#{a}zz"
+|> map (.toUpperCase!)
+|> (* ', ')
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var a, join$ = [].join;
+(function(it){
+  return join$.call(it, ', ');
+})(
+map(function(it){
+  return it.toUpperCase();
+})(
+(function(){
+  var i$, ref$, len$, results$ = [];
+  for (i$ = 0, len$ = (ref$ = ['fi', 'bu', 'ba']).length; i$ < len$; ++i$) {
+    a = ref$[i$];
+    results$.push(a + "zz");
+  }
+  return results$;
+}())));
+</pre>
+        </div>
+      </div>
+
       <a name="composing"></a>
       <h3>Composition</h3>
 
-      <p>La composition vous permet de créer des fonctions <em>composées</em> d'autres fonctions. LiveScript a deux opérateurs : en avant (<code>&gt;&gt;</code>) et en arrière (<code>&lt;&lt;</code>).
+      <p>La composition vous permet de créer des fonctions <em>composées</em> d'autres fonctions. LiveScript a deux opérateurs pour : avant (<code>&gt;&gt;</code>) et arrière (<code>&lt;&lt;</code>).
 
-      <p><code>(f &lt;&lt; g) x</code> est pareil que <code>f(g(x))</code>, et <code>(f &gt;&gt; g) x</code> est équivalent à <code>g(f(x))</code>. Par exemple :
+      <p><code>(f &lt;&lt; g) x</code> est pareil que <code>f(g(x))</code>, et <code>(f &gt;&gt; g) x</code> est équivalent à <code>g(f(x))</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -1780,7 +1835,7 @@ function not$(x){ return !x; }
         </div>
       </div>
 
-      <p>Pour être un peu plus clear à propos des différences entre les deux opérateurs :
+      <p>Pour être un peu plus clair à propos des différences entre les deux opérateurs :
 
       <div class="example">
         <div class="example-ls">
@@ -1788,8 +1843,8 @@ function not$(x){ return !x; }
 add-two-times-two = (+ 2) >> (* 2)
 times-two-add-two = (+ 2) << (* 2)
 
-add-two-times-two 3 #=> 10
-times-two-add-two 3 #=> 8
+add-two-times-two 3 #=> (3+2)*2 = 10
+times-two-add-two 3 #=> (3*2)+2 = 8
 </pre>
         </div>
         <div class="example-js">
@@ -1822,7 +1877,8 @@ function compose$(fs){
         </div>
       </div>
 
-      <p>Vous pouvez aussi utiliser un point espacé comme alias pour <code>&lt;&lt;</code>, par exemple <code>f . g</code>, comme en Haskell.
+      <p>Vous pouvez aussi utiliser un point espacé comme alias pour <code>&lt;&lt;</code>,
+      <br />par exemple <code>f . g</code>, comme en Haskell.
 
       <h3>Liste</h3>
 
@@ -1831,7 +1887,7 @@ function compose$(fs){
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-<[ un deux trois ]> +++ [\quatre]
+<[ un deux trois ]> ++ [\quatre]
 #=> ['un','deux','trois','quatre']
 </pre>
         </div>
@@ -1874,17 +1930,19 @@ function compose$(fs){
         </div>
       </div>
 
-      <p>Propagation unaire - quand l'opérande est une liste littérale, l'opérateur unaire est appliqué à tous les éléments :<br />
+      <p>Propagation unaire — quand l'opérande est une liste littérale, l'opérateur unaire est appliqué à tous les éléments :<br />
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 r = +[4 5 6]        #=> [+4, +5, +6]
-t = typeof! [\b 5 {}] #=> ["String", "Number", "Object"]
+t = typeof! [\b 5 {}]
+#=> ["String", "Number", "Object"]
 c = ~[4, 5]         #=> [-5, -6]
 ++player<[strength hp]>
-# marche aussi avec -, --, typeof, ! et delete!
-# ou -~-~
+
+# marche aussi avec -, --, typeof,
+# ! et delete! voire -~-~
 i = new [some, classes]
 c = ^^[copy, these, {}]
 delete list[1, 2, 3]
@@ -1947,7 +2005,7 @@ string += 'yeah';
         </div>
       </div>
 
-      <p>Soustraction / division de chaînes - soustraction pour <code>replace</code>, division pour <code>split</code>.
+      <p>Soustraction / division de chaînes — soustraction pour <code>replace</code>, division pour <code>split</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -1966,7 +2024,7 @@ string += 'yeah';
 
       <h3>Existence/Inexistence</h3>
 
-      <p>L'opérateur <code>?</code> peut être utilisé dans de nombreux contextes pour vérifier une présence. L'opérateur <code>!?</code> est son inverse, vérifiant l'inexistance.
+      <p>L'opérateur <code>?</code> peut être utilisé dans de nombreux contextes pour vérifier une présence.
 
       <div class="example">
         <div class="example-ls">
@@ -1996,7 +2054,7 @@ if (typeof document != 'undefined' && document !== null) {
 
       <h3>Objet</h3>
 
-      <p>Instanceof - les listes littérales sur la droite sont étendues :
+      <p><code>instanceof</code> — les listes littérales sur la droite sont étendues (propagation unaire).
 
       <div class="example">
         <div class="example-ls">
@@ -2015,7 +2073,7 @@ new Date() instanceof Date;
         </div>
       </div>
 
-      <p>Typeof - ainsi que la variante avec un point d'exclamation :
+      <p><code>typeof</code> — ainsi que la variante LiveScript avec un point d'exclamation :
 
       <div class="example">
         <div class="example-ls">
@@ -2034,7 +2092,7 @@ toString$.call(/^/).slice(8, -1);
         </div>
       </div>
 
-      <p>Delete retourne la valeur de l'élément supprimé :
+      <p><code>delete</code> retourne la valeur de l'élément supprimé :
 
       <div class="example">
         <div class="example-ls">
@@ -2057,7 +2115,7 @@ r;
         </div>
       </div>
 
-      <p><code>delete!</code> est l'équivalent de <code>delete</code> en JavaScript, et retourne <code>false</code> uniquement si la propriété existe mais ne peut être supprimée :
+      <p class="note"><code>delete!</code> est l'équivalent de <code>delete</code> en JavaScript, et retourne <code>false</code> uniquement si la propriété existe mais ne peut être supprimée :
 
       <div class="example">
         <div class="example-ls">
@@ -2080,8 +2138,8 @@ delete Math.PI;
         </div>
       </div>
 
-      <p>Copie de propriétés - de droite à
-       gauche. <code>&lt;&lt;&lt;</code> pour les propriétés propres (<code>Object.hasOwnProperty</code>), <code>&lt;&lt;&lt;&lt;</code> pour toutes les propriétés. <code>import</code> et <code>import all</code> sont des alias. Si vous omettez l'opérande gauche, <code>this</code> est implicite :
+      <p>Copie de propriétés — de droite à
+       gauche. <code>&lt;&lt;&lt;</code> pour les propriétés propres (<code>Object.hasOwnProperty</code>), <code>&lt;&lt;&lt;&lt;</code> pour toutes les propriétés. <code>import</code> et <code>import all</code> sont des alias. Si vous omettez l'opérande gauche, <code>this</code> est implicite.
 
       <div class="example">
         <div class="example-ls">
@@ -2117,7 +2175,7 @@ function import$(obj, src){
         </div>
       </div>
 
-      <p>Clonage - clone le prototype de l'opérande. Ne clone pas en profondeur, à la place, l'opérande sera le prototype de l'objet cloné.
+      <p>Clonage — clone le prototype de l'opérande. Ne clone pas en profondeur, à la place, l'opérande sera le prototype de l'objet cloné.
       <p>Souvenez-vous que la sérialisation JSON ne montre pas les prototypes.
 
       <div class="example">
@@ -2229,11 +2287,11 @@ function not$(x){ return !x; }
       <a name="require"></a>
       <h3>require!</h3>
 
-      <p>Avoir beaucoup de module signifie beaucoup de redondance dans les inclusions. Avec <code>require!</code>, qui prend identifieur, chaîne, liste ou objet, vous pouvez éviter cette redondance.
+      <p>Avoir beaucoup de modules signifie beaucoup de redondance dans les inclusions. Avec <code>require!</code>, qui prend identifieur(s), chaîne, liste ou objet, vous pouvez éviter cette redondance.
 
       <p>Si vous voulez inclure un module avec des tirets, vous devez utiliser une chaîne.
 
-      <p>Vous pouvez renommer ce que vous require-ez en utilisant un objet littéral.
+      <p>Vous pouvez renommer ce que vous incluez en utilisant un objet littéral.
 
       <div class="example">
         <div class="example-ls">
@@ -2410,7 +2468,7 @@ Math.pow(2, 3);
         </div>
       </div>
 
-      <p>Si vous appelez une fonction sans arguments, vous pouvez utiliser <code>!</code> - vous n'avez pas besoin on plus de point pour enchaîner les fonctions ainsi appelées.
+      <p>Si vous appelez une fonction sans arguments, vous pouvez utiliser <code>!</code> — vous n'avez pas besoin non plus de point pour enchaîner les fonctions ainsi appelées.
 
       <div class="example">
         <div class="example-ls">
@@ -2427,7 +2485,7 @@ f();
         </div>
       </div>
 
-      <p><code>and</code>, <code>or</code>, <code>xor</code>, un <code>.</code> espacé ou <code>?.</code> ferment les appels implcites - permettant d'enchaîner les appels sans parenthèses.
+      <p><code>and</code>, <code>or</code>, <code>xor</code>, un <code>.</code> espacé ou <code>?.</code> ferment les appels implcites — permettant d'enchaîner les appels sans parenthèses.
 
       <div class="example">
         <div class="example-ls">
@@ -2515,7 +2573,7 @@ add(3, 4);
         </div>
       </div>
 
-       <p>Appeler une fonction avec l'opérateur de reste <code>...</code> lui passe les arguments de la fonction actuelle. C'est particulièrement utile avec <code>super</code>.
+       <p>Appeler une fonction avec l'opérateur reste (<i>splat</i>) <code>...</code> lui passe les arguments de la fonction actuelle. C'est particulièrement utile avec <code>super</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -2540,6 +2598,8 @@ g = function(a, b){
 };
 g(3, 4);
 </pre>
+</div>
+</div>
 
       <h3>Paramètres</h3>
 
@@ -2614,7 +2674,7 @@ add(1, 2);
         </div>
       </div>
 
-      <p>... ou utiliser n'importe quel opérateur logique (dans les paramètres, <code>x = 2</code> est la même chose que<code>x ? 2</code>):
+      <p>... ou utiliser n'importe quel opérateur logique (dans les paramètres, <code>x = 2</code> correspond à <code>x ? 2</code>):
 
       <div class="example">
         <div class="example-ls">
@@ -2700,7 +2760,7 @@ setCords();
         </div>
       </div>
 
-      <p>Vous pouvez aussi obtenir le reste des paramètres :
+      <p>Vous pouvez aussi obtenir le reste (<i>splat</i>) des paramètres :
 
       <div class="example">
         <div class="example-ls">
@@ -2725,7 +2785,7 @@ f(1, 2, 3, 4);
 
       <h3>Currification</h3>
 
-      <p>Les fonctions currifiées sont très puissantes. Pour faire simple, les fonctions appelées avec moins d'arguments qu'elles n'en ont retourne une fonction partiellement appliquée que vous pourez appeler avec le reste des arguments. En LiveScript, ces fonctions sont définiés avec une longue flèche :
+      <p>Les fonctions currifiées sont très puissantes. Pour faire simple, les fonctions appelées avec moins d'arguments qu'elles n'en ont retournent une fonction partiellement appliquée qui acceptera le reste des arguments. En LiveScript, ces fonctions sont définiés avec une longue flèche :
 
       <div class="example">
         <div class="example-ls">
@@ -2760,7 +2820,9 @@ function curry$(f, args){
 
       <h3>Fonctions nommées</h3>
 
-      <p>Vous pouvez créer des fonctions nommées, utilisable n'importe où dans le fichier même si définies à la fin. Ces fonctions sont constantes et ne peuvent être redéfinies.
+      <p>Vous pouvez créer des fonctions nommées, utilisables n'importe où dans le fichier même si définies à la fin. Ces fonctions sont constantes et ne peuvent être redéfinies.
+
+      <p class="note">LiveScript ne touche pas au <a href="http://kangax.github.com/nfe/">bug JScript (EN)</a>.
 
       <div class="example">
         <div class="example-ls">
@@ -2826,7 +2888,7 @@ function util(x){
         </div>
       </div>
 
-      <p>Vous pouvez bien sûr combiner <code>~</code> et <code>!</code> pour créer une fonction liée qui ne retourne rien.
+      <p>Vous pouvez bien sûr combiner <code>~</code> et <code>!</code> pour créer une fonction liée sans retour implicite.
 
       <h3>Fonctions liées</h3>
 
@@ -2876,7 +2938,7 @@ obj2.bound();
 
       <p>Référez-vous au paragraphe sur la <a href="#oop">POO</a> pour plus d'informations sur les fonctions liées dans les classes.
 
-      <h3>Let, Where, New</h3>
+      <h3>Let, New</h3>
 
       <p><code>let</code> est un raccourci pour <code>(function(a){...}.call(this, b))</code>.
 
@@ -2920,30 +2982,7 @@ x;
         </div>
       </div>
 
-      <p><code>where</code> est comme <code>let</code>, mais après l'expression. Cette syntaxe vous permet aussi d'avoir des déclarations complexes
-
-      <div class="example">
-        <div class="example-ls">
-<pre class="prettyprint lang-ls">
-result = x + y
-       where x = 4,
-             y = x + 1
-       #=> 9
-</pre>
-        </div>
-        <div class="example-js">
-<pre class="prettyprint lang-js">
-var result;
-result = (function(x, y){
-  x = 4;
-  y = x + 1;
-  return x + y;
-}.call(this, void 8, void 8));
-</pre>
-        </div>
-      </div>
-
-      <p>Avec un nouveau contexte :
+      <p>Création de contexte :
 
       <div class="example">
         <div class="example-ls">
@@ -3038,9 +3077,9 @@ map(function(it){
       </div>
 
       <a name="backcalls"></a>
-      <h3>Backball</h3>
+      <h3>Rappels arrières</h3>
 
-      <p>Les backcalls sont très utiles. Ils vous permettent de désimbriquer vos rappels. La syntaxe est la même que pour les fonctions, mais avec la flèche vers la gauche (<code><~</code>, <code><--</code>, <code><~~</code>, <code><-!</code>) :
+      <p>Les Rappels arrières (<i>backcalls</i>) sont très utiles. Ils vous permettent de désimbriquer vos rappels. La syntaxe est la même que pour les fonctions, mais avec la flèche vers la gauche (<code><~</code>, <code><--</code>, <code><~~</code>, <code><-!</code>) :
 
       <div class="example">
         <div class="example-ls">
@@ -3058,7 +3097,7 @@ $(function(){
         </div>
       </div>
 
-      <p>Vous pouvez ajouter des arguments, et réserver l'espace si l'ordre des arguments ne vous convient pas :
+      <p>Vous pouvez ajouter des arguments, et réserver un espace si l'ordre des arguments ne vous convient pas :
 
       <div class="example">
         <div class="example-ls">
@@ -3077,7 +3116,7 @@ map(function(x){
         </div>
       </div>
 
-      <p>Si vous voulez avoir plus de code après, vous pouvez décaler vos backcalls avec <code>do</code>.
+      <p>Si vous voulez rajouter du code après, vous pouvez indenter vos rappels arrières grâce à <code>do</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -3105,7 +3144,7 @@ alert('hi');
       </div>
 
 
-      <p>Si vous voulez des fonctionnalités asynchrones avancées, vous pouvez utiliser <a href="https://github.com/caolan/async/">async.js</a> avec LiveScript.
+      <p class="note">Si vous voulez des fonctionnalités asynchrones avancées, vous pouvez utiliser <a href="https://github.com/caolan/async/">async.js</a> avec LiveScript.
 
       <h3>Application partielle</h3>
 
@@ -3345,7 +3384,7 @@ result = 2 / 2 === 0 ? 'quelque chose' : 'quelque chose d\'autre';
         </div>
       </div>
 
-      <p>Aussi utilisable après une expression - ayant une précédence plus basse que l'égalité, rendant ceci possible :
+      <p>Aussi utilisable après une expression — ayant une précédence plus basse que l'égalité, rendant ceci possible :
 
       <div class="example">
         <div class="example-ls">
@@ -3394,7 +3433,7 @@ if (2 + 2 !== 5) {
         </div>
       </div>
 
-      <p><code>that</code> réfère implicitement la valeur de la condition - ignorant les vérifications d'existences (<code>?</code>).
+      <p><code>that</code> réfère implicitement à la valeur de la condition — ignorant les vérifications d'existences (<code>?</code>). Dans un <code>if</code>, dans un switch <code>case</code> ou avec <code>when</code> (et leur version inverse).
 
       <div class="example">
         <div class="example-ls">
@@ -3437,7 +3476,7 @@ if ((that = halfYear) != null) {
       <a name="loops"></a>
       <h2>Boucles et Compréhensions</h2>
 
-      <p>Les boucles <code>for</code> ont la structure suivante : <code>for (from) (to|til) (by) (when)</code> - (tout est optionnel).
+      <p>Les boucles <code>for</code> ont la structure suivante : <code>for (from) (to|til) (by) (when)</code> — (tout est optionnel).
       <p><code>by</code> est l'étape, par défaut <code>1</code>.
       <p><code>from</code>, si omis, est <code>0</code>.
       <p><code>when</code>, (alias <code>case</code>, <code>|</code>) est un guard optionnel.
@@ -3485,7 +3524,7 @@ for (key in ref$ = {
         </div>
       </div>
 
-      <p>Les boucles normalses imbriquées renvoient des listes de listes :
+      <p>Les boucles normales (<code>for</code>/<code>while</code>) imbriquées renvoient des listes de listes :
 
       <div class="example">
         <div class="example-ls">
@@ -3550,7 +3589,7 @@ for (i$ = 0; i$ < 3; ++i$) {
         </div>
       </div>
 
-      <p>Les compréhensions de listes, même multiples, renvoient des listes :
+      <p>Les compréhensions de listes, même multiples, renvoient des listes non imbriquées :
 
       <div class="example">
         <div class="example-ls">
@@ -3826,7 +3865,7 @@ default:
         </div>
       </div>
 
-      <p>Si vous ne donnez pas d'opérance à <code>switch</code>, elle sera <code>true</code>. (le code compile à <code>switch (false)</code> pour permettre une conversion booléenne via un simple <code>!</code> plutôt que deux)
+      <p>Si vous ne donnez pas d'opérance à <code>switch</code>, ce sera <code>true</code>. (le code compile à <code>switch (false)</code> pour permettre une conversion booléenne via un unique <code>!</code> plutôt que <code>!!</code>)
 
       <div class="example">
         <div class="example-ls">
@@ -3856,7 +3895,7 @@ case 6 / 2 !== 3:
         </div>
       </div>
 
-      <p>Vous pouvez utiliser <code>fallthrough</code> pour e^mpêcher l'insertion d'un <code>break</code> implicite, et doit être la dernière expression du <code>case</code>. Aussi, vous pouvez un <code>switch</code> en tant qu'expression :
+      <p>Vous pouvez utiliser <code>fallthrough</code> pour empêcher l'insertion d'un <code>break</code> implicite, et doit être la dernière expression du <code>case</code>. Aussi, vous pouvez utiliser un <code>switch</code> en tant qu'expression :
 
       <div class="example">
         <div class="example-ls">
@@ -4093,7 +4132,7 @@ var x;
         </div>
       </div>
 
-      <p>Vous pouvez aussi déclarer des constantes avec le mot-clef <code>const</code>. Les vérifications sont faites à la compilation - le JavaScript compilé est le même.
+      <p>Vous pouvez aussi déclarer des constantes avec le mot-clef <code>const</code>. Les vérifications sont faites à la compilation — le JavaScript compilé est le même.
 
       <p>Essayer de compiler le code suivant : 
 
@@ -4104,14 +4143,14 @@ x = 0
 
       <p>Donnera l'erreur suivante : <code>redeclaration of constant "x" on line 2</code> (re-déclaration de la constante "x" ligne 2).
 
-      <p>À l'inverse, les objets ne sont pas "gêlés" - vous pouvez quand même modifier leurs propriétés. Vous pouvez forcer toutes les variables à être des constantes à l'aide de l'option <code>-k</code> (ou <code>--const</code>). 
+      <p>À l'inverse, les objets ne sont pas "gêlés" — vous pouvez quand même modifier leurs propriétés. Vous pouvez forcer toutes les variables à être des constantes à l'aide de l'option <code>-k</code> (ou <code>--const</code>). 
       <p>Results in <code>redeclaration of constant "x" on line 2</code>.
 
       <h3>Opérateurs</h3>
 
       <p>Assignation composée :
 
-      <p>(<code>?</code>, <code>!?</code>, <code>||</code>, or <code>&&</code> peut préfixer n'importe quelle assignation.)
+      <p>(<code>?</code>, <code>||</code>, or <code>&&</code> peuvent préfixer n'importe quelle assignation.)
 
       <div class="example">
         <div class="example-ls">
@@ -4131,20 +4170,22 @@ x ^= 2   #=> 16
 
 x ?= 10
 x        #=> 16
-x !?= 8
-x        #=> 8
 
-x ||= 5  #=> 8
+x ||= 5  #=> 16
 x &&= 5  #=> 5
 
 x &&+= 3 #=> 8
 x ?*= 2
 x        #=> 8
+
+xs = [1 2]
+xs ++= [3]
+xs #=> [1 2 3]
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var x, ref$;
+var x, ref$, xs;
 x = 2;
 x += 2;
 x -= 1;
@@ -4157,7 +4198,7 @@ x >= 2 || (x = 2);
 x = Math.pow(x, 2);
 x = Math.pow(x, 2);
 
-x == null && (x = 10);
+x == null && (x = 16);
 x;
 x != null && (x = 8);
 x;
@@ -4168,6 +4209,10 @@ x && (x = 5);
 x && (x += 3);
 x == null && (x *= 2);
 x;
+
+xs = [1, 2];
+xs = xs.concat([3]);
+xs;
 </pre>
         </div>
       </div>
@@ -4195,7 +4240,7 @@ y = -~-~y;
         </div>
       </div>
 
-      <p>Valeur par défaut - vous pouvez utiliser <code>||</code>, <code>&&</code>, <code>?</code>, et <code>!?</code>.
+      <p>Valeurs par défaut — vous pouvez utiliser <code>||</code>, <code>&&</code> et <code>?</code>.
 
       <p>Vous pouvez utiliser <code>=</code> à la place de <code>?</code> dans les paramètres et les destructurations :
 
@@ -4225,7 +4270,7 @@ f();
         </div>
       </div>
 
-      <p>Assignation conditionnelle - n'assigne que si l'opérande de droite existe :
+      <p>Assignation conditionnelle — n'assigne que si l'opérande de droite existe :
 
       <div class="example">
         <div class="example-ls">
@@ -4425,7 +4470,7 @@ phile.pets;
         </div>
       </div>
 
-      <p>L'accès avec un point - le point accepte bien plus qu'un simple identifieur comme opérande de droite, vous pouvez aussi donner des nombres, chaînes, parenthèses, etc :
+      <p>L'accès avec un point — le point accepte bien plus qu'un simple identifieur comme opérande de droite, vous pouvez aussi donner des nombres, chaînes, parenthèses, etc :
 
       <div class="example">
         <div class="example-ls">
@@ -4732,7 +4777,7 @@ throw new Error('Une erreur est survenue !');
         </div>
       </div>
 
-      <p>Vous pouvez attraper les exceptions avec <code>try</code> - <code>catch</code> - <code>finally</code>. Les blocs <code>catch</code> et <code>finally</code> sont optionnels.
+      <p>Vous pouvez attraper les exceptions avec <code>try</code>, <code>catch</code>, <code>finally</code>. Les blocs <code>catch</code> et <code>finally</code> sont optionnels.
 
       <p>Le bloc <code>try</code> est éxecuté. Si une exception est lancée, le bloc <code>catch</code> est éxecuté, avec l'objet. Contrairement au JavaScript, l'exception est liée à la portée de la fonction la plus propche, non pas au bloc <code>catch</code>. Vous pouvez même déstructurer l'exception si vous le voulez :
 
@@ -5399,7 +5444,7 @@ b.dimensions;
         <li>Changez les nombre littéraux commençant avec un point, transformez <code>.5</code> en ajoutant un zéro <code>0.5</code>
         <li>Changez vos expressions régulières avancées de <code>/// ///</code> vers <code>// //</code>
         <li>L'opérateur de reste (<code>...</code>) est en préfixe, non pas en suffixe (<code>(...args) -></code>)
-        <li>Retirez les parenthèses pour les arguments d'une fonction sans paramètres, <code>() -></code> doit être <code>-></code> - <code>()</code> est toujours un appel.
+        <li>Retirez les parenthèses pour les arguments d'une fonction sans paramètres, <code>() -></code> doit être <code>-></code> — <code>()</code> est toujours un appel.
         <li>Changez vos constructeurs de : 
 <pre>
 class Item
@@ -5410,7 +5455,7 @@ class Item
   ->
 </pre>
         Si votre constructeur est une fonction externe, assignez <code>constructor$$</code>.
-        <li>Changez vos appels à super de <code>super</code> à) <code>super ...</code> - this is because <code>super</code> is a direct reference to the parent function rather than a call itself.
+        <li>Changez vos appels à super de <code>super</code> à) <code>super ...</code> — <code>super</code> est une référence directe à la fonction parente et non pas un appel.
         <li>Entourez vos opérateurs de bits de points, <code>&amp;</code> est <code>.&amp;.</code> et <code>&gt;&gt;</code> est <code>.&gt;&gt;.</code> (etc)
         <li>Si vous voulez modifier des variables dans des portées supérieures
 <pre>
@@ -5482,7 +5527,7 @@ f do
       <a name="contributing"></a>
       <h2>Guide du contributeur</h2>
       <p>Créez un fork de <a href="https://github.com/gkz/LiveScript">LiveScript</a> et effectuez vos modifications, sans oublier les tests (dossier <code>/test</code>).
-      <p>&Eacute;xecutez <code>bin/slake</code> pour voir les commandes disponibles. Assurez-vous de pouvoir lancer <code>bin/slake build:full</code> - à savoir, recompiler le compilateur. Utile : <code>git checkout -- lib && bin/slake build:full</code> : nettoie votre <code>lib</code> et compile ainsi que lance vos tests. N'envoyez une Pull Request que si tous vos tests passant. Si vous modifiez la grammaire, vous devrez lancer <code>git checkout -- lib && bin/slake build && bin/slake build:parser && bin/slake test</code>. Une fois que tous les tests sont passés, modifiez les parties du compilateur à modifier, puis éxecutez <code>bin/slake build:full</code>.
+      <p>&Eacute;xecutez <code>bin/slake</code> pour voir les commandes disponibles. Assurez-vous de pouvoir lancer <code>bin/slake build:full</code> — à savoir, recompiler le compilateur. Utile : <code>git checkout -- lib && bin/slake build:full</code> : nettoie votre <code>lib</code> et compile ainsi que lance vos tests. N'envoyez une Pull Request que si tous vos tests passant. Si vous modifiez la grammaire, vous devrez lancer <code>git checkout -- lib && bin/slake build && bin/slake build:parser && bin/slake test</code>. Une fois que tous les tests sont passés, modifiez les parties du compilateur à modifier, puis éxecutez <code>bin/slake build:full</code>.
       <p>Ne recompilez pas (<code>extras/livescript.js</code>) (créé par <code>bin/slake build:browser</code>). Ce fichier n'est regénéré que lors de nouvelles versions.
     </div>
   </div>
