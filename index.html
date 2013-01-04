@@ -4650,6 +4650,47 @@ x = { "hello world": [ 4, [ 5, { boom: 6 } ] ] };
         </div>
       </div>
 
+      <p>Binding access <code>.~</code> retrieves an object's method as bound to the object. With automatic dot insertion you can just use <code>~</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj =
+  x: 5
+  add: (y) -> @x + y
+
+target =
+  x: 600
+  not-bound: obj.add
+  bound: obj~add
+
+target.not-bound 5 #=> 605
+target.bound 5     #=> 10
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj, target;
+obj = {
+  x: 5,
+  add: function(y){
+    return this.x + y;
+  }
+};
+target = {
+  x: 600,
+  notBound: obj.add,
+  bound: bind$(obj, 'add')
+};
+target.bound(5);
+function bind$(obj, key, target){
+  return function(){ return (target || obj)[key].apply(obj, arguments) };
+}
+</pre>
+        </div>
+      </div>
+
+
 
       <a name="cascades"></a>
       <h3>Cascades</h3>
