@@ -1043,7 +1043,7 @@ this.location;
 <pre class="prettyprint lang-ls">
 //
 | [!=]==?             # equality
-| @@                  # arguments
+| @@                  # constructor
 | <\[(?:[\s\S]*?\]>)? # words
 //g
 </pre>
@@ -1795,8 +1795,8 @@ function not$(x){ return !x; }
 add-two-times-two = (+ 2) >> (* 2)
 times-two-add-two = (+ 2) << (* 2)
 
-add-two-times-two 3 #=> 10
-times-two-add-two 3 #=> 8
+add-two-times-two 3 #=> (3+2)*2 => 10
+times-two-add-two 3 #=> (3*2)+2 => 8
 </pre>
         </div>
         <div class="example-js">
@@ -2828,6 +2828,47 @@ function curry$(f, bound){
       </div>
 
       <p>You can define bound curried functions with a long wavy arrow: <code>~~&gt;</code>
+
+      <p>If you call a curried function with no arguments, it will evaluate as is, allowing you to use default arguments.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = (x = 5, y = 10) --> x + y
+f! #=> 15
+g = f 20
+g 7 #=> 27
+g!  #=> 30
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var f, g;
+f = curry$(function(x, y){
+  x == null && (x = 5);
+  y == null && (y = 10);
+  return x + y;
+});
+f();
+g = f(20);
+g(7);
+g();
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
+}
+</pre>
+        </div>
+      </div>
 
       <h3>Named Functions</h3>
 
