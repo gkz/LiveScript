@@ -127,8 +127,8 @@ exports import
     case \return \throw                                then tag = \HURL
     case \break  \continue                             then tag = \JUMP
     case \this \eval \super then return @token(\LITERAL id, true)length
-    case \for  then @seenFor = true; fallthrough
-    case \then then @wantBy  = false
+    case \for  then @seenFor = true; @wantBy = false
+    case \then then @seenFor = @wantBy = false
     case \catch \function then id = ''
     case \where
       console?warn "WARNING on line #{@line}: the `where` statement is deprecated and will be removed in a future LiveScript release. Please use `let` or local variables instead."
@@ -395,7 +395,7 @@ exports import
                    IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
         return length
       if delta then @indent delta else @newline!
-    @wantBy = false
+    @seenFor = @wantBy = false
     length
 
   # Consumes non-newline whitespaces and/or a line comment.
@@ -419,7 +419,6 @@ exports import
   doLiteral: (code, index) ->
     return 0 unless sym = (SYMBOL <<< lastIndex: index)exec(code)0
     switch tag = val = sym
-    case \=>             then tag = \THEN; @unline!
     case \|
       tag = \CASE
       return sym.length if @doCase!
@@ -602,19 +601,24 @@ exports import
       @adi!
       val = \prototype
       tag = \ID
+    case \=>
+      @unline!
+      @seenFor = false
+      tag = \THEN
     default switch val.charAt 0
     case \( then @token \CALL( \(; tag = \)CALL; val = \)
     case \<
       @carp 'unterminated words' if val.length < 4
       @token \WORDS, val.slice(2, -2), @adi!
       return val.length
-    if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT 
+    if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
                  COMPOSE RELATION PIPE BACKPIPE IMPORT ]> and @last.0 is \(
       tag = if tag is \BACKPIPE then \BIOPBP else \BIOP
-    @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE 
+    @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE
                           MATH POWER IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
+
 
   #### Token Manipulators
 

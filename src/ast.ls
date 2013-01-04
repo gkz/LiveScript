@@ -1356,7 +1356,7 @@ class exports.Assign extends Node
       else if dot-split.length > 1
         right.in-class-static = dot-split[til -1].join ''
     code = if not o.level and right instanceof While and not right.else and
-              (lvar or left.isSimpleAccess!)
+              (lvar or left instanceof Chain and left.isSimpleAccess!)
       # Optimize `a = while ...`.
       empty = if right.objComp then '{}' else '[]'
       """#{ res = o.scope.temporary \res } = #empty;
@@ -2078,8 +2078,7 @@ class exports.For extends While
         then "#idx #{ '<>'charAt pvar < 0 }#eq #tvar"
         else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
     else
-      if @cascade
-        @item = Var o.scope.temporary \x
+      @item = Var o.scope.temporary \x if @ref
       if @item or @object and @own
         [svar, srcPart] = @source.compileLoopReference o, \ref, not @object
         svar is srcPart or temps.push svar
@@ -2114,11 +2113,10 @@ class exports.For extends While
     if @index and not @object
       head += \\n + o.indent +
         Assign(Var @index; JS idx).compile(o, LEVEL_TOP) + \;
-    if @cascade
-      @body = Block Cascade(JS "#svar[#idx]"; @body) <<< {ref: @item.value, +map}
-    else if @item and not @item.isEmpty!
+    if @item and not @item.isEmpty!
       head += \\n + o.indent +
         Assign(@item, JS "#svar[#idx]")compile(o, LEVEL_TOP) + \;
+    o.ref = @item.value if @ref
     body  = @compileBody o
     head += \\n + @tab if (@item or (@index and not @object)) and \} is body.charAt 0
     head + body
@@ -2374,11 +2372,11 @@ class exports.Cascade extends Node
     if \ret of this
       output.=makeReturn @ret
     if ref
-    then prog1 or @map or output = Assign JS(ref), output
+    then prog1 or output = Assign Var(ref), output
     else ref = o.scope.temporary \x
     if input instanceof Cascade
     then input <<< {ref}
-    else input &&= Assign JS(ref), input
+    else input &&= Assign Var(ref), input
     o.level &&= LEVEL_PAREN
     code = input.compile o
     out  = Block output .compile o <<< ref: new String ref

@@ -123,7 +123,7 @@ bnf =
     , -> Chain Slice type: $4, target: $1
 
     o 'WITH Expression Block' -> Chain Cascade $2, $3, \with
-    o 'FOR  Expression Block' -> Chain new For source: $2, body: $3, cascade: true
+    o 'FOR  Expression Block' -> Chain new For source: $2, body: $3, ref: true
 
   # An array or object
   List:
@@ -369,13 +369,13 @@ bnf =
     , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6, guard: $8
 
     o 'FOR Expression'
-    , -> new For source: $2, cascade: true
+    , -> new For source: $2, ref: true
     o 'FOR Expression CASE Expression'
-    , -> new For source: $2, cascade: true, guard: $4
+    , -> new For source: $2, ref: true, guard: $4
     o 'FOR Expression BY Expression'
-    , -> new For source: $2, cascade: true, step: $4
+    , -> new For source: $2, ref: true, step: $4
     o 'FOR Expression BY Expression CASE Expression'
-    , -> new For source: $2, cascade: true, step: $4, guard: $6
+    , -> new For source: $2, ref: true, step: $4, guard: $6
 
     o 'FOR     ID         OF Expression'
     , -> new For {+object,       index: $2,                   source: $4}

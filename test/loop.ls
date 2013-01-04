@@ -390,6 +390,14 @@ for, o.count!_ of [1 2] then continue
 eq o.i, 4
 
 
+# [#195](https://github.com/satyr/coco/issues/195)
+for [0]
+  ok 0 of {0}
+  for [1] then ok 1 in [1]
+  for [2] =>   ok 2 in [2]
+  ok 3 not of []
+
+
 ### Line folding before/after `for` prepositions
 for x
 of   {2}
