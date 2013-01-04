@@ -2126,28 +2126,31 @@ function import$(obj, src){
         </div>
       </div>
 
-      <p>Clone - creates a prototypical clone of the operand. Ie. the resulting object's prototype is the operand.
+      <p>Clone - creates a prototypical clone of the operand. It does not create a deep clone of the object, rather the resulting object's prototype is the operand. Remember that prototypes are ignored when serializing to JSON.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
+
 obj = {one: 1}
 obj2 = ^^obj
 obj2.two = 2
 obj2 #=> {one: 1, two: 2}
+# above includes its prototype's properties
+# JSON serialization would be just `{two: 2}`
 obj  #=> {one: 1}
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var obj, obj2;
-obj = {
-  one: 1
-};
+obj = {one: 1};
 obj2 = clone$(obj);
 obj2.two = 2;
 obj2;
-obj2.one;
+
+
+obj
 function clone$(it){
   function fun(){} fun.prototype = it;
   return new fun;
@@ -2156,7 +2159,7 @@ function clone$(it){
         </div>
       </div>
 
-      <p>The infix <em>with</em> (aka the <em>cloneport</em>) combines the clone and property copy operators for easy object creation. It is equivalent to <code>^^obj &lt;&lt;&lt; obj2</code>
+      <p>The infix <em>with</em> (aka the <em>cloneport</em>) combines the clone and property copy operators for easy object creation. It is equivalent to <code>^^obj &lt;&lt;&lt; obj2</code>. Remember that the clone operator creates a prototypical clone, and prototypes are not serialized in JSON.
 
       <div class="example">
         <div class="example-ls">
@@ -2164,6 +2167,8 @@ function clone$(it){
 girl = {name: \hanna, age: 22}
 guy  = girl with name: \john
 guy  #=> {name: 'john',  age: 22}
+# the above result include the object's prototype
+# in the result - the actual JSON: {name: 'john'}
 girl #=> {name: 'hanna', age: 22}
 </pre>
         </div>
