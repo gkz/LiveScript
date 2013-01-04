@@ -1,0 +1,5512 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>LiveScript - a language which compiles to JavaScript</title>
+<meta name='description' content="LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.">
+
+<link rel="canonical" href="http://livescript.net">
+<link rel="icon" type="image/png" href="images/icon.png">
+<link href="bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
+<link href="google-code-prettify/prettify.css" rel="stylesheet">
+<link href="styles.css" rel="stylesheet">
+
+<script>
+  if(window.location.host && window.location.host !== "localhost") {
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-7402515-5']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  }
+</script>
+</head>
+<body data-spy="scroll">
+<div class="site container-fluid">
+  <div class="row-fluid side-row">
+    <div class="span2 sidebar">
+      <h1><a href="#">LiveScript</a><img src="images/icon.png"></h1>
+      <ul class="nav nav-list">
+        <li class="active"><a href="#overview">Vue d'ensemble</a></li> 
+        <li class="divider">
+        <li><a href="#installation">Installation</a></li> 
+        <li><a href="#usage">Utilisation</a></li> 
+        <li><a href="#community">Communauté</a></li> 
+        <li><a href="#editor-support">&Eacute;diteurs de texte</a></li> 
+        <li><a href="#prelude-ls">Bibliothèque standard</a></li>
+        <li class="divider">
+        <li><a href="#introduction">Introduction</a></li> 
+        <li><a href="#literals">Littéraux</a></li> 
+        <li><a href="#operators">Opérateurs</a></li> 
+        <li><a href="#functions">Fonctions</a></li> 
+        <li><a href="#if-unless">If et Unless</a></li> 
+        <li><a href="#loops">Boucles et Compréhensions</a></li> 
+        <li><a href="#switch">Switch</a></li> 
+        <li><a href="#assignment">Attribution</a></li> 
+        <li><a href="#property-access">Accès Propriétés</a></li> 
+        <li><a href="#exceptions">Exceptions</a></li> 
+        <li><a href="#oop">POO</a></li> 
+        <li class="divider">
+        <li><a href="#coffee-to-ls">Conversion depuis CoffeeScript</a></li> 
+        <li><a href="#changes">Conversion depuis Coco</a></li> 
+        <li><a href="#changelog">Changelog</a></li> 
+        <li class="divider">
+        <li><a href="#inspiration">Inspiration</a></li> 
+        <li><a href="#name">Nom</a></li> 
+        <li><a href="#thanks">Remerciements</a></li> 
+        <li><a href="#contributing">Guide du contributeur</a></li> 
+      </ul>
+    </div>
+    <div class="span4 compiler">
+      <div class="compiler-box">
+      <div class="github-buttons">
+<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://livescript.net/" data-text="LiveScript - functional CoffeeScript" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        <iframe src="http://ghbtns.com/github-btn.html?user=gkz&repo=LiveScript&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="120px" height="20px"></iframe>
+      </div>
+        <textarea placeholder="Enter LiveScript here"></textarea>
+        <div class="actions">
+          <button class="btn btn-primary" data-action="compile" title="Convert LiveScript to JavaScript">Compile</button>
+          <button class="btn" data-action="run" title="Run compiled JavaScript">Run</button>
+          <button class="btn" data-action="ast" title="Abstract Syntax Tree">AST</button>
+          <button class="btn" data-action="tokens" title="Tokenization of input">Tokens</button>
+          <button class="btn" data-action="lex" title="Same as tokens, but skipping rewriting">Lex</button>
+        </div>
+      </div>
+      <div class="compiler-output">
+
+      </div>
+    </div>
+  </div>
+  <div class="row-fluid content-row">
+    <div class="span2">&nbsp;</div>
+    <div class="span6 content">
+      <div id="overview" class="section">
+        <a name="overview"></a>
+        <h2>Vue d'ensemble</h2>
+        <p>LiveScript est un langage qui se compile en JavaScript. Il a un rapport direct avec JavaScript, et vous permet d'écrire du JavaScript de façon considérables sans répétitivité. LiveScript ajoute non seulement des fonctionnalités pour écrire du code fonctionnel, mais possède aussi nombre d'améliorations pour la programmation orientée objet et la programmation impérative.
+        <p>LiveScript est un descendant indirect de <a href="http://coffeescript.org/">CoffeeScript</a>, direct de <a href="http://satyr.github.com/coco/">Coco</a> avec beaucoup plus de <a href="#coffee-to-ls">compatibilité</a>.
+        <div class="major-actions">
+          <h3 class="download">1.1.1:</h3>
+          <a href="https://github.com/gkz/LiveScript/zipball/1.1.1"><div class="btn btn-large btn">zip</div></a>
+          <a href="https://github.com/gkz/LiveScript/tarball/1.1.1"><div class="btn btn-large btn">tar.gz</div></a>
+          <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn-primary">View project on GitHub</div></a>
+          <iframe src="http://ghbtns.com/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="150" height="40"></iframe>
+          <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://livescript.net/" data-text="LiveScript - functional CoffeeScript" data-size="large" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        </div>
+<p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Suivez @gkzahariev (EN)</a> pour vous tenir au courant. 
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        <p>Dernier article: <strong><a href="blog/powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript (EN)</a></strong></p>
+        <p>Double-cliquez un exemple pour le compiler.
+      <h3>Examples</h3>
+      <p>Fonctions currifiées, switch implicite, opérateur de concaténation, et composition de fonctions :
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+take = (n, [x, ...xs]:list) -->
+  | n <= 0     => []
+  | empty list => []
+  | otherwise  => [x] +++ take n - 1, xs
+
+
+
+
+
+
+
+
+
+take 2, [1 2 3 4 5] #=> [1, 2]
+
+take-three = take 3
+take-three [3 to 8] #=> [3, 4, 5]
+
+# Composition, 'reverse' de prelude.ls
+last-three = reverse >> take-three >> reverse
+last-three [1 to 8] #=> [6, 7, 8]
+</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+var take, takeThree, lastThree, slice$ = [].slice;
+take = curry$(function(n, list){
+  var x, xs;
+  x = list[0], xs = slice$.call(list, 1);
+  switch (false) {
+  case !(n <= 0):
+    return [];
+  case !empty(list):
+    return [];
+  default:
+    return [x].concat(take(n - 1, xs));
+  }
+});
+take(2, [1, 2, 3, 4, 5]);
+
+takeThree = take(3);
+takeThree([3, 4, 5, 6, 7, 8]);
+
+
+lastThree = compose$([reverse, takeThree, reverse]);
+lastThree([1, 2, 3, 4, 5, 6, 7, 8]);
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
+}
+function compose$(fs){
+  return function(){
+    var i, args = arguments;
+    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+    return args[0];
+  };
+}
+</pre>
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-ls">
+          <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+
+# Listage facile, objets implicites
+table1 =
+  * id: 1
+    name: 'george'
+  * id: 2
+    name: 'mike'
+  * id: 3
+    name: 'donald'
+
+table2 =
+  * id: 2
+    age: 21
+  * id: 1
+    age: 20
+  * id: 3
+    age: 26
+
+# Accès implicite, accessignment
+up-case-name = (.name .= to-upper-case!)
+
+# Fonctions currifiées -->
+sort-by = (prop, list) --> list.sort (a, b) -> 
+  | a[prop] < b[prop] => -1
+  | a[prop] > b[prop] => 1
+  | otherwise         => 0
+
+
+
+
+
+
+
+# Compréhensions, déstructuration, piping
+[{id:id1, name, age} for {id:id1, name} in table1
+                     for {id:id2, age} in table2
+                     when id1 is id2]
+|> sort-by 'id'
+|> each up-case-name # 'each' de prelude.ls
+|> JSON.stringify
+#=>
+#[{"id":1,"name":"GEORGE","age":20},
+# {"id":2,"name":"MIKE",  "age":21},
+# {"id":3,"name":"DONALD","age":26}]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Opérateurs en tant que fonctions, pipe inversée
+map (.age), table2 |> fold1 (+)
+#=> 67 ('fold1' et 'map' de prelude.ls)
+</pre>
+        </div>
+        <div class="example-js">
+          <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+var table1, table2, upCaseName, sortBy, id1, name, id2, age;
+table1 = [
+  { id: 1,
+    name: 'george' },
+  { id: 2,
+    name: 'mike' },
+  { id: 3,
+    name: 'donald' }
+];
+table2 = [
+  { id: 2,
+    age: 21 },
+  { id: 1,
+    age: 20 },
+  { id: 3,
+    age: 26 }
+];
+upCaseName = function(it){
+  return it.name = it.name.toUpperCase();
+};
+sortBy = curry$(function(prop, list){
+  return list.sort(function(a, b){
+    switch (false) {
+    case !(a[prop] < b[prop]):
+      return -1;
+    case !(a[prop] > b[prop]):
+      return 1;
+    default:
+      return 0;
+    }
+  });
+});
+JSON.stringify(
+each(upCaseName)(
+sortBy('id')(
+(function(){
+  var i$, ref$, len$, ref1$, j$, len1$, ref2$, results$ = [];
+  for (i$ = 0, len$ = (ref$ = table1).length; i$ < len$; ++i$) {
+    ref1$ = ref$[i$], id1 = ref1$.id, name = ref1$.name;
+    for (j$ = 0, len1$ = (ref1$ = table2).length; j$ < len1$; ++j$) {
+      ref2$ = ref1$[j$], id2 = ref2$.id, age = ref2$.age;
+      if (id1 === id2) {
+        results$.push({
+          id: id1,
+          name: name,
+          age: age
+        });
+      }
+    }
+  }
+  return results$;
+}()))));
+fold1(curry$(function(x$, y$){
+  return x$ + y$;
+}))(
+map(function(it){
+  return it.age;
+}, table2));
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
+}
+</pre>
+        </div>
+      </div>
+      <p>Rappels désimbriqués, chaînage sans parenthèses :
+      <div class="example">
+        <div class="example-ls">
+        <h5>LiveScript</h5>
+<pre class="prettyprint lang-ls">
+<-! $ 'h1' .on 'click'
+alert 'boom!'
+</pre>
+        </div>
+        <div class="example-js">
+        <h5>JavaScript</h5>
+<pre class="prettyprint lang-js">
+$('h1').on('click', function(){
+  alert('boom!');
+});
+</pre>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <div id="installation" class="section">
+      <a name="installation"></a>
+      <h2>Installation</h2>
+      <p>Vous pouvez installer LiveScript depuis <a href="http://npmjs.org">Node Package Manager (EN)</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
+      <p>Vous pouvez aussi le télécharger (<a href="https://github.com/gkz/LiveScript/zipball/1.1.1">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.1.1">tar.gz</a>), ouvrir le dossier, et éxecuter <code>sudo bin/slake install</code>. En utilisant Git pour télécharger : <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> doit être installé sur votre machine.</p>
+      <p>Vous pouvez aussi l'inclure directement dans le navigateur en incluant le fichier <code>LiveScript/extras/livescript.js</code> via une balise script. C'est en fait la technique utilisée sur cette page. Si vous utilisez cette méthode, vos scripts LiveScript doivent être à même la page (sans utiliser l'attribut <code>src</code>), être placés après l'inclusion de <code>livescript.js</code>, et la balise script doit avoir l'attribut <code>type="text/ls"</code>.
+    </div>
+    <div id="usage" class="section">
+      <a name="usage"></a>
+      <h2>Utilisation</h2>
+      <p>Utilisation: <code>lsc [options] [fichiers] [arguments]</code></p>
+      <h3>Options</h3>
+      <table class="usage-options table table-striped table-bordered">
+        <tr><td>-i, --interactive</td><td>lance le compileur intéractif, utilisez ^J pour du multiligne</td></tr>
+        <tr><td>-c, --compile</td><td>compile en JavaScript et sauvegarde en .js</td></tr>
+        <tr><td>-d, --prelude</td><td>importe automatiquement prelude.ls</td></tr>
+        <tr><td>-k, --const</td><td>compile toutes les variables en tant que constantes</td></tr>
+        <tr><td>-o, --output DIR</td><td>compile dans le dossier de sortie précisé</td></tr>
+        <tr><td>-w, --watch</td><td>surveille les scripts lors de changements et relance</td></tr>
+        <tr><td>-s, --stdin</td><td>lis le flux stdin</td></tr>
+        <tr><td>-e, --eval</td><td>lis les arguments CLI comme script</td></tr>
+        <tr><td>-r, --require FILE+</td><td>inclus des bibliothèques avant l'éxecution</td></tr>
+        <tr><td>-b, --bare</td><td>compile sans l'IIFE globale</td></tr>
+        <tr><td>-p, --print</td><td>affiche le résultat dans stdout</td></tr>
+        <tr><td>-l, --lex</td><td>affiche les tokens que le lexer produit</td></tr>
+        <tr><td>-t, --tokens</td><td>affiche les tokens que le rewriter produit</td></tr>
+        <tr><td>-a, --ast</td><td>affiche l'arbre syntaxique abstrait que le parser produit</td></tr>
+        <tr><td>-j, --json</td><td>affiche/compile en tant que JSON</td></tr>
+        <tr><td>-n, --nodejs ARGS+</td><td>passe les options à nodejs</td></tr>
+        <tr><td>-v, --version</td><td>affiche la version</td></tr>
+        <tr><td>-h, --help</td><td>affiche ceci</td></tr>
+      </table>
+
+      <h3>Exemples</h3>
+
+      <ul>
+        <li>Lancer un fichier LiveScript (via node.js): <code>lsc file.ls</code> - le <code>.ls</code> est optionnel.
+        <li>Compile un fichier LiveScript, créant un fichier .js : <code>lsc -c file.ls</code>
+        <li>Surveille un fichier LiveScript et le compile lors de changements : <code>lsc -wc file.ls</code>
+        <li>Compile un dossier entier vers un autre dossier : <code>lsc -co output src</code>
+        <li>Surveille un dossier, le compile vers un autre dossier lors de changements : <code>lsc -wco output src</code>
+        <li>Compile un petit extrait et affiche le résultat dans la console : <code>lsc -bpe '[1 to 5]'</code>
+        <li>Lance le compilateur intéractif : <code>lsc -i</code> - <code>Ctrl-D</code> pour quitter, utilisez <code>Ctrl-J</code> pour du multiligne.
+      </ul>
+    </div>
+    <div id="community" class="section">
+      <a name="community"></a>
+      <h2>Commauté</h2>
+      <ul>
+        <li><a href="https://github.com/gkz/LiveScript/issues">Issues (GitHub)</a>
+        <li><a href="https://groups.google.com/forum/#!forum/livescript">Google Groups</a>
+        <li><a href="http://www.reddit.com/r/livescript/">r/livescript</a>
+        <li>Retrouvez-nous sur #livescript@freenode.
+      </ul>
+      <a name="blog"></a>
+      <h3>Blog</h3>
+      <ul>
+        <li><a href="blog/livescript-1.1.0.html">LiveScript 1.1.0 Released! (EN)</a>
+        <li><a href="blog/powerful-jquery-with-livescript.html">Powerful jQuery with LiveScript (EN)</a>
+        <li><a href="blog/livescript-1.0.0.html">LiveScript 1.0.0 Released (EN)</a>
+        <li><a href="blog/functional-programming-in-javascript-using-livescript-part-2.html">Functional Programming in JavaScript using LiveScript - Part 2 (EN)</a>
+        <li><a href="blog/ten-reasons-to-switch-from-coffeescript.html">10 Reasons to Switch from CoffeeScript to LiveScript (EN)</a>
+        <li><a href="blog/functional-programming-in-javascript-using-livescript-and-prelude-ls.html">Functional Programming in JavaScript using LiveScript and prelude.ls (EN)</a>
+        <li><a href="blog/livescript-one-liners-to-impress-your-friends.html">10 LiveScript One Liners to Impress Your Friends (EN)</a>
+      </ul>
+      <h3>Sur le web</h3>
+      <ul>
+        <li><a href="https://github.com/gkz/LiveScript/wiki/Projects-using-LiveScript">Projets utilisant LiveScript (EN)</a>
+        <li><a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">Projets supportant LiveScript (EN)</a>
+      </ul>
+      <p>Ajoutez vos propres projets à la liste !
+    </div>
+    <div id="editor-support" class="section">
+      <a name="editor-support"></a>
+      <h2>&Eacute;diteurs de texte</h2>
+      <ul>
+        <li>Utilisateurs de Vim, voici <a href="https://github.com/gkz/vim-ls">vim-ls</a>.
+        <li>Bundle TextMate, Chocolat, et Sublime Text pour LiveScript : <a href="https://github.com/paulmillr/LiveScript.tmbundle">LiveScript.tmbundle</a>.
+        <li>Support basique dans Emacs : <a href="https://github.com/tensai-cirno/livescript-mode">livescript-mode</a>
+      </ul>
+      <p>Ajoutez le votre dans le <a href="https://github.com/gkz/LiveScript/wiki/Projects-supporting-LiveScript">wiki (EN)</a>.
+    </div>
+    <div id="prelude-ls" class="section">
+      <a name="prelude-ls">
+      <h2>Bibliothèque standard</h2>
+      <p><a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> est la bibliothèque recommandée pour utiliser avec LiveScript. Elle vous permet de faire des choses telles que :
+
+<pre class="prettyprint lang-ls">
+[1 2 3] |> map (* 2) |> filter (> 3) |> fold1 (+) 
+#=> 10
+</pre>
+
+      <p>Vous pouvez importer automatiquement prelude.ls en compilant ou avec le compilateur intéractif via l'option <code>-d</code> (ou <code>--prelude</code>).
+
+      <p>Prelude.ls est chargé sur cette page, vous pouvez en utiliser les fonctions dans le compilateur (panneau droite).
+    </div>
+    <hr>
+    <div id="introduction" class="section">
+      <a name="introduction"></a>
+      <h2>Introduction</h2>
+      <p>Comme beaucoup de langages modernes, les blocs sont délimités par l'indentation avec des espaces/tabulations et les instructions sont séparées par des lignes plutôt que par des points-virgules (vous pouvez toujours utilisez des points-virgules pour avoir plus d'une instruction sur une ligne).
+
+      <p>Par exemple (LiveScript sur la gauche, JavaScript compilé sur la droite):
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+if 2 + 2 == 4
+  do-something()
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+if (2 + 2 === 4) {
+  doSomething();
+}
+</pre>
+        </div>
+      </div>
+
+      <p class="note">Vous pouvez tester tous ces exemples en utilisant le compilateur sur la droite.
+
+      <p>Pour nettoyer votre code, vous pouvez omettre les parenthèses quand vous appelez une fonction.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add 2, 3
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+add(2, 3);
+</pre>
+        </div>
+      </div>
+
+      <p>Les commentaires sont :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+# d'ici à la fin de la ligne.
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+// d'ici à la fin de la ligne.
+</pre>
+        </div>
+      </div>
+
+      <p class="note">Amis de Lisp, vous serez heureux d'apprendre que vous pouvez utiliser les tirets dans vos noms de variables et de fonctions. Ces noms sont identiques à - et compilés vers - leur équivalent camelCase. <code>my-value = 42</code> == <code>myValue = 42</code>.
+
+      <p>L'extension est <code>.ls</code>.
+
+
+      <h3>Définir une fonction</h3>
+
+      <p>La définition de fonction est très simple en LiveScript :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+(x, y) -> x + y 
+
+-> # une fonction vide
+
+times = (x, y) ->
+  x * y
+# multiligne, assignée à une variable
+# comme en JavaScript
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var times;
+(function(x, y){ return x + y; });
+
+(function(){});
+
+times = function(x, y){ 
+  return x * y;
+};
+
+
+</pre>
+        </div>
+      </div>
+
+      <p>Comme vous pouvez le voir, les déclarations sont bien plus courtes. Vous pouvez aussi voir que le <code>return</code> est implicite. En LiveScript, presque tout est une expression et la dernière est automatiquement retournée. Cependant, vous pouvez toujours utiliser <code>return</code> pour forcer un retour, ou ajouter un point d'exclamation à la définition pour supprimer le retour implicite <code>no-ret = !(x) -> ...</code>.
+
+      <h3>Attribution</h3>
+      <p>L'attribution basique est comme vous vous y attendez, <code>variable = value</code>, et il n'y a pas besoin de déclarer les variables. Cependant, contrairement à CoffeeScript, vous devez utiliser <code>:=</code> pour modifier les variables dans des portées supérieures. 
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+x = 10
+
+
+do ->
+  x = 5
+
+x #=> 10
+
+do ->
+  x := 2
+
+x #=> 2
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 10;
+
+(function(){
+  var x;
+  return x = 5;
+})();
+x;
+
+(function(){
+  return x = 2;
+})();
+x;
+</pre>
+        </div>
+      </div>
+      
+      <p>Presque tout est une expression, ce qui signifie que vous pouvez faire des choses comme :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = if 2 + 2 == 4
+    then 10
+    else 0
+x #=> 10
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 2 + 2 === 4 ? 10 : 0;
+
+x;
+</pre>
+        </div>
+      </div>
+
+      <p>Même les boucles, switch, voire les try/catch sont des expressions. 
+
+      <p>Si vous voulez simplement déclarer une variable sans l'initialiser, utilisez <code>var</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+var x
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi déclarer des constantes avec le mot-clef <code>const</code>. Les vérifications sont faites à la compilation - le JavaScript compilé est le même.
+      
+      <p>Essayer de compiler le code suivant :
+
+<pre class="prettyprint lang-ls">
+const x = 10
+x = 0
+</pre>
+
+      <p>Donnera l'erreur suivante : <code>redeclaration of constant "x" on line 2</code> (<code>re-déclaration de la constante "x" ligne 2</code>). 
+
+      <p>&Agrave; l'inverse, les objets ne sont pas "gêlés" - vous pouvez quand même modifier leurs propriétés. Vous pouvez forcer toutes les variables à être des constantes à l'aide de l'option <code>-k</code> (ou <code>--const</code>).
+
+
+      <h3>Infos</h3>
+
+      <p>Pour voir les différences avec CoffeeScript, allez au paragraphe <a href="#coffee-to-ls">Conversion depuis CoffeeScript</a>.
+      <p>Vous pouvez double-cliquer n'importe quel exemple pour le charger dans le compilateur à droite, ou vous pouvez charger votre propre code. Notez que LiveScript entoure le JavaScript dans une IIFE <code>(function(){...contenu...}).call(this);</code> - retiré des exemples et des résultats du compilateur pour la concision.
+    </div>
+    <div id="literals" class="section">
+      <a name="literal"></a>
+      <h2>Littéraux</h2>
+
+      <h3>Numbres</h3>
+
+      <p><code>.4</code> est invalide, vous devez le précéder d'un zero : <code>0.4</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+42
+17.34
+0.4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+42;
+17.34;
+0.4;
+</pre>
+        </div>
+      </div>
+
+      <p>Les traits de soulignement (underscores) et autres lettres sont ignorées :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+64_000km
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+64000;
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez utiliser n'importe quelle base de 2 à 36 en utilisant <code>~</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+6~12
+2~1000
+16~ff
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+8;
+8;
+255;
+</pre>
+        </div>
+      </div>
+
+      <h3>Booléens, Undefined, Null</h3>
+
+      <p>Alias comme en CoffeeScript :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+true
+false
+on
+off
+yes
+no
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+true;
+false;
+true;
+false;
+true;
+false;
+</pre>
+        </div>
+      </div>
+
+      <p>En JavaScript, <code>undefined</code> peut être redéfini, il est donc plus prudent d'utiliser <code>void</code> qui produira toujours undefined.
+
+      <p><code>void</code> ne se compile en rien (utilisé comme espace réservé) - il peut cependant être utilisé comme valeur :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+void
+x = void
+y = undefined
+
+null
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, y;
+// void compiles to nothing here!
+x = void 8;
+y = void 8;
+
+null;
+</pre>
+        </div>
+      </div>
+
+      <h3>Chaînes</h3>
+
+      <p>Vous pouvez utiliser des apostrophes ou des guillemets :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+'a string'
+"a string"
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+'a string';
+"a string";
+</pre>
+        </div>
+      </div>
+
+
+      <p>Les chaînes sans espaces peuvent être écrites avec un anti-slash :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+\word
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+'word';
+</pre>
+        </div>
+      </div>
+
+      <p>Les chaînes entre guillemets acceptent les interpolations. Les variables simples peuvent être interpolées sans accolades.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+"The answer is #{2 + 2}"
+'As #{is}'
+
+variable = "world"
+"Hello #variable"
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var variable;
+"The answer is " + (2 + 2);
+'As #{is}';
+
+variable = "world";
+"Hello " + variable;
+</pre>
+        </div>
+      </div>
+
+      <p>Préfixer une interpolation avec <code>%</code> retourne les parties en tant que liste, vous permettant de les joindre comme bon vous semble.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+%"#x #y"
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+[x, " ", y];
+</pre>
+        </div>
+      </div>
+
+      <p>Chaînes multilignes (vous pouvez aussi utiliser des guillemets pour utiliser les interpolations) :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+multiline = 'les chaînes peuvent être multilignes
+            en continuant tant que nécessaire
+            les espaces précédant sont
+            ignorés'
+heredoc = '''
+            les chaînes peuvent être multilignes
+            en continuant tant que nécessaire
+            les espaces précédant sont
+            ignorés
+'''
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var multiline, heredoc;
+multiline = 'les chaînes peuvent être multilignes en continuant tant que nécessaire les espaces précédant sont ignorés';
+
+heredoc = 'les chaînes peuvent être multilignes\nen continuant tant que nécessaire\nles espaces précédant sont\nignorés';
+
+
+
+
+
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Commentaires</h3>
+
+      <p>Les commentaires monoligne commencent avec un <code>#</code>. Ils ne sont pas gardés dans la version compilée.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+# commentaire
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+
+
+</pre>
+        </div>
+      </div>
+
+      <p>Les commentaires multiligne sont gardés
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+/* Utilisez ce format
+   pour conserver
+   vos commentaires
+*/
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+/* Utilisez ce format
+   pour conserver
+   vos commentaires
+*/
+</pre>
+        </div>
+      </div>
+
+      <h3>Objets</h3>
+
+      <p>Les accolades sont optionnelles :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+obj = {prop: 1, thing: 'moo'}
+
+
+
+person =
+  age:      23
+  eye-color: \green
+  height:   180cm
+
+oneline = color: \blue, heat: 4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj, person, oneline;
+obj = {
+  prop: 1,
+  thing: 'moo'
+};
+person = {
+  age: 23,
+  eyeColor: 'green',
+  height: 180
+};
+oneline = {
+  color: 'blue',
+  heat: 4
+};
+</pre>
+        </div>
+      </div>
+
+      <p>Clefs dynamiques :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj =
+  "#variable": 234
+  (person.eye-color): false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, obj;
+obj = (ref$ = {}, ref$[variable + ""] = 234, ref$[person.eyeColor] = false, ref$);
+</pre>
+        </div>
+      </div>
+
+      <p>Raccourci pour les paramètres - vous permet d'utiliser plus rapidement des variables quand la clef est le nom de la variable en valeur :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = 1
+y = 2
+obj = {x, y}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, y, obj;
+x = 1;
+y = 2;
+obj = {
+  x: x,
+  y: y
+};
+</pre>
+        </div>
+      </div>
+
+      <p>Raccourci pour les booléens :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+{+debug, -live}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+({
+  debug: true,
+  live: false
+});
+</pre>
+        </div>
+      </div>
+
+      <p>This - Pas besoin d'utiliser de <code>.</code> pour accéder aux propriétés.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+this
+@
+@location
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+this;
+this;
+this.location;
+</pre>
+        </div>
+      </div>
+
+      <h3>Expressions régulières</h3>
+
+      <p>Les expressions régulières sont délimitées avec un simple <code>/</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+/moo/gi
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+/moo/gi;
+</pre>
+        </div>
+      </div>
+
+      <p>Lorsque délimitées avec <code>//</code>, vous permettent d'utiliser des espaces, des interpolations et du multiligne !
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+//
+| [!=]==?             # équalité
+| @@                  # arguments
+| <\[(?:[\s\S]*?\]>)? # mots
+//g
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+/|[!=]==?|@@|<\[(?:[\s\S]*?\]>)?/g;
+
+
+
+
+
+</pre>
+        </div>
+      </div>
+
+      <h3>Listes</h3>
+
+      <p>Les listes normales sont entre crochets :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1, person.age, 'French Fries']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+[1, person.age, 'French Fries'];
+</pre>
+        </div>
+      </div>
+
+      <p>Les virgules ne sont pas nécessaires si l'élément précédent n'est pas appellable :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 2 3 true void \word 'hello there']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+[1, 2, 3, true, void 8, 'word', 'hello there'];
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez créer des listes implicites en indentant un bloc. Vous devez avoir au moins deux éléments pour que cela fonctionne. Si vous n'en avez qu'un, utilisez le yaddayaddayadda <code>...</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+my-list =
+  32 + 1
+  person.height
+  \beautiful
+
+one-item =
+  1
+  ...
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var myList, oneItem;
+myList = [32 + 1, person.height, 'beautiful'];
+
+
+
+oneItem = [1];
+
+
+
+</pre>
+        </div>
+      </div>
+
+      <p>Quand vous utilisez des listes implicites, vous pouvez utiliser un astérisque <code>*</code> pour désambiguïser entre les structures. L'astérique ne représente pas un élément de la liste, mais décale en fait une structure implicite pour ne pas qu'elle soit mélangée avec les autres.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+tree =
+  * 1
+    * 2
+      3
+    4
+  * 5
+    6
+    * 7
+      8
+      * 9
+        10
+    11
+
+obj-list =
+  * name: \tessa
+    age:  23
+  * name: \kendall
+    age:  19
+
+
+obj =
+  * name: \tessa
+    age:  23
+
+obj-one-list =
+  * name: \tessa
+    age:  23
+  ...
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var tree, objList, obj, objOneList;
+tree = [[1, [2, 3], 4], [5, 6, [7, 8, [9, 10]], 11]];
+
+
+
+
+
+
+
+
+
+objList = [
+  {
+    name: 'tessa',
+    age: 23
+  }, {
+    name: 'kendall',
+    age: 19
+  }
+];
+obj = {
+  name: 'tessa',
+  age: 23
+};
+objOneList = [{
+  name: 'tessa',
+  age: 23
+}];
+</pre>
+        </div>
+      </div>
+
+      <p>Liste de mots :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+<[ list of words ]>
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+['list', 'of', 'words'];
+</pre>
+        </div>
+      </div>
+
+      <h3>Séries</h3>
+
+      <p>Dans une série, <code>to</code> signifie <em>à</em>, et inclu le nombre à droite. <code>til</code> signifie <em>jusqu'à</em> et n'inclue pas le nombre.
+
+      <p>Vous pouvez optionnellement ajouter un <code>by</code> qui définira l'étape.
+
+      <p>Si vous omettez le premier nombre, il sera <code>0</code>.
+
+      <p>Avec des nombres/chaînes littéraux :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 to 5]       #=> [1, 2, 3, 4, 5]
+[1 til 5]      #=> [1, 2, 3, 4]
+[1 to 10 by 2] #=> [1, 3, 7, 9]
+[4 to 1]       #=> [4, 3, 2, 1]
+[to 5]         #=> [0, 1, 2, 3, 4, 5]
+[\A to \D]     #=> ['A', 'B', 'C', D']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i$;
+[1, 2, 3, 4, 5];
+[1, 2, 3, 4];
+[1, 3, 5, 7, 9];
+[4, 3, 2, 1];
+[0, 1, 2, 3, 4, 5];
+["A", "B", "C", "D"];
+</pre>
+        </div>
+      </div>
+
+      <p>Avec n'importe quelle expression - si vous voulez aller vers le bas (d'un nombre à un autre plus petit), vous devez le préciser explicitement avec <code>by -1</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = 4
+[1 to x]       #=> [1, 2, 3, 4]
+[x to 0 by -1] #=> [4, 3, 2, 1, 0]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, i$;
+x = 4;
+for (i$ = 1; i$ <= x; ++i$) {
+  i$;
+}
+for (i$ = x; i$ >= 0; --i$) {
+  i$;
+}
+</pre>
+        </div>
+      </div>
+
+      <h3>Autres</h3>
+
+      <p>Labels (utile pour les boucles imbriquées) :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+:label 4 + 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+label: {
+  4 + 2;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Raccourci pour <code>constructor</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+@@
+@@x
+x@@y
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+constructor;
+constructor.x;
+x.constructor.y;
+</pre>
+        </div>
+      </div>
+
+      <p>Yaddayaddayadda - un espace réservé :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+...
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+throw Error('unimplemented');
+</pre>
+        </div>
+      </div>
+    </div>
+
+    <div id="operators" class="section">
+      <a name="operators"></a>
+      <h2>Opérateurs</h2>
+
+      <h3>Nombre</h3>
+
+      <p>Les opérateurs mathématiques standarts :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+1 + 2 #=> 3
+3 - 4 #=> -1
+6 * 2 #=> 12
+8 / 4 #=> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+1 + 2;
+3 - 4;
+6 * 2;
+8 / 4;
+</pre>
+        </div>
+      </div>
+
+      <p>Il y a aussi un opérateur pour le reste, comme en JavaScript - ainsi que le modulo :
+
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+-3 % 4  #=> -3
+-3 %% 4 #=> 1
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$;
+-3 % 4;
+((-3) % (ref$ = 4) + ref$) % ref$;
+</pre>
+        </div>
+      </div>
+
+      <p>L'opérateur de puissance est associatif à droite, et a une plus haute précédence que les opérateurs unaires. <code>^</code> est un alias pour <code>**</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+2 ** 4     #=> 16
+3 ^ 4      #=> 81
+-2 ^ 2 ^ 3 #=> -256
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+Math.pow(2, 4);
+Math.pow(3, 4);
+-Math.pow(2, Math.pow(2, 3));
+</pre>
+        </div>
+      </div>
+
+      <p>Incrémentation, décrementation :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+n = 0
+n++ #=> 0
+++n #=> 2
+n-- #=> 2
+--n #=> 0
+x = n++ #=> 0
+x #=> 0
+n #=> 1
+x = ++n #=> 2
+x #=> 2
+n #=> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var n, x;
+n = 0;
+n++;
+++n;
+n--;
+--n;
+x = n++;
+x;
+n;
+x = ++n;
+x;
+n;
+</pre>
+        </div>
+      </div>
+
+      <p>Opérateurs de bits et de décalage :
+
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+14 .&. 9   #=> 8
+14 .|. 9   #=> 15
+14 .^. 9   #=> 7
+~9         #=> -10
+9  .<<. 2  #=> 36
+-9 .>>. 2  #=> -3
+-9 .>>>. 2 #=> 1073741821
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+14 & 9;
+14 | 9;
+14 ^ 9;
+~9;
+9 << 2;
+-9 >> 2;
+-9 >>> 2;
+</pre>
+        </div>
+      </div>
+
+      <p>Casting vers un nombre :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
++'4' #=>  4
+-'3' #=> -3
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
++'4';
+-'3';
+</pre>
+        </div>
+      </div>
+
+      <h3>Comparaison</h3>
+
+      <p>&Eacute;galité stricte (pas de conversion de type) :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+2 + 4 == 6      #=> true
+\boom is 'boom' #=> true
+
+\boom != null   #=> true
+2 + 2 is not 4  #=> false
+0 + 1 isnt 1    #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+2 + 4 === 6;
+'boom' === 'boom';
+
+'boom' !== null;
+2 + 2 !== 4;
+0 + 1 !== 1;
+</pre>
+        </div>
+      </div>
+
+      <p>&Eacute;galité simple (avec conversion de type) :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+2 ~= '2'       #=> true
+\1 !~= 1       #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+2 == '2';
+'1' != 1;
+</pre>
+        </div>
+      </div>
+
+      <p>Supérieur/inférieur à :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+2 < 4           #=> true
+9 > 7           #=> true
+8 <= 8          #=> true
+7 >= 8          #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+2 < 4;
+9 > 7;
+8 <= 8;
+7 >= 8;
+</pre>
+        </div>
+      </div>
+
+      <p>Enchaînement de comparaisons :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+1 < 2 < 4        #=> true
+1 < 2 == 4/2 > 0 #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$;
+1 < 2 && 2 < 4;
+1 < 2 && 2 === (ref$ = 4 / 2) && ref$ > 0;
+</pre>
+        </div>
+      </div>
+
+      <p>Minimum/maximum - retourne le minimum/maximum des deux opérandes :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+4 >? 8     #=> 8
+9 - 5 &lt;? 6 #=> 4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$;
+4 > 8 ? 4 : 8;
+(ref$ = 9 - 5) < 6 ? ref$ : 6;
+</pre>
+        </div>
+      </div>
+
+      <p>Quand une des deux opérandes d'une comparaison (<code>==</code> ou <code>is</code>, ainsi que les versions inversées) est une expression régulière littérale, elle sera testée contre l'autre opérande. Une égalité donne un appel d'<code>exec</code> pour que vous puissiez utiliser les résultats, alors qu'une inégalité utilise <code>test</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+/^e(.*)/ is 'enter' #=> ["enter","nter"]
+/^e(.*)/ == 'zx'    #=> null
+/moo/ != 'loo'      #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+/^e(.*)/.exec('enter');
+/^e(.*)/.exec('zx');
+!/moo/.test('loo');
+</pre>
+        </div>
+      </div>
+
+
+      <h3>Logique</h3>
+
+      <p>Les bases :</p>
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+true and false #=> false
+true && false  #=> false
+
+true or false  #=> true
+true || false  #=> true
+
+not false      #=> true
+!false         #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+true && false;
+true && false;
+
+true || false;
+true || false;
+
+!false;
+!false;
+</pre>
+        </div>
+      </div>
+
+      <p>Ou exclusif - un opérateur peu vu dans d'autres langages:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+false xor true  #=> true
+false xor false #=> false
+1 xor 0         #=> 1
+1 xor 1         #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+((true, false) || true) && !(false && true) && (false || true);
+((false, false) || false) && !(false && false) && (false || false);
+((0, 1) || 0) && !(1 && 0) && (1 || 0);
+((1, 1) || 1) && !(1 && 1) && (1 || 1);
+</pre>
+        </div>
+      </div>
+
+      <p><code>and</code>, <code>or</code>, et <code>xor</code> ferment les appels implicites, contrairement à <code>||</code> et <code>&amp;&amp;</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+even 0 and 3 #=> 3
+even 0 &&  3 #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+even(0) && 3;
+even(0 && 3);
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez appeler les opérateurs logiques :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+(f or g) 1
+(f and g or h) 3 4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+f(1) || g(1);
+f(3, 4) && g(3, 4) || h(3, 4);
+</pre>
+        </div>
+      </div>
+
+      <h3>In/Of</h3>
+
+      <p>Utilisez <code>in</code> pour savoir si un élément est dans une liste, et <code>of</code> pour savoir si l'objet contient une clef :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+list = [7 8 9]
+2 in [1 2 3 4 5]             #=> true
+3 in list                    #=> false
+\id of id: 23, name: \rogers #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var list;
+list = [7, 8, 9];
+2 == 1 || 2 == 2 || 2 == 3 || 2 == 4 || 2 == 5;
+in$(3, list);
+'id' in {
+  id: 23,
+  name: 'rogers'
+};
+function in$(x, arr){
+  var i = 0, l = arr.length >>> 0;
+  while (i < l) if (x === arr[i++]) return true;
+  return false;
+}
+</pre>
+        </div>
+      </div>
+
+      <a name="piping"></a>
+      <h3>Piping</h3>
+
+      <p>&Eacute; la place d'une série d'appels imbriqués, vous pouvez utiliser le piping. <code>x |> f</code> et <code>f <| x</code> sont équivalents à <code>f(x)</code>.
+
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 2 3] |> reverse |> head #=> 3
+
+
+reverse <| [1 2 3]         #=> [3,2,1]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+head(
+reverse(
+[1, 2, 3]));
+reverse([1, 2, 3]);
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez ajouter des nouvelles lignes pour clarifier :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+4
+|> (+ 1)
+|> even
+#=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+even(
+(function(it){
+  return it + 1;
+})(
+4));
+</pre>
+        </div>
+      </div>
+
+      <a name="composing"></a>
+      <h3>Composition</h3>
+
+      <p>La composition vous permet de créer des fonctions <em>composées</em> d'autres fonctions. LiveScript a deux opérateurs : en avant (<code>&gt;&gt;</code>) et en arrière (<code>&lt;&lt;</code>).
+
+      <p><code>(f &lt;&lt; g) x</code> est pareil que <code>f(g(x))</code>, et <code>(f &gt;&gt; g) x</code> est équivalent à <code>g(f(x))</code>. Par exemple :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+odd     = (not) << even
+odd 3   #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var odd;
+odd = compose$([not$, even]);
+odd(3);
+function compose$(fs){
+  return function(){
+    var i, args = arguments;
+    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+    return args[0];
+  };
+}
+function not$(x){ return !x; }
+</pre>
+        </div>
+      </div>
+
+      <p>Pour être un peu plus clear à propos des différences entre les deux opérateurs :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add-two-times-two = (+ 2) >> (* 2)
+times-two-add-two = (+ 2) << (* 2)
+
+add-two-times-two 3 #=> 10
+times-two-add-two 3 #=> 8
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var addTwoTimesTwo, timesTwoAddTwo;
+addTwoTimesTwo = compose$([
+  (function(it){
+    return it * 2;
+  }), (function(it){
+    return it + 2;
+  })
+]);
+timesTwoAddTwo = compose$([
+  (function(it){
+    return it + 2;
+  }), (function(it){
+    return it * 2;
+  })
+]);
+addTwoTimesTwo(3);
+timesTwoAddTwo(3);
+function compose$(fs){
+  return function(){
+    var i, args = arguments;
+    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
+    return args[0];
+  };
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi utiliser un point espacé comme alias pour <code>&lt;&lt;</code>, par exemple <code>f . g</code>, comme en Haskell.
+
+      <h3>Liste</h3>
+
+      <p>Vous pouvez concaténer deux listes ensemble :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+<[ un deux trois ]> +++ [\quatre]
+#=> ['un','deux','trois','quatre']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+['un', 'deux', 'trois'].concat(['quatre']);
+
+
+</pre>
+        </div>
+      </div>
+
+      <p>Répétition :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[\ha] * 3 #=> ['ha','ha','ha']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+['ha', 'ha', 'ha'];
+</pre>
+        </div>
+      </div>
+
+      <p>Jointure :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+<[ one two three ]> * \|      #=> 'one|two|three'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+['one', 'two', 'three'].join('|');
+</pre>
+        </div>
+      </div>
+
+      <p>Propagation unaire - quand l'opérande est une liste littérale, l'opérateur unaire est appliqué à tous les éléments :<br />
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+r = +[4 5 6]        #=> [+4, +5, +6]
+t = typeof! [\b 5 {}] #=> ["String", "Number", "Object"]
+c = ~[4, 5]         #=> [-5, -6]
+++player<[strength hp]>
+# marche aussi avec -, --, typeof, ! et delete!
+# ou -~-~
+i = new [some, classes]
+c = ^^[copy, these, {}]
+delete list[1, 2, 3]
+do [a, b, c]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var r, t, c, i, toString$ = {}.toString;
+r = [+4, +5, +6];
+t = [toString$.call('b').slice(8, -1), toString$.call(5).slice(8, -1), toString$.call({}).slice(8, -1)];
+c = [~4, ~5];
+++player['strength'], ++player['hp'];
+i = [new some, new classes];
+c = [clone$(copy), clone$(these), clone$({})];
+delete list[1], delete list[2], delete list[3];
+a(), b(), c();
+function clone$(it){
+  function fun(){} fun.prototype = it;
+  return new fun;
+}
+</pre>
+        </div>
+      </div>
+
+      <h3>Chaîne</h3>
+
+      <p>Concaténation :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+'hello' + ' ' + 'world' #=> 'hello world'
+string = 'say '         #=> 'say '
+string += \yeah         #=> 'say yeah'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var string;
+'hello' + ' ' + 'world';
+string = 'say ';
+string += 'yeah';
+</pre>
+        </div>
+      </div>
+
+      <p>Répétition :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+'X' * 3      #=> 'XXX'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+'XXX';
+</pre>
+        </div>
+      </div>
+
+      <p>Soustraction / division de chaînes - soustraction pour <code>replace</code>, division pour <code>split</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+'say yeah' - /h/ #=> 'say yea'
+'say yeah' / \y  #=> ['sa',' ','eah']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+'say yeah'.replace(/h/, '');
+'say yeah'.split('y');
+</pre>
+        </div>
+      </div>
+
+      <h3>Existence/Inexistence</h3>
+
+      <p>L'opérateur <code>?</code> peut être utilisé dans de nombreux contextes pour vérifier une présence. L'opérateur <code>!?</code> est son inverse, vérifiant l'inexistance.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+bigfoot ? 'grizzly bear'     #=> 'grizzly bear'
+string = \boom if window?    #=> 'boom'
+string = 'yeah' if bigfoot!? #=> 'yeah'
+document?.host               #=> 'gkz.github.com'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var string;
+(typeof bigfoot == 'undefined' || bigfoot === null) && 'grizzly bear';
+if (typeof window != 'undefined' && window !== null) {
+  string = 'boom';
+}
+if (typeof bigfoot == 'undefined' || bigfoot === null) {
+  string = 'yeah';
+}
+if (typeof document != 'undefined' && document !== null) {
+  document.host;
+}
+</pre>
+        </div>
+      </div>
+
+      <h3>Objet</h3>
+
+      <p>Instanceof - les listes littérales sur la droite sont étendues :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+new Date() instanceof Date           #=> true
+new Date() instanceof [Date, Object] #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$;
+new Date() instanceof Date;
+(ref$ = new Date()) instanceof Date || ref$ instanceof Object;
+</pre>
+        </div>
+      </div>
+
+      <p>Typeof - ainsi que la variante avec un point d'exclamation :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+typeof /^/  #=> object
+typeof! /^/ #=> RegEx
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var toString$ = {}.toString;
+typeof /^/;
+toString$.call(/^/).slice(8, -1);
+</pre>
+        </div>
+      </div>
+
+      <p>Delete retourne la valeur de l'élément supprimé :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = {one: 1, two: 2}
+r = delete obj.one
+r #=> 1
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj, r;
+obj = {
+  one: 1,
+  two: 2
+};
+r = obj.one, delete obj.one;
+r;
+</pre>
+        </div>
+      </div>
+
+      <p><code>delete!</code> est l'équivalent de <code>delete</code> en JavaScript, et retourne <code>false</code> uniquement si la propriété existe mais ne peut être supprimée :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = {one: 1, two: 2}
+delete! obj.one #=> true
+delete! Math.PI #=> false
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj;
+obj = {
+  one: 1,
+  two: 2
+};
+delete obj.one;
+delete Math.PI;
+</pre>
+        </div>
+      </div>
+
+      <p>Copie de propriétés - de droite à
+       gauche. <code>&lt;&lt;&lt;</code> pour les propriétés propres (<code>Object.hasOwnProperty</code>), <code>&lt;&lt;&lt;&lt;</code> pour toutes les propriétés. <code>import</code> et <code>import all</code> sont des alias. Si vous omettez l'opérande gauche, <code>this</code> est implicite :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = {one: 1, two: 2}
+obj <<< three: 3 #=> {one: 1, two: 2, three: 3}
+{go: true} <<<< window
+import obj
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj;
+obj = {
+  one: 1,
+  two: 2
+};
+obj.three = 3;
+importAll$({
+  go: true
+}, window);
+import$(this, obj);
+function importAll$(obj, src){
+  for (var key in src) obj[key] = src[key];
+  return obj;
+}
+function import$(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Clonage - clone le prototype de l'opérande. Ne clone pas en profondeur, à la place, l'opérande sera le prototype de l'objet cloné.
+      <p>Souvenez-vous que la sérialisation JSON ne montre pas les prototypes.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = {one: 1}
+obj2 = ^^obj
+obj2.two = 2
+obj2 #=> {one: 1, two: 2}
+# ci-dessus avec les propriétés du prototype
+# la sérialisation JSON donnerait `{two: 2}`
+obj  #=> {one: 1}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj, obj2;
+obj = {one: 1};
+obj2 = clone$(obj);
+obj2.two = 2;
+obj2;
+
+
+obj;
+function clone$(it){
+  function fun(){} fun.prototype = it;
+  return new fun;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Le <em>with</em> infixe (ou <em>cloneport</em>) combine le clonage et la copie de propriétés. Il est équivalent à <code>^^obj &lt;&lt;&lt; obj2</code>
+      <p>Souvenez-vous que le clonage est un clonage prototypal, et que la sérialisation JSON ne montre pas les prototypes.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+girl = {name: \hanna, age: 22}
+guy  = girl with name: \john
+guy  #=> {name: 'john',  age: 22}
+# ci-dessus avec les propriétés du prototype
+# la sérialisation JSON donnerait `{name: 'john'}`
+girl #=> {name: 'hanna', age: 22}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var girl, ref$, guy;
+girl = {
+  name: 'hanna',
+  age: 22
+};
+guy = (ref$ = clone$(girl), ref$.name = 'john', ref$);
+guy;
+guy.age;
+function clone$(it){
+  function fun(){} fun.prototype = it;
+  return new fun;
+}
+</pre>
+        </div>
+      </div>
+
+      <h3>Application partielle, opérateurs en tant que fonctions</h3>
+
+      <p>Vous pouvez "appliquer partiellement" les opérateurs pour les utiliser en tant que fonctions :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+(+ 2) 4         #=> 6
+(*) 4 3         #=> 12
+
+(not) true      #=> false
+(in [1 to 3]) 2 #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+(function(it){
+  return it + 2;
+})(4);
+curry$(function(x$, y$){
+  return x$ * y$;
+})(4, 3);
+not$(true);
+(function(it){
+  return it == 1 || it == 2 || it == 3;
+})(2);
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
+}
+function not$(x){ return !x; }
+</pre>
+        </div>
+      </div>
+
+      <a name="require"></a>
+      <h3>require!</h3>
+
+      <p>Avoir beaucoup de module signifie beaucoup de redondance dans les inclusions. Avec <code>require!</code>, qui prend identifieur, chaîne, liste ou objet, vous pouvez éviter cette redondance.
+
+      <p>Si vous voulez inclure un module avec des tirets, vous devez utiliser une chaîne.
+
+      <p>Vous pouvez renommer ce que vous require-ez en utilisant un objet littéral.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+require! lib
+require! 'lib1'
+
+require! prelude-ls # no
+require! 'prelude-ls'
+
+require! [fs, path]
+require! <[ fs path ]>
+
+
+
+require! $: jQuery
+
+require! {
+  fs
+  path
+  lib: lib4
+}
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var lib, lib1, preludeLs, fs, path, $;
+lib = require('lib');
+lib1 = require('lib1');
+
+preludeLs = require('preludeLs');
+preludeLs = require('prelude-ls');
+
+fs = require('fs');
+path = require('path');
+fs = require('fs');
+path = require('path');
+
+$ = require('jQuery');
+
+fs = require('fs');
+path = require('path');
+lib = require('lib4');
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi inclure des parties de modules :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+require! lib.part
+
+require! {
+  lib
+  lib.part1
+}
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var part, lib, part1;
+part = require('lib').part;
+
+lib = require('lib');
+part1 = require('lib').part1;
+
+
+</pre>
+        </div>
+      </div>
+
+      <p>Les noms de fichier sont extraits :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+require! 'lib.js'
+require! './dir/lib1.js'
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var lib, lib1;
+lib = require('lib.js');
+lib1 = require('./dir/lib1.js');
+</pre>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="functions" class="section">
+      <a name="functions"></a>
+      <h2>Function</h2>
+
+      <p>La définition de fonction est très simple en LiveScript : 
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+(x, y) -> x + y 
+
+-> # une fonction vide
+
+times = (x, y) ->
+  x * y
+# multiligne, assignée à une variable
+# comme en JavaScript
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var times;
+(function(x, y){
+  return x + y;
+});
+(function(){});
+
+times = function(x, y){
+  return x * y;
+};
+</pre>
+        </div>
+      </div>
+
+      <p>Comme vous pouvez le voir, les déclarations sont bien plus courtes. Vous pouvez aussi voir que le <code>return</code> est implicite. En LiveScript, presque tout est une expression et la dernière est automatiquement retournée. Cependant, vous pouvez toujours utiliser <code>return</code> pour forcer un retour, ou ajouter un point d'exclamation à la définition pour supprimer le retour implicite <code>no-ret = !(x) -> ...</code>.
+
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = !-> 2
+g = !(x) -> x + 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var f, g;
+f = function(){
+  2;
+};
+g = function(x){
+  x + 2;
+};
+</pre>
+        </div>
+      </div>
+
+      <h3>Appel</h3>
+
+      <p>vous pouvez omettre les parenthèses quand vous appelez une fonction, et comme pour les listes, vous pouvez omettre la virgule entre les arguments si l'argument précédent n'est pas appellable :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+x = 4
+Math.pow x, 3 #=> 64
+Math.pow 2 3  #=> 8
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 4;
+Math.pow(x, 3);
+Math.pow(2, 3);
+</pre>
+        </div>
+      </div>
+
+      <p>Si vous appelez une fonction sans arguments, vous pouvez utiliser <code>!</code> - vous n'avez pas besoin on plus de point pour enchaîner les fonctions ainsi appelées.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f!
+[1 2 3].reverse!slice 1 #=> [2,1]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+f();
+[1, 2, 3].reverse().slice(1);
+</pre>
+        </div>
+      </div>
+
+      <p><code>and</code>, <code>or</code>, <code>xor</code>, un <code>.</code> espacé ou <code>?.</code> ferment les appels implcites - permettant d'enchaîner les appels sans parenthèses.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+$ 'h1' .find 'a' .text! #=> LiveScript
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+$('h1').find('a').text();
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez utiliser <code>do</code> pour transformer un bloc de code en un appel (et appeler une fonction sans arguments) :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+do -> 3 + 2 #=> 5
+calc =
+  five: do
+    3 + 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var calc;
+(function(){
+  return 3 + 2;
+})();
+calc = {
+  five: 3 + 2
+};
+</pre>
+        </div>
+      </div>
+
+      <p>Si vous utilisez <code>do</code> sur une fonction nommée, et que le <code>do</code> n'est pas utilisé en tant qu'expression, l'appel appellera la fonction directement :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+i = 0
+f 9 #=> 9
+i   #=> 1
+do function f x
+  ++i
+  x
+i   #=> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i;
+i = 0;
+f(9);
+i;
+function f(x){
+  ++i;
+  return x;
+} f();
+i;
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez appeler des fonctions infixes avec <code>`</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add = (x, y) -> x + y
+3 `add` 4 #=> 7
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var add;
+add = function(x, y){
+  return x + y;
+};
+add(3, 4);
+</pre>
+        </div>
+      </div>
+
+       <p>Appeler une fonction avec l'opérateur de reste <code>...</code> lui passe les arguments de la fonction actuelle. C'est particulièrement utile avec <code>super</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = (x, y) ->
+  x + y
+
+g = (a, b) ->
+  f ...
+
+g 3 4 #=> 7
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var f, g;
+f = function(x, y){
+  return x + y;
+};
+g = function(a, b){
+  return f.apply(this, arguments);
+};
+g(3, 4);
+</pre>
+
+      <h3>Paramètres</h3>
+
+      <p>Paramètres étendus :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+set-person-params = (
+  person # objet cible
+  person.age
+  person.height
+) -> person
+
+person = set-person-params {}, 21, 180cm
+#=> {age: 21, height: 180}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var setPersonParams, person;
+setPersonParams = function(person, age, height){
+  person.age = age;
+  person.height = height;
+  return person;
+};
+person = setPersonParams({}, 21, 180);
+</pre>
+        </div>
+      </div>
+
+      <p>Particulièrement utile avec <code>this</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+set-text = (@text) -> this
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var setText;
+setText = function(text){
+  this.text = text;
+  return this;
+};
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez donner des valeurs par défault aux arguments :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add = (x = 4, y = 3) -> x + y
+add 1 2 #=> 3
+add 1   #=> 4
+add!    #=> 7
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var add;
+add = function(x, y){
+  x == null && (x = 4);
+  y == null && (y = 3);
+  return x + y;
+};
+add(1, 2);
+</pre>
+        </div>
+      </div>
+
+      <p>... ou utiliser n'importe quel opérateur logique (dans les paramètres, <code>x = 2</code> est la même chose que<code>x ? 2</code>):
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+add = (x && 4, y || 3) -> x + y
+add 1 2 #=> 6
+add 2 0 #=> 7
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var add;
+add = function(x, y){
+  x && (x = 4);
+  y || (y = 3);
+  return x + y;
+};
+add(1, 2);
+add(2, 0);
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi déstructurer les arguments :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+set-cords = ({x, y}) -> "#x,#y"
+set-cords y: 2, x: 3 #=> '3,2'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var setCords;
+setCords = function(arg$){
+  var x, y;
+  x = arg$.x, y = arg$.y;
+  return x + "," + y;
+};
+setCords({
+  y: 2,
+  x: 3
+});
+</pre>
+        </div>
+      </div>
+
+      <p>... et aller jusqu'à donner des valeurs par défaults, ou utiliser n'importe quel opérateur logique dans ces paramètres déstructurés :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+set-cords = ({x = 1, y = 3} = {}) -> "#x,#y"
+set-cords y: 2, x: 3 #=> '3,2'
+set-cords x: 2       #=> '2,3'
+set-cords y: 7       #=> '1,7'
+set-cords!           #=> '1,3'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var setCords;
+setCords = function(arg$){
+  var ref$, ref1$, x, y;
+  ref$ = arg$ != null
+    ? arg$
+    : {}, x = (ref1$ = ref$.x) != null ? ref1$ : 1, y = (ref1$ = ref$.y) != null ? ref1$ : 3;
+  return x + "," + y;
+};
+setCords({
+  y: 2,
+  x: 3
+});
+setCords({
+  x: 2
+});
+setCords({
+  y: 7
+});
+setCords();
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi obtenir le reste des paramètres :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = (x, ...ys) -> x + ys.1
+f 1 2 3 4 #=> 4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var f, slice$ = [].slice;
+f = function(x){
+  var ys;
+  ys = slice$.call(arguments, 1);
+  return x + ys[1];
+};
+f(1, 2, 3, 4);
+</pre>
+        </div>
+      </div>
+
+
+      <h3>Currification</h3>
+
+      <p>Les fonctions currifiées sont très puissantes. Pour faire simple, les fonctions appelées avec moins d'arguments qu'elles n'en ont retourne une fonction partiellement appliquée que vous pourez appeler avec le reste des arguments. En LiveScript, ces fonctions sont définiés avec une longue flèche :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+times = (x, y) --> x * y
+times 2, 3       #=> 6 (fonctionnement normal)
+double = times 2
+double 5         #=> 10
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var times, double;
+times = curry$(function(x, y){
+  return x * y;
+});
+times(2, 3);
+double = times(2);
+double(5);
+function curry$(f, args){
+  return f.length > 1 ? function(){
+    var params = args ? args.concat() : [];
+    return params.push.apply(params, arguments) < f.length && arguments.length ?
+      curry$.call(this, f, params) : f.apply(this, params);
+  } : f;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez définir des fonctions liées avec une longue flèche ondulée : <code>~~&gt;</code>
+
+      <h3>Fonctions nommées</h3>
+
+      <p>Vous pouvez créer des fonctions nommées, utilisable n'importe où dans le fichier même si définies à la fin. Ces fonctions sont constantes et ne peuvent être redéfinies.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+util!  #=> 'disponible avant déclaration'
+util2! #=> 2
+
+function util
+  'disponible avant déclaration'
+function util2 then 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+util();
+util2();
+function util(){
+  return 'disponible avant déclaration';
+}
+function util2(){
+  return 2;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez lié la fonction en ajoutant un <code>~</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+~function add x, y
+  @result = x + y
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var this$ = this;
+function add(x, y){
+  return this$.result = x + y;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi ajouter un <code>!</code> pour supprimer le <code>return</code> implicite :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+util! #=> nothing
+!function util(x)
+  x
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+util();
+function util(x){
+  x;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez bien sûr combiner <code>~</code> et <code>!</code> pour créer une fonction liée qui ne retourne rien.
+
+      <h3>Fonctions liées</h3>
+
+      <p>Les fonctions liées sont définies avec une flèche ondulée <code>~&gt;</code>. Utilisez la version longue pour les fonctions liées et currifiées <code>~~&gt;</code>.
+
+      <p>Les fonctions liées ont leur <code>this</code> lié lexicalement, pas dynamiquement, ce qui signifie que leur <code>this</code> restera l'original, quel que soit le contexte.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = new
+  @x      = 10
+  @normal = -> @x
+  @bound  = ~> @x
+
+obj2 = x: 5
+obj2.normal = obj.normal
+obj2.bound  = obj.bound
+
+obj2.normal! #=> 5
+obj2.bound!  #=> 10
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj, obj2;
+obj = new function(){
+  var this$ = this;
+  this.x = 10;
+  this.normal = function(){
+    return this.x;
+  };
+  this.bound = function(){
+    return this$.x;
+  };
+};
+obj2 = {
+  x: 5
+};
+obj2.normal = obj.normal;
+obj2.bound = obj.bound;
+obj2.normal();
+obj2.bound();
+</pre>
+        </div>
+      </div>
+
+      <p>Référez-vous au paragraphe sur la <a href="#oop">POO</a> pour plus d'informations sur les fonctions liées dans les classes.
+
+      <h3>Let, Where, New</h3>
+
+      <p><code>let</code> est un raccourci pour <code>(function(a){...}.call(this, b))</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+let $ = jQuery
+  $.isArray [] #=> true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+(function($){
+  $.isArray([]);
+}.call(this, jQuery));
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi définir le <code>this</code> (ou <code>@</code>) avec <code>let</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = let @ = a: 1, b: 2
+  @b ^ 3
+x #=> 8
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = (function(){
+  return Math.pow(this.b, 3);
+}.call({
+  a: 1,
+  b: 2
+}));
+x;
+</pre>
+        </div>
+      </div>
+
+      <p><code>where</code> est comme <code>let</code>, mais après l'expression. Cette syntaxe vous permet aussi d'avoir des déclarations complexes
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+result = x + y
+       where x = 4,
+             y = x + 1
+       #=> 9
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var result;
+result = (function(x, y){
+  x = 4;
+  y = x + 1;
+  return x + y;
+}.call(this, void 8, void 8));
+</pre>
+        </div>
+      </div>
+
+      <p>Avec un nouveau contexte :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+dog = new
+  @name = \spot
+  @mutt = true
+#=> {name: 'spot', mutt: true}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var dog;
+dog = new function(){
+  this.name = 'spot';
+  this.mutt = true;
+};
+</pre>
+        </div>
+      </div>
+
+      <h3>Fonctions implicites</h3>
+
+      <p>Particulièrement utile avec des fonctions de haut niveau telles que <code>map</code> et <code>filter</code>.
+
+      <p><code>(.prop)</code> est un raccourci pour <code>(it) -> it.prop</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+map (.length), <[ hello there you ]>
+#=> [5,5,3]
+
+filter (.length < 4), <[ hello there you ]>
+#=> ['you']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+map(function(it){
+  return it.length;
+}, ['hello', 'there', 'you']);
+filter(function(it){
+  return it.length < 4;
+}, ['hello', 'there', 'you']);
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez bien sûr appeler des méthodes :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+map (.join \|), [[1 2 3], [7 8 9]]
+#=> ['1|2|3','7|8|9']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+map(function(it){
+  return it.join('|');
+}, [[1, 2, 3], [7, 8, 9]]);
+</pre>
+        </div>
+      </div>
+
+      <p><code>(obj.)</code> est un raccourci pour <code>(it) -> obj[it]</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = one: 1, two: 2, three: 3
+map (obj.), <[ one three ]>
+#=> [1,3]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj;
+obj = {
+  one: 1,
+  two: 2,
+  three: 3
+};
+map(function(it){
+  return obj[it];
+}, ['one', 'three']);
+</pre>
+        </div>
+      </div>
+
+      <a name="backcalls"></a>
+      <h3>Backball</h3>
+
+      <p>Les backcalls sont très utiles. Ils vous permettent de désimbriquer vos rappels. La syntaxe est la même que pour les fonctions, mais avec la flèche vers la gauche (<code><~</code>, <code><--</code>, <code><~~</code>, <code><-!</code>) :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+<- $
+alert 'boom'
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+$(function(){
+  return alert('boom');
+});
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez ajouter des arguments, et réserver l'espace si l'ordre des arguments ne vous convient pas :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x <- map _, [1 to 3]
+x * 2
+#=> [2, 4, 6]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+map(function(x){
+  return x * 2;
+}, [1, 2, 3]);
+</pre>
+        </div>
+      </div>
+
+      <p>Si vous voulez avoir plus de code après, vous pouvez décaler vos backcalls avec <code>do</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+do
+  data <-! $.get 'ajaxtest'
+  $ '.result' .html data
+  processed <-! $.get 'ajaxprocess', data
+  $ '.result' .append processed
+
+alert 'hi'
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+$.get('ajaxtest', function(data){
+  $('.result').html(data);
+  $.get('ajaxprocess', data, function(processed){
+    $('.result').append(processed);
+  });
+});
+alert('hi');
+</pre>
+        </div>
+      </div>
+
+
+      <p>Si vous voulez des fonctionnalités asynchrones avancées, vous pouvez utiliser <a href="https://github.com/caolan/async/">async.js</a> avec LiveScript.
+
+      <h3>Application partielle</h3>
+
+      <p>Vous pouvez appliquer partiellement des fonctions avec <code>_</code> comme espace réservé, si l'ordre des arguments ne vous convient pas ou si la fonction n'est pas currifiée :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+filter-nums = filter _, [1 to 5]
+filter-nums even  #=> [2,4]
+filter-nums odd   #=> [1,3,5]
+filter-nums (< 3) #=> [1,2]
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var filterNums, slice$ = [].slice;
+filterNums = partialize$.apply(this, [filter, [void 8, [1, 2, 3, 4, 5]], [0]]);
+filterNums(even);
+filterNums(odd);
+filterNums((function(it){
+  return it < 3;
+}));
+function partialize$(f, args, where){
+  var context = this;
+  return function(){
+    var params = slice$.call(arguments), i,
+        len = params.length, wlen = where.length,
+        ta = args ? args.concat() : [], tw = where ? where.concat() : [];
+    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
+    return len < wlen && len ?
+      partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
+  };
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Si vous appelez une fonction partiellement appliquée sans arguments, elle sera éxecutée plutôt que de se retourner elle-même, vous permettant d'utiliser des arguments par défaut
+
+      <p>Cette syntaxe est particulièrement intéressante avec le piping lorsqu'utilisée avec des bibliothèques n'ayant pas une syntaxe adaptée (comme underscore.js).
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 2 3]
+|> _.map _, (* 2)
+|> _.reduce _, (+), 0
+#=> 12
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var slice$ = [].slice;
+partialize$.apply(_, [
+  _.reduce, [ void 8, curry$(function(x$, y$){ return x$ + y$; }), 0 ], [0]
+])(
+partialize$.apply(_, [
+  _.map, [ void 8, (function(it){ return it * 2; }) ], [0]
+])(
+[1, 2, 3]));
+function partialize$(f, args, where){
+  var context = this;
+  return function(){
+    var params = slice$.call(arguments), i,
+        len = params.length, wlen = where.length,
+        ta = args ? args.concat() : [], tw = where ? where.concat() : [];
+    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
+    return len < wlen && len ?
+      partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
+  };
+}
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
+}
+</pre>
+        </div>
+      </div>
+
+      <h3>Arguments</h3>
+
+      <p>Si vous n'avez qu'un seul argument, vous pouvez utiliser <code>it</code> pour y accéder sans avoir à le lister :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = -> it + 2
+f 3 #=> 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var f;
+f = function(it){
+  return it + 2;
+};
+f(3);
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez accéder à l'objet <code>arguments</code> avec le raccourci <code>&</code>. Le premier argument est <code>&0</code>, le second <code>&1</code>, etc. <code>&</code> seul correspond à <code>arguments</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+add-three-numbers = -> &0 + &1 + &2
+add-three-numbers 1 2 3 #=> 6
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var addThreeNumbers;
+addThreeNumbers = function(){
+  return arguments[0] + arguments[1] + arguments[2];
+};
+addThreeNumbers(1, 2, 3);
+</pre>
+        </div>
+      </div>
+
+      <p>Notez que la currification ne marche pas dans cette situation, car le nombre d'arguments déclarés de <code>add-three-numbers</code> est 0.
+
+      <h3>Plus</h3>
+
+      <p>Référez-vous au paragraphe sur la <a href="#composing">composition de fnctions</a>, ainsi que sur le <a href="#piping">piping</a>.
+
+    </div>
+
+    <div id="if-unless" class="section">
+      <a name="if-unless"></a>
+      <h2>If et Unless</h2>
+
+      <p>Il y a plusieurs manières de formater un <code>if</code> (en fait une expression).
+
+      <p>The standard:
+
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+if 2 + 2 == 4
+  'quelque chose'
+else
+  'quelque chose d\'autre'
+
+if 2 + 2 == 4 then 'quelque chose' else 'quelque chose d\'autre'
+
+
+
+
+if 2 + 2 == 4
+then 'quelque chose'
+else 'quelque chose d\'autre'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+if (2 + 2 === 4) {
+  'quelque chose';
+} else {
+  'quelque chose d\'autre';
+}
+if (2 + 2 === 4) {
+  'quelque chose';
+} else {
+  'quelque chose d\'autre';
+}
+if (2 + 2 === 4) {
+  'quelque chose';
+} else {
+  'quelque chose d\'autre';
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Le <code>else</code> est bien sûr optionnel, et ovus pouvez ajouter des <code>else if</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+if 2 + 2 == 4
+  'quelque chose'
+
+if 2 + 2 == 6
+  'quelque chose'
+else if 2 + 2  == 5
+  'quelque chose d\'autre'
+else
+  'par défaut'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+if (2 + 2 === 4) {
+  'quelque chose';
+}
+if (2 + 2 === 6) {
+  'quelque chose';
+} else if (2 + 2 === 5) {
+  'quelque chose d\'autre';
+} else {
+  'par défaut';
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Aussi utilisable en tant qu'expression :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+result = if 2 / 2 is 0
+         then 'quelque chose'
+         else 'quelque chose d\'autre'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var result;
+result = 2 / 2 === 0 ? 'quelque chose' : 'quelque chose d\'autre';
+</pre>
+        </div>
+      </div>
+
+      <p>Aussi utilisable après une expression - ayant une précédence plus basse que l'égalité, rendant ceci possible :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = 10
+x = 3 if 2 + 2 == 4
+x #=> 3
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 10;
+if (2 + 2 === 4) {
+  x = 3;
+}
+x;
+</pre>
+        </div>
+      </div>
+
+      <p><code>unless</code> est l'équivalent de <code>if not</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+unless 2 + 2 == 5
+  'quelque chose'
+
+x = 10
+x = 3 unless 2 + 2 == 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+if (2 + 2 !== 5) {
+  'quelque chose';
+}
+x = 10;
+if (2 + 2 !== 5) {
+  x = 3;
+}
+</pre>
+        </div>
+      </div>
+
+      <p><code>that</code> réfère implicitement la valeur de la condition - ignorant les vérifications d'existences (<code>?</code>).
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+time = days: 365
+
+
+
+half-year = that / 2 if time.days
+#=> 182.5
+
+if /^e(.*)/ == 'enter'
+  that.1   #=> 'nter'
+
+if half-year?
+  that * 2 #=> 365
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var time, that, halfYear;
+time = {
+  days: 365
+};
+if (that = time.days) {
+  halfYear = that / 2;
+}
+if (that = /^e(.*)/.exec('enter')) {
+  that[1];
+}
+if ((that = halfYear) != null) {
+  that * 2;
+}
+</pre>
+        </div>
+      </div>
+
+    </div>
+    <div id="loops" class="section">
+      <a name="loops"></a>
+      <h2>Boucles et Compréhensions</h2>
+
+      <p>Les boucles <code>for</code> ont la structure suivante : <code>for (from) (to|til) (by) (when)</code> - (tout est optionnel).
+      <p><code>by</code> est l'étape, par défaut <code>1</code>.
+      <p><code>from</code>, si omis, est <code>0</code>.
+      <p><code>when</code>, (alias <code>case</code>, <code>|</code>) est un guard optionnel.
+      <p>Utilisez <code>in</code> pour itérer dans une liste, <code>of</code> et of dans un objet.
+      <p>Si utilisé comme expression, les boucles renvoient des listes.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+for i from 1 to 10 by 3
+  i
+
+
+for val, i in [7 8 9]
+  val
+
+
+
+
+for key, val of {one: 1, two: 2}
+  key
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i$, i, ref$, len$, val, key;
+for (i$ = 1; i$ <= 10; i$ += 3) {
+  i = i$;
+  i;
+}
+for (i$ = 0, len$ = (ref$ = [7, 8, 9]).length; i$ < len$; ++i$) {
+  i = i$;
+  val = ref$[i$];
+  val;
+}
+for (key in ref$ = {
+  one: 1,
+  two: 2
+}) {
+  val = ref$[key];
+  key;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Les boucles normalses imbriquées renvoient des listes de listes :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+result = for x to 3
+  for y to 2
+    x + y
+result #=> [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var result, res$, i$, x, lresult$, j$, y;
+res$ = [];
+for (i$ = 0; i$ <= 3; ++i$) {
+  x = i$;
+  lresult$ = [];
+  for (j$ = 0; j$ <= 2; ++j$) {
+    y = j$;
+    lresult$.push(x + y);
+  }
+  res$.push(lresult$);
+}
+result = res$;
+result;
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez omettre une ou les deux variable dans une boucle <code>in</code>/<code>of</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+res = for , i in [1 2 3]
+  i
+res #=> [0, 1, 2]
+
+for til 3 then func!
+# calls func three times
+
+[6 for til 3] #=> [6, 6, 6]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var res, res$, i$, len$, i;
+res$ = [];
+for (i$ = 0, len$ = [1, 2, 3].length; i$ < len$; ++i$) {
+  i = i$;
+  res$.push(i);
+}
+res = res$;
+res;
+for (i$ = 0; i$ < 3; ++i$) {
+  func();
+}
+for (i$ = 0; i$ < 3; ++i$) {
+  6;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Les compréhensions de listes, même multiples, renvoient des listes :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[x + 1 for x to 10 by 2 when x isnt 4]
+#=> [1,3,7,9,11]
+
+
+
+
+
+
+
+["#x#y" for x in [\a \b] for y in [1 2]]
+#=> ['a1','a2','b1','b2']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i$, x, ref$, len$, j$, ref1$, len1$, y;
+for (i$ = 0; i$ <= 10; i$ += 2) {
+  x = i$;
+  if (x !== 4) {
+    x + 1;
+  }
+}
+for (i$ = 0, len$ = (ref$ = ['a', 'b']).length; i$ < len$; ++i$) {
+  x = ref$[i$];
+  for (j$ = 0, len1$ = (ref1$ = [1, 2]).length; j$ < len1$; ++j$) {
+    y = ref1$[j$];
+    x + "" + y;
+  }
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez formater vos compréhensions avec de l'identation :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[{id:id1, name, age} for {id:id1, name} in table1
+                     for {id:id2, age} in table2
+                     when id1 is id2]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i$, ref$, len$, ref1$, id1, name, j$, len1$, ref2$, id2, age;
+for (i$ = 0, len$ = (ref$ = table1).length; i$ < len$; ++i$) {
+  ref1$ = ref$[i$], id1 = ref1$.id, name = ref1$.name;
+  for (j$ = 0, len1$ = (ref1$ = table2).length; j$ < len1$; ++j$) {
+    ref2$ = ref1$[j$], id2 = ref2$.id, age = ref2$.age;
+    if (id1 === id2) {
+      ({
+        id: id1,
+        name: name,
+        age: age
+      });
+    }
+  }
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Les compréhensions d'objets renvoient des objets :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+{[key, val * 2] for key, val of {a: 1, b: 2}}
+#=> {a: 2, b: 4}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var key, ref$, val;
+for (key in ref$ = {
+  a: 1,
+  b: 2
+}) {
+  val = ref$[key];
+  [key, val * 2];
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Boucles <code>while</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+i = 0
+list = [1 to 10]
+while n < 9
+  n = list[++i]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i, list, n;
+i = 0;
+list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+while (n < 9) {
+  n = list[++i];
+}
+</pre>
+        </div>
+      </div>
+
+      <p><code>until</code> est l'équivalent de <code>while not</code>.
+
+      <p><code>while</code>/<code>until</code> acceptent aussi une clause <code>when</code>, guard optionnel, <code>else</code> ainsi qu'un block <code>else</code> si la boucle n'a pas été évalué.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+i = 1
+list = [1 to 10]
+until i > 7 when n isnt 99
+  n = list[++i]
+else
+  10
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i, list, yet$, n;
+i = 1;
+list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+for (yet$ = true; !(i > 7);) {
+  yet$ = false;
+  if (n !== 99) {
+    n = list[++i];
+  }
+} if (yet$) {
+  10;
+}
+</pre>
+        </div>
+      </div>
+
+      <p><code>do while</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+i = 0
+list = [1 to 10]
+do
+  i++
+while list[i] < 9 
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i, list;
+i = 0;
+list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+do {
+  i++;
+} while (list[i] < 9);
+</pre>
+        </div>
+      </div>
+
+      <p><code>while</code> accepte aussi une clause exécutée à chaque itération.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+i = 0
+list = [1 to 10]
+while list[i] < 9, i++ then i
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i, list;
+i = 0;
+list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+for (; list[i] < 9; i++) {
+  i;
+}
+</pre>
+        </div>
+      </div>
+
+      <p><code>while true</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+i = 0
+loop
+  \ha
+  break if ++i > 20
+
+
+
+i = 0
+for ever
+  \ha
+  if ++i > 20
+     break
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var i;
+i = 0;
+for (;;) {
+  'ha';
+  if (++i > 20) {
+    break;
+  }
+}
+i = 0;
+for (;;) {
+  'ha';
+  if (++i > 20) {
+    break;
+  }
+}
+</pre>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="switch" class="section">
+      <a name="switch"></a>
+      <h2>Switch</h2>
+
+      <p><code>break</code> est automatiquement inséré, et les conditions multiples sont autorisées :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+switch 6
+case 1    then \hello
+case 2, 4 then \boom
+case 6
+  'here it is'
+default \something
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+switch (6) {
+case 1:
+  'hello';
+  break;
+case 2:
+case 4:
+  'boom';
+  break;
+case 6:
+  'here it is';
+  break;
+default:
+  'something';
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Si vous ne donnez pas d'opérance à <code>switch</code>, elle sera <code>true</code>. (le code compile à <code>switch (false)</code> pour permettre une conversion booléenne via un simple <code>!</code> plutôt que deux)
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+switch
+case 5 == 6
+  \never
+case false
+  'also never'
+case 6 / 2 is 3
+  'here'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+switch (false) {
+case 5 !== 6:
+  'never';
+  break;
+case !false:
+  'also never';
+  break;
+case 6 / 2 !== 3:
+  'here';
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez utiliser <code>fallthrough</code> pour e^mpêcher l'insertion d'un <code>break</code> implicite, et doit être la dernière expression du <code>case</code>. Aussi, vous pouvez un <code>switch</code> en tant qu'expression :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+result = switch 6
+case 6
+  something = 5
+  fallthrough
+case 4
+  'this is it'
+
+result #=> 'this is it'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var something, result;
+result = (function(){
+  switch (6) {
+  case 6:
+    something = 5;
+    // fallthrough
+  case 4:
+    return 'this is it';
+  }
+}());
+result;
+</pre>
+        </div>
+      </div>
+
+      <p><code>|</code> est un alias pour <code>case</code>, et <code>=&gt;</code> est un alias pour <code>then</code>. <code>| otherwise</code> et <code>| _</code> sont des alias pour <code>default</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+switch 'moto'
+| "quelque chose"  => \coucou
+| \explosion \bomb => \boom
+| <[ la moto ? ]> => 'ici !'
+| otherwise        => \quelquechose
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+switch ('moto') {
+case "quelque chose":
+  'coucou';
+  break;
+case 'explosion':
+case 'bomb':
+  'boom';
+  break;
+case 'la':
+case 'moto':
+case '?':
+  'ici !';
+  break;
+default:
+  'quelquechose';
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Un <code>switch</code> implicite est ajouté après les flèches (comme <code>-></code>), <code>:</code>, et <code>=</code> si un <code>case</code> (ou <code>|</code>) est trouvé :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+func = (param) ->
+  | param.length < 5 => param.length
+  | otherwise        => param.slice 3
+
+func 'coucou' #=> cou
+
+
+
+
+
+state = | 2 + 2 is 5 => "I love Big Brother"
+        | _          => "I love Julia"
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var func, state;
+func = function(param){
+  switch (false) {
+  case !(param.length < 5):
+    return param.length;
+  default:
+    return param.slice(3);
+  }
+};
+func('hello');
+state = (function(){
+  switch (false) {
+  case 2 + 2 !== 5:
+    return 'I love Big Brother';
+  default:
+    return 'I love Julia';
+  }
+}());
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi utiliser les <code>switch</code> de CoffeeScript.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+day = \Sum
+switch day
+  when "Lun" then 'Au boulot'
+  when "Mar" then 'Au ciné'
+  when "Mer" then 'Au café'
+  when "Ven", "Sam"
+      'Au bingo'
+  when "Dim" then 'Toujours au café'
+  else 'Au boulot'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var day;
+day = 'Sum';
+switch (day) {
+case "Lun":
+  'Au boulot';
+  break;
+case "Mar":
+  'Au ciné';
+  break;
+case "Mer":
+  'Au café';
+  break;
+case "Ven":
+case "Sam":
+  'Au bingo';
+  break;
+case "Dim":
+  'Toujours au café';
+  break;
+default:
+  'Au boulot';
+}
+</pre>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div id="assignment" class="section">
+      <a name="assignment"></a>
+      <h2>Attribution</h2>
+
+      <p>L'assignement basique est comme vous vous y attendez, <code>variable = value</code>, et il n'y a pas besoin de déclarer les variables. Cependant, contrairement à CoffeeScript, vous devez utiliser <code>:=</code> pour modifier les variables dans des portées supérieures.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+x = 10
+
+
+do ->
+  x = 5
+
+x #=> 10
+
+do ->
+  x := 2
+
+x #=> 2
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 10;
+
+(function(){
+  var x;
+  return x = 5;
+})();
+x;
+
+(function(){
+  return x = 2;
+})();
+x;
+</pre>
+        </div>
+      </div>
+
+      <p>Presque tout est une expression, ce qui signifie que vous pouvez faire des choses comme :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = if 2 + 2 == 4
+    then 10
+    else 0
+x #=> 10
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = 2 + 2 === 4 ? 10 : 0;
+
+x;
+</pre>
+        </div>
+      </div>
+
+      <p> Même les boucles, switch, voire les try/catch sont des expressions.
+
+      <p> Si vous voulez simplement déclarer une variable sans l'initialiser, utilisez <code>var</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+var x
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi déclarer des constantes avec le mot-clef <code>const</code>. Les vérifications sont faites à la compilation - le JavaScript compilé est le même.
+
+      <p>Essayer de compiler le code suivant : 
+
+<pre class="prettyprint lang-ls">
+const x = 10
+x = 0
+</pre>
+
+      <p>Donnera l'erreur suivante : <code>redeclaration of constant "x" on line 2</code> (re-déclaration de la constante "x" ligne 2).
+
+      <p>À l'inverse, les objets ne sont pas "gêlés" - vous pouvez quand même modifier leurs propriétés. Vous pouvez forcer toutes les variables à être des constantes à l'aide de l'option <code>-k</code> (ou <code>--const</code>). 
+      <p>Results in <code>redeclaration of constant "x" on line 2</code>.
+
+      <h3>Opérateurs</h3>
+
+      <p>Assignation composée :
+
+      <p>(<code>?</code>, <code>!?</code>, <code>||</code>, or <code>&&</code> peut préfixer n'importe quelle assignation.)
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+x = 2    #=> 2
+x += 2   #=> 4
+x -= 1   #=> 3
+x *= 3   #=> 9
+x /= 3   #=> 3
+x %= 3   #=> 0
+x %%= 3  #=> 0
+x &lt;?= -1 #=> -1
+x >?= 2  #=> 2
+x **= 2  #=> 4
+x ^= 2   #=> 16
+
+x ?= 10
+x        #=> 16
+x !?= 8
+x        #=> 8
+
+x ||= 5  #=> 8
+x &&= 5  #=> 5
+
+x &&+= 3 #=> 8
+x ?*= 2
+x        #=> 8
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, ref$;
+x = 2;
+x += 2;
+x -= 1;
+x *= 3;
+x /= 3;
+x %= 3;
+x = ((x) % (ref$ = 3) + ref$) % ref$;
+x <= (ref$ = -1) || (x = ref$);
+x >= 2 || (x = 2);
+x = Math.pow(x, 2);
+x = Math.pow(x, 2);
+
+x == null && (x = 10);
+x;
+x != null && (x = 8);
+x;
+
+x || (x = 5);
+x && (x = 5);
+
+x && (x += 3);
+x == null && (x *= 2);
+x;
+</pre>
+        </div>
+      </div>
+
+      <p>Assignation unaire :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+y = \45
++  = y   #=> 45   (conversion en nombre)
+!! = y   #=> true (conversion en booléen)
+-~-~ = y #=> 3    (conversion en entier doublement incrémentale)
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var y;
+y = '45';
+y = +y;
+y = !!y;
+y = -~-~y;
+</pre>
+        </div>
+      </div>
+
+      <p>Valeur par défaut - vous pouvez utiliser <code>||</code>, <code>&&</code>, <code>?</code>, et <code>!?</code>.
+
+      <p>Vous pouvez utiliser <code>=</code> à la place de <code>?</code> dans les paramètres et les destructurations :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x ? y = 10
+y        #=> 10
+
+f = (z = 7) -> z
+f 9      #=> 9
+f!       #=> 7
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var y, f;
+(typeof x == 'undefined' || x === null) && (y = 10);
+y;
+f = function(z){
+  z == null && (z = 7);
+  return z;
+};
+f(9);
+f();
+</pre>
+        </div>
+      </div>
+
+      <p>Assignation conditionnelle - n'assigne que si l'opérande de droite existe :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+age = 21
+x? = age
+x #=> 21
+
+
+x? = years
+x #=> 21
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var age, x;
+age = 21;
+if (age != null) {
+  x = age;
+}
+x;
+if (typeof years != 'undefined' && years !== null) {
+  x = years;
+}
+x;
+</pre>
+        </div>
+      </div>
+
+      <h3>Destructuration</h3>
+
+      <p>La déstructuration est une manière puissante d'extraire des valeurs depuis des listes et des objets, vous permettant de lire directement des structures :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[first, second] = [1, 2]
+first  #=> 1
+second #=> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, first, second;
+ref$ = [1, 2], first = ref$[0], second = ref$[1];
+first;
+second;
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi obtenir la partie restante :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+[head, ...tail] = [1 to 5]
+head #=> 1
+tail #=> [2,3,4,5]
+
+
+
+[first, ...middle, last] = [1 to 5]
+first  #=> 1
+middle #=> [2,3,4]
+last   #=> 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, head, tail, first, i$, middle, last, slice$ = [].slice;
+ref$ = [1, 2, 3, 4, 5], head = ref$[0], tail = slice$.call(ref$, 1);
+head;
+tail;
+ref$ = [1, 2, 3, 4, 5], first = ref$[0], middle = 1 < (i$ = ref$.length - 1) ? slice$.call(ref$, 1, i$) : (i$ = 1, []), last = ref$[i$];
+first;
+middle;
+last;
+</pre>
+        </div>
+      </div>
+
+      <p>La déstructuration marche aussi avec les objets :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+{name, age} = {weight: 110, name: 'emma', age: 20}
+name #=> 'emma'
+age  #=> 20
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, name, age;
+ref$ = {
+  weight: 110,
+  name: 'emma',
+  age: 20
+}, name = ref$.name, age = ref$.age;
+name;
+age;
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez aussi labeller les structures avec <code>:label</code>, ou imbriquer les déstructurations :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[[x, ...xs]:list1, [y, ...ys]:list2] = [[1,2,3],[4,5,6]]
+x     #=> 1
+xs    #=> [2,3]
+list1 #=> [1,2,3]
+y     #=> 4
+ys    #=> [5,6]
+list2 #=> [4,5,6]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var ref$, list1, x, xs, list2, y, ys, slice$ = [].slice;
+ref$ = [[1, 2, 3], [4, 5, 6]], list1 = ref$[0], x = list1[0], xs = slice$.call(list1, 1), list2 = ref$[1], y = list2[0], ys = slice$.call(list2, 1);
+x;
+xs;
+list1;
+y;
+ys;
+list2;
+</pre>
+        </div>
+      </div>
+
+      <h3>Sous-déstructuration</h3>
+
+      <p>Permet de lire et écrire aisément les propriétés d'objets :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+mitch =
+  age:    21
+  height: 180cm
+  pets:    [\dog, \goldfish]
+
+
+phile = {}
+phile{height, pets} = mitch
+phile.height #=> 180
+phile.pets   #=> ['dog', 'goldfish']
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var mitch, phile;
+mitch = {
+  age: 21,
+  height: 180,
+  pets: ['dog', 'goldfish']
+};
+phile = {};
+phile.height = mitch.height, phile.pets = mitch.pets;
+phile.height;
+phile.pets;
+</pre>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div id="property-access" class="section">
+      <a name="property-access"></a>
+      <h2>Accès propriétés</h2>
+
+      <p>Le standard :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1 2 3][1]     #=> 2
+{a: 1, b: 2}.b #=> 2
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+[1, 2, 3][1];
+({
+  a: 1,
+  b: 2
+}).b;
+</pre>
+        </div>
+      </div>
+
+      <p>L'accès avec un point - le point accepte bien plus qu'un simple identifieur comme opérande de droite, vous pouvez aussi donner des nombres, chaînes, parenthèses, etc :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = "hello world": [4 [5 boom: 6]]
+x.'hello world'.1.[0] #=> 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x;
+x = {
+  "hello world": [
+    4, [
+      5, {
+        boom: 6
+      }
+    ]
+  ]
+};
+x['hello world'][1][0];
+</pre>
+        </div>
+      </div>
+
+      <p>Accessignation avec <code>.=</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+document.title .= to-upper-case! #=> LIVESCRIPT ...
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+document.title = document.title.toUpperCase();
+</pre>
+        </div>
+      </div>
+
+      <p>Récupérer ou assigner une partie de liste :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+list = [1 2 3 4 5]
+list[2, 4]    #=> [3,5]
+list[1 to 3]  #=> [2,3,4]
+list[1 til 3] #=> [2,3]
+list[1 til 3] = [7 8]
+list          #=> [1,7,8,4,5]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var list, ref$;
+list = [1, 2, 3, 4, 5];
+[list[2], list[4]];
+[list[1], list[2], list[3]];
+[list[1], list[2]];
+ref$ = [7, 8], list[1] = ref$[0], list[2] = ref$[1];
+list;
+</pre>
+        </div>
+      </div>
+
+      <p>Une partie d'un objet :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj = one: 1, two: 2
+obj{first: one, two} #=> {first: 1, two: 2}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj;
+obj = {
+  one: 1,
+  two: 2
+};
+({
+  first: obj.one,
+  two: obj.two
+});
+</pre>
+        </div>
+      </div>
+
+      <p>L'étoile de longueur <code>*</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+list = [1 2 3 4 5]
+list[*] = 6
+list        #=> [1,2,3,4,5,6]
+list[*-1]   #=> 6
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var list;
+list = [1, 2, 3, 4, 5];
+list[list.length] = 6;
+list;
+list[list.length - 1];
+</pre>
+        </div>
+      </div>
+
+      <p>Semi-autovivification <code>.{}</code> (objet), <code>.[]</code> (liste) permet de s'assurer que la propriété est un objet ou une liste :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = "hello world": [4 [5 boom: 6]]
+x.[]'hello world'.1.{}1.boom #=> 6
+
+
+x.[]arr.{}1.y = 9
+x.arr.1.y #=> 9
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, ref$;
+x = { "hello world": [ 4, [ 5, { boom: 6 } ] ] };
+
+((ref$ = (x['hello world'] || (x['hello world'] = []))[1])[1] || (ref$[1] = {})).boom;
+((ref$ = x.arr || (x.arr = []))[1] || (ref$[1] = {})).y = 9;
+</pre>
+        </div>
+      </div>
+
+      <p>L'accès lié <code>.~</code> récupère une méthode d'un objet en la liant à cet objet. Avec l'auto-insertion de points, vous pouvez simplement utiliser <code>~</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+obj =
+  x: 5
+  add: (y) -> @x + y
+
+target =
+  x: 600
+  not-bound: obj.add
+  bound: obj~add
+
+target.not-bound 5 #=> 605
+target.bound 5     #=> 10
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var obj, target;
+obj = {
+  x: 5,
+  add: function(y){
+    return this.x + y;
+  }
+};
+target = {
+  x: 600,
+  notBound: obj.add,
+  bound: bind$(obj, 'add')
+};
+target.bound(5);
+function bind$(obj, key, target){
+  return function(){ return (target || obj)[key].apply(obj, arguments) };
+}
+</pre>
+        </div>
+      </div>
+
+
+      <a name="cascades"></a>
+      <h3>Cascades</h3>
+
+      <p>Une cascade retourne l'objet accédé, et non pas les opérations 
+
+      <p>Enchaînement via cascades :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+a = [2 7 1 8]
+  ..push 3
+  ..shift!
+  ..sort!
+a #=> [1,3,7,8]
+
+document.query-selector \h1
+  ..style
+    ..color = \red
+    ..font-size = \large
+  ..inner-HTML = 'LIVESCRIPT!'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x$, a, y$;
+x$ = a = [2, 7, 1, 8];
+x$.push(3);
+x$.shift();
+x$.sort();
+a;
+
+x$ = document.querySelector('h1');
+y$ = x$.style;
+y$.color = 'red';
+y$.fontSize = 'large';
+x$.innerHTML = 'LIVESCRIPT!';
+</pre>
+        </div>
+      </div>
+
+      <p>Cascade monoligne :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[2 7 1 8]..push 3 ..shift!..sort! #=> [1,3,7,8]
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x$;
+x$ = [2, 7, 1, 8];
+x$.push(3);
+x$.shift();
+x$.sort();
+</pre>
+        </div>
+      </div>
+
+      <p>Les cascades sont appellables, et peuvent contenir n'importe quel code :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+console.log
+  x = 1
+  y = 2
+  .. x, y
+# affiche `1 2` dans la console
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x$, x, y;
+x$ = console.log;
+x = 1;
+y = 2;
+x$(x, y);
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez utiliser <code>with</code> pour effectuer la cascade avant l'assignation :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+x = with {a: 1, b: 2}
+  ..a = 7
+  ..b += 9
+x #=>  {a: 7, b: 11}
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var x, x$;
+x = (x$ = {
+  a: 1,
+  b: 2
+}, x$.a = 7, x$.b += 9, x$);
+x;
+</pre>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="exceptions" class="section">
+      <a name="exceptions"></a>
+      <h2>Exceptions</h2>
+
+      <p>Vous pouvez lancer des exceptions avec <code>throw</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+throw new Error 'Une erreur est survenue !'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+throw new Error('Une erreur est survenue !');
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez attraper les exceptions avec <code>try</code> - <code>catch</code> - <code>finally</code>. Les blocs <code>catch</code> et <code>finally</code> sont optionnels.
+
+      <p>Le bloc <code>try</code> est éxecuté. Si une exception est lancée, le bloc <code>catch</code> est éxecuté, avec l'objet. Contrairement au JavaScript, l'exception est liée à la portée de la fonction la plus propche, non pas au bloc <code>catch</code>. Vous pouvez même déstructurer l'exception si vous le voulez :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+try
+  ...
+
+try
+  ...
+catch
+  2 + 2
+e.message
+
+x = try
+  ...
+catch {message}
+  message
+
+x #=> unimplemented
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var e, x, message;
+try {
+  throw Error('unimplemented');
+} catch (e$) {}
+try {
+  throw Error('unimplemented');
+} catch (e$) {
+  e = e$;
+  2 + 2;
+}
+e.message;
+x = (function(){
+  try {
+    throw Error('unimplemented');
+  } catch (e$) {
+    message = e$.message;
+    return message;
+  }
+}());
+x;
+</pre>
+        </div>
+      </div>
+
+      <p>Le bloc <code>finally</code> est éxecuté après le bloc <code>try</code> ou le bloc <code>catch</code>, peu importe qu'il y ait eu une exception ou non.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+try
+  ...
+catch
+  handle-exception e
+finally
+  do-something!
+
+try
+  ...
+finally
+  do-something!
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var e;
+try {
+  throw Error('unimplemented');
+} catch (e$) {
+  e = e$;
+  handleException(e);
+} finally {
+  doSomething();
+}
+try {
+  throw Error('unimplemented');
+} finally {
+  doSomething();
+}
+</pre>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="oop" class="section">
+      <a name="oop"></a>
+      <h2>Programmation orientée objets</h2>
+
+      <p>Les classes sont simplement une syntaxe offerte pour définir un constructeur et les fonctions du prototype.
+
+      <p>Le constructeur est une fonction déclarée directement dans la classe.
+
+      <p>Les propriétés du prototypes sont définies avec la même syntaxe que les objets.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class A
+  (num) ->
+    @x = num
+  property: 1
+  method: (y) ->
+    @x + @property + y
+
+a = new A 3
+a.x        #-> 3
+a.property #=> 1
+a.method 6 #=> 10
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var A, a;
+A = (function(){
+  A.displayName = 'A';
+  var prototype = A.prototype, constructor = A;
+  function A(num){
+    this.x = num;
+  }
+  prototype.property = 1;
+  prototype.method = function(y){
+    return this.x + this.property + y;
+  };
+  return A;
+}());
+a = new A(3);
+a.x;
+a.property;
+a.method(6);
+</pre>
+        </div>
+      </div>
+
+      <p>Les propriétés statiques (attachées au constructeur) sont définies en préfixant le nom de la propriété par un <code>this</code> (ou <code>@</code>). Ces propriétés peuvent être accédées via le <code>constructor</code> (ou <code>@@</code>) :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class A
+  @static-prop = 10
+  get-static: ->
+    @@static-prop + 2
+
+A.static-prop #=> 10
+a = new A
+a.get-static! #=> 12
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var A, a;
+A = (function(){
+  A.displayName = 'A';
+  var prototype = A.prototype, constructor = A;
+  A.staticProp = 10;
+  prototype.getStatic = function(){
+    return constructor.staticProp + 2;
+  };
+  function A(){}
+  return A;
+}());
+A.staticProp;
+a = new A;
+a.getStatic();
+</pre>
+        </div>
+      </div>
+
+      <p>Les propriétés privées statiques sont juste définies comme des variables dans le bloc de la classe. (note : les propriétés privées pour une instance sont impossibles en JavaScript, et par conséquent, en LiveScript.)
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class A
+  secret = 10
+
+  get-secret: ->
+    secret
+
+a = new A
+a.get-secret! #=> 10
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var A, a;
+A = (function(){
+  A.displayName = 'A';
+  var secret, prototype = A.prototype, constructor = A;
+  secret = 10;
+  prototype.getSecret = function(){
+    return secret;
+  };
+  function A(){}
+  return A;
+}());
+a = new A;
+a.getSecret();
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez définir des méthodes liées (using <code>~></code>, qui auront alors leur <code>this</code> lié à l'instance :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class A
+  x: 10
+  bound-func: (x) ~>
+    @x
+  reg-func: (x) ->
+    @x
+
+a = new A
+obj =
+  x: 1
+  bound: a.bound-func
+  reg: a.reg-func
+
+obj.bound! #=> 10
+obj.reg!   #=> 1
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var A, a, obj;
+A = (function(){
+  A.displayName = 'A';
+  var prototype = A.prototype, constructor = A;
+  prototype.x = 10;
+  prototype.boundFunc = function(x){
+    return this.x;
+  };
+  prototype.regFunc = function(x){
+    return this.x;
+  };
+  function A(){
+    this.boundFunc = bind$(this, 'boundFunc', prototype);
+  }
+  return A;
+}());
+a = new A;
+obj = {
+  x: 1,
+  bound: a.boundFunc,
+  reg: a.regFunc
+};
+obj.bound();
+obj.reg();
+function bind$(obj, key, target){
+  return function(){ return (target || obj)[key].apply(obj, arguments) };
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez facilement modifier les propriétés dans les fonctions et dans le constructeur via le raccourci depuis les paramètres :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class A
+  (@x) ->
+
+  f: (@y) ->
+    @x + @y
+
+a = new A 2
+a.x   #=> 2
+a.f 3 #=> 5
+a.y   #=> 3
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var A, a;
+A = (function(){
+  A.displayName = 'A';
+  var prototype = A.prototype, constructor = A;
+  function A(x){
+    this.x = x;
+  }
+  prototype.f = function(y){
+    this.y = y;
+    return this.x + this.y;
+  };
+  return A;
+}());
+a = new A(2);
+a.x;
+a.f(3);
+a.y;
+</pre>
+        </div>
+      </div>
+
+      <p>Si vous définissez le constructeur en tant que fonction liée (<code>~></code>), vous n'aurez pas besoin d'utiliser <code>new</code> pour l'instanciation :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class A
+  (@x) ~>
+
+a = A 4
+a.x #=> 4
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var A, a;
+A = (function(){
+  A.displayName = 'A';
+  var prototype = A.prototype, constructor = A;
+  function A(x){
+    var this$ = this instanceof ctor$ ? this : new ctor$;
+    this$.x = x;
+    return this$;
+  } function ctor$(){} ctor$.prototype = prototype;
+  return A;
+}());
+a = A(4);
+a.x;
+</pre>
+        </div>
+      </div>
+
+      <p>Pour les bibliothèques haut niveau et autres, vous pouvez assigner le constructeur à une fonction externe, en assignant <code>constructor$$</code>. Ce n'est pas recommandé cependant.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = (@x) ->
+
+class A
+  constructor$$: f
+
+a = new A 5
+a.x #=> 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var f, A, a;
+f = function(x){
+  this.x = x;
+};
+A = (function(){
+  A.displayName = 'A';
+  var constructor$$, prototype = A.prototype, constructor = A;
+  function A(){
+    return constructor$$.apply(this, arguments);
+  }
+  constructor$$ = f;
+  return A;
+}());
+a = new A(5);
+a.x;
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez hériter avec <code>extends</code> :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class A
+  ->
+    @x = 1
+  @static-prop = 8
+  method: ->
+    @x + 2
+
+class B extends A
+  ->
+    @x = 10
+
+B.static-prop #=> 8
+b = new B
+b.x       #=> 10
+b.method! #=> 12
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var A, B, b;
+A = (function(){
+  A.displayName = 'A';
+  var prototype = A.prototype, constructor = A;
+  function A(){
+    this.x = 1;
+  }
+  A.staticProp = 8;
+  prototype.method = function(){
+    return this.x + 2;
+  };
+  return A;
+}());
+B = (function(superclass){
+  var prototype = extend$((import$(B, superclass).displayName = 'B', B), superclass).prototype, constructor = B;
+  function B(){
+    this.x = 10;
+  }
+  return B;
+}(A));
+B.staticProp;
+b = new B;
+b.x;
+b.method();
+function extend$(sub, sup){
+  function fun(){} fun.prototype = (sub.superclass = sup).prototype;
+  (sub.prototype = new fun).constructor = sub;
+  if (typeof sup.extended == 'function') sup.extended(sub);
+  return sub;
+}
+function import$(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez utiliser avec <code>super</code>. Si seul, <code>super</code> est une référence à la fonction appropriée. Si vous voulez l'appeler en passant les arguments, utilisez <code>super ...</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class A
+  ->
+    @x = 1
+  method: (num) ->
+    @x + num
+
+class B extends A
+  ->
+    @y = 2
+    super!
+
+  method: (num) ->
+    @y + super ...
+
+b = new B
+b.y #=> 2
+b.method 10 #=> 13
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var A, B, b;
+A = (function(){
+  A.displayName = 'A';
+  var prototype = A.prototype, constructor = A;
+  function A(){
+    this.x = 1;
+  }
+  prototype.method = function(num){
+    return this.x + num;
+  };
+  return A;
+}());
+B = (function(superclass){
+  var prototype = extend$((import$(B, superclass).displayName = 'B', B), superclass).prototype, constructor = B;
+  function B(){
+    this.y = 2;
+    B.superclass.call(this);
+  }
+  prototype.method = function(num){
+    return this.y + superclass.prototype.method.apply(this, arguments);
+  };
+  return B;
+}(A));
+b = new B;
+b.y;
+b.method(10);
+function extend$(sub, sup){
+  function fun(){} fun.prototype = (sub.superclass = sup).prototype;
+  (sub.prototype = new fun).constructor = sub;
+  if (typeof sup.extended == 'function') sup.extended(sub);
+  return sub;
+}
+function import$(obj, src){
+  var own = {}.hasOwnProperty;
+  for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+  return obj;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Vous pouvez utiliser des mixins via <code>implements</code>. Vous ne pouvez hériter que d'une classe, mais vous pouvez avoir autant de mixins que vous le voulez.
+      <p>Souvenez-vous, si vous voulez implémenter une classe et non un simple objet, vous devrez implémenter son prototype.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+Renameable =
+  set-name: (@name) ->
+  get-name: -> @name ? @id
+
+class A implements Renameable
+  ->
+    @id = Math.random! * 1000
+
+a = new A
+a.get-name! #=> some random number
+a.set-name 'moo'
+a.get-name! #=> 'moo'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var Renameable, A, a;
+Renameable = {
+  setName: function(name){
+    this.name = name;
+  },
+  getName: function(){
+    var ref$;
+    return (ref$ = this.name) != null
+      ? ref$
+      : this.id;
+  }
+};
+A = (function(){
+  A.displayName = 'A';
+  var prototype = A.prototype, constructor = A;
+  importAll$(prototype, arguments[0]);
+  function A(){
+    this.id = Math.random() * 1000;
+  }
+  return A;
+}(Renameable));
+a = new A;
+a.getName();
+a.setName('moo');
+a.getName();
+function importAll$(obj, src){
+  for (var key in src) obj[key] = src[key];
+  return obj;
+}
+</pre>
+        </div>
+      </div>
+
+      <p>Pour modifier le prototype, vous pouvez utiliser le raccourci <code>::</code>, et vous pouvez utiliser <code>::=</code> pour modifier plusieurs propriétés :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class A
+  prop: 10
+  f: ->
+    @prop
+
+a = new A
+b = new A
+a.f! #=> 10
+
+A::prop = 6
+a.f! #=> 6
+b.f! #=> 6
+
+A ::=
+  prop: 5
+  f: ->
+    @prop + 4
+a.f! #=> 9
+b.f! #=> 9
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var A, a, b, ref$;
+A = (function(){
+  A.displayName = 'A';
+  var prototype = A.prototype, constructor = A;
+  prototype.prop = 10;
+  prototype.f = function(){
+    return this.prop;
+  };
+  function A(){}
+  return A;
+}());
+a = new A;
+b = new A;
+a.f();
+A.prototype.prop = 6;
+a.f();
+b.f();
+ref$ = A.prototype;
+ref$.prop = 5;
+ref$.f = function(){
+  return this.prop + 4;
+};
+a.f();
+b.f();
+</pre>
+        </div>
+      </div>
+
+      <p>Si vous ne souhaitez pas supporter les anciens navigateurs et voulez utiliser <code>Object.defineProperty</code>, la syntaxe suivante est à votre disposition :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+class Box
+  dimensions:~
+    -> @d
+    ([width, height]) -> @d = "#{width}x#height"
+
+b = new Box
+b.dimensions = [10 5]
+b.dimensions #=> '10x5'
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var Box, b;
+Box = (function(){
+  Box.displayName = 'Box';
+  var prototype = Box.prototype, constructor = Box;
+  Object.defineProperty(prototype, 'dimensions', {
+    get: function(){
+      return this.d;
+    },
+    set: function(arg$){
+      var width, height;
+      width = arg$[0], height = arg$[1];
+      this.d = width + "x" + height;
+    },
+    configurable: true,
+    enumerable: true
+  });
+  function Box(){}
+  return Box;
+}());
+b = new Box;
+b.dimensions = [10, 5];
+b.dimensions;
+</pre>
+        </div>
+      </div>
+
+    </div>
+    <hr>
+    <div class="section" id="coffee-to-ls">
+      <a name="coffee-to-ls"></a>
+      <h2>Conversion depuis CoffeeScript</h2>
+      <ul>
+        <li>Changez toutes vos flèches doublées <code>=></code> pour des flèches ondulées <code>~></code>
+        <li>Changez tous vos blocs de commentaires <code>### ###</code> pour <code>/* */</code>
+        <li>Changez toutes vos séries <code>[x..y]</code> pour <code>[x to y]</code> et changez <code>[x...y]</code> en <code>[x til y]</code>. Si votre série descend, et que ce n'est pas évident (le from et le to ne sont pas littéraux), vous devez ajouter  <code>by -1</code>, par exemple <code>[x to -3 by -1]</code>
+        <li>De manière similaire, changez vos <code>for</code> utilisant la syntaxe <code>for i in [x..y]</code> pour <code>for i from x to y</code>, de même pour <code>for i in [x...y]</code> à transformer en <code>for i from x til y</code>
+        <li>Changez vos compréhensions de listes <code>(x for x in list)</code> pour <code>[x for x in list]</code>. Toutes les boucles suffixes qui ne doivent pas retourner des listes ne doivent pas être en suffixes, par exemple, changez <code>increase x for x in list</code> pour <code>for x in list then increase x</code>. Vous pouvez économiser des caractères en utilisant l'alias de <code>then</code>, la flèche doublée <code>=></code>
+        <li>Changez les nombre littéraux commençant avec un point, transformez <code>.5</code> en ajoutant un zéro <code>0.5</code>
+        <li>Changez vos expressions régulières avancées de <code>/// ///</code> vers <code>// //</code>
+        <li>L'opérateur de reste (<code>...</code>) est en préfixe, non pas en suffixe (<code>(...args) -></code>)
+        <li>Retirez les parenthèses pour les arguments d'une fonction sans paramètres, <code>() -></code> doit être <code>-></code> - <code>()</code> est toujours un appel.
+        <li>Changez vos constructeurs de : 
+<pre>
+class Item
+  constructor: ->
+</pre> Pour :
+<pre>
+class Item
+  ->
+</pre>
+        Si votre constructeur est une fonction externe, assignez <code>constructor$$</code>.
+        <li>Changez vos appels à super de <code>super</code> à) <code>super ...</code> - this is because <code>super</code> is a direct reference to the parent function rather than a call itself.
+        <li>Entourez vos opérateurs de bits de points, <code>&amp;</code> est <code>.&amp;.</code> et <code>&gt;&gt;</code> est <code>.&gt;&gt;.</code> (etc)
+        <li>Si vous voulez modifier des variables dans des portées supérieures
+<pre>
+x = 10
+do ->
+  x = 5
+</pre> vous douvez utiliser l'opérateur <code>:=</code> au lieu du simple <code>=</code> car ce dernier est toujours utilisé pour déclarer une variable (shadowing). Le code ci-dessus devrait être
+<pre>
+x = 10
+do ->
+  x := 5
+</pre>
+      <li>N'utilisez pas <code>it</code>, <code>that</code>, <code>fallthrough</code>, ou <code>otherwise</code> pour vos variables. Cela peut ne pas être techniquement requis dans tous les cas, mais sera moins confus. Référez-vous à la documentation ci-dessus pour leurs utilisations.
+      <li>LiveScript ignore l'indentation dans les chaînes multilignes avec entourées de guillements simples (non triplés, <code>"string"</code> ou <code>'string'</code>)
+<pre>
+text = "hi 
+        there"
+</pre> devra être changé car produit, en CoffeeScript, <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> mais <code>"hi there"</code> en LiveScript.
+      <li><code>and</code>, <code>or</code> et les versions espacées de <code>.</code> and <code>?.</code> ferment les appels implicites : <code>f a .g b or h c</code> est <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript. You can use <code>||</code> instead of <code>or</code> and <code>&amp;&amp;</code> instead of <code>and</code> as those versions do not close implicit calls.
+      <li>Changez vos <code>do</code>s-bloc pour utiliser <code>let</code>. Par exemple : en CoffeScript <code>do ($ = jQuery) -> $</code> à changer pour
+<pre>
+let $ = jQuery
+  $
+</pre>
+      <li>Utilisez le <code>do</code> pour les appels implicites suivis d'un bloc :
+<pre>
+f
+  a: b
+</pre> à transformer en
+<pre>
+f do
+  a: b
+</pre>
+      <li>Changez vos interpolations JavaScript de <code>`js code here`</code> pour <code>``js code here``</code>
+      <li>N'espacez jamais vos accès des deux côtés (exemple <code>x . y</code>), c'est l'opérateur de composition de fonctions en LiveScript
+      <li>Espacez vos opérations, comme <code>a-b</code> pour <code>a - b</code>. <code>a-1</code> et <code>1-b</code> sont toujours valides (mais déconseillés), car <code>a-b</code> est un identifieur valide en LiveScript, qui se compile en camelCase : <code>aB</code>.
+      </ul>
+    </div>
+    <div class="section" id="changes">
+      <a name="changes" href="http://livescript.net/index.html#changes">Changes from Coco: Detail and Rationale (EN)</a>
+    </div>
+    <div id="changelog" class="section">
+      <a name="changelog" href="http://livescript.net/index.html#changelog">ChangeLog (EN)</a>
+    </div>
+    <hr>
+    <div id="inspiration" class="section">
+      <a name="inspiration"></a>
+      <h2>Inspiration</h2>
+        <ul>
+          <li>Les langages fonctionnels en général
+          <li>Haskell
+          <li>F#
+        </ul>
+    </div>
+    <div id="name" class="section">
+      <a name="name"></a>
+      <h2>Nom</h2>
+        <p>LiveScript était l'un des premiers noms du JavaScript, c'est une référence.
+    </div>
+    <div id="thanks" class="section">
+      <a name="thanks"></a>
+      <h2>Remerciements</h2>
+      <p>Vous pouvez trouver la liste des contributeurs <a href="https://github.com/gkz/LiveScript/graphs/contributors">ici</a>. Cette liste inclue aussi les contributeurs aux précédesseurs. 
+      <p>Les personnes qui ont contribuées directement, incluant <a href="https://github.com/gkz">George Zahariev</a>, <a href="https://github.com/satyr">Satoshi Murakami</a>, <a href="https://github.com/josher19">Joshua Weinstein</a>, <a href="https://github.com/goatslacker">Josh Perez</a>, et <a href="https://github.com/paulmillr">Paul Miller</a>.
+      <p>Un remerciement spécial pour Satoshi car ce projet est un dérivé de son langage <a href="https://github.com/satyr/coco">Coco</a> et ne serait possible sans.
+      <p>Traduction par <a href="https://github.com/Nami-Doc">Vendethiel</a>. 
+    </div>
+    <div id="contributing" class="section">
+      <a name="contributing"></a>
+      <h2>Guide du contributeur</h2>
+      <p>Créez un fork de <a href="https://github.com/gkz/LiveScript">LiveScript</a> et effectuez vos modifications, sans oublier les tests (dossier <code>/test</code>).
+      <p>&Eacute;xecutez <code>bin/slake</code> pour voir les commandes disponibles. Assurez-vous de pouvoir lancer <code>bin/slake build:full</code> - à savoir, recompiler le compilateur. Utile : <code>git checkout -- lib && bin/slake build:full</code> : nettoie votre <code>lib</code> et compile ainsi que lance vos tests. N'envoyez une Pull Request que si tous vos tests passant. Si vous modifiez la grammaire, vous devrez lancer <code>git checkout -- lib && bin/slake build && bin/slake build:parser && bin/slake test</code>. Une fois que tous les tests sont passés, modifiez les parties du compilateur à modifier, puis éxecutez <code>bin/slake build:full</code>.
+      <p>Ne recompilez pas (<code>extras/livescript.js</code>) (créé par <code>bin/slake build:browser</code>). Ce fichier n'est regénéré que lors de nouvelles versions.
+    </div>
+  </div>
+</div>
+
+<script type="text/ls">
+  console?.log 'LiveScript up'
+</script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+
+<script src="bootstrap/js/bootstrap.js"></script>
+<script src="bootstrap/js/bootstrap-scrollspy.js"></script>
+
+<script src="google-code-prettify/prettify.js"></script>
+<script src="lang-ls-1.1.0.js"></script>
+
+<script src="underscore-min.js"></script>
+<script src="prelude-browser-min-0.6.0.js"></script>
+<script src="site.js"></script>
+
+<script src="livescript-1.1.0.js"></script>
+<script>
+  (document.getElementById("email") || {}).href = "mailto:z" + "@" + "georgezahariev.com";
+</script>
+</body>
+</html>
