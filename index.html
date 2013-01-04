@@ -2090,7 +2090,7 @@ delete Math.PI;
         </div>
       </div>
 
-      <p>Property copy - copy enumerable properties from right to left, and evaluate to the left. <code>&lt;&lt;&lt;</code> for own properties, <code>&lt;&lt;&lt;&lt;</code> for all properties. <code>import</code> and <code>importAll</code> are aliases for the two respectively. If you leave out the left operand, <code>this</code> is presumed.
+      <p>Property copy - copy enumerable properties from right to left, and evaluate to the left. <code>&lt;&lt;&lt;</code> for own properties, <code>&lt;&lt;&lt;&lt;</code> for all properties. <code>import</code> and <code>import all</code> are aliases for the two respectively with the exception that if you leave out the left operand, <code>this</code> is presumed.
 
       <div class="example">
         <div class="example-ls">
@@ -2519,6 +2519,34 @@ add(3, 4);
         </div>
       </div>
 
+      <p>Calling a function with bare splats <code>...</code> implies calling it with the arguments of the current function. Especially useful when calling <code>super</code>.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+f = (x, y) ->
+  x + y
+
+g = (a, b) ->
+  f ...
+
+g 3 4 #=> 7
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var f, g;
+f = function(x, y){
+  return x + y;
+};
+g = function(a, b){
+  return f.apply(this, arguments);
+};
+g(3, 4);
+</pre>
+        </div>
+      </div>
+
       <h3>Parameters</h3>
 
       <p>Extended parameters:
@@ -2702,7 +2730,7 @@ f(1, 2, 3, 4);
 
       <a name="params-unary-ops"></a>
 
-      <p>You can even use unary operators in your parameters. You could use <code>+</code> and <code>!!</code> to cast your parameters to a number or boolean respectively, or use the clone operator <code>^^</code> to make sure any changes you make to the object are not reflected in the original. 
+      <p>You can even use unary operators in your parameters. You could use <code>+</code> and <code>!!</code> to cast your parameters to a number or boolean respectively, or use the clone operator <code>^^</code> to make sure any changes you make to the object are not reflected in the original. You can still use extended parameters, eg. <code>(!!x.x) -&gt;</code>.
 
       <div class="example">
         <div class="example-ls">
@@ -5319,7 +5347,7 @@ function import$(obj, src){
         </div>
       </div>
 
-      <p>You can use mixins through <code>implements</code>. You can only inherit from one class, but can mixin as many objects as you like.
+      <p>You can use mixins through <code>implements</code>. You can only inherit from one class, but can mixin as many objects as you like. Remember, if you want to implement a class, not just a simple object, you must implement the class's prototype.
 
       <div class="example">
         <div class="example-ls">
