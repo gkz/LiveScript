@@ -230,6 +230,9 @@ list-of-obj =
 
 eq '1,4' String [..ha for list-of-obj]
 
+ys = [\A to \D] ++ [\H to \K] ++ [\Z]
+eq 'A,B,C,D,H,I,J,K,Z' String [.. for [\A to \Z] when .. in ys]
+
 # Comprehensions in loops
 xs = for x to 5
   [x + y for y to 5]

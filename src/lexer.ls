@@ -405,6 +405,7 @@ exports import
 
   # Used from both doLiteral (|) and doID (case): adds swtich if required
   doCase: ->
+    @seenFor = false
     if @last.0 in <[ ASSIGN -> : ]>
     or (@last.0 is \INDENT and @tokens[*-2].0 in <[ ASSIGN -> : ]>)
       @token \SWITCH \switch
