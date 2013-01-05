@@ -447,6 +447,16 @@ class exports.Chain extends Node
   children: <[ head tails ]>
 
   add: ->
+    if @tails.length
+      last = @tails[*-1]
+      # optimize `x |> f 1, _` to `f(1, x)`
+      if last instanceof Call
+      and last.partialized?length is 1
+      and it.args.length is 1
+        index = last.partialized.0.head.value # Chain Literal i
+        delete last.partialized
+        last.args[index] = it.args.0 # extract the single arg from pipe call
+        return this
     if @head instanceof Existence
       {@head, @tails} = Chain @head.it
       it.soak = true
