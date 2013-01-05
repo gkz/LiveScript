@@ -1635,9 +1635,9 @@ class exports.Fun extends Node
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
     curry-code-check = ~>
-      if @curried
-        if @has-splats
+      if @curried and @has-splats
           @carp 'cannot curry a function with a variable number of arguments'
+      if @curried and @params.length > 1
         "#{ util \curry }" + if @bound or @class-bound
           "((#code), true)"
         else
