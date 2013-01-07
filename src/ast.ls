@@ -2469,7 +2469,7 @@ class exports.Event extends Node
     op = ops[@method]
     base = @findBase t
     assign = if "this" == t then t else "#t = #t || {}"
-    "#{ util op }.call(#assign, #{ @observer.compile o, LEVEL_LIST }, #base)"
+    "#{ util op, o }.call(#assign, #{ @observer.compile o, LEVEL_LIST }, #base)"
 
 
 #### Parser Utils
@@ -2853,9 +2853,12 @@ SIMPLENUM = /^\d+$/
 ##### Helpers
 
 # Declares a utility function at the top level.
-function util
-  func = UTILS[it]
-  if {}.toString.call(func) == '[object Function]' then func = func()
-  Scope.root.assign it+\$ func.toString!
+function util fn, options
+  unless options?util
+    func = UTILS[fn]
+    if {}.toString.call(func) == '[object Function]' then func = func!
+    Scope.root.assign fn+\$ func.toString!
+  else
+    return fn+\$
 
 function entab code, tab then code.replace /\n/g \\n + tab
