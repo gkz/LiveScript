@@ -31,6 +31,7 @@ require! {
   eval        : 'read command line arguments as script'
   require     :['require libraries before executing' \FILE+]
   bare        : 'compile without the top-level function wrapper'
+  util        : 'compile with symbols for external utils library'
   print       : 'print the result to stdout'
   lex         : 'print the tokens the lexer produces'
   tokens      : 'print the tokens the rewriter produces'
@@ -102,7 +103,7 @@ switch
 # Compile a single source script, containing the given code, according to the
 # requested options.
 !function compileScript filename, input, base
-  options = {filename, o.bare, o.const}
+  options = {filename, o.bare, o.const, o.util}
   t       = {input, options}
   try
     LiveScript.emit \lex t
