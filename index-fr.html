@@ -324,7 +324,7 @@ function curry$(f, bound){
 </pre>
         </div>
       </div>
-      <p>Rappels (<i>backcall</i>) désimbriqués, chaînage sans parenthèses :
+      <p>Rappels désimbriqués (<i>backcalls</i>) , chaînage sans parenthèses :
       <div class="example">
         <div class="example-ls">
         <h5>LiveScript</h5>
@@ -386,7 +386,7 @@ $('h1').on('click', function(){
         <li>Compile un dossier entier vers un autre dossier : <code>lsc -co output src</code>
         <li>Surveille un dossier, compile les fichiers vers un autre dossier : <code>lsc -wco output src</code>
         <li>Compile un petit extrait et affiche le résultat dans la console : <code>lsc -bpe '[1 to 5]'</code>
-        <li>Lance le compilateur intéractif : <code>lsc -i</code> — f<code>Ctrl-D</code> pour quitter, utilisez <code>Ctrl-J</code> pour du multiligne.
+        <li>Lance le compilateur intéractif : <code>lsc -i</code> — <code>Ctrl-D</code> pour quitter, utilisez <code>Ctrl-J</code> pour du multiligne.
       </ul>
     </div>
     <div id="community" class="section">
@@ -3077,9 +3077,9 @@ map(function(it){
       </div>
 
       <a name="backcalls"></a>
-      <h3>Rappels arrières</h3>
+      <h3>Rappels désimbriqués</h3>
 
-      <p>Les Rappels arrières (<i>backcalls</i>) sont très utiles. Ils vous permettent de désimbriquer vos rappels. La syntaxe est la même que pour les fonctions, mais avec la flèche vers la gauche (<code><~</code>, <code><--</code>, <code><~~</code>, <code><-!</code>) :
+      <p>Les rappels désimbriqués (<i>backcalls</i>) sont très utiles. Ils vous permettent de désimbriquer vos rappels. La syntaxe est la même que pour les fonctions, mais avec la flèche vers la gauche (<code><~</code>, <code><--</code>, <code><~~</code>, <code><-!</code>) :
 
       <div class="example">
         <div class="example-ls">
