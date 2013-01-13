@@ -259,6 +259,12 @@ eq 6 xs.length
 eq 6 xs[*-2][*-1]
 eq 10 xs[*-1][*-1]
 
+xs = for i to 9
+  while 0 => while 0 =>  
+  i
+
+eq 0 xs.0
+
 xs = for x to 1
   [y] = [z for z from 1 to 2]
   y

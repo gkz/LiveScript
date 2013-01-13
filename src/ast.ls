@@ -2020,7 +2020,7 @@ class exports.While extends Node
     last = lines?[*-1]
     unless (@is-comprehension or @in-comprehension) and not last?is-comprehension
       var has-loop
-      @traverseChildren !-> if it instanceof Block and it.lines[*-1] instanceof While
+      last?traverseChildren !-> if it instanceof Block and it.lines[*-1] instanceof While
         has-loop := true
       if @returns and not @res-var
         @res-var = res = o.scope.assign \results$ empty
