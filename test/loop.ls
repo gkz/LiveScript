@@ -490,12 +490,20 @@ while i--
 
 
 ### Post condition with when
-i = 1
+i = 0
 list = [1 to 5]
 do
-  n = list[++i]
-until i > 7 when n isnt 5
-eq 8 i
+  list[i] = list[i] + 1
+until ++i > 3 when i isnt 2
+eq '2,3,3,5,5', ''+list
+
+i = 0
+list = [1 to 5]
+do
+  list[i] = list[i] + 1
+while ++i < 3 when i isnt 2
+eq '2,3,3,4,5', ''+list
+
 
 ### Update clause
 i = 0; evens = [i while i < 9, i += 2]
