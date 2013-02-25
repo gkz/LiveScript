@@ -489,6 +489,22 @@ eq i, 2
 while i--
 
 
+### Post condition with when
+i = 0
+list = [1 to 5]
+do
+  list[i] = list[i] + 1
+until ++i > 3 when i isnt 2
+eq '2,3,3,5,5', ''+list
+
+i = 0
+list = [1 to 5]
+do
+  list[i] = list[i] + 1
+while ++i < 3 when i isnt 2
+eq '2,3,3,4,5', ''+list
+
+
 ### Update clause
 i = 0; evens = [i while i < 9, i += 2]
 eq '0,2,4,6,8' ''+evens
