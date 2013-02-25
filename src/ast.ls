@@ -1562,7 +1562,7 @@ class exports.In extends Node implements Negatable
             , #{ array.compile o, LEVEL_LIST })"
     code = ''
     [sub, ref] = @item.cache o, false, LEVEL_PAREN
-    [cmp, cnj] = if @negated then [' != ' ' && '] else [' == ' ' || ']
+    [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
     for test, i in items
       code &&+= cnj
       if test instanceof Splat

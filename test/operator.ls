@@ -92,6 +92,9 @@ eq 0, +(10 in [ ])
 
 ok array[0]++ in [0, 1] 'should cache testee'
 
+a = [1 2 3]
+ok not ("2" in a)
+ok not ("2" in [1 2 3])
 
 # Non-spaced values still work.
 x = 10
