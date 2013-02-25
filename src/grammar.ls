@@ -268,6 +268,9 @@ bnf =
     # postfix with a single expression,
     o 'DO Block WHILE Expression'
     , -> new While($4, $3 is \until, true)addBody $2
+    # with a guard
+    o 'DO Block WHILE Expression CASE Expression'
+    , -> new While($4, $3 is \until, true)addGuard $6 .addBody $2
 
     # `return` or `throw`.
     o 'HURL Expression'                     -> Jump[$1] $2

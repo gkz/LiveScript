@@ -489,6 +489,14 @@ eq i, 2
 while i--
 
 
+### Post condition with when
+i = 1
+list = [1 to 5]
+do
+  n = list[++i]
+until i > 7 when n isnt 5
+eq 8 i
+
 ### Update clause
 i = 0; evens = [i while i < 9, i += 2]
 eq '0,2,4,6,8' ''+evens
