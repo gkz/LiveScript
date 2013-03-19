@@ -2702,7 +2702,7 @@ UTILS =
   deepEq: '''function(x, y, type){
     var toString = {}.toString, hasOwnProperty = {}.hasOwnProperty,
         has = function (obj, key) { return hasOwnProperty.call(obj, key); };
-    first = true;
+    var first = true;
     return eq(x, y, []);
     function eq(a, b, stack) {
       var className, length, size, result, alength, blength, r, key, ref, sizeB;
