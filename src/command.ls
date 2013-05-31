@@ -23,7 +23,7 @@ require! {
 {$args} = o = require(\./optparse) do
   interactive : 'start REPL; use ^J for multiline input'
   compile     : 'compile to JavaScript and save as .js files'
-  prelude     :['automatically import prelude.ls' '' \d]
+  prelude     :['automatically import prelude.ls on REPL' '' \d]
   const       :['compile all variables as constants' '' \k]
   output      :['compile into the specified directory' \DIR]
   watch       : 'watch scripts for changes, and repeat'
@@ -119,8 +119,6 @@ switch
     options.bare ||= o.json or o.run
     t.ast.makeReturn! if o.json or o.run and o.print
     t.output = t.ast.compileRoot options
-    if o.prelude
-      t.output = "if (typeof window == 'undefined' || window === null) {\n  require('prelude-ls').installPrelude(global);\n} else {\n  prelude.installPrelude(window);\n}\n#{t.output}"
     if o.json or o.run
       LiveScript.emit \run t
       t.result = LiveScript.run t.output, options, true
