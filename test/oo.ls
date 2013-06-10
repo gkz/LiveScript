@@ -447,10 +447,11 @@ let @ = constructor: 10
 
 # Executable class bodies and let
 class A
-  let b = 2
-    a: b
+  a: 2
+  -> b: 2
 
 eq 2 (new A).a
+eq void (new A).b
 
 # complex extends and auto super
 x =
