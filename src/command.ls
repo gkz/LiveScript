@@ -7,6 +7,7 @@ require! {
   path
   fs
   util
+  \prelude-ls
 }
 
 !function say => process.stdout.write it + \\n
@@ -218,7 +219,7 @@ switch
     module.paths = module.constructor._nodeModulePaths \
       module.filename = process.cwd! + \/repl
     vm = require \vm
-    global <<< require \prelude-ls if o.prelude
+    global <<< preludeLs if o.prelude
     repl-ctx = {}
     repl-ctx <<< global
     repl-ctx <<< {module, exports, require}
