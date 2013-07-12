@@ -243,7 +243,7 @@ bnf =
 
     # The function literal can be either anonymous with `->`,
     o 'PARAM( ArgList OptComma )PARAM -> Block'
-    , -> L Fun $2, $6, $5.charAt(0) is \~, $5.length is 3
+    , -> L Fun $2, $6, /~/.test($5), /--|~~/.test($5), /!/.test($5)
     # or named with `function`.
     o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> L Fun($3, $6)named $1
 

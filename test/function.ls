@@ -524,6 +524,11 @@ eq void do
 
 eq false !!->
 
+eq void do (x) !-> true
+eq void do (x) !--> true
+eq void do (x) !~> true
+eq void do (x) !~~> true
+
 ### auto currying magic
 times = (x, y) --> x * y
 timesTwo = times 2

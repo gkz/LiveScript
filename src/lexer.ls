@@ -566,7 +566,7 @@ exports import
     case \~
       return 1 if @dotcat val
       tag = \UNARY
-    case \-> \~> \--> \~~> then up = \->; fallthrough
+    case \-> \~> \--> \~~> \!-> \!~> \!--> \!~~> then up = \->; fallthrough
     case \<- \<~ \<-- \<~~ then @parameters tag = up || \<-
     case \::
       @adi!
@@ -1206,12 +1206,12 @@ SYMBOL = //
 | \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
 | \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
 | \^\^                          # clone
-| --> | ~~> | <-- | <~~         # curry
+| !?--> | !?~~> | <-- | <~~     # curry
 | ([-+&|:])\1                   # crement / logic / `prototype`
 | %%                            # mod
 | &                             # arguments
 | \([^\n\S]*\)                  # call
-| [-~]>                         # function, bound function
+| !?[-~]>                       # function, bound function
 | <[-~]                         # backcall
 | [!=]==?                       # strict equality, deep equals
 | !?\~=                         # fuzzy equality

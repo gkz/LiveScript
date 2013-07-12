@@ -1591,7 +1591,7 @@ class exports.Existence extends Node implements Negatable
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Block!, @bound and \this$, @curried or false) ~>
+  (@params or [], @body or Block!, @bound and \this$, @curried or false, @hushed = false) ~>
 
   children: <[ params body ]>
 
