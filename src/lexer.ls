@@ -119,9 +119,7 @@ exports import
       return input.length
     # keywords
     switch id
-    case <[ true false on off yes no null void undefined arguments debugger ]>
-      if id is \undefined
-        console?warn "WARNING on line #{@line}: `undefined` as an alias to `void` is deprecated and will be removed in a future LiveScript release. Please use `void` instead."
+    case <[ true false on off yes no null void arguments debugger ]>
       tag = \LITERAL
     case \new \do \typeof \delete                      then tag = \UNARY
     case \return \throw                                then tag = \HURL
@@ -130,8 +128,6 @@ exports import
     case \for  then @seenFor = true; @wantBy = false
     case \then then @seenFor = @wantBy = false
     case \catch \function then id = ''
-    case \where
-      console?warn "WARNING on line #{@line}: the `where` statement is deprecated and will be removed in a future LiveScript release. Please use `let` or local variables instead."
     case \in \of
       if @seenFor
         @seenFor = false
@@ -432,7 +428,7 @@ exports import
     case \.&. \.|. \.^.  then tag = \BITWISE
     case \^^             then tag = \CLONE
     case \** \^          then tag = \POWER
-    case \?  \!?
+    case \?
       if @last.0 is \(
         @token \PARAM( \(
         @token \)PARAM \)
@@ -441,9 +437,6 @@ exports import
       else
         tag = \LOGIC if @last.spaced
     case \/ \% \%%       then tag = \MATH
-    case \+++
-      console?warn "WARNING on line #{ @line }: the `+++` concat operator is deprecated and will be removed in a future LiveScript release. Please use a spaced `++` for concatenation instead."
-      tag = \CONCAT
     case \++ \--         then tag = \CREMENT
     case \<<< \<<<<      then tag = \IMPORT
     case \;              then tag = \NEWLINE; @wantBy = false
@@ -500,27 +493,6 @@ exports import
           | otherwise => \BIOP
       @lpar = @parens.pop! if \) is tag = val = @pair val
     case <[ = : ]>
-      # change id@! to calls (id! already makes calls)
-      if @last.0 is \UNARY and @last.1 is \! and @tokens[*-2].1 in [\.@ \this]
-        @tokens.pop!
-        @token \CALL( \(
-        @token \)CALL \)
-      else if @last.0 is \)CALL
-        console?warn "WARNING on line #{ @line }: `func(x) = ...` type functions are deprecated and will be removed in a future LiveScript release. Please use long arrows --> for your curried functions instead."
-        tag = \ASSIGN if val is \=
-        arrow = \-->
-        @tokens.pop! # remove the )CALL
-        @token \)PARAM \) # add )PARAM
-        for t, i in @tokens by -1 when t.0 is \CALL( then break # find opening CALL
-        # remove opening call, replace with assign and param
-        @tokens.splice i, 1, [tag, val, @line], [\PARAM( \( @line]
-        if @tokens[i-2]?1 in [\.~ \~]
-          @tokens.splice i-2, 1; --i # remove the ~
-          if able @tokens.slice 0, i - 1
-            @tokens.splice i-2 + 1, 0, [\DOT \. @line]; ++i
-          arrow = \~~>
-        @token \-> arrow
-        return sym.length
       if val is \:
         switch @last.0
         | \ID \STRNUM \) => break
@@ -754,11 +726,7 @@ exports import
   # Supplies an implicit DOT if applicable.
   adi: ->
     return if @last.spaced
-    if @last.0 is \!?
-      @last.0 = \CALL(
-      @token \)CALL ''
-      @token \? \?
-    else unless able @tokens
+    unless able @tokens
       return
     @token \DOT \.
 
@@ -889,8 +857,6 @@ character = if not JSON? then uxxxx else ->
   while token = tokens[++i]
     [tag, val, line] = token
     switch
-    case tag is \!? or tag is \LOGIC and val is \!?
-      console?warn "WARNING on line #line: the `!?` inexistance operator is deprecated and will be removed in a future LiveScript release. Please use a negated existance instead, eg. change `x!?` to `not x?`. For its use as a logic operator, change `x !? y` to `if x? then y else void`."
     case tag is \ASSIGN and prev.1 in LS_KEYWORDS and tokens[i-2].0 isnt \DOT
       carp "cannot assign to reserved word \"#{prev.1}\"" line
     case tag is \DOT and prev.0 is \] and tokens[i-2].0 is \[ and tokens[i-3].0 is \DOT
@@ -1182,7 +1148,7 @@ character = if not JSON? then uxxxx else ->
           tokens.splice i, 0 [\CALL( '' token.2] [\)CALL '' token.2]
           i += 2
       continue
-    case \LITERAL \} \!? then break
+    case \LITERAL \} then break
     case \) \)CALL then continue if token.1
     case \]        then continue if token.index
     case \CREMENT  then continue unless able tokens, i
@@ -1244,7 +1210,6 @@ SYMBOL = //
 | \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
 | \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
 | \^\^                          # clone
-| \+\+\+                        # list concat
 | --> | ~~> | <-- | <~~         # curry
 | ([-+&|:])\1                   # crement / logic / `prototype`
 | %%                            # mod
@@ -1261,7 +1226,6 @@ SYMBOL = //
 | [<>]== | <<= | >>=            # deep {less,greater}-than-(or-equal-to)
 | << | >>                       # compose
 | [<>]\??=?                     # {less,greater}-than-(or-equal-to) / min/max
-| !\?                           # inexistence
 | \|>                           # pipe
 | \|                            # case
 | =>                            # then

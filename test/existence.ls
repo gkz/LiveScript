@@ -187,3 +187,10 @@ let [x, y?]? = a, {z}? = a.1
   eq x, 0
   eq y, void
   eq z, void
+
+### on function call
+f = -> 42
+g = -> void
+
+ok f!?
+ok not g!?

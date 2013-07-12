@@ -405,6 +405,9 @@ eq a * b, 21
 
 eq 11, ((, a) -> a)(, 11)
 
+# undefined not a keyword...
+undefined = 52
+eq 52 undefined
 
 ### ACI
 eq null null

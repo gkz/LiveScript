@@ -1084,7 +1084,7 @@ class exports.Binary extends Node
   show: -> @op
 
   isCallable: ->
-    @partial or @op in <[ && || ? !? << >> ]> and @first.isCallable! and @second.isCallable!
+    @partial or @op in <[ && || ? << >> ]> and @first.isCallable! and @second.isCallable!
 
   isArray: -> switch @op | \* => @first .isArray!
                          | \/ => @second.isMatcher!
@@ -1104,7 +1104,7 @@ class exports.Binary extends Node
 
   invertIt: -> @inverted = true; this
 
-  getDefault: -> switch @op | \? \|| \&& \!? => this
+  getDefault: -> switch @op | \? \|| \&& => this
 
   xorChildren: (test) ->
     return false unless (first = test @first) xor test @second
@@ -1113,7 +1113,7 @@ class exports.Binary extends Node
   compileNode: (o) ->
     return @compilePartial o if @partial
     switch @op
-    case \? \!?   then return @compileExistence o
+    case \? then return @compileExistence o
     case \*
       return @compileJoin   o if @second.isString!
       return @compileRepeat o if @first.isString! or @first.isArray!
@@ -1122,7 +1122,7 @@ class exports.Binary extends Node
     case \** \^   then return @compilePow o
     case \<? \>?  then return @compileMinMax o
     case \<< \>>  then return @compileCompose o
-    case \+++ \++ then return @compileConcat o
+    case \++ then return @compileConcat o
     case \%%      then return @compileMod o
     case \xor     then return @compileXor o
     case \&& \||
@@ -1171,9 +1171,6 @@ class exports.Binary extends Node
     if o.level <= LEVEL_OP then code else "(#code)"
 
   compileExistence: (o) ->
-    if @op is \!?
-      x = If(Existence @first; @second) <<< {@cond, @void or not o.level}
-      return x.compileExpression o
     if @void or not o.level
       x = Binary \&& Existence(@first, true), @second
       return (x <<< {+void})compileNode o
@@ -1380,7 +1377,7 @@ class exports.Assign extends Node
     code
 
   compileConditional: (o, left) ->
-    if left instanceof Var and @logic in <[ ? !? ]> and @op is \=
+    if left instanceof Var and @logic in <[ ? ]> and @op is \=
       o.scope.declare left.value, left
     lefts = Chain(left)cacheReference o
     # Deal with `a && b ||= c`.

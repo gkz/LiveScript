@@ -198,9 +198,6 @@ bnf =
     o 'Cascade Chain'
     , -> Cascade $1.0, (Block $1.slice(1) ++ $2), \cascade
 
-    o 'Expression WHERE CALL( ArgList OptComma )CALL' -> Chain Call.where $4, Block [$1]
-    o 'Expression WHERE Block' -> Chain Call.where $3.lines, Block [$1]
-
     o 'Chain CLONEPORT Expression'
     , -> Import (Unary \^^ $1, prec: \UNARY), $3,         false
     o 'Chain CLONEPORT Block'
@@ -445,7 +442,7 @@ operators =
   # Listed from lower precedence.
   <[ left     POST_IF FOR WHILE ]>
   <[ right    BACKPIPE     ]>
-  <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL WHERE ]>
+  <[ right    , ASSIGN HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
   <[ left     PIPE         ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
