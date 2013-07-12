@@ -238,7 +238,9 @@ switch
   rl.on \SIGCONT rl.prompt
   rl.on \SIGINT !->
     if @line or code then say ''; reset! else @close!
-  rl.on \close process~exit
+  rl.on \close ->
+    process.stdout.write \\n
+    process.exit!
   rl.on \line !->
     repl.infunc = false if it.match(/^$/) # close with a blank line without spaces
     repl.infunc = true if it.match(/(\=|\~>|->|do|import|switch)\s*$/) or (it.match(/^!?(function|class|if|unless) /) and not it.match(/ then /))
