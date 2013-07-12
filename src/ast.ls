@@ -1099,6 +1099,7 @@ class exports.Binary extends Node
   invert: ->
     if not COMPARER.test @second.op and INVERSIONS[@op]
       @op = that
+      @was-inverted = true
       return this
     Unary \! Parens(this), true
 
@@ -1267,8 +1268,12 @@ class exports.Binary extends Node
 
   compileRegexEquals: (o, [regex, target]) ->
     if @op is \===
-    then Chain regex .add Index Key \exec .add Call [target] .compile o
-    else Unary \! (Chain regex .add Index Key \test .add Call [target]) .compile o
+      if @was-inverted
+        Chain regex .add Index Key \test .add Call [target] .compile o
+      else
+        Chain regex .add Index Key \exec .add Call [target] .compile o
+    else
+      Unary \! (Chain regex .add Index Key \test .add Call [target]) .compile o
 
   compileDeepEq: (o) ->
     if @op in <[ >== >>= ]>

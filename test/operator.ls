@@ -760,6 +760,10 @@ if /moo/ != 'loo'
 then ok 1
 else ok 0
 
+switch
+| /moo/ != 'loo' => ok 1
+| _              => ok 0
+
 ### Deep Equals
 NaN === NaN
 /moo/gi === /moo/gi
