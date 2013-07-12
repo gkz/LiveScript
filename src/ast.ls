@@ -1268,10 +1268,8 @@ class exports.Binary extends Node
 
   compileRegexEquals: (o, [regex, target]) ->
     if @op is \===
-      if @was-inverted
-        Chain regex .add Index Key \test .add Call [target] .compile o
-      else
-        Chain regex .add Index Key \exec .add Call [target] .compile o
+      method = if @was-inverted then \test else \exec
+      Chain regex .add Index Key method .add Call [target] .compile o
     else
       Unary \! (Chain regex .add Index Key \test .add Call [target]) .compile o
 
