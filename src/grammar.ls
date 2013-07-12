@@ -189,15 +189,8 @@ bnf =
     o 'INDENT Lines DEDENT' -> $2
     ...
 
-  Cascade:
-    o 'Chain CASCADE' -> [$1]
-    o 'Cascade Chain CASCADE' -> $1 ++ $2
-
   # All the different types of expressions in our language.
   Expression:
-    o 'Cascade Chain'
-    , -> Cascade $1.0, (Block $1.slice(1) ++ $2), \cascade
-
     o 'Chain CLONEPORT Expression'
     , -> Import (Unary \^^ $1, prec: \UNARY), $3,         false
     o 'Chain CLONEPORT Block'
