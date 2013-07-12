@@ -43,7 +43,7 @@ preferGlobal: true
 repository: type: \git, url: \git://github.com/gkz/LiveScript.git
 
 dependencies:
-  \prelude-ls : '>= 0.6.0'
+  \prelude-ls : '~1.0.1'
 
 devDependencies:
   jison       : \0.2.1
