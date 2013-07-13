@@ -1242,12 +1242,23 @@ class exports.Binary extends Node
     Chain @first .add Index (Key \concat), \., true .add Call(f @second) .compile o
 
   compileCompose: (o) ->
-    f = (x) ->
-      | x instanceof Binary and x.op in [\<< \>>] => (f x.first) ++ (f x.second)
-      | otherwise                                 => [x]
-    args = ([@first] ++ f @second)
-    args.=reverse! if @op is \>>
-    Chain Var (util \compose) .add Call([Arr args]) .compile o
+    op = @op
+    functions = [@first]
+    x = @second
+    while x instanceof Binary and x.op is op
+      functions.push x.first
+      x = x.second
+    functions.push x
+
+    functions.reverse! if op is \<<
+
+    first = functions.shift!
+    n = Chain first .add Index (Key \apply) .add Call [Literal 'this'; Literal 'arguments']
+
+    for f in functions
+      n = Chain f .add Call [n]
+
+    Fun [], Block [n] .compile o
 
   compileMod: (o) ->
     ref = o.scope.temporary!
@@ -2670,14 +2681,6 @@ UTILS =
       } : f;
     };
     return _curry();
-  }'''
-
-  compose: '''function(fs){
-    return function(){
-      var i, args = arguments;
-      for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
-      return args[0];
-    };
   }'''
 
   flip: '''function(f){

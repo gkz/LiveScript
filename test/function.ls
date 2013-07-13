@@ -592,6 +592,18 @@ odd = (not) . even
 ok odd 3
 ok not odd 2
 
+f = (+ 1) >> (* 2) >> (- 10)
+eq 12, f 10
+
+f = (+ 1) << (* 2) << (- 10)
+eq 1, f 10
+
+f = (+ 1) >> (* 2) << (- 10)
+eq 2, f 10
+
+f = (+ 1) << (* 2) >> (- 10)
+eq 11, f 10
+
 ### infix calls
 add = (x, y) --> x + y
 times = (x, y) --> x * y

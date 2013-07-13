@@ -177,9 +177,6 @@ eq '[1].concat([2], [3], [4]);' bare '[1] ++ [2] ++ [3] ++ [4]'
 # Error when attempting to curry a funciton using splats [#91](https://github.com/gkz/LiveScript/issues/91)
 compileThrows 'cannot curry a function with a variable number of arguments' 1 '(...args) --> args[0]'
 
-# Optimize/clean compose [#101](https://github.com/gkz/LiveScript/issues/101)
-eq 'compose$([j, h, g, f]);' (bare 'f >> g >> h >> j').split(\\n).0
-eq 'compose$([f, g, h, j]);' (bare 'f << g << h << j').split(\\n).0
 
 # destructuring assign sugar
 compileThrows 'invalid assign' 1 '{a **= b} = c'
