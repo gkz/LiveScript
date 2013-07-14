@@ -216,3 +216,6 @@ eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 
 
 # JS literal
 eq 'some js code!' bare '``some js code!``'
+
+# [livescript#279](https://github.com/gkz/LiveScript/issues/279)
+################################################################
