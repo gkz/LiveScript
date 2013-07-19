@@ -155,6 +155,11 @@ switch
     code = ''
     ..on \data !-> code += it
     ..on \end  !-> compileScript '' code
+    ..on \data !->
+      # Detect trailing __^D__ or __^Z__ for Windows.
+      if code.slice(-3) in <[ \4\r\n \x1a\r\n ]>
+        compileScript '' code.slice 0 -3
+        ..destroy!
 
 # Watch a source LiveScript file using `setTimeout`, taking an `action` every
 # time the file is updated.
