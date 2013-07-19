@@ -954,6 +954,7 @@ class exports.Unary extends Node
         if it instanceof Existence and not it.negated
           it = Chain(it)add Call!
         it.newed = true
+        it <<< {+hushed} if it instanceof Fun
         for node in it.tails or ''
           if node instanceof Call and not node.new
             node.args.shift! if node.method is \.call

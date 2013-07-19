@@ -169,7 +169,7 @@ ok new (Object C: Number).C instanceof Number
 # `new` against bare function prevents implicit return.
 o = new ->
   @0 = 1
-  2
+  [2]
 eq o.0, 1
 
 
@@ -360,6 +360,7 @@ compileThrows 'invalid constructor' 1 'new 42'
 o = new
   @1 = \_
   @length = 3
+  {}
 eq '0_0' o * \0
 
 
