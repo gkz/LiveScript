@@ -53,6 +53,8 @@ exports import
     @closes = []
     # The stack for tagging parameters.
     @parens = []
+    # The stack of flags per nesting level.
+    @flags = []
     # Call tokenizers based on the character at current `i`ndex.
     # Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
@@ -125,14 +127,19 @@ exports import
     case \return \throw                                then tag = \HURL
     case \break  \continue                             then tag = \JUMP
     case \this \eval \super then return @token(\LITERAL id, true)length
-    case \for  then @seenFor = true; @wantBy = false
-    case \then then @seenFor = @wantBy = false
+    case \for
+      id = \for
+      @fset \for true
+      @fset \to false
+    case \then
+      @fset \for false
+      @fset \to false
     case \catch \function then id = ''
     case \in \of
-      if @seenFor
-        @seenFor = false
+      if @fget \for
+        @fset \for false
         if id is \in
-          @wantBy = true
+          @fset \by true
           id = ''
           if last.0 is \ID and @tokens[*-2]0 in <[ , ] } ]>
             id = @tokens.pop!1
@@ -171,7 +178,9 @@ exports import
             | last.0 is \( => \BIOP
             | otherwise    => \WITH
     case \when
-      tag = \CASE; fallthrough
+      @fset \for false
+      tag = \CASE
+      fallthrough
     case \case
       return input.length if @doCase!
     case \match then tag = \SWITCH
@@ -201,8 +210,9 @@ exports import
       case \from then @forange! and tag = \FROM
       case \to \til
         @forange! and @tokens.push [\FROM '' @line] [\STRNUM \0 @line]
-        if @seenFrom
-          import {-seenFrom, +wantBy}
+        if @fget \from
+          @fset \from false
+          @fset \by true
           tag = \TO
         else if not last.callable and last.0 is \STRNUM and @tokens[*-2]0 is \[
           last <<< 0:\RANGE op: id
@@ -216,12 +226,18 @@ exports import
         and @tokens[*-3]0 is \[
         then tag = \RANGE_BY
         else if \] in @closes then tag = \BY
-        else @wantBy &&= !tag = \BY
+        else if @fget \by
+          tag = \BY
+          @fset \by false
       case \ever then if last.0 is \FOR
-        @seenFor = false; last.0 = \WHILE; tag = \LITERAL; id = \true
+        @fset \for false
+        last.0 = \WHILE; tag = \LITERAL; id = \true
     tag ||= regex-match.1.toUpperCase!
     if tag in <[ COMPARE LOGIC RELATION ]> and last.0 is \(
       tag = if tag is \RELATION then \BIOPR else \BIOP
+    if tag in <[ THEN IF WHILE ]>
+      @fset \for false
+      @fset \by false
     @unline! if tag in <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
                           IN OF FROM TO BY EXTENDS IMPLEMENTS WHERE ]>
     @token tag, id
@@ -391,7 +407,8 @@ exports import
                    IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
         return length
       if delta then @indent delta else @newline!
-    @seenFor = @wantBy = false
+    @fset \for false
+    @fset \by false
     length
 
   # Consumes non-newline whitespaces and/or a line comment.
@@ -439,7 +456,9 @@ exports import
     case \/ \% \%%       then tag = \MATH
     case \++ \--         then tag = \CREMENT
     case \<<< \<<<<      then tag = \IMPORT
-    case \;              then tag = \NEWLINE; @wantBy = false
+    case \;
+      tag = \NEWLINE
+      @fset \by false
     case \..
       @token \LITERAL \.. true
       return 2
@@ -574,7 +593,7 @@ exports import
       tag = \ID
     case \=>
       @unline!
-      @seenFor = false
+      @fset \for false
       tag = \THEN
     default switch val.charAt 0
     case \( then @token \CALL( \(; tag = \)CALL; val = \)
@@ -759,13 +778,24 @@ exports import
   # Checks FOR for FROM/TO.
   forange: ->
     if @tokens[* - 2 - (@last.0 in <[NEWLINE INDENT]>)]?0 is \FOR or @last.0 is \FOR
-      import {-seenFor, +seenFrom}
+      @fset \for false
+      @fset \from true
+      true
+    else false
+
 
   # Complains on bad regex flag.
   validate: (flag) ->
     if flag and /(.).*\1/exec flag
       @carp "duplicate regex flag `#{that.1}`"
     flag
+
+  # Gets/Sets a per-nest flag
+  fget: (key) ->
+    @flags[@closes.length]?[key]
+
+  fset: (key, val) !->
+    @flags{}[@closes.length][key] = val
 
   # Throws a syntax error with the current line number.
   carp: !-> carp it, @line
