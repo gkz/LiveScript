@@ -954,7 +954,6 @@ class exports.Unary extends Node
         if it instanceof Existence and not it.negated
           it = Chain(it)add Call!
         it.newed = true
-        it <<< {+hushed} if it instanceof Fun
         for node in it.tails or ''
           if node instanceof Call and not node.new
             node.args.shift! if node.method is \.call
@@ -1652,7 +1651,7 @@ class exports.Fun extends Node
       pscope.add name, \function, this
     if @statement or name and @labeled
       code += ' ' + scope.add name, \function, this
-    @hushed or @ctor or body.makeReturn!
+    @hushed or @ctor or @newed or body.makeReturn!
     code += "(#{ @compileParams scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
