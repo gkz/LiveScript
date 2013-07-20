@@ -1652,7 +1652,7 @@ class exports.Fun extends Node
     if @statement or name and @labeled
       code += ' ' + scope.add name, \function, this
     @hushed or @ctor or @newed or body.makeReturn!
-    code += "(#{ @compileParams scope }){"
+    code += "(#{ @compileParams o, scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
     curry-code-check = ~>
@@ -1672,7 +1672,7 @@ class exports.Fun extends Node
     code = curry-code-check!
     if @front and not @statement then "(#code)" else code
 
-  compileParams: (scope) ->
+  compileParams: (o, scope) ->
     {{length}:params, body} = this
     # Remove trailing placeholders.
     for p in params by -1
@@ -1701,6 +1701,8 @@ class exports.Fun extends Node
         vr.=first if df = vr.getDefault!
         if vr.isEmpty!
           vr = Var scope.temporary \arg
+        else if vr.value is \..
+          vr = Var o.ref = scope.reference!
         else if vr not instanceof Var
           unaries = []
           while vr instanceof Unary
@@ -2068,12 +2070,24 @@ class exports.For extends While
   ->
     import all it
     @item = null if @item instanceof Var and not @item.value
+    for @kind or [] => @[..] = true
+    @carp '`for own` requires `of`' if @own and not @object
 
   children: <[ item source from to step body ]>
 
   aSource: null
 
-  show: -> @index
+  show: -> (@kind ++ @index)join ' '
+
+  addBody: (body) ->
+    if @let
+      @item = Literal \.. if delete @ref
+      body = Block Call.let do
+        with []
+          ..push Assign Var(that), Literal \index if delete @index
+          ..push Assign that,      Literal \item if delete @item
+        body
+    super body
 
   compileNode: (o) ->
     o.loop = true
@@ -2128,7 +2142,13 @@ class exports.For extends While
     @own and head += ") if (#{ o.scope.assign \own$ '{}.hasOwnProperty' }
                             .call(#svar, #idx)"
     head += ') {'
-    @infuseIIFE!
+    if @let
+      @body.traverseChildren !->
+        switch it.value
+        | \index => it.value = idx
+        | \item  => it.value = "#svar[#idx]"
+    else
+      @infuseIIFE!
     o.indent += TAB
     if @index and not @object
       head += \\n + o.indent +

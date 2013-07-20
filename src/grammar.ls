@@ -122,8 +122,10 @@ bnf =
     o 'Chain DOT [ TO ]'
     , -> Chain Slice type: $4, target: $1
 
-    o 'WITH Expression Block' -> Chain Cascade $2, $3, \with
-    o 'FOR  Expression Block' -> Chain new For source: $2, body: $3, ref: true
+    o 'WITH Expression Block'
+    , -> Chain Cascade $2, $3, \with
+    o 'FOR  Expression Block'
+    , -> Chain new For(kind: $1, source: $2, body: $3, ref: true)addBody $3
 
   # An array or object
   List:
@@ -353,54 +355,54 @@ bnf =
     # Unless it's iterating over an object, you can choose to step through
     # in fixed-size increments.
     o 'FOR Chain IN Expression'
-    , -> new For item: $2.unwrap!, index: $3, source: $4
+    , -> new For kind: $1, item: $2.unwrap!, index: $3, source: $4
     o 'FOR Chain IN Expression CASE Expression'
-    , -> new For item: $2.unwrap!, index: $3, source: $4, guard: $6
+    , -> new For kind: $1, item: $2.unwrap!, index: $3, source: $4, guard: $6
     o 'FOR Chain IN Expression BY Expression'
-    , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6
+    , -> new For kind: $1, item: $2.unwrap!, index: $3, source: $4, step: $6
     o 'FOR Chain IN Expression BY Expression CASE Expression'
-    , -> new For item: $2.unwrap!, index: $3, source: $4, step: $6, guard: $8
+    , -> new For kind: $1, item: $2.unwrap!, index: $3, source: $4, step: $6, guard: $8
 
     o 'FOR Expression'
-    , -> new For source: $2, ref: true
+    , -> new For kind: $1, source: $2, ref: true
     o 'FOR Expression CASE Expression'
-    , -> new For source: $2, ref: true, guard: $4
+    , -> new For kind: $1, source: $2, ref: true, guard: $4
     o 'FOR Expression BY Expression'
-    , -> new For source: $2, ref: true, step: $4
+    , -> new For kind: $1, source: $2, ref: true, step: $4
     o 'FOR Expression BY Expression CASE Expression'
-    , -> new For source: $2, ref: true, step: $4, guard: $6
+    , -> new For kind: $1, source: $2, ref: true, step: $4, guard: $6
 
     o 'FOR     ID         OF Expression'
-    , -> new For {+object,       index: $2,                   source: $4}
+    , -> new For {+object, kind: $1,       index: $2,                   source: $4}
     o 'FOR     ID         OF Expression CASE Expression'
-    , -> new For {+object,       index: $2,                   source: $4, guard: $6}
+    , -> new For {+object, kind: $1,       index: $2,                   source: $4, guard: $6}
     o 'FOR     ID , Chain OF Expression'
-    , -> new For {+object,       index: $2, item: $4.unwrap!, source: $6}
+    , -> new For {+object, kind: $1,       index: $2, item: $4.unwrap!, source: $6}
     o 'FOR     ID , Chain OF Expression CASE Expression'
-    , -> new For {+object,       index: $2, item: $4.unwrap!, source: $6, guard: $8}
+    , -> new For {+object, kind: $1,       index: $2, item: $4.unwrap!, source: $6, guard: $8}
     o 'FOR OWN ID         OF Expression'
-    , -> new For {+object, +own, index: $3,                   source: $5}
+    , -> new For {+object, kind: $1, +own, index: $3,                   source: $5}
     o 'FOR OWN ID         OF Expression CASE Expression'
-    , -> new For {+object, +own, index: $3,                   source: $5, guard: $8}
+    , -> new For {+object, kind: $1, +own, index: $3,                   source: $5, guard: $8}
     o 'FOR OWN ID , Chain OF Expression'
-    , -> new For {+object, +own, index: $3, item: $5.unwrap!, source: $7}
+    , -> new For {+object, kind: $1, +own, index: $3, item: $5.unwrap!, source: $7}
     o 'FOR OWN ID , Chain OF Expression CASE Expression'
-    , -> new For {+object, +own, index: $3, item: $5.unwrap!, source: $7, guard: $8}
+    , -> new For {+object, kind: $1, +own, index: $3, item: $5.unwrap!, source: $7, guard: $8}
 
     o 'FOR ID FROM Expression TO Expression'
-    , -> new For index: $2, from: $4, op: $5, to: $6
+    , -> new For kind: $1, index: $2, from: $4, op: $5, to: $6
     o 'FOR FROM Expression TO Expression'
-    , -> new For            from: $3, op: $4, to: $5
+    , -> new For kind: $1,            from: $3, op: $4, to: $5
     o 'FOR ID FROM Expression TO Expression CASE Expression'
-    , -> new For index: $2, from: $4, op: $5, to: $6, guard: $8
+    , -> new For kind: $1, index: $2, from: $4, op: $5, to: $6, guard: $8
     o 'FOR FROM Expression TO Expression CASE Expression'
-    , -> new For            from: $3, op: $4, to: $5, guard: $7
+    , -> new For kind: $1,            from: $3, op: $4, to: $5, guard: $7
     o 'FOR ID FROM Expression TO Expression BY Expression'
-    , -> new For index: $2, from: $4, op: $5, to: $6, step: $8
+    , -> new For kind: $1, index: $2, from: $4, op: $5, to: $6, step: $8
     o 'FOR ID FROM Expression TO Expression BY Expression CASE Expression'
-    , -> new For index: $2, from: $4, op: $5, to: $6, step: $8, guard: $10
+    , -> new For kind: $1, index: $2, from: $4, op: $5, to: $6, step: $8, guard: $10
     o 'FOR ID FROM Expression TO Expression CASE Expression BY Expression'
-    , -> new For index: $2, from: $4, op: $5, to: $6, guard: $8, step: $10
+    , -> new For kind: $1, index: $2, from: $4, op: $5, to: $6, guard: $8, step: $10
 
     o 'WHILE Expression'                 -> new While $2, $1 is \until
     o 'WHILE Expression CASE Expression' -> new While $2, $1 is \until .addGuard $4
