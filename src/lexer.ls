@@ -128,7 +128,7 @@ exports import
     case \break  \continue                             then tag = \JUMP
     case \this \eval \super then return @token(\LITERAL id, true)length
     case \for
-      id = \for
+      id = []
       @fset \for true
       @fset \to false
     case \then
@@ -188,6 +188,11 @@ exports import
       @token \WHILE   id
       @token \LITERAL \true
       return input.length
+    case \let \own
+      if last.0 is \FOR and id not in last.1
+        last.1.push id
+        return 3
+      fallthrough
     default
       break if id in KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED
@@ -197,7 +202,6 @@ exports import
       tag = \ID
       # contextual keywords (reserved only in specific places)
       switch id
-      case \own then tag = \OWN if last.0 is \FOR
       case \otherwise
         if last.0 in <[ CASE | ]>
           last.0 = \DEFAULT

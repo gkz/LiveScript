@@ -586,3 +586,16 @@ for v, k in [1]
 ok v
 ok not k
 
+# for-let
+i = v = 7
+for let v, k in [0]
+  ok true
+for let k, v of {a: \b}
+  ok true
+ok 7 is i is v
+
+fns = for <[foo bar]>
+  for let i in [7 8]
+    -> .. + i
+eq \foo7 fns.0.0!
+eq \bar8 fns.1.1!
