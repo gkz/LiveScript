@@ -380,14 +380,6 @@ bnf =
     , -> new For {+object, kind: $1,       index: $2, item: $4.unwrap!, source: $6}
     o 'FOR     ID , Chain OF Expression CASE Expression'
     , -> new For {+object, kind: $1,       index: $2, item: $4.unwrap!, source: $6, guard: $8}
-    o 'FOR OWN ID         OF Expression'
-    , -> new For {+object, kind: $1, +own, index: $3,                   source: $5}
-    o 'FOR OWN ID         OF Expression CASE Expression'
-    , -> new For {+object, kind: $1, +own, index: $3,                   source: $5, guard: $8}
-    o 'FOR OWN ID , Chain OF Expression'
-    , -> new For {+object, kind: $1, +own, index: $3, item: $5.unwrap!, source: $7}
-    o 'FOR OWN ID , Chain OF Expression CASE Expression'
-    , -> new For {+object, kind: $1, +own, index: $3, item: $5.unwrap!, source: $7, guard: $8}
 
     o 'FOR ID FROM Expression TO Expression'
     , -> new For kind: $1, index: $2, from: $4, op: $5, to: $6
