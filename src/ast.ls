@@ -1044,11 +1044,10 @@ class exports.Unary extends Node
   # `v = delete o.k`
   compilePluck: (o) ->
     [get, del] = Chain @it .cacheReference o
-    code = if @assigned then '' else "#{ ref = o.scope.temporary! } = "
-    code +=   "#{ get.compile o, LEVEL_LIST }
-      , delete #{ del.compile o, LEVEL_LIST }"
-    return code if @assigned
-    code += ", #{ o.scope.free ref }"
+    code = "#{ ref = o.scope.temporary!  } = \
+            #{ get.compile o, LEVEL_LIST }, delete \
+            #{ del.compile o, LEVEL_LIST }, \
+            #{ o.scope.free ref }"
     if o.level < LEVEL_LIST then code else "(#code)"
 
   compileAsFunc: (o) ->
@@ -1363,7 +1362,6 @@ class exports.Assign extends Node
     sign = op.replace \: ''
     name = (left <<< {+front})compile o, LEVEL_LIST
     if lvar = left instanceof Var
-      del = right.op is \delete
       if op is \=
         o.scope.declare name, left,
           (@const or not @defParam and o.const and \$ isnt name.slice -1)
@@ -1384,10 +1382,8 @@ class exports.Assign extends Node
          #{@tab}#{ right.makeReturn(res)compile o }
          #{@tab}#name #sign #{ o.scope.free res }"""
     else
-      "#name #sign " + (right <<< {+assigned})compile o, LEVEL_LIST
-    if o.level
-      code += ", #name" if del
-      code  = "(#code)" if that > (if del then LEVEL_PAREN else LEVEL_LIST)
+      "#name #sign " + right.compile o, LEVEL_LIST
+    code = "(#code)" if o.level > LEVEL_LIST
     code
 
   compileConditional: (o, left) ->
