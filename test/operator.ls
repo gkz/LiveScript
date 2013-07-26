@@ -368,6 +368,12 @@ eq o[7], void
 compileThrows 'invalid delete' 1 'delete a'
 compileThrows 'invalid delete' 1 'delete a.=b'
 
+# [#273](https://github.com/gkz/LiveScript/issues/273)
+a = b = ^^{0} <<< [1]
+a = delete a.0
+eq 1 a
+eq 0 b.0
+
 ### `jsdelete`
 
 x =
