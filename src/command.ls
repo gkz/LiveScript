@@ -22,7 +22,6 @@ require! {
 
 # Use the [option parser](#optparse).
 {$args} = o = require(\./optparse) do
-  interactive : 'start REPL; use ^J for multiline input'
   compile     : 'compile to JavaScript and save as .js files'
   prelude     :['automatically import prelude.ls on REPL' '' \d]
   const       :['compile all variables as constants' '' \k]
@@ -61,14 +60,12 @@ switch
   case o.eval
     argv.1 = \eval
     compileScript '' $args * \\n
-  case o.interactive
-    repl!
   case o.stdin
     compileStdin!
   case $args.length
     compileScripts!
   case require \tty .isatty 0
-    say version! + \\n + help! + \\n
+    say "#{version!} - use 'lsc --help' for more information"
     repl!
   default
     compileStdin!
@@ -219,7 +216,7 @@ switch
     then cont += 1
     else cont := 0
     _ttyWrite ...
-  prompt = \livescript
+  prompt = \ls
   prompt += " -#that" if \b * !!o.bare + \c * !!o.compile
   LiveScript.history = rl.history if LiveScript?
   unless o.compile
@@ -291,7 +288,7 @@ switch
     cwd: process.cwd!, env: process.env, customFds: [0 to 2]
 
 function help then """
-  Usage: livescript [options] [files] [arguments]
+  Usage: lsc [options] [files] [arguments]
 
   Options:
   #o
