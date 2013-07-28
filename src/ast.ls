@@ -1266,9 +1266,8 @@ class exports.Binary extends Node
     code
 
   compilePartial: (o) ->
-    vit = Var \it
-    switch
-    case  not @first? and not @second?
+    switch !!vit = Var \it$
+    case not @first? and not @second?
       x = Var \x$; y = Var \y$
       (Fun [x, y], Block((Binary @op, x, y).invertCheck this), false, true).compile o
     case @first?

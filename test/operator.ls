@@ -697,6 +697,10 @@ eq '1,2,3,4' String (++) a, [3 4]
 eq '3,4,1,2' String (++ a) [3 4]
 eq '1,2,3,4' String (a ++) [3 4]
 
+# Partially applied functions use a reserved `it$` [#337]
+func = -> (3*it*)
+eq 36 func(3) 4
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)
