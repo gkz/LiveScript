@@ -23,7 +23,7 @@ require! {
 # Use the [option parser](#optparse).
 {$args} = o = require(\./optparse) do
   compile     : 'compile to JavaScript and save as .js files'
-  prelude     :['automatically import prelude.ls on REPL' '' \d]
+  prelude     :['automatically import prelude.ls in REPL' '' \d]
   const       :['compile all variables as constants' '' \k]
   output      :['compile into the specified directory' \DIR]
   watch       : 'watch scripts for changes, and repeat'
