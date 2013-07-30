@@ -2677,9 +2677,9 @@ UTILS =
     return r;
   }'''
 
-  in: '''function(x, arr){
-    var i = -1, l = arr.length >>> 0;
-    while (++i < l) if (x === arr[i] && i in arr) return true;
+  in: '''function(x, xs){
+    var i = -1, l = xs.length >>> 0;
+    while (++i < l) if (x === xs[i]) return true;
     return false;
   }'''
 
