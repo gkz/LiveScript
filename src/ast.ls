@@ -346,7 +346,6 @@ class exports.Literal extends Atom
   compile: (o, level ? o.level) ->
     switch val = "#{@value}"
     | \this      => return o.scope.fun?bound or val
-    | \undefined => val = 'void'; fallthrough
     | \void      =>
       return '' unless level
       val += ' 8'
@@ -752,15 +751,6 @@ class exports.Call extends Node
       else Var a.varName! || a.carp 'invalid "let" argument'
     gotThis or args.unshift Literal \this
     @block Fun(params, body), args, \.call
-
-  @where = (args, body) ->
-    lines = [a for a in args when a.op is \= and not a.logic]
-    params = for a, i in args
-      if a.op is \= and not a.logic
-      then args[i] = Literal \void; a.left
-      else Var a.varName! || a.carp 'invalid "let" argument'
-    args.unshift Literal \this
-    @block Fun(params, Block lines ++ body.lines), args, \.call
 
 #### List
 # An abstract node for a list of comma-separated items.
@@ -1235,7 +1225,7 @@ class exports.Binary extends Node
 
   compileConcat: (o) ->
     f = (x) ->
-      | x instanceof Binary and x.op in <[ +++ ++ ]> =>
+      | x instanceof Binary and x.op is \++ =>
         (f x.first) ++ (f x.second)
       | otherwise                            => [x]
     Chain @first .add Index (Key \concat), \., true .add Call(f @second) .compile o
@@ -2837,7 +2827,7 @@ let @ = PREC = {unary: 0.9}
   @\.&.  = @\.^.  = @\.|.                         = 0.3
   @\== = @\!= = @\~= = @\!~= = @\=== = @\!==      = 0.4
   @\<  = @\>  = @\<=  = @\>= = @of = @instanceof  = 0.5
-  @\<<= = @\>>= = @\<== = @\>== = @\+++ = @\++    = 0.5
+  @\<<= = @\>>= = @\<== = @\>== = @\++            = 0.5
   @\.<<. = @\.>>. = @\.>>>.                       = 0.6
   @\+  = @\-                                      = 0.7
   @\*  = @\/  = @\%                               = 0.8
