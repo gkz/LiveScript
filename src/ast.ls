@@ -1698,7 +1698,7 @@ class exports.Fun extends Node
         if vr.isEmpty!
           vr = Var scope.temporary \arg
         else if vr.value is \..
-          vr = Var o.ref = scope.reference!
+          vr = Var o.ref = scope.temporary!
         else if vr not instanceof Var
           unaries = []
           while vr instanceof Unary
@@ -1977,7 +1977,7 @@ class exports.While extends Node
     for node in @body?.lines or [] then return node if node.getJump ctx
 
   addBody: (@body) ->
-    @body = Block If @guard, body if @guard
+    @body = Block If @guard, @body if @guard
     [top] = @body.lines
     @body.lines.length = 0 if top?verb is \continue and not top.label
     this
@@ -2080,10 +2080,23 @@ class exports.For extends While
       @item = Literal \.. if delete @ref
       body = Block Call.let do
         with []
-          ..push Assign Var(that), Literal \index if delete @index
-          ..push Assign that,      Literal \item if delete @item
+          ..push Assign Var(that), Literal \index$$ if @index
+          ..push Assign that,      Literal \item$$ if @item
         body
+
     super body
+
+    if @guard and @let and (@index or @item)
+      @body.lines[0].if.traverse-children !~>
+        if it instanceof Var
+          if @index and it.value is @index
+            it.value = \index$$
+          if @item and it.value is @item.value
+            it.value = \item$$
+    if @let
+      delete @index
+      delete @item
+    this
 
   compileNode: (o) ->
     o.loop = true
@@ -2141,8 +2154,8 @@ class exports.For extends While
     if @let
       @body.traverseChildren !->
         switch it.value
-        | \index => it.value = idx
-        | \item  => it.value = "#svar[#idx]"
+        | \index$$ => it.value = idx
+        | \item$$  => it.value = "#svar[#idx]"
     else
       @infuseIIFE!
     o.indent += TAB

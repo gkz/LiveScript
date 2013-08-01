@@ -594,8 +594,18 @@ for let k, v of {a: \b}
   ok true
 ok 7 is i is v
 
-fns = for <[foo bar]>
-  for let i in [7 8]
-    -> .. + i
-eq \foo7 fns.0.0!
+fns = for let <[foo bar]>
+  for let x in [6 7 8 9] when x % 2 == 0
+      -> .. + x
+eq \foo6 fns.0.0!
 eq \bar8 fns.1.1!
+
+xs = for let x, i in [1 to 10] by 2 when x % 3 == 0
+  -> i + x
+eq 5, xs[0]!
+eq 17, xs[1]!
+
+xs = for own let key, value of {a: 1, b: 2, c: 3, d: 4} when value % 2 == 0
+  -> key + value
+eq 'b2', xs[0]!
+eq 'd4', xs[1]!
