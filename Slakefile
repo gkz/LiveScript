@@ -70,7 +70,7 @@ task \build:browser 'build extras/' ->
   """
   slobber \extras/livescript.js """
     // LiveScript #{LiveScript.VERSION}
-    // Copyright (c) 2012 Jeremy Ashkenas, Satoshi Murakami, George Zahariev
+    // Copyright (c) 2013 Jeremy Ashkenas, Satoshi Murakami, George Zahariev
     // Released under the MIT License
     // raw.github.com/gkz/LiveScript/master/LICENSE
     #{ minify js };

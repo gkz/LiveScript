@@ -1,5 +1,5 @@
 name    : \LiveScript
-version : \1.2.0-dev
+version : \1.2.0
 
 description : 'LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.'
 
@@ -43,7 +43,7 @@ preferGlobal: true
 repository: type: \git, url: \git://github.com/gkz/LiveScript.git
 
 dependencies:
-  \prelude-ls : '~1.0.1'
+  \prelude-ls : '~1.0.3'
 
 devDependencies:
   jison       : \0.2.1
