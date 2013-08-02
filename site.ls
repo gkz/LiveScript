@@ -1,4 +1,4 @@
-prelude.installPrelude window
+window <<< require 'prelude-ls'
 $ ->
   for example in $ '.example .example-ls'
     src = $ example .find \.lang-ls .html!
