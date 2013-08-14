@@ -73,16 +73,6 @@ x = 3
 x |>= (+ 7)
 eq 10 x
 
-# Copy
-x = a:\a
-x <<<= b:\b, c:\c
-eq \abc x.a + x.b + x.c
-
-# Copy all
-x = a:\a
-x <<<<= ^^{b:\b, c:\c}
-eq \abc x.a + x.b + x.c
-
 # obj ::= obj2 as alias to obj::<<<obj2
 lala = ->
 lala ::= prop: true
