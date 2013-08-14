@@ -407,7 +407,7 @@ exports import
     else
       [tag, val] = last
       if tag is \ASSIGN  and val+'' not in <[ = := += ]>
-      or tag is \CREMENT and @tokens[*-2].spaced
+      or val is \++ and @tokens[*-2].spaced
       or tag in <[ +- PIPE BACKPIPE DOT LOGIC MATH COMPARE RELATION SHIFT
                    IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
         return length
