@@ -522,7 +522,7 @@ exports import
         @token tag, val
         return sym.length
       fallthrough
-    case <[ := += -= *= /= %= %%= <?= >?= **= ^= .&.= .|.= .^.= .<<.= .>>.= .>>>.= ++= |>= <<<= <<<<= ]>
+    case <[ := += -= *= /= %= %%= <?= >?= **= ^= .&.= .|.= .^.= .<<.= .>>.= .>>>.= ++= |>= ]>
       if @last.1 is \. or @last.0 is \? and @adi!
         @last.1 += val
         return val.length
@@ -1236,31 +1236,31 @@ ID = //
   ( [^\n\S]* : (?![:=]) )?  # Is this a property name?
 |//ig
 SYMBOL = //
-  [-/^]= | [%+:*]{1,2}= | \|>= | <<<<?= # compound assign
-| \.(?:[&\|\^] | << | >>>?)\.=?         # bitwise and shifts
-| \.{1,3}                               # dot / cascade / splat/placeholder/yada*3
-| \^\^                                  # clone
-| !?--> | !?~~> | <-- | <~~             # curry
-| ([-+&|:])\1                           # crement / logic / `prototype`
-| %%                                    # mod
-| &                                     # arguments
-| \([^\n\S]*\)                          # call
-| !?[-~]>                               # function, bound function
-| <[-~]                                 # backcall
-| [!=]==?                               # strict equality, deep equals
-| !?\~=                                 # fuzzy equality
-| @@?                                   # this / constructor
-| <\[(?:[\s\S]*?\]>)?                   # words
-| <<<<?                                 # import
-| <\|                                   # backpipe
-| [<>]== | <<= | >>=                    # deep {less,greater}-than-(or-equal-to)
-| << | >>                               # compose
-| [<>]\??=?                             # {less,greater}-than-(or-equal-to) / min/max
-| \|>                                   # pipe
-| \|                                    # case
-| =>                                    # then
-| \*\* | \^                             # pow
-| `                                     # backticks
+  [-/^]= | [%+:*]{1,2}= | \|>=  # compound assign
+| \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
+| \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
+| \^\^                          # clone
+| !?--> | !?~~> | <-- | <~~     # curry
+| ([-+&|:])\1                   # crement / logic / `prototype`
+| %%                            # mod
+| &                             # arguments
+| \([^\n\S]*\)                  # call
+| !?[-~]>                       # function, bound function
+| <[-~]                         # backcall
+| [!=]==?                       # strict equality, deep equals
+| !?\~=                         # fuzzy equality
+| @@?                           # this / constructor
+| <\[(?:[\s\S]*?\]>)?           # words
+| <<<<?                         # import
+| <\|                           # backpipe
+| [<>]== | <<= | >>=            # deep {less,greater}-than-(or-equal-to)
+| << | >>                       # compose
+| [<>]\??=?                     # {less,greater}-than-(or-equal-to) / min/max
+| \|>                           # pipe
+| \|                            # case
+| =>                            # then
+| \*\* | \^                     # pow
+| `                             # backticks
 | [^\s#]?
 //g
 SPACE     = /[^\n\S]*(?:#.*)?/g
