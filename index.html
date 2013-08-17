@@ -3170,9 +3170,9 @@ map(function(x){
 <pre class="prettyprint lang-ls">
 do
   data <-! $.get 'ajaxtest'
-  $ \.result .html data
+  $ '.result' .html data
   processed <-! $.get 'ajaxprocess', data
-  $ \.result .append processed
+  $ '.result' .append processed
 
 alert 'hi'
 </pre>
