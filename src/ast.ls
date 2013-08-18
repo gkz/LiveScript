@@ -445,15 +445,13 @@ class exports.Slice extends Node
     return unless stars.length
     [sub, ref, temps] = @target.unwrap!cache o
     value = Chain(ref, [Index Key \length])compile o
-    for star in stars then star <<< {value, isAssignable: YES}
+    for stars => .. <<< {value, isAssignable: YES}
     @target = JS sub.compile(o, LEVEL_CALL)
     o.scope.free temps.0 if temps
     !function seek
       if it.value is \* then stars.push it
-      else unless it instanceof Index
-        or it instanceof Slice 
-        or it instanceof StepSlice
-          then it.eachChild seek
+      else unless it instanceof [Index, Slice, StepSlice]
+          it.eachChild seek
 
 #### Chain
 # Acts as a container for property-access/function-call chains, by holding
@@ -695,16 +693,14 @@ class exports.Chain extends Node
       continue unless stars.length
       [sub, ref, temps] = Chain(@head, tails.splice 0 i)unwrap!cache o
       value = Chain(ref, [Index Key \length])compile o
-      for star in stars then star <<< {value, isAssignable: YES}
+      for stars => .. <<< {value, isAssignable: YES}
       @head = JS sub.compile(o, LEVEL_CALL) + tails.shift!compile o
       o.scope.free temps.0 if temps
       i = -1
     !function seek
       if it.value is \* then stars.push it
-      else unless it instanceof Index
-        or it instanceof Slice
-        or it instanceof StepSlice
-          then it.eachChild seek
+      else unless it instanceof [Index, Slice, StepSlice]
+          it.eachChild seek
 
   # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
   expandSlice: (o, assign) ->
@@ -2228,13 +2224,11 @@ class exports.StepSlice extends For
       else boundary.eachChild seek
     return unless stars.length
     value = Chain(ref, [Index Key \length])compile o
-    for star in stars then star <<< {value, isAssignable: YES}
+    for stars => .. <<< {value, isAssignable: YES}
     !function seek
       if it.value is \* then stars.push it
-      else unless it instanceof Index 
-        or it instanceof Slice 
-        or it instanceof StepSlice
-          then it.eachChild seek
+      else unless it instanceof [Index, Slice, StepSlice]
+          it.eachChild seek
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
