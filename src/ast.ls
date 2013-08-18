@@ -430,10 +430,30 @@ class exports.Slice extends Node
   show: -> @type
 
   compileNode: (o) ->
+    @expandStar o
     @to = Binary \|| @to, Literal \9e9 if @to and @type is \to
     args = [@target, @from]
     args.push @to if @to
     Chain Var (util \slice) .add Index (Key \call), \. true .add Call args .compile o
+
+  expandStar: !(o) ->
+    stars = []
+    for boundary in [@from, @to]
+      continue unless boundary?
+      if boundary.value is \* then stars.push boundary
+      else boundary.eachChild seek
+    return unless stars.length
+    [sub, ref, temps] = @target.unwrap!cache o
+    value = Chain(ref, [Index Key \length])compile o
+    for star in stars then star <<< {value, isAssignable: YES}
+    @target = JS sub.compile(o, LEVEL_CALL)
+    o.scope.free temps.0 if temps
+    !function seek
+      if it.value is \* then stars.push it
+      else unless it instanceof Index
+        or it instanceof Slice 
+        or it instanceof StepSlice
+          then it.eachChild seek
 
 #### Chain
 # Acts as a container for property-access/function-call chains, by holding
@@ -680,8 +700,11 @@ class exports.Chain extends Node
       o.scope.free temps.0 if temps
       i = -1
     !function seek
-      if it.value is \*               then stars.push it
-      else unless it instanceof Index then it.eachChild seek
+      if it.value is \* then stars.push it
+      else unless it instanceof Index
+        or it instanceof Slice
+        or it instanceof StepSlice
+          then it.eachChild seek
 
   # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
   expandSlice: (o, assign) ->
@@ -2177,6 +2200,41 @@ class exports.For extends While
     item = Var that if item instanceof List and item.name
     if item instanceof Var and not dup params, item.value
       call.args.push params.* = item
+
+#### Step slice
+# Slices a list in steps
+# Makes it possible to use the BY keyword in slices
+class exports.StepSlice extends For
+
+  makeReturn: ->
+    if it then @makeReturnArg = it
+    super ...
+  
+  compileNode: (o) -> 
+    @index = o.scope.temporary \x
+    [sub, ref, temps] = @target.unwrap!cache o
+    @expandStar o, ref
+    @guard = Binary '<' (Literal @index), (Chain ref .add Index Key \length)
+    @makeComprehension (Chain ref .add Index Literal @index), this
+    if @makeReturnArg then @makeReturn @makeReturnArg
+    code = ''
+    if temps then code += sub.compile(o) + \; + \\n + o.indent
+    code += super ...
+
+  expandStar: !(o, ref) ->
+    stars = []
+    for boundary in [@from, @to, @step]
+      if boundary.value is \* then stars.push boundary
+      else boundary.eachChild seek
+    return unless stars.length
+    value = Chain(ref, [Index Key \length])compile o
+    for star in stars then star <<< {value, isAssignable: YES}
+    !function seek
+      if it.value is \* then stars.push it
+      else unless it instanceof Index 
+        or it instanceof Slice 
+        or it instanceof StepSlice
+          then it.eachChild seek
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.

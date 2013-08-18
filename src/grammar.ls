@@ -113,6 +113,10 @@ bnf =
     o '[ TO Expression BY Expression ]'
     , -> Chain new For from: (Chain Literal 0), op: $2, to: $3, step: $5, in-comprehension: true
 
+    o 'Chain DOT [ Expression TO Expression BY Expression ]'
+    , -> Chain new StepSlice op: $5, target: $1, from: $4, to: $6, step: $8
+    o 'Chain DOT [ TO Expression BY Expression ]'
+    , -> Chain new StepSlice op: $4, target: $1, from: (Literal 0), to: $5, step: $7
     o 'Chain DOT [ Expression TO Expression ]'
     , -> Chain Slice type: $5, target: $1, from: $4, to: $6
     o 'Chain DOT [ Expression TO ]'
