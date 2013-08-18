@@ -2207,7 +2207,7 @@ class exports.For extends While
 class exports.StepSlice extends For
 
   makeReturn: ->
-    if it then @makeReturnArg = it
+    @makeReturnArg = it
     super ...
   
   compileNode: (o) -> 
@@ -2216,7 +2216,7 @@ class exports.StepSlice extends For
     @expandStar o, ref
     @guard = Binary '<' (Literal @index), (Chain ref .add Index Key \length)
     @makeComprehension (Chain ref .add Index Literal @index), this
-    if @makeReturnArg then @makeReturn @makeReturnArg
+    if @makeReturnArg? then @makeReturn @makeReturnArg
     code = ''
     if temps then code += sub.compile(o) + \; + \\n + o.indent
     code += super ...
