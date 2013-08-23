@@ -341,6 +341,11 @@ new
 a = [0]
 ok ++a.0
 
+# Don't confuse with concat op
+f = -> it
+x = 4
+eq 5, f ++x
+
 # Can be spaced.
 eq(-- a[0], a[0] ++)
 eq 1 a.0
