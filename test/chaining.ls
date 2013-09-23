@@ -75,7 +75,7 @@ eq 1, [-> it]. 0  1
 eq 1, [-> it].'0' 1
 
 
-# `prototype` shorthand, `constructor` 
+# `prototype` shorthand, `constructor`
 eq Array::toString, Array.prototype.toString
 eq 12345@@toString, 123@@toString
 eq 0 (:::0)::
@@ -107,9 +107,9 @@ compileThrows 'invalid assign' 1 'o~m=g'
 
 
 # Dots have to workaround syntax error when accessing a simple number.
-eq '0 .go;'  , LiveScript.compile '0.go', {+bare}
+eq '0 .go;'  , LiveScript.compile '0.go', {+bare,-header}
 # Brackets don't.
-eq "0['do'];", LiveScript.compile '0.do', {+bare}
+eq "0['do'];", LiveScript.compile '0.do', {+bare,-header}
 
 
 # Array/Object Slice

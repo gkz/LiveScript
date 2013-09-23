@@ -107,11 +107,11 @@ eq '''
   var a;
   a = arguments[arguments.length - 1];
 });
-''', LiveScript.compile '(..., a) ->', {+bare}
+''', LiveScript.compile '(..., a) ->', {+bare,-header}
 
 
 # Don't call `slice$` on array literals.
-eq '[a, a].concat([b]);' LiveScript.compile '[...[a]*2 b]' {+bare}
+eq '[a, a].concat([b]);' LiveScript.compile '[...[a]*2 b]' {+bare,-header}
 
 # splatted new
 class A

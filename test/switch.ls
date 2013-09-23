@@ -93,7 +93,7 @@ case 5 then that
 case 6 [7 8] then
 case[] then
 default 9
-''', {+bare}
+''', {+bare,-header}
 
 
 # `that`
@@ -117,12 +117,12 @@ switch
 | false then ok 0 | false then ok 0
 | false
   ok 0
-| true 
+| true
   ok 1
 | true  then ok 0
 
 # then =>
-switch 
+switch
 | false => ok 0
 | false =>
   ok 0

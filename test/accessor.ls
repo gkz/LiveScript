@@ -37,7 +37,7 @@ eq '''({
   get p(){
     return it;
   }
-});''' LiveScript.compile 'p:~ -> it' {+bare}
+});''' LiveScript.compile 'p:~ -> it' {+bare,-header}
 
 
 compileThrows 'duplicate property "p"' 2 '''
