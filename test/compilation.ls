@@ -1,4 +1,4 @@
-bare = -> LiveScript.compile it, {+bare}
+bare = -> LiveScript.compile it, {+bare,-header}
 
 # Ensure that carriage returns don't break compilation on Windows.
 eq 'one;\ntwo;', bare 'one\r\ntwo'
@@ -9,11 +9,11 @@ eq '_(__);', bare '\n\t_\t__\t\n'
 
 
 # `{\eval}` forces the last value to be returned.
-eq 1, Function('return ' + LiveScript.compile 'delete @1' {\eval}).call {1}
+eq 1, Function('return ' + LiveScript.compile 'delete @1' {\eval,-header}).call {1}
 eq '''
 var ref$;
 ref$ = o.k, delete o.k, ref$;
-''' LiveScript.compile 'delete o.k' {\eval, +bare}
+''' LiveScript.compile 'delete o.k' {\eval, +bare,-header}
 
 
 compileThrows 'missing `"`' 2 '\n"\n'
@@ -34,7 +34,7 @@ compileThrows 'missing `)CALL`' 1 'f('
 throws '''
   empty range on line 1
   at filename
-''' -> LiveScript.compile '[0 til 0]' {\filename}
+''' -> LiveScript.compile '[0 til 0]' {\filename,-header}
 
 
 eq '''
@@ -118,7 +118,7 @@ eq '''
   }
 }).call(this);
 
-''', LiveScript.compile '''try for k of o then let then ^^@'''
+''', LiveScript.compile '''try for k of o then let then ^^@''' {-header}
 
 
 eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' LiveScript.tokens('''

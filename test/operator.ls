@@ -301,7 +301,7 @@ eq '''
   b: b,
   c: c
 });
-''', LiveScript.compile '{a}<<<{b}<<<{c}', {+bare}
+''', LiveScript.compile '{a}<<<{b}<<<{c}', {+bare,-header}
 
 ok ok.isPrototypeOf new []= (->) <<< prototype: ok
 

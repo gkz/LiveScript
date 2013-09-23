@@ -101,7 +101,7 @@ throws 'assignment to constant "z" on line 2' ->
 eq '''(function(n){
   n == null && (n = 2);
   return n + 1;
-});''' LiveScript.compile '(n = 2) -> n + 1' {+\const, +bare}
+});''' LiveScript.compile '(n = 2) -> n + 1' {+\const, +bare,-header}
 
 eq '''var ref$;
-1 < 2 && 2 === (ref$ = 4 / 2) && ref$ > 0;''' LiveScript.compile '1 < 2 == 4/2 > 0' {+\const, +bare}
+1 < 2 && 2 === (ref$ = 4 / 2) && ref$ > 0;''' LiveScript.compile '1 < 2 == 4/2 > 0' {+\const, +bare,-header}

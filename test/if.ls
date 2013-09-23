@@ -119,7 +119,7 @@ r = a
 ''' LiveScript.compile '''
 r =    if a then b
   else if c then d else e!
-''' {+bare}
+''' {+bare,-header}
 
 
 ### Anaphoric `if`
@@ -144,7 +144,7 @@ if 1
     4 if 3
     5 if that
 that if 6?
-''', {+bare}
+''', {+bare,-header}
 
 # Soaks should not `that`-aware.
 a = [0 1]
