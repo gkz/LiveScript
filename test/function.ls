@@ -205,7 +205,7 @@ eq func(1), 1
 
 
 # Don't gather results from a loop that _jumps_ out of a closure.
-findIt = (items) -> for item in items then return item if item is 'bacon' 
+findIt = (items) -> for item in items then return item if item is 'bacon'
 eq 'bacon', findIt [1, 2, 3, 'bacon', 4, 5]
 eq void   , findIt []
 
@@ -232,7 +232,7 @@ compileThrows 'inconvertible statement' 3 '''
 '''
 
 
-eq '(function(){})(function(){});', LiveScript.compile '(->return)(->void)', {+bare}
+eq '(function(){})(function(){});', LiveScript.compile '(->return)(->void)', {+bare,-header}
 
 
 # `@it` isn't `it`
@@ -240,7 +240,7 @@ eq '''
 (function(){
   return this.it;
 });
-''', LiveScript.compile '-> @it', {+bare}
+''', LiveScript.compile '-> @it', {+bare,-header}
 
 
 # Simple functions require no parens when comma-listed.
@@ -397,7 +397,7 @@ eq '192' do
   /* block comments */
 
 
-addArr = do 
+addArr = do
   (x, y) <-- map _, [2 3 4]
   x + y
 
@@ -405,7 +405,7 @@ eq 5 addArr.0 3
 eq 5 addArr.1 2
 eq 5 addArr.2 1
 
-t-obj = 
+t-obj =
   z: 10
   bound: ->
     (x, y) <~~ map _, [2 3 4]
@@ -489,7 +489,7 @@ eq '''
 (function(){
   this;
 }.call(this));
-''' LiveScript.compile 'let() then this # top-level and should not return' {+bare}
+''' LiveScript.compile 'let() then this # top-level and should not return' {+bare,-header}
 
 ok let [it] = [ok]
   it is ok
@@ -628,7 +628,7 @@ obj =
   b: -> 5
   c: (x, y) -> x + y
 
-eq 2 (.a) obj 
+eq 2 (.a) obj
 eq 5 (.b!) obj
 eq 7 (.c 3 4) obj
 
@@ -657,7 +657,7 @@ two-add = (x = 10, y) -> x + y
 g = two-add _, 4
 eq 14 g!
 
-obj = 
+obj =
   three-add: (x, y, z) -> x + y + z
 
 f = obj.three-add 1, _, 3

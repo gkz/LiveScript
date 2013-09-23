@@ -175,7 +175,7 @@ eq '" one\\n \\nzero\\n";' LiveScript.compile '''
     zero
     \
   """
-''' {+bare}
+''' {+bare,-header}
 
 
 eq ''' line 0

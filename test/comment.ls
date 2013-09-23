@@ -156,7 +156,7 @@ obj = {
   /* trailing block comments are  */
   /* removed when returning value */
 /* trailing top level comment */
-''', {+bare}
+''', {+bare,-header}
 
 
 # Block comments within non-statement `if`s.

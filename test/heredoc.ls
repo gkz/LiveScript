@@ -1,7 +1,7 @@
 eq ?= (a,b,msg="#a != #b") -> console.assert a == b, msg
 
 eq ' here there', ''' here ''' + """there"""
- 
+
 eq ' here there', ''' here there
 '''
 
@@ -14,12 +14,12 @@ eq '''
   var a;
   a = arguments[arguments.length - 1];
 });
-''', LiveScript.compile '(..., a) ->', {+bare}
+''', LiveScript.compile '(..., a) ->', {+bare,-header}
 
 eq '''
-   a = -> 
+   a = ->
     3
-   ''', 'a = -> \n 3'
+   ''', 'a = ->\n 3'
 
 # heredoc with `then`
 function help then """
@@ -42,7 +42,7 @@ eq '''function help(){
 function helper
   """
   Usage: livescript [options] [files] [arguments]
-  
+
   Options:
   #o
 """
