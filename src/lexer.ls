@@ -846,20 +846,18 @@ TABS = /\n(?!$)[^\n\S]*/mg
 function detab str, len
   if len then str.replace detab[len]||=//\n[^\n\S]{1,#len}//g \\n else str
 
-function replacer re, to then -> it.replace re, to
-
 # Erases all newlines and indentations.
-unlines = replacer /\n[^\n\S]*/g ''
+unlines = (.replace /\n[^\n\S]*/g '')
 
 # Converts newlines/backslashes to their quoted form.
-enlines = replacer /\n/g \\\n
-enslash = replacer /\\/g \\\\
+enlines = (.replace /\n/g \\\n)
+enslash = (.replace /\\/g \\\\)
 
 # Quotes slashes unless already quoted.
-reslash = replacer /(\\.)|\//g -> &1 or \\\/
+reslash = (.replace /(\\.)|\//g -> &1 or \\\/)
 
 # Transforms hyphenated-words to camelCase.
-camelize = replacer /-[a-z]/ig -> it.char-at 1 .to-upper-case!
+camelize = (.replace /-[a-z]/ig -> it.char-at 1 .to-upper-case!)
 
 # Deletes the first character if newline.
 function lchomp then it.slice 1 + it.lastIndexOf \\n 0
