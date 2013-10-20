@@ -1644,6 +1644,11 @@ class exports.Fun extends Node
     curry-code-check = ~>
       if @curried and @has-splats
           @carp 'cannot curry a function with a variable number of arguments'
+      if @curried and @params.length > 1 and not @class-bound
+        "#{ util \curry }" + if @bound
+          "((#code), true)"
+        else
+          "(#code)"
       else code
     if inLoop then return pscope.assign pscope.temporary(\fn), curry-code-check!
     if @returns
