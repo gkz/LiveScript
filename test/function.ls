@@ -699,6 +699,12 @@ fn = a.enclose \head
 curried = fn \tail
 eq 'head,middle,tail' curried
 
+# multiple instances
+a2 = new A \middle2
+fn2 = a2.enclose \head
+curried2 = fn2 \tail
+eq 'head,middle2,tail' curried2
+
 # not bound
 obj =
   list: \haha

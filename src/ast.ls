@@ -1644,8 +1644,8 @@ class exports.Fun extends Node
     curry-code-check = ~>
       if @curried and @has-splats
           @carp 'cannot curry a function with a variable number of arguments'
-      if @curried and @params.length > 1
-        "#{ util \curry }" + if @bound or @class-bound
+      if @curried and @params.length > 1 and not @class-bound
+        "#{ util \curry }" + if @bound
           "((#code), true)"
         else
           "(#code)"
@@ -1724,6 +1724,7 @@ class exports.Class extends Node
   compile: (o, level) ->
     {{{lines}:body}:fun, title} = this
     bound-funcs = []
+    curried-bound-funcs = []
     decl = title?varName!
     name = decl or @name
     if ID.test name || '' then fun.cname = name else name = \constructor
@@ -1746,7 +1747,10 @@ class exports.Class extends Node
           key = Var o.scope.temporary \key
           prop.key = Assign key, prop.key
         if prop.val.bound
-          bound-funcs.push prop.key
+          if prop.val.curried
+            curried-bound-funcs.push prop.key
+          else
+            bound-funcs.push prop.key
           prop.val.bound = false
           # need to know whether bound param of curry$ should be true
           prop.val.class-bound = true
@@ -1781,6 +1785,17 @@ class exports.Class extends Node
         Assign (Chain Literal \this .add Index f),
                (Chain Var (util \bind)
                  .add Call [Literal \this; Literal "'#{f.name}'"; Var \prototype])
+
+    for f in curried-bound-funcs
+      ctor.body.lines.unshift do
+        Assign (Chain Literal \this .add Index Key "_#{f.name}"),
+               (Chain Var (util \curry)
+                 .add Call [Chain Var \prototype .add Index f; Var \true])
+        Assign (Chain Literal \this .add Index f),
+               (Chain Var (util \bind)
+                 .add Call [Literal \this; Literal "'_#{f.name}'"])
+
+
     lines.push vname = fun.proto = Var fun.bound = name
     args = []
     if @sup
