@@ -153,8 +153,9 @@ take(2, [1, 2, 3, 4, 5]);
 takeThree = take(3);
 takeThree([3, 4, 5, 6, 7, 8]);
 
-
-lastThree = compose$([reverse, takeThree, reverse]);
+lastThree = function(){
+  return reverse(takeThree(reverse.apply(this, arguments)));
+};
 lastThree([1, 2, 3, 4, 5, 6, 7, 8]);
 function curry$(f, bound){
   var context,
@@ -169,13 +170,6 @@ function curry$(f, bound){
   };
   return _curry();
 }
-function compose$(fs){
-  return function(){
-    var i, args = arguments;
-    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
-    return args[0];
-  };
-}
 </pre>
         </div>
       </div>
@@ -183,7 +177,6 @@ function compose$(fs){
         <div class="example-ls">
           <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-
 # Listage facile, objets implicites
 table1 =
   * id: 1
@@ -204,13 +197,6 @@ table2 =
 # Accès implicite, accessignment
 up-case-name = (.name .= to-upper-case!)
 
-# Fonctions currifiées -->
-sort-by = (prop, list) --> list.sort (a, b) -> 
-  | a[prop] < b[prop] => -1
-  | a[prop] > b[prop] => 1
-  | otherwise         => 0
-
-
 
 
 
@@ -220,7 +206,7 @@ sort-by = (prop, list) --> list.sort (a, b) ->
 [{id:id1, name, age} for {id:id1, name} in table1
                      for {id:id2, age} in table2
                      when id1 is id2]
-|> sort-by 'id'
+|> sort-by (.id) # 'sort-by' de prelude.ls
 |> each up-case-name # 'each' de prelude.ls
 |> JSON.stringify
 #=>
@@ -250,41 +236,39 @@ map (.age), table2 |> fold1 (+)
         <div class="example-js">
           <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
-var table1, table2, upCaseName, sortBy, id1, name, id2, age;
+var table1, table2, upCaseName, id1, name, id2, age;
 table1 = [
-  { id: 1,
-    name: 'george' },
-  { id: 2,
-    name: 'mike' },
-  { id: 3,
-    name: 'donald' }
+  {
+    id: 1,
+    name: 'george'
+  }, {
+    id: 2,
+    name: 'mike'
+  }, {
+    id: 3,
+    name: 'donald'
+  }
 ];
 table2 = [
-  { id: 2,
-    age: 21 },
-  { id: 1,
-    age: 20 },
-  { id: 3,
-    age: 26 }
+  {
+    id: 2,
+    age: 21
+  }, {
+    id: 1,
+    age: 20
+  }, {
+    id: 3,
+    age: 26
+  }
 ];
 upCaseName = function(it){
   return it.name = it.name.toUpperCase();
 };
-sortBy = curry$(function(prop, list){
-  return list.sort(function(a, b){
-    switch (false) {
-    case !(a[prop] < b[prop]):
-      return -1;
-    case !(a[prop] > b[prop]):
-      return 1;
-    default:
-      return 0;
-    }
-  });
-});
 JSON.stringify(
 each(upCaseName)(
-sortBy('id')(
+sortBy(function(it){
+  return it.id;
+})(
 (function(){
   var i$, ref$, len$, ref1$, j$, len1$, ref2$, results$ = [];
   for (i$ = 0, len$ = (ref$ = table1).length; i$ < len$; ++i$) {
@@ -302,25 +286,6 @@ sortBy('id')(
   }
   return results$;
 }()))));
-fold1(curry$(function(x$, y$){
-  return x$ + y$;
-}))(
-map(function(it){
-  return it.age;
-}, table2));
-function curry$(f, bound){
-  var context,
-  _curry = function(args) {
-    return f.length > 1 ? function(){
-      var params = args ? args.concat() : [];
-      context = bound ? context || this : this;
-      return params.push.apply(params, arguments) <
-          f.length && arguments.length ?
-        _curry.call(context, params) : f.apply(context, params);
-    } : f;
-  };
-  return _curry();
-}
 </pre>
         </div>
       </div>
@@ -329,7 +294,7 @@ function curry$(f, bound){
         <div class="example-ls">
         <h5>LiveScript</h5>
 <pre class="prettyprint lang-ls">
-<-! $ 'h1' .on 'click'
+<- $ 'h1' .on 'click'
 alert 'boom!'
 </pre>
         </div>
@@ -337,7 +302,7 @@ alert 'boom!'
         <h5>JavaScript</h5>
 <pre class="prettyprint lang-js">
 $('h1').on('click', function(){
-  alert('boom!');
+  return alert('boom!');
 });
 </pre>
         </div>
@@ -359,7 +324,7 @@ $('h1').on('click', function(){
       <table class="usage-options table table-striped table-bordered">
         <tr><td>-i, --interactive</td><td>lance le compileur intéractif, utilisez ^J pour du multiligne</td></tr>
         <tr><td>-c, --compile</td><td>compile en JavaScript et sauvegarde en .js</td></tr>
-        <tr><td>-d, --prelude</td><td>importe automatiquement prelude.ls</td></tr>
+        <tr><td>-d, --prelude</td><td>importe automatiquement prelude.ls (dans le REPL)</td></tr>
         <tr><td>-k, --const</td><td>compile toutes les variables en tant que constantes</td></tr>
         <tr><td>-o, --output DIR</td><td>compile dans le dossier de sortie précisé</td></tr>
         <tr><td>-w, --watch</td><td>surveille les scripts lors de changements et relance</td></tr>
@@ -386,7 +351,7 @@ $('h1').on('click', function(){
         <li>Compile un dossier entier vers un autre dossier : <code>lsc -co output src</code>
         <li>Surveille un dossier, compile les fichiers vers un autre dossier : <code>lsc -wco output src</code>
         <li>Compile un petit extrait et affiche le résultat dans la console : <code>lsc -bpe '[1 to 5]'</code>
-        <li>Lance le compilateur intéractif : <code>lsc -i</code> — <code>Ctrl-D</code> pour quitter, utilisez <code>Ctrl-J</code> pour du multiligne.
+        <li>Lance le compilateur intéractif : <code>lsc</code> — <code>Ctrl-D</code> pour quitter, utilisez <code>Ctrl-J</code> pour du multiligne.
       </ul>
     </div>
     <div id="community" class="section">
@@ -429,10 +394,10 @@ $('h1').on('click', function(){
     <div id="prelude-ls" class="section">
       <a name="prelude-ls">
       <h2>Bibliothèque standard</h2>
-      <p><a href="http://gkz.github.com/prelude-ls/">prelude.ls</a> est la bibliothèque recommandée pour utiliser avec LiveScript. Elle vous permet de faire des choses telles que :
+      <p><a href="http://preludels.com/">prelude.ls</a> est la bibliothèque recommandée pour utiliser avec LiveScript. Elle vous permet de faire des choses telles que :
 
 <pre class="prettyprint lang-ls">
-[1 2 3] |> map (* 2) |> filter (> 3) |> fold1 (+) 
+[1 2 3] |> map (* 2) |> filter (> 3) |> fold1 (+)
 #=> 10
 </pre>
 
@@ -670,7 +635,7 @@ x = 0
         </div>
       </div>
 
-      <h3>Booléens, Undefined, Null</h3>
+      <h3>Booléens, Void, Null</h3>
 
       <p>Alias comme en CoffeeScript :
 
@@ -699,7 +664,7 @@ false;
 
       <p>En JavaScript, <code>undefined</code> peut être redéfini, il est donc plus prudent d'utiliser <code>void</code> qui produira toujours undefined.
 
-      <p><code>void</code> seul n'est pas inclus dans la compilation (utilisé comme espace réservé) — il peut cependant être utilisé comme valeur :
+      <p>Un <code>void</code> seul n'est pas inclus dans la compilation (en tant que placeholder) — il peut cependant être utilisé comme valeur :
 
       <div class="example">
         <div class="example-ls">
@@ -707,17 +672,15 @@ false;
 
 void
 x = void
-y = undefined
 
 null
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var x, y;
+var x;
 // void compiles to nothing here!
 x = void 8;
-y = void 8;
 
 null;
 </pre>
@@ -1796,15 +1759,10 @@ odd 3   #=> true
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var odd;
-odd = compose$([not$, even]);
+odd = function(){
+  return not$(even.apply(this, arguments));
+};
 odd(3);
-function compose$(fs){
-  return function(){
-    var i, args = arguments;
-    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
-    return args[0];
-  };
-}
 function not$(x){ return !x; }
 </pre>
         </div>
@@ -1825,29 +1783,22 @@ times-two-add-two 3 #=> (3*2)+2 = 8
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var addTwoTimesTwo, timesTwoAddTwo;
-addTwoTimesTwo = compose$([
-  (function(it){
+addTwoTimesTwo = function(){
+  return (function(it){
     return it * 2;
-  }), (function(it){
+  })((function(it){
     return it + 2;
-  })
-]);
-timesTwoAddTwo = compose$([
-  (function(it){
+  }).apply(this, arguments));
+};
+timesTwoAddTwo = function(){
+  return (function(it){
     return it + 2;
-  }), (function(it){
+  })((function(it){
     return it * 2;
-  })
-]);
+  }).apply(this, arguments));
+};
 addTwoTimesTwo(3);
 timesTwoAddTwo(3);
-function compose$(fs){
-  return function(){
-    var i, args = arguments;
-    for (i = fs.length; i > 0; --i) { args = [fs[i-1].apply(this, args)]; }
-    return args[0];
-  };
-}
 </pre>
         </div>
       </div>
@@ -1857,7 +1808,7 @@ function compose$(fs){
 
       <h3>Liste</h3>
 
-      <p>Vous pouvez concaténer deux listes ensemble :
+      <p>Vous pouvez concaténer deux listes ensemble : (attention, l'opérateur doit être doublement espacé)
 
       <div class="example">
         <div class="example-ls">
@@ -2006,7 +1957,6 @@ string += 'yeah';
 <pre class="prettyprint lang-ls">
 bigfoot ? 'grizzly bear'     #=> 'grizzly bear'
 string = \boom if window?    #=> 'boom'
-string = 'yeah' if bigfoot!? #=> 'yeah'
 document?.host               #=> 'gkz.github.com'
 </pre>
         </div>
@@ -2016,9 +1966,6 @@ var string;
 (typeof bigfoot == 'undefined' || bigfoot === null) && 'grizzly bear';
 if (typeof window != 'undefined' && window !== null) {
   string = 'boom';
-}
-if (typeof bigfoot == 'undefined' || bigfoot === null) {
-  string = 'yeah';
 }
 if (typeof document != 'undefined' && document !== null) {
   document.host;
@@ -2079,12 +2026,12 @@ r #=> 1
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var obj, r;
+var obj, r, ref$;
 obj = {
   one: 1,
   two: 2
 };
-r = obj.one, delete obj.one;
+r = (ref$ = obj.one, delete obj.one, ref$);
 r;
 </pre>
         </div>
@@ -2397,14 +2344,14 @@ times = function(x, y){
         </div>
       </div>
 
-      <p>Comme vous pouvez le voir, les déclarations sont bien plus courtes. Vous pouvez aussi voir que le <code>return</code> est implicite. En LiveScript, presque tout est une expression et la dernière est automatiquement retournée. Cependant, vous pouvez toujours utiliser <code>return</code> pour forcer un retour, ou ajouter un point d'exclamation à la définition pour supprimer le retour implicite <code>no-ret = !(x) -> ...</code>.
+      <p>Comme vous pouvez le voir, les déclarations sont bien plus courtes. Vous pouvez aussi voir que le <code>return</code> est implicite. En LiveScript, presque tout est une expression et la dernière est automatiquement retournée. Cependant, vous pouvez toujours utiliser <code>return</code> pour forcer un retour, ou ajouter un point d'exclamation à la définition pour supprimer le retour implicite <code>no-ret = (x) !-> ...</code>.
 
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 f = !-> 2
-g = !(x) -> x + 2
+g = (x) !-> x + 2
 </pre>
         </div>
         <div class="example-js">
@@ -2524,6 +2471,54 @@ function f(x){
   return x;
 } f();
 i;
+</pre>
+        </div>
+      </div>
+
+      <p>Utilisez <code>do</code> pour appeler une function avec un objet implicite :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+func do
+  a: b
+  c: d
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+func({
+  a: b
+  c: d
+});
+</pre>
+        </div>
+      </div>
+
+      <p><code>do</code> sert en vérité à bien plus que ça - c'est une construction permettant de créer un Block et donc d'éviter les parenthèses :
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+pow do
+  1
+  2
+
+h 1 do
+  a: 2
+  b: 5
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+func(1, 2);
+
+
+h(1; {
+  a: 2,
+  b: 5
+});
+
 </pre>
         </div>
       </div>
@@ -3174,25 +3169,11 @@ function partialize$(f, args, where){
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var slice$ = [].slice;
-partialize$.apply(_, [
-  _.reduce, [ void 8, curry$(function(x$, y$){ return x$ + y$; }), 0 ], [0]
-])(
-partialize$.apply(_, [
-  _.map, [ void 8, (function(it){ return it * 2; }) ], [0]
-])(
-[1, 2, 3]));
-function partialize$(f, args, where){
-  var context = this;
-  return function(){
-    var params = slice$.call(arguments), i,
-        len = params.length, wlen = where.length,
-        ta = args ? args.concat() : [], tw = where ? where.concat() : [];
-    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
-    return len < wlen && len ?
-      partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
-  };
-}
+_.reduce(_.map([1, 2, 3], (function(it){
+  return it * 2;
+})), curry$(function(x$, y$){
+  return x$ + y$;
+}), 0);
 function curry$(f, bound){
   var context,
   _curry = function(args) {
@@ -3451,10 +3432,11 @@ if ((that = halfYear) != null) {
       <a name="loops"></a>
       <h2>Boucles et Compréhensions</h2>
 
-      <p>Les boucles <code>for</code> ont la structure suivante : <code>for (from) (to|til) (by) (when)</code> — (tout est optionnel).
+      <p>Les boucles <code>for</code> ont la structure suivante : <code>for (let) (from) (to|til) (by) (when)</code> — (tout est optionnel).
       <p><code>by</code> est l'étape, par défaut <code>1</code>.
       <p><code>from</code>, si omis, est <code>0</code>.
-      <p><code>when</code>, (alias <code>case</code>, <code>|</code>) est un guard optionnel (comme un <code>if</code>).
+      <p><code>when</code>, (alias <code>case</code> ou <code>|</code>) est un guard optionnel (comme un <code>if</code>).
+      <p><code>let</code> permet de capturer les variables dans une fonction auto-invoquée, empêchant aussi les variables créées dans la boucle d'exister dans les portées supérieures.
       <p>Utilisez <code>in</code> pour itérer dans une liste, <code>of</code> et of dans un objet.
       <p>Si utilisé comme expression, les boucles renvoient des listes.
 
@@ -4662,25 +4644,6 @@ y$ = x$.style;
 y$.color = 'red';
 y$.fontSize = 'large';
 x$.innerHTML = 'LIVESCRIPT!';
-</pre>
-        </div>
-      </div>
-
-      <p>Cascade monoligne :
-
-      <div class="example">
-        <div class="example-ls">
-<pre class="prettyprint lang-ls">
-[2 7 1 8]..push 3 ..shift!..sort! #=> [1,3,7,8]
-</pre>
-        </div>
-        <div class="example-js">
-<pre class="prettyprint lang-js">
-var x$;
-x$ = [2, 7, 1, 8];
-x$.push(3);
-x$.shift();
-x$.sort();
 </pre>
         </div>
       </div>
