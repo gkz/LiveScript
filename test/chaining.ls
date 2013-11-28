@@ -91,6 +91,27 @@ eq 2, a.length
 
 compileThrows 'stray star' 1 '[*-1]'
 
+# Length Star in Slices
+[x, f, list] = [2, (/2), [1 to 6]]
+eq '1,2,3,4,5,6' String list[to *]
+eq '1,2,3,4,5,6' String list[0 til *]
+eq '4,5,6' String list[*/2 to *]
+eq '4,5,6' String list[f(*) to *]
+eq '3,4,5,6' String list[x to *]
+eq '2,3,4,5' String list[to *-2][1 til *]
+
+# `BY` Keyword in Slices
+[x, f, list] = [2, (/2), [1 to 6]]
+eq '3,4,5' String list[x to 4 by 1]
+eq '2,4' String list[1 til 4 by x]
+eq '1,3' String list[to x by f 4][to x-1 by 1]
+
+# Complex Slices
+[x, f, list] = [2, (/2), [1 to 6]]
+eq '6,5,4,3,2,1' String list[* to 0 by -1]
+eq '1,3,5' String list[to * by x]
+eq '6,4' String list[*-1 to f(*) by -2]
+eq '2,5' String list[f([1 to 4][*-1])-list[* to 0 by -1][*-1] to *-[1][-1 + * * *] by */(0+*)+x]
 
 # Binding Access
 parent =

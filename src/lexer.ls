@@ -218,14 +218,14 @@ exports import
           @fset \from false
           @fset \by true
           tag = \TO
-        else if not last.callable and last.0 is \STRNUM and @tokens[*-2]0 is \[
+        else if not last.callable and last.0 is \STRNUM and last.1 isnt \* and @tokens[*-2]0 is \[
           last <<< 0:\RANGE op: id
           return id.length
         else if \] in @closes
           @token \TO id
           return id.length
       case \by
-        if last.0 is \STRNUM
+        if last.0 is \STRNUM and last.1 isnt \*
         and @tokens[*-2]0 is \RANGE
         and @tokens[*-3]0 is \[
         then tag = \RANGE_BY
@@ -1116,7 +1116,8 @@ character = if not JSON? then uxxxx else ->
         and (tokens[i+1]1.charAt(0) in [\' \"]
           or +tokens[i+1]1 >= 0))
         or (tokens[i+2]0 is \BY
-        and tokens[i+3]?0 is \STRNUM
+        and tokens[i+1]?0 is \STRNUM and tokens[i+1]?1 isnt \*
+        and tokens[i+3]?0 is \STRNUM and tokens[i+3]?1 isnt \*
         and tokens[i+4]?0 is \]))
         continue
       
