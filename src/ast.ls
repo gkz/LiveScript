@@ -2836,7 +2836,7 @@ LEVEL_COND   = 3  # ... ? x : y
 LEVEL_OP     = 4  # !...
 LEVEL_CALL   = 5  # ...()
 
-# Operator precedances.
+# Operator precedences.
 let @ = PREC = {unary: 0.9}
   @\&& = @\|| = @\xor                             = 0.2
   @\.&.  = @\.^.  = @\.|.                         = 0.3
