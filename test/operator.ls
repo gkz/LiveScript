@@ -453,6 +453,13 @@ eq \b x
 x = [1, 2, 3, 4, 5] |> filter even |> map (* 2) |> fold (+), 0
 eq 12 x
 
+# Pipe and assign
+result1 = 'hello' |> reverse |> upCase
+eq 'OLLEH', result1
+
+result2 = upCase <| reverse <| \hello
+eq 'OLLEH', result2
+
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
 eq 'number,string' ''+ typeof
