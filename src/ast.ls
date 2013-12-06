@@ -105,7 +105,7 @@
   carp: (msg, type = SyntaxError) ->
     throw type "#msg on line #{ @line or @traverseChildren -> it.line }"
 
-  # Defines delegaters.
+  # Defines delegators.
   delegate: !(names, fn) ->
     for let name in names
       @[name] = -> fn.call this, name, it
