@@ -436,24 +436,6 @@ until them.1 then them.push((x, y) --> x + y)
 eq 5 them.1(2) 3
 
 
-
-### IIFE Scoping
-# IIFE constructions under `for` auto-capture the loop variables.
-fs = for a, i in [1 2]
-  for b from 3 to 4
-    let i = i+5
-      -> i + a + b
-sums = [f! for f in flatten fs]
-eq sums.1, 10
-eq sums.2, 11
-
-fs = for x, y of {2 3 5} then let z = 7 then -> x * y * z
-eq 63 fs.1()
-
-os = for [_]:n in [11 13] then new -> import n: -> n
-eq 11 os.0.n()
-
-
 ### Post-`for` chains
 eq "#{
   [a * b * c * d         \

@@ -101,26 +101,6 @@ NEWLINE,
 eq '1;\n2;', bare '  1\n  2'
 
 
-eq '''
-(function(){
-  var k;
-  try {
-    for (k in o) {
-      (fn$.call(this, k));
-    }
-  } catch (e$) {}
-  function clone$(it){
-    function fun(){} fun.prototype = it;
-    return new fun;
-  }
-  function fn$(k){
-    clone$(this);
-  }
-}).call(this);
-
-''', LiveScript.compile '''try for k of o then let then ^^@''' {-header}
-
-
 eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' LiveScript.tokens('''
 0 \\
   1

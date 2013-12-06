@@ -91,7 +91,7 @@ eq {func: Dog.static}.func().name, 'Dog'
 class Mini
   ->
     @generate = ~>
-      for i from 1 to 3 then let
+      for let i from 1 to 3
         ~> @num * i
   num: 10
 

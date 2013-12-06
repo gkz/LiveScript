@@ -105,9 +105,9 @@
   carp: (msg, type = SyntaxError) ->
     throw type "#msg on line #{ @line or @traverseChildren -> it.line }"
 
-  # Defines delegaters.
+  # Defines delegators.
   delegate: !(names, fn) ->
-    for name in names then let
+    for let name in names
       @[name] = -> fn.call this, name, it
 
   # Default implementations of the common node properties and methods. Nodes
@@ -2161,8 +2161,6 @@ class exports.For extends While
         switch it.value
         | \index$$ => it.value = idx
         | \item$$  => it.value = "#svar[#idx]"
-    else
-      @infuseIIFE!
     o.indent += TAB
     if @index and not @object
       head += \\n + o.indent +
@@ -2174,24 +2172,6 @@ class exports.For extends While
     body  = @compileBody o
     head += \\n + @tab if (@item or (@index and not @object)) and \} is body.charAt 0
     head + body
-
-  # Makes IIFE constructions (such as `let`) capture the loop variables.
-  infuseIIFE: !->
-    function dup params, name
-      if name then for p in params then return true if name is p.value
-    <~! @body.traverseChildren
-    return unless it.calling or it.op is \new and (fun = it.it)params
-    if fun
-    then it.it = Call.make fun <<< void: true
-    else fun = it.it.head
-    {params} = fun; call = it.it.tails.0
-    return if params.length .^. call.args.length - !!call.method
-    {index, item} = this
-    if index and not dup params, index
-      call.args.push params.* = Var index
-    item = Var that if item instanceof List and item.name
-    if item instanceof Var and not dup params, item.value
-      call.args.push params.* = item
 
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
