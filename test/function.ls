@@ -643,6 +643,11 @@ eq 7 ((obj <<< d: 7).) \d
 eq 2 (.) obj, \a
 eq 2 ((.) obj) \a
 
+ary = [1 2]
+eq '1,2,3' "#{(.~concat) ary <| 3}"
+concat = (.~) ary, 'concat'
+eq '1,2,3' "#{concat 3}"
+
 ### partialization
 three-add = (x, y, z) -> x + y + z
 g = three-add 2, _, 10

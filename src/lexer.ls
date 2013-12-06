@@ -908,7 +908,7 @@ character = if not JSON? then uxxxx else ->
       or prev.0 is \( and token.spaced
       or next.0 is \) and prev.spaced
         tokens[i].0 = 'BIOP'
-    case tag is \DOT and val is \.
+    case tag is \DOT
       next = tokens[i+1]
       if prev.0 is \( and next.0 is \)
         tokens[i].0 = \BIOP
