@@ -1065,7 +1065,7 @@ class exports.Binary extends Node
       | \<<< \<<<< => return Import first, second, op is \<<<<
       | \<|        => return Block first .pipe second, op
       | \|>        => return Block second .pipe first, \<|
-      | \. \.~     => return Chain first .add Index second
+      | \. \.~     => return Chain first .add Index second, op
     import {op, first, second}
 
   children: <[ first second ]>
