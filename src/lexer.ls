@@ -183,7 +183,6 @@ exports import
       fallthrough
     case \case
       return input.length if @doCase!
-    case \match then tag = \SWITCH
     case \loop
       @token \WHILE   id
       @token \LITERAL \true
@@ -1225,7 +1224,7 @@ KEYWORDS_UNUSED =
 
 JS_KEYWORDS = KEYWORDS_SHARED ++ KEYWORDS_UNUSED
 
-LS_KEYWORDS = <[ xor match where ]>
+LS_KEYWORDS = <[ xor ]>
 
 ##### Regexes
 # Some of these are given `g` flag and made sure to match empty string
