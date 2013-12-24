@@ -52,6 +52,12 @@ $ ->
 
       $ toPrepend .prependTo '.compiler-output' .attr \title, source
 
+  $ '#close-menu' .on \click ->
+    $('#menu') .hide!
+
+  $ '#close-compiler' .on \click ->
+    $('.compiler') .hide!
+
   $ '.compiler-output' .on \click \.close ->
     $(this) .parent! .parent! .hide!   # or remove()
     return false
@@ -60,6 +66,7 @@ $ ->
     boom($ @ .data \action)
 
   $ '.example' .on \dblclick ->
+    $ '.compiler' .show!
     $ '.compiler textarea' .val($ this .find '.source' .text!)
 
   $ '.sidebar .nav'  .on \click \a ->
@@ -70,5 +77,5 @@ $ ->
     $ '.nav li' .removeClass \active
     $ '.nav li' .first!.addClass \active
 
-  $ 'body' .scrollspy \refresh 
+  $ 'body' .scrollspy \refresh
   $ '.sidebar .nav' .scrollspy offset: 0

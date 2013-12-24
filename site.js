@@ -72,6 +72,12 @@
         return $(toPrepend).prependTo('.compiler-output').attr('title', source);
       }
     };
+    $('#close-menu').on('click', function(){
+      return $('#menu').hide();
+    });
+    $('#close-compiler').on('click', function(){
+      return $('.compiler').hide();
+    });
     $('.compiler-output').on('click', '.close', function(){
       $(this).parent().parent().hide();
       return false;
@@ -80,6 +86,7 @@
       return boom($(this).data('action'));
     });
     $('.example').on('dblclick', function(){
+      $('.compiler').show();
       return $('.compiler textarea').val($(this).find('.source').text());
     });
     $('.sidebar .nav').on('click', 'a', function(){
