@@ -256,6 +256,8 @@ h1 a:hover {
     width: 100%;
     height: 100%;
     top: 0;
+    padding: 5px;
+    padding-bottom: 0;
   }
   .side-row.row-fluid .compiler #compiler-close-button {
     display: block;
