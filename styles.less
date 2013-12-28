@@ -181,7 +181,7 @@ h1 {
       }
     }
     .example-ls {
-      float: left; 
+      float: left;
     }
     .example-js {
       float: right;
@@ -210,7 +210,7 @@ h1 {
   }
 }
 
-@media screen and (max-width: 1500px) {
+@media (max-width: 1500px) {
   .sidebar h1 a {
     font-size: 32px;
   }
@@ -222,8 +222,68 @@ h1 {
   }
 }
 
-@media screen and (max-width: 1366px) {
+@media (max-width: 1366px) {
   .sidebar h1 a {
     font-size: 26px;
+  }
+}
+
+#compiler-close-button {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .side-row.row-fluid {
+    .sidebar {
+      width: 100%;
+      float: none;
+      position: static;
+      h1 {
+        margin-bottom: 10px;
+      }
+      .nav-list {
+        padding: 0;
+
+        li {
+          display: inline-block;
+
+          a {
+            margin-right: 5px;
+
+            &:hover {
+              background-color: transparent;
+            }
+          }
+          &.active a {
+            margin: 0;
+            background-color: transparent;
+            text-decoration: underline;
+            color: #369BD7;
+            text-shadow: none;
+          }
+          &:first-child a {
+            padding-left: 0;
+          }
+        }
+      }
+    }
+    .compiler {
+      display: none;
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+
+      #compiler-close-button {
+        display: block;
+        float: left;
+        font-size: 30px;
+        cursor: pointer;
+      }
+    }
+  }
+  .row-fluid > .span6.content {
+    padding-top: 0;
+    width: 100%;
   }
 }

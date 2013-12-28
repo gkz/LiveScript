@@ -56,10 +56,14 @@ $ ->
     $(this) .parent! .parent! .hide!   # or remove()
     return false
 
+  $ '#compiler-close-button' .on 'click' ->
+    $ '.compiler' .hide!
+
   $ '.actions button' .on \click ->
     boom($ @ .data \action)
 
   $ '.example' .on \dblclick ->
+    $ '.compiler' .show!
     $ '.compiler textarea' .val($ this .find '.source' .text!)
 
   $ '.sidebar .nav'  .on \click \a ->

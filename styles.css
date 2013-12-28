@@ -107,7 +107,7 @@ h1 a:hover {
   width: 100%;
   overflow: auto;
 }
-.content .major-actions  > h1,
+.content .major-actions > h1,
 .content .major-actions a,
 .content .major-actions iframe {
   display: block;
@@ -170,8 +170,8 @@ h1 a:hover {
   padding-top: 12px;
   padding-left: 10px;
 }
-.content .example .example-ls  > pre,
-.content .example .example-js  > pre {
+.content .example .example-ls > pre,
+.content .example .example-js > pre {
   padding: 10px;
   height: 100%;
   border: none;
@@ -200,7 +200,7 @@ h1 a:hover {
   margin-right: 5px;
   margin-top: 7px;
 }
-@media screen and (max-width: 1500px) {
+@media (max-width: 1500px) {
   .sidebar h1 a {
     font-size: 32px;
   }
@@ -211,8 +211,60 @@ h1 a:hover {
     width: 53.717948718%;
   }
 }
-@media screen and (max-width: 1366px) {
+@media (max-width: 1366px) {
   .sidebar h1 a {
     font-size: 26px;
+  }
+}
+#compiler-close-button {
+  display: none;
+}
+@media (max-width: 768px) {
+  .side-row.row-fluid .sidebar {
+    width: 100%;
+    float: none;
+    position: static;
+  }
+  .side-row.row-fluid .sidebar h1 {
+    margin-bottom: 10px;
+  }
+  .side-row.row-fluid .sidebar .nav-list {
+    padding: 0;
+  }
+  .side-row.row-fluid .sidebar .nav-list li {
+    display: inline-block;
+  }
+  .side-row.row-fluid .sidebar .nav-list li a {
+    margin-right: 5px;
+  }
+  .side-row.row-fluid .sidebar .nav-list li a:hover {
+    background-color: transparent;
+  }
+  .side-row.row-fluid .sidebar .nav-list li.active a {
+    margin: 0;
+    background-color: transparent;
+    text-decoration: underline;
+    color: #369BD7;
+    text-shadow: none;
+  }
+  .side-row.row-fluid .sidebar .nav-list li:first-child a {
+    padding-left: 0;
+  }
+  .side-row.row-fluid .compiler {
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+  }
+  .side-row.row-fluid .compiler #compiler-close-button {
+    display: block;
+    float: left;
+    font-size: 30px;
+    cursor: pointer;
+  }
+  .row-fluid > .span6.content {
+    padding-top: 0;
+    width: 100%;
   }
 }

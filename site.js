@@ -77,10 +77,14 @@
       $(this).parent().parent().hide();
       return false;
     });
+    $('#compiler-close-button').on('click', function(){
+      return $('.compiler').hide();
+    });
     $('.actions button').on('click', function(){
       return boom($(this).data('action'));
     });
     $('.example').on('dblclick', function(){
+      $('.compiler').show();
       return $('.compiler textarea').val($(this).find('.source').text());
     });
     $('.sidebar .nav').on('click', 'a', function(){
