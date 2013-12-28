@@ -62,9 +62,15 @@ $ ->
   $ '.actions button' .on \click ->
     boom($ @ .data \action)
 
-  $ '.example' .on \dblclick ->
+  load-compiler = ->
     $ '.compiler' .show!
-    $ '.compiler textarea' .val($ this .find '.source' .text!)
+    $ '.compiler textarea' .val <| $ this .find '.source' .text!
+
+  $ '.example' .on \dblclick, load-compiler
+
+  $ '.example' .on 'click', ->
+    if $ window .width! <= 768
+      load-compiler.call this
 
   $ '.sidebar .nav'  .on \click \a ->
     $ '.nav li' .removeClass \active

@@ -3,7 +3,7 @@
   var join$ = [].join, toString$ = {}.toString;
   import$(window, require('prelude-ls'));
   $(function(){
-    var i$, ref$, len$, example, src, boom;
+    var i$, ref$, len$, example, src, boom, loadCompiler;
     for (i$ = 0, len$ = (ref$ = $('.example .example-ls')).length; i$ < len$; ++i$) {
       example = ref$[i$];
       src = $(example).find('.lang-ls').html();
@@ -83,9 +83,15 @@
     $('.actions button').on('click', function(){
       return boom($(this).data('action'));
     });
-    $('.example').on('dblclick', function(){
+    loadCompiler = function(){
       $('.compiler').show();
       return $('.compiler textarea').val($(this).find('.source').text());
+    };
+    $('.example').on('dblclick', loadCompiler);
+    $('.example').on('click', function(){
+      if ($(window).width() <= 768) {
+        return loadCompiler.call(this);
+      }
     });
     $('.sidebar .nav').on('click', 'a', function(){
       $('.nav li').removeClass('active');
