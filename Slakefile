@@ -121,7 +121,7 @@ task \test:json 'test JSON {de,}serialization' ->
 function runTests global.LiveScript
   startTime = Date.now!
   passedTests = failedTests = 0
-  for name, func of require \assert then let
+  for let name, func of require \assert
     global[name] = -> func ...; ++passedTests
   global <<<
     eq: strictEqual
