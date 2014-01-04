@@ -1478,6 +1478,7 @@ n;
         </div>
       </div>
 
+
       <p>Greater/less than:
 
       <div class="example">
@@ -1555,6 +1556,142 @@ var ref$;
 </pre>
         </div>
       </div>
+
+
+      <p>Deep (structural) equality is experimental, but allows one to compare
+      using the contents of a data structure, rather than its object
+      reference. It's possible to use `_` as a placeholder for unknown items,
+      which makes it quite useful for switch cases.
+
+      <p>Besides actual equality, the `>==` operator compares if the structure
+      on the left shares a common prefix with the structure on the right, where
+      the structure on the right has a larger or equal number of items or
+      keys. The `<==` operator works in the same way, but assumes that the
+      structure on the right has a larger or equal number of keys. `<<=`, and
+      `>>=` are similar, but compare structures of strictly different lengths.
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+[1, 2] === [1, 2]                 # => true
+[1, 1] === [1, 1, 2]              # => false
+[1, 2, 3] === [1, 2, _]           # => true
+[1, 2] <== [1, 2, 3, 4]           # => true
+[1, 2, 3] <== [1, 2, 3]           # => true
+[1, 2, 3] <== [1, 2]              # => false
+[1, 2, 3] >>= [1, 2, 3]           # => false
+[1, 2, 3] >>= [1, 2]              # => true
+{ foo: 'bar' } === { foo: 'bar' } # => true
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+deepEq$([1, 2], [1, 2], '===');
+deepEq$([1, 1], [1, 1, 2], '===');
+deepEq$([1, 2, 3], [
+  1, 2, {
+    __placeholder__: true
+  }
+], '===');
+deepEq$([1, 2], [1, 2, 3, 4], '<==');
+deepEq$([1, 2, 3], [1, 2, 3], '<==');
+deepEq$([1, 2, 3], [1, 2], '<==');
+deepEq$([1, 2, 3], [1, 2, 3], '<<=');
+deepEq$([1, 2], [1, 2, 3], '<<=');
+return deepEq$({
+  foo: 'bar'
+}, {
+  foo: 'bar '
+}, '===');
+
+function deepEq$(x, y, type){
+  var toString = {}.toString, hasOwnProperty = {}.hasOwnProperty,
+      has = function (obj, key) { return hasOwnProperty.call(obj, key); };
+  var first = true;
+  return eq(x, y, []);
+  function eq(a, b, stack) {
+    var className, length, size, result, alength, blength, r, key, ref, sizeB;
+    if (a == null || b == null) { return a === b; }
+    if (a.__placeholder__ || b.__placeholder__) { return true; }
+    if (a === b) { return a !== 0 || 1 / a == 1 / b; }
+    className = toString.call(a);
+    if (toString.call(b) != className) { return false; }
+    switch (className) {
+      case '[object String]': return a == String(b);
+      case '[object Number]':
+        return a != +a ? b != +b : (a == 0 ? 1 / a == 1 / b : a == +b);
+      case '[object Date]':
+      case '[object Boolean]':
+        return +a == +b;
+      case '[object RegExp]':
+        return a.source == b.source &&
+               a.global == b.global &&
+               a.multiline == b.multiline &&
+               a.ignoreCase == b.ignoreCase;
+    }
+    if (typeof a != 'object' || typeof b != 'object') { return false; }
+    length = stack.length;
+    while (length--) { if (stack[length] == a) { return true; } }
+    stack.push(a);
+    size = 0;
+    result = true;
+    if (className == '[object Array]') {
+      alength = a.length;
+      blength = b.length;
+      if (first) { 
+        switch (type) {
+        case '===': result = alength === blength; break;
+        case '<==': result = alength <= blength; break;
+        case '<<=': result = alength < blength; break;
+        }
+        size = alength;
+        first = false;
+      } else {
+        result = alength === blength;
+        size = alength;
+      }
+      if (result) {
+        while (size--) {
+          if (!(result = size in a == size in b && eq(a[size], b[size], stack))){ break; }
+        }
+      }
+    } else {
+      if ('constructor' in a != 'constructor' in b || a.constructor != b.constructor) {
+        return false;
+      }
+      for (key in a) {
+        if (has(a, key)) {
+          size++;
+          if (!(result = has(b, key) && eq(a[key], b[key], stack))) { break; }
+        }
+      }
+      if (result) {
+        sizeB = 0;
+        for (key in b) {
+          if (has(b, key)) { ++sizeB; }
+        }
+        if (first) {
+          if (type === '<<=') {
+            result = size < sizeB;
+          } else if (type === '<==') {
+            result = size <= sizeB
+          } else {
+            result = size === sizeB;
+          }
+        } else {
+          first = false;
+          result = size === sizeB;
+        }
+      }
+    }
+    stack.pop();
+    return result;
+  }
+}
+</pre>
+        </div>
+      </div>
+
 
 
       <h3>Logic</h3>
