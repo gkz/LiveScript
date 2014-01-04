@@ -59,6 +59,10 @@ $ ->
   $ '#compiler-close-button' .on 'click' ->
     $ '.compiler' .hide!
 
+  $ \#compiler-fullscreen-button .click ->
+    $ \.compiler .toggleClass \fullscreen
+    false
+
   $ '.actions button' .on \click ->
     boom($ @ .data \action)
 

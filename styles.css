@@ -58,6 +58,18 @@ h1 a:hover {
   right: 0;
   position: fixed;
 }
+.compiler .nav-buttons {
+  float: left;
+}
+.compiler .nav-buttons a {
+  text-decoration: none !important;
+}
+.compiler.fullscreen {
+  width: 100% !important;
+}
+.compiler.fullscreen .nav-buttons #compiler-fullscreen-button {
+  background-position: -384px -72px;
+}
 .compiler .github-buttons {
   float: right;
 }
