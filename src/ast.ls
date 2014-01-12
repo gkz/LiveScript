@@ -2207,14 +2207,7 @@ class exports.Try extends Node
 # Compiles to the regular JS `switch`-`case`-`default`,
 # but with forced `break` after each cases.
 class exports.Switch extends Node
-  (@type, @topic, @cases, @default) ->
-    if type is \match
-      @target = Arr topic if topic
-      @topic = null
-    else
-      if topic
-        throw "can't have more than one topic in switch statement" if topic.length > 1
-        @topic.=0
+  (@topic, @cases, @default) ->
     if @cases.length and (last = @cases[*-1]).tests.length is 1
     and last.tests.0 instanceof Var and last.tests.0.value is \_
       @cases.pop!
@@ -2245,16 +2238,12 @@ class exports.Switch extends Node
   compileNode: (o) ->
     {tab} = this
     [target-node, target] = Chain @target .cacheReference o if @target
-    topic = if @type is \match
-      t = if target then [target-node] else []
-      Block (t ++ [Literal \false]) .compile o, LEVEL_PAREN
-    else
-      !!@topic and @anaphorize!compile o, LEVEL_PAREN
+    topic = !!@topic and @anaphorize!compile o, LEVEL_PAREN
     code  = "switch (#topic) {\n"
     stop  = @default or @cases.length - 1
     o.break = true
     for c, i in @cases
-      code += c.compileCase o, tab, i is stop, (@type is \match or !topic), @type, target
+      code += c.compileCase o, tab, i is stop, !topic, target
     if @default
       o.indent = tab + TAB
       code += tab + "default:\n#that\n" if @default.compile o, LEVEL_TOP
@@ -2276,17 +2265,12 @@ class exports.Case extends Node
     tests = []
     for test in @tests
       test.=expandSlice(o)unwrap!
-      if test instanceof Arr and type isnt \match
+      if test instanceof Arr
         for t in test.items then tests.push t
       else tests.push test
     tests.length or tests.push Literal \void
-    if type is \match
-      for test, i in tests
-        tar = Chain target .add Index (Literal i), \., true
-        tests[i] = Chain test .auto-compare (if target then [tar] else null)
     if bool
-      binary = if type is \match then \&& else \||
-      [t] = tests; i = 0; while tests[++i] then t = Binary binary, t, that
+      [t] = tests; i = 0; while tests[++i] then t = Binary \||, t, that
       tests = [(@<<<{t, aSource: \t, aTargets: [\body]})anaphorize!invert!]
     code = ''
     for t in tests then code += tab + "case #{ t.compile o, LEVEL_PAREN }:\n"
