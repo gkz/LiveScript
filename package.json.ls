@@ -36,6 +36,7 @@ bin  :
 scripts:
   pretest: "bin/slake build && bin/slake build:parser && bin/slake build"
   test: "bin/slake test"
+  \test-harmony : "node --harmony ./bin/slake test"
   posttest: "git checkout -- lib"
 
 preferGlobal: true

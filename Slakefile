@@ -138,7 +138,11 @@ function runTests global.LiveScript
     else tint message
     if failedTests
       process.exit 1
-  dir(\test)forEach (file) ->
+  
+  files = dir \test
+  unless '--harmony' in process.execArgv or '--harmony-generators' in process.execArgv
+    files.=splice (files.indexOf 'generators.ls'), 1
+  files.forEach (file) ->
     return unless /\.ls$/i.test file
     code = slurp filename = path.join \test file
     try LiveScript.run code, {filename} catch

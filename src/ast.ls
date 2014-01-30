@@ -1012,7 +1012,7 @@ class exports.Unary extends Node
               #{ it.compile o, LEVEL_LIST }).slice(8, -1)"
     code = it.compile o, LEVEL_OP + PREC.unary
     if @post then code += op else
-      op += ' ' if op in <[ new typeof delete ]>
+      op += ' ' if op in <[ new typeof delete yield ]>
                 or op in <[ + - ]> and op is code.charAt!
       code = op + code
     if o.level < LEVEL_CALL then code else "(#code)"
@@ -1591,7 +1591,7 @@ class exports.Existence extends Node implements Negatable
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-  (@params or [], @body or Block!, @bound and \this$, @curried or false, @hushed = false) ~>
+  (@params or [], @body or Block!, @bound and \this$, @curried or false, @hushed = false, @generator = false) ~>
 
   children: <[ params body ]>
 
@@ -1623,6 +1623,10 @@ class exports.Fun extends Node
     o.indent += TAB
     {body, name, tab} = this
     code = \function
+    if @generator
+      if @ctor
+        @ctor.error "A constructor can't be a generator"
+      code += \*
     if @bound is \this$
       if @ctor
         scope.assign \this$ 'this instanceof ctor$ ? this : new ctor$'
@@ -1637,7 +1641,7 @@ class exports.Fun extends Node
       pscope.add name, \function, this
     if @statement or name and @labeled
       code += ' ' + scope.add name, \function, this
-    @hushed or @ctor or @newed or body.makeReturn!
+    @hushed or @ctor or @newed or @generator or body.makeReturn!
     code += "(#{ @compileParams o, scope }){"
     code += "\n#that\n#tab" if body.compileWithDeclarations o
     code += \}
