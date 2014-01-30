@@ -5621,7 +5621,7 @@ text = "hi
         there"
 </pre> you will have to change them as in CoffeeScript this would be <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> while LiveScript ignores indentation after newlines so it would be <code>"hi there"</code>
       <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript. You can use <code>||</code> instead of <code>or</code> and <code>&amp;&amp;</code> instead of <code>and</code> as those versions do not close implicit calls.
-      <li>Change any <code>do</code>s special casing function literals to using <code>let</code>. Eg. in CoffeScript <code>do ($ = jQuery) -> $</code> change to
+      <li>Change any <code>do</code>s special casing function literals to using <code>let</code>. Eg. in CoffeeScript <code>do ($ = jQuery) -> $</code> change to
 <pre>
 let $ = jQuery
   $
