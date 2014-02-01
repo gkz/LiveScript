@@ -199,3 +199,6 @@ eq 'some js code!' bare '``some js code!``'
 
 # [livescript#279](https://github.com/gkz/LiveScript/issues/279)
 ################################################################
+
+compileThrows "a constructor can't be a generator" 1 'class => ->*'
+compileThrows "a generator is hushed by default" 1 '!->*'

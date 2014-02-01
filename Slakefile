@@ -141,7 +141,9 @@ function runTests global.LiveScript
   
   files = dir \test
   unless '--harmony' in process.execArgv or '--harmony-generators' in process.execArgv
-    files.=splice (files.indexOf 'generators.ls'), 1
+    say "Skipping --harmony tests"
+    files.splice (files.indexOf 'generators.ls'), 1
+
   files.forEach (file) ->
     return unless /\.ls$/i.test file
     code = slurp filename = path.join \test file

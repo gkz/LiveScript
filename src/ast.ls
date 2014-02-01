@@ -1012,6 +1012,7 @@ class exports.Unary extends Node
               #{ it.compile o, LEVEL_LIST }).slice(8, -1)"
     code = it.compile o, LEVEL_OP + PREC.unary
     if @post then code += op else
+      op = 'yield* ' if op is \yieldfrom
       op += ' ' if op in <[ new typeof delete yield ]>
                 or op in <[ + - ]> and op is code.charAt!
       code = op + code
@@ -1624,8 +1625,8 @@ class exports.Fun extends Node
     {body, name, tab} = this
     code = \function
     if @generator
-      if @ctor
-        @ctor.error "A constructor can't be a generator"
+      @ctor and @carp "a constructor can't be a generator"
+      @hushed and @carp "a generator is hushed by default"
       code += \*
     if @bound is \this$
       if @ctor

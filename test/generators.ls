@@ -15,7 +15,6 @@ x = ->*
   yield 1
   yield 2
 
-# YIELD FROM ?
 y = x!
 z = y.next!
 eq z.value, 0
@@ -27,10 +26,34 @@ z = y.next!
 eq z.value, 2
 eq z.done, false
 z = y.next!
-eq z.value, undefined
+eq z.value, void
 eq z.done, true
 
-# function* ?
+# yield from
+first = ->*
+  i = 0
+  loop => yield i++
+second = ->*
+  yield from first!
+list = second!
+for i to 3 
+  {value} = list.next!
+  eq value, i
+
+# curried bound generators
+class A
+  val: 5
+  curried: (x, y) ~~>*
+    yield @val + x + y
+fn = (new A).curried
+yield-add = fn 2
+y = yield-add 3
+z = y.next!
+eq z.value, 10
+eq z.done, false
+z = y.next!
+eq z.value, void
+eq z.done, true
 
 # bound generator
 obj =
