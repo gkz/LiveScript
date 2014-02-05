@@ -80,6 +80,10 @@
     $('#compiler-close-button').on('click', function(){
       return $('.compiler').hide();
     });
+    $('#compiler-fullscreen-button').click(function(){
+      $('.compiler').toggleClass('fullscreen');
+      return false;
+    });
     $('.actions button').on('click', function(){
       return boom($(this).data('action'));
     });
