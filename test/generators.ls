@@ -59,10 +59,10 @@ eq z.done, true
 obj =
   bound: ->
     do ~>*
-      return this
+      yield this
   unbound: ->
     do ->*
-      return this
+      yield this
 
 eq obj, obj.bound().next().value
 ok obj isnt obj.unbound().next().value

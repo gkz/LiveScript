@@ -543,9 +543,6 @@ exports import
       @token \IMPORT \<<
       return sym.length
     case \*
-      if @last.0 is \->
-        @last.1 += \* if @last.0 is \->
-        return 1
       if @last.0 in <[ NEWLINE INDENT THEN => ]> and
          (INLINEDENT <<< lastIndex: index+1)exec code .0.length
         @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
@@ -597,8 +594,6 @@ exports import
     case \~
       return 1 if @dotcat val
       tag = \UNARY
-    case \-> \~> \--> \~~> \!-> \!~> \!--> \!~~> then up = \->; fallthrough
-    case \<- \<~ \<-- \<~~ then @parameters tag = up || \<-
     case \::
       @adi!
       val = \prototype
@@ -607,12 +602,18 @@ exports import
       @unline!
       @fset \for false
       tag = \THEN
-    default switch val.charAt 0
-    case \( then @token \CALL( \(; tag = \)CALL; val = \)
-    case \<
-      @carp 'unterminated words' if val.length < 4
-      @token \WORDS, val.slice(2, -2), @adi!
-      return val.length
+    default
+      if /^!?(?:--?|~~?)>\*?$/.test val # function arrow
+        @parameters tag = '->'
+      else if /^<(?:--?|~~?)$/.test val # backcall
+        @parameters tag = \<-
+      else
+        switch val.charAt 0
+        case \( then @token \CALL( \(; tag = \)CALL; val = \)
+        case \<
+          @carp 'unterminated words' if val.length < 4
+          @token \WORDS, val.slice(2, -2), @adi!
+          return val.length
     if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
                  COMPOSE RELATION PIPE BACKPIPE IMPORT ]> and @last.0 is \(
       tag = if tag is \BACKPIPE then \BIOPBP else \BIOP
@@ -1246,13 +1247,12 @@ SYMBOL = //
 | \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
 | \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
 | \^\^                          # clone
-| !?--> | !?~~> | <-- | <~~     # curry
+| <(?:--?|~~?)                  # backcall
+| !?(?:--?|~~?)>\*?             # function, bound function
 | ([-+&|:])\1                   # crement / logic / `prototype`
 | %%                            # mod
 | &                             # arguments
 | \([^\n\S]*\)                  # call
-| !?[-~]>                       # function, bound function
-| <[-~]                         # backcall
 | [!=]==?                       # strict equality, deep equals
 | !?\~=                         # fuzzy equality
 | @@?                           # this / constructor
