@@ -2439,39 +2439,30 @@ class exports.Require extends Node
   children: <[ body ]>
 
   compile: (o) ->
-    var chain
     strip-string = (val) ->
       if val == //^['"](.*)['"]$// then that.1 else val
+
     get-file-name = (val) ->
       strip-string val .split '/' .[*-1].split '.' .0
         .replace /-[a-z]/ig, -> it.char-at 1 .to-upper-case!
+
     get-value = (item) ~>
       | item instanceof Key     => item.name
       | item instanceof Var     => item.value
       | item instanceof Literal => item.value
       | item instanceof Index   => get-value item.key
-      | item instanceof Chain   =>
-        if item.tails?length
-          chain := item.tails
-        get-value item.head
       | otherwise               => item
-    process-item = (item) ->
-      chain := null
-      [asg, value] = switch
-      | item instanceof Prop    => [get-value item.key; item.val]
-      | item instanceof Chain   =>
-        if item.tails?length
-          chain := item.tails
-          [item.tails[*-1], item.head]
-        else
-          [item.head, item.head]
-      | otherwise               => [item, item]
 
-      asg = get-file-name get-value asg
+    process-item = (item) ->
+      [asg, value] = switch
+      | item instanceof Prop    => [item.val, item.key]
+      | otherwise               => [item, item]
+      asg-value = get-value asg
+      to-asg = if typeof! asg-value is 'String' then Var get-file-name asg-value else asg
       value = strip-string get-value value
 
       main = Chain Var 'require' .add Call [Literal "'#value'"]
-      Assign (Var asg), (if chain then Chain main, chain else main) .compile o
+      Assign to-asg, main .compile o
 
     if @body.items?
       [process-item item for item in @body.items].join ";\n#{o.indent}"

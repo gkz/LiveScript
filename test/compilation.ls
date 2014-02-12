@@ -1,4 +1,9 @@
-bare = -> LiveScript.compile it, {+bare,-header}
+bare = ->
+  try
+    LiveScript.compile it, {+bare,-header}
+  catch
+    console.error it
+    throw e
 
 # Ensure that carriage returns don't break compilation on Windows.
 eq 'one;\ntwo;', bare 'one\r\ntwo'
@@ -168,26 +173,22 @@ eq "var a;\na = require('a');" bare 'require! <[a]>'
 eq "var a;\na = require('a');" bare 'require! {a}'
 eq "var b;\nb = require('b');" bare "require! {'b'}"
 
-eq "var c;\nc = require('d');" bare "require! c: d"
-eq "var e;\ne = require('f');" bare "require! e: 'f'"
-eq "var g;\ng = require('h');" bare "require! 'g': h"
+eq "var c;\nc = require('d');" bare "require! d: c"
+eq "var e;\ne = require('f');" bare "require! f: e"
+eq "var g;\ng = require('h');" bare "require! 'h': 'g'"
 
 eq "var file;\nfile = require('file.js');" bare "require! 'file.js'"
 eq "var file;\nfile = require('./file.js');" bare "require! './file.js'"
 eq "var file;\nfile = require('./a/b/c/file.js');" bare "require! './a/b/c/file.js'"
 
-eq "var a;\na = require('file.js');" bare "require! a: 'file.js'"
-eq "var b;\nb = require('./file.js');" bare "require! b: './file.js'"
-eq "var c;\nc = require('./a/b/c/file.js');" bare "require! c: './a/b/c/file.js'"
-
-eq "var bar;\nbar = require('foo').bar;" bare "require! { foo.bar }"
-eq "var bar;\nbar = require('./file.js').bar;" bare "require! { './file.js'.bar }"
-
-eq "var bar;\nbar = require('foo').bar;" bare "require! foo.bar"
-eq "var baz;\nbaz = require('foo').bar.baz;" bare "require! foo.bar.baz"
-eq "var bar;\nbar = require('./file.js').bar;" bare "require! './file.js'.bar"
+eq "var a;\na = require('file.js');" bare "require! 'file.js': a"
+eq "var b;\nb = require('./file.js');" bare "require! './file.js': b"
+eq "var c;\nc = require('./a/b/c/file.js');" bare "require! './a/b/c/file.js': c"
 
 eq "var preludeLs;\npreludeLs = require('prelude-ls');" bare "require! 'prelude-ls'"
+
+eq "var bar;\nbar = require('./file.js').bar;" bare "require! { './file.js': {bar} }"
+eq "var ref$, id, map;\nref$ = require('prelude-ls'), id = ref$.id, map = ref$.map;" bare "require! 'prelude-ls': {id, map}"
 
 eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 'require! [a, b, c]'
 eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 'require! <[ a b c ]>'
