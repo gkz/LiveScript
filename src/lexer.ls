@@ -123,7 +123,7 @@ exports import
     switch id
     case <[ true false on off yes no null void arguments debugger ]>
       tag = \LITERAL
-    case \new \do \typeof \delete                      then tag = \UNARY
+    case <[ new do typeof delete yield ]>              then tag = \UNARY
     case \return \throw                                then tag = \HURL
     case \break  \continue                             then tag = \JUMP
     case \this \eval \super then return @token(\LITERAL id, true)length
@@ -211,7 +211,11 @@ exports import
         or last.1 is \import and \All
           last.1 += that
           return 3
-      case \from then @forange! and tag = \FROM
+      case \from
+        if last.1 is \yield
+          last.1 += \from
+          return 4
+        @forange! and tag = \FROM
       case \to \til
         @forange! and @tokens.push [\FROM '' @line] [\STRNUM \0 @line]
         if @fget \from
@@ -539,6 +543,9 @@ exports import
       @token \IMPORT \<<
       return sym.length
     case \*
+      if @last.0 is \->
+        @last.1 += \* if @last.0 is \->
+        return 1
       if @last.0 in <[ NEWLINE INDENT THEN => ]> and
          (INLINEDENT <<< lastIndex: index+1)exec code .0.length
         @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
@@ -1215,13 +1222,13 @@ KEYWORDS_SHARED = <[
   true false null this void super return throw break continue
   if else for while switch case default try catch finally
   function class extends implements new do delete typeof in instanceof
-  let with var const import export debugger
+  let with var const import export debugger yield
 ]>
 
 # The list of keywords that are reserved by JavaScript, but not used.
 # We throw a syntax error for these to avoid runtime errors.
 KEYWORDS_UNUSED =
-  <[ enum interface package private protected public static yield ]>
+  <[ enum interface package private protected public static ]>
 
 JS_KEYWORDS = KEYWORDS_SHARED ++ KEYWORDS_UNUSED
 
