@@ -12,6 +12,15 @@ body {
 }
 .site {
   height: 100%;
+
+  &.fullscreen-compiler {
+    .compiler {
+      width: 100%;
+    }
+    .content-row {
+      display: none;
+    }
+  }
 }
 .container-fluid {
   padding: 0;
@@ -64,6 +73,10 @@ h1 {
   height: 100%;
   right: 0;
   position: fixed;
+
+  .action-compiler-fullscreen {
+    cursor: pointer;
+  }
 
   .github-buttons {
     float: right;
@@ -275,6 +288,10 @@ h1 {
       top: 0;
       padding: 5px;
       padding-bottom: 0;
+
+      .action-compiler-fullscreen {
+        display: none;
+      }
 
       #compiler-close-button {
         display: block;

@@ -101,6 +101,10 @@
       $('.nav li').removeClass('active');
       return $('.nav li').first().addClass('active');
     });
+    $('.compiler .action-compiler-fullscreen').on('click', function(){
+      $('.compiler .action-compiler-fullscreen').toggle();
+      return $('.site').toggleClass('fullscreen-compiler');
+    });
     $('body').scrollspy('refresh');
     return $('.sidebar .nav').scrollspy({
       offset: 0

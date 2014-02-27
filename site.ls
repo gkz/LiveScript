@@ -80,5 +80,9 @@ $ ->
     $ '.nav li' .removeClass \active
     $ '.nav li' .first!.addClass \active
 
+  $ '.compiler .action-compiler-fullscreen' .on 'click' ->
+      $ '.compiler .action-compiler-fullscreen' .toggle!
+      $ '.site' .toggle-class 'fullscreen-compiler'
+
   $ 'body' .scrollspy \refresh 
   $ '.sidebar .nav' .scrollspy offset: 0
