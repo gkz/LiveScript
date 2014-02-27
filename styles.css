@@ -66,6 +66,7 @@ h1 a:hover {
 }
 .compiler .action-compiler-fullscreen {
   cursor: pointer;
+  margin-top: -4px;
 }
 .compiler .github-buttons {
   float: right;
