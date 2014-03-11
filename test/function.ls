@@ -1,3 +1,5 @@
+{map} = require 'prelude-ls'
+
 I = (x) -> x
 M = (x) -> x x
 
@@ -741,7 +743,3 @@ l = (!!@x) -> x
 obj = {-x}
 l.call obj, 'hello'
 eq true obj.x
-
-
-## util funcs
-function map f, xs then [f x for x in xs]

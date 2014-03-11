@@ -4,6 +4,8 @@
 # To convert the syntax tree into a string of JavaScript code,
 # call `Block::compileRoot`.
 
+{fold} = require 'prelude-ls'
+
 ### Node
 # The abstract base class for all nodes in the syntax tree.
 # Each subclass implements the `compileNode` method, which performs the
@@ -2830,7 +2832,3 @@ SIMPLENUM = /^\d+$/
 function util then Scope.root.assign it+\$ UTILS[it]
 
 function entab code, tab then code.replace /\n/g \\n + tab
-
-function fold f, memo, xs
-  for x in xs then memo = f memo, x
-  memo

@@ -2,7 +2,7 @@
 # [tokenizing](#lexer), [parsing](#grammar), and [compiling](#ast)
 # LiveScript source into JavaScript.
 
-require! \./lexer
+require! './lexer'
 
 # Override Jison's default lexer, so that it can accept
 # the generic stream of tokens our lexer produces.
@@ -15,7 +15,7 @@ parser import
     upcomingInput : -> ''
 
 exports import
-  VERSION: \1.2.0
+  VERSION: '1.2.0'
 
   # Compiles a string of LiveScript code to JavaScript.
   compile: (code, options) ->

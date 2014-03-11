@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>LiveScript browser tests</title>
+  </head>
+  <body>
+    <h1>LiveScript browser tests</h1>
+    <div id="output">
+    </div>
+
+    <script src="../browser/livescript.js"></script>
+    <script type="text/ls">
+      do ->
+        window.YAY = true
+    </script>
+    <script>
+      (function () {
+        var LiveScript = require("LiveScript");
+        assert(LiveScript, "LiveScript exists");
+
+        assert(LiveScript.compile, "LiveScript.compile exists");
+        assert(/return x\(\)/.test(LiveScript.compile("do -> x!", {bare: true})), "LiveScript.compile worked");
+
+        assert(LiveScript.go, "LiveScript.go exists");
+        LiveScript.go();
+        assert(window.YAY,'LiveScript.go (auto loading) works');
+
+        function assert(test, msg) {
+          var color = test ? "green" : "red";
+          var stat = test ? "passed" : "failed";
+          document.getElementById("output").innerHTML += "<div style='color:" + color + "'>"
+                                                         + stat + ": " + msg
+                                                         + "</div>";
+        }
+      })();
+    </script>
+  </body>
+</html>

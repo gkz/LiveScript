@@ -2,8 +2,8 @@
 
 {argv} = process
 
-LiveScript = require './livescript'
 require! {
+  '..': LiveScript
   path
   fs
   util

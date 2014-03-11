@@ -1,11 +1,4 @@
-# util curried funcs
-filter = (f, xs) --> [x for x in xs when f x]
-even = (x) --> x % 2 == 0
-map = (f, xs) --> [f x for x in xs]
-fold = (f, memo, xs) -->
-  for x in xs
-    memo = f memo, x
-  memo
+{filter, even, map, fold} = require 'prelude-ls'
 
 # Newline suppression for binary operators.
 eq 32,

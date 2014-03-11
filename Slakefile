@@ -52,37 +52,10 @@ task \build:parser 'build lib/parser.js from lib/grammar.js' ->
       .replace /(:[^]+?break;)(?=\ncase \d+\1)/g \:
       .replace /(:return .+)\nbreak;/g \$1
 
-task \build:browser 'build extras/' ->
-  LiveScript = require \./lib/livescript
-  co = ''
-  for name in <[ lexer ast livescript ]>
-    code = slurp("src/#name.ls")replace /\n/g '\n '
-    co += "let exports = require'./#name' = {}\n#code\n"
-  fs.writeFile \extras/livescript.raw.js js = """
-    this.LiveScript = function(){
-    function require(path){ return require[path] }
-    var exports = require['./parser'] = {}; #{ slurp \lib/parser.js }
-    #{ LiveScript.compile co, {+bare} }
-    return require['./livescript']
-    }()
-    this.window && function(){\n#{ slurp \lib/browser.js }\n}()
-    this.LiveScript
-  """
-  slobber \extras/livescript.js """
-    // LiveScript #{LiveScript.VERSION}
-    // Copyright (c) 2013 Jeremy Ashkenas, Satoshi Murakami, George Zahariev
-    // Released under the MIT License
-    // raw.github.com/gkz/LiveScript/master/LICENSE
-    #{ minify js };
-
-  """
-  invoke \test:browser
-
-
 coreSources = -> ["src/#src.ls" for src in <[ livescript grammar lexer ast ]>]
 
 task \bench 'quick benchmark in compilation time' ->
-  LiveScript   = require \./lib/livescript
+  LiveScript   = require './lib/'
   co     = coreSources!map(-> slurp it)join \\n
   fmt    = -> "#bold#{ "   #it"slice -4 }#reset ms"
   total  = nc = 0
@@ -106,13 +79,10 @@ task \loc 'count the lines in main compiler code' ->
   console.log count
 
 
-task \test 'run test/' -> runTests require \./lib/livescript
-
-task \test:browser 'run test/ against extras/livescript.js' ->
-  runTests (new new Function slurp \extras/livescript.js)LiveScript
+task \test 'run test/' -> runTests require './lib/'
 
 task \test:json 'test JSON {de,}serialization' ->
-  {ast} = require \./lib/livescript
+  {ast} = require './lib'
   json = ast slurp \src/ast.ls .stringify!
   code = ast.parse json .compileRoot {+bare}
   exec 'diff -u lib/ast.js -' (e, out) -> say e || out.trim! || tint \ok
