@@ -550,7 +550,7 @@ class exports.Chain extends Node
   cacheReference: (o) ->
     name = @tails[*-1]
     # `a.b()`
-    return @cache o, true if name instanceof Call
+    return @unwrap!cache o, true unless @isAssignable!
     # `a` `a.b`
     if @tails.length < 2 and not @head.isComplex! and not name?isComplex!
       return [this] * 2
@@ -620,6 +620,19 @@ class exports.Chain extends Node
     for node, i in @tails when delete node.soak
       bust = Chain @head, @tails.splice 0 i
       node.carp 'invalid accessign' if node.assign and not bust.isAssignable!
+      if i and (node.assign or node instanceof Call)
+        [test, bust] = bust.cacheReference o
+        if bust instanceof Chain
+          @tails.unshift ...bust.tails
+          bust.=head
+        @head = bust
+      else
+        [test, @head] = bust.unwrap!cache o
+      test = if node instanceof Call
+        JS "typeof #{ test.compile o, LEVEL_OP } == 'function'"
+      else
+        Existence test
+      /*
       test = if node instanceof Call
         [test, @head] = bust.cacheReference o
         JS "typeof #{ test.compile o, LEVEL_OP } === 'function'"
@@ -630,6 +643,7 @@ class exports.Chain extends Node
         else
           [test, @head] = bust.unwrap!cache o, true
         Existence test
+        */
       return If(test, this) <<< {+soak, @cond, @void}
 
   unfoldAssign: (o) ->
