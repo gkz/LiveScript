@@ -4,7 +4,10 @@
 # To convert the syntax tree into a string of JavaScript code,
 # call `Block::compileRoot`.
 
-{fold} = require 'prelude-ls'
+require! {
+  'prelude-ls': {fold}
+  path
+}
 
 ### Node
 # The abstract base class for all nodes in the syntax tree.
@@ -2445,7 +2448,8 @@ class exports.Require extends Node
       if val == //^['"](.*)['"]$// then that.1 else val
 
     get-file-name = (val) ->
-      strip-string val .split '/' .[*-1].split '.' .0
+      (path.basename strip-string val)
+        .split '.' .0
         .replace /-[a-z]/ig, -> it.char-at 1 .to-upper-case!
 
     get-value = (item) ~>
