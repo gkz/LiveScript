@@ -40,7 +40,7 @@ scripts:
   test: 'bin/slake test'
   posttest: 'git checkout -- lib'
 
-preferGlobal: true
+prefer-global: true
 
 repository:
   type: 'git'
@@ -49,7 +49,7 @@ repository:
 dependencies:
   'prelude-ls': '~1.0.3'
 
-devDependencies:
+dev-dependencies:
   jison: '0.2.1'
   'uglify-js': '~2.4.12'
   istanbul: '~0.2.4'
