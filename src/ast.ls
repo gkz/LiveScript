@@ -632,18 +632,6 @@ class exports.Chain extends Node
         JS "typeof #{ test.compile o, LEVEL_OP } == 'function'"
       else
         Existence test
-      /*
-      test = if node instanceof Call
-        [test, @head] = bust.cacheReference o
-        JS "typeof #{ test.compile o, LEVEL_OP } === 'function'"
-      else
-        if i and node.assign
-          [test, bust] = bust.cacheReference o
-          @head = bust.head; @tails.unshift ...bust.tails
-        else
-          [test, @head] = bust.unwrap!cache o, true
-        Existence test
-        */
       return If(test, this) <<< {+soak, @cond, @void}
 
   unfoldAssign: (o) ->
