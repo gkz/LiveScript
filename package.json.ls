@@ -54,3 +54,4 @@ dev-dependencies:
   'uglify-js': '~2.4.12'
   istanbul: '~0.2.4'
   browserify: '~3.0.0'
+  optionator: '~0.2.1'

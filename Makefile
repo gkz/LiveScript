@@ -9,7 +9,7 @@ UGLIFYJS = node_modules/.bin/uglifyjs
 ISTANBUL = node_modules/.bin/istanbul
 
 lib:
-	mkdir lib/
+	mkdir -p lib/
 
 lib/parser.js: lib/grammar.js
 	$(SLAKE) build:parser
