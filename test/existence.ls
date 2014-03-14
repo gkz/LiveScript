@@ -194,3 +194,9 @@ g = -> void
 
 ok f!?
 ok not g!?
+
+# #471
+obj =
+  f: -> @xs.toString! + [...&]toString!
+  xs: [1 5]
+eq '1,51,5', obj.f? ...obj.xs
