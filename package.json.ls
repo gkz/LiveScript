@@ -31,7 +31,6 @@ files:
 
 main: './lib/'
 bin:
-  livescript: './bin/livescript'
   lsc: './bin/lsc'
   slake: './bin/slake'
 
