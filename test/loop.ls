@@ -1,15 +1,4 @@
-## utils
-flatten = (x) ->
-  result = []
-  f = (x) ->
-    | 'Array' isnt typeof! x => result.push x
-    | x.length is 1          => f x.0
-    | x.length > 1           =>
-      f x.0
-      f (x.slice 1)
-  f x
-  result
-##
+{flatten} = require 'prelude-ls'
 
 i = 5
 list = while i -= 1

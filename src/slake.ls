@@ -14,9 +14,9 @@ Options  = {}
 
 # The top-level objects for Slakefiles to use directly.
 global import
-  LiveScript : require \./livescript
-  fs   : require \fs
-  path : require \path
+  LiveScript : require '..'
+  fs   : require 'fs'
+  path : require 'path'
 
   # Define a slake task with a short name, an optional sentence description,
   # and the function to run as the action itself.
@@ -52,7 +52,7 @@ fs.exists filename, :rec(affirmative) ->
       process.exit 1
     process.chdir \..
     return fs.exists filename, rec
-  require! \./optparse
+  optparse = require './optparse'
   LiveScript.run slurp(filename), {filename}
   Options := optparse Flags, args
   if args.length
