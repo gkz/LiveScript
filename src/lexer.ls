@@ -196,7 +196,7 @@ exports import
     default
       break if id in KEYWORDS_SHARED
       @carp "reserved word \"#id\"" if id in KEYWORDS_UNUSED
-      if not last.1 and last.0 in <[ FUNCTION LABEL ]>
+      if not last.1 and last.0 in <[ FUNCTION GENERATOR LABEL ]>
         last <<< {1: id, -spaced}
         return input.length
       tag = \ID
@@ -495,7 +495,7 @@ exports import
     case <[ < > <= >= <== >== >>= <<= ]> then tag = \COMPARE
     case <[ .<<. .>>. .>>>. <? >? ]> then tag = \SHIFT
     case \(
-      unless @last.0 in <[ FUNCTION LET ]> or @able true or @last.1 is \.@
+      unless @last.0 in <[ FUNCTION GENERATOR LET ]> or @able true or @last.1 is \.@
         @token \( \(
         @closes.push \)
         @parens.push @last
@@ -543,6 +543,9 @@ exports import
       @token \IMPORT \<<
       return sym.length
     case \*
+      if @last.0 is 'FUNCTION'
+        @last.0 = 'GENERATOR'
+        return sym.length
       if @last.0 in <[ NEWLINE INDENT THEN => ]> and
          (INLINEDENT <<< lastIndex: index+1)exec code .0.length
         @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
@@ -1026,7 +1029,7 @@ character = if not JSON? then uxxxx else ->
     tag is \[ and brackets.push prev.0 is \DOT
     if prev.0 is \]
       if brackets.pop! then prev.index = true else continue
-    continue unless prev.0 in <[ FUNCTION LET WHERE ]>
+    continue unless prev.0 in <[ FUNCTION GENERATOR LET WHERE ]>
                  or prev.spaced and able tokens, i, true
     if token.doblock
       token.0 = \CALL(
@@ -1054,7 +1057,7 @@ character = if not JSON? then uxxxx else ->
     case \DOT \?
       return not skipBlock and (pre.spaced or pre.0 is \DEDENT)
     case \SWITCH                         then seenSwitch := true; fallthrough
-    case \IF \CLASS \FUNCTION \LET \WITH \CATCH then skipBlock  := true
+    case \IF \CLASS \FUNCTION \GENERATOR \LET \WITH \CATCH then skipBlock  := true
     case \CASE
       if seenSwitch then skipBlock := true else return true
     case \INDENT
@@ -1181,7 +1184,7 @@ character = if not JSON? then uxxxx else ->
         if that.1 is \new
           tokens.splice i++ 0 \
             [\PARAM( '' token.2] [\)PARAM '' token.2] [\-> '' token.2]
-        else if that.0 in <[ FUNCTION LET ]>
+        else if that.0 in <[ FUNCTION GENERATOR LET ]>
           tokens.splice i, 0 [\CALL( '' token.2] [\)CALL '' token.2]
           i += 2
       continue
@@ -1311,9 +1314,9 @@ INVERSES = {[o, CLOSERS[i]] for o, i in OPENERS} <<<
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
-ARG = CHAIN ++ <[ ... UNARY CREMENT PARAM( FUNCTION
+ARG = CHAIN ++ <[ ... UNARY CREMENT PARAM( FUNCTION GENERATOR
                       IF SWITCH TRY CLASS RANGE LABEL DECL DO BIOPBP ]>
 
 # Tokens that expect INDENT on the right.
 BLOCK_USERS = <[ , : -> ELSE ASSIGN IMPORT UNARY DEFAULT TRY FINALLY
-                 HURL DECL DO LET FUNCTION ]>
+                 HURL DECL DO LET FUNCTION GENERATOR ]>

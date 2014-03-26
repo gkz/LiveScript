@@ -19,12 +19,38 @@ y = x!
 z = y.next!
 eq z.value, 0
 eq z.done, false
+
 z = y.next!
 eq z.value, 1
 eq z.done, false
+
 z = y.next!
 eq z.value, 2
 eq z.done, false
+
+z = y.next!
+eq z.value, void
+eq z.done, true
+
+# function declaration generator
+function* f
+  yield 0
+  yield 1
+  yield 2
+
+y = f!
+z = y.next!
+eq z.value, 0
+eq z.done, false
+
+z = y.next!
+eq z.value, 1
+eq z.done, false
+
+z = y.next!
+eq z.value, 2
+eq z.done, false
+
 z = y.next!
 eq z.value, void
 eq z.done, true
