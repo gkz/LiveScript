@@ -15,7 +15,7 @@ author: 'George Zahariev <z@georgezahariev.com>'
 homepage: 'http://livescript.net'
 bugs: 'https://github.com/gkz/LiveScript/issues'
 licenses:
-  type: 'MIT', url: 'https://raw.github.com/gkz/LiveScript/master/LICENSE'
+  type: 'MIT', url: 'https://raw.githubusercontent.com/gkz/LiveScript/master/LICENSE'
   ...
 
 engines:

@@ -5,5 +5,5 @@ console.log """
 // LiveScript #version
 // Copyright (c) Jeremy Ashkenas, Satoshi Murakami, George Zahariev
 // Released under the MIT License
-// raw.github.com/gkz/LiveScript/master/LICENSE
+// https://raw.githubusercontent.com/gkz/LiveScript/master/LICENSE
 """
