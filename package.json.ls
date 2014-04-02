@@ -46,7 +46,7 @@ repository:
   url: 'git://github.com/gkz/LiveScript.git'
 
 dependencies:
-  'prelude-ls': '~1.0.3'
+  'prelude-ls': '~1.1.0'
 
 dev-dependencies:
   jison: '0.2.1'
