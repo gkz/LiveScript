@@ -44,7 +44,7 @@ dev-install: package.json
 	npm install .
 
 test: build
-	$(SLAKE) test
+	./scripts/test
 
 coverage: build
 	$(ISTANBUL) cover $(SLAKE) -- test
