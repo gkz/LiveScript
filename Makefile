@@ -29,13 +29,19 @@ browser/livescript-min.js:  browser/livescript.js
 package.json: package.json.ls
 	$(LSC) --compile package.json.ls
 
-.PHONY: build build-browser install dev-install test coverage loc clean
+.PHONY: build build-browser force full install dev-install test coverage loc clean
 
 all: build
 
 build: $(LIB) package.json
 
 build-browser: browser/livescript.js browser/livescript-min.js
+
+force:
+	make -B
+
+full:
+	make force && make force && make test && make coverage
 
 install: build
 	npm install -g .
