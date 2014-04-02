@@ -34,8 +34,7 @@
   ],
   "main": "./lib/",
   "bin": {
-    "lsc": "./bin/lsc",
-    "slake": "./bin/slake"
+    "lsc": "./bin/lsc"
   },
   "scripts": {
     "pretest": "make force && make force",

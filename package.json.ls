@@ -32,7 +32,6 @@ files:
 main: './lib/'
 bin:
   lsc: './bin/lsc'
-  slake: './bin/slake'
 
 scripts:
   pretest: 'make force && make force'
