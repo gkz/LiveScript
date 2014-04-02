@@ -14,7 +14,7 @@
 # [nonterminal](http://en.wikipedia.org/wiki/Terminal_and_nonterminal_symbols)
 # (the enclosing name at the top), and we proceed from there.
 #
-# If you run the `slake build:parser` command, Jison constructs a parse table
+# If you run the `scripts/build-parser` command, Jison constructs a parse table
 # from our rules and saves it into [lib/parser.js](../lib/parser.js).
 
 # Jison DSL
