@@ -3,7 +3,6 @@ default: all
 SRC = $(shell find src -name "*.ls" -type f | sort)
 LIB = $(SRC:src/%.ls=lib/%.js) lib/parser.js
 LSC = bin/lsc
-SLAKE = bin/slake
 BROWSERIFY = node_modules/.bin/browserify
 UGLIFYJS = node_modules/.bin/uglifyjs
 ISTANBUL = node_modules/.bin/istanbul
@@ -53,7 +52,7 @@ test: build
 	./scripts/test
 
 coverage: build
-	$(ISTANBUL) cover $(SLAKE) -- test
+	$(ISTANBUL) cover ./scripts/test
 
 loc:
 	wc --lines src/*
