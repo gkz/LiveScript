@@ -47,13 +47,13 @@
     "url": "git://github.com/gkz/LiveScript.git"
   },
   "dependencies": {
-    "prelude-ls": "~1.1.0"
+    "prelude-ls": "~1.1.0",
+    "optionator": "~0.3.0"
   },
   "devDependencies": {
     "jison": "0.2.1",
     "uglify-js": "~2.4.12",
     "istanbul": "~0.2.4",
-    "browserify": "~3.0.0",
-    "optionator": "~0.3.0"
+    "browserify": "~3.0.0"
   }
 }
