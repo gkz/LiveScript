@@ -3,7 +3,6 @@ default: all
 SRC = $(shell find src -name "*.ls" -type f | sort)
 LIB = $(SRC:src/%.ls=lib/%.js) lib/parser.js
 LSC = bin/lsc
-SLAKE = bin/slake
 BROWSERIFY = node_modules/.bin/browserify
 UGLIFYJS = node_modules/.bin/uglifyjs
 ISTANBUL = node_modules/.bin/istanbul
@@ -12,7 +11,7 @@ lib:
 	mkdir -p lib/
 
 lib/parser.js: lib/grammar.js
-	$(SLAKE) build:parser
+	./scripts/build-parser > lib/parser.js
 
 lib/%.js: src/%.ls lib
 	$(LSC) --output lib --bare --compile "$<"
@@ -20,8 +19,8 @@ lib/%.js: src/%.ls lib
 browser:
 	mkdir browser/
 
-browser/livescript.js: $(LIB) browser
-	{ $(LSC) ./scripts/preroll.ls ; $(BROWSERIFY) -r ./lib/browser.js:LiveScript ; } > browser/livescript.js
+browser/livescript.js: $(LIB) browser scripts/preroll.ls
+	{ ./scripts/preroll ; $(BROWSERIFY) -r ./lib/browser.js:LiveScript ; } > browser/livescript.js
 
 browser/livescript-min.js:  browser/livescript.js
 	$(UGLIFYJS) browser/livescript.js --mangle --comments "all" > browser/livescript-min.js
@@ -29,13 +28,19 @@ browser/livescript-min.js:  browser/livescript.js
 package.json: package.json.ls
 	$(LSC) --compile package.json.ls
 
-.PHONY: build build-browser install dev-install test coverage loc clean
+.PHONY: build build-browser force full install dev-install test test-harmony coverage loc clean
 
 all: build
 
 build: $(LIB) package.json
 
 build-browser: browser/livescript.js browser/livescript-min.js
+
+force:
+	make -B
+
+full:
+	make force && make force && make test && make coverage
 
 install: build
 	npm install -g .
@@ -44,10 +49,13 @@ dev-install: package.json
 	npm install .
 
 test: build
-	$(SLAKE) test
+	./scripts/test
+
+test-harmony: build
+	node --harmony ./scripts/test
 
 coverage: build
-	$(ISTANBUL) cover $(SLAKE) -- test
+	$(ISTANBUL) cover ./scripts/test
 
 loc:
 	wc --lines src/*

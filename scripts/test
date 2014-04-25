@@ -1,0 +1,125 @@
+#!/usr/bin/env node
+
+(function() {
+  var fs = require("fs");
+  var path = require("path");
+  var assert = require("assert");
+  global.LiveScript = require("..");
+
+  var bold = "\33[0;1m";
+  var red = "\33[0;31m";
+  var green = "\33[0;32m";
+  var reset = "\33[0m";
+  function tint(text, color) {
+    if (color == null) {
+      color = green;
+    }
+    return color + text + reset;
+  }
+
+  var startTime = Date.now();
+  var passedTests = 0;
+  var failedTests = 0;
+
+  var key;
+  for (key in assert) {
+    (function (name, func){
+      global[name] = function(){
+        func.apply(global, arguments);
+        ++passedTests;
+      };
+    }(key, assert[key]));
+  }
+
+  global.eq = strictEqual;
+
+  global.throws = function(msg, fun){
+    try {
+      fun();
+    } catch (e) {
+      return eq(e != null ? e.message : void 8, msg);
+    }
+    ok(false, "should throw: " + msg);
+  };
+
+  global.compileThrows = function(msg, lno, code){
+    throws(msg + " on line " + lno, function(){
+      LiveScript.compile(code);
+    });
+  };
+
+  process.on("exit", function(){
+    var time = ((Date.now() - startTime) / 1e3).toFixed(2);
+    var message = "passed " + passedTests + " tests in " + time + " seconds";
+
+    console.log(failedTests
+      ? tint("failed " + failedTests + " and " + message, red)
+      : tint(message));
+
+    if (failedTests) {
+      process.exit(1);
+    }
+  });
+
+  var files = fs.readdirSync("test");
+
+  if (process.execArgv.indexOf("--harmony") < 0 && process.execArgv.indexOf("--harmony-generators") < 0) {
+    files.splice(files.indexOf("generators.ls"), 1);
+  } else {
+    console.log("Testing with harmony.");
+  }
+
+  files.forEach(function(file){
+    var stk, msg, m, ref, num, row, col, that, lines, line;
+
+    if (!/\.ls$/i.test(file)) {
+      return;
+    }
+
+    var filename = path.join("test", file);
+    var code = fs.readFileSync(filename, "utf8");
+
+    try {
+      LiveScript.run(code, { filename: filename });
+    } catch (e) {
+      ++failedTests;
+
+      if (!(stk = e != null ? e.stack : null)) {
+        console.error(e);
+      }
+
+      msg = e.message || "" + /^[^]+?(?=\n    at )/.exec(stk);
+
+      m = /^(AssertionError:) "(.+)" (===) "(.+)"$/.exec(msg)
+      if (m) {
+        for (num = 2; num <= 4; num += 2) {
+          m[num] = tint(m[num].replace(/\\n/g, "\n"), bold);
+        }
+        msg = m.slice(1).join("\n");
+      }
+
+      if ((ref = RegExp(filename + ":(\\d+):(\\d+)\\)?$", "m").exec(stk)) != null) {
+        row = ref[1];
+        col = ref[2];
+      }
+
+      if (row && col) {
+        console.error(tint(msg + "\n" + red + "at " + filename + ":" + row-- + ":" + col--, red));
+        code = LiveScript.compile(code, {
+          bare: true
+        });
+      } else if (that = /\bon line (\d+)\b/.exec(msg)) {
+        console.error(tint(msg, red));
+        row = that[1] - 1;
+        col = 0;
+      } else {
+        console.error(stk);
+        return;
+      }
+
+      line = (lines = code.split("\n"))[row];
+      lines[row] = line.slice(0, col) + tint(line.slice(col), bold);
+      console.error(lines.slice((ref = row - 8) > 0 ? ref : 0, row + 9).join("\n"));
+    }
+  });
+}());

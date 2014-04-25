@@ -15,7 +15,7 @@ author: 'George Zahariev <z@georgezahariev.com>'
 homepage: 'http://livescript.net'
 bugs: 'https://github.com/gkz/LiveScript/issues'
 licenses:
-  type: 'MIT', url: 'https://raw.github.com/gkz/LiveScript/master/LICENSE'
+  type: 'MIT', url: 'https://raw.githubusercontent.com/gkz/LiveScript/master/LICENSE'
   ...
 
 engines:
@@ -32,12 +32,11 @@ files:
 main: './lib/'
 bin:
   lsc: './bin/lsc'
-  slake: './bin/slake'
 
 scripts:
-  pretest: 'bin/slake build && bin/slake build:parser && bin/slake build'
-  test: 'bin/slake test'
-  'test-harmony': 'node --harmony ./bin/slake test'
+  pretest: 'make force && make force'
+  test: 'make test'
+  'test-harmony': 'make test-harmony'
   posttest: 'git checkout -- lib'
 
 prefer-global: true
@@ -47,11 +46,11 @@ repository:
   url: 'git://github.com/gkz/LiveScript.git'
 
 dependencies:
-  'prelude-ls': '~1.0.3'
+  'prelude-ls': '~1.1.0'
+  optionator: '~0.3.0'
 
 dev-dependencies:
   jison: '0.2.1'
   'uglify-js': '~2.4.12'
   istanbul: '~0.2.4'
   browserify: '~3.0.0'
-  optionator: '~0.2.1'

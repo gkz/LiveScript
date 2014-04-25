@@ -111,6 +111,13 @@ eq \\ <[\]>0
 eq 0  <[ ]>length
 eq \1 [String]<[0]> 1
 
+compile-throws 'unterminated words' 5 '''
+  <[
+  a
+  b
+  ]>
+  <[
+  '''
 
 #### Implicit arrays
 o =

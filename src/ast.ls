@@ -348,6 +348,12 @@ class exports.Literal extends Atom
 
   varName: -> if /^\w+$/test @value then \$ + @value else ''
 
+  make-return: ->
+    if not it and @value is 'debugger'
+      this
+    else
+      super ...
+
   compile: (o, level ? o.level) ->
     switch val = "#{@value}"
     | \this      => return o.scope.fun?bound or val
@@ -362,8 +368,8 @@ class exports.Literal extends Atom
     | \..        =>
       @carp 'stray reference' unless val = o.ref
       @cascadee or val.erred = true
-    | \debugger  => if level
-      return "(function(){\n#TAB#{o.indent}debugger;\n#{o.indent}}())"
+    | \debugger  =>
+      return "(function(){ debugger; }())" if level
     val
 
 #### Var

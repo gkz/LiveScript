@@ -116,11 +116,11 @@ eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' LiveScript.tokens('''
 eq '!a;', bare '!!!a'
 
 
-eq '''
-+(function(){
-  debugger;
-}());
-''' bare '+debugger'
+eq '''(function(){
+  if ((function(){ debugger; }())) {
+    debugger;
+  }
+});''' bare '-> debugger if debugger'
 
 
 eq '1;\n2;\n3;\n4;', bare '''
