@@ -105,6 +105,8 @@ while 1
 
 switch case [0, 2, 4,] then eq 2, that
 
+# `that` with default - #508
+switch 10 | _ => that
 
 # Sans-condition
 switch

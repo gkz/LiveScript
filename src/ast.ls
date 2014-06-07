@@ -2235,7 +2235,7 @@ class exports.Switch extends Node
 
   children: <[ topic cases default ]>
 
-  aSource: \topic, aTargets: [\cases]
+  aSource: \topic, aTargets: <[ cases default ]>
 
   show: -> @type
 
