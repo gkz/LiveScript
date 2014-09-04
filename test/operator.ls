@@ -541,6 +541,8 @@ eq -1, 7 %% -2
 x = 7; x %%= -2
 eq -1 x
 
+eq '9', (-1 %% 10).toString!
+
 ### Partially applied binary ops
 addTwo = (+ 2)
 eq 5 addTwo 3
