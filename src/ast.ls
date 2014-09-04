@@ -1254,13 +1254,7 @@ class exports.Binary extends Node
 
     functions.reverse! if op is \<<
 
-    first = functions.shift!
-    n = Chain first .add Index (Key \apply) .add Call [Literal 'this'; Literal 'arguments']
-
-    for f in functions
-      n = Chain f .add Call [n]
-
-    Fun [], Block [n] .compile o
+    Chain Var (util \compose) .add Call functions .compile o
 
   compileMod: (o) ->
     ref = o.scope.temporary!
@@ -2718,6 +2712,17 @@ UTILS =
     };
   }'''
   not: '''function(x){ return !x; }'''
+  compose: '''function() {
+    var functions = arguments;
+    return function() {
+      var i, result;
+      result = functions[0].apply(this, arguments);
+      for (i = 1; i < functions.length; ++i) {
+        result = functions[i](result);
+      }
+      return result;
+    };
+  }'''
 
   # modified version of underscore.js's _.isEqual and eq functions
   deepEq: '''function(x, y, type){
