@@ -1264,7 +1264,7 @@ class exports.Binary extends Node
 
   compileMod: (o) ->
     ref = o.scope.temporary!
-    code = "((#{@first.compile o}) % (#ref = #{@second.compile o}) + #ref) % #ref"
+    code = "(((#{@first.compile o}) % (#ref = #{@second.compile o}) + #ref) % #ref)"
     o.scope.free ref
     code
 
@@ -2140,7 +2140,7 @@ class exports.For extends While
         else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
     else
       @item = Var o.scope.temporary \x if @ref
-      if @item or @object and @own
+      if @item or @object and @own or @let
         [svar, srcPart] = @source.compileLoopReference o, \ref, not @object
         svar is srcPart or temps.push svar
       else

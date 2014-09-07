@@ -586,3 +586,15 @@ xs = for own let key, value of {a: 1, b: 2, c: 3, d: 4} when value % 2 == 0
   -> key + value
 eq 'b2', xs[0]!
 eq 'd4', xs[1]!
+
+arr = [1,3,5,7]
+o = for let i in (if true => arr else arr) => i
+eq "1,3,5,7", o.join ','
+
+i = 0
+inc = ->
+  i += 1
+  [1 3 5]
+o = for let x in inc() => x
+eq "1,3,5", o.join ','
+eq 1, i
