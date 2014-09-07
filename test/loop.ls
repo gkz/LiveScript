@@ -622,3 +622,7 @@ inc = ->
 o = for let x in inc() => x
 eq "1,3,5", o.join ','
 eq 1, i
+
+o = { [k, -> v] for let k, v of {a: 1, b: 2} }
+eq 1 o.a!
+eq 2 o.b!

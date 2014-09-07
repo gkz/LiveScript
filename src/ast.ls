@@ -164,9 +164,14 @@ require! {
   # stored on ref. Otherwise, pushes this node into ref.
   makeReturn: (ref, obj) ->
     if obj then
-      items = @items
-      if not items.0? or not items.1?
-        @carp 'must specify both key and value for object comprehension'
+      items = if this instanceof Arr
+        if not @items.0? or not @items.1?
+          @carp 'must specify both key and value for object comprehension'
+        @items
+      else
+        kv = \keyValue$
+        for v, i in [Assign(Var(kv), this), Var(kv)]
+          Chain v .add Index Literal i
       Assign (Chain Var ref).add(Index items.0, \., true), items.1
     else if ref then
       Call.make JS(ref + \.push), [this]
