@@ -2042,13 +2042,14 @@ class exports.While extends Node
     {body: {lines}, yet, tab} = this
     code = ret = mid = ''
     empty = if @objComp then '{}' else '[]'
+    result-name = if @objComp then \resultObj$ else \results$
     last = lines?[*-1]
     unless (@is-comprehension or @in-comprehension) and not last?is-comprehension
       var has-loop
       last?traverseChildren !-> if it instanceof Block and it.lines[*-1] instanceof While
         has-loop := true
       if @returns and not @res-var
-        @res-var = res = o.scope.assign \results$ empty
+        @res-var = res = o.scope.assign result-name, empty
       if @res-var and (last instanceof While or has-loop)
         temp = o.scope.temporary \lresult
         lines.unshift Assign (Var temp), (if lines[*-1].objComp then Obj! else Arr!), \=
@@ -2061,10 +2062,10 @@ class exports.While extends Node
         if @res-var
           @body.makeReturn @res-var
     if @returns
-      @body = Block @body.makeReturn \results$, true if @objComp
+      @body = Block @body.makeReturn result-name, true if @objComp
       @body = If @guard, @body if @guard and @objComp
       if (not last instanceof While and not @has-returned) or @is-comprehension or @in-comprehension
-        lines[*-1]?=makeReturn res = o.scope.assign \results$ empty
+        lines[*-1]?=makeReturn res = o.scope.assign result-name, empty
       ret += "\n#{@tab}return #{ res or empty };"
       @else?makeReturn!
     yet and lines.unshift JS "#yet = false;"
