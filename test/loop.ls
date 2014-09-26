@@ -193,6 +193,22 @@ eq 6 obs[*-1].two
 obs = [{[key, val] for key, val of obj} for obj in [{+a, +b}, {+a, +b}]]
 ok typeof! obs[0] is \Object
 
+# Object and list comprehensions in the same scope should not share an empty value:
+# https://github.com/gkz/LiveScript/issues/294
+using-if = -> if it
+  {[key, value] for key, value of {}}
+else
+  [value for value in []]
+
+eq \Object typeof! using-if true
+eq \Array  typeof! using-if false
+
+using-switch = -> switch it
+| true  => {[key, value] for key, value of {}}
+| false => [value for value in []]
+
+eq \Object typeof! using-switch true
+eq \Array  typeof! using-switch false
 
 # Comprehensions returned
 
