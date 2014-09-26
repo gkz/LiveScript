@@ -607,6 +607,13 @@ eq 2, f 10
 f = (+ 1) << (* 2) >> (- 10)
 eq 11, f 10
 
+do ->
+  a = -> 1
+  b = (* 2)
+  c = a >> b
+  a = -> 100
+  eq 2, c!
+
 ### infix calls
 add = (x, y) --> x + y
 times = (x, y) --> x * y
