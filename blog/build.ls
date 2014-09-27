@@ -1,9 +1,16 @@
+require! fs
+
+say = console.log
+slurp = -> '' + fs.readFileSync ...
+spit = fs.writeFileSync
+dir = fs.readdirSync
+
 post-template = slurp \post-template.html
 test-name = (.match /.+\.html$/)
 
-task \build 'build blog posts' build-all
-
-task \watch 'watch for changes, build when they happen' ->
+switch process.argv.2
+| 'build' => build-all!
+| 'watch' =>
   watch \post-template.html ->
     post-template := slurp \post-template.html
     build-all!
@@ -11,6 +18,7 @@ task \watch 'watch for changes, build when they happen' ->
   dir \posts .for-each (post) ->
     if test-name post
       watch "posts/#post", -> build post
+| otherwise => say "unrecognized command: #{process.argv}"
 
 !function build-all
   for post in dir \posts when test-name post
