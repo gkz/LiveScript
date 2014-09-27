@@ -18,7 +18,7 @@ switch process.argv.2
   dir \posts .for-each (post) ->
     if test-name post
       watch "posts/#post", -> build post
-| otherwise => say "unrecognized command: #{process.argv}"
+| otherwise => say "unrecognized command: #that"
 
 !function build-all
   for post in dir \posts when test-name post
