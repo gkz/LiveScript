@@ -2,8 +2,9 @@
 <html>
 <head>
 <meta charset='utf-8'>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LiveScript - a language which compiles to JavaScript</title>
-<meta name='description' content="LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.">
+<meta name="description" content="LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.">
 
 <link rel="canonical" href="http://livescript.net">
 <link rel="icon" type="image/png" href="images/icon.png">
@@ -63,11 +64,13 @@
     </div>
     <div class="span4 compiler">
       <div class="compiler-box">
-      <div class="github-buttons">
-<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://livescript.net/" data-text="LiveScript - functional CoffeeScript" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
-<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-        <iframe src="http://ghbtns.com/github-btn.html?user=gkz&repo=LiveScript&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="120px" height="20px"></iframe>
-      </div>
+        <div id="compiler-close-button">&times;</div>
+        <div class="github-buttons">
+          <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://livescript.net/" data-text="LiveScript - functional CoffeeScript" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
+          <iframe src="http://ghbtns.com/github-btn.html?user=gkz&repo=LiveScript&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="120px" height="20px"></iframe>
+          <i class="icon-resize-full action-compiler-fullscreen" title="Go fullscreen"></i>
+          <i style="display:none" class="icon-resize-small action-compiler-fullscreen" title="Escape fullscreen"></i>
+        </div>
         <textarea placeholder="Enter LiveScript here"></textarea>
         <div class="actions">
           <button class="btn btn-primary" data-action="compile" title="Convert LiveScript to JavaScript">Compile</button>
@@ -97,11 +100,9 @@
           <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn-primary">View project on GitHub</div></a>
           <iframe src="http://ghbtns.com/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="150" height="40"></iframe>
           <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://livescript.net/" data-text="LiveScript - functional CoffeeScript" data-size="large" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
-<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
         </div>
         <p><code>npm install -g LiveScript</code>
 <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for updates on LiveScript. 
-<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
         <p>Featured blog post: <strong><a href="blog/livescript-1.2.0.html">LiveScript 1.2.0 released!</a></strong>
         <p>Double-click an example to load it into the compiler/REPL. Docs in French: <a href="index-fr.html">Français</a>.
       <h3>Some Examples</h3>
@@ -206,9 +207,9 @@ up-case-name = (.name .= to-upper-case!)
 |> each up-case-name # using 'each' from prelude.ls
 |> JSON.stringify
 #=>
-#[{"id":3,"name":"DONALD","age":26},
+#[{"id":1,"name":"GEORGE","age":20},
 # {"id":2,"name":"MIKE",  "age":21},
-# {"id":1,"name":"GEORGE","age":20}]
+# {"id":3,"name":"DONALD","age":26}]
 
 
 
@@ -320,7 +321,7 @@ $('h1').on('click', function(){
       <a name="installation"></a>
       <h2>Installation</h2>
       <p>You can install LiveScript through the <a href="http://npmjs.org">Node Package Manager</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
-      <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.2.0">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.2.0">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http:/nodejs.org">Node.js</a> is required to be installed on your system.</p>
+      <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.2.0">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.2.0">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http://nodejs.org">Node.js</a> is required to be installed on your system.</p>
       <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates. If you use this, your LiveScript scripts must be inline (not linked to with the <code>src</code> attribute), be placed after the included <code>livescript.js</code> file, and the script tags must have the attribute <code>type="text/ls"</code>.
     </div>
     <div id="usage" class="section">
@@ -614,7 +615,7 @@ x = 0
       <a name="literal"></a>
       <h2>Literals</h2>
 
-      <h3>Numbers</h3>
+      <h3 id="literals-numbers">Numbers</h3>
 
       <p><code>.4</code> is not valid, it must be preceded with a zero, eg. <code>0.4</code>.
 
@@ -669,7 +670,7 @@ x = 0
         </div>
       </div>
 
-      <h3>Booleans, Void, Null</h3>
+      <h3 id="literals-booleans">Booleans, Void, Null</h3>
 
       <p>Aliases as in CoffeeScript.
 
@@ -721,7 +722,7 @@ null;
         </div>
       </div>
 
-      <h3>Strings</h3>
+      <h3 id="literals-strings">Strings</h3>
 
       <p>You can use double or single quotes.
 
@@ -830,7 +831,7 @@ heredoc = 'string can be multiline\nwith newlines\nand go on and on\nbeginning w
         </div>
       </div>
 
-      <h3>Comments</h3>
+      <h3 id="literals-comments">Comments</h3>
 
       <p>Single line comments start off with a <code>#</code>. They are not passed through to the compiled output.
 
@@ -869,7 +870,7 @@ heredoc = 'string can be multiline\nwith newlines\nand go on and on\nbeginning w
         </div>
       </div>
 
-      <h3>Objects</h3>
+      <h3 id="literals-objects">Objects</h3>
 
       <p>Braces are optional:
 
@@ -987,7 +988,7 @@ this.location;
         </div>
       </div>
 
-      <h3>Regular Expressions</h3>
+      <h3 id="literals-regexp">Regular Expressions</h3>
 
       <p>Regular regex delineated with a single <code>/</code>.
 
@@ -1028,7 +1029,7 @@ this.location;
         </div>
       </div>
 
-      <h3>Lists</h3>
+      <h3 id="literals-lists">Lists</h3>
 
       <p>Regular list literal delineated with brackets:
 
@@ -1174,7 +1175,7 @@ objOneList = [{
         </div>
       </div>
 
-      <h3>Ranges</h3>
+      <h3 id="literals-ranges">Ranges</h3>
 
       <p><code>to</code> means up to and <em>including</em> the number. <code>til</code> means up <em>until</em> but not including the number.
 
@@ -1232,7 +1233,7 @@ for (i$ = x; i$ >= 0; --i$) {
         </div>
       </div>
 
-      <h3>Misc</h3>
+      <h3 id="literals-misc">Misc</h3>
 
       <p>Labels (useful for nested loops):
 
@@ -1290,7 +1291,7 @@ throw Error('unimplemented');
       <a name="operators"></a>
       <h2>Operators</h2>
 
-      <h3>Number</h3>
+      <h3 id="operators-number">Number</h3>
 
       <p>The standard math operators:
 
@@ -1434,7 +1435,7 @@ n;
         </div>
       </div>
 
-      <h3>Comparison</h3>
+      <h3 id="operators-comparison">Comparison</h3>
 
       <p>Strict equality (no type coercion):
 
@@ -1557,7 +1558,7 @@ var ref$;
       </div>
 
 
-      <h3>Logic</h3>
+      <h3 id="operators-logic">Logic</h3>
 
       <p>The basics:</p>
 
@@ -1643,7 +1644,7 @@ f(3, 4) && g(3, 4) || h(3, 4);
         </div>
       </div>
 
-      <h3>In/Of</h3>
+      <h3 id="operators-in-of">In/Of</h3>
 
       <p>Use <code>in</code> to check if and element is in a list; use <code>of</code> to check if a key is in an object.
 
@@ -1677,7 +1678,7 @@ function in$(x, arr){
       </div>
 
       <a name="piping"></a>
-      <h3>Piping</h3>
+      <h3 id="operators-piping">Piping</h3>
 
       <p>Instead of a series of nested function calls, you can pipe values in. <code>x |> f</code> and <code>f <| x</code> are equivalent to <code>f(x)</code>.
 
@@ -1724,7 +1725,7 @@ even(
       </div>
 
       <a name="composing"></a>
-      <h3>Function</h3>
+      <h3 id="operators-composing">Function</h3>
 
       <p>Composing allows you to create functions by <em>composing</em> them out of a series of functions. LiveScript has two operators for composing, forward <code>&gt;&gt;</code> and backwards <code>&lt;&lt;</code>.
 
@@ -1787,7 +1788,7 @@ timesTwoAddTwo(3);
 
       <p>You can use a spaced dot as an alias to <code>&lt;&lt;</code>, for example <code>f . g</code>, just as in Haskell.
 
-      <h3>List</h3>
+      <h3 id="operators-list">List</h3>
 
       <p>You can concatenate two lists together:
 
@@ -1874,7 +1875,7 @@ function clone$(it){
         </div>
       </div>
 
-      <h3>String</h3>
+      <h3 id="operators-string">String</h3>
 
       <p>String concatenation:
 
@@ -1928,7 +1929,7 @@ string += 'yeah';
         </div>
       </div>
 
-      <h3>Existence</h3>
+      <h3 id="operators-existence">Existence</h3>
 
       <p>The <code>?</code> operator can be used in a variety of contexts to check for existence.
 
@@ -1954,7 +1955,7 @@ if (typeof document != 'undefined' && document !== null) {
         </div>
       </div>
 
-      <h3>Object</h3>
+      <h3 id="operators-object">Object</h3>
 
       <p>Instanceof - list literals to the right get expanded:
 
@@ -2140,7 +2141,7 @@ function clone$(it){
         </div>
       </div>
 
-      <h3>Partial Application, Operators as Functions</h3>
+      <h3 id="operators-partial">Partial Application, Operators as Functions</h3>
 
       <p>You can partially apply operators and use them as functions
 
@@ -2185,7 +2186,7 @@ function not$(x){ return !x; }
       </div>
 
       <a name="require"></a>
-      <h3>require!</h3>
+      <h3 id="operators-require">require!</h3>
 
       <p>Having to require a series of modules results in a lot of cruft. You can get rid of that cruft by using <code>require!</code>, which takes an ID, or a string, array, or object literal.
 
@@ -2348,7 +2349,7 @@ g = function(x){
         </div>
       </div>
 
-      <h3>Calling</h3>
+      <h3 id="functions-calling">Calling</h3>
 
       <p>You can omit the parentheses when calling a function, and you can omit the comma separating the arguments if the preceding item is not callable, just like in arrays.
 
@@ -2545,7 +2546,7 @@ g(3, 4);
         </div>
       </div>
 
-      <h3>Parameters</h3>
+      <h3 id="functions-paramaters">Parameters</h3>
 
       <p>Extended parameters:
 
@@ -2786,7 +2787,7 @@ function clone$(it){
         </div>
       </div>
 
-      <h3>Currying</h3>
+      <h3 id="functions-currying">Currying</h3>
 
       <p>Curried functions are very powerful. Essentially, when called with less arguments than defined with, they return a partially applied function. This means that it returns a function whose arguments are those which you didn't supply, with the values for what you did supply already bound. They are defined in LiveScript using the long arrow. Perhaps an example will make things more clear:
 
@@ -2868,7 +2869,7 @@ function curry$(f, bound){
         </div>
       </div>
 
-      <h3>Named Functions</h3>
+      <h3 id="functions-named">Named Functions</h3>
 
       <p>You can create named functions whose definition is hoisted to the top of the scope - this is useful for defining utility functions at the end of the file instead of the top. Name functions are constants, and can't be redefined.
 
@@ -2937,7 +2938,7 @@ function util(x){
 
       <p>You can combine the <code>~</code> and <code>!</code> to make a bound non-returning function if you wish.
 
-      <h3>Bound Functions</h3>
+      <h3 id="functions-bound">Bound Functions</h3>
 
       <p>Defined using the wavy arrow <code>~&gt;</code>. Use the long wavy arrow for curried and bound functions <code>~~&gt;</code>. Prepend a <code>~</code> to named functions to make them bound.
 
@@ -2985,7 +2986,7 @@ obj2.bound();
 
       <p>Check out the <a href="#oop">OOP</a> section for more on bound functions when used in classes.
 
-      <h3>Let, New</h3>
+      <h3 id="functions-let-new">Let, New</h3>
 
       <p><code>let</code> is short for <code>(function(a){...}.call(this, b))</code>.
 
@@ -3052,7 +3053,7 @@ dog = new function(){
         </div>
       </div>
 
-      <h3>Access/Call Function Shorthand</h3>
+      <h3 id="functions-shorthand">Access/Call Function Shorthand</h3>
 
       <p>There are especially useful for higher order functions like map and filter.
 
@@ -3124,7 +3125,7 @@ map(function(it){
       </div>
 
       <a name="backcalls"></a>
-      <h3>Backcalls</h3>
+      <h3 id="functions-backcalls">Backcalls</h3>
 
       <p>Backcalls are very useful. They allow you to unnest callbacks. They are defined using arrows pointed to the left. All the syntax is the same as regular arrows for defining bound functions (<code><~</code>), curried functions (<code><--, <~~</code>), suppressing return (<code><-!</code>) - except that it is just pointing the other way.
 
@@ -3170,9 +3171,9 @@ map(function(x){
 <pre class="prettyprint lang-ls">
 do
   data <-! $.get 'ajaxtest'
-  $ \.result .html data
+  $ '.result' .html data
   processed <-! $.get 'ajaxprocess', data
-  $ \.result .append processed
+  $ '.result' .append processed
 
 alert 'hi'
 </pre>
@@ -3193,7 +3194,7 @@ alert('hi');
 
       <p>If you want further async functionality, you can use <a href="https://github.com/caolan/async/">async.js</a> with LiveScript.
 
-      <h3>Partial Application</h3>
+      <h3 id="functions-partial">Partial Application</h3>
 
       <p>You can partially apply functions using the underscore <code>_</code> as a placeholder. Sometimes, the function you want to deal with isn't curried, or if it is the arguments are not in a good order. In these cases partial application is very useful.
 
@@ -3268,7 +3269,7 @@ function curry$(f, bound){
         </div>
       </div>
 
-      <h3>Arguments</h3>
+      <h3 id="functions-arguments">Arguments</h3>
 
       <p>If you have only one argument, you can use <code>it</code> to access it without having to define an argument.
 
@@ -3313,7 +3314,7 @@ addThreeNumbers(1, 2, 3);
 
       <p>Note that currying won't work in that situation, as the number of declared arguments in <code>add-three-numbers</code> is 0.
 
-      <h3>More</h3>
+      <h3 id="functions-more">More</h3>
 
       <p>Check out the section on <a href="#composing">composing functions</a>, and <a href="#piping">piping</a> as well.
 
@@ -4299,7 +4300,7 @@ x = 0
 
       <p>However, objects are not frozen if declared as constants - you can still modify their properties. You can force all variables to be constants if you compile with the <code>-k</code> or <code>--const</code> flags.
 
-      <h3>Operators</h3>
+      <h3 id="assignment-operators">Operators</h3>
 
       <p>Compound assignment:
 
@@ -4452,7 +4453,7 @@ x;
         </div>
       </div>
 
-      <h3>Destructuring</h3>
+      <h3 id="assignment-destructuring">Destructuring</h3>
 
       <p>Destructuring is a powerful way to extract values from variables. Rather than assigning to a simple variable, you can assign to data structures, which extract the values. For example:
 
@@ -4559,7 +4560,7 @@ list2;
         </div>
       </div>
 
-      <h3>Substructuring</h3>
+      <h3 id="assignment-substructuring">Substructuring</h3>
 
       <p>Easily set properties of lists and objects.
 
@@ -4802,7 +4803,7 @@ function bind$(obj, key, target){
 
 
       <a name="cascades"></a>
-      <h3>Cascades</h3>
+      <h3 id="property-access-cascades">Cascades</h3>
 
       <p>A cascade always evaluates to the item being accessed, and not to the return value of the accessing operations.
 
@@ -5619,7 +5620,7 @@ text = "hi
         there"
 </pre> you will have to change them as in CoffeeScript this would be <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> while LiveScript ignores indentation after newlines so it would be <code>"hi there"</code>
       <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript. You can use <code>||</code> instead of <code>or</code> and <code>&amp;&amp;</code> instead of <code>and</code> as those versions do not close implicit calls.
-      <li>Change any <code>do</code>s special casing function literals to using <code>let</code>. Eg. in CoffeScript <code>do ($ = jQuery) -> $</code> change to
+      <li>Change any <code>do</code>s special casing function literals to using <code>let</code>. Eg. in CoffeeScript <code>do ($ = jQuery) -> $</code> change to
 <pre>
 let $ = jQuery
   $
@@ -5903,6 +5904,7 @@ delete! x.y
       <h2>Thanks</h2>
       <p>You can find the full list of contributors <a href="https://github.com/gkz/LiveScript/graphs/contributors">here</a>. That list includes contributors to LiveScript and its predecessors.
       <p>People who have contributed directly to LiveScript include <a href="https://github.com/gkz">George Zahariev</a>, <a href="https://github.com/satyr">Satoshi Murakami</a>, <a href="https://github.com/josher19">Joshua Weinstein</a>, <a href="https://github.com/goatslacker">Josh Perez</a>, <a href="https://github.com/paulmillr">Paul Miller</a>, <a href="https://github.com/Nami-Doc">Nami-Doc</a>, <a href="https://github.com/killdream">killdream</a>, <a href="https://github.com/audreyt">audreyt</a>, <a href="https://github.com/clkao">clkao</a>, <a href="https://github.com/viclib">viclib</a>, <a href="https://github.com/dtinth">dtinth</a>, and <a href="https://github.com/racklin">racklin</a>.
+      <p>Thank you to <a href="http://nielsgrootobbink.com/">Niels Groot Obbink</a> for giving me the <a href="http://livescript.org">livescript.org</a> domain name.
       <p>An extra special thanks to Satoshi, as this project is a fork of his project <a href="https://github.com/satyr/coco">Coco</a> and would not be possible without it. It has been a pleasure to work off of his beautiful Coco compiler. 
     </div>
     <div id="contributing" class="section">
@@ -5990,13 +5992,15 @@ delete! x.y
 <script src="bootstrap/js/bootstrap-scrollspy.js"></script>
 
 <script src="google-code-prettify/prettify.js"></script>
-<script src="lang-ls-1.1.1.js"></script>
+<script src="lang-ls-1.2.0.js"></script>
 
 <script src="underscore-min.js"></script>
-<script src="prelude-browser-min-0.6.0.js"></script>
+<script src="prelude-browser-min-1.0.3.js"></script>
 <script src="site.js"></script>
 
-<script src="livescript-1.1.1.js"></script>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+<script src="livescript-1.2.0.js"></script>
 <script>
   (document.getElementById("email") || {}).href = "mailto:z" + "@" + "georgezahariev.com";
 </script>

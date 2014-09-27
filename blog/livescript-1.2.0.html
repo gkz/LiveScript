@@ -14,7 +14,7 @@
 
 <script src="../google-code-prettify/prettify.js"></script>
 <link href="../google-code-prettify/prettify.css" rel="stylesheet">
-<script src="../lang-ls-1.1.1.js"></script>
+<script src="../lang-ls-1.2.0.js"></script>
 
 <link href="styles.css" rel="stylesheet">
 
@@ -38,7 +38,7 @@
       <div class="span10 content">
         <h1>LiveScript 1.2.0 released!</h1>
         <div class="date-author">
-          <span class="date">31 July 2013</span> - <a href="https://twitter.com/gkzahariev" class="author">George Zahariev</a>
+          <span class="date">2 August 2013</span> - <a href="https://twitter.com/gkzahariev" class="author">George Zahariev</a>
         </div>
         
 
@@ -52,7 +52,7 @@
 
 <h4>for let</h4>
 
-<p>This is a new addition to our looping constructs, which acts just like wrapping the <code>for</code> loop body with a <code>let</code> statement. This allows you to create functions inside a loop which use the current (not final) value of loop variables.
+<p>This is a new addition to our looping constructs, which acts like wrapping the <code>for</code> loop body with a <code>let</code> statement. This allows you to create functions inside a loop which use the current (not final) value of loop variables. It also keeps the loop variables from being exposed to the surrounding scope.
 
 <div class="example">
   <div class="example-ls">

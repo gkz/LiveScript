@@ -1,4 +1,4 @@
-prelude.installPrelude window
+window <<< require 'prelude-ls'
 $ ->
   for example in $ '.example .example-ls'
     src = $ example .find \.lang-ls .html!
@@ -56,11 +56,21 @@ $ ->
     $(this) .parent! .parent! .hide!   # or remove()
     return false
 
+  $ '#compiler-close-button' .on 'click' ->
+    $ '.compiler' .hide!
+
   $ '.actions button' .on \click ->
     boom($ @ .data \action)
 
-  $ '.example' .on \dblclick ->
-    $ '.compiler textarea' .val($ this .find '.source' .text!)
+  load-compiler = ->
+    $ '.compiler' .show!
+    $ '.compiler textarea' .val <| $ this .find '.source' .text!
+
+  $ '.example' .on \dblclick, load-compiler
+
+  $ '.example' .on 'click', ->
+    if $ window .width! <= 768
+      load-compiler.call this
 
   $ '.sidebar .nav'  .on \click \a ->
     $ '.nav li' .removeClass \active
@@ -69,6 +79,10 @@ $ ->
   $ 'h1 a' .click ->
     $ '.nav li' .removeClass \active
     $ '.nav li' .first!.addClass \active
+
+  $ '.compiler .action-compiler-fullscreen' .on 'click' ->
+      $ '.compiler .action-compiler-fullscreen' .toggle!
+      $ '.site' .toggle-class 'fullscreen-compiler'
 
   $ 'body' .scrollspy \refresh 
   $ '.sidebar .nav' .scrollspy offset: 0
