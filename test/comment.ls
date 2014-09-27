@@ -173,6 +173,11 @@ eq true, do
 
 eq 0, [0]/* inline block comment */[0]
 
+# Ensure that backslash gobbles line comments as well as regular whitespace
+# [#550](https://github.com/gkz/LiveScript/issues/550)
+({a, b, \
+ #comment
+ c})->
 
 /*
 Trailing block comment works.

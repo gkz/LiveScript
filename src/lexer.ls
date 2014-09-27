@@ -1276,7 +1276,10 @@ SPACE     = /[^\n\S]*(?:#.*)?/g
 MULTIDENT = /(?:\s*#.*)*(?:\n([^\n\S]*))*/g
 SIMPLESTR = /'[^\\']*(?:\\[\s\S][^\\']*)*'|/g
 JSTOKEN   = /``[^\\`]*(?:\\[\s\S][^\\`]*)*``|/g
-BSTOKEN   = // \\ (?: (\S[^\s,;)}\]]*) | \s* ) //g
+BSTOKEN   = // \\ (?:
+  (\S[^\s,;)}\]]*)          # word literal
+| (?: #{SPACE.source}\n? )* # whitespace (including line comments)
+)//g
 
 NUMBER = //
   0x[\dA-Fa-f][\dA-Fa-f_]*                # hex
