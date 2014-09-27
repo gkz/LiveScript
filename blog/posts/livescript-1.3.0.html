@@ -1,0 +1,75 @@
+title: LiveScript 1.3.0 released!
+date:  30 Sep 2014
+author: <a href="https://twitter.com/gkzahariev" class="author">George Zahariev</a>
+-----
+
+<p><strong>LiveScript</strong> is a language which <strong>compiles to JavaScript</strong>. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
+
+<p>For more information, check out the <a href="http://livescript.net">LiveScript site</a>.
+
+
+<h3>1.3.0</h3>
+
+<p>LiveScript 1.3.0 fixes many bugs and adds some new features.
+
+
+<h4>Pipe and Assign Precedence</h4>
+<p>One bug whose fix may break some code is the precedence of the pipe operator and assign. Assign now has a lower precedence than all pipes, so
+
+<pre class="prettyprint lang-ls">
+result1 = 'hello' |> reverse |> upCase
+'OLLEH' == result1
+
+result2 = upCase <| reverse <| \hello
+'OLLEH' == result2
+</pre>
+
+<h4>Auto Infused IIFE</h4>
+<p>Auto infused IIFE were removed as we have <code>for let</code> now. Change any <code>for ... then let</code> to <code>for let .... then</code>
+
+<h4>require!</h4>
+<p> require! has been changed around to be more straightforward to use:
+
+<code>require! {a: b}</code> has been changed to mean <code>b = require('a')</code>, and
+you can now destructure, eg: 
+
+<div class="example">
+  <div class="example-ls">
+<pre class="prettyprint lang-ls">
+require! {
+    fs: foo
+    'prelude-ls': {map, id}
+}
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var foo, ref$, map, id;
+foo = require('fs');
+ref$ = require('prelude-ls'), map = ref$.map, id = ref$.id;
+
+
+</pre>
+  </div>
+</div>
+
+<h4>Option parsing and help</h4>
+<p><a href="https://github.com/gkz/optionator">Optionator</a> is now used for option parsing and help text generation, instead of a custom solution.
+
+<h4>Use <code>lsc</code>, not <code>livescript</code></h4>
+<p><code>livescript</code> was removed from the bin, please use <code>lsc</code> on the command line now. It is the exact same, but shorter to type!
+
+<h4>Generators</h4>
+<p>generators and yield
+
+<h4>Slake</h4>
+<p><code>slake</code> and <code>Slakefile</code>s were removed (no need for another build system!), please use make, gulp, grunt, etc.
+
+<h4><code>that</code> in switch</h4>
+<p>You can use <code>that</code> in the default case of a switch statement, to mean the value you are switching upon.
+
+<h3>Thanks still from 1.2 relase, update for 1.3</h3>
+
+<p>Thank you to <a href="https://github.com/Nami-Doc">Nami-Doc</a> for his numerous contributions to this release! Also thanks to <a href="https://github.com/satyr">satyr</a> (through coco), <a href="https://github.com/killdream">killdream</a>, <a href="https://github.com/clkao">clkao</a>, <a href="https://github.com/viclib">viclib</a>, <a href="https://github.com/dtinth">dtinth</a>, and <a href="https://github.com/racklin">racklin</a> for their contributions to this release as well!
+
+<p>For more information on LiveScript, check out the <a href="http://livescript.net">LiveScript site</a>.

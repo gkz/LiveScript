@@ -2,9 +2,9 @@
 <html>
 <head>
 <meta charset='utf-8'>
-<title>LiveScript 1.2.0 released!</title>
+<title>LiveScript 1.3.0 released!</title>
 
-<link rel="canonical" href="http://livescript.net/blog/livescript-1.2.0.html">
+<link rel="canonical" href="http://livescript.net/blog/livescript-1.3.0.html">
 <link rel="icon" type="image/png" href="../images/icon.png">
 
 <link href="../bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
@@ -36,156 +36,78 @@
   <div class="container">
     <div class="row">
       <div class="span10 content">
-        <h1>LiveScript 1.2.0 released!</h1>
+        <h1>LiveScript 1.3.0 released!</h1>
         <div class="date-author">
-          <span class="date">2 August 2013</span> - <a href="https://twitter.com/gkzahariev" class="author">George Zahariev</a>
+          <span class="date">30 Sep 2014</span> - <a href="https://twitter.com/gkzahariev" class="author">George Zahariev</a>
         </div>
         
 
-<p>LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
+<p><strong>LiveScript</strong> is a language which <strong>compiles to JavaScript</strong>. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
 
 <p>For more information, check out the <a href="http://livescript.net">LiveScript site</a>.
 
-<h3>1.2.0</h3>
 
-<p>LiveScript 1.2.0 adds new features, removes deprecated ones, improves compilation, and fixes many bugs.
+<h3>1.3.0</h3>
 
-<h4>for let</h4>
+<p>LiveScript 1.3.0 fixes many bugs and adds some new features.
 
-<p>This is a new addition to our looping constructs, which acts like wrapping the <code>for</code> loop body with a <code>let</code> statement. This allows you to create functions inside a loop which use the current (not final) value of loop variables. It also keeps the loop variables from being exposed to the surrounding scope.
+
+<h4>Pipe and Assign Precedence</h4>
+<p>One bug whose fix may break some code is the precedence of the pipe operator and assign. Assign now has a lower precedence than all pipes, so
+
+<pre class="prettyprint lang-ls">
+result1 = 'hello' |> reverse |> upCase
+'OLLEH' == result1
+
+result2 = upCase <| reverse <| \hello
+'OLLEH' == result2
+</pre>
+
+<h4>Auto Infused IIFE</h4>
+<p>Auto infused IIFE were removed as we have <code>for let</code> now. Change any <code>for ... then let</code> to <code>for let .... then</code>
+
+<h4>require!</h4>
+<p> require! has been changed around to be more straightforward to use:
+
+<code>require! {a: b}</code> has been changed to mean <code>b = require('a')</code>, and
+you can now destructure, eg: 
 
 <div class="example">
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
-functions = for let x in [1 2 3]
-  -> x
-functions[0]() #=> 1
-functions[1]() #=> 2
-functions[2]() #=> 3
-</pre>
-  </div>
-  <div class="example-js">
-<pre class="prettyprint lang-js">
-var functions, res$, i$, len$;
-res$ = [];
-for (i$ = 0, len$ = [1, 2, 3].length; i$ < len$; ++i$) {
-  res$.push((fn$.call(this, [1, 2, 3][i$])));
+require! {
+    fs: foo
+    'prelude-ls': {map, id}
 }
-functions = res$;
-functions[0]();
-functions[1]();
-functions[2]();
-function fn$(x){
-  return function(){
-    return x;
-  };
-}
-</pre>
-  </div>
-</div>
-
-<h4>JSON</h4>
-
-<p>If you end your filename with <code>.json.ls</code>, the file will automatically be compiled to json with the <code>.json</code> extension, without having to specify that you are compiling JSON specifically using the <code>-j/--json</code> option.
-
-<p>For example, <code>lsc -c file.json.ls</code> produces <code>file.json</code>
-
-<h4>Hushed Functions</h4>
-
-<p>You can currently hush functions (which means stopping them from automatically adding return statements) by adding a not <code>!</code> in front of the entire function definition. For example, <code>!-> ...</code> or <code>!(x) -> ...</code>. To make things easier, you can now simply have the <code>!</code> in front of the arrow. This allows you to add parameters to your function in the future without having to deal with moving the <code>!</code>.
-
-<pre class="prettyprint lang-ls">
-(x) !-> x
-(x) !~> x
-(x) !--> x
-(x) !~~> x
-</pre>
-
-<h4>Better Compilation</h4>
-
-<p>We now have improved compilation for calls on partially applied functions and the compose operator.
-
-<p>When you call a partially applied function, if there is only one parameter left, then the compilation is optimized.
-
-<div class="example">
-  <div class="example-ls">
-<pre class="prettyprint lang-ls">
-2 |> pow  _, 3 |> mod _, 3 #=> 2
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-mod(pow(2, 3), 3);
+var foo, ref$, map, id;
+foo = require('fs');
+ref$ = require('prelude-ls'), map = ref$.map, id = ref$.id;
+
+
 </pre>
   </div>
 </div>
 
-<p>The compose operator no longer uses a helper function, but compiles to exactly what you would write by hand:
+<h4>Option parsing and help</h4>
+<p><a href="https://github.com/gkz/optionator">Optionator</a> is now used for option parsing and help text generation, instead of a custom solution.
 
-<div class="example">
-  <div class="example-ls">
-<pre class="prettyprint lang-ls">
-h = f . g
-</pre>
-  </div>
-  <div class="example-js">
-<pre class="prettyprint lang-js">
-var h;
-h = function(){
-    return f(g.apply(this, arguments));
-};
-</pre>
-  </div>
-</div>
+<h4>Use <code>lsc</code>, not <code>livescript</code></h4>
+<p><code>livescript</code> was removed from the bin, please use <code>lsc</code> on the command line now. It is the exact same, but shorter to type!
 
-<h4>Generated Header</h4>
+<h4>Generators</h4>
+<p>generators and yield
 
-<p>A comment is now added at the top of the generated JavaScript, showing which version of LiveScript the file was generated with. <code>// Generated by LiveScript 1.2.0</code>
+<h4>Slake</h4>
+<p><code>slake</code> and <code>Slakefile</code>s were removed (no need for another build system!), please use make, gulp, grunt, etc.
 
-<h4>Updated prelude.ls</h4>
+<h4><code>that</code> in switch</h4>
+<p>You can use <code>that</code> in the default case of a switch statement, to mean the value you are switching upon.
 
-<p><a href="http://preludels.com">prelude.ls</a> has received a huge update, and is now at version 1.0.3. With the new version, some changes had to be made to the <code>-d/--prelude</code> flag. The flag now only requires and imports all of prelude.ls if you are using it with the REPL. If you are compiling, it does not add the code to automatically require prelude.ls any more - you must do this yourself, using the <a href="http://preludels.com/#installation">new guidelines</a> which recommend only importing what you need.
-
-<h4>REPL</h4>
-
-<p>The REPL is now automatically started without printing the help information with a bare call of <code>lsc</code>. You can still print the help using the <code>-h/--help</code> option.
-
-<p>The REPL prompt is now simply <code>ls&gt;</code>.
-
-<pre>
-$ lsc
-LiveScript 1.2.0 - use 'lsc --help' for more information
-ls&gt;
-</pre>
-
-<h4>Feature Removal</h4>
-
-<p>Several deprecated features have been removed.
-
-<p>The inexistence operator <code>!?</code> was removed because it caused inconsistencies with using the existence operator on a bang <code>!</code> call. Please use the negation of the existence operator instead - change <code>x!?</code> to <code>not x?</code>.
-
-<p>The long concatenation operator <code>+++</code> has been replaced with <code>++</code> as it is shorter. Please use it instead - change <code>xs +++ ys</code> to <code>xs ++ ys</code>. Note that you must either doubly space as the preceding example, or not space at all: <code>xs++ys</code>. Having one space on one side of the operator, and no space on the other, not only looks terrible, but denotes use of the increment operator, eg. <code>f ++x</code> calls <code>f</code> with <code>x</code> incremented.
-
-<p><code>undefined</code> as an alias to <code>void</code> has been removed - the alias was unnecessary. Please change <code>undefined</code> to <code>void</code>.
-
-<p>The <code>where</code> statement has been removed. It could not be implemented in the way desired - it may come back in the future if it can be implemented properly. Please use a <code>let</code> statement or local variables instead. Please change
-
-<pre class="prettyprint lang-ls">
-x = y + z
-  where y = 1,
-        z = 2
-</pre>
-
-<p>to
-
-<pre class="prettyprint lang-ls">
-x = let y = 1, z = 2
-  y + z
-</pre>
-
-<p>Single line cascades were removed as well. They were not that useful, and created ambiguities with the multiline cascade syntax. Change <code>obj..name = 2</code> to <code>obj <<< name: 2</code>.
-
-<h3>Thanks</h3>
+<h3>Thanks still from 1.2 relase, update for 1.3</h3>
 
 <p>Thank you to <a href="https://github.com/Nami-Doc">Nami-Doc</a> for his numerous contributions to this release! Also thanks to <a href="https://github.com/satyr">satyr</a> (through coco), <a href="https://github.com/killdream">killdream</a>, <a href="https://github.com/clkao">clkao</a>, <a href="https://github.com/viclib">viclib</a>, <a href="https://github.com/dtinth">dtinth</a>, and <a href="https://github.com/racklin">racklin</a> for their contributions to this release as well!
 
