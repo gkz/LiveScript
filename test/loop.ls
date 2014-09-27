@@ -81,7 +81,7 @@ eq \one   result.1
 eq \two   result.2
 eq \three result.3
 
-f = -> 
+f = ->
   {[key, val * 2] for key, val of {a:1, b:2}}
 obj = f!
 eq 2 obj.a
@@ -188,6 +188,28 @@ eq 6 obs.length
 eq 0 obs.0.one
 eq 6 obs[*-1].two
 
+# Object comprehension in comprehension, see:
+# https://github.com/gkz/LiveScript/issues/538
+obs = [{[key, val] for key, val of obj} for obj in [{+a, +b}, {+a, +b}]]
+ok typeof! obs[0] is \Object
+
+# Object and list comprehensions in the same scope should not share an empty value:
+# https://github.com/gkz/LiveScript/issues/294
+using-if = -> if it
+  {[key, value] for key, value of {}}
+else
+  [value for value in []]
+
+eq \Object typeof! using-if true
+eq \Array  typeof! using-if false
+
+using-switch = -> switch it
+| true  => {[key, value] for key, value of {}}
+| false => [value for value in []]
+
+eq \Object typeof! using-switch true
+eq \Array  typeof! using-switch false
+
 # Comprehensions returned
 
 xs = do -> [[x for x to 1] for y to 1]
@@ -253,7 +275,7 @@ eq 6 xs[*-2][*-1]
 eq 10 xs[*-1][*-1]
 
 xs = for i to 9
-  while 0 => while 0 =>  
+  while 0 => while 0 =>
   i
 
 eq 0 xs.0
@@ -445,8 +467,8 @@ while 1
 
 ### Destructuring `for`-`of`
 r = 0
-for [a, b] i in [[2 3] [5 7]] then r += a * b * i 
-for {a, b} i in [{\a \b}] then r += a + b + i 
+for [a, b] i in [[2 3] [5 7]] then r += a * b * i
+for {a, b} i in [{\a \b}] then r += a + b + i
 eq r, '35ab0'
 
 
@@ -517,9 +539,9 @@ r = for i til 0 then i else [9]
 eq 9 r.0
 
 ### Omission of `for`'s first assignment
-for    , i in [0] => eq i, 0 
-for    , v of {1} => eq v, 1 
-for own, v of {2} => eq v, 2 
+for    , i in [0] => eq i, 0
+for    , v of {1} => eq v, 1
+for own, v of {2} => eq v, 2
 
 ### When
 evens = [x for x from 1 to 10 | x % 2 is 0]
@@ -530,7 +552,7 @@ for x in <[ amy bibs ashley charlie danny alex ]> when x.charAt(0) is \a
   ok x in <[ amy ashley alex ]>
 
 while i < evens.length, ++i when evens[i] * 2 is 8
-  eq 4 evens[i] 
+  eq 4 evens[i]
 
 eq '1 3 7 9' [y for y from 1 to 10 when y isnt 5 by 2].join ' '
 
@@ -580,3 +602,15 @@ xs = for own let key, value of {a: 1, b: 2, c: 3, d: 4} when value % 2 == 0
   -> key + value
 eq 'b2', xs[0]!
 eq 'd4', xs[1]!
+
+arr = [1,3,5,7]
+o = for let i in (if true => arr else arr) => i
+eq "1,3,5,7", o.join ','
+
+i = 0
+inc = ->
+  i += 1
+  [1 3 5]
+o = for let x in inc() => x
+eq "1,3,5", o.join ','
+eq 1, i

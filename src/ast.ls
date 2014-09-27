@@ -1255,17 +1255,11 @@ class exports.Binary extends Node
 
     functions.reverse! if op is \<<
 
-    first = functions.shift!
-    n = Chain first .add Index (Key \apply) .add Call [Literal 'this'; Literal 'arguments']
-
-    for f in functions
-      n = Chain f .add Call [n]
-
-    Fun [], Block [n] .compile o
+    Chain Var (util \compose) .add Call functions .compile o
 
   compileMod: (o) ->
     ref = o.scope.temporary!
-    code = "((#{@first.compile o}) % (#ref = #{@second.compile o}) + #ref) % #ref"
+    code = "(((#{@first.compile o}) % (#ref = #{@second.compile o}) + #ref) % #ref)"
     o.scope.free ref
     code
 
@@ -2048,16 +2042,17 @@ class exports.While extends Node
     {body: {lines}, yet, tab} = this
     code = ret = mid = ''
     empty = if @objComp then '{}' else '[]'
+    result-name = if @objComp then \resultObj$ else \results$
     last = lines?[*-1]
     unless (@is-comprehension or @in-comprehension) and not last?is-comprehension
       var has-loop
       last?traverseChildren !-> if it instanceof Block and it.lines[*-1] instanceof While
         has-loop := true
       if @returns and not @res-var
-        @res-var = res = o.scope.assign \results$ empty
+        @res-var = res = o.scope.assign result-name, empty
       if @res-var and (last instanceof While or has-loop)
         temp = o.scope.temporary \lresult
-        lines.unshift Assign (Var temp), Arr!, \=
+        lines.unshift Assign (Var temp), (if lines[*-1].objComp then Obj! else Arr!), \=
         lines[*-1]?=makeReturn temp
         mid += "#TAB#{Chain Var @res-var
           .add Index (Key \push), \., true
@@ -2067,10 +2062,10 @@ class exports.While extends Node
         if @res-var
           @body.makeReturn @res-var
     if @returns
-      @body = Block @body.makeObjReturn \results$ if @objComp
+      @body = Block @body.makeObjReturn result-name if @objComp
       @body = If @guard, @body if @guard and @objComp
       if (not last instanceof While and not @has-returned) or @is-comprehension or @in-comprehension
-        lines[*-1]?=makeReturn res = o.scope.assign \results$ empty
+        lines[*-1]?=makeReturn res = o.scope.assign result-name, empty
       ret += "\n#{@tab}return #{ res or empty };"
       @else?makeReturn!
     yet and lines.unshift JS "#yet = false;"
@@ -2145,7 +2140,7 @@ class exports.For extends While
         else "#pvar < 0 ? #idx >#eq #tvar : #idx <#eq #tvar"
     else
       @item = Var o.scope.temporary \x if @ref
-      if @item or @object and @own
+      if @item or @object and @own or @let
         [svar, srcPart] = @source.compileLoopReference o, \ref, not @object
         svar is srcPart or temps.push svar
       else
@@ -2240,7 +2235,7 @@ class exports.Switch extends Node
 
   children: <[ topic cases default ]>
 
-  aSource: \topic, aTargets: [\cases]
+  aSource: \topic, aTargets: <[ cases default ]>
 
   show: -> @type
 
@@ -2723,6 +2718,17 @@ UTILS =
     };
   }'''
   not: '''function(x){ return !x; }'''
+  compose: '''function() {
+    var functions = arguments;
+    return function() {
+      var i, result;
+      result = functions[0].apply(this, arguments);
+      for (i = 1; i < functions.length; ++i) {
+        result = functions[i](result);
+      }
+      return result;
+    };
+  }'''
 
   # modified version of underscore.js's _.isEqual and eq functions
   deepEq: '''function(x, y, type){
@@ -2759,7 +2765,7 @@ UTILS =
       if (className == '[object Array]') {
         alength = a.length;
         blength = b.length;
-        if (first) { 
+        if (first) {
           switch (type) {
           case '===': result = alength === blength; break;
           case '<==': result = alength <= blength; break;
