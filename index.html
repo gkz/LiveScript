@@ -106,75 +106,6 @@
         <p>Featured blog post: <strong><a href="blog/livescript-1.3.0.html">LiveScript 1.3.0 released!</a></strong>
         <p>Double-click an example to load it into the compiler/REPL. Docs in French: <a href="index-fr.html">Français</a>.
       <h3>Some Examples</h3>
-      <p>Curried functions, implicit switch, concat operator, and function composition:
-      <div class="example">
-        <div class="example-ls">
-          <h5>LiveScript</h5>
-<pre class="prettyprint lang-ls">
-take = (n, [x, ...xs]:list) -->
-  | n <= 0     => []
-  | empty list => []
-  | otherwise  => [x] ++ take n - 1, xs
-
-
-
-
-
-
-
-
-
-take 2, [1 2 3 4 5] #=> [1, 2]
-
-take-three = take 3
-take-three [3 to 8] #=> [3, 4, 5]
-
-# Function composition, 'reverse' from prelude.ls
-last-three = reverse >> take-three >> reverse
-last-three [1 to 8] #=> [6, 7, 8]
-</pre>
-        </div>
-        <div class="example-js">
-          <h5>JavaScript</h5>
-<pre class="prettyprint lang-js">
-var take, takeThree, lastThree, slice$ = [].slice;
-take = curry$(function(n, list){
-  var x, xs;
-  x = list[0], xs = slice$.call(list, 1);
-  switch (false) {
-  case !(n <= 0):
-    return [];
-  case !empty(list):
-    return [];
-  default:
-    return [x].concat(take(n - 1, xs));
-  }
-});
-take(2, [1, 2, 3, 4, 5]);
-takeThree = take(3);
-takeThree([3, 4, 5, 6, 7, 8]);
-
-
-lastThree = function(){
-  return reverse(takeThree(reverse.apply(this, arguments)));
-};
-lastThree([1, 2, 3, 4, 5, 6, 7, 8]);
-function curry$(f, bound){
-  var context,
-  _curry = function(args) {
-    return f.length > 1 ? function(){
-      var params = args ? args.concat() : [];
-      context = bound ? context || this : this;
-      return params.push.apply(params, arguments) <
-          f.length && arguments.length ?
-        _curry.call(context, params) : f.apply(context, params);
-    } : f;
-  };
-  return _curry();
-}
-</pre>
-        </div>
-      </div>
       <div class="example">
         <div class="example-ls">
           <h5>LiveScript</h5>
@@ -321,32 +252,51 @@ $('h1').on('click', function(){
       <a name="installation"></a>
       <h2>Installation</h2>
       <p>You can install LiveScript through the <a href="http://npmjs.org">Node Package Manager</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
-      <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.2.0">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.2.0">tar.gz</a>), enter its directory, and run <code>sudo bin/slake install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo bin/slake install</code>. <a href="http://nodejs.org">Node.js</a> is required to be installed on your system.</p>
-      <p>You can also use it directly in the browser by including the file in <code>LiveScript/extras/livescript.js</code> via a script tag. In fact, this is how this page operates. If you use this, your LiveScript scripts must be inline (not linked to with the <code>src</code> attribute), be placed after the included <code>livescript.js</code> file, and the script tags must have the attribute <code>type="text/ls"</code>.
+      <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.2.0">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.2.0">tar.gz</a>), enter its directory, and run <code>sudo make install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo make install</code>. <a href="http://nodejs.org">Node.js</a> is required to be installed on your system.</p>
+      <p>You can also use it directly in the browser by including the file in <code>LiveScript/browser/livescript.js</code> via a script tag. You must then call <code>require("LiveScript").go()</code>. If you use this, your LiveScript scripts must be inline (not linked to with the <code>src</code> attribute), be placed after the included <code>livescript.js</code> file, and the script tags must have the attribute <code>type="text/ls"</code>.
+      <p>For example:
+<pre>
+&lt;script src="livescript.js"&gt;&lt;/script&gt;
+&lt;script type="text/ls"&gt;
+    console.log "boom #{window.location}"
+&lt;/script&gt;
+&lt;script&gt;
+    var LiveScript = require("LiveScript");
+    LiveScript.go();
+&lt;/script&gt;
+</pre>
     </div>
     <div id="usage" class="section">
       <a name="usage"></a>
       <h2>Usage</h2>
-      <p>Usage: <code>lsc [options] [files] [arguments]</code></p>
+
+      <p>Usage: <code>lsc [options]... [file]...</code></p>
+      <p>Use <code>lsc</code> with no options to start REPL.
+
       <h3>Options</h3>
+      <h4>Misc:</h4>
       <table class="usage-options table table-striped table-bordered">
+        <tr><td>-v, --version</td><td>display version</td></tr>
+        <tr><td>-h, --help</td><td>display this help message</td></tr>
         <tr><td>-c, --compile</td><td>compile to JavaScript and save as .js files</td></tr>
+        <tr><td>-e, --eval code::String</td><td>pass as string from the command line as input</td></tr>
         <tr><td>-d, --prelude</td><td>automatically import prelude.ls in REPL</td></tr>
-        <tr><td>-k, --const</td><td>compile all variables as constants</td></tr>
-        <tr><td>-o, --output DIR</td><td>compile into the specified directory</td></tr>
-        <tr><td>-w, --watch</td><td>watch scripts for changes, and repeat</td></tr>
         <tr><td>-s, --stdin</td><td>read stdin</td></tr>
-        <tr><td>-e, --eval</td><td>read command line arguments as script</td></tr>
-        <tr><td>-r, --require FILE+</td><td>require libraries before executing</td></tr>
-        <tr><td>-b, --bare</td><td>compile without the top-level function wrapper</td></tr>
+        <tr><td>-j, --json</td><td>print/compile as JSON</td></tr>
+        <tr><td>-n, --nodejs</td><td>pass options after this through to the 'node' binary</td></tr>
+        <tr><td>-w, --watch</td><td>watch scripts for changes, and repeat</td></tr>
+        <tr><td>-k, --const</td><td>compile all variables as constants</td></tr>
+      </table>
+
+      <h4>Output control:</h4>
+      <table class="usage-options table table-striped table-bordered">
+        <tr><td>-o, --output path::String</td><td>compile into the specified directory</td></tr>
         <tr><td>-p, --print</td><td>print the result to stdout</td></tr>
+        <tr><td>-b, --bare</td><td>compile without the top-level function wrapper</td></tr>
+        <tr><td>--header</td><td>add "Generated by" header, '--no-header' to suppress - default: true</td></tr>
         <tr><td>-l, --lex</td><td>print the tokens the lexer produces</td></tr>
         <tr><td>-t, --tokens</td><td>print the tokens the rewriter produces</td></tr>
         <tr><td>-a, --ast</td><td>print the syntax tree the parser produces</td></tr>
-        <tr><td>-j, --json</td><td>print/compile as JSON</td></tr>
-        <tr><td>-n, --nodejs ARGS+</td><td>pass options through to the "node" binary</td></tr>
-        <tr><td>-v, --version</td><td>display version</td></tr>
-        <tr><td>-h, --help</td><td>display this</td></tr>
       </table>
 
       <h3>Examples</h3>
@@ -1687,18 +1637,20 @@ function in$(x, arr){
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-[1 2 3] |> reverse |> head #=> 3
+
+x = [1 2 3] |> reverse |> head #=> 3
 
 
-reverse <| [1 2 3]         #=> [3,2,1]
+y = reverse <| [1 2 3] #=> [3,2,1]
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-head(
+var x, y;
+x = head(
 reverse(
 [1, 2, 3]));
-reverse([1, 2, 3]);
+y = reverse([1, 2, 3]);
 </pre>
         </div>
       </div>
@@ -2195,6 +2147,8 @@ function not$(x){ return !x; }
 
       <p>You can rename what you are requiring by using an object literal.
 
+      <p>You can destructure to get the contents of value.
+
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
@@ -2206,22 +2160,22 @@ require! prelude-ls # no
 require! 'prelude-ls'
 
 require! [fs, path]
+
 require! <[ fs path ]>
 
 
-
-require! $: jQuery
+require! jQuery: $
 
 require! {
   fs
   path
-  lib: lib4
+  lib: foo
 }
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var lib, lib1, preludeLs, fs, path, $;
+var lib, lib1, preludeLs, fs, path, $, foo;
 lib = require('lib');
 lib1 = require('lib1');
 
@@ -2235,35 +2189,34 @@ path = require('path');
 
 $ = require('jQuery');
 
+
 fs = require('fs');
 path = require('path');
-lib = require('lib4');
+foo = require('lib');
+
+
 </pre>
         </div>
       </div>
 
-      <p>You can also easily require parts of modules.
+      <p>You can easily require parts of modules with destructuring.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-require! lib.part
-
 require! {
-  lib
-  lib.part1
+    fs: filesystem
+    'prelude-ls': {map, id}
+    path: {join, resolve}:p
 }
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var part, lib, part1;
-part = require('lib').part;
-
-lib = require('lib');
-part1 = require('lib').part1;
-
-
+var filesystem, ref$, map, id, p, join, resolve;
+filesystem = require('fs');
+ref$ = require('prelude-ls'), map = ref$.map, id = ref$.id;
+p = require('path'), join = p.join, resolve = p.resolve;
 </pre>
         </div>
       </div>
@@ -4021,7 +3974,7 @@ default:
         </div>
       </div>
 
-      <p>If you switch on nothing, you switch on true. (It compile to switching on false so it can cast the cases to booleans with one <code>!</code> instead of two.
+      <p>If you switch on nothing, you switch on true. (It compile to switching on false so it can cast the cases to booleans with one <code>!</code> instead of two).
 
       <div class="example">
         <div class="example-ls">
@@ -4112,6 +4065,31 @@ case '?':
   break;
 default:
   'something';
+}
+</pre>
+        </div>
+      </div>
+
+      <p>You can use <code>that</code> with a switch statement:
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+switch num
+| 2         => console.log that
+| otherwise => console.log that
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var that;
+switch (that = num) {
+case 2:
+  console.log(that);
+  break;
+default:
+  console.log(that);
 }
 </pre>
         </div>
@@ -5912,8 +5890,9 @@ delete! x.y
       <a name="contributing"></a>
       <h2>Contributing Guide</h2>
       <p>Fork <a href="https://github.com/gkz/LiveScript">LiveScript</a> and make your changes. Always write tests first (in the <code>/test</code> directory).
-      <p>Run <code>bin/slake</code> to see available commands. Always make sure you can <code>bin/slake build:full</code> - ie. build the compiler itself. Useful: <code>git checkout -- lib && bin/slake build:full</code>: cleans out your <code>lib</code> and compiles twice and tests. Only send a pull requests if all tests pass. If you are hacking on the grammar, you will need to <code>git checkout -- lib && bin/slake build && bin/slake build:parser && bin/slake test</code>. Once all tests pass, rewrite any of the compiler that needs rewriting, and then <code>bin/slake build:full</code>.
-      <p>Don't submit patches with a built browser file (<code>extras/livescript.js</code>) created by <code>bin/slake build:browser</code>. This file is only built before releasing a new version. 
+      <p>Check out the Makefile included - it has all the available commands.
+      <p>Always make sure you can <code>make full</code> - ie. build the compiler itself. Useful: <code>git checkout -- lib &&  make full</code>: cleans out your <code>lib</code> and compiles twice and tests. Only send a pull requests if all tests pass. Once all tests pass, rewrite any of the compiler that needs rewriting, and then <code>make full</code>. Use <code>make test-harmony</code> to test with generators and such with node's <code>--harmony</code> flag.
+      <p>Don't submit patches with a built browser file (<code>browser/livescript.js</code>) created by <code>make build-browser</code>. This file is only built before releasing a new version.
     </div>
     <div class="section" id="changes">
       <a name="changes"></a>
