@@ -12,6 +12,8 @@ author: <a href="https://twitter.com/gkzahariev" class="author">George Zahariev<
 
 <p>LiveScript 1.3.0 fixes many bugs and adds some new features.
 
+<h4>Generators</h4>
+<p>TODO generators and yield
 
 <h4>Pipe and Assign Precedence</h4>
 <p>One bug whose fix may break some code is the precedence of the pipe operator and assign. Assign now has a lower precedence than all pipes, so
@@ -37,30 +39,49 @@ you can now destructure, eg:
   <div class="example-ls">
 <pre class="prettyprint lang-ls">
 require! {
-    fs: foo
+    fs: filesystem
     'prelude-ls': {map, id}
+    path: {join, resolve}:p
 }
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var foo, ref$, map, id;
-foo = require('fs');
+var filesystem, ref$, map, id, p, join, resolve;
+filesystem = require('fs');
 ref$ = require('prelude-ls'), map = ref$.map, id = ref$.id;
-
-
+p = require('path'), join = p.join, resolve = p.resolve;
 </pre>
   </div>
 </div>
 
+<h4>Browser version</h4>
+<p>The browser versions of LiveScript (<code>browser/livescript.js</code> and <code>browser/livescript-min.js</code>) are now packaged with <a href="http://browserify.org/">browserify</a>. To use the browser version, include the file you want, and then do:
+<pre>
+    var LiveScript = require("LiveScript");
+</pre>
+
+<p>For example:
+
+<pre>
+&lt;script src="livescript.js"&gt;&lt;/script&gt;
+&lt;script type="text/ls"&gt;
+    console.log "boom #{window.location}"
+&lt;/script&gt;
+&lt;script&gt;
+    var LiveScript = require("LiveScript");
+    LiveScript.go();
+&lt;/script&gt;
+</pre>
+
 <h4>Option parsing and help</h4>
-<p><a href="https://github.com/gkz/optionator">Optionator</a> is now used for option parsing and help text generation, instead of a custom solution.
+<p><a href="https://github.com/gkz/optionator">Optionator</a> is now used for option parsing and help text generation, instead of a custom solution. The <code>--require</code> option was removed as it was useless.
+
+<h4>No header option</h4>
+<p>You can use the <code>--no-header</code> option to not output the header when compiling. This option is also available when using LiveScript as a library through the <code>header: false</code> option.
 
 <h4>Use <code>lsc</code>, not <code>livescript</code></h4>
 <p><code>livescript</code> was removed from the bin, please use <code>lsc</code> on the command line now. It is the exact same, but shorter to type!
-
-<h4>Generators</h4>
-<p>generators and yield
 
 <h4>Slake</h4>
 <p><code>slake</code> and <code>Slakefile</code>s were removed (no need for another build system!), please use make, gulp, grunt, etc.
@@ -68,8 +89,8 @@ ref$ = require('prelude-ls'), map = ref$.map, id = ref$.id;
 <h4><code>that</code> in switch</h4>
 <p>You can use <code>that</code> in the default case of a switch statement, to mean the value you are switching upon.
 
-<h3>Thanks still from 1.2 relase, update for 1.3</h3>
+<h3>Thanks</h3>
 
-<p>Thank you to <a href="https://github.com/Nami-Doc">Nami-Doc</a> for his numerous contributions to this release! Also thanks to <a href="https://github.com/satyr">satyr</a> (through coco), <a href="https://github.com/killdream">killdream</a>, <a href="https://github.com/clkao">clkao</a>, <a href="https://github.com/viclib">viclib</a>, <a href="https://github.com/dtinth">dtinth</a>, and <a href="https://github.com/racklin">racklin</a> for their contributions to this release as well!
+<p>Thank you to <a href="https://github.com/Nami-Doc">Nami-Doc</a> for his numerous contributions, and also Haspacker, <a href="https://github.com/racklin">Rack Lin (racklin)</a>, <a href="https://github.com/appedemic">appedemic</a>, <a href="https://github.com/piotrklibert">piotrklibert</a>, and <a href="https://github.com/rhendric">Ryan Hendrickson (rhendric)</a> for their contributions as well!
 
 <p>For more information on LiveScript, check out the <a href="http://livescript.net">LiveScript site</a>.
