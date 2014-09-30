@@ -123,7 +123,8 @@ exports import
     switch id
     case <[ true false on off yes no null void arguments debugger ]>
       tag = \LITERAL
-    case <[ new do typeof delete yield ]>              then tag = \UNARY
+    case <[ new do typeof delete ]>                    then tag = \UNARY
+    case \yield                                        then tag = \YIELD
     case \return \throw                                then tag = \HURL
     case \break  \continue                             then tag = \JUMP
     case \this \eval \super then return @token(\LITERAL id, true)length

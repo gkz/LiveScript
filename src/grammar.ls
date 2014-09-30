@@ -220,6 +220,7 @@ bnf =
     o 'CLONE ASSIGN Chain' ditto
 
     o 'UNARY Expression' -> Unary $1, $2
+    o 'YIELD Expression' ditto
     o '+-    Expression' ditto, prec: \UNARY
     o 'CLONE Expression' ditto, prec: \UNARY
     o 'UNARY INDENT ArgList OptComma DEDENT' -> Unary $1, Arr.maybe $3
@@ -430,6 +431,7 @@ operators =
   # Listed from lower precedence.
   <[ left     POST_IF      ]>
   <[ right    ASSIGN       ]>
+  <[ right    YIELD        ]>
   <[ right    BACKPIPE     ]>
   <[ left     PIPE         ]>
   <[ right    , FOR WHILE HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>

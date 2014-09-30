@@ -92,3 +92,11 @@ obj =
 
 eq obj, obj.bound().next().value
 ok obj isnt obj.unbound().next().value
+
+# yield as expression, yield precendence
+f1 = ->*
+    x = yield "foo"
+    yield x + 2
+g1 = f1!
+eq "foo" g1.next!.value
+eq 5 g1.next(3).value
