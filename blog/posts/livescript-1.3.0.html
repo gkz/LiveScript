@@ -10,30 +10,53 @@ author: <a href="https://twitter.com/gkzahariev" class="author">George Zahariev<
 
 <h3>1.3.0</h3>
 
-<p>LiveScript 1.3.0 fixes many bugs and adds some new features.
+<p>LiveScript 1.3.0 fixes many bugs and adds some new features, including generator support!
 
-<h4>Generators</h4>
-<p>TODO generators and yield
+<h4>Generators and Yield</h4>
+<p>You can now use generators and yield in your LiveScript code! A brief rundown:
 
-<h4>Pipe and Assign Precedence</h4>
-<p>One bug whose fix may break some code is the precedence of the pipe operator and assign. Assign now has a lower precedence than all pipes, so
-
+<div class="example">
+  <div class="example-ls">
 <pre class="prettyprint lang-ls">
-result1 = 'hello' |> reverse |> upCase
-'OLLEH' == result1
 
-result2 = upCase <| reverse <| \hello
-'OLLEH' == result2
+function* f
+    yield "foo"
+
+g = ->*
+    yield from f!
+    yield "bar"
+
+h = g!
+h.next!.value + h.next!.value #=> "foobar"
 </pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var g, h;
+function* f(){
+  yield "foo";
+}
+g = function*(){
+  yield* f();
+  yield "bar";
+};
+h = g();
+h.next().value + h.next().value;
+</pre>
+  </div>
+</div>
 
-<h4>Auto Infused IIFE</h4>
-<p>Auto infused IIFE were removed as we have <code>for let</code> now. Change any <code>for ... then let</code> to <code>for let .... then</code>
+<p>You can create generators by either appending a star <code>*</code> to the <code>function</code> keyword, or appending it to LiveScript's arrow notation. This works with the variety of arrows we have.
+
+<p><code>yield</code> is simply the same as in JavaScript, and <code>yield from</code> is JavaScript's <code>yield*</code>.
+
+<p>To run code using generators and yield using node 0.11, use the <code>--harmony</code> flag. If running directly with <code>lsc</code>, use <code>lsc file.ls --nodejs --harmony</code> to pass the harmony flag to node.
 
 <h4>require!</h4>
 <p> require! has been changed around to be more straightforward to use:
 
 <code>require! {a: b}</code> has been changed to mean <code>b = require('a')</code>, and
-you can now destructure, eg: 
+you can now destructure, eg:
 
 <div class="example">
   <div class="example-ls">
@@ -55,6 +78,21 @@ p = require('path'), join = p.join, resolve = p.resolve;
   </div>
 </div>
 
+
+<h4>Pipe and Assign Precedence</h4>
+<p>One bug whose fix may break some code is the precedence of the pipe operator and assign. Assign now has a lower precedence than all pipes, so
+
+<pre class="prettyprint lang-ls">
+result1 = 'hello' |> reverse |> upCase
+'OLLEH' == result1
+
+result2 = upCase <| reverse <| \hello
+'OLLEH' == result2
+</pre>
+
+<h4>Auto Infused IIFE</h4>
+<p>Auto infused IIFE were removed as we have <code>for let</code> now. Change any <code>for ... then let</code> to <code>for let .... then</code>.
+
 <h4>Browser version</h4>
 <p>The browser versions of LiveScript (<code>browser/livescript.js</code> and <code>browser/livescript-min.js</code>) are now packaged with <a href="http://browserify.org/">browserify</a>. To use the browser version, include the file you want, and then do:
 <pre>
@@ -73,6 +111,8 @@ p = require('path'), join = p.join, resolve = p.resolve;
     LiveScript.go();
 &lt;/script&gt;
 </pre>
+
+<p><code>LiveScript.go()</code> finds any script tags with <code>type="text/ls"</code>, compiles them, and executes them.
 
 <h4>Option parsing and help</h4>
 <p><a href="https://github.com/gkz/optionator">Optionator</a> is now used for option parsing and help text generation, instead of a custom solution. The <code>--require</code> option was removed as it was useless.

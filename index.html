@@ -44,6 +44,7 @@
         <li><a href="#literals">Literals</a></li> 
         <li><a href="#operators">Operators</a></li> 
         <li><a href="#functions">Functions</a></li> 
+        <li><a href="#generators-yield">Generators and Yield</a></li> 
         <li><a href="#if-unless">If and Unless</a></li> 
         <li><a href="#loops">Loops and Comprehensions</a></li> 
         <li><a href="#switch">Switch</a></li> 
@@ -3273,6 +3274,53 @@ addThreeNumbers(1, 2, 3);
       <p>Check out the section on <a href="#composing">composing functions</a>, and <a href="#piping">piping</a> as well.
 
     </div>
+
+
+    <div id="generators-yield" class="section">
+      <a name="generators-yield"></a>
+      <h2>Generators and Yield</h2>
+
+      <p>You can use generators and yield in your LiveScript code! A brief rundown:
+
+      <div class="example">
+        <div class="example-ls">
+      <pre class="prettyprint lang-ls">
+
+function* f
+    yield "foo"
+
+g = ->*
+    yield from f!
+    yield "bar"
+
+h = g!
+h.next!.value + h.next!.value #=> "foobar"
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var g, h;
+function* f(){
+  yield "foo";
+}
+g = function*(){
+  yield* f();
+  yield "bar";
+};
+h = g();
+h.next().value + h.next().value;
+</pre>
+  </div>
+</div>
+
+      <p>You can create generators by either appending a star <code>*</code> to the <code>function</code> keyword, or appending it to LiveScript's arrow notation. This works with the variety of arrows we have.
+
+      <p><code>yield</code> is simply the same as in JavaScript, and <code>yield from</code> is JavaScript's <code>yield*</code>.
+
+      <p>To run code using generators and yield using node 0.11, use the <code>--harmony</code> flag. If running directly with <code>lsc</code>, use <code>lsc file.ls --nodejs --harmony</code> to pass the harmony flag to node.
+
+    </div>
+
 
     <div id="if-unless" class="section">
       <a name="if-unless"></a>
