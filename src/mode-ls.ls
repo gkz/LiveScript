@@ -63,7 +63,7 @@ LiveScriptMode.Rules =
         |n(?:ew|ot)
         |un(?:less|til)
         |w(?:hile|ith)
-        |o[fr]|return|break|let|var|loop
+        |o[fr]|return|break|let|var|loop|yield
       )//$ + keywordend
 
     * token: \constant.language
@@ -73,7 +73,7 @@ LiveScriptMode.Rules =
       regex: '(?
         :p(?:ackage|r(?:ivate|otected)|ublic)
         |i(?:mplements|nterface)
-        |enum|static|yield
+        |enum|static
       )' + keywordend
 
     * token: \language.support.class

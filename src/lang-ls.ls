@@ -41,7 +41,7 @@ tint \ls [
   | un(?:less|til)
   | w(?:hile|ith|hen)
   | s(?:witch|uper)
-  | o[frn] | off | return | break | and | let | var | loop | yes
+  | o[frn] | off | return | break | and | let | var | loop | yes | yield
   ) #kwend //]
   [\typ // ^ (?: true | false | null | void ) #kwend //]
   [\ctx // ^ (?
