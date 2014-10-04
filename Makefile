@@ -19,7 +19,7 @@ lib/%.js: src/%.ls lib
 browser:
 	mkdir browser/
 
-browser/livescript.js: $(LIB) browser scripts/preroll.ls
+browser/livescript.js: $(LIB) browser scripts/preroll
 	{ ./scripts/preroll ; $(BROWSERIFY) -r ./lib/browser.js:LiveScript ; } > browser/livescript.js
 
 browser/livescript-min.js:  browser/livescript.js
