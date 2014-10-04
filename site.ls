@@ -1,4 +1,5 @@
 window <<< require 'prelude-ls'
+LiveScript = require "LiveScript"
 $ ->
   for example in $ '.example .example-ls'
     src = $ example .find \.lang-ls .html!
