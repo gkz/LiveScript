@@ -91,6 +91,30 @@ r = {[key, val] for key, val of {a:1, b:2} when val isnt 2}
 eq 1 r.a
 ok not r.b?
 
+input =
+  a: b: 1, c: 2
+  d: e: 3, f: 4
+result = { ["#{k1}#{k2}", v] for k1, x of input for k2, v of x }
+deepEqual {ab: 1, ac: 2, de: 3, df: 4} result
+eq \Object typeof! result
+
+result = [ { ["#{k1}#{k2}", v] for k2, v of x } for k1, x of input ]
+deepEqual [ { ab: 1, ac: 2 } { de: 3, df: 4} ] result
+eq \Array typeof! result
+eq \Object typeof! result.0
+
+result = { ["#k#x", x + v] for x from 0 to 1 for k, v of {a: 1, b: 2} }
+deepEqual { a0: 1, a1: 2, b0: 2, b1: 3 } result
+eq \Object typeof! result
+
+result = { ["#k#x", x + v] for k, v of {a: 1, b: 2} for x from 0 to 1 }
+deepEqual { a0: 1, a1: 2, b0: 2, b1: 3 } result
+eq \Object typeof! result
+
+result = { ["#k#x", x] for k in <[ a b ]> for x from 0 to 1 }
+deepEqual { a0: 0, a1: 1, b0: 0, b1: 1 } result
+eq \Object typeof! result
+
 
 # Basic range comprehensions.
 nums = [i * 3 for i from 1 to 3]
@@ -614,3 +638,7 @@ inc = ->
 o = for let x in inc() => x
 eq "1,3,5", o.join ','
 eq 1, i
+
+o = { [k, -> v] for let k, v of {a: 1, b: 2} }
+eq 1 o.a!
+eq 2 o.b!

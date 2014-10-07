@@ -160,17 +160,21 @@ require! {
   addElse: (@else) -> this
 
   # Constructs a node that returns the current node's result.
-  makeReturn: (arref) ->
-    if arref then Call.make JS(arref + \.push), [this] else Return this
-
-  makeObjReturn: (arref) ->
-    if arref
-      base = this.lines.0
-      base.=then.lines.0 if this.lines.0 instanceof If
-      items = base.items
-      if not items.0? or not items.1?
-        @carp 'must specify both key and value for object comprehension'
-      Assign (Chain Var arref).add(Index items.0, \., true), items.1
+  # If obj is true, interprets this node as a key-value pair to be
+  # stored on ref. Otherwise, pushes this node into ref.
+  makeReturn: (ref, obj) ->
+    if obj then
+      items = if this instanceof Arr
+        if not @items.0? or not @items.1?
+          @carp 'must specify both key and value for object comprehension'
+        @items
+      else
+        kv = \keyValue$
+        for v, i in [Assign(Var(kv), this), Var(kv)]
+          Chain v .add Index Literal i
+      Assign (Chain Var ref).add(Index items.0, \., true), items.1
+    else if ref then
+      Call.make JS(ref + \.push), [this]
     else Return this
 
   # Extra info for `toString`.
@@ -267,7 +271,7 @@ class exports.Block extends Node
   # ensures that the final line is returned.
   makeReturn: ->
     @chomp!
-    if @lines[*-1]?=makeReturn it
+    if @lines[*-1]?=makeReturn ...&
       --@lines.length if that instanceof Return and not that.it
     this
 
@@ -538,7 +542,7 @@ class exports.Chain extends Node
   isSimpleAccess: ->
     @tails.length is 1 and not @head.isComplex! and not @tails.0.isComplex!
 
-  makeReturn: -> if @tails.length then super ... else @head.makeReturn it
+  makeReturn: -> if @tails.length then super ... else @head.makeReturn ...&
 
   getCall: -> (tail = @tails[*-1]) instanceof Call and tail
 
@@ -2006,19 +2010,19 @@ class exports.While extends Node
     return this if @has-returned
     if it
       if @objComp
-        @body = Block @body.makeObjReturn it
+        @body = Block @body.makeReturn it, true
         @body = If @guard, @body if @guard
       else
         unless @body or @index
           @addBody Block Var @index = \ridx$
         last = @body.lines?[*-1]
         if (@is-comprehension or @in-comprehension) and not last?is-comprehension
-          @body.makeReturn it
-          @else?makeReturn it
+          @body.makeReturn ...&
+          @else?makeReturn ...&
           @has-returned = true
         else
           @res-var = it
-          @else?makeReturn it
+          @else?makeReturn ...&
     else
       @getJump! or @returns = true
     this
@@ -2062,7 +2066,7 @@ class exports.While extends Node
         if @res-var
           @body.makeReturn @res-var
     if @returns
-      @body = Block @body.makeObjReturn result-name if @objComp
+      @body = Block @body.makeReturn result-name, true if @objComp
       @body = If @guard, @body if @guard and @objComp
       if (not last instanceof While and not @has-returned) or @is-comprehension or @in-comprehension
         lines[*-1]?=makeReturn res = o.scope.assign result-name, empty
@@ -2203,8 +2207,8 @@ class exports.Try extends Node
   getJump: -> @attempt.getJump it or @recovery?getJump it
 
   makeReturn: ->
-    @attempt .=makeReturn it
-    @recovery?=makeReturn it
+    @attempt .=makeReturn ...&
+    @recovery?=makeReturn ...&
     this
 
   compileNode: (o) ->
@@ -2251,8 +2255,8 @@ class exports.Switch extends Node
     @default?getJump ctx
 
   makeReturn: ->
-    for c in @cases then c.makeReturn it
-    @default?makeReturn it
+    for c in @cases then c.makeReturn ...&
+    @default?makeReturn ...&
     this
 
   compileNode: (o) ->
@@ -2282,7 +2286,7 @@ class exports.Case extends Node
   isCallable: -> @body.isCallable!
 
   makeReturn: ->
-    @body.makeReturn it unless @body.lines[*-1]?value is \fallthrough
+    @body.makeReturn ...& unless @body.lines[*-1]?value is \fallthrough
     this
 
   compileCase: (o, tab, nobr, bool, type, target) ->
@@ -2329,8 +2333,8 @@ class exports.If extends Node
   getJump: -> @then.getJump it or @else?getJump it
 
   makeReturn: ->
-    @then.=makeReturn it
-    @else?=makeReturn it
+    @then.=makeReturn ...&
+    @else?=makeReturn ...&
     this
 
   compileNode: (o) ->
@@ -2383,7 +2387,7 @@ class exports.Label extends Node
     (ctx.labels ?= []).push @label
     @it.getJump ctx <<< {+\break}
 
-  makeReturn: -> @it.=makeReturn it; this
+  makeReturn: -> @it.=makeReturn ...&; this
 
   compileNode: (o) ->
     {label, it} = this
