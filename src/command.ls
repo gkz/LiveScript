@@ -64,7 +64,7 @@ switch
 # compile them. If a directory is passed, recursively compile all
 # _.ls_ files in it and all subdirectories.
 !function compile-scripts
-  positional.for-each !-> walk it, (path.normalize it), true
+  walk positional.0, (path.normalize positional.0), true
   !function walk source, base, top
     !function work
       fshoot 'readFile' source, !-> compile-script source, "#it", base

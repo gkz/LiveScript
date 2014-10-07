@@ -7,6 +7,9 @@ module.exports = !(LiveScript) ->
   require! [fs, path]
 
   LiveScript.run = (code, {filename}:options?, js) ->
+    # Splice out the script name that was passed to lsc so it doesn't appear
+    # twice...
+    process.argv.splice 2, 1
     {main} = require
     # Hack for relative `require`.
     if filename
