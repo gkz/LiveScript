@@ -34,6 +34,13 @@ switch
 | otherwise =>
   o.run = not o.compile ||= o.output
 
+  process.exec-path = process.argv.0 = process.argv.1
+  to-insert = if o.stdin
+    positional
+  else
+    if o.run then positional.splice 1 9e9 else []
+  process.argv.splice 2, 9e9, ...to-insert
+
   switch
   | o.eval =>
     compile-script '' o.eval
