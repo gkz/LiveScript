@@ -453,6 +453,14 @@ eq 'OLLEH', result1
 result2 = upCase <| reverse <| \hello
 eq 'OLLEH', result2
 
+id = -> it
+# Pipe and return
+ok do -> return true |> id
+
+# Throw and return
+try throw true |> id
+catch => ok e
+
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
 eq 'number,string' ''+ typeof

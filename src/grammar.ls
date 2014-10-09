@@ -430,11 +430,11 @@ bnf =
 operators =
   # Listed from lower precedence.
   <[ left     POST_IF      ]>
-  <[ right    ASSIGN       ]>
+  <[ right    ASSIGN HURL  ]>
   <[ right    YIELD        ]>
   <[ right    BACKPIPE     ]>
   <[ left     PIPE         ]>
-  <[ right    , FOR WHILE HURL EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
+  <[ right    , FOR WHILE EXTENDS INDENT SWITCH CASE TO BY LABEL ]>
   <[ right    LOGIC        ]>
   <[ left     BITWISE      ]>
   <[ right    COMPARE      ]>
