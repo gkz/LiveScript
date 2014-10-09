@@ -456,12 +456,17 @@ eq 'OLLEH', result2
 # Pipe and return
 ok do -> return false |> (not)
 
-# Throw and return
+# Pipe and throw
 try throw false |> (not)
 catch => ok e
 
 # Assign and return
 eq 5 do -> return a = 5
+
+# Assign and throw
+try throw a = 5
+catch => eq 5 e
+
 
 ### Unary spread
 eq 'number,string' ''+ typeof do [Number, String]
