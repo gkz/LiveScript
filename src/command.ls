@@ -41,6 +41,12 @@ switch
     if o.run then positional.splice 1 9e9 else []
   process.argv.splice 2, 9e9, ...to-insert
 
+  if o.require
+    {filename} = module
+    module.filename = '.'
+    each require, that
+    module <<< {filename}
+
   switch
   | o.eval =>
     compile-script '' o.eval
