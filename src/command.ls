@@ -5,6 +5,7 @@ require! {
   util
   'prelude-ls': {each, break-list}:prelude
   './options': {parse: parse-options, generate-help}
+  './util': {name-from-path}
 }
 
 version = LiveScript.VERSION
@@ -44,7 +45,7 @@ switch
   if o.require
     {filename} = module
     module.filename = '.'
-    each require, that
+    that |> each -> global[name-from-path it] = require it
     module <<< {filename}
 
   switch
