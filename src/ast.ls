@@ -6,7 +6,7 @@
 
 require! {
   'prelude-ls': {fold}
-  path
+  './util': {name-from-path, strip-string}
 }
 
 ### Node
@@ -2456,28 +2456,21 @@ class exports.Require extends Node
   children: <[ body ]>
 
   compile: (o) ->
-    strip-string = (val) ->
-      if val == //^['"](.*)['"]$// then that.1 else val
-
-    get-file-name = (val) ->
-      (path.basename strip-string val)
-        .split '.' .0
-        .replace /-[a-z]/ig, -> it.char-at 1 .to-upper-case!
-
-    get-value = (item) ~>
+    get-value = (item, throw-error) ~>
       | item instanceof Key     => item.name
       | item instanceof Var     => item.value
       | item instanceof Literal => item.value
-      | item instanceof Index   => get-value item.key
-      | otherwise               => item
+      | otherwise               => if throw-error
+                                   then @carp 'invalid require! argument'
+                                   else item
 
     process-item = (item) ->
       [asg, value] = switch
       | item instanceof Prop    => [item.val, item.key]
       | otherwise               => [item, item]
       asg-value = get-value asg
-      to-asg = if typeof! asg-value is 'String' then Var get-file-name asg-value else asg
-      value = strip-string get-value value
+      to-asg = if typeof! asg-value is 'String' then Var name-from-path asg-value else asg
+      value = strip-string get-value value, true
 
       main = Chain Var 'require' .add Call [Literal "'#value'"]
       Assign to-asg, main .compile o

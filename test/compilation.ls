@@ -194,6 +194,8 @@ eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 
 eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 'require! <[ a b c ]>'
 eq "var a, b, c;\na = require('a');\nb = require('b');\nc = require('c');" bare 'require! { a, b, c }'
 
+compileThrows 'invalid require! argument' 1 'require! obj.key'
+
 
 # JS literal
 eq 'some js code!' bare '``some js code!``'
