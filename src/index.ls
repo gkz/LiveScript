@@ -14,7 +14,7 @@ parser <<<
     upcoming-input: -> ''
 
 exports <<<
-  VERSION: '1.3.0'
+  VERSION: '1.3.1'
 
   # Compiles a string of LiveScript code to JavaScript.
   compile: (code, options = {}) ->
