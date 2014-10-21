@@ -95,9 +95,9 @@
         <p><strong>LiveScript</strong> is a language which <strong>compiles to JavaScript</strong>. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
         <p>LiveScript is a fork of <a href="http://satyr.github.com/coco/">Coco</a> and an indirect descendant of CoffeeScript, with which it has much <a href="#coffee-to-ls">compatibility</a>.
         <div class="major-actions">
-          <h3 class="download">1.3.0:</h3>
-          <a href="https://github.com/gkz/LiveScript/zipball/1.3.0"><div class="btn btn-large btn">zip</div></a>
-          <a href="https://github.com/gkz/LiveScript/tarball/1.3.0"><div class="btn btn-large btn">tar.gz</div></a>
+          <h3 class="download">1.3.1:</h3>
+          <a href="https://github.com/gkz/LiveScript/zipball/1.3.1"><div class="btn btn-large btn">zip</div></a>
+          <a href="https://github.com/gkz/LiveScript/tarball/1.3.1"><div class="btn btn-large btn">tar.gz</div></a>
           <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn-primary">View project on GitHub</div></a>
           <iframe src="http://ghbtns.com/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="150" height="40"></iframe>
           <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://livescript.net/" data-text="LiveScript - functional CoffeeScript" data-size="large" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
@@ -253,7 +253,7 @@ $('h1').on('click', function(){
       <a name="installation"></a>
       <h2>Installation</h2>
       <p>You can install LiveScript through the <a href="http://npmjs.org">Node Package Manager</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
-      <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.3.0">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.3.0">tar.gz</a>), enter its directory, and run <code>sudo make install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo make install</code>. <a href="http://nodejs.org">Node.js</a> is required to be installed on your system.</p>
+      <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.3.1">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.3.1">tar.gz</a>), enter its directory, and run <code>sudo make install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo make install</code>. <a href="http://nodejs.org">Node.js</a> is required to be installed on your system.</p>
       <p>You can also use it directly in the browser by including the file in <code>LiveScript/browser/livescript.js</code> via a script tag. You must then call <code>require("LiveScript").go()</code>. If you use this, your LiveScript scripts must be inline (not linked to with the <code>src</code> attribute), be placed after the included <code>livescript.js</code> file, and the script tags must have the attribute <code>type="text/ls"</code>.
       <p>For example:
 <pre>
@@ -282,6 +282,7 @@ $('h1').on('click', function(){
         <tr><td>-c, --compile</td><td>compile to JavaScript and save as .js files</td></tr>
         <tr><td>-e, --eval code::String</td><td>pass as string from the command line as input</td></tr>
         <tr><td>-d, --prelude</td><td>automatically import prelude.ls in REPL</td></tr>
+        <tr><td>-r, --require</td><td>require libraries before executing</td></tr>
         <tr><td>-s, --stdin</td><td>read stdin</td></tr>
         <tr><td>-j, --json</td><td>print/compile as JSON</td></tr>
         <tr><td>-n, --nodejs</td><td>pass options after this through to the 'node' binary</td></tr>
@@ -5669,6 +5670,14 @@ f do
     <div id="changelog" class="section">
       <a name="changelog"></a>
       <h2>Changelog</h2>
+      <h3>1.3.1</h3>
+      <ul>
+          <li>Fixed bug with calling lsc file.ls with arguments (<a href="https://github.com/gkz/LiveScript/issues/569">#569</a>
+          <li>Some object comprehension fixes
+          <li>Fixed prededence of <code>return</code> and <code>throw</code> in respect to pipes.
+          <li>Added back the <code>--require</code> option missing in 1.3.0, this option is great for when starting the REPL. Also made modules accesible in a similar manner as <code>require!</code>. Eg. <code>--require './bom.js'</code> requires the file and allows you to access it with <code>boom</code>.
+          <li>Fixed bug with <code>require!</code> compilation - an error is now thrown when it should be.
+      </ul>
       <h3>1.3.0</h3>
       <ul>
         <li>Added support for generators and yield
@@ -6035,7 +6044,7 @@ delete! x.y
 
 <script src="underscore-min.js"></script>
 <script src="prelude-browser-min-1.1.1.js"></script>
-<script src="livescript-1.3.0.js"></script>
+<script src="livescript-1.3.1.js"></script>
 <script src="site.js"></script>
 
 </body>
