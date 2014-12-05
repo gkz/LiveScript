@@ -5,6 +5,7 @@ $ ->
   editor .setTheme 'ace/theme/textmate'
   editor .setFontSize 16
   editor .renderer .setShowGutter false
+  editor .getSession! .setTabSize 2
   LiveScriptMode = ace .require 'ace/mode/livescript' .Mode
   editor .getSession! .setMode new LiveScriptMode!
 
