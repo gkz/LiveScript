@@ -8,6 +8,7 @@
     editor = ace.edit('compiler-editor');
     editor.setTheme('ace/theme/textmate');
     editor.setFontSize(16);
+    editor.renderer.setShowGutter(false);
     LiveScriptMode = ace.require('ace/mode/livescript').Mode;
     editor.getSession().setMode(new LiveScriptMode());
     for (i$ = 0, len$ = (ref$ = $('.example .example-ls')).length; i$ < len$; ++i$) {
