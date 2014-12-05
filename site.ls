@@ -1,6 +1,12 @@
 window <<< require 'prelude-ls'
 LiveScript = require "LiveScript"
 $ ->
+  editor = ace .edit 'compiler-editor'
+  editor .setTheme 'ace/theme/textmate'
+  editor .setFontSize 16
+  LiveScriptMode = ace .require 'ace/mode/livescript' .Mode
+  editor .getSession! .setMode new LiveScriptMode!
+
   for example in $ '.example .example-ls'
     src = $ example .find \.lang-ls .html!
     $ '<pre class="source"></pre>' .html src .appendTo example
@@ -8,7 +14,7 @@ $ ->
   prettyPrint!
 
   boom = (action) ->
-    source = $ '.compiler textarea' .val!
+    source = editor.getValue!
     result = try
       source = "<- (do)\n#source" if action is \run
       func = if action is \run then \compile else action
@@ -65,7 +71,7 @@ $ ->
 
   load-compiler = ->
     $ '.compiler' .show!
-    $ '.compiler textarea' .val <| $ this .find '.source' .text!
+    editor .setValue ($ this .find '.source' .text!), 1
 
   $ '.example' .on \dblclick, load-compiler
 

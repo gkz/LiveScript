@@ -72,7 +72,7 @@
           <i class="icon-resize-full action-compiler-fullscreen" title="Go fullscreen"></i>
           <i style="display:none" class="icon-resize-small action-compiler-fullscreen" title="Escape fullscreen"></i>
         </div>
-        <textarea placeholder="Enter LiveScript here"></textarea>
+        <div id="compiler-editor">Enter LiveScript here</div>
         <div class="actions">
           <button class="btn btn-primary" data-action="compile" title="Convert LiveScript to JavaScript">Compile</button>
           <button class="btn" data-action="run" title="Run compiled JavaScript">Run</button>
@@ -6041,6 +6041,10 @@ delete! x.y
 
 <script src="google-code-prettify/prettify.js"></script>
 <script src="lang-ls-1.3.0.js"></script>
+
+<script src="ace/src-min-noconflict/ace.js"></script>
+<script src="ace/src-min-noconflict/theme-textmate.js"></script>
+<script src="ace/src-min-noconflict/mode-livescript.js"></script>
 
 <script src="underscore-min.js"></script>
 <script src="prelude-browser-min-1.1.1.js"></script>
