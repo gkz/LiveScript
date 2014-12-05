@@ -60,6 +60,10 @@ $ ->
 
       $ toPrepend .prependTo '.compiler-output' .attr \title, source
 
+  $ '#compiler-editor' .keydown (e) !->
+    if e.keyCode in [10, 13] && e.ctrlKey
+      boom \compile
+
   $ '.compiler-output' .on \click \.close ->
     $(this) .parent! .parent! .hide!   # or remove()
     return false

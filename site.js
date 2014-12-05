@@ -80,6 +80,12 @@
         return $(toPrepend).prependTo('.compiler-output').attr('title', source);
       }
     };
+    $('#compiler-editor').keydown(function(e){
+      var ref$;
+      if (((ref$ = e.keyCode) === 10 || ref$ === 13) && e.ctrlKey) {
+        boom('compile');
+      }
+    });
     $('.compiler-output').on('click', '.close', function(){
       $(this).parent().parent().hide();
       return false;
