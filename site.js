@@ -83,7 +83,7 @@
     $('#compiler-editor').keydown(function(e){
       var ref$;
       if (((ref$ = e.keyCode) === 10 || ref$ === 13) && e.ctrlKey) {
-        boom('compile');
+        boom(e.shiftKey ? 'run' : 'compile');
       }
     });
     $('.compiler-output').on('click', '.close', function(){

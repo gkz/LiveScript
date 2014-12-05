@@ -62,7 +62,7 @@ $ ->
 
   $ '#compiler-editor' .keydown (e) !->
     if e.keyCode in [10, 13] && e.ctrlKey
-      boom \compile
+      boom if e.shiftKey then \run else \compile
 
   $ '.compiler-output' .on \click \.close ->
     $(this) .parent! .parent! .hide!   # or remove()
