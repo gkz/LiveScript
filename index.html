@@ -695,17 +695,27 @@ null;
       </div>
 
 
-      <p>Strings without whitespace can be written with a preceding backslash instead of quotes.
+      <p>Strings can be written with a preceding backslash instead of quotes. Backslash strings can't contain <code>, ; ] ) }</code> or whitespace.
 
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 \word
+func \word, \word;
+(func \word)
+[\word]
+{prop:\word}
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
 'word';
+func('word', 'word');
+func('word');
+['word'];
+({
+  prop: 'word'
+});
 </pre>
         </div>
       </div>
