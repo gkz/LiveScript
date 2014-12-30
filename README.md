@@ -9,7 +9,7 @@ Check out **[livescript.net](http://livescript.net)** for more information, exam
 ### Install
 Have Node.js installed. `sudo npm install -g LiveScript`
 
-After, run `livescript` for more information.
+After, run `lsc -h` for more information.
 
 
 ### Source
