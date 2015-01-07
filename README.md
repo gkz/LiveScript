@@ -14,3 +14,7 @@ After, run `lsc -h` for more information.
 
 ### Source
 [git://github.com/gkz/LiveScript.git](git://github.com/gkz/LiveScript.git)
+
+### Community
+
+If you'd like to chat, drop by [#livescript](irc://irc.freenode.net/livescript) on Freenode IRC.
