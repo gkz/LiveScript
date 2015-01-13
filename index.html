@@ -32,35 +32,35 @@
     <div class="span2 sidebar">
       <h1><a href="#">LiveScript</a><img src="images/icon.png"></h1>
       <ul class="nav nav-list">
-        <li class="active"><a href="#overview">Overview</a></li> 
+        <li class="active"><a href="#overview">Overview</a></li>
         <li class="divider">
-        <li><a href="#installation">Installation</a></li> 
-        <li><a href="#usage">Usage</a></li> 
-        <li><a href="#community">Community</a></li> 
-        <li><a href="#editor-support">Text Editor Support</a></li> 
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#usage">Usage</a></li>
+        <li><a href="#community">Community</a></li>
+        <li><a href="#editor-support">Text Editor Support</a></li>
         <li><a href="#prelude-ls">Standard Library</a></li>
         <li class="divider">
-        <li><a href="#introduction">Introduction</a></li> 
-        <li><a href="#literals">Literals</a></li> 
-        <li><a href="#operators">Operators</a></li> 
-        <li><a href="#functions">Functions</a></li> 
-        <li><a href="#generators-yield">Generators and Yield</a></li> 
-        <li><a href="#if-unless">If and Unless</a></li> 
-        <li><a href="#loops">Loops and Comprehensions</a></li> 
-        <li><a href="#switch">Switch</a></li> 
-        <li><a href="#assignment">Assignment</a></li> 
-        <li><a href="#property-access">Property Access</a></li> 
-        <li><a href="#exceptions">Exceptions</a></li> 
-        <li><a href="#oop">OOP</a></li> 
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#literals">Literals</a></li>
+        <li><a href="#operators">Operators</a></li>
+        <li><a href="#functions">Functions</a></li>
+        <li><a href="#generators-yield">Generators and Yield</a></li>
+        <li><a href="#if-unless">If and Unless</a></li>
+        <li><a href="#loops">Loops and Comprehensions</a></li>
+        <li><a href="#switch">Switch</a></li>
+        <li><a href="#assignment">Assignment</a></li>
+        <li><a href="#property-access">Property Access</a></li>
+        <li><a href="#exceptions">Exceptions</a></li>
+        <li><a href="#oop">OOP</a></li>
         <li class="divider">
-        <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li> 
-        <li><a href="#changelog">Changelog</a></li> 
+        <li><a href="#coffee-to-ls">Converting from CoffeeScript</a></li>
+        <li><a href="#changelog">Changelog</a></li>
         <li class="divider">
-        <li><a href="#inspiration">Inspiration</a></li> 
-        <li><a href="#name">Name</a></li> 
-        <li><a href="#thanks">Thanks</a></li> 
-        <li><a href="#contributing">Contributing Guide</a></li> 
-        <li><a href="#changes">Changes from Coco</a></li> 
+        <li><a href="#inspiration">Inspiration</a></li>
+        <li><a href="#name">Name</a></li>
+        <li><a href="#thanks">Thanks</a></li>
+        <li><a href="#contributing">Contributing Guide</a></li>
+        <li><a href="#changes">Changes from Coco</a></li>
       </ul>
     </div>
     <div class="span4 compiler">
@@ -103,7 +103,7 @@
           <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://livescript.net/" data-text="LiveScript - functional CoffeeScript" data-size="large" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
         </div>
         <p><strong><code>npm install -g LiveScript</code></strong>
-<p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for updates on LiveScript. 
+<p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for updates on LiveScript.
         <p>Featured blog post: <strong><a href="blog/livescript-1.3.0.html">LiveScript 1.3.0 released!</a></strong>
         <p>Double-click an example to load it into the compiler/REPL. Docs in French: <a href="index-fr.html">Français</a>.
       <h3>Some Examples</h3>
@@ -256,7 +256,7 @@ $('h1').on('click', function(){
       <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.3.1">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.3.1">tar.gz</a>), enter its directory, and run <code>sudo make install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo make install</code>. <a href="http://nodejs.org">Node.js</a> is required to be installed on your system.</p>
       <p>You can also use it directly in the browser by including the file in <code>LiveScript/browser/livescript.js</code> via a script tag. You must then call <code>require("LiveScript").go()</code>. If you use this, your LiveScript scripts have to be placed after the included <code>livescript.js</code> file, and the script tags must have the attribute <code>type="text/ls"</code>.
       <p>For example:
-<pre>
+<pre class="prettyprint lang-html">
 &lt;script src="livescript.js"&gt;&lt;/script&gt;
 &lt;script type="text/ls"&gt;
     console.log "boom #{window.location}"
@@ -271,11 +271,12 @@ $('h1').on('click', function(){
       <a name="usage"></a>
       <h2>Usage</h2>
 
+      <h3>Command Line:</h3>
+
       <p>Usage: <code>lsc [options]... [file]...</code></p>
       <p>Use <code>lsc</code> with no options to start REPL.
 
-      <h3>Options</h3>
-      <h4>Misc:</h4>
+      <h4>General:</h4>
       <table class="usage-options table table-striped table-bordered">
         <tr><td>-v, --version</td><td>display version</td></tr>
         <tr><td>-h, --help</td><td>display this help message</td></tr>
@@ -301,7 +302,7 @@ $('h1').on('click', function(){
         <tr><td>-a, --ast</td><td>print the syntax tree the parser produces</td></tr>
       </table>
 
-      <h3>Examples</h3>
+      <h3>Command Line Examples</h3>
 
       <ul>
         <li>Run a LiveScript file (through node.js): <code>lsc file.ls</code> - you can omit the <code>.ls</code> if you wish.
@@ -312,6 +313,69 @@ $('h1').on('click', function(){
         <li>Compile a one-liner and print the JS: <code>lsc -bpe '[1 to 5]'</code>
         <li>Start the LiveScript REPL: <code>lsc</code> - <code>Ctrl-D</code> to exit, use <code>Ctrl-J</code> for multiline input.
       </ul>
+
+      <h3>Programmatic API:</h3>
+
+      <p>Require it into your Node or Browserify project with <code class="prettyprint lang-js">var LiveScript = require('LiveScript');</code> or <code class="prettyprint lang-ls">require! LiveScript</code>, or use the installation steps above for in-browser installation. In Node, requiring this also registers it in <code>require.extensions</code>.</p>
+
+      <h4>General:</h4>
+      <p><code>LiveScript.compile(code :: String, options? :: Object) -> String</code></p>
+      <p>Compile a string of LiveScript code into plain JavaScript. If the string fails to compile, a SyntaxError is thrown.</p>
+      <p>Options:</p>
+      <table class="usage-options table table-striped table-bordered">
+        <tr><td>bare :: Boolean = false</td><td>if true, compile without the top-level function wrapper</td></tr>
+        <tr><td>header :: Boolean = true</td><td>if true, add the "Generated by" header</td></tr>
+        <tr><td>const :: Boolean = false</td><td>if true, compile all variables as constants</td></tr>
+        <tr><td>filename? :: String</td><td>an optional filename to use for compilation errors</td></tr>
+      </table>
+
+      <br> <!-- for proper spacing -->
+
+      <p><code>LiveScript.run(code :: String, options? :: Object) -> String</code></p>
+      <p>Evaluate a string of LiveScript code. If the string fails to compile, a SyntaxError is thrown. Note that this uses the Function constructor.</p>
+      <p>Options:</p>
+      <table class="usage-options table table-striped table-bordered">
+        <tr><td>const :: Boolean = false</td><td>if true, compile all variables as constants</td></tr>
+        <tr><td>filename? :: String</td><td>an optional filename to use for errors</td></tr>
+      </table>
+
+      <h4>Utilities:</h4>
+      <p><code>LiveScript.ast(code :: String|Array) -> Object</code></p>
+      <p>Generate the AST representation of the LiveScript source, if it is a string, or the token stream if it is an array. If it is a string that cannot be parsed as LiveScript code, a SyntaxError is thrown. If it is an Array, an Error is thrown if the stream is not valid.</p>
+
+      <br> <!-- for proper spacing -->
+
+      <p><code>LiveScript.tokens(code :: String, options? :: Object) -> Array</code></p>
+      <p>Generate a token stream from LiveScript code. Note that this does keep state between calls.</p>
+      <p>Options</p>
+      <table class="usage-options table table-striped table-bordered">
+        <tr><td>raw :: Boolean = false</td><td>if true, do not flush the token stream before tokenizing - recommended to leave as default</td></tr>
+        <tr><td>line :: Number = 0</td><td>the starting line number for the token stream</td></tr>
+      </table>
+
+      <br> <!-- for proper spacing -->
+
+      <p><code>LiveScript.lex(code :: String)</code></p>
+      <p>Equivalent to <code>LiveScript.tokens(code, {raw: true})</code>.</p>
+
+      <br> <!-- for proper spacing -->
+
+      <p><code>LiveScript.ast.* :: Object...</code></p>
+      <p>All the AST constructors used for <code>LiveScript.ast()</code>.</p>
+
+      <h4>Browser-specific methods:</h4>
+      <p><code>LiveScript.stab(code :: String, callback :: (err? :: Error) -> void, filename?) -> void</code></p>
+      <p>Run a string of code, and call back with an optional error.</p>
+
+      <br> <!-- for proper spacing -->
+
+      <p><code>LiveScript.load(url :: String, callback :: (err? :: Error) -> void) -> void</code></p>
+      <p>Load a remote LiveScript file via an <code>XMLHttpRequest</code> at <code>url</code> and call back with an optional error.</p>
+
+      <br> <!-- for proper spacing -->
+
+      <p><code>LiveScript.go() -> void</code></p>
+      <p>Load all scripts with a <code>type</code> attribute of either <code>"text/ls"</code> or <code>"application/ls"</code>.</p>
     </div>
     <div id="community" class="section">
       <a name="community"></a>
@@ -439,13 +503,13 @@ add(2, 3);
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 
-(x, y) -> x + y 
+(x, y) -> x + y
 
--> # an empty function 
+-> # an empty function
 
 times = (x, y) ->
   x * y
-# multiple lines, and be assigned to 
+# multiple lines, and be assigned to
 # a var like in JavaScript
 </pre>
   </div>
@@ -456,7 +520,7 @@ var times;
 
 (function(){});
 
-times = function(x, y){ 
+times = function(x, y){
   return x * y;
 };
 
@@ -468,7 +532,7 @@ times = function(x, y){
       <p>As you see, function definitions are considerably shorter! You may also have noticed that we have omitted <code>return</code>. In LiveScript, almost everything is an expression and the last one reached is automatically returned. However, you can still use <code>return</code> to force returns if you want, and you can add a bang <code>!</code> before the arrow to suppress auto-returning <code>no-ret = (x) !-> ...</code>.
 
       <h3>Assignment</h3>
-      <p>Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. 
+      <p>Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes.
 
       <div class="example">
         <div class="example-ls">
@@ -506,7 +570,7 @@ x;
 </pre>
         </div>
       </div>
-      
+
       <p>Almost everything is an expression, which means you can do things like:
 
       <div class="example">
@@ -528,7 +592,7 @@ x;
         </div>
       </div>
 
-      <p>Things such as loops, switch statements, and even try/catch statements are all expressions. 
+      <p>Things such as loops, switch statements, and even try/catch statements are all expressions.
 
       <p>If you want to simply declare a variable and not initialize it, you can use <code>var</code>.
 
@@ -546,7 +610,7 @@ var x;
       </div>
 
       <p>You can also declare constants in LiveScript using <code>const</code>. They are checked at compile time - the compiled JS is no different.
-      
+
       <p>Attempting to compile the following:
 
 <pre class="prettyprint lang-ls">
@@ -554,7 +618,7 @@ const x = 10
 x = 0
 </pre>
 
-      <p>Results in <code>redeclaration of constant "x" on line 2</code>. 
+      <p>Results in <code>redeclaration of constant "x" on line 2</code>.
 
       <p>However, objects are not frozen if declared as constants - you can still modify their properties. You can force all variables to be constants if you compile with the <code>-k</code> or <code>--const</code> flags.
 
@@ -765,9 +829,9 @@ variable = "world";
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-multiline = 'string can be multiline 
-            and go on and on 
-            beginning whitespace is 
+multiline = 'string can be multiline
+            and go on and on
+            beginning whitespace is
             ignored'
 heredoc = '''
             string can be multiline
@@ -3915,7 +3979,7 @@ i = 0
 list = [1 to 10]
 do
   i++
-while list[i] < 9 
+while list[i] < 9
 </pre>
         </div>
         <div class="example-js">
@@ -4248,7 +4312,7 @@ default:
       <a name="assignment"></a>
       <h2>Assignment</h2>
 
-      <p>Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes. 
+      <p>Basic assignment is as you would expect, <code>variable = value</code>, and there is no need for variable declarations. However, unlike CoffeeScript, you must use <code>:=</code> to modify variables in upper scopes.
 
       <div class="example">
         <div class="example-ls">
@@ -5617,7 +5681,7 @@ b.dimensions;
         <li>Change any regular expression literals from <code>/// ///</code> to <code>// //</code>
         <li>Change any splats you are using from <code>(args...) -></code> to be prefixed like <code>(...args) -></code>
         <li>Remove the parentheses from function definitions with no parameters, <code>() -></code> simply becomes <code>-></code> - this is because <code>()</code> is always a call.
-        <li>Change your constructor functions in your classes from being defined as 
+        <li>Change your constructor functions in your classes from being defined as
 <pre>
 class Item
   constructor: ->
@@ -5654,7 +5718,7 @@ result = for x in [1, 2]
       <li>Change the name of any of your variables named <code>it</code>, <code>that</code>, <code>fallthrough</code>, or <code>otherwise</code>. Those are terrible names for variables so you should change them anyway. This technically isn't required in all cases, but will be less confusing if you do so in all cases. <code>it</code> is used as the implicit argument of functions defined with no parameters, eg. <code>reverse = -> it.reverse!</code>. <code>that</code> refers to the value of the condition, for instance <code>that + 2 if (x + 10)/(y - 18)</code>, <code>that == (x + 10)/(y-18)</code>. <code>fallthrough</code>, if used at the end of a case block makes that block fallthrough to the next case. <code>otherwise</code>, if used directly after case, turns that case into default.
       <li>If you have any multiline strings non triple quoted strings (using <code>"string"</code> or <code>'string'</code>), eg.
 <pre>
-text = "hi 
+text = "hi
         there"
 </pre> you will have to change them as in CoffeeScript this would be <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> while LiveScript ignores indentation after newlines so it would be <code>"hi there"</code>
       <li><code>and</code>, <code>or</code> and spaced <code>.</code> and <code>?.</code> close implicit calls, so you will have to change any code involving those where you have depended on CoffeeScript to not close the call. Eg. <code>f a .g b or h c</code> would be <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript. You can use <code>||</code> instead of <code>or</code> and <code>&amp;&amp;</code> instead of <code>and</code> as those versions do not close implicit calls.
@@ -5663,7 +5727,7 @@ text = "hi
 let $ = jQuery
   $
 </pre>
-      <li>Change any implicit calls against blocks starting with an implicit objects to use <code>do</code>. Eg. change 
+      <li>Change any implicit calls against blocks starting with an implicit objects to use <code>do</code>. Eg. change
 <pre>
 f
   a: b
@@ -5878,7 +5942,7 @@ delete! x.y
         <li>Added <code>--const</code> or <code>-k</code> option to compile as if all variables are constants
         <li>Added partial application of property accessor eg. <code>(obj.)</code>
         <li>Removed cons <code>&</code> operator
-        <li>Added <code>&</code> as alias to <code>arguments</code>, allowing <code>-> &0 + &1</code> etc. 
+        <li>Added <code>&</code> as alias to <code>arguments</code>, allowing <code>-> &0 + &1</code> etc.
         <li>Removed <code>@@</code> as alias to <code>arguments</code>
         <li>Increased precedence of the pipe <code>|&gt;</code> operator to allow assignment of the entire thing without parens, not just of the first section
         <li>Added mixin feature <code>implements</code> thanks to Coco, eg. <code>class Cow extends Animal implements Mooer</code>, which does <code>::<<< Mooer</code> in the class body.
@@ -5964,7 +6028,7 @@ delete! x.y
       <p>You can find the full list of contributors <a href="https://github.com/gkz/LiveScript/graphs/contributors">here</a>. That list includes contributors to LiveScript and its predecessors.
       <p>People who have contributed directly to LiveScript include <a href="https://github.com/gkz">George Zahariev</a>, <a href="https://github.com/satyr">Satoshi Murakami</a>, <a href="https://github.com/josher19">Joshua Weinstein</a>, <a href="https://github.com/goatslacker">Josh Perez</a>, <a href="https://github.com/paulmillr">Paul Miller</a>, <a href="https://github.com/Nami-Doc">Nami-Doc</a>, <a href="https://github.com/killdream">killdream</a>, <a href="https://github.com/audreyt">audreyt</a>, <a href="https://github.com/clkao">clkao</a>, <a href="https://github.com/viclib">viclib</a>, <a href="https://github.com/dtinth">dtinth</a>, and <a href="https://github.com/racklin">racklin</a>.
       <p>Thank you to <a href="http://nielsgrootobbink.com/">Niels Groot Obbink</a> for giving me the <a href="http://livescript.org">livescript.org</a> domain name.
-      <p>An extra special thanks to Satoshi, as this project is a fork of his project <a href="https://github.com/satyr/coco">Coco</a> and would not be possible without it. It has been a pleasure to work off of his beautiful Coco compiler. 
+      <p>An extra special thanks to Satoshi, as this project is a fork of his project <a href="https://github.com/satyr/coco">Coco</a> and would not be possible without it. It has been a pleasure to work off of his beautiful Coco compiler.
     </div>
     <div id="contributing" class="section">
       <a name="contributing"></a>
@@ -5979,44 +6043,44 @@ delete! x.y
       <h2>Changes from Coco: Detail and Rationale</h2>
       <p>This section is has not been updated since 1.0.x
       <ul>
-      <li>Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other projects are named LiveScript. Slake because lake was taken and lsake sounds bad. 
+      <li>Renamed everything from Coco and Coke to LiveScript and Slake, and file extension from .co to .ls. Rationale for names chosen: LiveScript was the name of JavaScript before it was named JavaScript - thus it seemed like an appropriate name, also few if any other projects are named LiveScript. Slake because lake was taken and lsake sounds bad.
       <li>Switched so that <code>==</code> compiles into <code>===</code>, and also for the negatives. Rationale: Most people would want to use the JavaScript <code>===</code> more often than <code>==</code> and less typing is better, also this makes things more similar to CoffeeScript which compiles <code>==</code> to <code>===</code> so there is less code for people to change coming from CoffeeScript. The compilation of <code>is</code> to <code>===</code> stays the same.
       <li>Switched <code>in</code> and <code>of</code> so that they are like in CoffeeScript. In goes over values, of over keys. Rationale: People have to change less of their CoffeeScript code, they're used to it, and using <code>in</code> for checking if a value is in an array just seems right, using <code>of</code> just feels weird.
-      <li>All bitwise operators except <code>~</code> have changed to be surrounded by dots, eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>. Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is. 
+      <li>All bitwise operators except <code>~</code> have changed to be surrounded by dots, eg. <code>&amp;</code> is now <code>.&amp;.</code> and <code>&gt;&gt;</code> is <code>.&gt;&gt;.</code>. Bitwise assign equals (eg. <code>&amp;=</code>) have been removed. Rationale: People rarely use the bitwise operators all the time, and they take up valuable symbols that could be used for other purposes. They are still available, just in a longer form. <code>~</code> is still there as is.
       <li><code>=></code>, the pipe operator using <code>_</code>, is removed. Free up => (for <code>then</code> alias), (<code>|</code> is used as an alias for case). Use other pipes (<code>|></code>) and partial application instead.
       <li><code>|</code> is an alias for <code>case</code> (used in switch) Rationale: less typing, looks good. Modelled after Haskell's guards.
-      <li><code>=></code> is an alias for <code>then</code>. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with <code>|</code>, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.  
+      <li><code>=></code> is an alias for <code>then</code>. Rationale: will not be encouraged for use in if statements as it looks slightly odd - really for use in switch statements, when combined with <code>|</code>, to create a succinct and easy to understand structure. Based off of Haskell's use of -> in case expressions.
       <li>Added <code>otherwise</code> and underscore <code>_</code> as a contextual keyword, when used after <code>case</code> or <code>|</code>, making that the default statement. Rationale: same as in Haskell (otherwise), underscore as in Scala - and shorter. It allows <code>| otherwise => 4 + 9</code>, which fits in with the rest of the structure.
-      <li>Added implicit <code>switch</code> after <code>-></code>, <code>~></code>, <code>:</code>, or an assign when they are followed by case tokens (either <code>case</code> or <code>|</code>). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity. 
+      <li>Added implicit <code>switch</code> after <code>-></code>, <code>~></code>, <code>:</code>, or an assign when they are followed by case tokens (either <code>case</code> or <code>|</code>). Rationale: reduces typing and increases beauty in a common situation for using a switch, with no increase in ambiguity.
       <li>Added list concat operator, <code>+++</code>. Eg. <code>xs +++ ys</code> is <code>xs.concat(ys)</code>. Rationale: less typing, more beautiful, inspired by the ++ function in Haskell (had to use 3 pluses in order to avoid ambiguity with increment operator.)
-      <li><code>^</code> is now an alias to <code>**</code>, the power operator. Rationale: it was available, and is used in other languages. 
-      <li>Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell. 
+      <li><code>^</code> is now an alias to <code>**</code>, the power operator. Rationale: it was available, and is used in other languages.
+      <li>Power precedence is now proper, and the power operator has precedence over multiplication and division. It also has higher precedence than unary ops. Eg. 2*4^2 == 32, not 64 as in Coco. Also, -2^2 == -4. Rationale: math should work properly - this is how it's done in many languages including Haskell.
       <li>Power operator is now right associative. eg. 2^2^3 == 2^(2^3) == 256. Rationale: follwing Haskell's and many other languages lead on this one.
-      <li>Added magic auto curried functions, defined using <code>--></code> and <code>~~></code>. With this you can do <code>times = (x, y) --> x * y</code>, <code>timesTwo = times 2</code>, <code>timesTwo 4 #=> 8</code>. If you call a curried function with no arguments, it calls itself as is, instead of returning itself (you can just reference it if you want it itself). Rationale: more Haskell like, useful functionality. 
+      <li>Added magic auto curried functions, defined using <code>--></code> and <code>~~></code>. With this you can do <code>times = (x, y) --> x * y</code>, <code>timesTwo = times 2</code>, <code>timesTwo 4 #=> 8</code>. If you call a curried function with no arguments, it calls itself as is, instead of returning itself (you can just reference it if you want it itself). Rationale: more Haskell like, useful functionality.
       <li>Added new function definition syntax, eg. <code>add(x, y) = x + y</code> == <code>add = (x, y) --> x + y</code>. You can also use it in object literals and class definitions eg. <code>add(x, y): x + y</code> == <code>add: (x, y) --> x + y</code>. You can also suppress return on both by starting with a bang, eg. <code>!nothingness(params) = true</code> will not return anything. As well you can have lexically bound this using <code>id@(param) = something</code> which is suger for <code>id = (param) ~~> something</code> (notice the wavy arrow). You can go crazy and do something like this if you wish: <code>@!func@! = something</code> which is a function assigned to this, which takes no parameters and returns nothing, while being lexically bound to this. All functions defined using this syntax are curried. Rationale: more beautiful, less typing, more Haskell like.
       <li>Added <code>obj ::= obj2</code> as alias to <code>obj::&lt;&lt;&lt;obj2</code>. Rationale: seems to be the intuitive behavior expected, looks cleaner.
-      <li>Added <code>yes / on</code> as aliases to <code>true</code> and <code>no / off</code> as aliases to <code>false</code>. Added <code>undefined</code> as an alias to <code>void</code>, and aliased <code>isnt</code> to <code>is not</code>. Rationale: ease transition from CoffeeScript, which has all these features, to LiveScript. 
-      <li>Added <code>when</code> as alias to <code>case</code> (and <code>|</code>). Rationale: ease transition from CoffeeScript. 
+      <li>Added <code>yes / on</code> as aliases to <code>true</code> and <code>no / off</code> as aliases to <code>false</code>. Added <code>undefined</code> as an alias to <code>void</code>, and aliased <code>isnt</code> to <code>is not</code>. Rationale: ease transition from CoffeeScript, which has all these features, to LiveScript.
+      <li>Added <code>when</code> as alias to <code>case</code> (and <code>|</code>). Rationale: ease transition from CoffeeScript.
       <li>Allowed guards in loops using case statement, eg. <code>x for x from 1 to 10 when x % 2 is 0</code>. Rationale: ease transition from CoffeeScript and have guards in comprehensions like other languages (Haskell).
       <li>Added the use of <code>else</code> for default in switch. Rationale: ease transition from CoffeeScript.
-      <li>Added <code>loop</code> as alias for <code>while true</code>. Rationale: ease transition from CoffeeScript. 
+      <li>Added <code>loop</code> as alias for <code>while true</code>. Rationale: ease transition from CoffeeScript.
       <li>Added pipe operator <code>|></code> ala F#, <code>val |> func</code> is the same as <code>func(val)</code>. Very useful in combination with curried functions. Rationale: useful, as in F#.
       <li>Added backwards pipe operator <code><|</code> ala F#: <code>f <| x</code> is the same as <code>f x</code>. This is more useful than it looks, and can help you avoid parens. For instance for a definition of toCase that returns a function that either uppercases or lowercases a word, <code>toCase \up <| \hello</code> rather than <code>toCase(\up) \hello</code>. Rationale: useful as per above, as in F#.
       <li>Added function composition operators ala F#. <code>&gt;&gt;</code> and <code>&lt;&lt;</code>. <code>(f &gt;&gt; g) x</code> is <code>g(f(x))</code> and <code>(f &lt;&lt; g) x</code> is <code>f(g(x))</code>. Rationale: very useful, especially with curried functions. As in F# (and Haskell, there it's the dot operator).
       <li>Added <code>%%</code> operator (and corresponding <code>%%=</code> operator), <code>x %% y</code> is <code>(x % y + y) % y</code>. Eg. <code>-3 % 4 == -3; -3 %% 4 == 1</code>. Rationale: this is how the <code>%</code> op behaves in other languages such as Python and Ruby.
       <li>Changed number base format from <code>7r4</code> to <code>7~4</code>. This is because using <code>r</code> causes ambiguity with number comments. For instance, <code>36rpm</code> - is that the number <code>36</code> with the number comment <code>rpm</code> or is it <code>pm</code> base <code>36</code> (922). Also now accept any number as radix, so that a better error can be thrown when that radix is not 2-36. Rationale: fixes ambiguity.
-      <li>Allowed expression in range syntax, eg. <code>[x to y/2]</code> instead of just number literals. This has the side effect of removing naked ranges, eg. <code>2 to 5</code> without enclosing brackets (for loops remain unchanged). Rationale: expressions in ranges are useful, much more than naked ranges which have really limited use. Also closer to CoffeeScript, easing transition again. 
+      <li>Allowed expression in range syntax, eg. <code>[x to y/2]</code> instead of just number literals. This has the side effect of removing naked ranges, eg. <code>2 to 5</code> without enclosing brackets (for loops remain unchanged). Rationale: expressions in ranges are useful, much more than naked ranges which have really limited use. Also closer to CoffeeScript, easing transition again.
       <li>Changed CLI to bare compilation so that defined variables are attached to global scope. Improved repl to continue when lines end with <code>-></code>, <code>~></code>, or <code>=</code>
-      <li>Added list comprehensions (eg. <code>[x for x in list when x is \something]</code>) and removed postfix loops (eg. <code>something x for x in list</code>). Comprehensions always return a list. Nested list comprehensions behave properly, ie. the last for is the inner most loop. Rationale: following Haskell and Python. More consistent behavior. Easier to deal with in your head. More intuitive. 
+      <li>Added list comprehensions (eg. <code>[x for x in list when x is \something]</code>) and removed postfix loops (eg. <code>something x for x in list</code>). Comprehensions always return a list. Nested list comprehensions behave properly, ie. the last for is the inner most loop. Rationale: following Haskell and Python. More consistent behavior. Easier to deal with in your head. More intuitive.
       <li>Changed JS literals to use two backticks, eg. <code>``js code here``</code> instead of <code>`js code here`</code>. Rationale: it was seldom needed; frees up backticks for infix function application.
       <li>Add infix function application, eg. <code>3 `add` 2</code>. Rationale: as in Haskell. This allows for partial application of their second argument, like operators eg. <code>(`times` 2)</code>.
       <li>Changed unary clone operator from <code>^</code> to <code>^^</code>. Rationale: disambiguate with partial application of power operator.
       <li>Added partial application of operators. Eg. <code>(+ 2)</code> returns a function which adds 2 to its argument. Also allowed is simply <code>(*)</code> which is a function which multiplies its two arguments. <code>(+x)</code> and <code>(-x)</code> still mean the application of those unary operators - the operator must be spaced to be the partial application of that operator. Using the length star <code>*</code> is no longer allowed within parens (sometimes used when setting dynamic keys), due to ambiguity with the partially applied multiplication operator. Rationale: awesome. As in Haskell.
       <li>Added unary operators as functions. Eg. you can use <code>(not)</code> as a function, compose it, etc. Rationale: very useful, as in Haskell.
-      <li>Added <code>.</code> as alias to <code>&lt;&lt;</code> in composing functions. This disallows property access in the style of <code>x . y</code>. Rationale: as in Haskell. Dually spaced property access should never be used anyway. 
+      <li>Added <code>.</code> as alias to <code>&lt;&lt;</code> in composing functions. This disallows property access in the style of <code>x . y</code>. Rationale: as in Haskell. Dually spaced property access should never be used anyway.
       <li>Added object comprehensions. Eg. <code>{[key, val * 2] for key, val of obj}</code> would return an object with all the values double of the original. The first part of the array literal gets translated into the key, the second part into the value. Rationale: very useful when dealing with objects. Can now map and filter objects back into objects.
-      <li>Dashes are now supported in identifiers, they get converted into camel case. Eg. <code>get-room</code> is equivalent to <code>getRoom</code>, <code>encode-URI</code> is <code>encodeURI</code>. Rationale: enable different styles which other people may enjoy. As in the lisp family of languages. 
-      <li>Added implicit call/lookup eg. <code>(.length)</code> is equivalent to <code>-> it.length</code> and <code>(.join \*)</code> is equivalent to <code>-> it.join \*</code>. <code>(obj.)</code> is <code>-> obj[it]</code>. Rationale: useful when mapping, filtering, etc. 
+      <li>Dashes are now supported in identifiers, they get converted into camel case. Eg. <code>get-room</code> is equivalent to <code>getRoom</code>, <code>encode-URI</code> is <code>encodeURI</code>. Rationale: enable different styles which other people may enjoy. As in the lisp family of languages.
+      <li>Added implicit call/lookup eg. <code>(.length)</code> is equivalent to <code>-> it.length</code> and <code>(.join \*)</code> is equivalent to <code>-> it.join \*</code>. <code>(obj.)</code> is <code>-> obj[it]</code>. Rationale: useful when mapping, filtering, etc.
       <li>Added infix <code>with</code> operator ("cloneport"). Eg. <code>personA = personB with name: \alice</code> is equivalent to <code>personA = ^^personB &lt;&lt;&lt; name: \alice</code>. Ie. it clones the head and imports the tail into that new object. <code>personB</code> is unmodified. Rationale: really nice may to create new objects out of old ones.
       <li>Add partial application, <code>_</code> is the placeholder. Eg. <code>f = add-three-numbers 1, _, 3</code> then <code>f 2 #=> 6</code>. Can be multiple times, and like curried functions if called with no args will invoke, allowing use of default args. Rationale: really useful, for when function args aren't in a nice order so you can use a curried version.
       <li>Changed backcall <code>&lt;-</code> placeholder to underscore <code>_</code>. Rationale: fit in with partial application placeholder.
