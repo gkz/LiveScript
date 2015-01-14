@@ -209,16 +209,3 @@ eq '(function*(){\n  var body;\n  body = (yield fn).body;\n});' bare '->* {body}
 
 # [livescript#279](https://github.com/gkz/LiveScript/issues/279)
 ################################################################
-
-# [livescript#639](https://github.com/gkz/LiveScript/issues/639)
-eq '''
-var ret, res$, k, ref$, v;
-res$ = {};
-for (k in ref$ = o) {
-  v = ref$[k];
-  if (cond) {
-    res$[k] = v;
-  }
-}
-ret = res$;
-''' bare 'ret = {[k, v] for k, v of o | cond}'
