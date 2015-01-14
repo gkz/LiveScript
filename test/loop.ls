@@ -642,3 +642,11 @@ eq 1, i
 o = { [k, -> v] for let k, v of {a: 1, b: 2} }
 eq 1 o.a!
 eq 2 o.b!
+
+# [livescript#639](https://github.com/gkz/LiveScript/issues/639)
+i = 0
+f = ->
+  i++
+  true
+o = {[k, v] for k, v of {a: 1} when f!}
+eq 1 i
