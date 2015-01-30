@@ -280,4 +280,4 @@ switch
   require 'child_process' .spawn do
     process.exec-path
     node-args ++ ls-args
-    cwd: process.cwd!, custom-fds: [0 1 2]
+    cwd: process.cwd!, stdio: 'inherit'
