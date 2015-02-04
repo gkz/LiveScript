@@ -2150,6 +2150,61 @@ function not$(x){ return !x; }
         </div>
       </div>
 
+      <a name="export"></a>
+      <h3 id="operators-export">export</h3>
+      <p>By using the <code>export</code> operator instead of <code>exports</code> you get a more concise way to define modules.</p>
+
+      <div class="example">
+        <div class="example-ls">
+<pre class="prettyprint lang-ls">
+
+
+
+export func = ->
+
+export value
+
+export value-a, value-b, value-c
+
+
+
+export 
+  a: 1
+  b: -> 123
+
+
+
+export class MyClass
+</pre>
+        </div>
+        <div class="example-js">
+<pre class="prettyprint lang-js">
+var func, ref$, MyClass, out$ = typeof exports != 'undefined' && exports || this;
+
+out$.func = func = function(){};
+
+out$.value = value;
+
+out$.valueA = valueA;
+out$.valueB = valueB;
+out$.valueC = valueC;
+
+ref$ = out$;
+ref$.a = 1;
+ref$.b = function(){
+  return 123;
+};
+
+out$.MyClass = MyClass = (function(){
+  MyClass.displayName = 'MyClass';
+  var prototype = MyClass.prototype, constructor = MyClass;
+  function MyClass(){}
+  return MyClass;
+}());
+</pre>
+        </div>
+      </div>
+
       <a name="require"></a>
       <h3 id="operators-require">require!</h3>
 
