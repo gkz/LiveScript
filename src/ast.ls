@@ -2190,6 +2190,26 @@ class exports.For extends While
     head += \\n + @tab if (@item or (@index and not @object)) and \} is body.charAt 0
     head + body
 
+#### Step slice
+# Slices a list in steps
+# Makes it possible to use the BY keyword in slices
+# 
+class exports.StepSlice extends For
+
+  makeReturn: ->
+    @makeReturnArg = it
+    super ...
+  
+  compileNode: (o) -> 
+    @index = o.scope.temporary \x
+    [sub, ref, temps] = @target.unwrap!cache o
+    @guard = Binary '<' (Literal @index), (Chain ref .add Index Key \length)
+    @makeComprehension (Chain ref .add Index Literal @index), this
+    if @makeReturnArg? then @makeReturn @makeReturnArg
+    code = ''
+    if temps then code += sub.compile(o) + \; + \\n + o.indent
+    code += super ...
+
 #### Try
 # Classic `try`-`catch`-`finally` block with optional `catch`.
 class exports.Try extends Node
