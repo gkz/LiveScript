@@ -2192,8 +2192,8 @@ class exports.For extends While
 
 #### Step slice
 # Slices a list in steps
-# Makes it possible to use the BY keyword in slices
-# 
+# Makes it possible to combine non-literals and the BY keyword in slices 
+# E.g. list[1 to 10][f() to x by (1+1)]
 class exports.StepSlice extends For
 
   makeReturn: ->

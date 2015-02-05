@@ -178,7 +178,7 @@ l = [1 to 5]
 eq '8,9' "#{ l[2 to 3] = [8 9] }"
 eq '1,2,8,9,5' "#{ l }"
 
-# `BY` Keyword in Slices
+# `BY` keyword in Slices
 [x, f, list] = [2, (/2), [1 to 6]]
 eq '2,4' String list[1 til 4 by 2]
 eq '3,4,5' String list[x to 4 by 1]
