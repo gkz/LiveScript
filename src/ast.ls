@@ -2196,9 +2196,7 @@ class exports.For extends While
 # E.g. list[1 to 10][f() to x by (1+1)]
 class exports.StepSlice extends For
 
-  makeReturn: ->
-    @makeReturnArg = it
-    super ...
+  makeReturn: (@makeReturnArg) -> super ...
   
   compileNode: (o) -> 
     @index = o.scope.temporary \x
