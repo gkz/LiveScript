@@ -178,6 +178,14 @@ l = [1 to 5]
 eq '8,9' "#{ l[2 to 3] = [8 9] }"
 eq '1,2,8,9,5' "#{ l }"
 
+# `BY` keyword in Slices
+[x, f, list] = [2, (/2), [1 to 6]]
+eq '2,4' String list[1 til 4 by 2]
+eq '3,4,5' String list[x to 4 by 1]
+eq '2,4' String list[1 til 4 by x]
+eq '1,3' String list[to x by f 4][to x-1 by 1]
+
+
 # Automatic Dot Insertion
 eq @toString, @\toString
 eq @toString, @"to#{\S}tring"
