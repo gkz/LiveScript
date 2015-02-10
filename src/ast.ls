@@ -2011,7 +2011,6 @@ class exports.While extends Node
     if it
       if @objComp
         @body = Block @body.makeReturn it, true
-        @body = If @guard, @body if @guard
       else
         unless @body or @index
           @addBody Block Var @index = \ridx$
