@@ -9,7 +9,8 @@ require! {
 parser <<<
   yy: ast
   lexer:
-    lex: -> [tag, @yytext, @yylineno] = @tokens[++@pos] or ['']; tag
+    # Abuse yyleng to store the column index - in newer versions of Jison, yyloc should be used instead
+    lex: -> [tag, @yytext, @yylineno, @yyleng] = @tokens[++@pos] or ['']; tag
     set-input: -> @pos = -1; @tokens = it
     upcoming-input: -> ''
 

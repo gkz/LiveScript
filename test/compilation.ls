@@ -68,8 +68,6 @@ compileThrows 'invalid use of null' 1 'null.po'
 
 compileThrows 'deprecated octal literal 0666' 1 '0666'
 
-
-
 tokens = LiveScript.lex '''
 """
   1 #{
@@ -80,33 +78,32 @@ tokens = LiveScript.lex '''
 '''
 eq tokens.join('\n'), '''
 NEWLINE,
-,0
-(,\",0
-STRNUM,\"1 \",1
-+-,+,1
-(,(,2
-INDENT,4,2
-STRNUM,2,2
+,0,0
+(,\",0,0
+STRNUM,\"1 \",1,4
++-,+,1,4
+(,(,2,4
+INDENT,4,2,4
+STRNUM,2,2,4
 NEWLINE,
-,3
-STRNUM,3,3
-DEDENT,4,4
+,3,4
+STRNUM,3,3,4
+DEDENT,4,4,2
 NEWLINE,
-,4
-),),4
-+-,+,4
-STRNUM,\" 4\",5
-),,5
+,4,2
+),),4,2
++-,+,4,2
+STRNUM,\" 4\",5,0
+),,5,0
 NEWLINE,
-,5
+,5,0
 '''
-
 
 # Indentation on line 1 should be valid.
 eq '1;\n2;', bare '  1\n  2'
 
 
-eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' LiveScript.tokens('''
+eq 'STRNUM,0,0,0 ,,,,0,0 STRNUM,1,1,2' LiveScript.tokens('''
 0 \\
   1
 ''').slice(0 3).join ' '
