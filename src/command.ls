@@ -175,9 +175,9 @@ switch
     util.log "#source => #js-path" if o.watch
   !function compileWithMap
     map-path = js-path + ".map"
-    js := new SourceNode(1, 0, null, ["//# sourceMappingURL=#{path.relative(path.dirname(js-path), map-path)}\n", js])
-    js.setFile(path.relative(path.dirname(js-path), source))
+    js.setFile(path.relative(path.dirname(map-path), source))
     js := js.toStringWithSourceMap()
+    js.code += '\n//# sourceMappingURL=' + path.relative(path.dirname(js-path), map-path) + '\n'
  
     e <-! fs.write-file js-path, js.code || '\n'
     e2 <-! fs.write-file map-path, js.map || '\n'
