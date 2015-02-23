@@ -68,7 +68,7 @@
   } else {
     console.log("Testing with harmony.");
   }
-
+  
   files.forEach(function(file){
     var stk, msg, m, ref, num, row, col, that, lines, line;
 
@@ -80,6 +80,7 @@
     var code = fs.readFileSync(filename, "utf8");
 
     try {
+      console.log(filename);
       LiveScript.run(code, { filename: filename });
     } catch (e) {
       ++failedTests;

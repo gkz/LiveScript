@@ -88,3 +88,7 @@ module.exports = optionator do
       alias: 'a'
       type: 'Boolean'
       description: 'print the syntax tree the parser produces'
+    * option: 'map'
+      alias: 'm'
+      type: 'Boolean'
+      description: 'generate source maps alongside the compiled JavaScript files'
