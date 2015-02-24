@@ -229,6 +229,12 @@ h1 a:hover {
 #compiler-close-button {
   display: none;
 }
+#compiler-editor {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  margin: 10px 0 10px 0;
+}
 @media (max-width: 768px) {
   .side-row.row-fluid .sidebar {
     width: 100%;

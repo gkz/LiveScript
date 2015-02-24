@@ -1,6 +1,14 @@
 window <<< require 'prelude-ls'
 LiveScript = require "LiveScript"
 $ ->
+  editor = ace .edit 'compiler-editor'
+  editor .setTheme 'ace/theme/textmate'
+  editor .setFontSize 16
+  editor .renderer .setShowGutter false
+  editor .getSession! .setTabSize 2
+  LiveScriptMode = ace .require 'ace/mode/livescript' .Mode
+  editor .getSession! .setMode new LiveScriptMode!
+
   for example in $ '.example .example-ls'
     src = $ example .find \.lang-ls .html!
     $ '<pre class="source"></pre>' .html src .appendTo example
@@ -8,7 +16,7 @@ $ ->
   prettyPrint!
 
   boom = (action) ->
-    source = $ '.compiler textarea' .val!
+    source = editor.getValue!
     result = try
       source = "<- (do)\n#source" if action is \run
       func = if action is \run then \compile else action
@@ -53,6 +61,10 @@ $ ->
 
       $ toPrepend .prependTo '.compiler-output' .attr \title, source
 
+  $ '#compiler-editor' .keydown (e) !->
+    if e.keyCode in [10, 13] && e.ctrlKey
+      boom if e.shiftKey then \run else \compile
+
   $ '.compiler-output' .on \click \.close ->
     $(this) .parent! .parent! .hide!   # or remove()
     return false
@@ -65,7 +77,7 @@ $ ->
 
   load-compiler = ->
     $ '.compiler' .show!
-    $ '.compiler textarea' .val <| $ this .find '.source' .text!
+    editor .setValue ($ this .find '.source' .text!), 1
 
   $ '.example' .on \dblclick, load-compiler
 
