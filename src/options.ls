@@ -91,6 +91,6 @@ module.exports = optionator do
     * option: 'map'
       alias: 'm'
       type: 'String'
-      enum: ['none' 'linked' 'linked-src' 'embedded']
+      enum: ['none' 'linked' 'linked-src' 'embedded', 'debug']
       default: 'none'
       description: 'generate source maps'

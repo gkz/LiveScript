@@ -7,12 +7,14 @@
 require! {
   'prelude-ls': {fold}
   './util': {name-from-path, strip-string}
-  'source-map': {SourceNode}
+  'source-map': {SourceNode, SourceMapGenerator}
 }
 
 sn = (node, ...parts) ->
   try
-    new SourceNode(node.line, node.column, null, parts)
+    result = new SourceNode(node.line, node.column, null, parts)
+    result.displayName = node.constructor.displayName
+    result
   catch ex
     console.dir parts
     throw ex
@@ -59,6 +61,69 @@ SourceNode::setFile = (filename) ->
   for child in @children
     if child instanceof SourceNode
       child.setFile(filename)
+# Built-in version of this sucks, so replace it with our own
+SourceNode::toStringWithSourceMap = (...args) ->
+  gen = new SourceMapGenerator(...args)
+  genLine = 1
+  genColumn = 0
+  stack = []
+  code = ""
+  debugOutput = ""
+  debugIndent = ""
+  debugIndentStr = "  "
+
+  genForNode = (node) ->
+    if node instanceof SourceNode
+      debugOutput += debugIndent + node.displayName
+      # Block nodes should essentially "clear out" any effects from parent nodes, so always add them to the stack
+      valid = (node.line && ('column' of node)) || (node.displayName == "Block")
+      if valid
+        stack.push if node.displayName != "Block" then node else null
+        debugOutput += "!"
+      debugOutput += " " + node.line + ":" + node.column +  " " + genLine + ":" + genColumn + "\n"
+
+      debugIndent += debugIndentStr
+      for child in node.children
+        genForNode(child)
+      debugIndent := debugIndent.slice(0, debugIndent.length - debugIndentStr.length)
+
+      if valid
+        stack.pop!
+    else
+      debugOutput += debugIndent + JSON.stringify(node) + "\n"
+      code += node
+      cur = stack[*-1]
+      if cur
+        gen.addMapping do
+          source: cur.source
+          original:
+            line: cur.line
+            column: cur.column
+          generated:
+            line: genLine
+            column: genColumn
+          name: cur.name
+      for i til node.length
+        c = node.charAt(i)
+        if c == "\n"
+          genColumn := 0
+          ++genLine
+          if cur
+            gen.addMapping do
+              source: cur.source
+              original:
+                line: cur.line
+                column: cur.column
+              generated:
+                line: genLine
+                column: genColumn
+              name: cur.name
+        else
+          ++genColumn
+
+  genForNode(this)
+  {code: code, map: gen, debug: debugOutput}
+
 /* # Use this to track down places where a SourceNode is being converted into a string and causing the location to be lost
 tmpToString = SourceNode::toString
 SourceNode::toString = (...args) ->
@@ -2532,6 +2597,7 @@ class exports.JS extends Node
 #### Require
 class exports.Require extends Node
   (@body) ~>
+    debugger
 
   children: <[ body ]>
 
@@ -2553,7 +2619,8 @@ class exports.Require extends Node
       value = strip-string get-value value, true
 
       main = Chain Var 'require' .add Call [Literal "'#value'"]
-      Assign to-asg, main .compile o
+
+      sn(item, (Assign to-asg, main .compile o))
 
     if @body.items?
       code = []

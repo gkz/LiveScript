@@ -187,7 +187,7 @@ bnf =
     # [yadayadayada](http://search.cpan.org/~tmtm/Yada-Yada-Yada-1.00/Yada.pm)
     o \... -> L Throw JS "Error('unimplemented')"
 
-    o 'REQUIRE Chain'   -> Require $2.unwrap!
+    o 'REQUIRE Chain'   -> L Require $2.unwrap!
 
   # An indented block of expressions.
   # Note that [Lexer](#lexer) rewrites some single-line forms into blocks.
@@ -229,7 +229,7 @@ bnf =
     o 'CLONE Expression' ditto, prec: \UNARY
     o 'UNARY INDENT ArgList OptComma DEDENT' -> Unary $1, Arr.maybe $3
 
-    o 'Expression +-      Expression' -> Binary $2, $1, $3
+    o 'Expression +-      Expression' -> L Binary $2, $1, $3
     o 'Expression COMPARE Expression' ditto
     o 'Expression LOGIC   Expression' ditto
     o 'Expression MATH    Expression' ditto
