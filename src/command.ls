@@ -124,7 +124,7 @@ switch
     LiveScript.emit 'write' t
     if o.print or not filename
     then say t.output.toString().trim-right!
-    else write-JS filename, t.output, base, json
+    else write-JS filename, t.output, t.input, base, json
   catch then if e?
     if LiveScript.listeners 'failure' .length
       LiveScript.emit 'failure' e, t
@@ -160,7 +160,7 @@ switch
 # Write out a JavaScript source file with the compiled code. By default, files
 # are written out in `cwd` as `.js` files with the same name, but the output
 # directory can be customized with `--output`.
-!function write-JS source, js, base, json
+!function write-JS source, js, input, base, json
   #     foo.ls     => foo.js
   #     foo.jsm.ls => foo.jsm
   filename = path.basename(source)replace do
@@ -175,17 +175,28 @@ switch
     util.log "#source => #js-path" if o.watch
   !function compileWithMap
     map-path = js-path + ".map"
-    js.setFile(path.relative(path.dirname(map-path), source))
+    sourceName = path.relative(path.dirname(map-path), source)
+    js.setFile(sourceName)
     js := js.toStringWithSourceMap()
-    js.code += '\n//# sourceMappingURL=' + path.relative(path.dirname(js-path), map-path) + '\n'
+
+    if o.map == 'embedded'
+      js.map.setSourceContent(sourceName, input)
+    if o.map == 'linked'
+      js.code += '\n//# sourceMappingURL=' + path.relative(path.dirname(js-path), map-path) + '\n'
+    else
+      js.code += '\n//# sourceMappingURL=data:application/json;base64,' + new Buffer(js.map.toString()).toString('base64') + '\n'
  
     e <-! fs.write-file js-path, js.code || '\n'
-    e2 <-! fs.write-file map-path, js.map || '\n'
     return warn e if e
-    return warn e2 if e2
-    util.log "#source => #js-path, #map-path" if o.watch
+
+    if o.map == 'linked'
+      e2 <-! fs.write-file map-path, js.map || '\n'
+      return warn e2 if e2
+      util.log "#source => #js-path, #map-path" if o.watch
+    else
+      util.log "#source => #js-path" if o.watch
   e <-! fs.stat dir
-  if o.map
+  if o.map != 'none'
     return compileWithMap! unless e
   else
     return compile! unless e

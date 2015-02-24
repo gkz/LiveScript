@@ -90,5 +90,7 @@ module.exports = optionator do
       description: 'print the syntax tree the parser produces'
     * option: 'map'
       alias: 'm'
-      type: 'Boolean'
-      description: 'generate source maps alongside the compiled JavaScript files'
+      type: 'String'
+      enum: ['none' 'linked' 'linked-src' 'embedded']
+      default: 'none'
+      description: 'generate source maps'
