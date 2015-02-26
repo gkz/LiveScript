@@ -11,7 +11,16 @@ parser <<<
   yy: ast
   lexer:
     # Abuse yyleng to store the column index - in newer versions of Jison, yyloc should be used instead
-    lex: -> [tag, @yytext, @yylineno, @yyleng] = @tokens[++@pos] or ['']; tag
+    lex: ->
+      [tag, @yytext, first_line, first_column] = @tokens[++@pos] or [''];
+      [_, _, last_line, last_column] = @tokens[@pos+1] or [''];
+      @yylineno = first_line
+      @yylloc =
+        first_line: first_line
+        first_column: first_column
+        last_line: last_line
+        last_column: last_column
+      tag
     set-input: -> @pos = -1; @tokens = it
     upcoming-input: -> ''
 

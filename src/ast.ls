@@ -2666,7 +2666,16 @@ class exports.Vars extends Node
 #### Parser Utils
 # Helpers for modifying nodes in [parser](../lib/parser.js).
 
-exports.L = (yylineno, yycolumn, node) -> node import line: yylineno + 1, column: yycolumn
+exports.L = (a, b, node) ->
+  if node instanceof Node
+    node import
+      first_line: a.first_line+1
+      first_column: a.first_column
+      last_line: b.last_line+1
+      last_column: b.last_column
+      line: a.first_line+1
+      column: a.first_column
+  node
 
 exports.Decl = (type, nodes, lno) ->
   throw SyntaxError "empty #type on line #lno" unless nodes.0
