@@ -10,7 +10,7 @@ require! {
   'source-map': {SourceNode, SourceMapGenerator}
 }
 
-sn = (node, ...parts) ->
+sn = (node = {}, ...parts) ->
   try
     result = new SourceNode(node.line, node.column, null, parts)
     result.displayName = node.constructor.displayName
@@ -76,9 +76,9 @@ SourceNode::toStringWithSourceMap = (...args) ->
     if node instanceof SourceNode
       debugOutput += debugIndent + node.displayName
       # Block nodes should essentially "clear out" any effects from parent nodes, so always add them to the stack
-      valid = (node.line && ('column' of node)) || (node.displayName == "Block")
+      valid = (node.line && ('column' of node))
       if valid
-        stack.push if node.displayName != "Block" then node else null
+        stack.push node
         debugOutput += "!"
       debugOutput += " " + node.line + ":" + node.column +  " " + genLine + ":" + genColumn + "\n"
 
@@ -149,7 +149,7 @@ SourceNode::toString = (...args) ->
     return node.compileClosure o if o.level and node.isStatement!
     code = (node import tab: o.indent)compileNode o
     if node.temps then for tmp in that then o.scope.free tmp
-    sn(this, code)
+    code
 
   compileClosure: (o) ->
     # A statement that _jumps_ out of current context (like `return`) can't be
@@ -173,7 +173,7 @@ SourceNode::toString = (...args) ->
 
   # Compiles a child node as a block statement.
   compileBlock: (o, node) ->
-    if node?compile o, LEVEL_TOP then sn(node, "{\n", that, "\n#{@tab}}") else sn(node, '{}')
+    unless snEmpty(code = node?compile o, LEVEL_TOP) then sn(null, "{\n", code, "\n#{@tab}}") else sn(node, '{}')
 
   # If the code generation wishes to use the result of a complex expression
   # in multiple places, ensure that the expression is only ever evaluated once,
@@ -409,7 +409,7 @@ class exports.Block extends Node
       node.isStatement! or codes.push node.terminator
       codes.push \\n
     codes.pop!
-    sn(this, ...codes)
+    sn(null, ...codes)
 
   # **Block** is the only node that can serve as the root.
   compileRoot: (options) ->
@@ -425,7 +425,7 @@ class exports.Block extends Node
     code = [(@compileWithDeclarations o)]
     # Wrap everything in a safety closure unless requested not to.
     bare or code = ["(function(){\n", ...code, "\n}).call(this);\n"]
-    result = sn(this, prefix || [], ...code)
+    result = sn(null, prefix || [], ...code)
 
     #snAutofill(result)
 
@@ -438,7 +438,7 @@ class exports.Block extends Node
       pre    = [(@compile o), "\n"]
       @lines = rest
     return sn(this, pre.0 || []) if snEmpty(post = @compile o)
-    sn(this, ...pre, if @scope then that.emit post, o.indent else post)
+    sn(null, ...pre, if @scope then that.emit post, o.indent else post)
 
   # Compile to a comma-separated list of expressions.
   compileExpressions: (o, level) ->
@@ -450,7 +450,7 @@ class exports.Block extends Node
     code = []; last = lines.pop!
     for node in lines then code.push (node <<< {+void})compile(o, LEVEL_PAREN), ', '
     code.push (last.compile o, LEVEL_PAREN)
-    if level < LEVEL_LIST then sn(this, ...code) else sn(this, "(", ...code, ")")
+    if level < LEVEL_LIST then sn(null, ...code) else sn(null, "(", ...code, ")")
 
 #### Atom
 # An abstract node for simple values.
@@ -1001,9 +1001,9 @@ class exports.Obj extends List
       ID.test key or key = do Function "return #key"
       node.carp "duplicate property \"#key\"" unless dic"#key." .^.= 1
     if code.join("") then code.push \\n + @tab
-    code = sn(this, "{", ...code, "}")
+    code = sn(null, sn(this, "{"), ...code, sn(this, "}"))
     rest and code = Import(JS code; Obj rest)compile o <<< indent: @tab
-    if @front and \{ is code.toString().charAt! then sn(this, "(", code, ")") else code
+    if @front and \{ is code.toString().charAt! then sn(null, "(", code, ")") else code
 
 #### Prop
 # `x: y`
@@ -1032,7 +1032,7 @@ class exports.Prop extends Node
       fun.accessor = true
       code.push fun.x, "et ", key, (fun.compile o, LEVEL_LIST .toString().slice 8), ',\n' + o.indent
     code.pop!
-    sn(this, ...code)
+    sn(null, ...code)
 
   compileDescriptor: (o) ->
     obj = Obj!
@@ -1068,7 +1068,7 @@ class exports.Arr extends List
     return sn(this, '[]') unless items.length
     unless snEmpty(code = Splat.compileArray o, items)
       return if @newed then sn(this, "(", code, ")") else sn(this, code)
-    sn(this, "[", (List.compile o, items, @deepEq), "]")
+    sn(null, sn(this, "["), (List.compile o, items, @deepEq), sn(this, "]"))
 
   @maybe = (nodes) ->
     return nodes.0 if nodes.length is 1 and nodes.0 not instanceof Splat
@@ -1439,6 +1439,7 @@ class exports.Binary extends Node
 # Assignment to a variable/property.
 class exports.Assign extends Node
   (@left, rite, @op or \=, @logic or @op.logic, @defParam) ~>
+    @opLoc = @op
     @op += ''
     @[if rite instanceof Node then \right else \unaries] = rite
 
@@ -1476,7 +1477,7 @@ class exports.Assign extends Node
       left.isAssignable! or left.carp 'invalid unary assign'
       [left, @right] = Chain left .cacheReference o
       for op in @unaries then @right = Unary op, @right
-    return sn(this, (Parens(@right) <<< {@front, @newed})compile o) if left.isEmpty!
+    return sn(null, (Parens(@right) <<< {@front, @newed})compile o) if left.isEmpty!
     if left.getDefault!
       @right = Binary left.op, @right, left.second
       left.=first
@@ -1493,7 +1494,7 @@ class exports.Assign extends Node
       op    = \:=
     op = (op.slice 1 -2) + \= if op in <[ .&.= .|.= .^.= .<<.= .>>.= .>>>.= ]>
     (right.=unparen!)ripName left.=unwrap!
-    sign = op.replace \: ''
+    sign = sn(@opLoc, " ", (op.replace \: ''), " ")
     name = ((left <<< {+front})compile o, LEVEL_LIST)
     if lvar = left instanceof Var
       if op is \=
@@ -1512,11 +1513,11 @@ class exports.Assign extends Node
               (lvar or left instanceof Chain and left.isSimpleAccess!)
       # Optimize `a = while ...`.
       empty = if right.objComp then '{}' else '[]'
-      [(res = o.scope.temporary \res), " = #empty;\n#{@tab}", (right.makeReturn(res)compile o), "\n#{@tab}", name, " #sign ", o.scope.free res]
+      [(res = o.scope.temporary \res), " = #empty;\n#{@tab}", (right.makeReturn(res)compile o), "\n#{@tab}", name, sign, o.scope.free res]
     else
-      [name, " #sign ", (right.compile o, LEVEL_LIST)]
+      [name, sign, (right.compile o, LEVEL_LIST)]
     code = ["(", ...code, ")"] if o.level > LEVEL_LIST
-    sn(this, ...code)
+    sn(null, ...code)
 
   compileConditional: (o, left) ->
     if left instanceof Var and @logic in <[ ? ]> and @op is \=
@@ -1606,7 +1607,7 @@ class exports.Assign extends Node
       else if node instanceof Prop
       then node = ({key} = node)val
       else key  = node
-      node = Var node.name if node instanceof Key
+      node = CopyL node, Var node.name if node instanceof Key
       node = logic <<< first: node if logic
       val  = Chain rcache||=Var(rite), [Index key.maybeKey!]
       val  = Import Obj!, val if splat
@@ -1647,7 +1648,7 @@ class exports.Import extends Node
              or right.unfoldAssign o
              or right.expandSlice  o .unwrap!
       return @compileAssign o, right.asObj!items if right instanceof List
-    sn(this, (Call.make Util("import#{ @all or '' }"), [@left, right] .compileNode o))
+    (CopyL this, Call.make Util("import#{ @all or '' }"), [@left, right]) .compileNode o
 
   # If the right operand of `<<<` is an object or array literal,
   # expand it to a series of assignments.
@@ -1682,10 +1683,10 @@ class exports.Import extends Node
       dyna  or  key.=maybeKey!
       logic and val = logic <<< first: val
       code.push (Assign(Chain reft, [Index key]; val)compile o, LEVEL_PAREN)
-    return sn(this, ...code) if top
+    return sn(null, ...code) if top
     @void or node instanceof Splat or
       code.push (if com then ' ' else ', '), (reft.compile o, LEVEL_PAREN)
-    if o.level < LEVEL_LIST then sn(this, ...code) else sn(this, "(", ...code, ")")
+    if o.level < LEVEL_LIST then sn(null, ...code) else sn(null, "(", ...code, ")")
 
 #### In
 # Handles `in` operation that tests if the left operand is included within
@@ -1783,7 +1784,9 @@ class exports.Fun extends Node
     if @statement or name and @labeled
       code.push ' ', (scope.add name, \function, this)
     @hushed or @ctor or @newed or @generator or body.makeReturn!
-    code.push "(", (@compileParams o, scope), "){"
+    code.push "(", (@compileParams o, scope), ")"
+    code = [sn(this, ...code)]
+    code.push "{"
     code.push "\n", bodyCode, "\n#tab" unless snEmpty(bodyCode = body.compileWithDeclarations o)
     code.push \}
     curry-code-check = ~>
@@ -1795,13 +1798,13 @@ class exports.Fun extends Node
         else
           [(util \curry), "(", ...code, ")"]
       else code
-    if inLoop then return pscope.assign pscope.temporary(\fn), sn(this, ...curry-code-check!)
+    if inLoop then return pscope.assign pscope.temporary(\fn), sn(null, ...curry-code-check!)
     if @returns
       code.push "\n#{tab}return ", name, ";"
     else if @bound and @ctor
       code.push ' function ctor$(){} ctor$.prototype = prototype;'
     code = curry-code-check!
-    if @front and not @statement then sn(this, "(", ...code, ")") else sn(this, ...code)
+    if @front and not @statement then sn(null, "(", ...code, ")") else sn(null, ...code)
 
   compileParams: (o, scope) ->
     {{length}:params, body} = this
@@ -1855,7 +1858,7 @@ class exports.Fun extends Node
       assigns.push Assign Arr(rest), Literal \arguments
     @body.prepend ...assigns if assigns.length
     names.pop!
-    sn(this, ...names)
+    sn(null, ...names)
 
 #### Class
 class exports.Class extends Node
@@ -1869,6 +1872,8 @@ class exports.Class extends Node
 
   compile: (o, level) ->
     {{{lines}:body}:fun, title} = this
+    CopyL this, fun
+
     bound-funcs = []
     curried-bound-funcs = []
     decl = title?varName!
@@ -1960,7 +1965,7 @@ class exports.Class extends Node
     clas = Parens Call.make(fun, args), true
     clas = Assign vname, clas if decl and title.isComplex!
     clas = Assign title, clas if title
-    sn(this, (clas.compile o, level))
+    sn(null, (clas.compile o, level))
 
 #### Super
 # Reference to the parent method or constructor.
@@ -2359,12 +2364,12 @@ class exports.Try extends Node
 
   compileNode: (o) ->
     o.indent += TAB
-    code = ['try ', (@compileBlock o, @attempt)]
+    code = [sn(this, 'try '), (@compileBlock o, @attempt)]
     if @recovery or not @ensure and JS ''
-      code.push ' catch (e$) ', (@compileBlock o, that)
+      code.push sn(that, ' catch (e$) '), (@compileBlock o, that)
     if @ensure
-      code.push ' finally ', (@compileBlock o, that)
-    sn(this, ...code)
+      code.push sn(that, ' finally '), (@compileBlock o, that)
+    sn(null, ...code)
 
 #### Switch
 # Compiles to the regular JS `switch`-`case`-`default`,
@@ -2413,7 +2418,7 @@ class exports.Switch extends Node
       Block (t ++ [Literal \false]) .compile o, LEVEL_PAREN
     else
       !!@topic and @anaphorize!compile o, LEVEL_PAREN
-    code  = ["switch (", snSafe(topic), ") {\n"]
+    code  = [sn(this, "switch (", snSafe(topic), ") {\n")]
     stop  = @default or @cases.length - 1
     o.break = true
     for c, i in @cases
@@ -2421,7 +2426,7 @@ class exports.Switch extends Node
     if @default
       o.indent = tab + TAB
       code.push tab + "default:\n", that, "\n" if @default.compile o, LEVEL_TOP
-    sn(this, ...code, tab + \})
+    sn(null, ...code, tab + \})
 
 #### Case
 class exports.Case extends Node
@@ -2452,13 +2457,13 @@ class exports.Case extends Node
       [t] = tests; i = 0; while tests[++i] then t = Binary binary, t, that
       tests = [(@<<<{t, aSource: \t, aTargets: [\body]})anaphorize!invert!]
     code = []
-    for t in tests then code.push tab + "case ", (t.compile o, LEVEL_PAREN), ":\n"
+    for t in tests then code.push tab, sn(t, "case ", (t.compile o, LEVEL_PAREN), ":\n")
     {lines} = @body; last = lines[*-1]
     lines[*-1] = JS '// fallthrough' if ft = last?value is \fallthrough
     o.indent = tab += TAB
     code.push bodyCode, \\n     unless snEmpty(bodyCode = @body.compile o, LEVEL_TOP)
     code.push tab  + 'break;\n' unless nobr or ft or last instanceof Jump
-    sn(this, ...code)
+    sn(null, ...code)
 
 #### If
 # The `if`/`else` structure that acts as both statement and expression.
@@ -2488,11 +2493,11 @@ class exports.If extends Node
     if o.level then @compileExpression o else @compileStatement o
 
   compileStatement: (o) ->
-    code = ["if (", (@if.compile o, LEVEL_PAREN), ") "]
+    code = [sn(this, "if (", (@if.compile o, LEVEL_PAREN), ") ")]
     o.indent += TAB
     code.push (@compileBlock o, Block @then)
-    return sn(this, ...code) unless els = @else
-    sn(this, ...code, ' else ', (if els instanceof constructor
+    return sn(null, ...code) unless els = @else
+    sn(null, ...code, sn(els, ' else '), (if els instanceof constructor
       then els.compile o <<< indent: @tab, LEVEL_TOP
       else @compileBlock o, els))
 
@@ -2501,10 +2506,10 @@ class exports.If extends Node
     @void and thn.void = els.void = true
     if not @else and (@cond or @void)
       return Parens Binary \&& @if, thn .compile o
-    code = [(@if.compile o, LEVEL_COND)]
+    code = [sn(this, @if.compile o, LEVEL_COND)]
     pad  = if els.isComplex! then \\n + o.indent += TAB else ' '
-    code.push "#pad? ", (thn.compile o, LEVEL_LIST), "#pad: ", (els.compile o, LEVEL_LIST)
-    if o.level < LEVEL_COND then sn(this, ...code) else sn(this, "(", code, ")")
+    code.push "#pad", sn(thn, "? "), (thn.compile o, LEVEL_LIST), "#pad", sn(els, ": "), (els.compile o, LEVEL_LIST)
+    if o.level < LEVEL_COND then sn(null, ...code) else sn(null, "(", code, ")")
 
   # Unfolds a node's child if soak,
   # then tuck the node under the created **If**.
@@ -2540,7 +2545,7 @@ class exports.Label extends Node
     @carp "duplicate label \"#label\"" if label in labels
     labels.push label
     it.isStatement! or it = Block it
-    sn(this, label, ": ", (if it instanceof Block
+    sn(null, sn(this, label, ": "), (if it instanceof Block
       then o.indent += TAB; @compileBlock o, it
       else it.compile o))
 
@@ -2577,9 +2582,9 @@ class exports.Cascade extends Node
     code = [(input.compile o)]
     out  = Block output .compile o <<< ref: new String ref
     @carp "unreferred cascadee" if prog1 is \cascade and not o.ref.erred
-    return sn(this, ...code, input.terminator, "\n", out) unless level
+    return sn(null, ...code, input.terminator, "\n", out) unless level
     code.push ", ", out
-    if level > LEVEL_PAREN then sn(this, "(", ...code, ")") else sn(this, ...code)
+    if level > LEVEL_PAREN then sn(null, "(", ...code, ")") else sn(null, ...code)
 
 #### JS
 # Embedded JavaScript snippets.
@@ -2597,7 +2602,6 @@ class exports.JS extends Node
 #### Require
 class exports.Require extends Node
   (@body) ~>
-    debugger
 
   children: <[ body ]>
 
@@ -2615,10 +2619,10 @@ class exports.Require extends Node
       | item instanceof Prop    => [item.val, item.key]
       | otherwise               => [item, item]
       asg-value = get-value asg
-      to-asg = if typeof! asg-value is 'String' then Var name-from-path asg-value else asg
+      to-asg = if typeof! asg-value is 'String' then CopyL asg, Var name-from-path asg-value else asg
       value = strip-string get-value value, true
 
-      main = Chain Var 'require' .add Call [Literal "'#value'"]
+      main = Chain (CopyL this, Var 'require') .add Call [Literal "'#value'"]
 
       sn(item, (Assign to-asg, main .compile o))
 
@@ -2627,9 +2631,9 @@ class exports.Require extends Node
       for item in @body.items
         code.push (process-item item), ";\n#{o.indent}"
       code.pop!
-      sn(this, ...code)
+      sn(null, ...code)
     else
-      sn(this, process-item @body)
+      sn(null, process-item @body)
 
 #### Util
 # A wrapper node for utility functions.
@@ -2667,7 +2671,7 @@ class exports.Vars extends Node
 # Helpers for modifying nodes in [parser](../lib/parser.js).
 
 exports.L = (a, b, node) ->
-  if node instanceof Node
+  if node && typeof node == "object"
     node import
       first_line: a.first_line+1
       first_column: a.first_column
@@ -2676,6 +2680,23 @@ exports.L = (a, b, node) ->
       line: a.first_line+1
       column: a.first_column
   node
+
+exports.CopyL = CopyL = (a, node) ->
+  if node && typeof node == "object"
+    node import
+      first_line: a.first_line
+      first_column: a.first_column
+      last_line: a.last_line
+      last_column: a.last_column
+      line: a.line
+      column: a.column
+  node
+
+exports.Box = (v) ->
+  if typeof v == "object"
+    v
+  else
+    new v.constructor(v)
 
 exports.Decl = (type, nodes, lno) ->
   throw SyntaxError "empty #type on line #lno" unless nodes.0

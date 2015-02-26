@@ -32,8 +32,8 @@ o = (patterns, action, options) ->
   patterns.=trim!split /\s+/
   action &&= if action is ditto then last else
     "#action"
-    .replace /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/ '$$$$ = L(@1, @' + patterns.length + ',$1);'
-    .replace /\b(?!Er)[A-Z][\w.]*/g \yy.$&
+    .replace /^function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/ ((_, a) -> '$$ = ' + (if a.slice(0,2) == 'L(' then '(' else 'L(@1, @' + patterns.length + ',') + a + ');')
+    .replace /\b(?!Er)(?!String)[A-Z][\w.]*/g \yy.$&
     .replace /(\.L\()\s*(\d+\s*\,)\s*(\d+\s*\,)?/g ((_, a, b, c) -> a + '@' + (b||'1,') + '@' + (c||b||(patterns.length + ',')))
   [patterns, last := action or '', options]
 
@@ -74,27 +74,27 @@ bnf =
     , -> Chain L 1 7 ($6.0.addObjComp!makeComprehension (L 3 Arr $3), $6.slice 1)
 
     o '( BIOP )'            -> Chain L 2 Binary $2
-    o '( BIOP Expression )' -> Chain L 2 3 Binary $2, , $3
-    o '( Expression BIOP )' -> Chain L 2 3 Binary $3,   $2
+    o '( BIOP Expression )' -> Chain L 2 Binary $2, , $3
+    o '( Expression BIOP )' -> Chain L 3 Binary $3,   $2
 
     o '( BIOPR )'
     , -> Chain L 2 if   \! is $2.charAt 0
                    then Binary $2.slice(1) .invertIt!
                    else Binary $2
     o '( BIOPR Expression )'
-    , -> Chain L 2 3 if   \! is $2.charAt 0
-                     then Binary $2.slice(1), , $3 .invertIt!
-                     else Binary $2, , $3
+    , -> Chain L 2 if   \! is $2.charAt 0
+                   then Binary $2.slice(1), , $3 .invertIt!
+                   else Binary $2, , $3
     o '( Expression BIOPR )'
-    , -> Chain L 2 3 if   \! is $3.charAt 0
-                     then Binary $3.slice(1), $2 .invertIt!
-                     else Binary $3, $2
+    , -> Chain L 3 if   \! is $3.charAt 0
+                   then Binary $3.slice(1), $2 .invertIt!
+                   else Binary $3, $2
 
     o '( BIOPBP )'                              -> Chain L 2 Binary $2
-    o '( BIOPBP CALL( ArgList OptComma )CALL )' -> Chain L 2 6 Binary $2, , $4
+    o '( BIOPBP CALL( ArgList OptComma )CALL )' -> Chain L 2 Binary $2, , $4
 
     o '( BIOPP )'                                -> Chain L 2 Binary $2
-    o '( PARAM( ArgList OptComma )PARAM BIOPP )' -> Chain L 2 6 Binary $6, $3
+    o '( PARAM( ArgList OptComma )PARAM BIOPP )' -> Chain L 6 Binary $6, $3
 
     o '( UNARY )'           -> Chain L 2 Unary $2
     o '( CREMENT )'         ditto
@@ -207,9 +207,9 @@ bnf =
     o \Chain -> $1.unwrap!
 
     o 'Chain ASSIGN Expression'
-    , -> Assign $1.unwrap!, $3           , $2
+    , -> Assign $1.unwrap!, $3           , L 2 Box $2
     o 'Chain ASSIGN INDENT ArgList OptComma DEDENT'
-    , -> Assign $1.unwrap!, Arr.maybe($4), $2
+    , -> Assign $1.unwrap!, Arr.maybe($4), L 2 Box $2
 
     o 'Expression IMPORT Expression'
     , -> Import $1, $3           , $2 is \<<<<
@@ -219,7 +219,7 @@ bnf =
     o 'CREMENT Chain' -> Unary $1, $2.unwrap!
     o 'Chain CREMENT' -> Unary $2, $1.unwrap!, true
 
-    o 'UNARY ASSIGN Chain' -> Assign $3.unwrap!, [$1] $2
+    o 'UNARY ASSIGN Chain' -> Assign $3.unwrap!, [$1] L 2 Box $2
     o '+-    ASSIGN Chain' ditto
     o 'CLONE ASSIGN Chain' ditto
 
@@ -229,7 +229,7 @@ bnf =
     o 'CLONE Expression' ditto, prec: \UNARY
     o 'UNARY INDENT ArgList OptComma DEDENT' -> Unary $1, Arr.maybe $3
 
-    o 'Expression +-      Expression' -> Binary $2, $1, $3
+    o 'Expression +-      Expression' -> L 2 Binary $2, $1, $3
     o 'Expression COMPARE Expression' ditto
     o 'Expression LOGIC   Expression' ditto
     o 'Expression MATH    Expression' ditto
@@ -256,9 +256,9 @@ bnf =
     o 'GENERATOR CALL( ArgList OptComma )CALL Block' -> Fun($3, $6, false, false, false, true).named $1
 
     # The full complement of `if` and `unless` expressions
-    o 'IF Expression Block Else'      -> If $2, $3, $1 is \unless .addElse $4
+    o 'IF Expression Block Else'      -> L 1 2 If $2, $3, $1 is \unless .addElse $4
     # and their postfix forms.
-    o 'Expression POST_IF Expression' -> If $3, $1, $2 is \unless
+    o 'Expression POST_IF Expression' -> L 2 3 If $3, $1, $2 is \unless
 
     # Loops can either be normal with a block of expressions to execute
     # and an optional `else` clause,
@@ -288,11 +288,11 @@ bnf =
     o 'SWITCH                     Block' -> new Switch $1, null [], $2
 
     o 'TRY Block'                               -> new Try $2
-    o 'TRY Block CATCH Block'                   -> new Try $2, , $4
-    o 'TRY Block CATCH Block     FINALLY Block' -> new Try $2, , $4, $6
-    o 'TRY Block CATCH Arg Block'               -> new Try $2, $4, $5
-    o 'TRY Block CATCH Arg Block FINALLY Block' -> new Try $2, $4, $5, $7
-    o 'TRY Block                 FINALLY Block' -> new Try $2, , , $4
+    o 'TRY Block CATCH Block'                   -> new Try $2, , (L 3 $4)
+    o 'TRY Block CATCH Block     FINALLY Block' -> new Try $2, , (L 3 $4), (L 5 $6)
+    o 'TRY Block CATCH Arg Block'               -> new Try $2, $4, (L 3 4 $5)
+    o 'TRY Block CATCH Arg Block FINALLY Block' -> new Try $2, $4, (L 3 4 $5), (L 6 $7)
+    o 'TRY Block                 FINALLY Block' -> new Try $2, , , (L 3 $4)
 
     o 'CLASS Chain OptExtends OptImplements Block'
     , -> new Class title: $2.unwrap!, sup: $3, mixins: $4, body: $5
@@ -324,8 +324,8 @@ bnf =
     o 'Key : INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($4)
 
     o \KeyValue
-    o 'KeyValue LOGIC Expression'  -> Binary $2, $1, $3
-    o 'KeyValue ASSIGN Expression' -> Binary $2, $1, $3, true
+    o 'KeyValue LOGIC Expression'  -> L 2 Binary $2, $1, $3
+    o 'KeyValue ASSIGN Expression' -> L 2 Binary $2, $1, $3, true
 
     o '+- Key'     -> Prop $2.maybeKey!   , L 1 Literal $1 is \+
     o '+- LITERAL' -> Prop L(2, Key $2, true), L 1 Literal $1 is \+
