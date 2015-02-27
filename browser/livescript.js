@@ -5268,8 +5268,6 @@ exports.doCase = function(){
   this.seenFor = false;
   if (((ref$ = this.last[0]) === 'ASSIGN' || ref$ === '->' || ref$ === ':') || (this.last[0] === 'INDENT' && ((ref$ = (ref1$ = this.tokens)[ref1$.length - 2][0]) === 'ASSIGN' || ref$ === '->' || ref$ === ':'))) {
     this.token('SWITCH', 'switch');
-    this.line++;
-    this.column = 0;
     return this.token('CASE', 'case');
   }
 };

@@ -444,8 +444,6 @@ exports import
     if @last.0 in <[ ASSIGN -> : ]>
     or (@last.0 is \INDENT and @tokens[*-2].0 in <[ ASSIGN -> : ]>)
       @token \SWITCH \switch
-      @line++
-      @column = 0
       @token \CASE   \case
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
