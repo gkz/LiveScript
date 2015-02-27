@@ -304,7 +304,6 @@ exports import
              then @doHeredoc code, index, q
              else @strnum q+q; 2
     if q is \"
-      debugger
       parts = @interpolate code, index, q
       @addInterpolated parts, unlines
       return parts.size

@@ -5093,7 +5093,6 @@ exports.doString = function(code, index, q){
       : (this.strnum(q + q), 2);
   }
   if (q === '"') {
-    debugger;
     parts = this.interpolate(code, index, q);
     this.addInterpolated(parts, unlines);
     return parts.size;
