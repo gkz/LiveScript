@@ -862,10 +862,10 @@ class exports.Call extends Node
   show: -> [@new] + [@method] + [\? if @soak]
 
   compile: (o) ->
-    code  =  [(@method or '') + \( + (if @pipe then "\n#{o.indent}" else '')]
+    code  =  [sn(this, (@method or ''), \() + (if @pipe then "\n#{o.indent}" else '')]
     for a, i in @args then code.push (if i then ', ' else ''), a.compile o, LEVEL_LIST
-    code.push \)
-    sn(this, ...code)
+    code.push sn(this, \))
+    sn(null, ...code)
   @make = (callee, args, opts) ->
     call = Call args
     call <<< opts if opts

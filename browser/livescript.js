@@ -1363,14 +1363,14 @@ exports.Call = Call = (function(superclass){
   };
   prototype.compile = function(o){
     var code, i$, ref$, len$, i, a;
-    code = [(this.method || '') + '(' + (this.pipe ? "\n" + o.indent : '')];
+    code = [sn(this, this.method || '', '(') + (this.pipe ? "\n" + o.indent : '')];
     for (i$ = 0, len$ = (ref$ = this.args).length; i$ < len$; ++i$) {
       i = i$;
       a = ref$[i$];
       code.push(i ? ', ' : '', a.compile(o, LEVEL_LIST));
     }
-    code.push(')');
-    return sn.apply(null, [this].concat(slice$.call(code)));
+    code.push(sn(this, ')'));
+    return sn.apply(null, [null].concat(slice$.call(code)));
   };
   Call.make = function(callee, args, opts){
     var call;
@@ -4680,7 +4680,7 @@ exports.rewrite = function(it){
   return it;
 };
 exports.tokenize = function(code, o){
-  var i, prevIndex, prevLine, c, that;
+  var i, prevIndex, c, charsConsumed, that;
   this.inter || (code = code.replace(/[\r\u2028\u2029\uFEFF]/g, ''));
   code = '\n' + code;
   this.tokens = [this.last = ['NEWLINE', '\n', 0, 0]];
@@ -4692,13 +4692,16 @@ exports.tokenize = function(code, o){
   this.flags = [];
   i = 0;
   prevIndex = i;
-  prevLine = this.line;
+  this.charsCounted = 0;
+  this.isAtPrefix = true;
   while (c = code.charAt(i)) {
-    if (this.line === prevLine) {
-      this.column += i - prevIndex;
-    }
+    charsConsumed = i - prevIndex;
     prevIndex = i;
-    prevLine = this.line;
+    if (this.charsCounted > charsConsumed) {
+      throw new Error("Location information out-of-sync in lexer");
+    }
+    this.column += charsConsumed - this.charsCounted;
+    this.charsCounted = 0;
     switch (c) {
     case ' ':
       i += this.doSpace(code, i);
@@ -5090,9 +5093,10 @@ exports.doString = function(code, index, q){
       : (this.strnum(q + q), 2);
   }
   if (q === '"') {
+    debugger;
     parts = this.interpolate(code, index, q);
     this.addInterpolated(parts, unlines);
-    return 1 + parts.size;
+    return parts.size;
   }
   str = (SIMPLESTR.lastIndex = index, SIMPLESTR).exec(code)[0] || this.carp('unterminated string');
   this.strnum(unlines(this.string(q, str.slice(1, -1))));
@@ -5108,7 +5112,7 @@ exports.doHeredoc = function(code, index, q){
     return this.countLines(raw).length + 6;
   }
   parts = this.interpolate(code, index, q + q + q);
-  tabs = heretabs(code.slice(index + 3, index + parts.size).replace(LASTDENT, ''));
+  tabs = heretabs(code.slice(index + 3, index + parts.size - 3).replace(LASTDENT, ''));
   for (i$ = 0, len$ = parts.length; i$ < len$; ++i$) {
     i = i$;
     t = parts[i$];
@@ -5123,7 +5127,7 @@ exports.doHeredoc = function(code, index, q){
     }
   }
   this.addInterpolated(parts, enlines);
-  return 3 + parts.size;
+  return parts.size;
 };
 exports.doComment = function(code, index){
   var comment, end, ref$;
@@ -5162,7 +5166,7 @@ exports.doHeregex = function(code, index){
   var tokens, last, parts, rest, flag, i$, i, t, dynaflag, len$, val, one;
   tokens = this.tokens, last = this.last;
   parts = this.interpolate(code, index, '//');
-  rest = code.slice(index + 2 + parts.size);
+  rest = code.slice(index + parts.size);
   flag = this.validate(/^(?:[gimy]{1,4}|[?$]?)/.exec(rest)[0]);
   if (parts[1]) {
     if (flag === '$') {
@@ -5208,7 +5212,7 @@ exports.doHeregex = function(code, index){
   } else {
     this.regex(reslash(parts[0][1].replace(HEREGEX_OMIT, '')), flag);
   }
-  return 2 + parts.size + flag.length;
+  return parts.size + flag.length;
 };
 exports.doBackslash = function(code, lastIndex){
   var ref$, input, word;
@@ -5680,20 +5684,23 @@ exports.parameters = function(arrow, offset){
   }
 };
 exports.interpolate = function(str, idx, end){
-  var parts, end0, pos, i, ch, c1, id, stringified, length, tag, e, delta, nested, clone, ref$;
+  var parts, end0, pos, i, ref$, oldLine, oldColumn, ch, c1, id, stringified, length, tag, e, delta, nested, clone, ref1$;
   parts = [];
   end0 = end.charAt(0);
   pos = 0;
   i = -1;
   str = str.slice(idx + end.length);
+  ref$ = [this.line, this.column], oldLine = ref$[0], oldColumn = ref$[1];
+  this.countLines(end);
   while (ch = str.charAt(++i)) {
     switch (ch) {
     case end0:
       if (end !== str.slice(i, i + end.length)) {
         continue;
       }
-      parts.push(['S', this.countLines(str.slice(0, i)), this.line, this.column]);
-      return parts.size = pos + i + end.length, parts;
+      parts.push(['S', this.countLines(str.slice(0, i)), oldLine, oldColumn]);
+      this.countLines(end);
+      return parts.size = pos + i + end.length * 2, parts;
     case '#':
       c1 = str.charAt(i + 1);
       id = in$(c1, ['@']) && c1 || (ID.lastIndex = i + 1, ID).exec(str)[1];
@@ -5708,7 +5715,8 @@ exports.interpolate = function(str, idx, end){
       continue;
     }
     if (i || nested && !stringified) {
-      stringified = parts.push(['S', this.countLines(str.slice(0, i)), this.line, this.column]);
+      stringified = parts.push(['S', this.countLines(str.slice(0, i)), oldLine, oldColumn]);
+      ref$ = [this.line, this.column], oldLine = ref$[0], oldColumn = ref$[1];
     }
     if (id) {
       length = id.length;
@@ -5733,19 +5741,21 @@ exports.interpolate = function(str, idx, end){
       clone = (ref$ = clone$(exports), ref$.inter = true, ref$.emender = this.emender, ref$);
       nested = clone.tokenize(str.slice(i + 2), {
         line: this.line,
-        column: this.column,
+        column: this.column + 2,
         raw: true
       });
       delta = str.length - clone.rest.length;
-      str = clone.rest, this.line = clone.line, this.column = clone.column;
+      this.countLines(str.slice(i, delta));
+      str = clone.rest;
       while (((ref$ = nested[0]) != null ? ref$[0] : void 8) === 'NEWLINE') {
         nested.shift();
       }
       if (nested.length) {
-        nested.unshift(['(', '(', nested[0][2], nested[0][3]]);
-        nested.push([')', ')', this.line, this.column]);
+        nested.unshift(['(', '(', oldLine, oldColumn]);
+        nested.push([')', ')', this.line, this.column - 1]);
         parts.push(['TOKENS', nested]);
       }
+      ref1$ = [this.line, this.column], oldLine = ref1$[0], oldColumn = ref1$[1];
     }
     pos += delta;
     i = -1;
@@ -5826,12 +5836,18 @@ exports.able = function(call){
 };
 exports.countLines = function(it){
   var pos;
+  if (!this.isAtPrefix) {
+    this.column += it.length;
+  }
   while (pos = 1 + it.indexOf('\n', pos)) {
-    if (++this.line !== 0) {
+    if (!this.isAtPrefix) {
       this.column = 0;
     }
     this.column += it.length - pos;
+    ++this.line;
+    this.isAtPrefix = false;
   }
+  this.charsCounted += it.length;
   return it;
 };
 exports.forange = function(){

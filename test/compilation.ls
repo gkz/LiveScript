@@ -80,9 +80,9 @@ eq tokens.join('\n'), '''
 NEWLINE,
 ,0,0
 (,\",0,0
-STRNUM,\"1 \",1,4
-+-,+,1,4
-(,(,2,4
+STRNUM,\"1 \",0,0
++-,+,0,0
+(,(,1,4
 INDENT,4,2,4
 STRNUM,2,2,4
 NEWLINE,
@@ -93,10 +93,10 @@ NEWLINE,
 ,4,2
 ),),4,2
 +-,+,4,2
-STRNUM,\" 4\",5,0
-),,5,0
+STRNUM,\" 4\",4,3
+),,5,3
 NEWLINE,
-,5,0
+,5,3
 '''
 
 # Indentation on line 1 should be valid.

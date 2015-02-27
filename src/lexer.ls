@@ -62,11 +62,16 @@ exports import
     # returning the number of characters it has consumed.
     i = 0
     prevIndex = i
-    prevLine = @line
+    @charsCounted = 0
+    @isAtPrefix = true
     while c = code.charAt i
-      @column += i - prevIndex if @line == prevLine
+      charsConsumed = i - prevIndex
       prevIndex = i
-      prevLine = @line
+
+      if @charsCounted > charsConsumed then throw new Error("Location information out-of-sync in lexer")
+      @column += charsConsumed - @charsCounted
+      @charsCounted = 0
+
       switch c
       | ' '        => i += @doSpace     code, i
       | \\n        => i += @doLine      code, i
@@ -299,9 +304,10 @@ exports import
              then @doHeredoc code, index, q
              else @strnum q+q; 2
     if q is \"
+      debugger
       parts = @interpolate code, index, q
       @addInterpolated parts, unlines
-      return 1 + parts.size
+      return parts.size
     str = (SIMPLESTR <<< lastIndex: index)exec code .0
           or @carp 'unterminated string'
     @strnum unlines @string q, str.slice 1 -1
@@ -318,13 +324,13 @@ exports import
       @strnum enlines @string q, lchomp detab doc, heretabs doc
       return @countLines(raw)length + 6
     parts = @interpolate code, index, q+q+q
-    tabs  = heretabs code.slice(index+3 index+parts.size)replace LASTDENT, ''
+    tabs  = heretabs code.slice(index+3, (index+parts.size - 3))replace LASTDENT, ''
     for t, i in parts then if t.0 is \S
       t.1.=replace LASTDENT, '' if i+1 is parts.length
       t.1 = detab  t.1, tabs
       t.1 = lchomp t.1 if i is 0
     @addInterpolated parts, enlines
-    3 + parts.size
+    parts.size
 
   # Matches block comments.
   doComment: (code, index) ->
@@ -363,7 +369,7 @@ exports import
   doHeregex: (code, index) ->
     {tokens, last} = this
     parts = @interpolate code, index, \//
-    rest  = code.slice index + 2 + parts.size
+    rest  = code.slice index + parts.size
     flag  = @validate /^(?:[gimy]{1,4}|[?$]?)/exec(rest)0
     if parts.1
       if flag is \$
@@ -388,7 +394,7 @@ exports import
         if dynaflag then tokens.push ...dynaflag else @token \STRNUM "'#flag'"
       @token (if flag is \$ then \) else \)CALL), ''
     else @regex reslash(parts.0.1.replace HEREGEX_OMIT, ''), flag
-    2 + parts.size + flag.length
+    parts.size + flag.length
 
   # Matches a word literal, or ignores a sequence of whitespaces.
   doBackslash: (code, BSTOKEN.lastIndex) ->
@@ -694,12 +700,15 @@ exports import
   interpolate: !(str, idx, end) ->
     parts = []; end0 = end.charAt 0; pos = 0; i = -1
     str.=slice idx + end.length
+    [oldLine, oldColumn] = [@line, @column]
+    @countLines end
     while ch = str.charAt ++i
       switch ch
       case end0
         continue unless end is str.slice i, i + end.length
-        parts.push [\S; @countLines str.slice 0 i; @line; @column]
-        return parts <<< size: pos + i + end.length
+        parts.push [\S; @countLines str.slice 0 i; oldLine; oldColumn]
+        @countLines end
+        return parts <<< size: pos + i + end.length*2
       case \#
         c1 = str.charAt i+1
         id = c1 in <[ @ ]> and c1 or (ID <<< lastIndex: i+1)exec str .1
@@ -708,7 +717,8 @@ exports import
       default continue
       # `"#a#{b || c}"` => `a + "" + (b || c)`
       if i or nested and not stringified
-        stringified = parts.push [\S; @countLines str.slice 0 i; @line; @column]
+        stringified = parts.push [\S; @countLines str.slice 0 i; oldLine; oldColumn]
+        [oldLine, oldColumn] = [@line, @column]
       if id
         {length} = id
         id = \this if id is \@
@@ -723,14 +733,16 @@ exports import
         parts.push [\TOKENS nested = [[tag, id, @line, @column]]]
       else
         clone  = exports with {+inter, @emender}
-        nested = clone.tokenize str.slice(i+2), {@line, @column, +raw}
+        nested = clone.tokenize str.slice(i+2), {@line, column: @column + 2, +raw}
         delta  = str.length - clone.rest.length
-        {rest: str, @line, @column} = clone
+        @countLines str.slice(i, delta)
+        {rest: str} = clone
         while nested.0?0 is \NEWLINE then nested.shift!
         if nested.length
-          nested.unshift [\( \( nested.0.2, nested.0.3]
-          nested.push    [\) \) @line, @column]
+          nested.unshift [\( \( oldLine, oldColumn]
+          nested.push    [\) \) @line, @column-1]
           parts.push [\TOKENS nested]
+        [oldLine, oldColumn] = [@line, @column]
       pos += delta; i = -1
     @carp "missing `#end`"
 
@@ -799,10 +811,16 @@ exports import
 
   # Increments `@line` by the number in newlines in a string.
   countLines: ->
+    # Each time we find a newline, reset the column to the correct value should there be no more newlines
+    # Take care if we are before the first line, because it might not start at zero
+    @column += it.length unless @isAtPrefix
     while pos = 1 + it.indexOf \\n pos
-      if ++@line != 0
-        @column = 0
+      @column = 0 unless @isAtPrefix
       @column += it.length - pos
+      ++@line
+      @isAtPrefix = false
+    # Mark these characters as consumed, so that the main loop doesn't re-count them
+    @charsCounted += it.length
     it
 
   # Checks FOR for FROM/TO.
