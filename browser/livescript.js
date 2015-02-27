@@ -1154,7 +1154,7 @@ exports.Chain = Chain = (function(superclass){
     if (this.splattedNewArgs) {
       idt = o.indent + TAB;
       func = Chain(this.head, tails.slice(0, -1));
-      return sn(this, "(function(func, args, ctor) {\n" + idt + "ctor.prototype = func.prototype;\n" + idt + "var child = new ctor, result = func.apply(child, args), t;\n" + idt + "return (t = typeof result)  == \"object\" || t == \"function\" ? result || child : child;\n" + TAB + "})(", func.compile(o), ", ", this.splattedNewArgs, ", function(){})");
+      return sn(null, "(function(func, args, ctor) {\n" + idt + "ctor.prototype = func.prototype;\n" + idt + "var child = new ctor, result = func.apply(child, args), t;\n" + idt + "return (t = typeof result)  == \"object\" || t == \"function\" ? result || child : child;\n" + TAB + "})(", func.compile(o), ", ", this.splattedNewArgs, ", function(){})");
     }
     if (!this.tails.length) {
       return this.head.compile(o);
@@ -1172,7 +1172,7 @@ exports.Chain = Chain = (function(superclass){
     if ('.' === rest.join("").charAt(0) && SIMPLENUM.test(base[0].toString())) {
       base.push(' ');
     }
-    return sn.apply(null, [this].concat(slice$.call(news), slice$.call(base), slice$.call(rest)));
+    return sn.apply(null, [null].concat(slice$.call(news), slice$.call(base), slice$.call(rest)));
   };
   prototype.unfoldSoak = function(o){
     var that, ref$, i$, len$, i, node, ref1$, bust, test;
@@ -2265,7 +2265,7 @@ exports.Binary = Binary = (function(superclass){
     }
   };
   prototype.compilePow = function(o){
-    return sn(this, Call.make(JS('Math.pow'), [this.first, this.second]).compile(o));
+    return sn(null, Call.make(CopyL(this, JS('Math.pow')), [this.first, this.second]).compile(o));
   };
   prototype.compileConcat = function(o){
     var f;
@@ -2277,7 +2277,7 @@ exports.Binary = Binary = (function(superclass){
         return [x];
       }
     };
-    return sn(this, Chain(this.first).add(Index(Key('concat'), '.', true)).add(Call(f(this.second))).compile(o));
+    return sn(null, Chain(this.first).add(CopyL(this, Index(Key('concat'), '.', true))).add(Call(f(this.second))).compile(o));
   };
   prototype.compileCompose = function(o){
     var op, functions, x;
@@ -2297,9 +2297,9 @@ exports.Binary = Binary = (function(superclass){
   prototype.compileMod = function(o){
     var ref, code;
     ref = o.scope.temporary();
-    code = ["(((", this.first.compile(o), ") % (", ref, " = ", this.second.compile(o), ") + ", ref, ") % ", ref, ")"];
+    code = [sn(this, "((("), this.first.compile(o), sn(this, ") % ("), sn(this, ref, " = "), this.second.compile(o), sn(this, ") + ", ref, ") % ", ref, ")")];
     o.scope.free(ref);
-    return sn.apply(null, [this].concat(slice$.call(code)));
+    return sn.apply(null, [null].concat(slice$.call(code)));
   };
   prototype.compilePartial = function(o){
     var vit, x, y;
@@ -3185,11 +3185,13 @@ exports.Super = Super = (function(superclass){
 }(Node));
 exports.Parens = Parens = (function(superclass){
   var prototype = extend$((import$(Parens, superclass).displayName = 'Parens', Parens), superclass).prototype, constructor = Parens;
-  function Parens(it, keep, string){
+  function Parens(it, keep, string, lb, rb){
     var this$ = this instanceof ctor$ ? this : new ctor$;
     this$.it = it;
     this$.keep = keep;
     this$.string = string;
+    this$.lb = lb;
+    this$.rb = rb;
     return this$;
   } function ctor$(){} ctor$.prototype = prototype;
   prototype.children = ['it'];
@@ -3218,12 +3220,12 @@ exports.Parens = Parens = (function(superclass){
       it.head.hushed = true;
     }
     if (!(this.keep || this.newed || level >= LEVEL_OP + PREC[it.op])) {
-      return sn(this, (it.front = this.front, it).compile(o, level || LEVEL_PAREN));
+      return (it.front = this.front, it).compile(o, level || LEVEL_PAREN);
     }
     if (it.isStatement()) {
-      return sn(this, it.compileClosure(o));
+      return it.compileClosure(o);
     } else {
-      return sn(this, "(", it.compile(o, LEVEL_PAREN), ")");
+      return sn(null, sn(this.lb, "("), it.compile(o, LEVEL_PAREN), sn(this.rb, ")"));
     }
   };
   return Parens;
@@ -3277,9 +3279,9 @@ exports.Splat = Splat = (function(superclass){
     if (atoms.length) {
       args.push(Arr(atoms));
     }
-    return sn(this, (index
+    return sn(null, (index
       ? Arr(list)
-      : args.shift()).compile(o, LEVEL_CALL), ".concat(", List.compile(o, args), ")");
+      : args.shift()).compile(o, LEVEL_CALL), sn(this, ".concat("), List.compile(o, args), sn(this, ")"));
   };
   function expand(nodes){
     var index, node, it;
@@ -3478,24 +3480,24 @@ exports.While = While = (function(superclass){
       ? this.test = this.test.invert()
       : this.anaphorize());
     if (this.post) {
-      return 'do {' + this.compileBody((o.indent += TAB, o));
+      return sn(null, sn(this, 'do {'), this.compileBody((o.indent += TAB, o)));
     }
     test = ((ref$ = this.test) != null ? ref$.compile(o, LEVEL_PAREN) : void 8) || '';
     if (!(this.update || this['else'])) {
       head = !snEmpty(test)
-        ? ["while (", test]
-        : ['for (;;'];
+        ? [sn(this, "while ("), test]
+        : [sn(this, 'for (;;')];
     } else {
-      head = ['for ('];
+      head = [sn(this, 'for (')];
       if (this['else']) {
         head.push(this.yet = o.scope.temporary('yet'), " = true");
       }
-      head.push(";", test.toString() && ' ', test, ";");
+      head.push(sn(this, ";"), test.toString() && ' ', test, sn(this, ";"));
       if (that = this.update) {
         head.push(' ', that.compile(o, LEVEL_PAREN));
       }
     }
-    return sn.apply(null, [this].concat(slice$.call(head), [') {', this.compileBody((o.indent += TAB, o))]));
+    return sn.apply(null, [null].concat(slice$.call(head), [sn(this, ') {'), this.compileBody((o.indent += TAB, o))]));
   };
   prototype.compileBody = function(o){
     var lines, yet, tab, code, ret, mid, empty, resultName, last, hasLoop, res, temp, key$, ref$, bodyCode;
@@ -3559,13 +3561,13 @@ exports.While = While = (function(superclass){
     code.push.apply(code, mid);
     code.push('}');
     if (this.post) {
-      code.push(" while (", this.test.compile((o.tab = tab, o), LEVEL_PAREN), ");");
+      code.push(sn(this, " while ("), this.test.compile((o.tab = tab, o), LEVEL_PAREN), sn(this, ");"));
     }
     if (yet) {
-      code.push(" if (", yet, ") ", this.compileBlock(o, Block(this['else'])));
+      code.push(sn(this, " if ("), yet, sn(this, ") "), this.compileBlock(o, Block(this['else'])));
       o.scope.free(yet);
     }
-    return sn.apply(null, [this].concat(slice$.call(code), slice$.call(ret)));
+    return sn.apply(null, [null].concat(slice$.call(code), slice$.call(ret)));
   };
   return While;
 }(Node));
@@ -3670,7 +3672,7 @@ exports.For = For = (function(superclass){
       }
     }
     this['else'] && (this.yet = o.scope.temporary('yet'));
-    head = ['for ('];
+    head = [sn(this, 'for (')];
     if (this.object) {
       head.push(idx, " in ");
     }
@@ -3687,8 +3689,8 @@ exports.For = For = (function(superclass){
           ? ' -= ' + pvar.toString().slice(1)
           : ' += ' + pvar)));
     }
-    this.own && head.push(") if (", o.scope.assign('own$', '{}.hasOwnProperty'), ".call(", svar, ", ", idx, ")");
-    head.push(') {');
+    this.own && head.push(sn(this, ") if ("), o.scope.assign('own$', '{}.hasOwnProperty'), ".call(", svar, ", ", idx, ")");
+    head.push(sn(this, ') {'));
     if (this['let']) {
       this.body.traverseChildren(function(it){
         switch (it.value) {
@@ -3714,7 +3716,7 @@ exports.For = For = (function(superclass){
     if ((this.item || (this.index && !this.object)) && '}' === body.toString().charAt(0)) {
       head.push('\n' + this.tab);
     }
-    return sn.apply(null, [this].concat(slice$.call(head), [body]));
+    return sn.apply(null, [null].concat(slice$.call(head), [body]));
   };
   return For;
 }(While));
@@ -7111,7 +7113,7 @@ case 154:
 this.$ = yy.L(_$[$0-3], _$[$0],$$[$0-2]);
 break;
 case 155:
-this.$ = yy.L(_$[$0-2], _$[$0],yy.Parens($$[$0-1].chomp().unwrap(), false, $$[$0-2] === '"'));
+this.$ = yy.L(_$[$0-2], _$[$0],yy.Parens($$[$0-1].chomp().unwrap(), false, $$[$0-2] === '"', yy.L(_$[$0-2],_$[$0-2],{}), yy.L(_$[$0],_$[$0],{})));
 break;
 case 159: case 192: case 194:
 this.$ = yy.L(_$[$0], _$[$0],null);

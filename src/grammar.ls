@@ -343,7 +343,7 @@ bnf =
     o 'INDENT Properties OptComma DEDENT'    -> $2
 
   Parenthetical:
-    o '( Body )' -> Parens $2.chomp!unwrap!, false, $1 is \"
+    o '( Body )' -> Parens $2.chomp!unwrap!, false, $1 is \", (L 1 {}), (L 3 {})
     ...
 
   Body:

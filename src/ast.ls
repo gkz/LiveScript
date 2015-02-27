@@ -736,7 +736,7 @@ class exports.Chain extends Node
     if @splatted-new-args
       idt = o.indent + TAB
       func = Chain @head, tails.slice 0 -1
-      return sn(this, """
+      return sn(null, """
         (function(func, args, ctor) {
         #{idt}ctor.prototype = func.prototype;
         #{idt}var child = new ctor, result = func.apply(child, args), t;
@@ -749,7 +749,7 @@ class exports.Chain extends Node
       news.push 'new ' if t.new
       rest.push t.compile o
     base.push ' ' if \. is rest.join("").charAt 0 and SIMPLENUM.test base.0.toString()
-    sn(this, ...news, ...base, ...rest)
+    sn(null, ...news, ...base, ...rest)
 
   # Unfolds a soak into an __If__: `a?.b` => `a.b if a?`
   unfoldSoak: (o) ->
@@ -1371,14 +1371,14 @@ class exports.Binary extends Node
       x = (refs = x.cache o, 1, LEVEL_OP)0 + " + #{refs.1}" * (n-1)
       if o.level < LEVEL_OP + PREC\+ then sn(this, x) else sn(this, "(", x, ")")
 
-  compilePow: (o) -> sn(this, Call.make(JS \Math.pow; [@first, @second])compile o)
+  compilePow: (o) -> sn(null, Call.make(CopyL this, JS \Math.pow; [@first, @second])compile o)
 
   compileConcat: (o) ->
     f = (x) ->
       | x instanceof Binary and x.op is \++ =>
         (f x.first) ++ (f x.second)
       | otherwise                            => [x]
-    sn(this, (Chain @first .add Index (Key \concat), \., true .add Call(f @second) .compile o))
+    sn(null, (Chain @first .add(CopyL this, Index (Key \concat), \., true) .add Call(f @second) .compile o))
 
   compileCompose: (o) ->
     op = @op
@@ -1395,9 +1395,9 @@ class exports.Binary extends Node
 
   compileMod: (o) ->
     ref = o.scope.temporary!
-    code = ["(((", (@first.compile o), ") % (", ref, " = ", (@second.compile o), ") + ", ref, ") % ", ref, ")"]
+    code = [sn(this, "((("), (@first.compile o), sn(this, ") % ("), sn(this, ref, " = "), (@second.compile o), sn(this, ") + ", ref, ") % ", ref, ")")]
     o.scope.free ref
-    sn(this, ...code)
+    sn(null, ...code)
 
   compilePartial: (o) ->
     vit = Var \it
@@ -1991,7 +1991,7 @@ class exports.Super extends Node
 # An extra set of parentheses,
 # specifying evaluation order and/or forcing expression.
 class exports.Parens extends Node
-  (@it, @keep, @string) ~>
+  (@it, @keep, @string, @lb, @rb) ~>
 
   children: [\it]
 
@@ -2008,10 +2008,10 @@ class exports.Parens extends Node
     it{cond, \void} ||= this
     it.head.hushed = true if @calling and (not level or @void)
     unless @keep or @newed or level >= LEVEL_OP + PREC[it.op]
-      return sn(this, ((it <<< {@front})compile o, level || LEVEL_PAREN))
+      return ((it <<< {@front})compile o, level || LEVEL_PAREN)
     if it.isStatement!
-    then sn(this, it.compileClosure o)
-    else sn(this, "(", (it.compile o, LEVEL_PAREN), ")")
+    then it.compileClosure o
+    else sn(null, sn(@lb, "("), (it.compile o, LEVEL_PAREN), sn(@rb, ")"))
 
 #### Splat
 # A splat, either as an argument to a call
@@ -2045,7 +2045,7 @@ class exports.Splat extends Node
         args.push ensureArray node.it
       else atoms.push node
     args.push Arr atoms if atoms.length
-    sn(this, (if index then Arr list else args.shift!)compile(o, LEVEL_CALL), ".concat(", (List.compile o, args), ")")
+    sn(null, (if index then Arr list else args.shift!)compile(o, LEVEL_CALL), sn(this, ".concat("), (List.compile o, args), sn(this, ")"))
 
   function expand nodes
     index = -1
@@ -2163,16 +2163,16 @@ class exports.While extends Node
   compileNode: (o) ->
     o.loop = true
     @test and if @un then @test.=invert! else @anaphorize!
-    return 'do {' + @compileBody (o.indent += TAB; o) if @post
+    return sn(null, sn(this, 'do {'), @compileBody (o.indent += TAB; o)) if @post
     test = @test?compile o, LEVEL_PAREN or ''
     unless @update or @else
-      head = unless snEmpty(test) then ["while (", test] else ['for (;;']
+      head = unless snEmpty(test) then [sn(this, "while ("), test] else [sn(this, 'for (;;')]
     else
-      head = ['for (']
+      head = [sn(this, 'for (')]
       head.push (@yet = o.scope.temporary \yet), " = true" if @else
-      head.push ";", (test.toString() and ' '), test, ";"
+      head.push sn(this, ";"), (test.toString() and ' '), test, sn(this, ";")
       head.push ' ', (that.compile o, LEVEL_PAREN) if @update
-    sn(this, ...head, ') {', (@compileBody (o.indent += TAB; o)))
+    sn(null, ...head, sn(this, ') {'), (@compileBody (o.indent += TAB; o)))
 
   compileBody: (o) ->
     o.break = o.continue = true
@@ -2211,11 +2211,11 @@ class exports.While extends Node
     code.push "\n", bodyCode, "\n#tab" unless snEmpty(bodyCode = @body.compile o, LEVEL_TOP)
     code.push ...mid
     code.push \}
-    code.push " while (", (@test.compile o<<<{tab} LEVEL_PAREN), ");" if @post
+    code.push sn(this, " while ("), (@test.compile o<<<{tab} LEVEL_PAREN), sn(this, ");") if @post
     if yet
-      code.push " if (", yet, ") ", (@compileBlock o, Block @else)
+      code.push sn(this, " if ("), yet, sn(this, ") "), (@compileBlock o, Block @else)
       o.scope.free yet
-    sn(this, ...code, ...ret)
+    sn(null, ...code, ...ret)
 
 #### For
 # LiveScript's replacements for the `for` loop are array, object or range iterators.
@@ -2293,7 +2293,7 @@ class exports.For extends While
           vars = "#idx = 0, #lvar = #srcPart.length"
           cond = "#idx < #lvar"
     @else and @yet = o.scope.temporary \yet
-    head = ['for (']
+    head = [sn(this, 'for (')]
     head.push idx, " in " if @object
     head.push that, " = true, " if @yet
     if @object
@@ -2305,8 +2305,8 @@ class exports.For extends While
         else idx + if pvar < 0
           then ' -= ' + pvar.toString().slice 1
           else ' += ' + pvar
-    @own and head.push ") if (", (o.scope.assign \own$ '{}.hasOwnProperty'), ".call(", svar, ", ", idx, ")"
-    head.push ') {'
+    @own and head.push sn(this, ") if ("), (o.scope.assign \own$ '{}.hasOwnProperty'), ".call(", svar, ", ", idx, ")"
+    head.push sn(this, ') {')
     if @let
       @body.traverseChildren !->
         switch it.value
@@ -2320,7 +2320,7 @@ class exports.For extends While
     o.ref = @item.value if @ref
     body  = @compileBody o
     head.push \\n + @tab if (@item or (@index and not @object)) and \} is body.toString().charAt 0
-    sn(this, ...head, body)
+    sn(null, ...head, body)
 
 #### Step slice
 # Slices a list in steps
