@@ -650,3 +650,16 @@ f = ->
   true
 o = {[k, v] for k, v of {a: 1} when f!}
 eq 1 i
+
+i = 0
+{o} = {[k, v] for k, v of {a: 1} when f!}
+eq 1 i
+
+i = 0
+g = ->
+g {[k, v] for k, v of {a: 1} when f!}
+eq 1 i
+
+i = 0
+o = {[k, v] for k, v of {a: 1} when f!}.a
+eq 1 i
