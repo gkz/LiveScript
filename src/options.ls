@@ -56,6 +56,7 @@ module.exports = optionator do
       type: 'Boolean'
       description: 'watch scripts for changes, and repeat'
     * option: 'const'
+      alias: 'k'
       type: 'Boolean'
       description: 'compile all variables as constants'
 
