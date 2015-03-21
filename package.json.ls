@@ -48,9 +48,10 @@ repository:
 dependencies:
   'prelude-ls': '~1.1.1'
   optionator: '~0.4.0'
+  'source-map': '^0.3.0'
 
 dev-dependencies:
-  jison: '0.2.1'
+  jison: '0.4.15'
   'uglify-js': '~2.4.15'
   istanbul: '~0.3.2'
-  browserify: '~6.0.2'
+  browserify: '^9.0.2'

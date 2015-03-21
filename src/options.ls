@@ -89,3 +89,9 @@ module.exports = optionator do
       alias: 'a'
       type: 'Boolean'
       description: 'print the syntax tree the parser produces'
+    * option: 'map'
+      alias: 'm'
+      type: 'String'
+      enum: ['none' 'linked' 'linked-src' 'embedded', 'debug']
+      default: 'none'
+      description: 'generate source maps'

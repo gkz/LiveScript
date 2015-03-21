@@ -3,7 +3,7 @@ LiveScript = require '..'
 # `.run`s LiveScript code and calls back, passing error if any.
 LiveScript.stab = (code, callback, filename) !->
   try
-    LiveScript.run code, {filename}
+    LiveScript.run code, {filename, +map}
   catch
   callback? e
 
