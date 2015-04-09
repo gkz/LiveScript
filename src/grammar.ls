@@ -180,7 +180,7 @@ bnf =
     o 'Expression Block' -> Cascade $1, $2, \cascade
 
     o 'PARAM( ArgList OptComma )PARAM <- Expression'
-    , -> Call.back $2, $6, $5.charAt(1) is \~, $5.length is 3
+    , -> Call.back $2, $6, $5.charAt(1) is \~, $5.length is 3, /\*/.test($5)
 
     o \COMMENT -> JS $1, true true
 

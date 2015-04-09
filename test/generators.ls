@@ -108,3 +108,14 @@ f2 = ->*
 g2 = f2!
 eq 1 g2.next!.value
 eq 2 g2.next!.value
+
+# backcall
+test-val = 0
+do
+    f3 = (gen) ->
+        g3 = gen!
+        test-val := g3.next!.value
+
+    *<- f3
+    yield 1
+eq 1 test-val

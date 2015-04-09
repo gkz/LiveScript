@@ -620,7 +620,7 @@ exports import
     default
       if /^!?(?:--?|~~?)>\*?$/.test val # function arrow
         @parameters tag = '->'
-      else if /^<(?:--?|~~?)$/.test val # backcall
+      else if /^\*?<(?:--?|~~?)$/.test val # backcall
         @parameters tag = \<-
       else
         switch val.charAt 0
@@ -1280,7 +1280,7 @@ SYMBOL = //
 | \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
 | \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
 | \^\^                          # clone
-| <(?:--?|~~?)                  # backcall
+| \*?<(?:--?|~~?)               # backcall
 | !?(?:--?|~~?)>\*?             # function, bound function
 | ([-+&|:])\1                   # crement / logic / `prototype`
 | %%                            # mod
