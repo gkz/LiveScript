@@ -1402,7 +1402,7 @@ class exports.Binary extends Node
     op = @op
     functions = [@first]
     x = @second
-    while x instanceof Binary and x.op is op
+    while x instanceof Binary and x.op is op and not x.partial
       functions.push x.first
       x = x.second
     functions.push x

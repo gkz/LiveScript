@@ -614,6 +614,9 @@ do ->
   a = -> 100
   eq 2, c!
 
+f = ((x) -> (* x)) >> ((+ 1) >>)
+eq 10 (f 2) 4
+
 ### infix calls
 add = (x, y) --> x + y
 times = (x, y) --> x * y
