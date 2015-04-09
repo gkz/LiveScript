@@ -2229,7 +2229,7 @@ class exports.For extends While
 
   aSource: null
 
-  show: -> (@kind ++ @index)join ' '
+  show: -> ((@kind || []) ++ @index).join ' '
 
   addBody: (body) ->
     if @let
