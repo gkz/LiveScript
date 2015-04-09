@@ -125,3 +125,14 @@ f4 = ->*
     yield [1, 2]
 g4 = f4!
 deep-equal [1, 2] g4.next!.value
+
+# parens
+f5 = ->*
+    if (yield) and not (yield)
+        ok true
+    else
+        ok false
+g5 = f5!
+g5.next!
+g5.next true
+g5.next false

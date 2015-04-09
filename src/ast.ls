@@ -1076,6 +1076,25 @@ class exports.Arr extends List
 
   @wrap = -> constructor [Splat it <<< isArray: YES]
 
+class exports.Yield extends Node
+    (@op, @it) ~>
+
+    children: <[ it ]>
+
+    show: -> if @op is 'yieldfrom' then 'from' else ''
+
+    compile-node: (o) ->
+        code = []
+
+        if @op is \yieldfrom
+            code.push 'yield*'
+        else
+            code.push 'yield'
+        if @it
+            code.push " #{@it.compile o, LEVEL_OP + PREC.unary}"
+
+        sn(this, "(", ...code, ")")
+
 #### Unary operators
 class exports.Unary extends Node
   # `flag` denotes inversion or postcrement.
@@ -1163,8 +1182,7 @@ class exports.Unary extends Node
               ", (it.compile o, LEVEL_LIST), ").slice(8, -1)")
     code = [(it.compile o, LEVEL_OP + PREC.unary)]
     if @post then code.push op else
-      op = 'yield* ' if op is \yieldfrom
-      op += ' ' if op in <[ new typeof delete yield ]>
+      op += ' ' if op in <[ new typeof delete ]>
                 or op in <[ + - ]> and op is code.join("").charAt!
       code.unshift op
     if o.level < LEVEL_CALL then sn(this, ...code) else sn(this, "(", ...code, ")")
@@ -1174,7 +1192,7 @@ class exports.Unary extends Node
     {it} = this; ops = [this]
     while it instanceof constructor, it.=it then ops.push it
     return '' unless it.=expandSlice(o)unwrap! instanceof Arr
-                 and (them = it.items)length and not /yield/.test this.op
+                 and (them = it.items)length
     for node, i in them
       node.=it if sp = node instanceof Splat
       for op in ops by -1 then node = constructor op.op, node, op.post

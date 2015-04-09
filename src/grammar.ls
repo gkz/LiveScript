@@ -224,10 +224,12 @@ bnf =
     o 'CLONE ASSIGN Chain' ditto
 
     o 'UNARY Expression' -> Unary $1, $2
-    o 'YIELD Expression' ditto
     o '+-    Expression' ditto, prec: \UNARY
     o 'CLONE Expression' ditto, prec: \UNARY
     o 'UNARY INDENT ArgList OptComma DEDENT' -> Unary $1, Arr.maybe $3
+
+    o 'YIELD' -> Yield $1
+    o 'YIELD Expression' -> Yield $1, $2
 
     o 'Expression +-      Expression' -> L 2 Binary $2, $1, $3
     o 'Expression COMPARE Expression' ditto
