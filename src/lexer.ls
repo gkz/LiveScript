@@ -1347,7 +1347,7 @@ INVERSES = {[o, CLOSERS[i]] for o, i in OPENERS} <<<
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
-ARG = CHAIN ++ <[ ... UNARY CREMENT PARAM( FUNCTION GENERATOR
+ARG = CHAIN ++ <[ ... UNARY YIELD CREMENT PARAM( FUNCTION GENERATOR
                       IF SWITCH TRY CLASS RANGE LABEL DECL DO BIOPBP ]>
 
 # Tokens that expect INDENT on the right.
