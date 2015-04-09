@@ -100,3 +100,11 @@ f1 = ->*
 g1 = f1!
 eq "foo" g1.next!.value
 eq 5 g1.next(3).value
+
+# generator returns
+f2 = ->*
+    yield 1
+    2
+g2 = f2!
+eq 1 g2.next!.value
+eq 2 g2.next!.value

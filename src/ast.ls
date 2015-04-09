@@ -1767,7 +1767,6 @@ class exports.Fun extends Node
     code = [\function]
     if @generator
       @ctor and @carp "a constructor can't be a generator"
-      @hushed and @carp "a generator is hushed by default"
       code.push \*
     if @bound is \this$
       if @ctor
@@ -1783,7 +1782,7 @@ class exports.Fun extends Node
       pscope.add name, \function, this
     if @statement or name and @labeled
       code.push ' ', (scope.add name, \function, this)
-    @hushed or @ctor or @newed or @generator or body.makeReturn!
+    @hushed or @ctor or @newed or body.makeReturn!
     code.push "(", (@compileParams o, scope), ")"
     code = [sn(this, ...code)]
     code.push "{"

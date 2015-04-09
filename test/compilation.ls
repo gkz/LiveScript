@@ -199,10 +199,9 @@ eq 'some js code!' bare '``some js code!``'
 
 # generators
 compileThrows "a constructor can't be a generator" 1 'class => ->*'
-compileThrows "a generator is hushed by default" 1 '!->*'
 
 # https://github.com/jashkenas/coffee-script/pull/3240#issuecomment-38344281
-eq '(function*(){\n  var body;\n  body = (yield fn).body;\n});' bare '->* {body} = yield fn'
+eq '(function*(){\n  var body;\n  body = (yield fn).body;\n});' bare '!->* {body} = yield fn'
 
 # [livescript#279](https://github.com/gkz/LiveScript/issues/279)
 ################################################################
