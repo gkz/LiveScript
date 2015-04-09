@@ -1174,7 +1174,7 @@ class exports.Unary extends Node
     {it} = this; ops = [this]
     while it instanceof constructor, it.=it then ops.push it
     return '' unless it.=expandSlice(o)unwrap! instanceof Arr
-                 and (them = it.items)length
+                 and (them = it.items)length and not /yield/.test this.op
     for node, i in them
       node.=it if sp = node instanceof Splat
       for op in ops by -1 then node = constructor op.op, node, op.post

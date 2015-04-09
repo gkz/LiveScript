@@ -119,3 +119,9 @@ do
     *<- f3
     yield 1
 eq 1 test-val
+
+# don't spread
+f4 = ->*
+    yield [1, 2]
+g4 = f4!
+deep-equal [1, 2] g4.next!.value
