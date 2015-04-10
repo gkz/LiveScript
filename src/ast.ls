@@ -2234,6 +2234,29 @@ class exports.While extends Node
       o.scope.free yet
     sn(null, ...code, ...ret)
 
+class exports.ForOf extends While
+    (opts) ~>
+        this <<< opts
+
+    children: <[ item source ]>
+
+    compileNode: (o) ->
+        o.loop = true
+        o.indent += TAB
+        head = []
+
+        body  = @compileBody o
+        item = @item
+        source = @source.compile o
+
+        head.push 'for ('
+        head.push 'let '
+        head.push item
+        head.push ' of '
+        head.push source
+        head.push ') {'
+        sn(this, ...head, body)
+
 #### For
 # LiveScript's replacements for the `for` loop are array, object or range iterators.
 class exports.For extends While

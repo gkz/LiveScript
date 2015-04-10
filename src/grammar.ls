@@ -389,6 +389,11 @@ bnf =
     o 'FOR     ID , Chain OF Expression CASE Expression'
     , -> new For {+object, kind: $1,       index: $2, item: $4.unwrap!, source: $6, guard: $8}
 
+    o 'FOR ID FROM Expression'
+    , -> new ForOf item: $2, source: $4
+    o 'FOR ID FROM Expression CASE Expression'
+    , -> new ForOf item: $2, source: $4, guard: $6
+
     o 'FOR ID FROM Expression TO Expression'
     , -> new For kind: $1, index: $2, from: $4, op: $5, to: $6
     o 'FOR FROM Expression TO Expression'
