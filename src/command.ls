@@ -51,7 +51,13 @@ switch
 
   switch
   | o.eval =>
-    compile-script '' o.eval
+    if o.json and o.stdin
+      input <-! get-stdin
+      global <<< prelude if o.prelude
+      o.run-context = JSON.parse input
+      compile-script '' o.eval
+    else
+      compile-script '' o.eval
   | o.stdin =>
     compile-stdin!
   | positional.length =>
@@ -114,7 +120,8 @@ switch
       print = json or o.print
       t.output = LiveScript.compile t.input, {...options, +bare, run, print}
       LiveScript.emit 'run' t
-      t.result = do Function t.output.toString()
+      o.run-context ?= {}
+      t.result = (Function t.output.toString()).call o.run-context
       switch
       | json  => process.stdout.write JSON.stringify(t.result, null 2) + '\n'
       | o.print => console.log t.result
@@ -138,17 +145,21 @@ switch
     return
   LiveScript.emit 'success' t
 
-# Attach the appropriate listeners to compile scripts incoming over **stdin**.
-!function compile-stdin
+# Attach the appropriate listeners to get data incoming over **stdin**.
+!function get-stdin cb
   process.open-stdin!
     code = ''
     ..on 'data' !-> code += it
-    ..on 'end'  !-> compile-script '' code
+    ..on 'end'  !-> cb code
     ..on 'data' !->
       # Detect trailing __^D__ or __^Z__ for Windows.
       if (code.slice -3) in <[ \4\r\n \x1a\r\n ]>
-        compile-script '' code.slice 0 -3
+        cb code.slice 0 -3
         ..destroy!
+
+!function compile-stdin
+  input <-! get-stdin
+  compile-script '' input
 
 # Watch a source LiveScript file using `setTimeout`, taking an `action` every
 # time the file is updated.
