@@ -205,3 +205,111 @@ eq '(function*(){\n  var body;\n  body = (yield fn).body;\n});' bare '!->* {body
 
 # [livescript#279](https://github.com/gkz/LiveScript/issues/279)
 ################################################################
+
+jsonls = ->
+  LiveScript.compile it, {+json}
+
+eq do
+  '''
+{
+  "key": "value",
+  "keyDash": 1,
+  "key-dash": true,
+  "object": {
+    "strArray": [
+      "of",
+      "strings"
+    ],
+    "objArray": [
+      {
+        "index": 0,
+        "name": "zero"
+      },
+      {
+        "index": 1,
+        "name": "one"
+      },
+      {
+        "index": 2,
+        "name": "two"
+      }
+    ],
+    "mixedArray": [
+      {
+        "key": "value"
+      },
+      1,
+      true,
+      "done"
+    ],
+    "nestedObjects": {
+      "level1": {
+        "level2": {
+          "level3": {
+            "key": true
+          },
+          "levelThree": {
+            "key": false
+          }
+        }
+      },
+      "levelOne": {
+        "nestedArrays": [
+          [
+            [
+              true,
+              false
+            ],
+            [
+              false,
+              true
+            ]
+          ]
+        ]
+      }
+    }
+  }
+}
+
+  '''
+  jsonls '''
+key: \\value
+key-dash: 1
+'key-dash': on
+
+object:
+  str-array: <[ of strings ]>
+  # a comment
+  obj-array:
+    * index: 0
+      name: "zero"
+    * index: 1
+      name: \\one
+    * index: 2
+      name: 'two'
+
+  mixed-array:
+    key: "valu\#{\\e}"
+    1
+    yes
+    \\done
+
+  nested-objects:
+    level1:
+      level2:
+        level3:
+          {+key}
+        level-three:
+          {-key}
+    level-one:
+      nested-arrays: [
+        [
+          [
+            on off
+          ]
+          [
+            off on
+          ]
+        ]
+      ]
+  '''
