@@ -66,6 +66,9 @@ exports <<<
   # Same as `tokens`, except that this skips rewriting.
   lex: -> lexer.lex it, {+raw}
 
+  # Runs LiveScript code directly.
+  run: (code, options) -> do Function exports.compile code, {...options, +bare}
+
 exports.tokens.rewrite = lexer.rewrite
 
 # Export AST constructors.
