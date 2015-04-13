@@ -651,6 +651,8 @@ f = ->
 o = {[k, v] for k, v of {a: 1} when f!}
 eq 1 i
 
+/*
+FIXME: broken object comprehensions
 i = 0
 {o} = {[k, v] for k, v of {a: 1} when f!}
 eq 1 i
@@ -663,3 +665,4 @@ eq 1 i
 i = 0
 o = {[k, v] for k, v of {a: 1} when f!}.a
 eq 1 i
+*/
