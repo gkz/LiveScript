@@ -12,6 +12,7 @@ module.exports = optionator do
           '''
   help-style:
     max-pad-factor: 1.9
+  positional-anywhere: false
   options:
     * heading: 'Misc'
     * option: 'version'

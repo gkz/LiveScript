@@ -47,7 +47,7 @@ repository:
 
 dependencies:
   'prelude-ls': '~1.1.1'
-  optionator: '~0.4.0'
+  optionator: '~0.6.0'
   'source-map': '^0.3.0'
 
 dev-dependencies:
