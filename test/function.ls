@@ -617,6 +617,22 @@ do ->
 f = ((x) -> (* x)) >> ((+ 1) >>)
 eq 10 (f 2) 4
 
+f1 = do ->
+  timesTwo >>
+  plusOne
+eq 5 f1 2
+
+f2 = do ->
+  timesTwo
+  >> plusOne
+eq 5 f2 2
+
+f3 = do ->
+  timesTwo
+  >>
+  plusOne
+eq 5 f3 2
+
 ### infix calls
 add = (x, y) --> x + y
 times = (x, y) --> x * y

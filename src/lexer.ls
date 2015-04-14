@@ -425,8 +425,8 @@ exports import
       [tag, val] = last
       if tag is \ASSIGN  and val+'' not in <[ = := += ]>
       or val is \++ and @tokens[*-2].spaced
-      or tag in <[ +- PIPE BACKPIPE DOT LOGIC MATH COMPARE RELATION SHIFT
-                   IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
+      or tag in <[ +- PIPE BACKPIPE COMPOSE DOT LOGIC MATH COMPARE RELATION
+                   SHIFT IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
         return length
       if delta then @indent delta else @newline!
     @fset \for false
@@ -630,10 +630,10 @@ exports import
           @token \WORDS, val.slice(2, -2), @adi!
           return @count-lines val .length
     if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
-                 COMPOSE RELATION PIPE BACKPIPE IMPORT ]> and @last.0 is \(
+                 RELATION PIPE BACKPIPE COMPOSE IMPORT ]> and @last.0 is \(
       tag = if tag is \BACKPIPE then \BIOPBP else \BIOP
-    @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE
-                          MATH POWER IMPORT SHIFT BITWISE ]>
+    @unline! if tag in <[ , CASE PIPE BACKPIPE COMPOSE DOT LOGIC
+                          COMPARE MATH POWER IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 
