@@ -34,6 +34,9 @@ switch
 | o.version => say "LiveScript version #version"
 | o.help    => say generate-help interpolate: {version}
 | otherwise =>
+  valid-map-values = <[ none linked linked-src embedded debug ]>
+  if o.map not in valid-map-values
+    die "Option --map must be either: #{ valid-map-values.join ', ' }"
   o.run = not o.compile ||= o.output
 
   process.exec-path = process.argv.0 = process.argv.1
