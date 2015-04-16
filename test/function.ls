@@ -426,6 +426,14 @@ ok isNaN timesArr.0 3
 ok isNaN timesArr.1 2
 ok isNaN timesArr.2 1.5
 
+g = (x, y, z, f) -->
+    eq 6, x + y + z
+    f!
+f = ->
+    <-! g 1, _, 3 <| 2
+    true
+eq void f!
+
 ### `function`
 new
   function undef1 then
