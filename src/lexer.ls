@@ -981,7 +981,9 @@ character = if not JSON? then uxxxx else ->
 # - Tag postfix conditionals.
 # - Fill in empty blocks for bodyless `class`es.
 !function rewriteBlockless tokens
-  for [tag]:token, i in tokens
+  i = -1
+  while token = tokens[++i]
+    [tag] = token
     detectEnd tokens, i+1, ok, go if tag in <[ IF CLASS CATCH ]>
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go it, i

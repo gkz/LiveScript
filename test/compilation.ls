@@ -203,6 +203,9 @@ compileThrows "a constructor can't be a generator" 1 'class => ->*'
 # https://github.com/jashkenas/coffee-script/pull/3240#issuecomment-38344281
 eq '(function*(){\n  var body;\n  body = (yield fn).body;\n});' bare '!->* {body} = yield fn'
 
+# [#237](https://github.com/satyr/coco/issues/237)
+LiveScript.compile 'class A; class B; class C'
+
 # [livescript#279](https://github.com/gkz/LiveScript/issues/279)
 ################################################################
 
