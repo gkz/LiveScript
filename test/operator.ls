@@ -558,6 +558,29 @@ eq -1 x
 
 eq '9', (-1 %% 10).toString!
 
+eq +2, +5 %% +3
+eq -1, +5 %% -3
+eq +1, -5 %% +3
+eq -2, -5 %% -3
+
+eq +0.25, +1.75 %% +0.5
+eq -0.25, +1.75 %% -0.5
+eq +0.25, -1.75 %% +0.5
+eq -0.25, -1.75 %% -0.5
+
+eq 1/+0, 1 / (0 %% +1)
+eq 1/-0, 1 / (0 %% -1)
+
+ok isNaN 1 %% 0
+
+# fail
+#o = i: 7, valueOf: -> @i -= 2
+#eq 2, o %% o
+#eq 3, o.i
+
+(a = [7 0])[a.1++] %%= 5
+eq a.0, 2
+
 ### Partially applied binary ops
 addTwo = (+ 2)
 eq 5 addTwo 3
