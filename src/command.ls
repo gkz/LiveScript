@@ -123,11 +123,12 @@ switch
       print = json or o.print
       t.output = LiveScript.compile t.input, {...options, +bare, run, print}
       LiveScript.emit 'run' t
-      o.run-context ?= {}
-      t.result = (Function t.output.toString()).call o.run-context
+      t.result = LiveScript.run t.output.toString!, options, do
+          js: true
+          context: o.run-context
       switch
       | json  => process.stdout.write JSON.stringify(t.result, null 2) + '\n'
-      | o.print => console.log t.result
+      | o.print => say t.result
       throw
 
     LiveScript.emit 'compile' t

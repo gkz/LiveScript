@@ -6,7 +6,7 @@
 module.exports = !(LiveScript) ->
   require! [fs, path]
 
-  LiveScript.run = (code, {filename}:options?, js) ->
+  LiveScript.run = (code, {filename}:options?, {js, context} = {}) ->
     {main} = require
     # Hack for relative `require`.
     if filename
@@ -16,7 +16,11 @@ module.exports = !(LiveScript) ->
       dirname = filename = \.
     main.paths = main.constructor._nodeModulePaths dirname
     main <<< {filename}
-    js or code = LiveScript.compile code, {...options, +bare}
+    unless js
+      code = LiveScript.compile code, {...options, +bare}
+    if context
+      global.__runContext = context
+      code = "return (function() {\n#code\n}).call(global.__runContext);"
     try main._compile code, filename catch then throw hackTrace e, code, filename
 
   LiveScript import all require(\events)EventEmitter::
