@@ -11,9 +11,11 @@ require! {
 
 version = LiveScript.VERSION
 
-say = console.log
-warn = console.error
-die = (message) !->
+args, {say, warn, die} = {} <-! (module.exports :=)
+
+say ?= console.log
+warn ?= console.error
+die ?= (message) !->
   console.error message
   process.exit 1
 p = (...args) !->
@@ -23,11 +25,10 @@ pp = (x, show-hidden, depth) !->
 ppp = !-> pp it, true, null
 
 try
-  o = parse-options process.argv
+  o = parse-options args
   positional = o._
 catch
-  console.error e.message
-  process.exit 1
+  die e.message
 
 switch
 | o.nodejs  => fork-node!
@@ -39,12 +40,13 @@ switch
     die "Option --map must be either: #{ valid-map-values.join ', ' }"
   o.run = not o.compile ||= o.output
 
-  process.exec-path = process.argv.0 = process.argv.1
-  to-insert = if o.stdin
-    positional
-  else
-    if o.run then positional.splice 1 9e9 else []
-  process.argv.splice 2, 9e9, ...to-insert
+  if args is process.argv
+    process.exec-path = process.argv.0 = process.argv.1
+    to-insert = if o.stdin
+      positional
+    else
+      if o.run then positional.splice 1 9e9 else []
+    process.argv.splice 2, 9e9, ...to-insert
 
   if o.require
     {filename} = module
@@ -127,7 +129,7 @@ switch
           js: true
           context: o.run-context
       switch
-      | json  => process.stdout.write JSON.stringify(t.result, null 2) + '\n'
+      | json  => say JSON.stringify(t.result, null, 2)
       | o.print => say t.result
       throw
 
