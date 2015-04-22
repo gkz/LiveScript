@@ -11,7 +11,7 @@ require! {
 
 version = LiveScript.VERSION
 
-args, {say, warn, die} = {} <-! (module.exports :=)
+args, {say, warn, die} = {} <-! (module.exports =)
 
 say ?= console.log
 warn ?= console.error
