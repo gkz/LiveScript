@@ -4,6 +4,7 @@
   var fs = require("fs");
   var path = require("path");
   var assert = require("assert");
+
   global.LiveScript = require("..");
   global.command = require("../lib/command");
 
@@ -49,43 +50,65 @@
     });
   };
 
+  var activeCommandTests = 0;
   global.commandEq = function(args, arr) {
+    activeCommandTests++;
     var i = 0;
     var res = [];
+    // switch to mocha in the future, better way to deal with async tests
+    var maybeTestResults = function() {
+        if (i === arr.length - 1) {
+            arr.forEach(function (x, j) {
+                if (x instanceof RegExp) {
+                    ok(x.test(res[j]), "should pass regex:\n" + x + "\n.test\n" + res[j]);
+                } else {
+                    eq(x, res[j], "should equal:\n" + x + "\n==\n" + res[j]);
+                }
+            });
+            activeCommandTests--;
+        } else if (i >= arr.length) {
+            console.error("more results than expected!\n" + args + "\n" + res[i-1]);
+        }
+    };
     var log = function(msg) {
-      res.push(msg);
+        res.push(msg);
+        maybeTestResults();
+        i++;
     };
     var die = function(msg) {
-        console.error(msg);
-        throw(msg);
+        res.push(msg);
+        maybeTestResults();
+        i++;
+    };
+
+    try {
+        command(args, {say: log, warn: log, die: die});
+    } catch (e) {
+        ok(false, e.message);
     }
-
-    command(args, {say: log, warn: log, die: die});
-
-    if (res.length > arr.length) {
-        console.error("more results than expected");
-    }
-
-    arr.forEach(function (x, i) {
-        if (x instanceof RegExp) {
-            ok(x.test(res[i]), "should pass regex:\n" + x + "\n.test\n" + res[i]);
-        } else {
-            eq(x, res[i], "should equal:\n" + x + "\n==\n" + res[i]);
-        }
-    });
   };
 
   process.on("exit", function(){
-    var time = ((Date.now() - startTime) / 1e3).toFixed(2);
-    var message = "passed " + passedTests + " tests in " + time + " seconds";
+      var printResults = function() {
+          var time = ((Date.now() - startTime) / 1e3).toFixed(2);
+          var message = "passed " + passedTests + " tests in " + time + " seconds";
 
-    console.log(failedTests
-      ? tint("failed " + failedTests + " and " + message, red)
-      : tint(message));
+          console.log(failedTests
+            ? tint("failed " + failedTests + " and " + message, red)
+            : tint(message));
 
-    if (failedTests) {
-      process.exit(1);
-    }
+          if (failedTests) {
+            process.exit(1);
+          }
+      };
+      var check = function() {
+          if (activeCommandTests > 0) {
+              setTimeout(wait, 5);
+          } else {
+              printResults();
+          }
+      };
+      check();
   });
 
   var files = fs.readdirSync("test");
@@ -95,7 +118,7 @@
   } else {
     console.log("Testing with harmony.");
   }
-  
+
   files.forEach(function(file){
     var stk, msg, m, ref, num, row, col, that, lines, line;
 

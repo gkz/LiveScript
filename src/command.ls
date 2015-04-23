@@ -137,7 +137,7 @@ switch
     t.output = LiveScript.compile t.input, {...options, json, o.print}
     LiveScript.emit 'write' t
     if o.print or not filename
-    then say t.output.toString().trim-right!
+    then say t.output.toString!
     else write-JS filename, t.output, t.input, base, json
   catch then if e?
     if LiveScript.listeners 'failure' .length
