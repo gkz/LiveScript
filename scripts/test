@@ -55,8 +55,24 @@
     var log = function(msg) {
       res.push(msg);
     };
-    command(args, {say: log, warn: log, die: log});
-    deepEqual(arr, res);
+    var die = function(msg) {
+        console.error(msg);
+        throw(msg);
+    }
+
+    command(args, {say: log, warn: log, die: die});
+
+    if (res.length > arr.length) {
+        console.error("more results than expected");
+    }
+
+    arr.forEach(function (x, i) {
+        if (x instanceof RegExp) {
+            ok(x.test(res[i]), "should pass regex:\n" + x + "\n.test\n" + res[i]);
+        } else {
+            eq(x, res[i], "should equal:\n" + x + "\n==\n" + res[i]);
+        }
+    });
   };
 
   process.on("exit", function(){

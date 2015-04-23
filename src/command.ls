@@ -103,7 +103,7 @@ switch
 # Compile a single source script, containing the given code, according to the
 # requested options.
 !function compile-script filename, input, base
-  options = {filename, o.bare, o.const}
+  options = {filename, o.bare, o.const, o.map, o.header}
   t       = {input, options}
   try
     if o.lex or o.tokens or o.ast
