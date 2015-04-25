@@ -19,10 +19,19 @@ command-eq '-cpb test/data/empty.ls', [
 
 # no-header
 command-eq '-cpb --no-header test/data/empty.ls', [
-    ""
+    ''
 ]
 
 # not using bare
 command-eq '-cp --no-header test/data/empty.ls', [
-    "(function(){\n\n}).call(this);"
+    '(function(){\n\n}).call(this);'
 ]
+
+# json
+json-content = '{\n  "moo": 1,\n  "foo": "string"\n}'
+
+# implicit json
+command-eq '-cp test/data/data.json.ls', [json-content ]
+
+# explicit json
+command-eq '-cp --json test/data/data.ls', [json-content]
