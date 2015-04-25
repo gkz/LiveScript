@@ -21,3 +21,8 @@ command-eq '-cpb test/data/empty.ls', [
 command-eq '-cpb --no-header test/data/empty.ls', [
     ""
 ]
+
+# not using bare
+command-eq '-cp --no-header test/data/empty.ls', [
+    "(function(){\n\n}).call(this);"
+]
