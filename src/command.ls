@@ -57,13 +57,17 @@ switch
 
   switch
   | o.eval =>
-    if o.json and o.stdin
-      input <-! get-stdin
-      global <<< prelude if o.prelude
-      o.run-context = JSON.parse input
-      compile-script '' o.eval
-    else
-      compile-script '' o.eval
+      json-callback = (input) !->
+          global <<< prelude if o.prelude
+          o.run-context = JSON.parse input.to-string!
+          compile-script '' o.eval
+      if positional.length and (o.json or /\.json$/.test positional.0)
+          o.json = true
+          fshoot 'readFile', positional.0, json-callback
+      else if o.json
+          get-stdin json-callback
+      else
+          compile-script '' o.eval
   | o.stdin =>
     compile-stdin!
   | positional.length =>
@@ -130,7 +134,7 @@ switch
           js: true
           context: o.run-context
       switch
-      | json  => say JSON.stringify(t.result, null, 2)
+      | json  => say JSON.stringify t.result, null, 2
       | o.print => say t.result
       throw
 

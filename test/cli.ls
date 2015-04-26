@@ -44,3 +44,9 @@ command-eq '-cp test/data/data.json.ls', [json-content ]
 
 # explicit json
 command-eq '-cp --json test/data/data.ls', [json-content]
+
+# eval print json, explicit
+command-eq '-je "@two" test/data/j.json', ['4']
+
+# eval print json, implicit
+command-eq '-e "@two" test/data/j.json', ['4']
