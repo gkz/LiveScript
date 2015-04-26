@@ -181,45 +181,35 @@ switch
 !function write-JS source, js, input, base, json
   #     foo.ls     => foo.js
   #     foo.jsm.ls => foo.jsm
-  filename = path.basename(source)replace do
+  filename = path.basename source .replace do
     /(?:(\.\w+)?\.\w+)?$/ -> &1 or if json then '.json' else '.js'
   dir = path.dirname source
   if o.output
-    dir = path.join that, dir.slice if base is '.' then 0 else base.length
+      dir = path.join that, dir.slice if base is '.' then 0 else base.length
   js-path = path.join dir, filename
   !function compile
-    e <-! fs.write-file js-path, js.toString() || '\n'
-    return warn e if e
-    util.log "#source => #js-path" if o.watch
-  !function compileWithMap
-    map-path = js-path + ".map"
-    sourceName = path.relative(path.dirname(map-path), source)
-    js.setFile(sourceName)
-    js := js.toStringWithSourceMap()
-
-    if o.map == 'embedded'
-      js.map.setSourceContent(sourceName, input)
-    if o.map == 'linked' || o.map == "debug"
-      js.code += '\n//# sourceMappingURL=' + path.relative(path.dirname(js-path), map-path) + '\n'
-    else
-      js.code += '\n//# sourceMappingURL=data:application/json;base64,' + new Buffer(js.map.toString()).toString('base64') + '\n'
-
-    e <-! fs.write-file js-path, js.code || '\n'
-    return warn e if e
-
-    if o.map == 'linked' || o.map == "debug"
-      e2 <-! fs.write-file map-path, js.map || '\n'
-      return warn e2 if e2
-      if o.map == "debug"
-        e3 <-! fs.write-file map-path+".debug", js.debug || '\n'
-        util.log "#source => #js-path, #map-path[.debug]" if o.watch
-      else
-        util.log "#source => #js-path, #map-path" if o.watch
-    else
+      e <-! fs.write-file js-path, js.to-string! || '\n'
+      return warn e if e
       util.log "#source => #js-path" if o.watch
+  !function compile-with-map
+      e <-! fs.write-file js-path, js.code || '\n'
+      return warn e if e
+
+      map-path = "#js-path.map"
+
+      if o.map == 'linked' || o.map == "debug"
+        e2 <-! fs.write-file map-path, js.map || '\n'
+        return warn e2 if e2
+        if o.map == "debug"
+          e3 <-! fs.write-file "#map-path.debug", js.debug || '\n'
+          util.log "#source => #js-path, #map-path[.debug]" if o.watch
+        else
+          util.log "#source => #js-path, #map-path" if o.watch
+      else
+        util.log "#source => #js-path" if o.watch
   e <-! fs.stat dir
   if o.map != 'none'
-    return compileWithMap! unless e
+    return compile-with-map! unless e
   else
     return compile! unless e
   require 'child_process' .exec do
