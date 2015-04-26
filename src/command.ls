@@ -11,9 +11,10 @@ require! {
 
 version = LiveScript.VERSION
 
-args, {say, warn, die} = {} <-! (module.exports =)
+args, {say, say-with-timestamp, warn, die} = {} <-! (module.exports =)
 
 say ?= console.log
+say-with-timestamp ?= util.log
 warn ?= console.error
 die ?= (message) !->
   console.error message
@@ -190,7 +191,7 @@ switch
   !function compile
       e <-! fs.write-file js-path, js.to-string! || '\n'
       return warn e if e
-      util.log "#source => #js-path" if o.watch
+      say-with-timestamp "#source => #js-path" if o.watch or o.debug
   !function compile-with-map
       e <-! fs.write-file js-path, js.code || '\n'
       return warn e if e
@@ -202,11 +203,11 @@ switch
         return warn e2 if e2
         if o.map == "debug"
           e3 <-! fs.write-file "#map-path.debug", js.debug || '\n'
-          util.log "#source => #js-path, #map-path[.debug]" if o.watch
+          say-with-timestamp "#source => #js-path, #map-path[.debug]" if o.watch or o.debug
         else
-          util.log "#source => #js-path, #map-path" if o.watch
+          say-with-timestamp "#source => #js-path, #map-path" if o.watch or o.debug
       else
-        util.log "#source => #js-path" if o.watch
+        say-with-timestamp "#source => #js-path" if o.watch or o.debug
   e <-! fs.stat dir
   if o.map != 'none'
     return compile-with-map! unless e

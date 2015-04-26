@@ -4,6 +4,7 @@
   var fs = require("fs");
   var path = require("path");
   var assert = require("assert");
+  var prelude = require("prelude-ls");
 
   global.LiveScript = require("..");
   global.command = require("../lib/command");
@@ -51,8 +52,9 @@
   };
 
   var activeCommandTests = 0;
-  global.commandEq = function(args, arr) {
+  global.commandEq = function(args, arr, afterTests) {
     activeCommandTests++;
+    afterTests = afterTests || prelude.id;
     var i = 0;
     var res = [];
     // switch to mocha in the future, better way to deal with async tests
@@ -65,6 +67,7 @@
                     eq(x, res[j], "should equal:\n" + x + "\n==\n" + res[j]);
                 }
             });
+            afterTests();
             activeCommandTests--;
         } else if (i >= arr.length) {
             console.error("more results than expected!\n" + args + "\n" + res[i-1]);
@@ -82,10 +85,37 @@
     };
 
     try {
-        command(args, {say: log, warn: log, die: die});
+        command(args, {say: log, warn: log, die: die, sayWithTimestamp: log});
     } catch (e) {
         ok(false, e.message);
     }
+  };
+
+  global.fileRead = function(filename) {
+      try {
+          return fs.readFileSync(filename, {
+              encoding: "utf8"
+          });
+      } catch (e) {
+          return "Error: " + e.message;
+      }
+  };
+
+  global.fileExists = function(filename) {
+      try {
+          return fs.statSync(filename).isFile();
+      } catch (e) {
+          console.error(e.message);
+          return false;
+      }
+  };
+
+  global.fileDelete = function(filename) {
+      try {
+          fs.unlinkSync(filename);
+      } catch (e) {
+          console.error(e.message);
+      }
   };
 
   process.on("exit", function(){

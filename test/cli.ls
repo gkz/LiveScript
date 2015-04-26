@@ -7,10 +7,19 @@ command-eq '-pe "2 + 2"', [4]
 # help
 command-eq '-h', [/^Usage: lsc (.|\n)*Misc:(.|\n)*Output control:(.|\n)*Version/]
 
+one-js = 'var f;\nf = function(x){\n  return 1 + x;\n};'
+one-path = 'test/data/one.js'
+
 # compile print
-command-eq '-cpb --no-header test/data/one.ls', [
-    'var f;\nf = function(x){\n  return 1 + x;\n};'
-]
+command-eq '-cpb --no-header test/data/one.ls', [one-js]
+
+# compile
+command-eq '-cb --no-header --debug test/data/one.ls', ['test/data/one.ls => test/data/one.js'], ->
+    try
+        ok file-exists one-path
+        eq one-js, file-read one-path
+    finally
+        file-delete one-path
 
 # header
 command-eq '-cpb test/data/empty.ls', [
