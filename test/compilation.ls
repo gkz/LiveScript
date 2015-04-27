@@ -68,8 +68,6 @@ compileThrows 'invalid use of null' 1 'null.po'
 
 compileThrows 'deprecated octal literal 0666' 1 '0666'
 
-
-
 tokens = LiveScript.lex '''
 """
   1 #{
@@ -80,33 +78,32 @@ tokens = LiveScript.lex '''
 '''
 eq tokens.join('\n'), '''
 NEWLINE,
-,0
-(,\",0
-STRNUM,\"1 \",1
-+-,+,1
-(,(,2
-INDENT,4,2
-STRNUM,2,2
+,0,0
+(,\",0,0
+STRNUM,\"1 \",0,0
++-,+,0,0
+(,(,1,4
+INDENT,4,2,4
+STRNUM,2,2,4
 NEWLINE,
-,3
-STRNUM,3,3
-DEDENT,4,4
+,3,4
+STRNUM,3,3,4
+DEDENT,4,4,2
 NEWLINE,
-,4
-),),4
-+-,+,4
-STRNUM,\" 4\",5
-),,5
+,4,2
+),),4,2
++-,+,4,2
+STRNUM,\" 4\",4,3
+),,5,3
 NEWLINE,
-,5
+,5,3
 '''
-
 
 # Indentation on line 1 should be valid.
 eq '1;\n2;', bare '  1\n  2'
 
 
-eq 'STRNUM,0,0 ,,,,0 STRNUM,1,1' LiveScript.tokens('''
+eq 'STRNUM,0,0,0 ,,,,0,0 STRNUM,1,1,2' LiveScript.tokens('''
 0 \\
   1
 ''').slice(0 3).join ' '
@@ -202,10 +199,120 @@ eq 'some js code!' bare '``some js code!``'
 
 # generators
 compileThrows "a constructor can't be a generator" 1 'class => ->*'
-compileThrows "a generator is hushed by default" 1 '!->*'
 
 # https://github.com/jashkenas/coffee-script/pull/3240#issuecomment-38344281
-eq '(function*(){\n  var body;\n  body = (yield fn).body;\n});' bare '->* {body} = yield fn'
+eq '(function*(){\n  var body;\n  body = (yield fn).body;\n});' bare '!->* {body} = yield fn'
+
+# [#237](https://github.com/satyr/coco/issues/237)
+LiveScript.compile 'class A; class B; class C'
 
 # [livescript#279](https://github.com/gkz/LiveScript/issues/279)
 ################################################################
+
+jsonls = ->
+  LiveScript.compile it, {+json}
+
+eq do
+  '''
+{
+  "key": "value",
+  "keyDash": 1,
+  "key-dash": true,
+  "object": {
+    "strArray": [
+      "of",
+      "strings"
+    ],
+    "objArray": [
+      {
+        "index": 0,
+        "name": "zero"
+      },
+      {
+        "index": 1,
+        "name": "one"
+      },
+      {
+        "index": 2,
+        "name": "two"
+      }
+    ],
+    "mixedArray": [
+      {
+        "key": "value"
+      },
+      1,
+      true,
+      "done"
+    ],
+    "nestedObjects": {
+      "level1": {
+        "level2": {
+          "level3": {
+            "key": true
+          },
+          "levelThree": {
+            "key": false
+          }
+        }
+      },
+      "levelOne": {
+        "nestedArrays": [
+          [
+            [
+              true,
+              false
+            ],
+            [
+              false,
+              true
+            ]
+          ]
+        ]
+      }
+    }
+  }
+}
+
+  '''
+  jsonls '''
+key: \\value
+key-dash: 1
+'key-dash': on
+
+object:
+  str-array: <[ of strings ]>
+  # a comment
+  obj-array:
+    * index: 0
+      name: "zero"
+    * index: 1
+      name: \\one
+    * index: 2
+      name: 'two'
+
+  mixed-array:
+    key: "valu\#{\\e}"
+    1
+    yes
+    \\done
+
+  nested-objects:
+    level1:
+      level2:
+        level3:
+          {+key}
+        level-three:
+          {-key}
+    level-one:
+      nested-arrays: [
+        [
+          [
+            on off
+          ]
+          [
+            off on
+          ]
+        ]
+      ]
+  '''

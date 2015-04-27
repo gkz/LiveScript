@@ -1,13 +1,11 @@
-{flatten} = require 'prelude-ls'
-
 i = 5
 list = while i -= 1
   i * 2
-eq '' + list, '8,6,4,2'
+deep-equal [8,6,4,2], list
 
 i = 5
 list = [i * 3 while i -= 1]
-eq '' + list, '12,9,6,3'
+deep-equal [12,9,6,3] list
 
 i = 5
 func   = -> i -= it
@@ -15,7 +13,7 @@ assert = -> unless 0 < i < 5 then ok false
 results = while func 1
   assert()
   i
-eq '' + results, '4,3,2,1'
+deep-equal [4,3,2,1] results
 
 value = false
 i = 0
@@ -23,7 +21,7 @@ results = until value
   value = true if i is 5
   i += 1
 
-ok i is 6
+eq 6 i
 
 
 i = 5
@@ -33,7 +31,7 @@ for ever
   break if i is 0
   list.push i * 2
 
-ok list.join(' ') is '8 6 4 2'
+deep-equal [8 6 4 2] list
 
 j = 5
 list2 = []
@@ -42,7 +40,7 @@ loop
   break if j is 0
   list2.push j * 2
 
-ok list2.join(' ') is '8 6 4 2'
+deep-equal [8 6 4 2] list
 
 #759: `if` within `while` condition
 [2 while if 1 then 0]
@@ -56,7 +54,7 @@ eq void, do -> while 0 then return
 nums    = for n in [1, 2, 3] then n * n if n .&. 1
 results = [n * 2 for n in nums]
 
-eq results + '', '2,18'
+deep-equal [2,18] results
 
 eq 11 [x for x to 10]length
 
@@ -66,68 +64,97 @@ obj   = {one: 1, two: 2, three: 3}
 names = [prop + '!' for prop of obj]
 odds  = for prop, value of obj then prop + '!' if value .&. 1
 
-eq names.join(' '), 'one! two! three!'
-eq odds. join(' '), 'one! three!'
+deep-equal <[ one! two! three! ]> names
+deep-equal <[ one! three! ]> odds
 
 
 # Object comprehensions
 result = {[key, val * 2] for key, val of obj}
-eq 2 result.one
-eq 4 result.two
-eq 6 result.three
+deep-equal {one: 2, two: 4, three: 6}, result
 
 result = {[val, key] for key, val of obj}
-eq \one   result.1
-eq \two   result.2
-eq \three result.3
+deep-equal {1: 'one', 2: 'two', 3: 'three'}, result
 
 f = ->
   {[key, val * 2] for key, val of {a:1, b:2}}
 obj = f!
-eq 2 obj.a
-eq 4 obj.b
+deep-equal {a: 2, b: 4} obj
 
 r = {[key, val] for key, val of {a:1, b:2} when val isnt 2}
-eq 1 r.a
+deep-equal {a: 1} r
 ok not r.b?
 
 input =
   a: b: 1, c: 2
   d: e: 3, f: 4
 result = { ["#{k1}#{k2}", v] for k1, x of input for k2, v of x }
-deepEqual {ab: 1, ac: 2, de: 3, df: 4} result
+deep-equal {ab: 1, ac: 2, de: 3, df: 4} result
 eq \Object typeof! result
 
 result = [ { ["#{k1}#{k2}", v] for k2, v of x } for k1, x of input ]
-deepEqual [ { ab: 1, ac: 2 } { de: 3, df: 4} ] result
+deep-equal [ { ab: 1, ac: 2 } { de: 3, df: 4} ] result
 eq \Array typeof! result
 eq \Object typeof! result.0
 
 result = { ["#k#x", x + v] for x from 0 to 1 for k, v of {a: 1, b: 2} }
-deepEqual { a0: 1, a1: 2, b0: 2, b1: 3 } result
+deep-equal { a0: 1, a1: 2, b0: 2, b1: 3 } result
 eq \Object typeof! result
 
 result = { ["#k#x", x + v] for k, v of {a: 1, b: 2} for x from 0 to 1 }
-deepEqual { a0: 1, a1: 2, b0: 2, b1: 3 } result
+deep-equal { a0: 1, a1: 2, b0: 2, b1: 3 } result
 eq \Object typeof! result
 
 result = { ["#k#x", x] for k in <[ a b ]> for x from 0 to 1 }
-deepEqual { a0: 0, a1: 1, b0: 0, b1: 1 } result
+deep-equal { a0: 0, a1: 1, b0: 0, b1: 1 } result
 eq \Object typeof! result
 
+# obj comp [livescript#639](https://github.com/gkz/LiveScript/issues/639)
+i = 0
+f = ->
+  i++
+  true
+
+o = {[k, v] for k, v of {a: 1} when f!}
+deep-equal {a: 1} o
+eq 1 i
+
+i = 0
+{a} = {[k, v] for k, v of {a: 1} when f!}
+eq 1 i
+eq 1 a
+
+i = 0
+o = null
+g = -> o := it
+g {[k, v] for k, v of {a: 1} when f!}
+deep-equal {a: 1} o
+eq 1 i
+
+i = 0
+a = {[k, v] for k, v of {a: 1} when f!}.a
+eq 1 i
+eq 1 a
+
+i = 0
+g = ->
+  {[k, v] for k, v of {a: 1} when f!}
+deep-equal {a: 1} g!
+eq 1 i
 
 # Basic range comprehensions.
 nums = [i * 3 for i from 1 to 3]
-negs = [x for x from -20 to -5*2]
+negs = [x for x from -14 to -5*2]
 four = [4 for x to 3]
-eq '3,6,9,-20,-19,-18,4,4,4,4', '' + nums.concat negs.slice(0, 3), four
+deep-equal [3,6,9] nums
+deep-equal [-14,-13,-12,-11,-10] negs
+deep-equal [4,4,4,4] four
 
-eq '123', [i for i from 1 til 4     ].join ''
-eq '036', [i for i from 0 til 9 by 3].join ''
+deep-equal [1,2,3], [i for i from 1 til 4     ]
+deep-equal [0,3,6], [i for i from 0 til 9 by 3]
 
 
 # Auto-descend when obvious.
-eq '0,-1,-2' String [i for i til -3]
+deep-equal [0,-1,-2] [i for i til -3]
 
 
 # Almost never mess with binary `in`/`of` and variable `by`.
@@ -145,9 +172,9 @@ ok not by
 
 
 # With range comprehensions, you can loop in steps.
-eq "#{ [x for x from 0 to 9 by  3] }", '0,3,6,9'
-eq "#{ [x for x from 9 to 0 by -3] }", '9,6,3,0'
-eq "#{ [x for x from 3*3 to 0*0 by 0-3] }", '9,6,3,0'
+deep-equal [0 3 6 9] [x for x from 0 to 9 by  3]
+deep-equal [9 6 3 0] [x for x from 9 to 0 by -3]
+deep-equal [9 6 3 0] [x for x from 3*3 to 0*0 by 0-3]
 
 
 # Multiline array comprehension with filter.
@@ -156,12 +183,12 @@ evens =
     num *= -1
     num -=  2
     num * -1
-eq evens + '', '4,6,8'
+deep-equal [4 6 8] evens
 
 
 # Backward traversing.
 odds = [num for num in [0, 1, 2, 3, 4, 5] by -2]
-eq odds + '', '5,3,1'
+deep-equal [5 3 1] odds
 
 # Multiline nested loops result in nested output
 eq 9 (for x from 3 to 5
@@ -196,7 +223,7 @@ eq 6 xs.0.1.length
 
 # Nested comprehensions.
 comp = ["#x#y" for x in [1 2 3] for y in [\a \b \c]]
-eq "#comp", '1a,1b,1c,2a,2b,2c,3a,3b,3c'
+deep-equal <[ 1a 1b 1c 2a 2b 2c 3a 3b 3c ]> comp
 
 pythagoreanTriples = [[x,y,z] for x in [1 to 20] for y in [x to 20] for z in [y to 20] when x^2 + y^2 == z^2]
 eq "#{ pythagoreanTriples * \_ }", '3,4,5_5,12,13_6,8,10_8,15,17_9,12,15_12,16,20'
@@ -214,17 +241,20 @@ eq 6 obs[*-1].two
 
 # Object comprehension in comprehension, see:
 # https://github.com/gkz/LiveScript/issues/538
-obs = [{[key, val] for key, val of obj} for obj in [{+a, +b}, {+a, +b}]]
+obs = [{[key + i, val] for key, val of obj} for obj, i in [{+a, +b}, {-a, -b}]]
+deep-equal [{a0: true, b0: true},  {a1: false, b1: false}] obs
 ok typeof! obs[0] is \Object
 
 # Object and list comprehensions in the same scope should not share an empty value:
 # https://github.com/gkz/LiveScript/issues/294
 using-if = -> if it
-  {[key, value] for key, value of {}}
+  {[key, value] for key, value of {a:1}}
 else
-  [value for value in []]
+  [value for value in [1]]
 
+deep-equal {a:1} using-if true
 eq \Object typeof! using-if true
+deep-equal [1] using-if false
 eq \Array  typeof! using-if false
 
 using-switch = -> switch it
@@ -234,9 +264,18 @@ using-switch = -> switch it
 eq \Object typeof! using-switch true
 eq \Array  typeof! using-switch false
 
-# Comprehensions returned
+# super nested comprehensions
+crazy = [{[y, [{[k + y, x + 1] for k, v of {a: 1}} for x from 1 to 2]] for y in <[ x y ]>} for z to 1]
+deep-equal [
+    * x: [{ax: 2}, {ax: 3}]
+      y: [{ay: 2}, {ay: 3}]
+    * x: [{ax: 2}, {ax: 3}]
+      y: [{ay: 2}, {ay: 3}]
+], crazy
 
-xs = do -> [[x for x to 1] for y to 1]
+# Comprehensions returned
+xs = do -> [[x + y for x to 1] for y to 1]
+deep-equal [[0 1], [1 2]] xs
 eq 2 xs.length
 eq 2 xs.1.length
 
@@ -249,13 +288,13 @@ eq 2 ys.1.length
 
 zs = do -> [x + y for x to 1 for y to 1]
 eq 4 zs.length
-eq '0,1,1,2' String zs
+deep-equal [0,1,1,2] zs
 
 # Comprehensions with cascade
-eq '3,4,5' String [.. + 2 for [1 2 3]]
-eq '3,5'   String [.. + 2 for [1 2 3] when .. % 2 isnt 0]
-eq '5,4,3' String [.. + 2 for [1 2 3] by -1]
-eq '5,3'   String [.. + 2 for [1 2 3] by -1 when .. % 2 isnt 0]
+deep-equal [3,4,5] [.. + 2 for [1 2 3]]
+deep-equal [3,5]   [.. + 2 for [1 2 3] when .. % 2 isnt 0]
+deep-equal [5,4,3] [.. + 2 for [1 2 3] by -1]
+deep-equal [5,3]   [.. + 2 for [1 2 3] by -1 when .. % 2 isnt 0]
 
 list-of-obj =
   * ha: 1
@@ -263,10 +302,10 @@ list-of-obj =
   * ha: 4
     la: 2
 
-eq '1,4' String [..ha for list-of-obj]
+deep-equal [1,4] [..ha for list-of-obj]
 
 ys = [\A to \D] ++ [\H to \K] ++ [\Z]
-eq 'A,B,C,D,H,I,J,K,Z' String [.. for [\A to \Z] when .. in ys]
+deep-equal <[ A B C D H I J K Z ]> [.. for [\A to \Z] when .. in ys]
 
 # Cascade comprehension doesn't prevent from using `in` later
 [.. for [0]]
@@ -298,18 +337,16 @@ eq 6 xs.length
 eq 6 xs[*-2][*-1]
 eq 10 xs[*-1][*-1]
 
-xs = for i to 9
+xs = for i to 5
   while 0 => while 0 =>
   i
 
-eq 0 xs.0
+deep-equal [0,1,2,3,4,5] xs
 
-xs = for x to 1
+xs = for x to 3
   [y] = [z for z from 1 to 2]
-  y
-eq 2 xs.length
-eq 1 xs.0
-eq 1 xs.1
+  y + x
+deep-equal [1 2 3 4] xs
 
 
 # Multiline comprehensions
@@ -385,14 +422,14 @@ i = 6
 odds = while i--
   continue unless i .&. 1
   i
-eq '5,3,1', '' + odds
+deep-equal [5,3,1], odds
 
 r = for i from 0 to 2
   switch i
   case 0 then continue
   case 1 then i
   default break
-eq r + '', '1'
+deep-equal [1], r
 
 eq (while 1 then break; 1).length, 0
 
@@ -505,7 +542,7 @@ do
 while ++i < 2
 eq i, 2
 
-(-> eq '4,2,0' ''+it) do
+(-> deep-equal [4,2,0] it) do
   i * 2
 while i--
 
@@ -516,29 +553,29 @@ list = [1 to 5]
 do
   list[i] = list[i] + 1
 until ++i > 3 when i isnt 2
-eq '2,3,3,5,5', ''+list
+deep-equal [2,3,3,5,5], list
 
 i = 0
 list = [1 to 5]
 do
   list[i] = list[i] + 1
 while ++i < 3 when i isnt 2
-eq '2,3,3,4,5', ''+list
+deep-equal [2,3,3,4,5], list
 
 
 ### Update clause
 i = 0; evens = [i while i < 9, i += 2]
-eq '0,2,4,6,8' ''+evens
+deep-equal [0,2,4,6,8] evens
 
 i = 1; odds = until i > 9, ++i
   continue unless i .&. 1
   i
-eq '1,3,5,7,9' ''+odds
+deep-equal [1,3,5,7,9] odds
 
 a = [1 2 3]
 b = []
 while a.pop(), b.push that => continue
-eq '3,2,1' ''+b
+deep-equal [3,2,1] b
 
 
 ### `else` clause
@@ -554,7 +591,7 @@ r = for i from 0 to 9
   else if i .&. 2
     i
 
-eq '2,6' flatten(r).to-string!
+deep-equal [[],[],[2],[],[],[],[6],[],[],[]] r
 
 r = for i til 1 then i else [9]
 eq 0 r.0
@@ -642,11 +679,3 @@ eq 1, i
 o = { [k, -> v] for let k, v of {a: 1, b: 2} }
 eq 1 o.a!
 eq 2 o.b!
-
-# [livescript#639](https://github.com/gkz/LiveScript/issues/639)
-i = 0
-f = ->
-  i++
-  true
-o = {[k, v] for k, v of {a: 1} when f!}
-eq 1 i

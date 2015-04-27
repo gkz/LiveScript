@@ -426,6 +426,14 @@ ok isNaN timesArr.0 3
 ok isNaN timesArr.1 2
 ok isNaN timesArr.2 1.5
 
+g = (x, y, z, f) -->
+    eq 6, x + y + z
+    f!
+f = ->
+    <-! g 1, _, 3 <| 2
+    true
+eq void f!
+
 ### `function`
 new
   function undef1 then
@@ -613,6 +621,25 @@ do ->
   c = a >> b
   a = -> 100
   eq 2, c!
+
+f = ((x) -> (* x)) >> ((+ 1) >>)
+eq 10 (f 2) 4
+
+f1 = do ->
+  timesTwo >>
+  plusOne
+eq 5 f1 2
+
+f2 = do ->
+  timesTwo
+  >> plusOne
+eq 5 f2 2
+
+f3 = do ->
+  timesTwo
+  >>
+  plusOne
+eq 5 f3 2
 
 ### infix calls
 add = (x, y) --> x + y

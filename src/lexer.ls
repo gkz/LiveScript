@@ -44,9 +44,11 @@ exports import
     code = \\n + code
     # Stream of parsed tokens,
     # initialized with a NEWLINE token to ensure `@last` always exists.
-    @tokens = [@last = [\NEWLINE \\n 0]]
+    @tokens = [@last = [\NEWLINE \\n 0 0]]
     # The current line number. Starts from -1 to setoff the prepended newline.
     @line = ~-o.line
+    # The index into `code` of the start of the current line. Used to reliably calculate the current column.
+    @column = o.column || 0
     # The stack of all current indentation levels.
     @dents = []
     # The stack for pairing tokens.
@@ -59,7 +61,17 @@ exports import
     # Each tokenizing method is responsible for
     # returning the number of characters it has consumed.
     i = 0
+    prevIndex = i
+    @charsCounted = 0
+    @isAtPrefix = true
     while c = code.charAt i
+      charsConsumed = i - prevIndex
+      prevIndex = i
+
+      if @charsCounted > charsConsumed then throw new Error("Location information out-of-sync in lexer")
+      @column += charsConsumed - @charsCounted
+      @charsCounted = 0
+
       switch c
       | ' '        => i += @doSpace     code, i
       | \\n        => i += @doLine      code, i
@@ -84,6 +96,7 @@ exports import
     else @last.spaced = true; @newline!
     # Rewrite the token stream unless explicitly asked not to.
     o.raw or @rewrite!
+
     @tokens
 
   # The current indentation level.
@@ -101,7 +114,6 @@ exports import
       then throw new ReferenceError do
         "Inconsistent use of #{camel} as #{id} on line #{-~@line}"
       else @identifiers[camel] = id
-
 
   #### Tokenizers
 
@@ -218,7 +230,7 @@ exports import
           return 4
         @forange! and tag = \FROM
       case \to \til
-        @forange! and @tokens.push [\FROM '' @line] [\STRNUM \0 @line]
+        @forange! and @tokens.push [\FROM '' @line, @column] [\STRNUM \0 @line, @column]
         if @fget \from
           @fset \from false
           @fset \by true
@@ -294,7 +306,7 @@ exports import
     if q is \"
       parts = @interpolate code, index, q
       @addInterpolated parts, unlines
-      return 1 + parts.size
+      return parts.size
     str = (SIMPLESTR <<< lastIndex: index)exec code .0
           or @carp 'unterminated string'
     @strnum unlines @string q, str.slice 1 -1
@@ -311,13 +323,13 @@ exports import
       @strnum enlines @string q, lchomp detab doc, heretabs doc
       return @countLines(raw)length + 6
     parts = @interpolate code, index, q+q+q
-    tabs  = heretabs code.slice(index+3 index+parts.size)replace LASTDENT, ''
+    tabs  = heretabs code.slice(index+3, (index+parts.size - 3))replace LASTDENT, ''
     for t, i in parts then if t.0 is \S
       t.1.=replace LASTDENT, '' if i+1 is parts.length
       t.1 = detab  t.1, tabs
       t.1 = lchomp t.1 if i is 0
     @addInterpolated parts, enlines
-    3 + parts.size
+    parts.size
 
   # Matches block comments.
   doComment: (code, index) ->
@@ -356,13 +368,13 @@ exports import
   doHeregex: (code, index) ->
     {tokens, last} = this
     parts = @interpolate code, index, \//
-    rest  = code.slice index + 2 + parts.size
+    rest  = code.slice index + parts.size
     flag  = @validate /^(?:[gimy]{1,4}|[?$]?)/exec(rest)0
     if parts.1
       if flag is \$
         @adi!; @token \( \"
       else
-        tokens.push [\ID \RegExp last.2] [\CALL( '' last.2]
+        tokens.push [\ID \RegExp last.2, last.3] [\CALL( '' last.2, last.3]
         if flag is \?
           for t, i in parts by -1 then if t.0 is \TOKENS
             dynaflag = parts.splice(i, 1).0.1
@@ -374,14 +386,14 @@ exports import
           val = t.1.replace HEREGEX_OMIT, ''
           continue if one and not val
           one = tokens.push t <<< [\STRNUM @string \' enslash val]
-        tokens.push [\+- \+ tokens[*-1]2]
+        tokens.push [\+- \+ tokens[*-1]2, tokens[*-1]3]
       --tokens.length
       if dynaflag or flag >= \g
         @token \, \,
         if dynaflag then tokens.push ...dynaflag else @token \STRNUM "'#flag'"
       @token (if flag is \$ then \) else \)CALL), ''
     else @regex reslash(parts.0.1.replace HEREGEX_OMIT, ''), flag
-    2 + parts.size + flag.length
+    parts.size + flag.length
 
   # Matches a word literal, or ignores a sequence of whitespaces.
   doBackslash: (code, BSTOKEN.lastIndex) ->
@@ -413,8 +425,8 @@ exports import
       [tag, val] = last
       if tag is \ASSIGN  and val+'' not in <[ = := += ]>
       or val is \++ and @tokens[*-2].spaced
-      or tag in <[ +- PIPE BACKPIPE DOT LOGIC MATH COMPARE RELATION SHIFT
-                   IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
+      or tag in <[ +- PIPE BACKPIPE COMPOSE DOT LOGIC MATH COMPARE RELATION
+                   SHIFT IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
         return length
       if delta then @indent delta else @newline!
     @fset \for false
@@ -432,7 +444,6 @@ exports import
     if @last.0 in <[ ASSIGN -> : ]>
     or (@last.0 is \INDENT and @tokens[*-2].0 in <[ ASSIGN -> : ]>)
       @token \SWITCH \switch
-      @line++
       @token \CASE   \case
 
   # We treat all other single characters as a token. e.g.: `( ) , . !`
@@ -481,8 +492,8 @@ exports import
       | \FOR \OWN       => @token \ID ''
     case \!= \~=
       unless able @tokens or @last.0 in [\( \CREMENT]
-        @tokens.push if val is \!= then [\UNARY \! @line] else [\UNARY \~ @line]
-                   , [\ASSIGN \= @line]
+        @tokens.push if val is \!= then [\UNARY \! @line, @column] else [\UNARY \~ @line, @column]
+                   , [\ASSIGN \= @line, @column]
         return 2
       fallthrough
     case \!~= \==
@@ -549,7 +560,7 @@ exports import
         return sym.length
       if @last.0 in <[ NEWLINE INDENT THEN => ]> and
          (INLINEDENT <<< lastIndex: index+1)exec code .0.length
-        @tokens.push [\LITERAL \void @line] [\ASSIGN \= @line]
+        @tokens.push [\LITERAL \void @line, @column] [\ASSIGN \= @line, @column]
         @indent index + that - 1 - @dent - code.lastIndexOf \\n index-1
         return that
       tag = if able @tokens
@@ -609,7 +620,7 @@ exports import
     default
       if /^!?(?:--?|~~?)>\*?$/.test val # function arrow
         @parameters tag = '->'
-      else if /^<(?:--?|~~?)$/.test val # backcall
+      else if /^\*?<(?:--?|~~?)!?$/.test val # backcall
         @parameters tag = \<-
       else
         switch val.charAt 0
@@ -619,10 +630,10 @@ exports import
           @token \WORDS, val.slice(2, -2), @adi!
           return @count-lines val .length
     if tag in <[ +- COMPARE LOGIC MATH POWER SHIFT BITWISE CONCAT
-                 COMPOSE RELATION PIPE BACKPIPE IMPORT ]> and @last.0 is \(
+                 RELATION PIPE BACKPIPE COMPOSE IMPORT ]> and @last.0 is \(
       tag = if tag is \BACKPIPE then \BIOPBP else \BIOP
-    @unline! if tag in <[ , CASE PIPE BACKPIPE DOT LOGIC COMPARE
-                          MATH POWER IMPORT SHIFT BITWISE ]>
+    @unline! if tag in <[ , CASE PIPE BACKPIPE COMPOSE DOT LOGIC
+                          COMPARE MATH POWER IMPORT SHIFT BITWISE ]>
     @token tag, val
     sym.length
 
@@ -632,7 +643,7 @@ exports import
   # Adds a token to the results,
   # taking note of the line number and returning `value`.
   token: (tag, value, callable) ->
-    @tokens.push @last = [tag, value, @line]
+    @tokens.push @last = [tag, value, @line, @column]
     @last.callable = true if callable
     value
 
@@ -653,7 +664,7 @@ exports import
 
   # Generates a newline token. Consecutive newlines get merged together.
   newline: !-> @last.1 is \\n or
-               @tokens.push @last = [\NEWLINE \\n @line] <<< {+spaced}
+               @tokens.push @last = [\NEWLINE \\n @line, @column] <<< {+spaced}
 
   # Cancels an immediate newline.
   unline: !->
@@ -671,9 +682,9 @@ exports import
       return
     if arrow is \-> then @token \PARAM( '' else
       for t, i in @tokens by -1 when t.0 in <[ NEWLINE INDENT THEN => ( ]> then break
-      @tokens.splice (i+1), 0 [\PARAM( '' t.2]
+      @tokens.splice (i+1), 0 [\PARAM( '' t.2, t.3]
     if   offset
-    then @tokens.splice (@tokens.length + offset), 0 [\)PARAM '' t.2]
+    then @tokens.splice (@tokens.length + offset), 0 [\)PARAM '' t.2, t.3]
     else @token \)PARAM ''
 
   # Expands variables and expressions inside double-quoted strings or heregexes
@@ -686,12 +697,15 @@ exports import
   interpolate: !(str, idx, end) ->
     parts = []; end0 = end.charAt 0; pos = 0; i = -1
     str.=slice idx + end.length
+    [oldLine, oldColumn] = [@line, @column]
+    @countLines end
     while ch = str.charAt ++i
       switch ch
       case end0
         continue unless end is str.slice i, i + end.length
-        parts.push [\S; @countLines str.slice 0 i; @line]
-        return parts <<< size: pos + i + end.length
+        parts.push [\S; @countLines str.slice 0 i; oldLine; oldColumn]
+        @countLines end
+        return parts <<< size: pos + i + end.length*2
       case \#
         c1 = str.charAt i+1
         id = c1 in <[ @ ]> and c1 or (ID <<< lastIndex: i+1)exec str .1
@@ -700,7 +714,8 @@ exports import
       default continue
       # `"#a#{b || c}"` => `a + "" + (b || c)`
       if i or nested and not stringified
-        stringified = parts.push [\S; @countLines str.slice 0 i; @line]
+        stringified = parts.push [\S; @countLines str.slice 0 i; oldLine; oldColumn]
+        [oldLine, oldColumn] = [@line, @column]
       if id
         {length} = id
         id = \this if id is \@
@@ -712,17 +727,19 @@ exports import
             @carp "invalid variable interpolation \"#id\""
           tag = \ID
         str.=slice delta = i + 1 + length
-        parts.push [\TOKENS nested = [[tag, id, @line]]]
+        parts.push [\TOKENS nested = [[tag, id, @line, @column]]]
       else
         clone  = exports with {+inter, @emender}
-        nested = clone.tokenize str.slice(i+2), {@line, +raw}
+        nested = clone.tokenize str.slice(i+2), {@line, column: @column + 2, +raw}
         delta  = str.length - clone.rest.length
-        {rest: str, @line} = clone
+        @countLines str.slice(i, delta)
+        {rest: str} = clone
         while nested.0?0 is \NEWLINE then nested.shift!
         if nested.length
-          nested.unshift [\( \( nested.0.2]
-          nested.push    [\) \) @line]
+          nested.unshift [\( \( oldLine, oldColumn]
+          nested.push    [\) \) @line, @column-1]
           parts.push [\TOKENS nested]
+        [oldLine, oldColumn] = [@line, @column]
       pos += delta; i = -1
     @carp "missing `#end`"
 
@@ -737,14 +754,14 @@ exports import
     else
       [\( \) [\+- \+]]
     callable = @adi!
-    tokens.push [left, \", last.2]
+    tokens.push [left, \", last.2, last.3]
     for t, i in parts
       if t.0 is \TOKENS
         tokens.push ...t.1
       else
         continue if i > 1 and not t.1
-        tokens.push [\STRNUM; nlines @string \" t.1; t.2]
-      tokens.push joint ++ tokens[*-1]2
+        tokens.push [\STRNUM; nlines @string \" t.1; t.2, t.3]
+      tokens.push joint ++ tokens[*-1]2 ++ tokens[*-1]3
     --tokens.length
     @token right, '', callable
 
@@ -790,7 +807,18 @@ exports import
   able: (call) -> not @last.spaced and able @tokens, null call
 
   # Increments `@line` by the number in newlines in a string.
-  countLines: -> (while pos = 1 + it.indexOf \\n pos then ++@line); it
+  countLines: ->
+    # Each time we find a newline, reset the column to the correct value should there be no more newlines
+    # Take care if we are before the first line, because it might not start at zero
+    @column += it.length unless @isAtPrefix
+    while pos = 1 + it.indexOf \\n pos
+      @column = 0 unless @isAtPrefix
+      @column += it.length - pos
+      ++@line
+      @isAtPrefix = false
+    # Mark these characters as consumed, so that the main loop doesn't re-count them
+    @charsCounted += it.length
+    it
 
   # Checks FOR for FROM/TO.
   forange: ->
@@ -898,7 +926,7 @@ character = if not JSON? then uxxxx else ->
   prev = [\NEWLINE \\n 0]
   i = 0
   while token = tokens[++i]
-    [tag, val, line] = token
+    [tag, val, line, column] = token
     switch
     case tag is \ASSIGN and prev.1 in LS_KEYWORDS and tokens[i-2].0 isnt \DOT
       carp "cannot assign to reserved word \"#{prev.1}\"" line
@@ -909,7 +937,7 @@ character = if not JSON? then uxxxx else ->
       tokens.splice i-2, 3
       tokens[i-3].1 = '{}'
     case val is \. and token.spaced and prev.spaced
-      tokens[i] = [\COMPOSE \<< line]
+      tokens[i] = [\COMPOSE \<< line, column]
     case val is \++
       break unless next = tokens[i+1]
       ts = <[ ID LITERAL STRNUM ]>
@@ -926,15 +954,15 @@ character = if not JSON? then uxxxx else ->
         tokens[i].0 = \BIOP
       else if prev.0 is \(
         tokens.splice i, 0,
-          * \PARAM( \(  line
-          * \)PARAM \)  line
-          * \->     \-> line
-          * \ID     \it line
+          * \PARAM( \(  line, column
+          * \)PARAM \)  line, column
+          * \->     \-> line, column
+          * \ID     \it line, column
       else if next.0 is \)
         tokens.splice i+1, 0,
-          [\[  \[  line]
-          [\ID \it line]
-          [\]  \]  line]
+          [\[  \[  line, column]
+          [\ID \it line, column]
+          [\]  \]  line, column]
         parens = 1
         :LOOP for j from i+1 to 0 by -1
           switch tokens[j].0
@@ -942,10 +970,10 @@ character = if not JSON? then uxxxx else ->
           | \( =>
             if --parens is 0
               tokens.splice j+1, 0,
-                [\PARAM( \(  line]
-                [\ID     \it line]
-                [\)PARAM \)  line]
-                [\->     \-> line]
+                [\PARAM( \(  line, column]
+                [\ID     \it line, column]
+                [\)PARAM \)  line, column]
+                [\->     \-> line, column]
               break LOOP
     prev = token
     continue
@@ -953,7 +981,9 @@ character = if not JSON? then uxxxx else ->
 # - Tag postfix conditionals.
 # - Fill in empty blocks for bodyless `class`es.
 !function rewriteBlockless tokens
-  for [tag]:token, i in tokens
+  i = -1
+  while token = tokens[++i]
+    [tag] = token
     detectEnd tokens, i+1, ok, go if tag in <[ IF CLASS CATCH ]>
   function  ok then it.0 in <[ NEWLINE INDENT ]>
   !function go it, i
@@ -962,7 +992,7 @@ character = if not JSON? then uxxxx else ->
                          or not it.1 and not it.then
                          or tokens[i-1]0 in BLOCK_USERS
     else unless it.0 is \INDENT
-      tokens.splice i, 0 [\INDENT 0 lno = tokens[i-1]2] [\DEDENT 0 lno]
+      tokens.splice i, 0 [\INDENT 0 lno = tokens[i-1]2, cno = tokens[i-1]3] [\DEDENT 0 lno, cno]
 
 # that lack ending delimiters.
 !function addImplicitIndentation tokens
@@ -976,7 +1006,7 @@ character = if not JSON? then uxxxx else ->
     case \INDENT \THEN
       tokens.splice i-- 1 if tag is \THEN
       continue
-    indent = [\INDENT 0 token.2]; dedent = [\DEDENT 0]
+    indent = [\INDENT 0 token.2, token.3]; dedent = [\DEDENT 0]
     if tag is \THEN
     then (tokens[i] = indent)then = true
     else tokens.splice ++i, 0 indent
@@ -1008,7 +1038,7 @@ character = if not JSON? then uxxxx else ->
     case \CASE \DEFAULT then t in <[ CASE THEN ]>
   !function go [] i
     prev = tokens[i-1]
-    tokens.splice if prev.0 is \, then i-1 else i, 0, dedent <<< {prev.2}
+    tokens.splice if prev.0 is \, then i-1 else i, 0, dedent <<< {prev.2, prev.3}
 
 # Functions may be optionally called without parentheses for simple cases.
 # Insert the missing parentheses here to aid the parser.
@@ -1040,7 +1070,7 @@ character = if not JSON? then uxxxx else ->
     if tag is \CREMENT
       continue if token.spaced or tokens[i+1]?0 not in CHAIN
     skipBlock = seenSwitch = false
-    tokens.splice i++, 0 [\CALL( '' token.2]
+    tokens.splice i++, 0 [\CALL( '' token.2, token.3]
     detectEnd tokens, i, ok, go
   # Does the token start an expression?
   function exp [tag]:token
@@ -1073,7 +1103,7 @@ character = if not JSON? then uxxxx else ->
           or pre.0 is \CREMENT
           or pre.0 is \... and pre.spaced
     false
-  !function go token, i then tokens.splice i, 0 [\)CALL '' tokens[i-1]2]
+  !function go token, i then tokens.splice i, 0 [\)CALL '' tokens[i-1]2, tokens[i-1]3]
 
 # Object literals may be written without braces for simple cases.
 # Insert the missing braces here to aid the parser.
@@ -1094,7 +1124,7 @@ character = if not JSON? then uxxxx else ->
     stack.push [\{]
     inline = not pre.doblock and pre.0 not in <[ NEWLINE INDENT ]>
     while tokens[index-2]?0 is \COMMENT then index -= 2
-    tokens.splice index, 0 [\{ \{ tokens[index]2]
+    tokens.splice index, 0 [\{ \{ tokens[index]2, tokens[index]3]
     detectEnd tokens, ++i+1, ok, go
   function ok token, i
     switch tag = token.0
@@ -1106,7 +1136,7 @@ character = if not JSON? then uxxxx else ->
     t1 = tokens[i+1]?0
     t1 is not (if tag is \, then \NEWLINE else \COMMENT) and
     \: is not tokens[if t1 is \( then 1 + indexOfPair tokens, i+1 else i+2]?0
-  !function go token, i then tokens.splice i, 0 [\} '' token.2]
+  !function go token, i then tokens.splice i, 0 [\} '' token.2, token.3]
 
 # - Slip unary {pl,min}uses off signed numbers.
 # - Expand ranges and words.
@@ -1120,7 +1150,7 @@ character = if not JSON? then uxxxx else ->
     case \STRNUM
       if ~'-+'indexOf sig = token.1.charAt 0
         token.1.=slice 1
-        tokens.splice i++ 0 [\+- sig, token.2]
+        tokens.splice i++ 0 [\+- sig, token.2, token.3]
       continue if token.callable
     case \TO \TIL
       unless tokens[i-1]0 is \[
@@ -1139,6 +1169,7 @@ character = if not JSON? then uxxxx else ->
       fallthrough
     case \RANGE
       lno = token.2
+      cno = token.3
       if   fromNum? or (tokens[i-1]0 is \[
       and  tokens[i+1]0 is \STRNUM
       and ((tokens[i+2]0 is \]
@@ -1159,7 +1190,7 @@ character = if not JSON? then uxxxx else ->
         ts  = []
         enc = if char then character else String
         add = !->
-           if 0x10000 < ts.push [\STRNUM enc n; lno] [\, \, lno]
+           if 0x10000 < ts.push [\STRNUM enc n; lno, cno] [\, \, lno, cno]
              carp 'range limit exceeded' lno
         if token.op is \to
           for n from fromNum to  toNum by byNum then add!
@@ -1171,22 +1202,22 @@ character = if not JSON? then uxxxx else ->
       else
         token.0 = \STRNUM
         if tokens[i+2]?0 is \RANGE_BY
-          tokens.splice i+2, 1, [\BY \by lno]
-        tokens.splice i+1, 0, [\TO, token.op, lno]
+          tokens.splice i+2, 1, [\BY \by lno, cno]
+        tokens.splice i+1, 0, [\TO, token.op, lno, cno]
       fromNum = null
     case \WORDS
-      ts = [[\[ \[ lno = token.2]]
+      ts = [[\[ \[ lno = token.2, cno = token.3]]
       for word in token.1.match /\S+/g or ''
-        ts.push [\STRNUM; string \', word, lno; lno] [\, \, lno]
-      tokens.splice i, 1, ...ts, [\] \] lno]
+        ts.push [\STRNUM; string \', word, lno; lno, cno] [\, \, lno, cno]
+      tokens.splice i, 1, ...ts, [\] \] lno, cno]
       i += ts.length
     case \INDENT
       if tokens[i-1]
         if that.1 is \new
           tokens.splice i++ 0 \
-            [\PARAM( '' token.2] [\)PARAM '' token.2] [\-> '' token.2]
+            [\PARAM( '' token.2, token.3] [\)PARAM '' token.2, token.3] [\-> '' token.2, token.3]
         else if that.0 in <[ FUNCTION GENERATOR LET ]>
-          tokens.splice i, 0 [\CALL( '' token.2] [\)CALL '' token.2]
+          tokens.splice i, 0 [\CALL( '' token.2, token.3] [\)CALL '' token.2, token.3]
           i += 2
       continue
     case \LITERAL \} then break
@@ -1199,7 +1230,7 @@ character = if not JSON? then uxxxx else ->
       continue
     default continue
     if token.spaced and tokens[i+1]0 in ARG
-      tokens.splice ++i, 0 [\, \, token.2]
+      tokens.splice ++i, 0 [\, \, token.2, token.3]
 
 # Seeks `tokens` from `i`ndex and `go` for a token of the same level
 # that's `ok` or an unmatched closer.
@@ -1251,7 +1282,7 @@ SYMBOL = //
 | \.(?:[&\|\^] | << | >>>?)\.=? # bitwise and shifts
 | \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
 | \^\^                          # clone
-| <(?:--?|~~?)                  # backcall
+| \*?<(?:--?|~~?)!?             # backcall
 | !?(?:--?|~~?)>\*?             # function, bound function
 | ([-+&|:])\1                   # crement / logic / `prototype`
 | %%                            # mod
@@ -1318,7 +1349,7 @@ INVERSES = {[o, CLOSERS[i]] for o, i in OPENERS} <<<
 CHAIN = <[ ( { [ ID STRNUM LITERAL LET WITH WORDS ]>
 
 # Tokens that can start an argument list.
-ARG = CHAIN ++ <[ ... UNARY CREMENT PARAM( FUNCTION GENERATOR
+ARG = CHAIN ++ <[ ... UNARY YIELD CREMENT PARAM( FUNCTION GENERATOR
                       IF SWITCH TRY CLASS RANGE LABEL DECL DO BIOPBP ]>
 
 # Tokens that expect INDENT on the right.

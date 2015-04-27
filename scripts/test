@@ -4,7 +4,10 @@
   var fs = require("fs");
   var path = require("path");
   var assert = require("assert");
+  var prelude = require("prelude-ls");
+
   global.LiveScript = require("..");
+  global.command = require("../lib/command");
 
   var bold = "\33[0;1m";
   var red = "\33[0;31m";
@@ -48,17 +51,94 @@
     });
   };
 
-  process.on("exit", function(){
-    var time = ((Date.now() - startTime) / 1e3).toFixed(2);
-    var message = "passed " + passedTests + " tests in " + time + " seconds";
+  var activeCommandTests = 0;
+  global.commandEq = function(args, arr, afterTests) {
+    activeCommandTests++;
+    afterTests = afterTests || prelude.id;
+    var i = 0;
+    var res = [];
+    // switch to mocha in the future, better way to deal with async tests
+    var maybeTestResults = function() {
+        if (i === arr.length - 1) {
+            arr.forEach(function (x, j) {
+                if (x instanceof RegExp) {
+                    ok(x.test(res[j]), "should pass regex:\n" + x + "\n.test\n" + res[j]);
+                } else {
+                    eq(x, res[j], "should equal:\n" + x + "\n==\n" + res[j]);
+                }
+            });
+            afterTests();
+            activeCommandTests--;
+        } else if (i >= arr.length) {
+            console.error("more results than expected!\n" + args + "\n" + res[i-1]);
+        }
+    };
+    var log = function(msg) {
+        res.push(msg);
+        maybeTestResults();
+        i++;
+    };
+    var die = function(msg) {
+        res.push(msg);
+        maybeTestResults();
+        i++;
+    };
 
-    console.log(failedTests
-      ? tint("failed " + failedTests + " and " + message, red)
-      : tint(message));
-
-    if (failedTests) {
-      process.exit(1);
+    try {
+        command(args, {say: log, warn: log, die: die, sayWithTimestamp: log});
+    } catch (e) {
+        ok(false, e.message);
     }
+  };
+
+  global.fileRead = function(filename) {
+      try {
+          return fs.readFileSync(filename, {
+              encoding: "utf8"
+          });
+      } catch (e) {
+          return "Error: " + e.message;
+      }
+  };
+
+  global.fileExists = function(filename) {
+      try {
+          return fs.statSync(filename).isFile();
+      } catch (e) {
+          console.error(e.message);
+          return false;
+      }
+  };
+
+  global.fileDelete = function(filename) {
+      try {
+          fs.unlinkSync(filename);
+      } catch (e) {
+          console.error(e.message);
+      }
+  };
+
+  process.on("exit", function(){
+      var printResults = function() {
+          var time = ((Date.now() - startTime) / 1e3).toFixed(2);
+          var message = "passed " + passedTests + " tests in " + time + " seconds";
+
+          console.log(failedTests
+            ? tint("failed " + failedTests + " and " + message, red)
+            : tint(message));
+
+          if (failedTests) {
+            process.exit(1);
+          }
+      };
+      var check = function() {
+          if (activeCommandTests > 0) {
+              setTimeout(wait, 5);
+          } else {
+              printResults();
+          }
+      };
+      check();
   });
 
   var files = fs.readdirSync("test");
@@ -80,6 +160,7 @@
     var code = fs.readFileSync(filename, "utf8");
 
     try {
+      console.log(filename);
       LiveScript.run(code, { filename: filename });
     } catch (e) {
       ++failedTests;

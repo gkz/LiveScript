@@ -100,3 +100,46 @@ f1 = ->*
 g1 = f1!
 eq "foo" g1.next!.value
 eq 5 g1.next(3).value
+
+# generator returns
+f2 = ->*
+    yield 1
+    2
+g2 = f2!
+eq 1 g2.next!.value
+eq 2 g2.next!.value
+
+# backcall
+test-val = 0
+do
+    f3 = (gen) ->
+        g3 = gen!
+        test-val := g3.next!.value
+
+    *<- f3
+    yield 1
+eq 1 test-val
+
+# don't spread
+f4 = ->*
+    yield [1, 2]
+g4 = f4!
+deep-equal [1, 2] g4.next!.value
+
+# parens, consumer yield
+f5 = ->*
+    if (yield) and not (yield)
+        ok true
+    else
+        ok false
+g5 = f5!
+g5.next!
+g5.next true
+g5.next false
+
+# calling a yield
+is-two = -> it == 2
+f6 = ->*
+    is-two yield 1
+g6 = f6!
+eq 1 g6.next(2).value
