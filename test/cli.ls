@@ -50,3 +50,14 @@ command-eq '-je "@two" test/data/j.json', ['4']
 
 # eval print json, implicit
 command-eq '-e "@two" test/data/j.json', ['4']
+
+# map, basic
+command-eq '-c --debug --map linked test/data/empty.ls', [
+    'test/data/empty.ls => test/data/empty.js, test/data/empty.js.map'
+], ->
+    try
+        ok file-exists 'test/data/empty.js'
+        ok file-exists 'test/data/empty.js.map'
+    finally
+        file-delete 'test/data/empty.js'
+        file-delete 'test/data/empty.js.map'
