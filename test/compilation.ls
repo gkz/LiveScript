@@ -200,6 +200,21 @@ eq 'some js code!' bare '``some js code!``'
 # generators
 compileThrows "a constructor can't be a generator" 1 'class => ->*'
 
+# statement expression in generator, normal function still compiles fine
+code = '''(function*(){
+  var f, g;
+  f = (yield* (function*(){
+    switch (false) {
+    case !true:
+      (yield 2);
+      return g = function(){
+        return 3;
+      };
+    }
+  }()));
+});'''
+eq code, bare '!->* f = | true => yield 2; g = -> 3'
+
 # https://github.com/jashkenas/coffee-script/pull/3240#issuecomment-38344281
 eq '(function*(){\n  var body;\n  body = (yield fn).body;\n});' bare '!->* {body} = yield fn'
 

@@ -156,6 +156,7 @@ SourceNode::toString = (...args) ->
     # an expression via closure-wrapping, as its meaning will change.
     that.carp 'inconvertible statement' if @getJump!
     fun = Fun [] Block this; call = Call!
+    fun.generator = true if o.in-generator
     var hasArgs, hasThis
     @traverseChildren !->
       switch it.value
@@ -169,7 +170,10 @@ SourceNode::toString = (...args) ->
       fun.params.push Var \args$
     # Flag the function as `wrapper` so that it shares a scope
     # with its parent to preserve the expected lexical scope.
-    Parens(Chain fun<<<{+wrapper, @void} [call]; true)compile o
+    out = Parens(Chain fun<<<{+wrapper, @void} [call]; true)
+    if o.in-generator
+        out = new Yield 'yieldfrom', out
+    out.compile o
 
   # Compiles a child node as a block statement.
   compileBlock: (o, node) ->
@@ -1784,7 +1788,10 @@ class exports.Fun extends Node
     code = [\function]
     if @generator
       @ctor and @carp "a constructor can't be a generator"
+      o.in-generator = true
       code.push \*
+    else if not @wrapper
+      o.in-generator = false
     if @bound is \this$
       if @ctor
         scope.assign \this$ 'this instanceof ctor$ ? this : new ctor$'

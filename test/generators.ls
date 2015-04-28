@@ -143,3 +143,12 @@ f6 = ->*
     is-two yield 1
 g6 = f6!
 eq 1 g6.next(2).value
+
+# in switch
+f7 = (x) ->*
+    y = switch x
+    | true => yield 1
+    | _    => yield 2
+    y
+g7 = f7 true
+eq 1 g7.next!.value
