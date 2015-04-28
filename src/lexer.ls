@@ -228,6 +228,8 @@ exports import
         if last.1 is \yield
           last.1 += \from
           return 4
+        if not @forange!
+          last = @token \FOR, ''
         @forange! and tag = \FROM
       case \to \til
         @forange! and @tokens.push [\FROM '' @line, @column] [\STRNUM \0 @line, @column]
@@ -1268,7 +1270,7 @@ KEYWORDS_UNUSED =
 
 JS_KEYWORDS = KEYWORDS_SHARED ++ KEYWORDS_UNUSED
 
-LS_KEYWORDS = <[ xor match where ]>
+LS_KEYWORDS = <[ xor match where from ]>
 
 ##### Regexes
 # Some of these are given `g` flag and made sure to match empty string
