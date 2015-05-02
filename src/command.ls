@@ -108,7 +108,14 @@ switch
 # Compile a single source script, containing the given code, according to the
 # requested options.
 !function compile-script filename, input, base
-  options = {filename, o.bare, o.const, o.map, o.header}
+  options = {
+      filename
+      output-filename: output-filename filename, o.json
+      o.bare
+      o.const
+      o.map
+      o.header
+  }
   t       = {input, options}
   try
     if o.lex or o.tokens or o.ast
@@ -186,8 +193,7 @@ switch
 !function write-JS source, js, input, base, json
   #     foo.ls     => foo.js
   #     foo.jsm.ls => foo.jsm
-  filename = path.basename source .replace do
-    /(?:(\.\w+)?\.\w+)?$/ -> &1 or if json then '.json' else '.js'
+  filename = output-filename source, json
   dir = path.dirname source
   if o.output
       dir = path.join that, dir.slice if base is '.' then 0 else base.length
@@ -219,6 +225,10 @@ switch
     return compile! unless e
   require 'child_process' .exec do
     "mkdir #{['-p' unless /^win/test process.platform]} #dir" compile
+
+function output-filename filename, json
+    path.basename filename .replace /(?:(\.\w+)?\.\w+)?$/ ->
+        &1 or if json then '.json' else '.js'
 
 # Pretty-print a stream of tokens.
 !function print-tokens tokens

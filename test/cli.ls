@@ -58,6 +58,7 @@ command-eq '-c --debug --map linked test/data/empty.ls', [
     try
         ok file-exists 'test/data/empty.js'
         ok file-exists 'test/data/empty.js.map'
+        ok //empty\.js\.map//.test file-read 'test/data/empty.js'
     finally
         file-delete 'test/data/empty.js'
         file-delete 'test/data/empty.js.map'
