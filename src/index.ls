@@ -21,7 +21,9 @@ parser <<<
                 last_line: last_line
                 last_column: last_column
             tag
-        set-input: -> @pos = -1; @tokens = it
+        set-input: ->
+            @pos = -1
+            @tokens = it
         upcoming-input: -> ''
 
 exports <<<
