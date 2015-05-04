@@ -158,7 +158,7 @@ deep-equal [0,-1,-2] [i for i til -3]
 
 
 # Almost never mess with binary `in`/`of` and variable `by`.
-all = from = to = by = 1
+all = to = by = 1
 
 for i to 0
   ok 0 of [0]
@@ -679,3 +679,22 @@ eq 1, i
 o = { [k, -> v] for let k, v of {a: 1, b: 2} }
 eq 1 o.a!
 eq 2 o.b!
+
+# `from` as an alias for `for from`
+
+i = 0
+from 1 to 5 => i++
+eq 5 i
+from 1 til 5 => i++
+eq 9 i
+
+a = from 1 to 5 => \x
+eq 'x,x,x,x,x' a.join ','
+
+a = from 1 to 2 => from 1 to 2 => \x
+eq 'x,x,x,x' a.map(-> it.join ',').join ','
+
+a = for i from 1 to 2 => from 1 to 2 => i
+eq '1,1,2,2' a.map(-> it.join ',').join ','
+
+
