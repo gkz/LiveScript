@@ -49,13 +49,12 @@ exports <<<
                   unless filename
                       filename = "unnamed-#{ Math.floor(Math.random! * 4294967296).to-string 16 }.ls"
 
-                  map-path = "#output-filename.map"
-
                   output.set-file filename
                   result = output.to-string-with-source-map!
                   if options.map is 'embedded'
                       result.map.set-source-content filename, code
                   if options.map in <[ linked debug ]>
+                      map-path = "#output-filename.map"
                       result.code += "\n//# sourceMappingURL=#map-path\n"
                   else
                       result.code += "\n//# sourceMappingURL=data:application/json;base64,#{ new Buffer result.map.to-string! .to-string 'base64' }\n"
@@ -77,7 +76,9 @@ exports <<<
     lex: -> lexer.lex it, {+raw}
 
     # Runs LiveScript code directly.
-    run: (code, options) -> do Function exports.compile code, {...options, +bare}
+    run: (code, options) ->
+        output = exports.compile code, {...options, +bare}
+        do Function (if typeof! output is 'String' then output else output.code)
 
 exports.tokens.rewrite = lexer.rewrite
 

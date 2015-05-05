@@ -149,7 +149,7 @@ switch
     t.output = LiveScript.compile t.input, {...options, json, o.print}
     LiveScript.emit 'write' t
     if o.print or not filename
-    then say t.output.to-string!.trim-right!
+    then say (if typeof! t.output is 'String' then t.output else t.output.code).trim-right!
     else write-JS filename, t.output, t.input, base, json
   catch then if e?
     if LiveScript.listeners 'failure' .length
@@ -206,9 +206,8 @@ switch
       e <-! fs.write-file js-path, js.code || '\n'
       return warn e if e
 
-      map-path = "#js-path.map"
-
       if o.map == 'linked' || o.map == "debug"
+        map-path = "#js-path.map"
         e2 <-! fs.write-file map-path, js.map || '\n'
         return warn e2 if e2
         if o.map == "debug"
