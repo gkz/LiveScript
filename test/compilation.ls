@@ -136,7 +136,7 @@ eq 1, __proto__ = 1
 λ = -> 七 = 7
 eq λ(), 7
 
-compileThrows 'invalid identifier "♪"' 1 'ƒ　♪　♯'
+compileThrows 'invalid identifier \'♪\'' 1 'ƒ　♪　♯'
 
 
 # - [coffee#1195](https://github.com/jashkenas/coffee-script/issues/1195)

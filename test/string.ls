@@ -205,7 +205,7 @@ compileThrows 'unterminated interpolation' 2 '"#{\n'
 
 throws "Parse error on line 1: Unexpected ')'" -> LiveScript.compile '"(#{+})"'
 
-compileThrows 'invalid variable interpolation "if"' 1 '"#if"'
+compileThrows 'invalid variable interpolation \'if\'' 1 '"#if"'
 
 compileThrows 'malformed character escape sequence' 1 '"\\x"'
 compileThrows 'malformed character escape sequence' 1 '"\\u"'
