@@ -134,7 +134,8 @@ h1 a:hover {
   margin-top: 15px;
 }
 .content p,
-.content ul {
+.content ul,
+.content ol {
   margin-top: 5px;
   margin-bottom: 5px;
   font-size: 18px;
@@ -143,7 +144,8 @@ h1 a:hover {
 .content code {
   font-size: 14px;
 }
-.content ul li {
+.content ul li,
+.content ol li {
   margin-bottom: 10px;
   line-height: 32px;
 }
@@ -214,7 +216,7 @@ h1 a:hover {
   .sidebar h1 a {
     font-size: 32px;
   }
-  .row-fluid > .span4.compiler {
+  .row-fluid > .span4.compiler:not(.fullscreen-compiler div) {
     width: 26.623931624%;
   }
   .row-fluid > .span6.content {

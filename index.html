@@ -39,6 +39,7 @@
         <li><a href="#community">Community</a></li>
         <li><a href="#editor-support">Text Editor/IDE Plugins</a></li>
         <li><a href="#prelude-ls">Standard Library</a></li>
+        <li><a href="#source-maps">Source Maps</a></li>
         <li class="divider">
         <li><a href="#introduction">Introduction</a></li>
         <li><a href="#literals">Literals</a></li>
@@ -95,14 +96,14 @@
         <p><strong>LiveScript</strong> is a language which <strong>compiles to JavaScript</strong>. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
         <p>LiveScript is a fork of <a href="http://satyr.github.com/coco/">Coco</a> and an indirect descendant of CoffeeScript, with which it has much <a href="#coffee-to-ls">compatibility</a>.
         <div class="major-actions">
-          <h3 class="download">1.3.1:</h3>
-          <a href="https://github.com/gkz/LiveScript/zipball/1.3.1"><div class="btn btn-large btn">zip</div></a>
-          <a href="https://github.com/gkz/LiveScript/tarball/1.3.1"><div class="btn btn-large btn">tar.gz</div></a>
+          <h3 class="download">1.4.0:</h3>
+          <a href="https://github.com/gkz/LiveScript/zipball/1.4.0"><div class="btn btn-large btn">zip</div></a>
+          <a href="https://github.com/gkz/LiveScript/tarball/1.4.0"><div class="btn btn-large btn">tar.gz</div></a>
           <a href="https://github.com/gkz/LiveScript"><div class="btn btn-large btn-primary">View project on GitHub</div></a>
           <iframe src="http://ghbtns.com/github-btn.html?user=gkz&repo=LiveScript&type=watch&size=large&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="150" height="40"></iframe>
           <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://livescript.net/" data-text="LiveScript - functional CoffeeScript" data-size="large" data-related="gkzahariev:The Creator" data-via="gkzahariev">Tweet</a>
         </div>
-        <p><strong><code>npm install -g LiveScript</code></strong>
+        <p><strong><code>npm install -g livescript</code></strong>
 <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for updates on LiveScript.
         <p>Featured blog post: <strong><a href="blog/livescript-1.3.0.html">LiveScript 1.3.0 released!</a></strong>
         <p>Double-click an example to load it into the compiler/REPL. Docs in French: <a href="index-fr.html">Français</a>.
@@ -252,9 +253,9 @@ $('h1').on('click', function(){
     <div id="installation" class="section">
       <a name="installation"></a>
       <h2>Installation</h2>
-      <p>You can install LiveScript through the <a href="http://npmjs.org">Node Package Manager</a>: <strong><code>sudo npm install -g LiveScript</code></strong>.
-      <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.3.1">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.3.1">tar.gz</a>), enter its directory, and run <code>sudo make install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git && cd LiveScript && sudo make install</code>. <a href="http://nodejs.org">Node.js</a> is required to be installed on your system.</p>
-      <p>You can also use it directly in the browser by including the file in <code>LiveScript/browser/livescript.js</code> via a script tag. You must then call <code>require("LiveScript").go()</code>. If you use this, your LiveScript scripts have to be placed after the included <code>livescript.js</code> file, and the script tags must have the attribute <code>type="text/ls"</code>.
+      <p>You can install LiveScript through the <a href="http://npmjs.org">Node Package Manager</a>: <strong><code>sudo npm install -g livescript</code></strong>.
+      <p>Alternately, you can also download it (<a href="https://github.com/gkz/LiveScript/zipball/1.4.0">zip</a>, <a href="https://github.com/gkz/LiveScript/tarball/1.4.0">tar.gz</a>), enter its directory, and run <code>sudo make install</code>. Using git to download: <code>git clone git://github.com/gkz/LiveScript.git &amp;&amp; cd LiveScript &amp;&amp; sudo make install</code>. <a href="http://nodejs.org">Node.js</a> is required to be installed on your system.</p>
+      <p>You can also use it directly in the browser by including the file in <code>LiveScript/browser/livescript.js</code> via a script tag. You must then call <code>require("livescript").go()</code>. If you use this, your LiveScript scripts have to be placed after the included <code>livescript.js</code> file, and the script tags must have the attribute <code>type="text/ls"</code>.
       <p>For example:
 <pre class="prettyprint lang-html">
 &lt;script src="livescript.js"&gt;&lt;/script&gt;
@@ -262,7 +263,7 @@ $('h1').on('click', function(){
     console.log "boom #{window.location}"
 &lt;/script&gt;
 &lt;script&gt;
-    var LiveScript = require("LiveScript");
+    var LiveScript = require("livescript");
     LiveScript.go();
 &lt;/script&gt;
 </pre>
@@ -277,30 +278,39 @@ $('h1').on('click', function(){
       <p>Use <code>lsc</code> with no options to start REPL.
 
       <h4>General:</h4>
-      <table class="usage-options table table-striped table-bordered">
-        <tr><td>-v, --version</td><td>display version</td></tr>
-        <tr><td>-h, --help</td><td>display this help message</td></tr>
-        <tr><td>-c, --compile</td><td>compile to JavaScript and save as .js files</td></tr>
-        <tr><td>-e, --eval code::String</td><td>pass as string from the command line as input</td></tr>
-        <tr><td>-d, --prelude</td><td>automatically import prelude.ls in REPL</td></tr>
-        <tr><td>-r, --require</td><td>require libraries before executing</td></tr>
-        <tr><td>-s, --stdin</td><td>read stdin</td></tr>
-        <tr><td>-j, --json</td><td>print/compile as JSON</td></tr>
-        <tr><td>-n, --nodejs</td><td>pass options after this through to the 'node' binary</td></tr>
-        <tr><td>-w, --watch</td><td>watch scripts for changes, and repeat</td></tr>
-        <tr><td>-k, --const</td><td>compile all variables as constants</td></tr>
-      </table>
+<pre>
+Usage: lsc [option]... [file]...
 
-      <h4>Output control:</h4>
-      <table class="usage-options table table-striped table-bordered">
-        <tr><td>-o, --output path::String</td><td>compile into the specified directory</td></tr>
-        <tr><td>-p, --print</td><td>print the result to stdout</td></tr>
-        <tr><td>-b, --bare</td><td>compile without the top-level function wrapper</td></tr>
-        <tr><td>--header</td><td>add "Generated by" header, '--no-header' to suppress - default: true</td></tr>
-        <tr><td>-l, --lex</td><td>print the tokens the lexer produces</td></tr>
-        <tr><td>-t, --tokens</td><td>print the tokens the rewriter produces</td></tr>
-        <tr><td>-a, --ast</td><td>print the syntax tree the parser produces</td></tr>
-      </table>
+Use 'lsc' with no options to start REPL.
+
+Misc:
+  -v, --version                  display version
+  -h, --help                     display this help message
+  -c, --compile                  compile to JavaScript and save as .js files
+  -e, --eval code::String        pass as string from the command line as input
+  -d, --prelude                  automatically import prelude.ls in REPL
+  -r, --require paths::[String]  require libraries before executing
+  -s, --stdin                    read stdin
+  -j, --json                     print/compile as JSON
+  -n, --nodejs                   pass options after this through to the 'node' binary
+  -w, --watch                    watch scripts for changes, and repeat
+  -k, --const                    compile all variables as constants
+
+Output control:
+  -o, --output path::String      compile into the specified directory
+  -p, --print                    print the result to stdout
+  -b, --bare                     compile without the top-level function wrapper
+  --no-header                    do not add "Generated by" header
+  -l, --lex                      print the tokens the lexer produces
+  -t, --tokens                   print the tokens the rewriter produces
+  -a, --ast                      print the syntax tree the parser produces
+  --debug                        print debug output when compiling
+  -m, --map String               generate source maps - either: 'none', 'linked',
+                                 'linked-src', 'embedded', or 'debug' - default: none
+
+Version 1.4.0
+&lt;http://livescript.net/&gt;
+</pre>
 
       <h3>Command Line Examples</h3>
 
@@ -316,7 +326,7 @@ $('h1').on('click', function(){
 
       <h3>Programmatic API:</h3>
 
-      <p>Require it into your Node or Browserify project with <code class="prettyprint lang-js">var LiveScript = require('LiveScript');</code> or <code class="prettyprint lang-ls">require! LiveScript</code>, or use the installation steps above for in-browser installation. In Node, requiring this also registers it in <code>require.extensions</code>.</p>
+      <p>Require it into your Node or Browserify project with <code class="prettyprint lang-js">var LiveScript = require('livescript');</code> or <code class="prettyprint lang-ls">require! livescript</code>, or use the installation steps above for in-browser installation. In Node, requiring this also registers it in <code>require.extensions</code>.</p>
 
       <h4>General:</h4>
       <p><code>LiveScript.compile(code :: String, options :: Object?) -> String</code></p>
@@ -390,6 +400,7 @@ $('h1').on('click', function(){
       <a name="blog"></a>
       <h3>Blog</h3>
       <ul>
+        <li><a href="blog/livescript-1.4.0-source-maps-more.html">LiveScript 1.4.0 - Source Maps and more!</a>
         <li><a href="blog/livescript-1.3.0.html">LiveScript 1.3.0 Released!</a>
         <li><a href="blog/livescript-1.2.0.html">LiveScript 1.2.0 Released!</a>
         <li><a href="blog/10-things-you-didnt-know-livescript-can-do.html">10 things you didn't know LiveScript can do</a>
@@ -435,6 +446,25 @@ $('h1').on('click', function(){
       <p>Prelude is loaded on this page and you can use it when running things in the compiler/REPL to the right.
     </div>
     <hr>
+    <div id="source-maps" class="section">
+      <a name="source-maps"></a>
+      <h2>Source Maps</h2>
+      <p>Use the <code>-m, --map</code> option when compiling to generate source maps. It has several possible values, <code>none</code>, the default, <code>linked</code>,
+                                         <code>linked-src</code>, <code>embedded</code>, <code>debug</code>
+      <p>There are three files involved when generating sourcemaps:
+      <ol style="list-style-type: lower-alpha">
+        <li>The original LiveScript source
+        <li>The sourcemap
+        <li>The generated javascript source
+      </ol>
+      <p><code>a</code> can optionally be embedded inside <code>b</code>, and <code>b</code> can optionally be embedded inside <code>c</code> via a comment.
+      <p><code>linked</code>: No embedding, <code>c</code> links to <code>b</code> via a relative path, and same for <code>b</code> to <code>a</code>
+      <p><code>linked-src</code>: <code>b</code> is embedded inside <code>c</code>, but <code>a</code> is linked to
+      <p><code>embedded</code>: Everything is embedded inside <code>c</code>
+      <p><code>debug</code>: Same as linked, but will also output a human readable representation of the source-node tree (similar to the output from the <code>ast</code> option) to a '.map.debug' file.
+      <p>Use <code>linked</code> or <code>linked-src</code> if you are directly serving the output from lsc to the browser - (ie. not performing further processing). They keep the original source separate, so the javascript file is still small. linked-src just means you have one fewer file to carry around at the expense of increasing the size of the javascript file.
+      <p>Use <code>embedded</code> for everything else - it's self-contained and it's the only form most other tools such as browserify will accept as input. The file will be significantly larger, but you can remedy this by running a separate tool at the end of your build pipeline to split the output back into the <code>linked</code> form.
+    </div>
     <div id="introduction" class="section">
       <a name="introduction"></a>
       <h2>Introduction</h2>
@@ -3431,11 +3461,11 @@ h.next!.value + h.next!.value #=> "foobar"
 <pre class="prettyprint lang-js">
 var g, h;
 function* f(){
-  yield "foo";
+  return (yield "foo");
 }
 g = function*(){
-  yield* f();
-  yield "bar";
+  (yield* f());
+  return (yield "bar");
 };
 h = g();
 h.next().value + h.next().value;
@@ -4827,11 +4857,12 @@ document.title = document.title.toUpperCase();
 <pre class="prettyprint lang-ls">
 
 list = [1 2 3 4 5]
-list[2, 4]    #=> [3,5]
-list[1 to 3]  #=> [2,3,4]
-list[1 til 3] #=> [2,3]
+list[2, 4]         #=> [3,5]
+list[1 to 3]       #=> [2,3,4]
+list[1 til 3]      #=> [2,3]
+list[1 til 4 by 2] #=> [2,4]
 list[1 til 3] = [7 8]
-list          #=> [1,7,8,4,5]
+list               #=> [1,7,8,4,5]
 </pre>
         </div>
         <div class="example-js">
@@ -4841,6 +4872,7 @@ list = [1, 2, 3, 4, 5];
 [list[2], list[4]];
 [list[1], list[2], list[3]];
 [list[1], list[2]];
+[list[1], list[3]];
 ref$ = [7, 8], list[1] = ref$[0], list[2] = ref$[1];
 list;
 </pre>
@@ -5799,6 +5831,24 @@ f do
     <div id="changelog" class="section">
       <a name="changelog"></a>
       <h2>Changelog</h2>
+      <h3>1.4.0</h3>
+      <ul>
+          <li>Changed npm name to <code>livescript</code> as npm no longer allows publishing updates to packages with upper-case letters
+          <li>Added source map support
+          <li>Fixed a regression from previous versions that did not allow for flag style positionals after a first positional (eg. <code>lsc app.ls --flag</code> caused an error)
+          <li>Generators are no longer auto-hushed, moving behavior in line with what was expected
+          <li>Allow backcall generators, eg. <code>*&lt;-</code>
+          <li>Added back <code>-k</code> shorthand for the <code>--const</code> flag
+          <li>JSON processing improvements
+          <li>Made it possible to use the <code>by</code> keyword in slices, eg. <code>list[1 til 5 by 2]</code>
+          <li>Object comprehension bug fixes
+          <li>Fixed various backcall issues
+          <li>Fixed composition operator spacing issues
+          <li>Yield bug fixes - including allowing it to be used with no operand
+          <li>Replaced deprecated usage of <code>customFds</code> in <code>child_process.spawn</code>
+          <li>Added CLI tests
+          <li>Improved coding style
+      </ul>
       <h3>1.3.1</h3>
       <ul>
           <li>Fixed bug with calling lsc file.ls with arguments (<a href="https://github.com/gkz/LiveScript/issues/569">#569</a>)
@@ -5954,7 +6004,7 @@ delete! x.y
         <li>The <code>--prelude</code>/<code>-d</code> flags work for the repl
         <li>New func syntax eg. <code>f(x) = x</code> now uses <code>~</code> for bound funcs, liked named funcs, eg. <code>~f(x) = x</code>
         <li>Removed no return option for new func syntax
-        <li>Added function keyword arguments ala python, eg. <code>f = ({x = 2, y = 3}) -> x + y</code>, and then application with <code>f y: 4</code>
+        <li>Added function keyword arguments ala python, eg. <code>f = ({x = 2, y = 3}) -&gt; x + y</code>, and then application with <code>f y: 4</code>
         <li>Removed overloading of <code>+</code> for list concatination (just use <code>+++</code>)
         <li>Readded bitwise compound assign, eg. <code>.&.=</code>
         <li>Added <code>where</code>, like <code>let</code> but comes after instead of before - also allows for nested assignments
@@ -6000,7 +6050,7 @@ delete! x.y
         <li>Added <code>&</code> as alias to <code>arguments</code>, allowing <code>-> &0 + &1</code> etc.
         <li>Removed <code>@@</code> as alias to <code>arguments</code>
         <li>Increased precedence of the pipe <code>|&gt;</code> operator to allow assignment of the entire thing without parens, not just of the first section
-        <li>Added mixin feature <code>implements</code> thanks to Coco, eg. <code>class Cow extends Animal implements Mooer</code>, which does <code>::<<< Mooer</code> in the class body.
+        <li>Added mixin feature <code>implements</code> thanks to Coco, eg. <code>class Cow extends Animal implements Mooer</code>, which does <code>::&lt;&lt;&lt; Mooer</code> in the class body.
       </ul>
       <h3>0.9.10</h3>
       <ul>
@@ -6024,7 +6074,7 @@ delete! x.y
       <ul>
         <li>Bug fixes
         <li>Precedence change of <code>&</code> and <code>+++</code>
-        <li>Nicer pipe <code>|></code> compilation
+        <li>Nicer pipe <code>|&gt;</code> compilation
       </ul>
       <h3>0.9.6</h3>
       <ul>
@@ -6081,7 +6131,7 @@ delete! x.y
       <a name="thanks"></a>
       <h2>Thanks</h2>
       <p>You can find the full list of contributors <a href="https://github.com/gkz/LiveScript/graphs/contributors">here</a>. That list includes contributors to LiveScript and its predecessors.
-      <p>People who have contributed directly to LiveScript include <a href="https://github.com/gkz">George Zahariev</a>, <a href="https://github.com/satyr">Satoshi Murakami</a>, <a href="https://github.com/josher19">Joshua Weinstein</a>, <a href="https://github.com/goatslacker">Josh Perez</a>, <a href="https://github.com/paulmillr">Paul Miller</a>, <a href="https://github.com/Nami-Doc">Nami-Doc</a>, <a href="https://github.com/killdream">killdream</a>, <a href="https://github.com/audreyt">audreyt</a>, <a href="https://github.com/clkao">clkao</a>, <a href="https://github.com/viclib">viclib</a>, <a href="https://github.com/dtinth">dtinth</a>, and <a href="https://github.com/racklin">racklin</a>.
+      <p>People who have contributed directly to LiveScript include <a href="https://github.com/gkz">George Zahariev</a>, <a href="https://github.com/satyr">Satoshi Murakami</a>, <a href="https://github.com/josher19">Joshua Weinstein</a>, <a href="https://github.com/goatslacker">Josh Perez</a>, <a href="https://github.com/paulmillr">Paul Miller</a>, <a href="https://github.com/Nami-Doc">Nami-Doc</a>, <a href="https://github.com/killdream">killdream</a>, <a href="https://github.com/audreyt">audreyt</a>, <a href="https://github.com/clkao">clkao</a>, <a href="https://github.com/viclib">viclib</a>, <a href="https://github.com/dtinth">dtinth</a>, <a href="https://github.com/racklin">racklin</a>, <a href="https://github.com/raine">Raine Virta</a>, <a href="https://github.com/Diggsey">Diggory Blake</a>, <a href="https://github.com/Haspaker">Haspaker</a>, <a href="https://github.com/synapsos">synapsos</a>, <a href="https://github.com/blvz">Rafael Belvederese</a>, <a href="https://github.com/quarterto">Matt Brennan</a>, <a href="https://github.com/rhendric">Ryan Hendrickson</a>, <a href="https://github.com/impinball">impinball</a>, <a href="https://github.com/skovsgaard">skovsgaard</a>, <a href="https://github.com/piotrklibert">Piotr Klibert</a>, <a href="https://github.com/appedemic">appedemic</a>
       <p>Thank you to <a href="http://nielsgrootobbink.com/">Niels Groot Obbink</a> for giving me the <a href="http://livescript.org">livescript.org</a> domain name.
       <p>An extra special thanks to Satoshi, as this project is a fork of his project <a href="https://github.com/satyr/coco">Coco</a> and would not be possible without it. It has been a pleasure to work off of his beautiful Coco compiler.
     </div>
@@ -6173,7 +6223,7 @@ delete! x.y
 
 <script src="underscore-min.js"></script>
 <script src="prelude-browser-min-1.1.1.js"></script>
-<script src="livescript-1.3.1.js"></script>
+<script src="livescript-1.4.0.js"></script>
 <script src="site.js"></script>
 
 </body>
