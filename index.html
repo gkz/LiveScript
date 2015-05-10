@@ -324,6 +324,55 @@ Version 1.4.0
         <li>Start the LiveScript REPL: <code>lsc</code> - <code>Ctrl-D</code> to exit, use <code>Ctrl-J</code> for multiline input.
       </ul>
 
+      <h3 id="json">JSON</h3>
+      <a name="json"></a>
+      <p>You can compile LiveScript style JSON to <code>.json</code> files by using the <code>.json.ls</code> file extension, or by passing in the <code>-j,--json</code> flag.
+
+      <p>You can combine <code>-e,--eval</code> with JSON data for functional style command line JSON processing. The JSON data you supply is bound to <code>this</code> in the eval expression. You can either pipe in JSON, and use the <code>-j,--json</code> flag, or use a file with the <code>.json</code>extension.
+
+<pre>
+$ lsc -e '@name' package.json
+"livescript"
+$ cat package.json | lsc -je '@name'
+"livescript"
+</pre>
+
+      <p>You can include <a href="www.preludels.com">prelude.ls</a> with the <code>-d,--prelude</code> flag.
+
+<pre>
+$ lsc -de '@files |&gt; map (.to-upper-case!)' package.json
+[
+  "LIB",
+  "BIN",
+  "README.MD",
+  "LICENSE"
+]
+</pre>
+
+      <p>You can easily require modules as well, with the <code>-r,--require</code> flag.
+
+<pre>
+lsc -r 'path' -de '@files |&gt; map -&gt; [it, path.resolve it]' package.json
+[
+  [
+    "lib",
+    "/home/z/open-source/LiveScript/lib"
+  ],
+  [
+    "bin",
+    "/home/z/open-source/LiveScript/bin"
+  ],
+  [
+    "README.md",
+    "/home/z/open-source/LiveScript/README.md"
+  ],
+  [
+    "LICENSE",
+    "/home/z/open-source/LiveScript/LICENSE"
+  ]
+]
+</pre>
+
       <h3>Programmatic API:</h3>
 
       <p>Require it into your Node or Browserify project with <code class="prettyprint lang-js">var LiveScript = require('livescript');</code> or <code class="prettyprint lang-ls">require! livescript</code>, or use the installation steps above for in-browser installation. In Node, requiring this also registers it in <code>require.extensions</code>.</p>
