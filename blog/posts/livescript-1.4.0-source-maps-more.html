@@ -1,0 +1,93 @@
+title: LiveScript 1.4.0 - Source Maps and more!
+date:  11 May 2015
+author: <a href="https://twitter.com/gkzahariev" class="author">George Zahariev</a>
+-----
+
+<p><strong>LiveScript</strong> is a language which <strong>compiles to JavaScript</strong>. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.
+
+<p>For more information, check out the <a href="http://livescript.net">LiveScript site</a>.
+
+
+<h3>1.4.0</h3>
+
+<p>LiveScript 1.4.0 includes <strong>source maps</strong>, functional JSON command line processing, improved generator support, along with many bug fixes. <a href="http://livescript.net/#changelog">Full changelog</a>.
+
+<p class="note"><strong>Package name change:</strong> LiveScript's package name on npm is now <strong><code>livescript</code></strong> - all lower case (previously <code>LiveScript</code>) - packages with upper case letters in their names are no longer allowed to publish updates on npm. Please use <code>npm&nbsp;uninstall&nbsp;-g&nbsp;LiveScript</code> and then <code>npm&nbsp;install&nbsp;-g&nbsp;livescript</code>.
+
+<h3>Source Maps</h3>
+
+<p>Use the <code>-m, --map</code> option when compiling to generate source maps. It has several possible values, <code>none</code> - the default, <code>linked</code>, <code>linked-src</code>, <code>embedded</code>, and <code>debug</code>
+
+<p><img src="img/source-maps.png" alt="screenshot of source maps in action">
+
+<p>There are three files involved when generating sourcemaps:
+<ol style="list-style-type: lower-alpha">
+  <li>The original LiveScript source
+  <li>The sourcemap
+  <li>The generated JavaScript source
+</ol>
+<p><code>a</code> can optionally be embedded inside <code>b</code>, and <code>b</code> can optionally be embedded inside <code>c</code> via a comment.
+<p><code>linked</code>: No embedding, <code>c</code> links to <code>b</code> via a relative path, and same for <code>b</code> to <code>a</code>
+<p><code>linked-src</code>: <code>b</code> is embedded inside <code>c</code>, but <code>a</code> is linked to
+<p><code>embedded</code>: Everything is embedded inside <code>c</code>
+<p><code>debug</code>: Same as linked, but will also output a human readable representation of the source-node tree (similar to the output from the <code>ast</code> option) to a '.map.debug' file.
+<p>Use <code>linked</code> or <code>linked-src</code> if you are directly serving the output from lsc to the browser - (ie. not performing further processing). They keep the original source separate, so the JavaScript file is still small. <code>linked-src</code> just means you have one fewer file to carry around at the expense of increasing the size of the JavaScript file.
+<p>Use <code>embedded</code> for everything else - it's self-contained and it's the only form most other tools such as browserify will accept as input. The file will be significantly larger, but you can remedy this by running a separate tool at the end of your build pipeline to split the output back into the <code>linked</code> form.
+
+<p>Thanks to <a href="https://github.com/Diggsey">Diggory Blake</a> for his big pull request!
+
+<h3>JSON</h3>
+<p>You can combine <code>-e,--eval</code> with JSON data for functional style command line JSON processing. The JSON data you supply is bound to <code>this</code> in the eval expression. You can either pipe in JSON, and use the <code>-j,--json</code> flag, or use a file with the <code>.json</code>extension.
+
+<pre>
+$ lsc -e '@name' package.json
+"livescript"
+$ cat package.json | lsc -je '@name'
+"livescript"
+</pre>
+
+<p>You can include <a href="http://www.preludels.com">prelude.ls</a> with the <code>-d,--prelude</code> flag.
+
+<pre>
+$ lsc -de '@files |&gt; map (.to-upper-case!)' package.json
+[
+  "LIB",
+  "BIN",
+  "README.MD",
+  "LICENSE"
+]
+</pre>
+
+<p>You can easily require modules as well, with the <code>-r,--require</code> flag.
+
+<pre>
+lsc -r 'path' -de '@files |&gt; map -&gt; [it, path.resolve it]' package.json
+[
+  [
+    "lib",
+    "/home/z/open-source/LiveScript/lib"
+  ],
+  [
+    "bin",
+    "/home/z/open-source/LiveScript/bin"
+  ],
+  [
+    "README.md",
+    "/home/z/open-source/LiveScript/README.md"
+  ],
+  [
+    "LICENSE",
+    "/home/z/open-source/LiveScript/LICENSE"
+  ]
+]
+</pre>
+
+<h3>Other improvements</h3>
+
+<p>Many fixes to <code>yield</code>, allowing <code>by</code> in list slices, eg. <code>list[1 til 5 by 2]</code>, added backcall generators <code>*&lt;-</code>, and many other fixes.
+
+<h3>Thanks</h3>
+
+<p>Thanks to the people who have contributed to this release, including <a href="https://github.com/rhendric">Ryan Hendrickson</a>, <a href="https://github.com/quarterto">Matt Brennan</a>, <a href="https://github.com/skovsgaard">skovsgaard</a>, <a href="https://github.com/vendethiel">vendethiel</a>, <a href="https://github.com/impinball">impinball</a>, <a href="https://github.com/synapsos">synapsos</a>, <a href="https://github.com/Haspaker">Haspaker</a>, <a href="https://github.com/Diggsey">Diggory Blake</a>, <a href="https://github.com/raine">Raine Virta</a>, and <a href="https://github.com/blvz">Rafael Belvederese</a>, 
+
+<p>For more information on LiveScript, check out the <a href="http://livescript.net">LiveScript site</a>.

@@ -2,9 +2,9 @@
 <html>
 <head>
 <meta charset='utf-8'>
-<title>LiveScript 1.3.0 released - Generators and Yield!</title>
+<title>LiveScript 1.4.0 - Source Maps and more!</title>
 
-<link rel="canonical" href="http://livescript.net/blog/livescript-1.3.0.html">
+<link rel="canonical" href="http://livescript.net/blog/livescript-1.4.0-source-maps-more.html">
 <link rel="icon" type="image/png" href="../images/icon.png">
 
 <link href="../bootstrap/themes/cerulean.bootstrap.min.css" rel="stylesheet">
@@ -34,9 +34,9 @@
   <div class="container">
     <div class="row">
       <div class="span10 content">
-        <h1>LiveScript 1.3.0 released - Generators and Yield!</h1>
+        <h1>LiveScript 1.4.0 - Source Maps and more!</h1>
         <div class="date-author">
-          <span class="date">4 Oct 2014</span> - <a href="https://twitter.com/gkzahariev" class="author">George Zahariev</a>
+          <span class="date">11 May 2015</span> - <a href="https://twitter.com/gkzahariev" class="author">George Zahariev</a>
         </div>
         
 
@@ -45,132 +45,87 @@
 <p>For more information, check out the <a href="http://livescript.net">LiveScript site</a>.
 
 
-<h3>1.3.0</h3>
+<h3>1.4.0</h3>
 
-<p>LiveScript 1.3.0 fixes many bugs and adds some new features, including <strong>generator</strong> and <strong>yield</strong> support!
+<p>LiveScript 1.4.0 includes <strong>source maps</strong>, functional JSON command line processing, improved generator support, along with many bug fixes. <a href="http://livescript.net/#changelog">Full changelog</a>.
 
-<h4>Generators and Yield</h4>
-<p>You can now use generators and yield in your LiveScript code! A brief rundown:
+<p class="note"><strong>Package name change:</strong> LiveScript's package name on npm is now <strong><code>livescript</code></strong> - all lower case (previously <code>LiveScript</code>) - packages with upper case letters in their names are no longer allowed to publish updates on npm. Please use <code>npm&nbsp;uninstall&nbsp;-g&nbsp;LiveScript</code> and then <code>npm&nbsp;install&nbsp;-g&nbsp;livescript</code>.
 
-<div class="example">
-  <div class="example-ls">
-<pre class="prettyprint lang-ls">
+<h3>Source Maps</h3>
 
-function* f
-    yield "foo"
+<p>Use the <code>-m, --map</code> option when compiling to generate source maps. It has several possible values, <code>none</code> - the default, <code>linked</code>, <code>linked-src</code>, <code>embedded</code>, and <code>debug</code>
 
-g = ->*
-    yield from f!
-    yield "bar"
+<p><img src="img/source-maps.png" alt="screenshot of source maps in action">
 
-h = g!
-h.next!.value + h.next!.value #=> "foobar"
-</pre>
-  </div>
-  <div class="example-js">
-<pre class="prettyprint lang-js">
-var g, h;
-function* f(){
-  yield "foo";
-}
-g = function*(){
-  yield* f();
-  yield "bar";
-};
-h = g();
-h.next().value + h.next().value;
-</pre>
-  </div>
-</div>
+<p>There are three files involved when generating sourcemaps:
+<ol style="list-style-type: lower-alpha">
+  <li>The original LiveScript source
+  <li>The sourcemap
+  <li>The generated JavaScript source
+</ol>
+<p><code>a</code> can optionally be embedded inside <code>b</code>, and <code>b</code> can optionally be embedded inside <code>c</code> via a comment.
+<p><code>linked</code>: No embedding, <code>c</code> links to <code>b</code> via a relative path, and same for <code>b</code> to <code>a</code>
+<p><code>linked-src</code>: <code>b</code> is embedded inside <code>c</code>, but <code>a</code> is linked to
+<p><code>embedded</code>: Everything is embedded inside <code>c</code>
+<p><code>debug</code>: Same as linked, but will also output a human readable representation of the source-node tree (similar to the output from the <code>ast</code> option) to a '.map.debug' file.
+<p>Use <code>linked</code> or <code>linked-src</code> if you are directly serving the output from lsc to the browser - (ie. not performing further processing). They keep the original source separate, so the JavaScript file is still small. <code>linked-src</code> just means you have one fewer file to carry around at the expense of increasing the size of the JavaScript file.
+<p>Use <code>embedded</code> for everything else - it's self-contained and it's the only form most other tools such as browserify will accept as input. The file will be significantly larger, but you can remedy this by running a separate tool at the end of your build pipeline to split the output back into the <code>linked</code> form.
 
-<p>You can create generators by either appending a star <code>*</code> to the <code>function</code> keyword, or appending it to LiveScript's arrow notation. This works with the variety of arrows we have.
+<p>Thanks to <a href="https://github.com/Diggsey">Diggory Blake</a> for his big pull request!
 
-<p><code>yield</code> is simply the same as in JavaScript, and <code>yield from</code> is JavaScript's <code>yield*</code>.
-
-<p>To run code using generators and yield using node 0.11, use the <code>--harmony</code> flag. If running directly with <code>lsc</code>, use <code>lsc file.ls --nodejs --harmony</code> to pass the harmony flag to node.
-
-<p><a href="https://github.com/gkz/vim-ls">vim-ls</a> has been updated to highlight <code>yield</code> and also has many other improvements.
-
-<h4>require!</h4>
-<p> require! has been changed around to be more straightforward to use:
-
-<code>require! {a: b}</code> has been changed to mean <code>b = require('a')</code>, and
-you can now destructure, eg:
-
-<div class="example">
-  <div class="example-ls">
-<pre class="prettyprint lang-ls">
-require! {
-    fs: filesystem
-    'prelude-ls': {map, id}
-    path: {join, resolve}:p
-}
-</pre>
-  </div>
-  <div class="example-js">
-<pre class="prettyprint lang-js">
-var filesystem, ref$, map, id, p, join, resolve;
-filesystem = require('fs');
-ref$ = require('prelude-ls'), map = ref$.map, id = ref$.id;
-p = require('path'), join = p.join, resolve = p.resolve;
-</pre>
-  </div>
-</div>
-
-
-<h4>Pipe and Assign Precedence</h4>
-<p>One bug whose fix may break some code is the precedence of the pipe operator and assign. Assign now has a lower precedence than all pipes, so
-
-<pre class="prettyprint lang-ls">
-result1 = 'hello' |> reverse |> upCase
-'OLLEH' == result1
-
-result2 = upCase <| reverse <| \hello
-'OLLEH' == result2
-</pre>
-
-<h4>Auto Infused IIFE</h4>
-<p>Auto infused IIFE were removed as we have <code>for let</code> now. Change any <code>for ... then let</code> to <code>for let .... then</code>.
-
-<h4>Browser version</h4>
-<p>The browser versions of LiveScript (<code>browser/livescript.js</code> and <code>browser/livescript-min.js</code>) are now packaged with <a href="http://browserify.org/">browserify</a>. To use the browser version, include the file you want, and then do:
-<pre>
-    var LiveScript = require("LiveScript");
-</pre>
-
-<p>For example:
+<h3>JSON</h3>
+<p>You can combine <code>-e,--eval</code> with JSON data for functional style command line JSON processing. The JSON data you supply is bound to <code>this</code> in the eval expression. You can either pipe in JSON, and use the <code>-j,--json</code> flag, or use a file with the <code>.json</code>extension.
 
 <pre>
-&lt;script src="livescript.js"&gt;&lt;/script&gt;
-&lt;script type="text/ls"&gt;
-    console.log "boom #{window.location}"
-&lt;/script&gt;
-&lt;script&gt;
-    var LiveScript = require("LiveScript");
-    LiveScript.go();
-&lt;/script&gt;
+$ lsc -e '@name' package.json
+"livescript"
+$ cat package.json | lsc -je '@name'
+"livescript"
 </pre>
 
-<p><code>LiveScript.go()</code> finds any script tags with <code>type="text/ls"</code>, compiles them, and executes them.
+<p>You can include <a href="http://www.preludels.com">prelude.ls</a> with the <code>-d,--prelude</code> flag.
 
-<h4>Option parsing and help</h4>
-<p><a href="https://github.com/gkz/optionator">Optionator</a> is now used for option parsing and help text generation, instead of a custom solution. The <code>--require</code> option was removed as it was useless.
+<pre>
+$ lsc -de '@files |&gt; map (.to-upper-case!)' package.json
+[
+  "LIB",
+  "BIN",
+  "README.MD",
+  "LICENSE"
+]
+</pre>
 
-<h4>No header option</h4>
-<p>You can use the <code>--no-header</code> option to not output the header when compiling. This option is also available when using LiveScript as a library through the <code>header: false</code> option.
+<p>You can easily require modules as well, with the <code>-r,--require</code> flag.
 
-<h4>Use <code>lsc</code>, not <code>livescript</code></h4>
-<p><code>livescript</code> was removed from the bin, please use <code>lsc</code> on the command line now. It is the exact same, but shorter to type!
+<pre>
+lsc -r 'path' -de '@files |&gt; map -&gt; [it, path.resolve it]' package.json
+[
+  [
+    "lib",
+    "/home/z/open-source/LiveScript/lib"
+  ],
+  [
+    "bin",
+    "/home/z/open-source/LiveScript/bin"
+  ],
+  [
+    "README.md",
+    "/home/z/open-source/LiveScript/README.md"
+  ],
+  [
+    "LICENSE",
+    "/home/z/open-source/LiveScript/LICENSE"
+  ]
+]
+</pre>
 
-<h4>Slake</h4>
-<p><code>slake</code> and <code>Slakefile</code>s were removed (no need for another build system!), please use make, gulp, grunt, etc.
+<h3>Other improvements</h3>
 
-<h4><code>that</code> in switch</h4>
-<p>You can use <code>that</code> in the default case of a switch statement, to mean the value you are switching upon.
+<p>Many fixes to <code>yield</code>, allowing <code>by</code> in list slices, eg. <code>list[1 til 5 by 2]</code>, added backcall generators <code>*&lt;-</code>, and many other fixes.
 
 <h3>Thanks</h3>
 
-<p>Thank you to <a href="https://github.com/Nami-Doc">Nami-Doc</a> for his numerous contributions, and also Haspacker, <a href="https://github.com/racklin">Rack Lin (racklin)</a>, <a href="https://github.com/appedemic">appedemic</a>, <a href="https://github.com/piotrklibert">piotrklibert</a>, and <a href="https://github.com/rhendric">Ryan Hendrickson (rhendric)</a> for their contributions as well!
+<p>Thanks to the people who have contributed to this release, including <a href="https://github.com/rhendric">Ryan Hendrickson</a>, <a href="https://github.com/quarterto">Matt Brennan</a>, <a href="https://github.com/skovsgaard">skovsgaard</a>, <a href="https://github.com/vendethiel">vendethiel</a>, <a href="https://github.com/impinball">impinball</a>, <a href="https://github.com/synapsos">synapsos</a>, <a href="https://github.com/Haspaker">Haspaker</a>, <a href="https://github.com/Diggsey">Diggory Blake</a>, <a href="https://github.com/raine">Raine Virta</a>, and <a href="https://github.com/blvz">Rafael Belvederese</a>, 
 
 <p>For more information on LiveScript, check out the <a href="http://livescript.net">LiveScript site</a>.
 
