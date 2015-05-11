@@ -105,7 +105,7 @@
         </div>
         <p><strong><code>npm install -g livescript</code></strong>
 <p><a href="https://twitter.com/gkzahariev" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @gkzahariev</a> for updates on LiveScript.
-        <p>Featured blog post: <strong><a href="blog/livescript-1.3.0.html">LiveScript 1.3.0 released!</a></strong>
+        <p>Featured blog post: <strong><a href="blog/livescript-1.4.0-source-maps-more.html">LiveScript 1.4.0 - Source Maps and more!</a></strong>
         <p>Double-click an example to load it into the compiler/REPL. Docs in French: <a href="index-fr.html">Français</a>.
       <h3>Some Examples</h3>
       <div class="example">
@@ -337,7 +337,7 @@ $ cat package.json | lsc -je '@name'
 "livescript"
 </pre>
 
-      <p>You can include <a href="www.preludels.com">prelude.ls</a> with the <code>-d,--prelude</code> flag.
+      <p>You can include <a href="http://www.preludels.com">prelude.ls</a> with the <code>-d,--prelude</code> flag.
 
 <pre>
 $ lsc -de '@files |&gt; map (.to-upper-case!)' package.json
@@ -498,8 +498,7 @@ lsc -r 'path' -de '@files |&gt; map -&gt; [it, path.resolve it]' package.json
     <div id="source-maps" class="section">
       <a name="source-maps"></a>
       <h2>Source Maps</h2>
-      <p>Use the <code>-m, --map</code> option when compiling to generate source maps. It has several possible values, <code>none</code>, the default, <code>linked</code>,
-                                         <code>linked-src</code>, <code>embedded</code>, <code>debug</code>
+      <p>Use the <code>-m, --map</code> option when compiling to generate source maps. It has several possible values, <code>none</code> - the default, <code>linked</code>, <code>linked-src</code>, <code>embedded</code>, and <code>debug</code>
       <p>There are three files involved when generating sourcemaps:
       <ol style="list-style-type: lower-alpha">
         <li>The original LiveScript source
@@ -6268,11 +6267,11 @@ delete! x.y
 <script src="bootstrap/js/bootstrap-scrollspy.js"></script>
 
 <script src="google-code-prettify/prettify.js"></script>
-<script src="lang-ls-1.3.0.js"></script>
+<script src="lang-ls-1.4.0.js"></script>
 
 <script src="underscore-min.js"></script>
 <script src="prelude-browser-min-1.1.1.js"></script>
-<script src="livescript-1.4.0.js"></script>
+<script src="livescript-1.4.0-min.js"></script>
 <script src="site.js"></script>
 
 </body>
