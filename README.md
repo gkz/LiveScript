@@ -7,7 +7,7 @@ Check out **[livescript.net](http://livescript.net)** for more information, exam
 [![Build Status](https://travis-ci.org/gkz/LiveScript.png?branch=master)](https://travis-ci.org/gkz/LiveScript)
 
 ### Install
-Have Node.js installed. `sudo npm install -g LiveScript`
+Have Node.js installed. `sudo npm install -g livescript`
 
 After, run `lsc -h` for more information.
 
