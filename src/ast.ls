@@ -924,7 +924,7 @@ class exports.Call extends Node
             ++index
         node <<< back: (args[index] = fun)body
 
-    @let = (args, body) ->
+    @let = (args, body, generator = false) ->
         params = for a, i in args
             if a.op is \= and not a.logic and a.right
                 args[i] = that
@@ -932,7 +932,7 @@ class exports.Call extends Node
                 a.left
             else Var a.var-name! || a.carp 'invalid "let" argument'
         gotThis or args.unshift Literal \this
-        @block Fun(params, body), args, \.call
+        @block Fun(params, body, null, null, null, generator), args, \.call
 
 #### List
 # An abstract node for a list of comma-separated items.
@@ -2299,6 +2299,8 @@ class exports.For extends While
     show: -> ((@kind || []) ++ @index).join ' '
 
     add-body: (body) ->
+        has-yield = !!body.traverse-children (child) ->
+            return true if child instanceof Yield
         if @let
             @item = Literal \.. if delete @ref
             body = Block Call.let do
@@ -2306,6 +2308,7 @@ class exports.For extends While
                     ..push Assign Var(that), Literal \index$$ if @index
                     ..push Assign that,      Literal \item$$ if @item
                 body
+                has-yield
 
         super body
 
@@ -2317,6 +2320,7 @@ class exports.For extends While
                     if @item and it.value is @item.value
                         it.value = \item$$
         if @let
+            @body := Block Yield \yieldfrom, body if has-yield
             delete @index
             delete @item
         this
