@@ -152,3 +152,17 @@ f7 = (x) ->*
     y
 g7 = f7 true
 eq 1 g7.next!.value
+
+f8 = ->*
+    result = for let i in [1,2,3]
+        yield i
+        -> i * 2
+    result
+g8 = f8!
+eq 1 g8.next!value
+eq 2 g8.next!value
+eq 3 g8.next!value
+g8_result = g8.next!value
+eq 2 g8_result[0]()
+eq 4 g8_result[1]()
+eq 6 g8_result[2]()
