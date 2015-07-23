@@ -13,12 +13,7 @@
   "author": "George Zahariev <z@georgezahariev.com>",
   "homepage": "http://livescript.net",
   "bugs": "https://github.com/gkz/LiveScript/issues",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://raw.githubusercontent.com/gkz/LiveScript/master/LICENSE"
-    }
-  ],
+  "license": "MIT",
   "engines": {
     "node": ">= 0.8.0"
   },
