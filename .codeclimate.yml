@@ -1,0 +1,10 @@
+# Save as .codeclimate.yml (note leading .) in project root directory
+languages:
+  JavaScript: true
+  Ruby: false
+  PHP: false
+  Python: false
+ratings:
+  paths:
+  - lib/**
+  - "**.js"
