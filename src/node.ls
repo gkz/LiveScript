@@ -29,7 +29,7 @@ module.exports = !(LiveScript) ->
     LiveScript <<<< events.EventEmitter.prototype
 
     require.extensions.'.ls' = (module, filename) ->
-        js = LiveScript.compile (fs.read-file-sync filename, 'utf8'), {filename, +bare}
+        js = LiveScript.compile (fs.read-file-sync filename, 'utf8'), {filename, +bare, map: "embedded"} .code
         try
             module._compile js, filename
         catch
