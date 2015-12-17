@@ -3,7 +3,7 @@ require! {
   path
   fs
   util
-  'prelude-ls': {each, break-list, lines, unlines, take}:prelude
+  'prelude-ls': {each, break-list, lines, unlines, take, keys, filter, dasherize, map}:prelude
   './options': {parse: parse-options, generate-help}
   './util': {name-from-path}
   'source-map': {SourceNode}
@@ -28,6 +28,8 @@ file-exists = (path) ->
   try
     fs.stat-sync path
     true
+dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
+starts-with = (str) -> (.index-of(str) is 0)
 
 try
   o = parse-options args
@@ -280,12 +282,16 @@ function output-filename filename, json
     server = require 'repl' .REPLServer:: with
       context: repl-ctx
       commands: []
-      use-global: false
+      use-global: true
       use-colors: process.env.NODE_DISABLE_COLORS
       eval: !(code,ctx,, cb) ->
         try res = vm.run-in-new-context code, ctx, 'repl' catch
         cb e, res
-    rl.completer = server~complete
+    rl.completer = (line, cb) ->
+      context-vars = map dasherize-vars, keys server.context
+      matches = filter (starts-with line), context-vars
+      cb null, [if matches.length then matches else context-vars, line]
+
   rl.on 'SIGCONT' rl.prompt
   rl.on 'SIGINT' !->
     if @line or code
