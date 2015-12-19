@@ -4,7 +4,7 @@ is a language which compiles to JavaScript. It has a straightforward mapping to 
 Check out **[livescript.net](http://livescript.net)** for more information, examples, usage, and a language reference.
 
 ### Build Status
-[![Build Status](https://travis-ci.org/gkz/LiveScript.png?branch=master)](https://travis-ci.org/gkz/LiveScript)
+[![Build Status](https://travis-ci.org/gkz/LiveScript.svg?branch=master)](https://travis-ci.org/gkz/LiveScript)
 
 ### Install
 Have Node.js installed. `sudo npm install -g livescript`
