@@ -18,3 +18,4 @@ After, run `lsc -h` for more information.
 ### Community
 
 If you'd like to chat, drop by [#livescript](irc://irc.freenode.net/livescript) on Freenode IRC.
+If you don't have IRC client you can use Freenode [webchat](https://webchat.freenode.net/?channels=#livescript).
