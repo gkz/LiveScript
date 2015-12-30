@@ -652,6 +652,8 @@ exports <<<
             @adi!
             val = 'prototype'
             tag = 'ID'
+        case '@:'
+            tag = 'ASCR'
         case '=>'
             @unline!
             @fset 'for' false
@@ -1343,6 +1345,7 @@ SYMBOL = //
 | \([^\n\S]*\)                  # call
 | [!=]==?                       # strict equality, deep equals
 | !?\~=                         # fuzzy equality
+| @:                            # type ascription
 | @@?                           # this / constructor
 | <\[(?:[\s\S]*?\]>)?           # words
 | <<<<?                         # import

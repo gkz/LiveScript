@@ -157,6 +157,7 @@ bnf =
     ArgList:
         o ''                                                -> []
         o 'Arg'                                             -> [$1]
+        o 'Arg ASCR ID'                                     -> [$1.set-type $3]
         o 'ArgList , Arg'                                   -> $1 ++ $3
         o 'ArgList OptComma NEWLINE Arg'                    -> $1 ++ $4
         o 'ArgList OptComma INDENT ArgList OptComma DEDENT' ditto

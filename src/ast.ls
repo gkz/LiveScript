@@ -535,6 +535,8 @@ class exports.Var extends Atom
 
     maybe-key: -> Key(@value) <<< {@line}
 
+    set-type: (@type) -> this
+
     var-name: ::show
 
     compile: (o) -> sn(this, if @temp then o.scope.free @value else @value)
@@ -1915,7 +1917,9 @@ class exports.Fun extends Node
                     vr = v
                 else if df
                     assigns.push Assign vr, p.second, \=, p.op, true
-                names.push (scope.add vr.value, \arg, p), ', '
+                names.push (scope.add vr.value, \arg, p)
+                names.push " : #that" if vr.type?
+                names.push ', '
         if rest
             while splace-- then rest.unshift Arr!
             assigns.push Assign Arr(rest), Literal \arguments
