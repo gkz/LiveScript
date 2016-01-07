@@ -1003,7 +1003,7 @@ character = if not JSON? then uxxxx else ->
                 tokens.splice i, 0,
                     * 'PARAM(' '('  line, column
                     * ')PARAM' ')'  line, column
-                    * '->'     '->' line, column
+                    * '->'     '~>' line, column
                     * 'ID'     'it' line, column
             else if next.0 is ')'
                 tokens.splice i + 1, 0,
@@ -1020,7 +1020,7 @@ character = if not JSON? then uxxxx else ->
                                 ['PARAM(' '('  line, column]
                                 ['ID'     'it' line, column]
                                 [')PARAM' ')'  line, column]
-                                ['->'     '->' line, column]
+                                ['->'     '~>' line, column]
                             break LOOP
         prev = token
         continue

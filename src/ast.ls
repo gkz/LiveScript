@@ -1467,9 +1467,9 @@ class exports.Binary extends Node
             y = Var \y$
             sn(this, (Fun [x, y], Block((Binary @op, x, y).invert-check this), false, true).compile o)
         case @first?
-            sn(this, "(", ((Fun [vit], Block((Binary @op, @first, vit) .invert-check this)).compile o), ")")
+            sn(this, "(", ((Fun [vit], Block((Binary @op, @first, vit) .invert-check this), true).compile o), ")")
         default
-            sn(this, "(", ((Fun [vit], Block((Binary @op, vit, @second).invert-check this)).compile o), ")")
+            sn(this, "(", ((Fun [vit], Block((Binary @op, vit, @second).invert-check this), true).compile o), ")")
 
     compileRegexEquals: (o, [regex, target]) ->
         if @op is \===
