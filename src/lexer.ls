@@ -1281,7 +1281,7 @@ character = if not JSON? then uxxxx else ->
                 tokens[i].0 = '+-'
             continue
         default continue
-        if token.spaced and tokens[i + 1].0 in ARG
+        if token.spaced and tokens[i + 1]?.0 in ARG
             tokens.splice ++i, 0 [',' ',' token.2, token.3]
 
 # Seeks `tokens` from `i`ndex and `go` for a token of the same level
