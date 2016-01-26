@@ -20,7 +20,7 @@ browser:
 	mkdir browser/
 
 browser/livescript.js: $(LIB) browser scripts/preroll
-	{ ./scripts/preroll ; $(BROWSERIFY) -r ./lib/browser.js:LiveScript ; } > browser/livescript.js
+	{ ./scripts/preroll ; $(BROWSERIFY) -r ./lib/browser.js:livescript ; } > browser/livescript.js
 
 browser/livescript-min.js:  browser/livescript.js
 	$(UGLIFYJS) browser/livescript.js --mangle --comments "all" > browser/livescript-min.js
