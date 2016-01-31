@@ -143,7 +143,7 @@ switch
       print = json or o.print
       t.output = LiveScript.compile t.input, {...options, +bare, run, print}
       LiveScript.emit 'run' t
-      t.result = LiveScript.run t.output.toString!, options, do
+      t.result = LiveScript.run (if o.map is 'none' then t.output else t.output.code), options, do
           js: true
           context: o.run-context
       switch
@@ -155,7 +155,7 @@ switch
     t.output = LiveScript.compile t.input, {...options, json, o.print}
     LiveScript.emit 'write' t
     if o.print or not filename
-    then say (if typeof! t.output is 'String' then t.output else t.output.code).trim-right!
+    then say (if o.map is 'none' then t.output else t.output.code).trim-right!
     else write-JS filename, t.output, t.input, base, json
   catch then if e?
     if LiveScript.listeners 'failure' .length
