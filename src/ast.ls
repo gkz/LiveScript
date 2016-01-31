@@ -1229,18 +1229,25 @@ class exports.Unary extends Node
         if o.level < LEVEL_CALL then sn(this, ...code) else sn(this, "(", ...code, ")")
 
     # `^delete o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
+    # `^delete o{p, q}` => `{p: ^delete o.p, q: ^delete o.q}`
     compile-spread: (o) ->
         {it} = this
         ops = [this]
         while it instanceof constructor, it.=it then ops.push it
-        return '' unless it.=expand-slice(o)unwrap! instanceof Arr
-                 and (them = it.items)length
+        is-spread =
+            it.=expand-slice(0)unwrap! instanceof Arr or
+            is-obj = it instanceof Obj and not do -> for ops
+                return true if ..op not in <[ ~ ! new do delete jsdelete ++ -- ]>
+        return '' unless is-spread and (them = it.items)length
         for node, i in them
-            node.=it if sp = node instanceof Splat
+            if sp = node instanceof Splat then node.=it
+            else if is-obj then node.=val
             for op in ops by -1 then node = constructor op.op, node, op.post
-            them[i] = if sp then lat = Splat node else node
+            if sp then them[i] = lat = Splat node
+            else if is-obj then them[i].val = node
+            else them[i] = node
         if not lat and (@void or not o.level)
-            it = Block(them) <<< {@front, +void}
+            it = Block(if is-obj then [..val for them] else them) <<< {@front, +void}
         it.compile o, LEVEL_PAREN
 
     # `v = delete o.k`
