@@ -48,7 +48,7 @@ switch
   o.run = not o.compile ||= o.output
 
   if args is process.argv
-    process.exec-path = process.argv.0 = process.argv.1
+    process.argv.0 = process.argv.1
     to-insert = if o.stdin
       positional
     else
