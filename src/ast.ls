@@ -1124,6 +1124,8 @@ class exports.Yield extends Node
 
     show: -> if @op is 'yieldfrom' then 'from' else ''
 
+    ::delegate <[ isCallable ]> -> yes
+
     compile-node: (o) ->
         code = []
 

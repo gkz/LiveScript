@@ -137,12 +137,16 @@ g5.next!
 g5.next true
 g5.next false
 
-# calling a yield
+# yield expression as argument, as callable
 is-two = -> it == 2
 f6 = ->*
     is-two yield 1
+    ok (yield 1)(2)
+    ok (2 |> yield 1)
 g6 = f6!
 eq 1 g6.next(2).value
+g6.next is-two
+g6.next is-two
 
 # in switch
 f7 = (x) ->*
