@@ -634,6 +634,13 @@ eq '0 1 2 3' [f! for til 4].join ' '
 i = 0
 eq '2 4 6' [f! for til 4 when f!].join ' '
 
+x = []
+for <[one two three]> by -1 then x.push ..
+eq 'three two one' x.join ' '
+
+x = [.. for <[one two three]> by -1]
+eq 'three two one' x.join ' '
+
 # index var outside loop
 for v, k in [1]
   void
