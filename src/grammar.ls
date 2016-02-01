@@ -277,11 +277,15 @@ bnf =
 
         # The function literal can be either anonymous with `->`,
         o 'PARAM( ArgList OptComma )PARAM -> Block'
-        , -> Fun $2, $6, /~/.test($5), /--|~~/.test($5), /!/.test($5), /\*/.test($5)
+        , -> Fun $2, $6, /~/.test($5), /--|~~/.test($5), /!/.test($5), /\*/.test($5), />>/.test($5)
+        o 'ASYNC PARAM( ArgList OptComma )PARAM -> Block'
+        , -> Fun $3, $7, /~/.test($6), /--|~~/.test($6), /!/.test($6), false, true
         # or named with `function`.
         o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> (Fun $3, $6).named $1
         o 'GENERATOR CALL( ArgList OptComma )CALL Block'
-        , -> (Fun $3, $6, false, false, false, true).named $1
+        , -> (Fun $3, $6, false, false, false, true, false).named $1
+        o 'ASYNC FUNCTION CALL( ArgList OptComma )CALL Block'
+        , -> (Fun $4, $7, false, false, false, false, true).named $2
 
         # The full complement of `if` and `unless` expressions
         o 'IF Expression Block Else'      -> L 1 2 If $2, $3, $1 is 'unless' .add-else $4

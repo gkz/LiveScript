@@ -143,7 +143,7 @@ exports <<<
             tag = 'LITERAL'
         case <[ new do typeof delete ]>
             tag = 'UNARY'
-        case 'yield'
+        case 'yield' 'await'
             tag = 'YIELD'
         case 'return' 'throw'
             tag = 'HURL'
@@ -239,6 +239,9 @@ exports <<<
                 if last.1 is '<<<' and '<'
                 or last.1 is 'import' and 'All'
                     last.1 += that
+                    return 3
+                if last.0 is 'yield' and last.1 is 'await'
+                    last.1 += 'all'
                     return 3
             case 'from'
                 if last.1 is 'yield'
@@ -655,7 +658,7 @@ exports <<<
             @fset 'for' false
             tag = 'THEN'
         default
-            if /^!?(?:--?|~~?)>\*?$/.test val # function arrow
+            if /^!?(?:--?|~~?)>(?:>|\*)?$/.test val # function arrow
                 @parameters tag = '->'
             else if /^\*?<(?:--?|~~?)!?$/.test val # backcall
                 @parameters tag = '<-'
@@ -1030,6 +1033,11 @@ character = if not JSON? then uxxxx else ->
                                 [')PARAM' ')'  line, column]
                                 ['->'     '~>' line, column]
                             break LOOP
+        case tag is 'ID' and val is 'async'
+            next = tokens[i + 1]
+            switch next.0
+            | 'PARAM(', 'FUNCTION' => token.0 = 'ASYNC'
+            | 'GENERATOR' => carp 'named generator cannot be async' line
         prev = token
         continue
 
@@ -1344,7 +1352,7 @@ SYMBOL = //
 | \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
 | \^\^                          # clone
 | \*?<(?:--?|~~?)!?             # backcall
-| !?(?:--?|~~?)>\*?             # function, bound function
+| !?(?:--?|~~?)>(?:>|\*)?       # function, bound function
 | ([-+&|:])\1                   # crement / logic / `prototype`
 | %%                            # mod
 | &                             # arguments
