@@ -1,3 +1,5 @@
+require! path: {normalize}
+
 # version
 command-eq '-v', ["LiveScript version #{LiveScript.VERSION}"]
 
@@ -8,18 +10,19 @@ command-eq '-pe "2 + 2"', [4]
 command-eq '-h', [/^Usage: lsc (.|\n)*Misc:(.|\n)*Output control:(.|\n)*Version/]
 
 one-js = 'var f;\nf = function(x){\n  return 1 + x;\n};'
-one-path = 'test/data/one.js'
+one-path-js = normalize 'test/data/one.js'
+one-path-ls = normalize 'test/data/one.ls'
 
 # compile print
 command-eq '-cpb --no-header test/data/one.ls', [one-js]
 
 # compile
-command-eq '-cb --no-header --debug test/data/one.ls', ['test/data/one.ls => test/data/one.js'], ->
+command-eq '-cb --no-header --debug test/data/one.ls', ["#one-path-ls => #one-path-js"], ->
     try
-        ok file-exists one-path
-        eq one-js, file-read one-path
+        ok file-exists one-path-js
+        eq one-js, file-read one-path-js
     finally
-        file-delete one-path
+        file-delete one-path-js
 
 # header
 command-eq '-cpb test/data/empty.ls', [
@@ -53,7 +56,7 @@ command-eq '-e "@two" test/data/j.json', ['4']
 
 # map, basic
 command-eq '-c --debug --map linked test/data/empty.ls', [
-    'test/data/empty.ls => test/data/empty.js, test/data/empty.js.map'
+    "#{normalize 'test/data/empty.ls'} => #{normalize 'test/data/empty.js'}, #{normalize 'test/data/empty.js.map'}"
 ], ->
     try
         ok file-exists 'test/data/empty.js'
