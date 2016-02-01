@@ -743,6 +743,19 @@ eq '1,2,3,4' String (++) a, [3 4]
 eq '3,4,1,2' String (++ a) [3 4]
 eq '1,2,3,4' String (a ++) [3 4]
 
+# partially bound binary operators should also bind `this`
+# see [#634](https://github.com/gkz/LiveScript/issues/634)
+o =
+  x: 1
+  y: 2
+  f: ->
+    ok (@x ==)(1)
+    ok (== @x)(1)
+    eq 2 (+ @x)(1)
+    (@y =)(3)
+    eq 3, @y
+o.f!
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)
