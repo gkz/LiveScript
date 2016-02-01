@@ -203,6 +203,7 @@ switch
   dir = path.dirname source
   if o.output
       dir = path.join that, dir.slice if base is '.' then 0 else base.length
+  source = path.normalize source
   js-path = path.join dir, filename
   !function compile
       e <-! fs.write-file js-path, js.to-string! || '\n'
