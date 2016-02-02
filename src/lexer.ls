@@ -155,6 +155,7 @@ exports <<<
             id = []
             @fset 'for' true
             @fset 'to' false
+            @fset 'by' true
         case 'then'
             @fset 'for' false
             @fset 'to' false
@@ -264,7 +265,7 @@ exports <<<
                 then tag = 'RANGE_BY'
                 else if ']' in @closes
                     tag = 'BY'
-                else if @fget 'by'
+                else if @fget 'by' and last.0 is not 'FOR'
                     tag = 'BY'
                     @fset 'by' false
             case 'ever' then if last.0 is 'FOR'
