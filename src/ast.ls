@@ -2523,7 +2523,7 @@ class exports.Case extends Node
         if type is \match
             for test, i in tests
                 tar = Chain target .add Index (Literal i), \., true
-                tests[i] = Chain test .auto-compare (if target then [tar] else null)
+                tests[i] = Parens (Chain test .auto-compare (if target then [tar] else null))
         if bool
             binary = if type is \match then \&& else \||
             [t] = tests
