@@ -331,3 +331,9 @@ object:
         ]
       ]
   '''
+
+# [LiveScript#48](https://github.com/gkz/LiveScript/issues/48)
+saveHere = {}
+LiveScript.compile 'x ?= 1', bare: true, saveScope: saveHere
+code = LiveScript.compile 'y ?= 2', bare: true, saveScope: saveHere
+ok 0 <= code.indexOf 'var x, y'

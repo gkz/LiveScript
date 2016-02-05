@@ -431,9 +431,9 @@ class exports.Block extends Node
             scope: @scope = Scope.root = new Scope
             ...options
         }
-        if saveTo = delete o.saveScope
+        if delete o.saveScope
             # use savedScope as your scope
-            o.scope = saveTo.savedScope or= o.scope
+            @scope = Scope.root = o.scope = that.savedScope or= o.scope
         delete o.filename
         o.indent = if bare = delete o.bare then '' else TAB
         if /^\s*(?:[/#]|javascript:)/test @lines.0?.code
