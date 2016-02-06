@@ -642,9 +642,6 @@ exports <<<
                 else break
                 return 1
             tag = 'UNARY'
-        case '&'
-            unless able @tokens
-                tag = 'LITERAL'
         case '|' then tag = 'BITWISE'
         case '~'
             return 1 if @dotcat val
