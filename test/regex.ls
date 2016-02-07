@@ -57,6 +57,13 @@ eq '\\\\#{}\\\\\\\"', //
  \\ \"
 //.source
 
+# [coffee#3059](https://github.com/jashkenas/coffee-script/pull/3059)
+# Keep escaped whitespaces.
+ok  //^
+  a \ b　\　c \
+  d
+$//test 'a b\u3000c\nd'
+
 eq '(?:)' ////source
 
 eq // _ #{if 1 then \g else \m}//? + '', '/_/g'
