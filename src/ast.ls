@@ -199,11 +199,13 @@ SourceNode::to-string = (...args) ->
         if once then [sub, ref <<< {+temp}] else [sub, ref, [ref.value]]
 
     # Compiles to a variable/source pair suitable for looping.
-    compile-loop-reference: (o, name, ret) ->
+    compile-loop-reference: (o, name, ret, safe-access) ->
         if this instanceof Var   and o.scope.check @value
         or this instanceof Unary and @op in <[ + - ]> and -1/0 < +@it.value < 1/0
         or this instanceof Literal and not @is-complex!
-            return [@compile o] * 2
+            code = @compile o, LEVEL_PAREN
+            code = "(#code)" if safe-access and this not instanceof Var
+            return [code] * 2
         asn = Assign Var(tmp = o.scope.temporary name), this
         ret or asn.void = true
         [tmp; asn.compile o, if ret then LEVEL_CALL else LEVEL_PAREN]
@@ -2352,7 +2354,7 @@ class exports.For extends While
         else
             @item = Var o.scope.temporary \x if @ref
             if @item or @object and @own or @let
-                [svar, srcPart] = @source.compile-loop-reference o, \ref, not @object
+                [svar, srcPart] = @source.compile-loop-reference o, \ref, not @object, true
                 svar is srcPart or temps.push svar
             else
                 svar = srcPart = @source.compile o, LEVEL_PAREN
