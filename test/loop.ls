@@ -686,3 +686,13 @@ eq 1, i
 o = { [k, -> v] for let k, v of {a: 1, b: 2} }
 eq 1 o.a!
 eq 2 o.b!
+
+# Certain literals could result in illegal JavaScript if not carefully
+# handled. These are all nonsensical use cases and could just as easily
+# be LiveScript syntax errors. The thing to avoid is for them to be JavaScript
+# syntax errors; lsc should never produce illegal JavaScript on any input,
+# silly or otherwise.
+deep-equal [] [0 for x in 42]
+deep-equal [] [0 for x in -42]
+throws "Cannot read property 'length' of null" -> [0 for x in null]
+throws "Cannot read property 'length' of undefined" -> [0 for x in void]
