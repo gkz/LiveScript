@@ -405,7 +405,7 @@ exports <<<
                 if t.0 is 'TOKENS'
                     tokens.push ...t.1
                 else
-                    val = t.1.replace HEREGEX_OMIT, ''
+                    val = deheregex t.1
                     continue if one and not val
                     one = tokens.push t <<< ['STRNUM' @string '\'' enslash val]
                 tokens.push ['+-' '+' tokens[*-1].2, tokens[*-1].3]
@@ -415,7 +415,7 @@ exports <<<
                 if dynaflag then tokens.push ...dynaflag else @token 'STRNUM' "'#flag'"
             @token (if flag is '$' then ')' else ')CALL'), ''
         else
-            @regex reslash(parts.0.1.replace HEREGEX_OMIT, ''), flag
+            @regex reslash(deheregex parts.0.1), flag
         parts.size + flag.length
 
     # Matches a word literal, or ignores a sequence of whitespaces.
@@ -943,6 +943,12 @@ reslash = (.replace /(\\.)|\//g -> &1 or \\\/)
 
 # Transforms hyphenated-words to camelCase.
 camelize = (.replace /-[a-z]/ig -> it.char-at 1 .to-upper-case!)
+
+# ESifies a heregex.
+deheregex = (.replace do
+  /\s+(?:#.*)?|(\\[\s\S])/g
+  (, bs || '') -> if \\n is bs.charAt 1 then \\\n else bs
+)
 
 # Deletes the first character if newline.
 function lchomp then it.slice 1 + it.last-index-of '\n' 0
