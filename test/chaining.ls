@@ -224,3 +224,11 @@ eq void f!?p
 
 f = void
 eq void f?!
+
+# Keyword literals in object slices
+keywords = arguments: 1 eval: 2 void: 3 on: 4 debugger: 5
+eq 1 keywords{arguments}arguments
+eq 2 keywords{eval}eval
+eq 3 keywords{void}void
+eq 4 keywords{on}on
+eq 5 keywords{debugger}debugger

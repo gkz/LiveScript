@@ -508,6 +508,8 @@ class exports.Literal extends Atom
         else
             super ...
 
+    maybe-key: -> if ID.test @value then Key @value else this
+
     compile: (o, level ? o.level) ->
         switch val = "#{@value}"
         | \this      => return sn(this, o.scope.fun?bound or val)
