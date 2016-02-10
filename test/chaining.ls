@@ -214,6 +214,11 @@ eq '0,1' ''+o.a.b
 eq '2,3' ''+o.a.c.d
 eq 5 o.a.b.e.f.4
 
+a = []
+eq 2 a{}[0, 1].length
+eq \object typeof a.0
+eq \object typeof a.1
+
 # Bang Call
 eq '' String!
 (-> ok true)!
