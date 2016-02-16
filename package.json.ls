@@ -28,6 +28,7 @@ files:
   'LICENSE'
 
 main: './lib/'
+browser: './lib/browser.js'
 bin:
   lsc: './bin/lsc'
 
