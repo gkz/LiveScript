@@ -639,8 +639,6 @@ class exports.Chain extends Node
                 @head.called = true
             else if not @tails.1 and it.key?name is \prototype
                 @head.sproto = true
-        else if delete it.vivify
-            @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
         else if it instanceof Call and @tails.length is 1
         and bi and bi.op in logics = <[ && || xor ]>
             call = it
@@ -759,6 +757,7 @@ class exports.Chain extends Node
                 .add Call [context, Arr [this; Arr partial.args; Arr partial.partialized]]), post).compile o
         @carp 'invalid callee' if tails.0 instanceof Call and not head.is-callable!
         @expand-slice o
+        @expand-vivify!
         @expand-bind o
         @expand-splat o
         @expand-star o
@@ -836,6 +835,13 @@ class exports.Chain extends Node
                     [@head, ctx] = Chain(@head, tails.splice 0 i-1)cache o, true
                     i = 0
                 call <<< method: \.apply, args: [ctx or Literal \null; JS args]
+
+    expand-vivify: !->
+        {tails} = this
+        i = 0
+        while i < tails.length when delete tails[i++]vivify
+            @head = Assign Chain(@head, tails.splice 0, i), that!, \= \||
+            i = 0
 
     expand-bind: !(o) ->
         {tails} = this
