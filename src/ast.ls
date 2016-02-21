@@ -1660,10 +1660,14 @@ class exports.Assign extends Node
                     continue if skip and i+2 is len
                     start = i+1
                     @temps = [ivar = o.scope.temporary \i]
-                    val = if skip then node = Var ivar; Var val else
-                        Arr.wrap JS "#i < (#ivar = #val)
-                                  \ ? #{ util \slice }.call(#rite, #i, #ivar)
-                                  \ : (#ivar = #i, [])"
+                    val = switch
+                    | skip
+                        Arr.wrap JS "#i < (#ivar = #val) ? #i : (#ivar = #i)"
+                    | _
+                        Arr.wrap JS do
+                            "#i < (#ivar = #val)
+                            \ ? #{ util \slice }.call(#rite, #i, #ivar)
+                            \ : (#ivar = #i, [])"
             else
                 (inc = ivar) and start < i and inc += " + #{ i - start }"
                 val = Chain rcache||=Literal(rite), [Index JS inc || i]
