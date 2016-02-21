@@ -43,8 +43,9 @@
     "url": "git://github.com/gkz/LiveScript.git"
   },
   "dependencies": {
-    "prelude-ls": "~1.1.1",
+    "babel-core": "^6.5.2",
     "optionator": "~0.6.0",
+    "prelude-ls": "~1.1.1",
     "source-map": "^0.3.0"
   },
   "devDependencies": {
