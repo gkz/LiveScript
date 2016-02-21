@@ -2348,6 +2348,7 @@ class exports.For extends While
             [pvar, step] = (@step or Literal 1)compile-loop-reference o, \step
             pvar is step or temps.push pvar
         if @from
+            @item = Var idx if @ref
             [tvar, tail] = @to.compile-loop-reference o, \to
             fvar = @from.compile o, LEVEL_LIST
             vars = "#idx = #fvar"
@@ -2397,7 +2398,7 @@ class exports.For extends While
         o.indent += TAB
         if @index and not @object
             head.push \\n + o.indent, Assign(Var @index; JS idx).compile(o, LEVEL_TOP), \;
-        if @item and not @item.is-empty!
+        if @item and not @item.is-empty! and not @from
             head.push \\n + o.indent, Assign(@item, JS "#svar[#idx]")compile(o, LEVEL_TOP), \;
         o.ref = @item.value if @ref
         body  = @compile-body o
