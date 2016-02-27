@@ -1240,13 +1240,14 @@ class exports.Unary extends Node
             code.unshift op
         if o.level < LEVEL_CALL then sn(this, ...code) else sn(this, "(", ...code, ")")
 
-    # `^delete o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
+    # `^delete ...o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
     compile-spread: (o) ->
         {it} = this
         ops = [this]
         while it instanceof constructor, it.=it then ops.push it
-        return '' unless it.=expand-slice(o)unwrap! instanceof Arr
-                 and (them = it.items)length
+        return '' unless it instanceof Splat
+                  and it.=it.expand-slice(o)unwrap! instanceof Arr
+        them = it.items
         for node, i in them
             node.=it if sp = node instanceof Splat
             for op in ops by -1 then node = constructor op.op, node, op.post
@@ -2089,7 +2090,8 @@ class exports.Parens extends Node
         else sn(null, sn(@lb, "("), (it.compile o, LEVEL_PAREN), sn(@rb, ")"))
 
 #### Splat
-# A splat, either as an argument to a call
+# A splat, either as an argument to a call,
+# the operand of a unary operator to be spread,
 # or as part of a destructuring assignment.
 class exports.Splat extends Node
     (@it, @filler) ~>

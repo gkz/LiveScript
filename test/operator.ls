@@ -469,18 +469,32 @@ catch => eq 5 e
 
 
 ### Unary spread
-eq 'number,string' ''+ typeof do [Number, String]
-eq 'number,string' ''+ typeof
+eq 'number,string' ''+ typeof do ...[Number, String]
+eq 'number,string' ''+ typeof ...
   0
   \1
 
-o = {2: [3 4], 5: 6}
-a = delete o[5 ...2]
+o = 2: [3 4] 5: 6
+a = delete ...o[5 ...2]
 eq '6,3,4' "#a"
 eq 3 a.length
 ok o.2 is o.5 is void
 
-eq '8,9' ''+ -~[7 8]
+eq '8,9' ''+ -~...[7 8]
+
+a = 1
+b = 2
+x = ++...[a, b]
+deep-equal [2 3] x
+eq 2 a
+eq 3 b
+
+a = 1
+b = 2
+x = ...[a, b]++
+deep-equal [1 2] x
+eq 2 a
+eq 3 b
 
 
 ### Overloaded

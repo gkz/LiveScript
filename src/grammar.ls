@@ -199,6 +199,10 @@ bnf =
         o 'INDENT Lines DEDENT' -> $2
         ...
 
+    SplatChain:
+        o '... Chain' -> Splat $2.unwrap!
+        ...
+
     # All the different types of expressions in our language.
     Expression:
         o 'Chain CLONEPORT Expression'
@@ -222,14 +226,21 @@ bnf =
 
         o 'CREMENT Chain' -> Unary $1, $2.unwrap!
         o 'Chain CREMENT' -> Unary $2, $1.unwrap!, true
+        o 'CREMENT ... Chain' -> Unary $1, Splat $3.unwrap!
+        o 'SplatChain CREMENT' -> Unary $2, $1, true
 
         o 'UNARY ASSIGN Chain' -> Assign $3.unwrap!, [$1] L 2 Box $2
         o '+-    ASSIGN Chain' ditto
         o 'CLONE ASSIGN Chain' ditto
 
-        o 'UNARY Expression' -> Unary $1, $2
-        o '+-    Expression' ditto, prec: 'UNARY'
-        o 'CLONE Expression' ditto, prec: 'UNARY'
+        o 'UNARY     Expression' -> Unary $1, $2
+        o '+-        Expression' ditto, prec: 'UNARY'
+        o 'CLONE     Expression' ditto, prec: 'UNARY'
+        o 'UNARY ... Expression' -> Unary $1, Splat $3
+        o '+-    ... Expression' ditto, prec: 'UNARY'
+        o 'CLONE ... Expression' ditto, prec: 'UNARY'
+        o 'UNARY ... INDENT ArgList OptComma DEDENT' -> Unary $1, Splat Arr $4
+
         o 'UNARY INDENT ArgList OptComma DEDENT' -> Unary $1, Arr.maybe $3
 
         o 'YIELD' -> Yield $1
@@ -459,6 +470,7 @@ operators =
     <[ right    POWER        ]>
     <[ right    COMPOSE      ]>
     <[ nonassoc CREMENT      ]>
+    <[ nonassoc ...          ]>
     <[ left     BACKTICK     ]>
 
 # Wrapping Up
