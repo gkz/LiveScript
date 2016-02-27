@@ -515,6 +515,13 @@ deep-equal [1 2] x
 eq 2 a
 eq 3 b
 
+a = 1
+b = 2
+x = ...[a, b] += 5
+deep-equal [6 7] x
+eq 6 a
+eq 7 b
+
 o = a: 1 b: 2 c: 3
 x = ...o{a, b}++
 deep-equal {a: 1 b: 2} x
@@ -524,6 +531,16 @@ o = a: 1 b: 2 c: 3
 x = ++...o{a, b}
 deep-equal {a: 2 b: 3} x
 deep-equal {a: 2 b: 3 c: 3} o
+
+o = a: 1 b: 2 c: 3
+cache-me = -> cache-me := (-> ok false "didn't cache the RHS"); 5
+x = ...o{a, b} += cache-me!
+deep-equal {a: 6 b: 7} x
+deep-equal {a: 6 b: 7 c: 3} o
+
+o = [true false true]
+deep-equal [false true], != ...o[0 1]
+deep-equal [false true true] o
 
 
 ### Overloaded

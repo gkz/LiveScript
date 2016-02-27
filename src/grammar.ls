@@ -216,6 +216,8 @@ bnf =
 
         o 'Chain ASSIGN Expression'
         , -> Assign $1.unwrap!, $3           , L 2 Box $2
+        o 'SplatChain ASSIGN Expression'
+        , -> Assign $1, $3                   , L 2 Box $2
         o 'Chain ASSIGN INDENT ArgList OptComma DEDENT'
         , -> Assign $1.unwrap!, Arr.maybe($4), L 2 Box $2
 
@@ -229,9 +231,12 @@ bnf =
         o 'CREMENT ... Chain' -> Unary $1, Splat $3.unwrap!
         o 'SplatChain CREMENT' -> Unary $2, $1, true
 
-        o 'UNARY ASSIGN Chain' -> Assign $3.unwrap!, [$1] L 2 Box $2
-        o '+-    ASSIGN Chain' ditto
-        o 'CLONE ASSIGN Chain' ditto
+        o 'UNARY ASSIGN     Chain' -> Assign $3.unwrap!, [$1] L 2 Box $2
+        o '+-    ASSIGN     Chain' ditto
+        o 'CLONE ASSIGN     Chain' ditto
+        o 'UNARY ASSIGN ... Chain' -> Assign Splat($4.unwrap!), [$1] L 2 Box $2
+        o '+-    ASSIGN ... Chain' ditto
+        o 'CLONE ASSIGN ... Chain' ditto
 
         o 'UNARY     Expression' -> Unary $1, $2
         o '+-        Expression' ditto, prec: 'UNARY'
