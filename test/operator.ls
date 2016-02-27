@@ -257,6 +257,13 @@ eq 3, a.2
 fn = null
 eq void fn? do then 4;5
 
+loaders =
+  a: -> 1
+  b: -> 2
+  more: -> c: 3, d: 4
+x = do ...loaders{a, b, ...more}
+deep-equal {a: 1 b: 2 c: 3 d: 4} x
+
 
 ### `import`
 x = 'xx'
@@ -371,6 +378,11 @@ a = delete a.0
 eq 1 a
 eq 0 b.0
 
+x = a: 1 b: 2 c: 3
+y = delete ...x{a, z: b}
+deep-equal {c: 3} x
+deep-equal {a: 1, z: 2} y
+
 ### `jsdelete`
 
 x =
@@ -378,6 +390,13 @@ x =
 
 ok delete! x.1
 ok not delete! Math.PI
+
+x = a: 1 b: 2 c: 3
+Object.defineProperty x, \d, writable: false, enumerable: true
+deep-equal {+a, +b} delete! ...x{a, b}
+deep-equal {c: 3 d: undefined} x
+deep-equal {+c, -d} delete! ...x{c, d}
+deep-equal {d: undefined} x
 
 
 ### [[Class]] sniffing
@@ -495,6 +514,16 @@ x = ...[a, b]++
 deep-equal [1 2] x
 eq 2 a
 eq 3 b
+
+o = a: 1 b: 2 c: 3
+x = ...o{a, b}++
+deep-equal {a: 1 b: 2} x
+deep-equal {a: 2 b: 3 c: 3} o
+
+o = a: 1 b: 2 c: 3
+x = ++...o{a, b}
+deep-equal {a: 2 b: 3} x
+deep-equal {a: 2 b: 3 c: 3} o
 
 
 ### Overloaded

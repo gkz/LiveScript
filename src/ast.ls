@@ -1241,19 +1241,23 @@ class exports.Unary extends Node
         if o.level < LEVEL_CALL then sn(this, ...code) else sn(this, "(", ...code, ")")
 
     # `^delete ...o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
+    # `^delete ...o{p, ...q}` => `{p: ^delete o[p], ...^delete o[q]}`
     compile-spread: (o) ->
         {it} = this
         ops = [this]
         while it instanceof constructor, it.=it then ops.push it
         return '' unless it instanceof Splat
-                  and it.=it.expand-slice(o)unwrap! instanceof Arr
+                  and it.=it.expand-slice(o)unwrap! instanceof List
+        ob = it instanceof Obj
         them = it.items
         for node, i in them
             node.=it if sp = node instanceof Splat
+            node.=val if ob and not sp
             for op in ops by -1 then node = constructor op.op, node, op.post
-            them[i] = if sp then lat = Splat node else node
+            node = lat = Splat node if sp
+            if ob and not sp then them[i].val = node else them[i] = node
         if not lat and (@void or not o.level)
-            it = Block(them) <<< {@front, +void}
+            it = Block(if ob then [..val for them] else them) <<< {@front, +void}
         it.compile o, LEVEL_PAREN
 
     # `v = delete o.k`
