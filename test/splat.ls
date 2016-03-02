@@ -102,6 +102,12 @@ eq b, 2
 eq a, 1
 eq b, 5
 
+# [LiveScript#858](https://github.com/gkz/LiveScript/issues/858)
+[a, ..., b, c, d] = [1 2 3]
+eq a, 1
+eq b, 2
+eq c, 3
+
 eq '''
 (function(){
   var a;
