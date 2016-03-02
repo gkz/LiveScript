@@ -257,6 +257,13 @@ eq 3, a.2
 fn = null
 eq void fn? do then 4;5
 
+loaders =
+  a: -> 1
+  b: -> 2
+  more: -> c: 3, d: 4
+x = do loaders{a, b, ...more}
+ok x === { a: 1 b: 2 c: 3 d: 4 }
+
 
 ### `import`
 x = 'xx'
@@ -371,6 +378,12 @@ a = delete a.0
 eq 1 a
 eq 0 b.0
 
+x = a: 1 b: 2 c: 3
+y = delete x{a, z: b}
+ok x === {c: 3}
+ok y === {a: 1, z: 2}
+
+
 ### `jsdelete`
 
 x =
@@ -378,6 +391,13 @@ x =
 
 ok delete! x.1
 ok not delete! Math.PI
+
+x = a: 1 b: 2 c: 3
+Object.defineProperty x, \d, writable: false, enumerable: true
+ok (delete! x{a, b}) === {+a, +b}
+ok x === {c: 3, d: undefined}
+ok (delete! x{c, d}) === {+c, -d}
+ok x === {d: undefined}
 
 
 ### [[Class]] sniffing
