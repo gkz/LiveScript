@@ -183,6 +183,20 @@ SourceNode::to-string = (...args) ->
         else
             sn(node, '{}')
 
+    # Spreads a transformation over a list and compiles it.
+    compile-spread-over: (o, list, transform) ->
+        ob = list instanceof Obj
+        them = list.items
+        for node, i in them
+            node.=it if sp = node instanceof Splat
+            node.=val if ob and not sp
+            node = transform node
+            node = lat = Splat node if sp
+            if ob and not sp then them[i].val = node else them[i] = node
+        if not lat and (@void or not o.level)
+            list = Block(if ob then [..val for them] else them) <<< {@front, +void}
+        list.compile o, LEVEL_PAREN
+
     # If the code generation wishes to use the result of a complex expression
     # in multiple places, ensure that the expression is only ever evaluated once,
     # by assigning it to a temporary variable.
@@ -1240,20 +1254,18 @@ class exports.Unary extends Node
             code.unshift op
         if o.level < LEVEL_CALL then sn(this, ...code) else sn(this, "(", ...code, ")")
 
-    # `^delete o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
+    # `^delete ...o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
+    # `^delete ...o{p, ...q}` => `{p: ^delete o[p], ...^delete o[q]}`
     compile-spread: (o) ->
         {it} = this
         ops = [this]
         while it instanceof constructor, it.=it then ops.push it
-        return '' unless it.=expand-slice(o)unwrap! instanceof Arr
-                 and (them = it.items)length
-        for node, i in them
-            node.=it if sp = node instanceof Splat
+        return '' unless it instanceof Splat
+                  and it.=it.expand-slice(o)unwrap! instanceof List
+
+        @compile-spread-over o, it, (node) ->
             for op in ops by -1 then node = constructor op.op, node, op.post
-            them[i] = if sp then lat = Splat node else node
-        if not lat and (@void or not o.level)
-            it = Block(them) <<< {@front, +void}
-        it.compile o, LEVEL_PAREN
+            node
 
     # `v = delete o.k`
     compile-pluck: (o) ->
@@ -1522,15 +1534,15 @@ class exports.Assign extends Node
 
     assigns: -> @left.assigns it
 
-    ::delegate <[ isCallable isRegex ]> -> @op in <[ = := ]> and @right[it]!
+    ::delegate <[ isCallable isRegex ]> -> @op in <[ = := ]> and @right and @right[it]!
 
     is-array: -> switch @op
-        | \= \:= => @right.is-array!
-        | \/=    => @right.is-matcher!
+        | \= \:= => @right and @right.is-array!
+        | \/=    => @right and @right.is-matcher!
 
     is-string: -> switch @op
-        | \= \:= \+= \*= => @right.is-string!
-        | \-=            => @right.is-matcher!
+        | \= \:= \+= \*= => @right and @right.is-string!
+        | \-=            => @right and @right.is-matcher!
 
     unfold-soak: (o) ->
         if @left instanceof Existence
@@ -1545,7 +1557,12 @@ class exports.Assign extends Node
 
     compile-node: (o) ->
         return @compileSplice o if @left instanceof Slice and @op is \=
-        left = @left.expand-slice(o, true)unwrap!
+        left = @left
+        left.=it if sp = @left instanceof Splat
+        left.=expand-slice(o, true)unwrap!
+        if sp
+            left instanceof List or @left.carp 'invalid splat'
+            return @compile-spread o, left
         unless @right
             left.is-assignable! or left.carp 'invalid unary assign'
             [left, @right] = Chain left .cache-reference o
@@ -1643,6 +1660,17 @@ class exports.Assign extends Node
                 .add Call [@left.target, (Chain Arr [from-exp-node, to-exp]
                 .add Index (Key \concat), \. true .add Call [right-node])]; right]
             .compile o, LEVEL_LIST))
+
+    compile-spread: (o, left) ->
+        [rite, rref] =
+            if @unaries then [that] * 2
+            else if left.items.length <= 1 then [@right] * 2
+            else @right.cache o, true
+
+        @compile-spread-over o, left, ~>
+            result = constructor it, rite, @op, @logic
+            rite := rref
+            result
 
     rendArr: (o, nodes, rite) ->
         for node, i in nodes
@@ -1893,6 +1921,9 @@ class exports.Fun extends Node
             break unless p.is-empty! or p.filler
             --params.length
         for p, i in params
+            if p.left instanceof Splat
+                # splats + default/operator arguments = too ambiguous to support
+                p.carp 'invalid splat'
             if p instanceof Splat
                 @has-splats = true
                 splace = i
@@ -2093,7 +2124,8 @@ class exports.Parens extends Node
         else sn(null, sn(@lb, "("), (it.compile o, LEVEL_PAREN), sn(@rb, ")"))
 
 #### Splat
-# A splat, either as an argument to a call
+# A splat, either as an argument to a call,
+# the operand of a unary operator to be spread,
 # or as part of a destructuring assignment.
 class exports.Splat extends Node
     (@it, @filler) ~>

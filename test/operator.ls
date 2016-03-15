@@ -257,6 +257,13 @@ eq 3, a.2
 fn = null
 eq void fn? do then 4;5
 
+loaders =
+  a: -> 1
+  b: -> 2
+  more: -> c: 3, d: 4
+x = do ...loaders{a, b, ...more}
+deep-equal {a: 1 b: 2 c: 3 d: 4} x
+
 
 ### `import`
 x = 'xx'
@@ -371,6 +378,11 @@ a = delete a.0
 eq 1 a
 eq 0 b.0
 
+x = a: 1 b: 2 c: 3
+y = delete ...x{a, z: b}
+deep-equal {c: 3} x
+deep-equal {a: 1, z: 2} y
+
 ### `jsdelete`
 
 x =
@@ -378,6 +390,13 @@ x =
 
 ok delete! x.1
 ok not delete! Math.PI
+
+x = a: 1 b: 2 c: 3
+Object.defineProperty x, \d, writable: false, enumerable: true
+deep-equal {+a, +b} delete! ...x{a, b}
+deep-equal {c: 3 d: undefined} x
+deep-equal {+c, -d} delete! ...x{c, d}
+deep-equal {d: undefined} x
 
 
 ### [[Class]] sniffing
@@ -469,18 +488,59 @@ catch => eq 5 e
 
 
 ### Unary spread
-eq 'number,string' ''+ typeof do [Number, String]
-eq 'number,string' ''+ typeof
+eq 'number,string' ''+ typeof do ...[Number, String]
+eq 'number,string' ''+ typeof ...
   0
   \1
 
-o = {2: [3 4], 5: 6}
-a = delete o[5 ...2]
+o = 2: [3 4] 5: 6
+a = delete ...o[5 ...2]
 eq '6,3,4' "#a"
 eq 3 a.length
 ok o.2 is o.5 is void
 
-eq '8,9' ''+ -~[7 8]
+eq '8,9' ''+ -~...[7 8]
+
+a = 1
+b = 2
+x = ++...[a, b]
+deep-equal [2 3] x
+eq 2 a
+eq 3 b
+
+a = 1
+b = 2
+x = ...[a, b]++
+deep-equal [1 2] x
+eq 2 a
+eq 3 b
+
+a = 1
+b = 2
+x = ...[a, b] += 5
+deep-equal [6 7] x
+eq 6 a
+eq 7 b
+
+o = a: 1 b: 2 c: 3
+x = ...o{a, b}++
+deep-equal {a: 1 b: 2} x
+deep-equal {a: 2 b: 3 c: 3} o
+
+o = a: 1 b: 2 c: 3
+x = ++...o{a, b}
+deep-equal {a: 2 b: 3} x
+deep-equal {a: 2 b: 3 c: 3} o
+
+o = a: 1 b: 2 c: 3
+cache-me = -> cache-me := (-> ok false "didn't cache the RHS"); 5
+x = ...o{a, b} += cache-me!
+deep-equal {a: 6 b: 7} x
+deep-equal {a: 6 b: 7 c: 3} o
+
+o = [true false true]
+deep-equal [false true], != ...o[0 1]
+deep-equal [false true true] o
 
 
 ### Overloaded
