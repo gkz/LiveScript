@@ -300,6 +300,9 @@ deep-equal [3,5]   [.. + 2 for from 1 to 3 when .. % 2 isnt 0]
 deep-equal [5,4,3] [.. + 2 for from 3 to 1 by -1]
 deep-equal [5,3]   [.. + 2 for from 3 to 1 by -1 when .. % 2 isnt 0]
 
+# gkz/LiveScript#854
+deep-equal [2,3,4,5] [.. + 2 for [to 3]]
+
 list-of-obj =
   * ha: 1
     mo: 8
