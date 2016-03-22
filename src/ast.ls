@@ -1642,14 +1642,15 @@ class exports.Assign extends Node
             cache = sn(this, (rref = o.scope.temporary!), " = ", rite)
             rite  = rref
         if rite.to-string! is \arguments and not ret
-            arg = true
-            if left not instanceof Arr then @carp 'arguments can only destructure to array'
-        list = @"rend#{ left.constructor.display-name }" o, items, rite, arg
+            destructure-args = true
+            if left not instanceof Arr
+                @carp 'arguments can only destructure to array'
+        list = @"rend#{ left.constructor.display-name }" o, items, rite, destructure-args
         o.scope.free rref  if rref
         list.unshift cache if cache
         list.push rite     if ret or not list.length
         code = []
-        sep = if arg then '; ' else ', '
+        sep = if destructure-args then '; ' else ', '
         for item in list
             code.push item, sep
         code.pop!
@@ -1675,11 +1676,12 @@ class exports.Assign extends Node
             rite := rref
             result
 
-    rendArr: (o, nodes, rite, arg) ->
-        ~function arg-slice(begin, end)
+    rendArr: (o, nodes, rite, destructure-args) ->
+        ~function args-slice(begin, end)
             # [&[..] for from (begin) til (end)]
             new For {+ref, from: begin, op: \til, to: end}
                 .make-comprehension (Chain Var \arguments .add Index Literal \..), []
+        ret = []
         for node, i in nodes
             continue if node.is-empty!
             if node instanceof Splat
@@ -1687,8 +1689,8 @@ class exports.Assign extends Node
                 skip = (node.=it).is-empty!
                 if i+1 is len = nodes.length
                     break if skip
-                    if arg
-                        val = arg-slice do # from i to &length
+                    if destructure-args
+                        val = args-slice do # from i to &length
                             Literal(i)
                             (Chain Var \arguments .add Index Key \length)
                     else
@@ -1703,8 +1705,8 @@ class exports.Assign extends Node
                     val = switch
                     | skip
                         Arr.wrap JS "#i < (#ivar = #val) ? #i : (#ivar = #i)"
-                    | arg
-                        arg-slice do
+                    | destructure-args
+                        args-slice do
                             JS "#i < (#ivar = #val) ? #i : (#ivar = #i)"
                             Var ivar
                     | _
@@ -1717,7 +1719,18 @@ class exports.Assign extends Node
                 val = Chain rcache||=Literal(rite), [Index JS inc || i]
             if node instanceof Assign
                 node = Binary node.op, node.left, node.right, (node.logic or true)
-            (this with {left: node, right: val, +void})compile o, if arg then LEVEL_TOP else LEVEL_PAREN
+            if destructure-args
+                if node not instanceof Var and val instanceof For
+                    # avoid accidentally creating closure
+                    @.[]temps.push tmp = o.scope.temporary \ref
+                    vtmp = Var tmp
+                    ret.push (this with {left: vtmp, right: val, +void})compile o, LEVEL_TOP
+                    ret.push (this with {left: node, right: vtmp, +void})compile o, LEVEL_TOP
+                else
+                    ret.push (this with {left: node, right: val, +void})compile o, LEVEL_TOP
+            else
+                ret.push (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
+        ret
 
     rendObj: (o, nodes, rite) ->
         for node in nodes
