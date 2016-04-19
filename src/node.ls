@@ -29,7 +29,11 @@ module.exports = !(LiveScript) ->
     LiveScript <<<< events.EventEmitter.prototype
 
     require.extensions.'.ls' = (module, filename) ->
-        js = LiveScript.compile (fs.read-file-sync filename, 'utf8'), {filename, +bare, map: "embedded"} .code
+        file = (fs.read-file-sync filename, 'utf8')
+        if (filename.substr -7) is 'json.ls'
+          js = 'module.exports = ' + LiveScript.compile file, {filename, +json}
+        else
+          js = LiveScript.compile file, {filename, +bare, map: "embedded"} .code
         try
             module._compile js, filename
         catch
