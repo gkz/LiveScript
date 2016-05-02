@@ -337,3 +337,20 @@ saveHere = {}
 LiveScript.compile 'x ?= 1', bare: true, saveScope: saveHere
 code = LiveScript.compile 'y ?= 2', bare: true, saveScope: saveHere
 ok 0 <= code.indexOf 'var x, y'
+
+# The presence of the full "ClassName.prototype.methodName =" in the compiled
+# code is relevant to post-processors like Google's Closure Compiler as a cue
+# that these are class methods.
+compiled = LiveScript.compile '''
+  class A
+    one: -> 1
+    two: -> 2
+  class B extends A
+    three: -> 3
+    four: -> 4
+'''
+for <[
+  A.prototype.one A.prototype.two
+  B.prototype.three B.prototype.four
+]>
+  ok compiled.indexOf(..) >= 0 "missing #{..}"

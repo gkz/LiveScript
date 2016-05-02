@@ -1761,7 +1761,7 @@ class exports.Import extends Node
     compile-assign: (o, items) ->
         return @left.compile o unless items.length
         top = not o.level
-        if items.length < 2 and (top or @void or items.0 instanceof Splat)
+        if @proto or (items.length < 2 and (top or @void or items.0 instanceof Splat))
             reft = @left
             reft = Parens reft if reft.is-complex!
         else [left, reft, @temps] = @left.cache o
@@ -1990,6 +1990,7 @@ class exports.Class extends Node
         name = decl or @name
         if ID.test name || '' then fun.cname = name else name = \constructor
         proto = Var \prototype
+        vname = fun.proto = Var fun.bound = name
         const ctor-name = \constructor$$
         var ctor, ctor-place
         import-proto-obj = (node, i) ->
@@ -2017,7 +2018,9 @@ class exports.Class extends Node
                     prop.val.class-bound = true
                 for v in [] ++ prop.val
                     v.meth = key
-            if node.items.length then Import proto, node else Literal 'void'
+            if node.items.length
+              Import(Chain vname .add Index Key \prototype; node) <<< {+proto}
+            else Literal 'void'
 
         for node, i in lines
             if node instanceof Obj
@@ -2057,7 +2060,7 @@ class exports.Class extends Node
                          .add Call [Literal \this; Literal "'_#{f.name}'"])
 
 
-        lines.push vname = fun.proto = Var fun.bound = name
+        lines.push vname
         args = []
         if @sup
             args.push that
