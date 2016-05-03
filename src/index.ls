@@ -2,6 +2,7 @@ require! {
     './lexer'
     './parser': {parser}
     './ast'
+    './babel-pipeline'
     'source-map': {SourceNode}
     path
 }
@@ -79,6 +80,15 @@ exports <<<
     run: (code, options) ->
         output = exports.compile code, {...options, +bare}
         do Function (if typeof! output is 'String' then output else output.code)
+
+    babel-pipeline:
+        # parse :: string -> babelAST
+        parse: (code) ->
+            exports.ast(code) |> babel-pipeline.lsASTToBabelAST
+
+        compile: (code, opts) ->
+            ls-ast = exports.ast code
+            babel-pipeline.compile ls-ast, code, opts
 
 exports.tokens.rewrite = lexer.rewrite
 
