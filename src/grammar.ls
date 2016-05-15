@@ -112,6 +112,10 @@ bnf =
         , -> Chain L 2 4 new For from: $2, op: $3, to: $4, in-comprehension: true
         o '[ Expression TO Expression BY Expression ]'
         , -> Chain L 2 6 new For from: $2, op: $3, to: $4, step: $6, in-comprehension: true
+        o '[ FROM Expression TO Expression ]'
+        , -> Chain L 2 5 new For from: $3, op: $4, to: $5, in-comprehension: true
+        o '[ FROM Expression TO Expression BY Expression ]'
+        , -> Chain L 2 7 new For from: $3, op: $4, to: $5, step: $7, in-comprehension: true
         o '[ TO Expression ]'
         , -> Chain L 2 3 new For from: (Chain Literal 0), op: $2, to: $3, in-comprehension: true
         o '[ TO Expression BY Expression ]'

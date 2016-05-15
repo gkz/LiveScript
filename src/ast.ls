@@ -1641,14 +1641,18 @@ class exports.Assign extends Node
         else if (ret or len > 1) and (not ID.test rite.to-string! or left.assigns rite.to-string!)
             cache = sn(this, (rref = o.scope.temporary!), " = ", rite)
             rite  = rref
-        list = @"rend#{ left.constructor.display-name }" o, items, rite
+        if rite.to-string! is \arguments and not ret
+            destructure-args = true
+            if left not instanceof Arr
+                @carp 'arguments can only destructure to array'
+        list = @"rend#{ left.constructor.display-name }" o, items, rite, destructure-args
         o.scope.free rref  if rref
         list.unshift cache if cache
         list.push rite     if ret or not list.length
         code = []
+        sep = if destructure-args then '; ' else ', '
         for item in list
-            code.push item
-            code.push ", "
+            code.push item, sep
         code.pop!
         if list.length < 2 or o.level < LEVEL_LIST then sn(this, ...code) else sn(this, "(", ...code, ")")
 
@@ -1672,7 +1676,12 @@ class exports.Assign extends Node
             rite := rref
             result
 
-    rendArr: (o, nodes, rite) ->
+    rendArr: (o, nodes, rite, destructure-args) ->
+        ~function args-slice(begin, end)
+            # [&[..] for from (begin) til (end)]
+            new For {+ref, from: begin, op: \til, to: end}
+                .make-comprehension (Chain Var \arguments .add Index Literal \..), []
+        ret = []
         for node, i in nodes
             continue if node.is-empty!
             if node instanceof Splat
@@ -1680,17 +1689,26 @@ class exports.Assign extends Node
                 skip = (node.=it).is-empty!
                 if i+1 is len = nodes.length
                     break if skip
-                    val = Arr.wrap JS do
-                        util(\slice) + \.call( + rite + if i then ", #i)" else \)
+                    if destructure-args
+                        val = args-slice do # from i to &length
+                            Literal(i)
+                            (Chain Var \arguments .add Index Key \length)
+                    else
+                        val = Arr.wrap JS do
+                            util(\slice) + \.call( + rite + if i then ", #i)" else \)
                 else
                     val = ivar = "#rite.length - #{ len - i - 1 }"
                     # Optimize `[..., a] = b`.
                     continue if skip and i+2 is len
                     start = i+1
-                    @temps = [ivar = o.scope.temporary \i]
+                    @.[]temps.push ivar = o.scope.temporary \i
                     val = switch
                     | skip
                         Arr.wrap JS "#i < (#ivar = #val) ? #i : (#ivar = #i)"
+                    | destructure-args
+                        args-slice do
+                            JS "#i < (#ivar = #val) ? #i : (#ivar = #i)"
+                            Var ivar
                     | _
                         Arr.wrap JS do
                             "#i < (#ivar = #val)
@@ -1701,7 +1719,18 @@ class exports.Assign extends Node
                 val = Chain rcache||=Literal(rite), [Index JS inc || i]
             if node instanceof Assign
                 node = Binary node.op, node.left, node.right, (node.logic or true)
-            (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
+            if destructure-args
+                if node not instanceof Var and val instanceof For
+                    # avoid accidentally creating closure
+                    @.[]temps.push tmp = o.scope.temporary \ref
+                    vtmp = Var tmp
+                    ret.push (this with {left: vtmp, right: val, +void})compile o, LEVEL_TOP
+                    ret.push (this with {left: node, right: vtmp, +void})compile o, LEVEL_TOP
+                else
+                    ret.push (this with {left: node, right: val, +void})compile o, LEVEL_TOP
+            else
+                ret.push (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
+        ret
 
     rendObj: (o, nodes, rite) ->
         for node in nodes
@@ -1930,7 +1959,7 @@ class exports.Fun extends Node
             # `(a = x) ->` => `(a ? x) ->`
             else if p.op is \=
                 params[i] = Binary (p.logic or \?), p.left, p.right
-        # `(a, ...b, c) ->` => `(a) -> [[] ...b, c] = @@`
+        # `(a, ...b, c) ->` => `(a) -> [[] ...b, c] = &`
         if splace?
             rest = params.splice splace, 9e9
         else if @accessor
@@ -1939,30 +1968,28 @@ class exports.Fun extends Node
             params.0 = Var \it if body.traverse-children -> it.value is \it or null
         names   = []
         assigns = []
-        if params.length
-            dic = {}
-            for p in params
-                vr = p
-                vr.=first if df = vr.get-default!
-                if vr.is-empty!
-                    vr = Var scope.temporary \arg
-                else if vr.value is \..
-                    vr = Var o.ref = scope.temporary!
-                else if vr not instanceof Var
-                    unaries = []
-                    while vr instanceof Unary
-                        has-unary = true
-                        unaries.push vr
-                        vr.=it
-                    v = Var delete (vr.it || vr)name || vr.var-name! || scope.temporary \arg
-                    assigns.push Assign vr, switch
-                        | df        => Binary p.op, v, p.second
-                        | has-unary => fold ((x, y) -> y.it = x; y), v, unaries.reverse!
-                        | otherwise => v
-                    vr = v
-                else if df
-                    assigns.push Assign vr, p.second, \=, p.op, true
-                names.push (scope.add vr.value, \arg, p), ', '
+        for p in params
+            vr = p
+            vr.=first if df = vr.get-default!
+            if vr.is-empty!
+                vr = Var scope.temporary \arg
+            else if vr.value is \..
+                vr = Var o.ref = scope.temporary!
+            else if vr not instanceof Var
+                unaries = []
+                while vr instanceof Unary
+                    has-unary = true
+                    unaries.push vr
+                    vr.=it
+                v = Var delete (vr.it || vr)name || vr.var-name! || scope.temporary \arg
+                assigns.push Assign vr, switch
+                    | df        => Binary p.op, v, p.second
+                    | has-unary => fold ((x, y) -> y.it = x; y), v, unaries.reverse!
+                    | otherwise => v
+                vr = v
+            else if df
+                assigns.push Assign vr, p.second, \=, p.op, true
+            names.push (scope.add vr.value, \arg, p), ', '
         if rest
             while splace-- then rest.unshift Arr!
             assigns.push Assign Arr(rest), Literal \arguments
