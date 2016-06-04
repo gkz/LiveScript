@@ -295,6 +295,15 @@ eq 1, new (class then (@do) -> eq @do, $do)(1).do
   eq c, 456
 ) {a: [123], c: 456}
 
+y = false
+((a, ...[x]:b, c) ->
+    eq 1, a
+    deep-equal [2, 3], b
+    eq 4, c
+    eq 2, x
+    y := true
+) 1, 2, 3, 4
+ok y
 
 # Parameter default values
 obj = f: (q = 123, @p = 456) -> q
