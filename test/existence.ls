@@ -200,3 +200,69 @@ obj =
   f: -> @xs.toString! + [...&]toString!
   xs: [1 5]
 eq '1,51,5', obj.f? ...obj.xs
+
+
+# Test anaphorize (`that`) together with existence (`?`).
+
+val = do ->
+    if non-existent?
+        that or 10
+eq val, void
+
+val = do ->
+    if not non-existent?
+        that or 10
+eq val, 10
+
+existent = 10
+existent2 = 20
+
+val = do ->
+    if existent?
+        that
+eq val, 10
+
+val = do ->
+    if not existent?
+        that
+    else 20
+eq val, 20
+
+# now a boolean, not the individual vals any more.
+val = do ->
+    if existent? and existent2?
+        that
+eq val, true
+
+val = do ->
+    | non-existent? => that or 10
+eq val, void
+
+val = do ->
+    | not non-existent? => that or 10
+eq val, 10
+
+val = do ->
+    | existent? => that
+eq val, 10
+
+val = do ->
+    | not existent? => that
+    | _ => 20
+eq val, 20
+
+# `that` is 10 every time.
+val = do ->
+    i = 5
+    while existent?
+        that-save = that
+        break unless i--
+        that-save
+eq val.join(' '), '10 10 10 10 10'
+
+# &&, so `that` gets the value of i
+val = do ->
+    i = 5
+    while existent? and i--
+        that
+eq val.join(' '), '5 4 3 2 1'
