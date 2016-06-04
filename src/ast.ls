@@ -2674,6 +2674,7 @@ class exports.If extends Node
 # A labeled block or statement.
 class exports.Label extends Node
     (@label or \_, @it) ->
+        @carp "can't use label with a curried function (attempted label '#{@label}')" if @it.curried
         if fun = it instanceof [Fun, Class] and it or
              it.calling and it.it.head
             fun.name or fun <<< {name: @label, +labeled}
