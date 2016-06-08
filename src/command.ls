@@ -164,7 +164,7 @@ switch
       warn "Failed at: #filename" if filename
       unless e instanceof SyntaxError or /^Parse error /test e.message
         e = e.stack or e
-      if o.watch then warn e + '\7'
+      if o.watch then warn e.message + '\7'
                  else die  e
     return
   LiveScript.emit 'success' t
