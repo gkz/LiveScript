@@ -1,5 +1,5 @@
 window <<< require 'prelude-ls'
-LiveScript = require "LiveScript"
+LiveScript = require "livescript"
 
 <- $
 for example in $ '.example .example-ls'
