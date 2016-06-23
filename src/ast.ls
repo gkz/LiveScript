@@ -242,10 +242,12 @@ SourceNode::to-string = (...args) ->
     anaphorize: ->
         @children = @aTargets
         if @each-child hasThat
+            # Set a flag and deal with it in the Existence node (it's too
+            # tricky here).
             if (base = this)[name = @a-source] instanceof Existence
-                base.=[name]
-                name = \it
-            unless base[name]value is \that
+                base[name].do-anaphorize = true
+            # 'that = x' here is fine.
+            else if base[name]value is not \that
                 base[name] = Assign Var(\that), base[name]
         function hasThat
             it.value is \that or if it.a-source
@@ -1860,8 +1862,16 @@ class exports.Existence extends Node implements Negatable
         code = [(node.compile o, LEVEL_OP + PREC\==)]
         if node instanceof Var and not o.scope.check code.join(""), true
             [op, eq] = if @negated then <[ || = ]> else <[ && ! ]>
+            if @do-anaphorize
+                o.scope.declare 'that' Var \that
+                [anaph-pre, anaph-post] = if @negated
+                    then [["(that = undefined) || "], []]
+                    else [[], [" && (that = ", ...code, ", true)"]]
             code = ["typeof ", ...code, " #eq= 'undefined' #op ", ...code, " #eq== null"]
+            code = that ++ code if anaph-pre?
+            code = code ++ that if anaph-post?
         else
+            code = ["(that = ", ...code, ")"] if @do-anaphorize
             code.push " #{ op = if @negated then \== else \!= } null"
         if o.level < LEVEL_OP + PREC[op] then sn(this, ...code) else sn(this, "(", code, ")")
 
