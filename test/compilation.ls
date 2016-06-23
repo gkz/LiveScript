@@ -35,6 +35,7 @@ compileThrows 'unmatched `]`' 3 '[{\n\n]}'
 
 compileThrows 'missing `)CALL`' 1 'f('
 
+compileThrows "can't use label with a curried function (attempted label 'abc')" 1 ':abc (a, b) --> a + b'
 
 throws '''
   empty range on line 1
