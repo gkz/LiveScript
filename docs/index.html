@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>index.ls</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="ast.html">
+                  ast.ls
+                </a>
+              
+                
+                <a class="source" href="browser.html">
+                  browser.ls
+                </a>
+              
+                
+                <a class="source" href="command.html">
+                  command.ls
+                </a>
+              
+                
+                <a class="source" href="grammar.html">
+                  grammar.ls
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.ls
+                </a>
+              
+                
+                <a class="source" href="lang-ls.html">
+                  lang-ls.ls
+                </a>
+              
+                
+                <a class="source" href="lexer.html">
+                  lexer.ls
+                </a>
+              
+                
+                <a class="source" href="mode-ls.html">
+                  mode-ls.ls
+                </a>
+              
+                
+                <a class="source" href="node.html">
+                  node.ls
+                </a>
+              
+                
+                <a class="source" href="options.html">
+                  options.ls
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.ls
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>index.ls</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">require</span>! {
+    <span class="hljs-string">'./lexer'</span>
+    <span class="hljs-string">'./parser'</span>: {parser}
+    <span class="hljs-string">'./ast'</span>
+    <span class="hljs-string">'source-map'</span>: {SourceNode}
+    path
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Override Jison’s default lexer, so that it can accept
+the generic stream of tokens our lexer produces.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>parser &lt;&lt;&lt;
+    yy: ast
+    lexer:
+        lex: <span class="hljs-function">-&gt;</span>
+            [tag, @yytext, first_line, first_column] = @tokens[++@pos] <span class="hljs-keyword">or</span> [<span class="hljs-string">''</span>];
+            [,, last_line, last_column] = @tokens[@pos+<span class="hljs-number">1</span>] <span class="hljs-keyword">or</span> [<span class="hljs-string">''</span>];
+            @yylineno = first_line
+            @yylloc =
+                first_line: first_line
+                first_column: first_column
+                last_line: last_line
+                last_column: last_column
+            tag
+        set-input: <span class="hljs-function">-&gt;</span>
+            @pos = <span class="hljs-number">-1</span>
+            @tokens = it
+        upcoming-input: <span class="hljs-function">-&gt;</span> <span class="hljs-string">''</span>
+
+exports &lt;&lt;&lt;
+    VERSION: <span class="hljs-string">'1.5.0'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Compiles a string of LiveScript code to JavaScript.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    compile: <span class="hljs-function"><span class="hljs-params">(code, options = {})</span> -&gt;</span>
+      options.header ?= <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">try</span>
+          <span class="hljs-keyword">if</span> options.json
+              result = <span class="hljs-keyword">do</span> Function exports.compile code, {+bare, +run, +<span class="hljs-built_in">print</span>}
+              <span class="hljs-string">"<span class="hljs-subst">#{ JSON.stringify result, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span> }</span>\n"</span>
+          <span class="hljs-keyword">else</span>
+              ast = parser.parse lexer.lex code
+              ast.make-<span class="hljs-keyword">return</span>! <span class="hljs-keyword">if</span> options.run <span class="hljs-keyword">and</span> options.<span class="hljs-built_in">print</span>
+              output = ast.compile-root options
+              <span class="hljs-keyword">if</span> options.header
+                  output = <span class="hljs-keyword">new</span> SourceNode <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, [
+                      <span class="hljs-string">"// Generated by LiveScript <span class="hljs-subst">#{exports.VERSION}</span>\n"</span>, output
+                  ]
+              <span class="hljs-keyword">if</span> options.map <span class="hljs-keyword">and</span> options.map <span class="hljs-keyword">isnt</span> <span class="hljs-string">'none'</span>
+                  {filename, output-filename} = options
+                  <span class="hljs-keyword">unless</span> filename
+                      filename = <span class="hljs-string">"unnamed-<span class="hljs-subst">#{ Math.floor(Math.random! * <span class="hljs-number">4294967296</span>).to-string <span class="hljs-number">16</span> }</span>.ls"</span>
+
+                  output.set-file filename
+                  result = output.to-string-with-source-map!
+                  <span class="hljs-keyword">if</span> options.map <span class="hljs-keyword">is</span> <span class="hljs-string">'embedded'</span>
+                      result.map.set-source-content filename, code
+                  <span class="hljs-keyword">if</span> options.map <span class="hljs-keyword">in</span> &lt;[ linked debug ]&gt;
+                      map-path = <span class="hljs-string">"#output-filename.map"</span>
+                      result.code += <span class="hljs-string">"\n//# sourceMappingURL=#map-path\n"</span>
+                  <span class="hljs-keyword">else</span>
+                      result.code += <span class="hljs-string">"\n//# sourceMappingURL=data:application/json;base64,<span class="hljs-subst">#{ <span class="hljs-keyword">new</span> Buffer result.map.to-string! .to-string <span class="hljs-string">'base64'</span> }</span>\n"</span>
+                  result
+              <span class="hljs-keyword">else</span>
+                  output.to-string!
+      <span class="hljs-keyword">catch</span>
+          e.message += <span class="hljs-string">"\nat #that"</span> <span class="hljs-keyword">if</span> options.filename
+          <span class="hljs-keyword">throw</span> e</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Parses a string or tokens of LiveScript code,
+returning the <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">AST</a>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    ast: <span class="hljs-function">-&gt;</span> parser.parse (<span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> it <span class="hljs-keyword">is</span> <span class="hljs-string">'string'</span> <span class="hljs-keyword">then</span> lexer.lex it <span class="hljs-keyword">else</span> it)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Tokenizes a string of LiveScript code, returning the array of tokens.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    tokens: lexer.lex</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Same as <code>tokens</code>, except that this skips rewriting.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    lex: <span class="hljs-function">-&gt;</span> lexer.lex it, {+raw}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Runs LiveScript code directly.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    run: <span class="hljs-function"><span class="hljs-params">(code, options)</span> -&gt;</span>
+        output = exports.compile code, {...options, +bare}
+        <span class="hljs-keyword">do</span> Function (<span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span>! output <span class="hljs-keyword">is</span> <span class="hljs-string">'String'</span> <span class="hljs-keyword">then</span> output <span class="hljs-keyword">else</span> output.code)
+
+exports.tokens.rewrite = lexer.rewrite</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Export AST constructors.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>exports.ast &lt;&lt;&lt;&lt; parser.yy
+
+<span class="hljs-keyword">if</span> <span class="hljs-built_in">require</span>.extensions
+    (<span class="hljs-built_in">require</span> <span class="hljs-string">'./node'</span>) exports
+<span class="hljs-keyword">else</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Attach <code>require</code> for debugging.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    exports &lt;&lt;&lt; {<span class="hljs-built_in">require</span>}</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
