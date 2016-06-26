@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>mode-ls.ls</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="ast.html">
+                  ast.ls
+                </a>
+              
+                
+                <a class="source" href="browser.html">
+                  browser.ls
+                </a>
+              
+                
+                <a class="source" href="command.html">
+                  command.ls
+                </a>
+              
+                
+                <a class="source" href="grammar.html">
+                  grammar.ls
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.ls
+                </a>
+              
+                
+                <a class="source" href="lang-ls.html">
+                  lang-ls.ls
+                </a>
+              
+                
+                <a class="source" href="lexer.html">
+                  lexer.ls
+                </a>
+              
+                
+                <a class="source" href="mode-ls.html">
+                  mode-ls.ls
+                </a>
+              
+                
+                <a class="source" href="node.html">
+                  node.ls
+                </a>
+              
+                
+                <a class="source" href="options.html">
+                  options.ls
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.ls
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>mode-ls.ls</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>Defines an editing mode for <a href="http://ace.ajax.org">Ace</a>.</p>
+<p>Open <a href="../test/ace.html">test/ace.html</a> to test.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-built_in">require</span>, exports, <span class="hljs-built_in">module</span> &lt;-! define \ace/mode/ls
+
+identifier = <span class="hljs-regexp">/(?![\d\s])[$\w\xAA-\uFFDC](?:(?!\s)[$\w\xAA-\uFFDC]|-[A-Za-z])*/</span>$
+
+exports.Mode = <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LiveScriptMode</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">require</span>(\<span class="hljs-title">ace</span>/<span class="hljs-title">mode</span>/<span class="hljs-title">text</span>)<span class="hljs-title">Mode</span></span>
+  -&gt;
+    @$tokenizer =
+      <span class="hljs-keyword">new</span> (<span class="hljs-built_in">require</span> \ace/tokenizer)Tokenizer LiveScriptMode.Rules
+    <span class="hljs-keyword">if</span> <span class="hljs-built_in">require</span> \ace/mode/matching_brace_outdent
+      @$outdent = <span class="hljs-keyword">new</span> that.MatchingBraceOutdent
+
+  indenter = <span class="hljs-regexp">//</span> (?
+    : [({[=:]
+    | [-~]&gt;
+    | \b (?: e(?:lse|xport) | d(?:o|efault) | t(?:ry|hen) | <span class="hljs-keyword">finally</span> |
+             import (?:\s* all)? | const | var |
+             let | <span class="hljs-keyword">new</span> | <span class="hljs-keyword">catch</span> (?:\s* <span class="hljs-comment">#identifier)? )</span>
+  ) \s* $ <span class="hljs-regexp">//</span>
+
+  getNextLineIndent: <span class="hljs-function"><span class="hljs-params">(state, line, tab)</span> -&gt;</span>
+    indent   = @$getIndent line
+    {tokens} = @$tokenizer.getLineTokens line, state
+    <span class="hljs-keyword">unless</span> tokens.length <span class="hljs-keyword">and</span> tokens[*<span class="hljs-number">-1</span>]type <span class="hljs-keyword">is</span> \comment
+      indent += tab <span class="hljs-keyword">if</span> state <span class="hljs-keyword">is</span> \start <span class="hljs-keyword">and</span> indenter.test line
+    indent
+
+  toggleCommentLines: <span class="hljs-function"><span class="hljs-params">(state, doc, startRow, endRow)</span> -&gt;</span>
+    comment = <span class="hljs-regexp">/^(\s*)#/</span>; range = <span class="hljs-keyword">new</span> (<span class="hljs-built_in">require</span> \ace/range)Range <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>
+    <span class="hljs-keyword">for</span> i from startRow to endRow
+      <span class="hljs-keyword">if</span> out = comment.test line = doc.getLine i
+      <span class="hljs-keyword">then</span> line.=replace comment, \$<span class="hljs-number">1</span>
+      <span class="hljs-keyword">else</span> line.=replace <span class="hljs-regexp">/^\s*/</span>   \$&amp;<span class="hljs-comment">#</span>
+      range.end.row = range.start.row = i
+      range.end.column = line.length + <span class="hljs-number">1</span>
+      doc.replace range, line
+    <span class="hljs-number">1</span> - out * <span class="hljs-number">2</span>
+
+  checkOutdent: <span class="hljs-function"><span class="hljs-params">(state, line, input)</span> -&gt;</span> @$outdent?checkOutdent line, input
+
+  autoOutdent: <span class="hljs-function"><span class="hljs-params">(state, doc, row)</span> -&gt;</span> @$outdent?autoOutdent doc, row</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <h2 id="highlight-rules">Highlight Rules</h2>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+keywordend = <span class="hljs-regexp">/(?![$\w]|-[A-Za-z]|\s*:(?![:=]))/</span>$
+stringfill = token: \string, regex: <span class="hljs-string">'.+'</span>
+
+LiveScriptMode.Rules =
+  start:
+    * token: \keyword
+      regex: <span class="hljs-regexp">//</span>(?
+        :t(?:h(?:<span class="hljs-keyword">is</span>|row|en)|ry|ypeof!?)
+        |c(?:<span class="hljs-literal">on</span>(?:tinue|st)|a(?:se|tch)|lass)
+        |i(?:n(?:stanceof)?|mp(?:ort(?:\s+all)?|lements)|[fs])
+        |d(?:e(?:fault|lete|bugger)|o)
+        |f(?:<span class="hljs-keyword">or</span>(?:\s+own)?|inally|unction)
+        |s(?:uper|witch)
+        |e(?:lse|x(?:tends|port)|val)
+        |a(?:nd|rguments)
+        |n(?:ew|ot)
+        |un(?:less|til)
+        |w(?:hile|ith)
+        |o[fr]|<span class="hljs-keyword">return</span>|<span class="hljs-keyword">break</span>|let|var|<span class="hljs-keyword">loop</span>|yield
+      )<span class="hljs-regexp">//</span>$ + keywordend
+
+    * token: \constant.language
+      regex: <span class="hljs-string">'(?:true|false|yes|no|on|off|null|void|undefined)'</span> + keywordend
+
+    * token: \invalid.illegal
+      regex: <span class="hljs-string">'(?
+        :p(?:ackage|r(?:ivate|otected)|ublic)
+        |i(?:mplements|nterface)
+        |enum|static
+      )'</span> + keywordend
+
+    * token: \language.support.class
+      regex: <span class="hljs-string">'(?
+        :R(?:e(?:gExp|ferenceError)|angeError)
+        |S(?:tring|yntaxError)
+        |E(?:rror|valError)
+        |Array|Boolean|Date|Function|Number|Object|TypeError|URIError
+      )'</span> + keywordend
+
+    * token: \language.support.function
+      regex: <span class="hljs-string">'(?
+        :is(?:NaN|Finite)
+        |parse(?:Int|Float)
+        |Math|JSON
+        |(?:en|de)codeURI(?:Component)?
+      )'</span> + keywordend
+
+    * token: \variable.language
+      regex: <span class="hljs-string">'(?:t(?:hat|il|o)|f(?:rom|allthrough)|it|by|e)'</span> + keywordend
+
+    * token: \identifier
+      regex: identifier + <span class="hljs-regexp">/\s*:(?![:=])/</span>$
+
+    * token: \variable
+      regex: identifier
+
+    * token: \keyword.operator
+      regex: <span class="hljs-regexp">/(?:\.{3}|\s+\?)/</span>$
+
+    * token: \keyword.variable
+      regex: <span class="hljs-regexp">/(?:@+|::|\.\.)/</span>$
+      next : \key
+
+    * token: \keyword.operator
+      regex: <span class="hljs-regexp">/\.\s*/</span>$
+      next : \key
+
+    * token: \string
+      regex: <span class="hljs-regexp">/\\\S[^\s,;)}\]]*/</span>$
+
+    * token: \string.doc
+      regex: \<span class="hljs-string">'''
+      next : \qdoc
+
+    * token: \string.doc
+      regex: \"""
+      next : \qqdoc
+
+    * token: \string
+      regex: \'
+      next : \qstring
+
+    * token: \string
+      regex: \"
+      next : \qqstring
+
+    * token: \string
+      regex: \`
+      next : \js
+
+    * token: \string
+      regex: '&lt;\\['
+      next : \words
+
+    * token: \string.regex
+      regex: \//
+      next : \heregex
+
+    * token: \comment.doc
+      regex: '/\\*'
+      next : \comment
+
+    * token: \comment
+      regex: '#.*'
+
+    * token: \string.regex
+      regex: //
+        /(?: [^ [ / \n \\ ]*
+          (?: (?: \\.
+                | \[ [^\]\n\\]* (?:\\.[^\]\n\\]*)* \]
+              ) [^ [ / \n \\ ]*
+          )*
+        )/ [gimy$]{0,4}
+      //$
+      next : \key
+
+    * token: \constant.numeric
+      regex: '(?:0x[\\da-fA-F][\\da-fA-F_]*
+                |(?:[2-9]|[12]\\d|3[0-6])r[\\da-zA-Z][\\da-zA-Z_]*
+                |(?:\\d[\\d_]*(?:\\.\\d[\\d_]*)?|\\.\\d[\\d_]*)
+                 (?:e[+-]?\\d[\\d_]*)?[\\w$]*)'
+
+    * token: \lparen
+      regex: '[({[]'
+
+    * token: \rparen
+      regex: '[)}\\]]'
+      next : \key
+
+    * token: \keyword.operator
+      regex: \\\S+
+
+    * token: \text
+      regex: \\\s+
+
+  heregex:
+    * token: \string.regex
+      regex: '.*?//[gimy$?]{0,4}'
+      next : \start
+    * token: \string.regex
+      regex: '\\s*#{'
+    * token: \comment.regex
+      regex: '\\s+(?:#.*)?'
+    * token: \string.regex
+      regex: '\\S+'
+
+  key:
+    * token: \keyword.operator
+      regex: '[.?@!]+'
+    * token: \identifier
+      regex: identifier
+      next : \start
+    * token: \text
+      regex: '.'
+      next : \start
+
+  comment:
+    * token: \comment.doc
+      regex: '.*?\\*/'
+      next : \start
+    * token: \comment.doc
+      regex: '.+'
+
+  qdoc:
+    token: \string
+    regex: ".*?'''</span><span class="hljs-string">"
+    next : \key
+    stringfill
+
+  qqdoc:
+    token: \string
+    regex: '.*?"</span><span class="hljs-string">""</span><span class="hljs-string">'
+    next : \key
+    stringfill
+
+  qstring:
+    token: \string
+    regex: /[^\\'</span>]*(?:\\.[^\\<span class="hljs-string">']*)*'</span>/$
+    next : \key
+    stringfill
+
+  qqstring:
+    token: \string
+    regex: <span class="hljs-regexp">/[^\\"]*(?:\\.[^\\"]*)*"/</span>$
+    next : \key
+    stringfill
+
+  js:
+    token: \string
+    regex: <span class="hljs-regexp">/[^\\`]*(?:\\.[^\\`]*)*`/</span>$
+    next : \key
+    stringfill
+
+  words:
+    token: \string
+    regex: <span class="hljs-string">'.*?\\]&gt;'</span>
+    next : \key
+    stringfill</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

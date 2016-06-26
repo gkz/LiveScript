@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>command.ls</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="ast.html">
+                  ast.ls
+                </a>
+              
+                
+                <a class="source" href="browser.html">
+                  browser.ls
+                </a>
+              
+                
+                <a class="source" href="command.html">
+                  command.ls
+                </a>
+              
+                
+                <a class="source" href="grammar.html">
+                  grammar.ls
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.ls
+                </a>
+              
+                
+                <a class="source" href="lang-ls.html">
+                  lang-ls.ls
+                </a>
+              
+                
+                <a class="source" href="lexer.html">
+                  lexer.ls
+                </a>
+              
+                
+                <a class="source" href="mode-ls.html">
+                  mode-ls.ls
+                </a>
+              
+                
+                <a class="source" href="node.html">
+                  node.ls
+                </a>
+              
+                
+                <a class="source" href="options.html">
+                  options.ls
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.ls
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>command.ls</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">require</span>! {
+  <span class="hljs-string">'..'</span>: LiveScript
+  path
+  fs
+  util
+  <span class="hljs-string">'prelude-ls'</span>: {each, <span class="hljs-keyword">break</span>-list, lines, unlines, take, keys, filter, dasherize, map}:prelude
+  <span class="hljs-string">'./options'</span>: {parse: parse-options, generate-help}
+  <span class="hljs-string">'./util'</span>: {name-from-path}
+  <span class="hljs-string">'source-map'</span>: {SourceNode}
+}
+
+version = LiveScript.VERSION
+
+args, {say, say-with-timestamp, warn, die} = {} &lt;-! (<span class="hljs-built_in">module</span>.exports =)
+
+say ?= <span class="hljs-built_in">console</span>.log
+say-with-timestamp ?= util.log
+warn ?= <span class="hljs-built_in">console</span>.error
+die ?= (message) !-&gt;
+  <span class="hljs-built_in">console</span>.error message
+  process.exit <span class="hljs-number">1</span>
+p = (...args) !-&gt;
+  each <span class="hljs-built_in">console</span>.dir, args
+pp = (x, show-hidden, depth) !-&gt;
+  say util.inspect x, show-hidden, depth, !process.env.NODE_DISABLE_COLORS
+ppp = !-&gt; pp it, <span class="hljs-literal">true</span>, <span class="hljs-literal">null</span>
+file-exists = <span class="hljs-function"><span class="hljs-params">(path)</span> -&gt;</span>
+  <span class="hljs-keyword">try</span>
+    fs.stat-sync path
+    <span class="hljs-literal">true</span>
+dasherize-vars = <span class="hljs-function"><span class="hljs-params">(str)</span> -&gt;</span> <span class="hljs-keyword">if</span> <span class="hljs-regexp">/^[a-z]/</span> <span class="hljs-keyword">is</span> str <span class="hljs-keyword">then</span> dasherize str <span class="hljs-keyword">else</span> str
+starts-with = <span class="hljs-function"><span class="hljs-params">(str)</span> -&gt;</span> (.index-<span class="hljs-keyword">of</span>(str) <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>)
+
+<span class="hljs-keyword">try</span>
+  o = parse-options args
+  positional = o._
+<span class="hljs-keyword">catch</span>
+  die e.message
+
+<span class="hljs-keyword">switch</span>
+| o.nodejs  =&gt; fork-node!
+| o.version =&gt; say <span class="hljs-string">"LiveScript version #version"</span>
+| o.help    =&gt; say generate-help interpolate: {version}
+| otherwise =&gt;
+  valid-map-values = &lt;[ none linked linked-src embedded debug ]&gt;
+  <span class="hljs-keyword">if</span> o.map <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> valid-map-values
+    die <span class="hljs-string">"Option --map must be either: <span class="hljs-subst">#{ valid-map-values.join <span class="hljs-string">', '</span> }</span>"</span>
+  o.run = <span class="hljs-keyword">not</span> o.compile ||= o.output
+
+  <span class="hljs-keyword">if</span> args <span class="hljs-keyword">is</span> process.argv
+    process.argv<span class="hljs-number">.0</span> = process.argv<span class="hljs-number">.1</span>
+    to-insert = <span class="hljs-keyword">if</span> o.stdin
+      positional
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-keyword">if</span> o.run <span class="hljs-keyword">then</span> positional.splice <span class="hljs-number">1</span> <span class="hljs-number">9e9</span> <span class="hljs-keyword">else</span> []
+    process.argv.splice <span class="hljs-number">2</span>, <span class="hljs-number">9e9</span>, ...to-insert
+
+  <span class="hljs-keyword">if</span> o.<span class="hljs-built_in">require</span>
+    {filename} = <span class="hljs-built_in">module</span>
+    <span class="hljs-built_in">module</span>.filename = <span class="hljs-string">'.'</span>
+    that |&gt; each -&gt; <span class="hljs-built_in">global</span>[name-from-path it] = <span class="hljs-built_in">require</span> it
+    <span class="hljs-built_in">module</span> &lt;&lt;&lt; {filename}
+
+  <span class="hljs-keyword">switch</span>
+  | o.eval =&gt;
+      json-callback = (input) !-&gt;
+          <span class="hljs-built_in">global</span> &lt;&lt;&lt; prelude <span class="hljs-keyword">if</span> o.prelude
+          o.run-context = JSON.parse input.to-string!
+          compile-script <span class="hljs-string">''</span> o.eval
+      <span class="hljs-keyword">if</span> positional.length <span class="hljs-keyword">and</span> (o.json <span class="hljs-keyword">or</span> <span class="hljs-regexp">/\.json$/</span>.test positional<span class="hljs-number">.0</span>)
+          o.json = <span class="hljs-literal">true</span>
+          fshoot <span class="hljs-string">'readFile'</span>, positional<span class="hljs-number">.0</span>, json-callback
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> o.json
+          get-stdin json-callback
+      <span class="hljs-keyword">else</span>
+          compile-script <span class="hljs-string">''</span> o.eval
+  | o.stdin =&gt;
+    compile-stdin!
+  | positional.length =&gt;
+    compile-scripts!
+  | <span class="hljs-built_in">require</span> <span class="hljs-string">'tty'</span> .isatty <span class="hljs-number">0</span> =&gt;
+    say <span class="hljs-string">"LiveScript #version - use 'lsc --help' for more information"</span>
+    repl!
+  | otherwise =&gt;
+    compile-stdin!</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Calls a <code>fs</code> method, exiting on error.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>!function fshoot name, arg, callback
+  e, result &lt;-! fs[name] arg
+  die e.stack || e <span class="hljs-keyword">if</span> e
+  callback result</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Asynchronously read in each LiveScript script in a list of source files and
+compile them. If a directory is passed, recursively compile all
+<em>.ls</em> files in it and all subdirectories.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>!function compile-scripts
+  positional.<span class="hljs-keyword">for</span>-each !-&gt; walk it, (path.normalize it), <span class="hljs-literal">true</span>
+  !function walk source, base, top
+    !function work
+      fshoot <span class="hljs-string">'readFile'</span> source, !-&gt; compile-script source, <span class="hljs-string">"#it"</span>, base
+    e, stats &lt;-! fs.stat source
+    <span class="hljs-keyword">if</span> e
+      die <span class="hljs-string">"Can't find: #source"</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> top <span class="hljs-keyword">or</span> <span class="hljs-regexp">/(?:\.ls|\/</span>)$/test source
+      walk <span class="hljs-string">"#source.ls"</span> base
+      <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">if</span> stats.<span class="hljs-keyword">is</span>-directory!
+      <span class="hljs-keyword">unless</span> o.run
+        fshoot <span class="hljs-string">'readdir'</span> source, !-&gt; it.<span class="hljs-keyword">for</span>-each !-&gt; walk <span class="hljs-string">"#source/#it"</span> base
+        <span class="hljs-keyword">return</span>
+      source += <span class="hljs-string">'/index.ls'</span>
+    <span class="hljs-keyword">if</span> top <span class="hljs-keyword">or</span> <span class="hljs-string">'.ls'</span> <span class="hljs-keyword">is</span> source.slice <span class="hljs-number">-3</span>
+      <span class="hljs-keyword">if</span> o.watch <span class="hljs-keyword">then</span> watch source, work <span class="hljs-keyword">else</span> work!</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Compile a single source script, containing the given code, according to the
+requested options.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>!function compile-script filename, input, base
+  options = {
+      filename
+      output-filename: output-filename filename, o.json
+      o.bare
+      o.const
+      o.map
+      o.header
+  }
+  t       = {input, options}
+  <span class="hljs-keyword">try</span>
+    <span class="hljs-keyword">if</span> o.lex <span class="hljs-keyword">or</span> o.tokens <span class="hljs-keyword">or</span> o.ast
+      LiveScript.emit <span class="hljs-string">'lex'</span> t
+      t.tokens = LiveScript.tokens t.input, raw: o.lex
+      <span class="hljs-keyword">if</span> o.lex <span class="hljs-keyword">or</span> o.tokens
+        <span class="hljs-built_in">print</span>-tokens t.tokens
+        <span class="hljs-keyword">throw</span>
+
+      LiveScript.emit <span class="hljs-string">'parse'</span> t
+      t.ast = LiveScript.ast t.tokens
+      say <span class="hljs-keyword">if</span> o.json <span class="hljs-keyword">then</span> t.ast.stringify <span class="hljs-number">2</span> <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>.trim.call t.ast
+      <span class="hljs-keyword">throw</span>
+
+    json = o.json <span class="hljs-keyword">or</span> <span class="hljs-regexp">/\.json\.ls$/</span>.test filename
+    run = o.run <span class="hljs-keyword">or</span> o.eval
+    <span class="hljs-keyword">if</span> run
+      LiveScript.emit <span class="hljs-string">'compile'</span> t
+      <span class="hljs-built_in">print</span> = json <span class="hljs-keyword">or</span> o.<span class="hljs-built_in">print</span>
+      t.output = LiveScript.compile t.input, {...options, +bare, run, <span class="hljs-built_in">print</span>}
+      LiveScript.emit <span class="hljs-string">'run'</span> t
+      t.result = LiveScript.run (<span class="hljs-keyword">if</span> o.map <span class="hljs-keyword">is</span> <span class="hljs-string">'none'</span> <span class="hljs-keyword">then</span> t.output <span class="hljs-keyword">else</span> t.output.code), options, <span class="hljs-keyword">do</span>
+          js: <span class="hljs-literal">true</span>
+          context: o.run-context
+      <span class="hljs-keyword">switch</span>
+      | json  =&gt; say JSON.stringify t.result, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>
+      | o.<span class="hljs-built_in">print</span> =&gt; say t.result
+      <span class="hljs-keyword">throw</span>
+
+    LiveScript.emit <span class="hljs-string">'compile'</span> t
+    t.output = LiveScript.compile t.input, {...options, json, o.<span class="hljs-built_in">print</span>}
+    LiveScript.emit <span class="hljs-string">'write'</span> t
+    <span class="hljs-keyword">if</span> o.<span class="hljs-built_in">print</span> <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> filename
+    <span class="hljs-keyword">then</span> say (<span class="hljs-keyword">if</span> o.map <span class="hljs-keyword">is</span> <span class="hljs-string">'none'</span> <span class="hljs-keyword">then</span> t.output <span class="hljs-keyword">else</span> t.output.code).trim-right!
+    <span class="hljs-keyword">else</span> write-JS filename, t.output, t.input, base, json
+  <span class="hljs-keyword">catch</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">if</span> e?
+    <span class="hljs-keyword">if</span> LiveScript.listeners <span class="hljs-string">'failure'</span> .length
+      LiveScript.emit <span class="hljs-string">'failure'</span> e, t
+    <span class="hljs-keyword">else</span>
+      warn <span class="hljs-string">"Failed at: #filename"</span> <span class="hljs-keyword">if</span> filename
+      <span class="hljs-keyword">unless</span> e <span class="hljs-keyword">instanceof</span> SyntaxError <span class="hljs-keyword">or</span> /^Parse error /test e.message
+        e = e.stack <span class="hljs-keyword">or</span> e
+      <span class="hljs-keyword">if</span> o.watch <span class="hljs-keyword">then</span> warn e.message + <span class="hljs-string">'\7'</span>
+                 <span class="hljs-keyword">else</span> die  e
+    <span class="hljs-keyword">return</span>
+  LiveScript.emit <span class="hljs-string">'success'</span> t</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Attach the appropriate listeners to get data incoming over <strong>stdin</strong>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>!function get-stdin cb
+  process.open-stdin!
+    code = <span class="hljs-string">''</span>
+    ..<span class="hljs-literal">on</span> <span class="hljs-string">'data'</span> !-&gt; code += it
+    ..<span class="hljs-literal">on</span> <span class="hljs-string">'end'</span>  !-&gt; cb code
+    ..<span class="hljs-literal">on</span> <span class="hljs-string">'data'</span> !-&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Detect trailing <strong>^D</strong> or <strong>^Z</strong> for Windows.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> (code.slice <span class="hljs-number">-3</span>) <span class="hljs-keyword">in</span> &lt;[ \<span class="hljs-number">4</span>\r\n \x1a\r\n ]&gt;
+        cb code.slice <span class="hljs-number">0</span> <span class="hljs-number">-3</span>
+        ..destroy!
+
+!function compile-stdin
+  input &lt;-! get-stdin
+  compile-script <span class="hljs-string">''</span> input</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Watch a source LiveScript file using <code>setTimeout</code>, taking an <code>action</code> every
+time the file is updated.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>!function watch source, action
+  :repeat let ptime = <span class="hljs-number">0</span>
+    {mtime} &lt;-! fshoot <span class="hljs-string">'stat'</span> source
+    <span class="hljs-keyword">do</span> action <span class="hljs-keyword">if</span> ptime .^. mtime
+    set-timeout repeat, <span class="hljs-number">500</span>ms, mtime</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Write out a JavaScript source file with the compiled code. By default, files
+are written out in <code>cwd</code> as <code>.js</code> files with the same name, but the output
+directory can be customized with <code>--output</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>!function write-JS source, js, input, base, json</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <pre><code>foo.ls     =&gt; foo.js
+foo.jsm.ls =&gt; foo.jsm
+</code></pre>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  filename = output-filename source, json
+  dir = path.dirname source
+  <span class="hljs-keyword">if</span> o.output
+      dir = path.join that, dir.slice <span class="hljs-keyword">if</span> base <span class="hljs-keyword">is</span> <span class="hljs-string">'.'</span> <span class="hljs-keyword">then</span> <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> base.length
+  source = path.normalize source
+  js-path = path.join dir, filename
+  !function compile
+      e &lt;-! fs.write-file js-path, js.to-string! || <span class="hljs-string">'\n'</span>
+      <span class="hljs-keyword">return</span> warn e <span class="hljs-keyword">if</span> e
+      say-with-timestamp <span class="hljs-string">"#source =&gt; #js-path"</span> <span class="hljs-keyword">if</span> o.watch <span class="hljs-keyword">or</span> o.debug
+  !function compile-with-map
+      e &lt;-! fs.write-file js-path, js.code || <span class="hljs-string">'\n'</span>
+      <span class="hljs-keyword">return</span> warn e <span class="hljs-keyword">if</span> e
+
+      <span class="hljs-keyword">if</span> o.map == <span class="hljs-string">'linked'</span> || o.map == <span class="hljs-string">"debug"</span>
+        map-path = <span class="hljs-string">"#js-path.map"</span>
+        e2 &lt;-! fs.write-file map-path, js.map || <span class="hljs-string">'\n'</span>
+        <span class="hljs-keyword">return</span> warn e2 <span class="hljs-keyword">if</span> e2
+        <span class="hljs-keyword">if</span> o.map == <span class="hljs-string">"debug"</span>
+          e3 &lt;-! fs.write-file <span class="hljs-string">"#map-path.debug"</span>, js.debug || <span class="hljs-string">'\n'</span>
+          say-with-timestamp <span class="hljs-string">"#source =&gt; #js-path, #map-path[.debug]"</span> <span class="hljs-keyword">if</span> o.watch <span class="hljs-keyword">or</span> o.debug
+        <span class="hljs-keyword">else</span>
+          say-with-timestamp <span class="hljs-string">"#source =&gt; #js-path, #map-path"</span> <span class="hljs-keyword">if</span> o.watch <span class="hljs-keyword">or</span> o.debug
+      <span class="hljs-keyword">else</span>
+        say-with-timestamp <span class="hljs-string">"#source =&gt; #js-path"</span> <span class="hljs-keyword">if</span> o.watch <span class="hljs-keyword">or</span> o.debug
+  e &lt;-! fs.stat dir
+  <span class="hljs-keyword">if</span> o.map != <span class="hljs-string">'none'</span>
+    <span class="hljs-keyword">return</span> compile-with-map! <span class="hljs-keyword">unless</span> e
+  <span class="hljs-keyword">else</span>
+    <span class="hljs-keyword">return</span> compile! <span class="hljs-keyword">unless</span> e
+  <span class="hljs-built_in">require</span> <span class="hljs-string">'child_process'</span> .exec <span class="hljs-keyword">do</span>
+    <span class="hljs-string">"mkdir <span class="hljs-subst">#{[<span class="hljs-string">'-p'</span> <span class="hljs-keyword">unless</span> /^win/test process.platform]}</span> #dir"</span> compile
+
+function output-filename filename, json
+    path.basename filename .replace <span class="hljs-regexp">/(?:(\.\w+)?\.\w+)?$/</span> -&gt;
+        &amp;<span class="hljs-number">1</span> <span class="hljs-keyword">or</span> <span class="hljs-keyword">if</span> json <span class="hljs-keyword">then</span> <span class="hljs-string">'.json'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">'.js'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Pretty-print a stream of tokens.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>!function <span class="hljs-built_in">print</span>-tokens tokens
+  lines = []
+  <span class="hljs-keyword">for</span> [tag, val, lno] <span class="hljs-keyword">in</span> tokens
+    (lines[lno] ?= []).push <span class="hljs-keyword">if</span> tag.to-lower-case! <span class="hljs-keyword">is</span> val <span class="hljs-keyword">then</span> tag <span class="hljs-keyword">else</span> <span class="hljs-string">"#tag:#val"</span>
+  <span class="hljs-keyword">for</span> l <span class="hljs-keyword">in</span> lines
+    say (<span class="hljs-keyword">if</span> l <span class="hljs-keyword">then</span> l.join <span class="hljs-string">' '</span> .replace <span class="hljs-regexp">/\n/g</span> <span class="hljs-string">'\\n'</span> <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>A Read-Eval-Print-Loop.
+Good for simple tests or poking around the
+<a href="http://nodejs.org/api/"><strong>node.js</strong> API</a>.</p>
+<ul>
+<li><strong>^M</strong>: Compile input, and prints (if <em>–compile</em>) or evaluates it.</li>
+<li><strong>^J</strong>: Insert linefeed.</li>
+<li><strong>^C</strong>: Cancel input if any. Quit otherwise.</li>
+<li><strong>??</strong>: <a href="https://github.com/joyent/node/blob/master/lib/readline.js">https://github.com/joyent/node/blob/master/lib/readline.js</a></li>
+</ul>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>!function repl
+  MAX-HISTORY-SIZE = <span class="hljs-number">500</span>
+  history-file = path.join process.env.HOME, <span class="hljs-string">'/.lsc_history'</span>
+  code   = <span class="hljs-keyword">if</span> repl.infunc <span class="hljs-keyword">then</span> <span class="hljs-string">'  '</span> <span class="hljs-keyword">else</span> <span class="hljs-string">''</span>
+  cont   = <span class="hljs-number">0</span>
+  rl     = <span class="hljs-built_in">require</span> <span class="hljs-string">'readline'</span> .create-interface process.stdin, process.stdout
+  reset  = !-&gt;
+    rl.line = code := <span class="hljs-string">''</span>
+    rl.prompt!
+    repl.inheredoc = <span class="hljs-literal">false</span>
+  ({_tty-write} = rl)._tty-write = <span class="hljs-function"><span class="hljs-params">(char)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> char <span class="hljs-keyword">in</span> [<span class="hljs-string">'\n'</span> <span class="hljs-string">'&gt;'</span>]
+    <span class="hljs-keyword">then</span> cont += <span class="hljs-number">1</span>
+    <span class="hljs-keyword">else</span> cont := <span class="hljs-number">0</span>
+    _tty-write ...
+  prompt = <span class="hljs-string">'ls'</span>
+  prompt += <span class="hljs-string">" -#that"</span> <span class="hljs-keyword">if</span> <span class="hljs-string">'b'</span> * !!o.bare + <span class="hljs-string">'c'</span> * !!o.compile
+  <span class="hljs-keyword">try</span> rl.history = lines &lt;| fs.read-file-sync history-file, <span class="hljs-string">'utf-8'</span> .trim!
+  LiveScript.history = rl.history <span class="hljs-keyword">if</span> LiveScript?
+  <span class="hljs-keyword">unless</span> o.compile
+    <span class="hljs-built_in">module</span>.paths = <span class="hljs-built_in">module</span>.constructor._node-<span class="hljs-built_in">module</span>-paths \
+      <span class="hljs-built_in">module</span>.filename = process.cwd! + <span class="hljs-string">'/repl'</span>
+    vm = <span class="hljs-built_in">require</span> <span class="hljs-string">'vm'</span>
+    <span class="hljs-built_in">global</span> &lt;&lt;&lt; prelude <span class="hljs-keyword">if</span> o.prelude
+    repl-ctx = {}
+    repl-ctx &lt;&lt;&lt; <span class="hljs-built_in">global</span>
+    repl-ctx &lt;&lt;&lt; {<span class="hljs-built_in">module</span>, exports, <span class="hljs-built_in">require</span>}
+    repl-ctx &lt;&lt;&lt; {LiveScript, path, fs, util, say, warn, die, p, pp, ppp}
+    server = <span class="hljs-built_in">require</span> <span class="hljs-string">'repl'</span> .REPLServer:: with
+      context: repl-ctx
+      commands: []
+      use-global: <span class="hljs-literal">true</span>
+      use-colors: process.env.NODE_DISABLE_COLORS
+      eval: !(code,ctx,, cb) -&gt;
+        <span class="hljs-keyword">try</span> res = vm.run-<span class="hljs-keyword">in</span>-<span class="hljs-keyword">new</span>-context code, ctx, <span class="hljs-string">'repl'</span> <span class="hljs-keyword">catch</span>
+        cb e, res
+    rl.completer = <span class="hljs-function"><span class="hljs-params">(line, cb)</span> -&gt;</span>
+      context-vars = map dasherize-vars, keys server.context
+      matches = filter (starts-with line), context-vars
+      cb <span class="hljs-literal">null</span>, [<span class="hljs-keyword">if</span> matches.length <span class="hljs-keyword">then</span> matches <span class="hljs-keyword">else</span> context-vars, line]
+
+  rl.<span class="hljs-literal">on</span> <span class="hljs-string">'SIGCONT'</span> rl.prompt
+  rl.<span class="hljs-literal">on</span> <span class="hljs-string">'SIGINT'</span> !-&gt;
+    <span class="hljs-keyword">if</span> @line <span class="hljs-keyword">or</span> code
+      say <span class="hljs-string">''</span>
+      reset!
+    <span class="hljs-keyword">else</span> @close!
+  rl.<span class="hljs-literal">on</span> <span class="hljs-string">'close'</span> -&gt;
+    say <span class="hljs-string">''</span>
+    process.exit!
+  rl.<span class="hljs-literal">on</span> <span class="hljs-string">'line'</span> !-&gt;
+    repl.infunc = <span class="hljs-literal">false</span> <span class="hljs-keyword">if</span> it.match <span class="hljs-regexp">/^$/</span> <span class="hljs-comment"># close with a blank line without spaces</span>
+    repl.infunc = <span class="hljs-literal">true</span> <span class="hljs-keyword">if</span> it.match(<span class="hljs-regexp">/(\=|\~&gt;|-&gt;|do|import|switch)\s*$/</span>) <span class="hljs-keyword">or</span> (it.match(<span class="hljs-regexp">/^!?(function|class|if|unless) /</span>) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> it.match(/ <span class="hljs-keyword">then</span> /))
+    <span class="hljs-keyword">if</span> (<span class="hljs-number">0</span> &lt; cont &lt; <span class="hljs-number">3</span> <span class="hljs-keyword">or</span> repl.infunc) <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> repl.inheredoc
+      code += it + <span class="hljs-string">'\n'</span>
+      @output.write <span class="hljs-string">'.'</span> * prompt.length + <span class="hljs-string">'. '</span>
+      <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">else</span>
+      isheredoc = it.match <span class="hljs-regexp">/(\'\'\'|\"\"\")/g</span>
+      <span class="hljs-keyword">if</span> isheredoc <span class="hljs-keyword">and</span> isheredoc.length % <span class="hljs-number">2</span> <span class="hljs-keyword">is</span> <span class="hljs-number">1</span> <span class="hljs-comment"># odd number of matches</span>
+        repl.inheredoc = <span class="hljs-keyword">not</span> repl.inheredoc
+      <span class="hljs-keyword">if</span> repl.inheredoc
+        code += it + <span class="hljs-string">'\n'</span>
+        rl.output.write <span class="hljs-string">'.'</span> * prompt.length + <span class="hljs-string">'" '</span>
+        <span class="hljs-keyword">return</span>
+    repl.inheredoc = <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">return</span> reset! <span class="hljs-keyword">unless</span> code += it
+    <span class="hljs-keyword">try</span>
+      <span class="hljs-keyword">if</span> o.compile
+        say LiveScript.compile code, {o.bare}
+      <span class="hljs-keyword">else</span>
+        ops = {<span class="hljs-string">'eval'</span>, +bare, save-scope:LiveScript}
+        ops = {+bare} <span class="hljs-keyword">if</span> code.match <span class="hljs-regexp">/^\s*!?function/</span>
+        x  = vm.run-<span class="hljs-keyword">in</span>-<span class="hljs-keyword">new</span>-context LiveScript.compile(code, ops), repl-ctx, <span class="hljs-string">'repl'</span>
+        repl-ctx &lt;&lt;&lt; {_:x} <span class="hljs-keyword">if</span> x?
+        pp  x
+        say x <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> x <span class="hljs-keyword">is</span> <span class="hljs-string">'function'</span>
+    <span class="hljs-keyword">catch</span> <span class="hljs-keyword">then</span> say e
+    reset!
+  process.<span class="hljs-literal">on</span> <span class="hljs-string">'uncaughtException'</span> !-&gt; say <span class="hljs-string">"\n<span class="hljs-subst">#{ it?stack <span class="hljs-keyword">or</span> it }</span>"</span>
+  process.<span class="hljs-literal">on</span> <span class="hljs-string">'exit'</span> !-&gt;
+    rl._tty-write <span class="hljs-string">'\r'</span> <span class="hljs-keyword">if</span> code <span class="hljs-keyword">and</span> rl.output.<span class="hljs-keyword">is</span>-TTY
+    <span class="hljs-keyword">if</span> file-exists history-file
+      (unlines . take MAX-HISTORY-SIZE) rl.history
+      |&gt; fs.write-file-sync history-file, _
+  rl.set-prompt <span class="hljs-string">"#prompt&gt; "</span>
+  rl.prompt!</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Start up a new <strong>node.js</strong> instance with the arguments in <code>--nodejs</code> passed
+to it, preserving the other options.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>!function fork-node
+  [, ...args] = process.argv
+
+  [ls-args, [, ...node-args]] = <span class="hljs-keyword">break</span>-list (<span class="hljs-keyword">in</span> &lt;[ --nodejs -n ]&gt;), args
+
+  <span class="hljs-built_in">require</span> <span class="hljs-string">'child_process'</span> .spawn <span class="hljs-keyword">do</span>
+    process.exec-path
+    node-args ++ ls-args
+    cwd: process.cwd!, stdio: <span class="hljs-string">'inherit'</span></pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
