@@ -355,3 +355,20 @@ for <[
   B.prototype.three B.prototype.four
 ]>
   ok compiled.indexOf(..) >= 0 "missing #{..}"
+
+# [LiveScript#923](https://github.com/gkz/LiveScript/issues/923)
+# The lexer was keeping some state associated with the for comprehension past
+# its extent, which resulted in an incorrect lexing of the subsequent `in`
+# token. These don't comprehensively exercise the underlying flaw; they're
+# just regression checks for this specific report.
+LiveScript.compile '''
+[1 for a]
+[b in c]
+'''
+LiveScript.compile '''
+[[{b: {[.., 1] for a}}]]
+->
+  if c
+    d
+      .e (.f in [2 3])
+'''

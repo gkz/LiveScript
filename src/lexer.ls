@@ -840,6 +840,7 @@ exports <<<
             @dedent @dents[*-1]
             return @pair it
         @unline!
+        @fclear!
         @closes.pop!
 
     #### Helpers
@@ -886,6 +887,9 @@ exports <<<
 
     fset: (key, val) !->
         @flags{}[@closes.length][key] = val
+
+    fclear: !->
+        @flags.splice @closes.length
 
     # Throws a syntax error with the current line number.
     carp: !-> carp it, @line
