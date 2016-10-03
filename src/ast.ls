@@ -2536,8 +2536,7 @@ class exports.Try extends Node
 class exports.Switch extends Node
     (@type, @topic, @cases, @default) ->
         if type is \match
-            @target = Arr topic if topic
-            @topic = null
+            @topic = Arr topic if topic
         else
             if topic
                 throw "can't have more than one topic in switch statement" if topic.length > 1
@@ -2571,8 +2570,8 @@ class exports.Switch extends Node
 
     compile-node: (o) ->
         {tab} = this
-        [target-node, target] = Chain @target .cache-reference o if @target
         topic = if @type is \match
+            [target-node, target] = Chain @topic .cache-reference o if @topic
             t = if target then [target-node] else []
             Block (t ++ [Literal \false]) .compile o, LEVEL_PAREN
         else
