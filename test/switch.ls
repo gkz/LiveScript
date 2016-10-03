@@ -273,3 +273,15 @@ match 1, 3, 3
 | 1, 1, 2 or 3 => ok 0
 | 1, 2 or 3, 3 => ok 1
 | _            => ok 0
+
+
+# [LiveScript#926](https://github.com/gkz/LiveScript/issues/926)
+# `match` wasn't binding `this` correctly in expression position
+o =
+  bar: 42
+  run: ->
+    foo:
+      match @bar
+      | (== 42) => true
+
+ok o.run!foo
