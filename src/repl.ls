@@ -3,7 +3,7 @@ require! {
   path
   fs
   util
-  'prelude-ls': {each, lines, unlines, take, keys, filter, dasherize, map}:prelude
+  'prelude-ls': {each, lines, unlines, take, dasherize}:prelude
 }
 
 file-exists = (path) ->
@@ -11,7 +11,6 @@ file-exists = (path) ->
     fs.stat-sync path
     true
 dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
-starts-with = (str) -> (.index-of(str) is 0)
 
 # A Read-Eval-Print-Loop.
 # Good for simple tests or poking around the
@@ -67,10 +66,37 @@ starts-with = (str) -> (.index-of(str) is 0)
       eval: !(code,ctx,, cb) ->
         try res = vm.run-in-new-context code, ctx, 'repl' catch
         cb e, res
-    rl.completer = (line, cb) ->
-      context-vars = map dasherize-vars, keys server.context
-      matches = filter (starts-with line), context-vars
-      cb null, [if matches.length then matches else context-vars, line]
+    rl.completer = (line, cb) !->
+      if analyze-for-completion line
+        {js, line-ends-in-dash, completed-from, last-part} = that
+      else
+        return cb null, [[], line]
+
+      e, [matches, _] <-! server.complete js
+      return cb e if e?
+
+      to-remove = js.length
+      incomplete-expr = line.substr completed-from
+      new-matches = for m in matches
+        if m is ''
+          # m is '' if the REPL engine thinks we should have a blank in the
+          # output. Indulge it.
+          m
+        else
+          completion = m.substr to-remove
+          if last-part?
+            completion-starts-word = completion is /^[A-Z]/
+            if line-ends-in-dash
+              continue unless completion-starts-word
+              completion = dasherize completion
+            else if last-part isnt /(^[^a-z])|[a-z][A-Z]/
+              completion = dasherize completion
+              if completion-starts-word
+                completion = '-' + completion
+          else
+            completion = dasherize-vars completion
+          incomplete-expr + completion
+      cb null, [new-matches, incomplete-expr]
 
   rl.on 'SIGCONT' rl.prompt
   rl.on 'SIGINT' !->
@@ -119,5 +145,64 @@ starts-with = (str) -> (.index-of(str) is 0)
         |> fs.write-file-sync history-file, _
   rl.set-prompt "#prompt> "
   rl.prompt!
+
+# Helper function used in REPL completion.
+# Returns an object with the following:
+#   js: The longest chain found at the end of `line`, as a JavaScript string
+#   last-part: The last part of this chain, in its original format
+#   completed-from: The position in `line` where this chain starts
+#   line-ends-in-dash: A boolean
+# Returns nothing if the line couldn't be analyzed and no attempt at completion
+# should be made.
+function analyze-for-completion line
+  line-ends-in-dash = line[*-1] is '-'
+  completed-from = line.length
+
+  try
+    # Adding Z is a hack to permit 'set-' to be completed with, for example,
+    # 'set-timeout', while still ensuring that something like '1-' gets
+    # completed with globals.
+    tokens = LiveScript.tokens(if line-ends-in-dash then line + 'Z' else line)
+  catch
+    return
+
+  if tokens.length == 0 then js = ''
+  else
+    # Clear out any stray terminating tokens
+    if tokens[*-1]0 is \NEWLINE then tokens.pop!
+    while (t = tokens[*-1]0) is \DEDENT or t is \)CALL then tokens.pop!
+
+    # Undo the Z hack
+    last-token = tokens[*-1]
+    if line-ends-in-dash
+      throw "unexpected token #{last-token.0}" unless last-token.0 is \ID
+      if last-token.1 is \Z
+        tokens.pop!
+        last-token = tokens[*-1]
+      else
+        last-token.1.=substr 0, last-token.1.length - 1
+
+    # There's nothing to complete after literals, unless we were in a list or
+    # object or something, but in that case the lexer will fail prior to this
+    # anyway.
+    return if last-token.0 is \STRNUM
+
+    js-parts = []
+    :token_loop while tokens.length
+      switch (token = tokens.pop!).0
+      case \ID \DOT
+        completed-from = token.3
+        # DOT can mean more than just . (it can also mean accessignment,
+        # semiautovivification, binding access, etc.).  But for completion
+        # purposes, replacing those fancy dots with plain . will do the right
+        # thing.
+        js-parts.unshift (if token.0 is \DOT then \. else token.1)
+      default break token_loop
+    js = js-parts.join ''
+
+    # Take from `line` because we want original format, not camelCased token.
+    last-part = line.substr last-token.3 if last-token.0 is \ID
+
+  {line-ends-in-dash, completed-from, js, last-part}
 
 module.exports = repl
