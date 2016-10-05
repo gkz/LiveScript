@@ -58,6 +58,7 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
     repl-ctx <<< global
     repl-ctx <<< {module, exports, require}
     repl-ctx <<< {LiveScript, path, fs, util, say, warn, die, p, pp, ppp}
+    var vm-error
     server = require 'repl' .REPLServer:: with
       context: repl-ctx
       commands: []
@@ -130,8 +131,19 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
         x  = vm.run-in-new-context LiveScript.compile(code, ops), repl-ctx, 'repl'
         repl-ctx <<< {_:x} if x?
         pp  x
-        say x if typeof x is 'function'
-    catch then say e
+    catch
+      vm-error ?:= vm.run-in-new-context 'Error' repl-ctx
+      unless e instanceof vm-error
+        # There's an odd little Node.js bug (I think it's a bug) where if code
+        # inside the child context throws something that isn't an Error or one
+        # of its subtypes, stdin gets all messed up and the REPL stops
+        # responding correctly to keypresses like up/down arrow. This fixes it,
+        # and I wish I had more of an explanation why than the old
+        # jiggle-it-until-it-works principle.
+        if typeof stdin.set-raw-mode is \function
+          stdin.set-raw-mode off
+          stdin.set-raw-mode on
+      say e
     reset!
   if stdin == process.stdin
     rl.on 'close' ->
