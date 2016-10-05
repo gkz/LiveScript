@@ -130,7 +130,6 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
         x  = vm.run-in-new-context LiveScript.compile(code, ops), repl-ctx, 'repl'
         repl-ctx <<< {_:x} if x?
         pp  x
-        say x if typeof x is 'function'
     catch then say e
     reset!
   if stdin == process.stdin
