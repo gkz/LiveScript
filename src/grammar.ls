@@ -341,9 +341,9 @@ bnf =
 
     # The various forms of property.
     KeyValue:
-        o 'Key'
+        o 'Key' -> $1.maybe-var!
         o 'LITERAL' -> Prop L(1,Key $1, $1 not in <[ arguments eval ]>), L 1 Literal $1
-        o 'Key     DOT KeyBase' -> Prop $3, Chain(            $1; [L 2 3 Index $3, $2])
+        o 'Key     DOT KeyBase' -> Prop $3, Chain( $1.maybe-var!; [L 2 3 Index $3, $2])
         o 'LITERAL DOT KeyBase' -> Prop $3, Chain(L 1 Literal $1; [L 2 3 Index $3, $2])
         o '{ Properties OptComma } LABEL' -> Prop L(5, Key $5), L(1, 4, Obj $2 .named $5)
         o '[ ArgList    OptComma ] LABEL' -> Prop L(5, Key $5), L(1, 4, Arr $2 .named $5)

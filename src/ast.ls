@@ -294,6 +294,7 @@ SourceNode::to-string = (...args) ->
     unparen       : THIS
     unwrap        : THIS
     maybe-key     : THIS
+    maybe-var     : THIS
     expand-slice  : THIS
     var-name      : String
     get-accessors : VOID
@@ -567,6 +568,8 @@ class exports.Key extends Node
     is-complex: NO
 
     assigns: -> it is @name
+
+    maybe-var: -> (Var @name) <<< {@line}
 
     var-name: ->
         {name} = this
