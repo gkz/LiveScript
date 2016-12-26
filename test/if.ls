@@ -146,6 +146,16 @@ if 1
 that if 6?
 ''', {+bare,-header}
 
+# Object shorthand `that`
+eq '''
+var that;
+if (that = result) {
+  ({
+    that: that
+  });
+}
+''', LiveScript.compile '{that} if result', {+bare,-header}
+
 # Soaks should not `that`-aware.
 a = [0 1]
 if 1

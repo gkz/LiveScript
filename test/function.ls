@@ -244,6 +244,21 @@ eq '''
 });
 ''', LiveScript.compile '-> @it', {+bare,-header}
 
+#899 Object shorthand `{it}` is `it`
+eq '''
+(function(it){
+  return {
+    it: it
+  };
+});
+''', LiveScript.compile '-> {it}', {+bare,-header}
+
+eq '''(function(it){
+  return {
+    it: it != null ? it : 'default'
+  };
+});
+''', LiveScript.compile '-> {it=\\default}', {+bare,-header}
 
 # Simple functions require no parens when comma-listed.
 funs = [->, -> 1, -> it, -> this, null]
