@@ -54,19 +54,37 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
       module.filename = process.cwd! + '/repl'
     vm = require 'vm'
     global <<< prelude if o.prelude
-    repl-ctx = {}
-    repl-ctx <<< global
-    repl-ctx <<< {module, exports, require}
-    repl-ctx <<< {LiveScript, path, fs, util, say, warn, die, p, pp, ppp}
     var vm-error
-    server = require 'repl' .REPLServer:: with
-      context: repl-ctx
-      commands: []
+    {REPLServer} = require 'repl'
+    server-options =
       use-global: true
       use-colors: process.env.NODE_DISABLE_COLORS
-      eval: !(code,ctx,, cb) ->
+      eval: (code, ctx,, cb) !->
         try res = vm.run-in-new-context code, ctx, 'repl' catch
         cb e, res
+    node-version = process.versions.node.split('.')
+    if +node-version.0 > 6 or +node-version.0 == 6 and +node-version.1 >= 4
+      # Tab completion breaks on Node.js >=6.4 with the code on the other
+      # branch.
+      class DummyStream extends (require 'stream')
+        readable: true
+        writable: true
+        resume: ->
+        write: ->
+      server = new REPLServer server-options <<<
+        stream: new DummyStream
+      repl-ctx = server.context
+    else
+      # Preserving the Node.js <6.4 code is perhaps overly conservative, but it
+      # has the look of delicate hacks that have been precariously balanced over
+      # the years.
+      repl-ctx = {}
+      repl-ctx <<< global
+      repl-ctx <<< {module, exports, require}
+      server = REPLServer:: with server-options <<<
+        context: repl-ctx
+        commands: []
+    repl-ctx <<< {LiveScript, path, fs, util, say, warn, die, p, pp, ppp}
     rl.completer = (line, cb) !->
       if analyze-for-completion line
         {js, line-ends-in-dash, completed-from, last-part} = that
