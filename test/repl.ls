@@ -37,13 +37,15 @@ stdout.on \data -> stdout-chunks.push it
 repl {} stdin, stdout
 
 # Initial setup of some vars so we aren't depending on (an exact set of)
-# builtins.
+# builtins. (z-prefix is for cases inspired by real builtins.)
 stdin.write '''
 alpha-bravo = 1
 alpha-charlie = 2
 one-two-three-four = 1234
 XXXXX_XXXX = {}
 delta-echo = a-foxtrot: true, a-golf: false, apple: \\red
+
+zdecode-URI = true
 
 '''.replace /\n/g, '\r\n'
 
@@ -100,6 +102,10 @@ eq tab-complete('set-timeout f, delta-echo.aF'), 'ls> set-timeout f, delta-echo.
 eq tab-complete('delta-echo.=to-s'), 'ls> delta-echo.=to-string'
 
 eq tab-complete('delta-echo~to-s'), 'ls> delta-echo~to-string'
+
+eq tab-complete('zdecode-'), 'ls> zdecode-URI'
+
+eq tab-complete('zdecode-U'), 'ls> zdecode-URI'
 
 stdin.end!
 

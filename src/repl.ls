@@ -3,13 +3,21 @@ require! {
   path
   fs
   util
-  'prelude-ls': {each, lines, unlines, take, dasherize}:prelude
+  'prelude-ls': {each, lines, unlines, take}:prelude
 }
 
 file-exists = (path) ->
   try
     fs.stat-sync path
     true
+
+# The dasherize in prelude-ls adds an extra '-' suffix to initial strings of
+# uppercase letters; we don't want this.
+dasherize = -> (it
+  .replace /([^-A-Z])([A-Z]+)/g, (, lower, upper) ->
+    "#{lower}-#{if upper.length > 1 then upper else upper.to-lower-case!}"
+  .replace /^([A-Z]+)/, (, upper) ->
+    if upper.length > 1 then upper else upper.to-lower-case!)
 dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
 
 # A Read-Eval-Print-Loop.
@@ -108,7 +116,7 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
             if line-ends-in-dash
               continue unless completion-starts-word
               completion = dasherize completion
-            else if last-part isnt /(^[^a-z])|[a-z][A-Z]/
+            else if last-part isnt /(^[^a-z])|[a-z-][A-Z]/
               completion = dasherize completion
               if completion-starts-word
                 completion = '-' + completion
