@@ -132,17 +132,18 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
         repl-ctx <<< {_:x} if x?
         pp  x
     catch
-      vm-error ?:= vm.run-in-new-context 'Error' repl-ctx
-      unless e instanceof vm-error
-        # There's an odd little Node.js bug (I think it's a bug) where if code
-        # inside the child context throws something that isn't an Error or one
-        # of its subtypes, stdin gets all messed up and the REPL stops
-        # responding correctly to keypresses like up/down arrow. This fixes it,
-        # and I wish I had more of an explanation why than the old
-        # jiggle-it-until-it-works principle.
-        if typeof stdin.set-raw-mode is \function
-          stdin.set-raw-mode off
-          stdin.set-raw-mode on
+      unless o.compile
+        vm-error ?:= vm.run-in-new-context 'Error' repl-ctx
+        unless e instanceof vm-error
+          # There's an odd little Node.js bug (I think it's a bug) where if code
+          # inside the child context throws something that isn't an Error or one
+          # of its subtypes, stdin gets all messed up and the REPL stops
+          # responding correctly to keypresses like up/down arrow. This fixes it,
+          # and I wish I had more of an explanation why than the old
+          # jiggle-it-until-it-works principle.
+          if typeof stdin.set-raw-mode is \function
+            stdin.set-raw-mode off
+            stdin.set-raw-mode on
       say e
     reset!
   if stdin == process.stdin
