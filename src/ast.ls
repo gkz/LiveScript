@@ -1012,7 +1012,7 @@ class exports.Obj extends List
             continue if node.comment
             if node instanceof [Prop, Splat]
                 node[name = node.children[*-1]] =
-                    chain = Chain base, [Index node[name]maybe-key!]
+                    chain = Chain base, [Index node[name]maybe-key!, symbol]
             else
                 # `o{k or v}` => `{k: a.k or v}`
                 node.=first if logic = node.get-default!
