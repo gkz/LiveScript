@@ -6,7 +6,6 @@ require! {
   'prelude-ls': {each, break-list}:prelude
   './options': {parse: parse-options, generate-help}
   './util': {name-from-path}
-  'source-map': {SourceNode}
 }
 
 version = LiveScript.VERSION
@@ -31,10 +30,12 @@ switch
 | o.version => say "LiveScript version #version"
 | o.help    => say generate-help interpolate: {version}
 | otherwise =>
-  valid-map-values = <[ none linked linked-src embedded debug ]>
-  if o.map not in valid-map-values
-    die "Option --map must be either: #{ valid-map-values.join ', ' }"
   o.run = not o.compile ||= o.output
+  if o.map?
+    valid-map-values = <[ none linked linked-src embedded debug ]>
+    if o.map not in valid-map-values
+      die "Option --map must be either: #{ valid-map-values.join ', ' }"
+  else o.map = if o.run or o.eval then 'embedded' else 'none'
 
   if args is process.argv
     process.argv.0 = process.argv.1
@@ -132,6 +133,7 @@ switch
       print = json or o.print
       t.output = LiveScript.compile t.input, {...options, +bare, run, print}
       LiveScript.emit 'run' t
+      require 'source-map-support' .install {+hook-require}
       t.result = LiveScript.run (if o.map is 'none' then t.output else t.output.code), options, do
           js: true
           context: o.run-context
