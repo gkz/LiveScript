@@ -97,4 +97,3 @@ module.exports = optionator do
           alias: 'm'
           type: 'String'
           description: "generate source maps - either: 'none', 'linked', 'linked-src', 'embedded', or 'debug'"
-          default: 'none'
