@@ -3,13 +3,21 @@ require! {
   path
   fs
   util
-  'prelude-ls': {each, lines, unlines, take, dasherize}:prelude
+  'prelude-ls': {each, lines, unlines, take}:prelude
 }
 
 file-exists = (path) ->
   try
     fs.stat-sync path
     true
+
+# The dasherize in prelude-ls adds an extra '-' suffix to initial strings of
+# uppercase letters; we don't want this.
+dasherize = -> (it
+  .replace /([^-A-Z])([A-Z]+)/g, (, lower, upper) ->
+    "#{lower}-#{if upper.length > 1 then upper else upper.to-lower-case!}"
+  .replace /^([A-Z]+)/, (, upper) ->
+    if upper.length > 1 then upper else upper.to-lower-case!)
 dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
 
 # A Read-Eval-Print-Loop.
@@ -54,19 +62,37 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
       module.filename = process.cwd! + '/repl'
     vm = require 'vm'
     global <<< prelude if o.prelude
-    repl-ctx = {}
-    repl-ctx <<< global
-    repl-ctx <<< {module, exports, require}
-    repl-ctx <<< {LiveScript, path, fs, util, say, warn, die, p, pp, ppp}
     var vm-error
-    server = require 'repl' .REPLServer:: with
-      context: repl-ctx
-      commands: []
+    {REPLServer} = require 'repl'
+    server-options =
       use-global: true
       use-colors: process.env.NODE_DISABLE_COLORS
-      eval: !(code,ctx,, cb) ->
+      eval: (code, ctx,, cb) !->
         try res = vm.run-in-new-context code, ctx, 'repl' catch
         cb e, res
+    node-version = process.versions.node.split('.')
+    if +node-version.0 > 6 or +node-version.0 == 6 and +node-version.1 >= 4
+      # Tab completion breaks on Node.js >=6.4 with the code on the other
+      # branch.
+      class DummyStream extends (require 'stream')
+        readable: true
+        writable: true
+        resume: ->
+        write: ->
+      server = new REPLServer server-options <<<
+        stream: new DummyStream
+      repl-ctx = server.context
+    else
+      # Preserving the Node.js <6.4 code is perhaps overly conservative, but it
+      # has the look of delicate hacks that have been precariously balanced over
+      # the years.
+      repl-ctx = {}
+      repl-ctx <<< global
+      repl-ctx <<< {module, exports, require}
+      server = REPLServer:: with server-options <<<
+        context: repl-ctx
+        commands: []
+    repl-ctx <<< {LiveScript, path, fs, util, say, warn, die, p, pp, ppp}
     rl.completer = (line, cb) !->
       if analyze-for-completion line
         {js, line-ends-in-dash, completed-from, last-part} = that
@@ -90,7 +116,7 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
             if line-ends-in-dash
               continue unless completion-starts-word
               completion = dasherize completion
-            else if last-part isnt /(^[^a-z])|[a-z][A-Z]/
+            else if last-part isnt /(^[^a-z])|[a-z-][A-Z]/
               completion = dasherize completion
               if completion-starts-word
                 completion = '-' + completion
@@ -132,17 +158,18 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
         repl-ctx <<< {_:x} if x?
         pp  x
     catch
-      vm-error ?:= vm.run-in-new-context 'Error' repl-ctx
-      unless e instanceof vm-error
-        # There's an odd little Node.js bug (I think it's a bug) where if code
-        # inside the child context throws something that isn't an Error or one
-        # of its subtypes, stdin gets all messed up and the REPL stops
-        # responding correctly to keypresses like up/down arrow. This fixes it,
-        # and I wish I had more of an explanation why than the old
-        # jiggle-it-until-it-works principle.
-        if typeof stdin.set-raw-mode is \function
-          stdin.set-raw-mode off
-          stdin.set-raw-mode on
+      unless o.compile
+        vm-error ?:= vm.run-in-new-context 'Error' repl-ctx
+        unless e instanceof vm-error
+          # There's an odd little Node.js bug (I think it's a bug) where if code
+          # inside the child context throws something that isn't an Error or one
+          # of its subtypes, stdin gets all messed up and the REPL stops
+          # responding correctly to keypresses like up/down arrow. This fixes it,
+          # and I wish I had more of an explanation why than the old
+          # jiggle-it-until-it-works principle.
+          if typeof stdin.set-raw-mode is \function
+            stdin.set-raw-mode off
+            stdin.set-raw-mode on
       say e
     reset!
   if stdin == process.stdin
