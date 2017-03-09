@@ -1863,10 +1863,11 @@ class exports.Existence extends Node implements Negatable
     compile-node: (o) ->
         node = @it.unwrap! <<< {@front}
         code = [(node.compile o, LEVEL_OP + PREC\==)]
+        if @do-anaphorize
+            o.scope.declare \that Var \that
         if node instanceof Var and not o.scope.check code.join(""), true
             [op, eq] = if @negated then <[ || = ]> else <[ && ! ]>
             if @do-anaphorize
-                o.scope.declare 'that' Var \that
                 [anaph-pre, anaph-post] = if @negated
                     then [["(that = undefined) || "], []]
                     else [[], [" && (that = ", ...code, ", true)"]]
