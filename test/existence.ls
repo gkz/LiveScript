@@ -266,3 +266,6 @@ val = do ->
     while existent? and i--
         that
 eq val.join(' '), '5 4 3 2 1'
+
+# Ensure `var that` is declared even if the tested variable exists
+eq 'var a, that, b;\na = 0;\nif ((that = a) != null) {\n  b = that;\n}', LiveScript.compile 'a = 0; b = that if a?' {+bare,-header}
