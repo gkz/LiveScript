@@ -41,18 +41,6 @@ sn-remove-left = (node, count) ->
         if count <= 0
             return 0
     count
-sn-autofill = (node, parents = []) ->
-    if node instanceof SourceNode
-        if node.line
-            for p in parents
-                p.line = node.line
-                p.column = node.column
-            parents.length = 0
-        else
-            parents.push node
-        for child in node.children
-            sn-autofill child, parents
-    node
 
 SourceNode::replace = (...args) ->
     new SourceNode @line, @column, @source, [..replace(...args) for @children], @name
