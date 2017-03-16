@@ -1148,11 +1148,7 @@ class exports.Prop extends Node
             @val.=first
             @logic = that <<< first: null
 
-        if assign and @key instanceof Splat
-            # `{...a} = b` => `a = {} <<< b.a`
-            @key.it = @val.extract-key-ref o, true
-        else
-            @key ?= @val.extract-key-ref o, assign
+        @key ?= @val.extract-key-ref o, assign
 
 #### Arr
 # `[x, y]`
@@ -1759,15 +1755,24 @@ class exports.Assign extends Node
         ret
 
     rendObj: (o, nodes, rite) ->
+        keys = []
+        pairs = []
+        rvar = Var rite
         for {key, val: lval, logic} in nodes
-            # `a{...b} = c` => `a.b = {} <<< c.b`
-            key.=it if splat = key instanceof Splat
             lval.=unparen!
-            # `{a or b} = c` => `a = c.a or b`
-            lval = logic <<< first: lval if logic
-            val  = Chain rcache||=Var(rite), [Index key]
-            val  = Import Obj!, val if splat
-            (this with {left: lval, right: val, +void})compile o, LEVEL_PAREN
+            if key instanceof Splat
+                logic? and @carp "invalid assign"
+                excludes = Obj [Prop ..extract-key-ref(o, true, this), Literal 0 for keys]
+                val = Chain Var(util \copyWithout) .add Call [rvar, excludes]
+            else
+                keys.push key
+                # `{a or b} = c` => `a = c.a or b`
+                lval = logic <<< first: lval if logic
+                val  = Chain rvar, [Index key]
+            # Defer compilation because keys might be mutated by a later splat
+            pairs.push [lval, val]
+        for [left, right] in pairs
+            (this with {left, right, +void, temps:[]})compile o, LEVEL_PAREN
 
     rewrite-shorthand: (o, assign) !->
         # Special logic for `[a = b] = c` meaning the same thing as `[a ? b] = c`
@@ -2198,11 +2203,15 @@ class exports.Parens extends Node
 
     maybe-key: THIS
 
-    extract-key-ref: (o, assign) ->
+    extract-key-ref: (o, assign, temp-owner) ->
+        # When assigning to an object splat, the lifetimes of the temporary
+        # variables used for dynamic keys have to be extended.
+        if temp-owner? and (v = @it) instanceof Var and delete v.temp
+            temp-owner[]temps.push v.value
         if @it instanceof Chain and assign
             # `{(a.b.c)} = d` => `(ref$ = a.b).c = d[ref$.c]`
             [@it, ref] = @it.cache-reference o
-            return ref
+            return Parens ref
         # `a{(++i)}` => `{(ref$ = ++i): a[ref$]}`
         [key, val] = @it.cache o, true
         # `a{(++i)} = b` => `{(ref$): a[ref$ = ++i]} = b`
@@ -3065,6 +3074,11 @@ UTILS =
     }'''
     import-all: '''function(obj, src){
       for (var key in src) obj[key] = src[key];
+      return obj;
+    }'''
+    copy-without: '''function(src, ex){
+      var obj = {}, own = {}.hasOwnProperty;
+      for (var key in src) if (own.call(src, key) && !own.call(ex, key)) obj[key] = src[key];
       return obj;
     }'''
 

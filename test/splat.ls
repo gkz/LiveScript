@@ -38,12 +38,19 @@ eq a, 0
 eq b, 4
 
 
-o = x: {0}, (y = 1): {2}
-{...x, ...(y)} = o
-eq x[0], 0
-eq y[2], 2
-ok x is not o.x , 'should copy o.x'
-ok y is not o[y], 'should copy o[y]'
+o = a: 1 b: 2 (y = \e): 3 p: 4 q: 5
+{a, b: c, (y): d, ...x, ...(y)} = o
+eq 1 a
+eq 2 c
+eq 3 d
+eq 4 x.p
+eq 4 y.p
+eq 5 x.q
+eq 5 y.q
+ok not x.a?, 'should exclude o.a'
+ok not y.a?, 'should exclude o.a'
+ok not x.e?, 'should exclude o[y]'
+ok not y.e?, 'should exclude o[y]'
 
 
 compileThrows 'multiple splat in an assignment' 1 '[...a, ...b] = c'
