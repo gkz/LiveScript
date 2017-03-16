@@ -253,6 +253,12 @@ compile-throws 'invalid property shorthand' 1 '{{0}}'
 
 compile-throws 'invalid property flag shorthand' 1 '{+a.b}'
 
+# Don't permit the label syntax outside of patterns
+compile-throws 'unexpected label' 1 '[0 1]:k'
+compile-throws 'unexpected label' 1 '{a}:k'
+compile-throws 'unexpected label' 1 '{[0 1]:k}'
+compile-throws 'unexpected label' 1 '{k0:[0 1]:k1}'
+
 #### Implicit/Braceless
 
 config =

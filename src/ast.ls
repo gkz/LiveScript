@@ -1058,6 +1058,7 @@ class exports.Obj extends List
     as-obj: THIS
 
     compile-node: (o) ->
+        @carp "unexpected label" if @name?
         {items} = this
         return sn(this, if @front then '({})' else '{}') unless items.length
         code = []
@@ -1163,6 +1164,7 @@ class exports.Arr extends List
     as-obj: -> Obj([Prop Literal(i), item for item, i in @items])
 
     compile: (o) ->
+        @carp "unexpected label" if @name?
         {items} = this
         return sn(this, '[]') unless items.length
         unless sn-empty(code = Splat.compile-array o, items)

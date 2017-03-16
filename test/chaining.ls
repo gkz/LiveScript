@@ -140,6 +140,10 @@ compile-throws 'value in object slice is not a key' 1 'a{b.c}'
 compile-throws 'value in object slice is not a key' 1 'a{b: c.d}'
 compile-throws 'value in object slice is not a key' 1 'a{b: c.d ? 0}'
 
+# Don't permit the label syntax outside of patterns
+compile-throws 'unexpected label' 1 'foo{[0 1]:k}'
+compile-throws 'unexpected label' 1 'foo{k0:[0 1]:k1}'
+
 if 0 then @front{ne,ss}
 
 x = 3
