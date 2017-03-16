@@ -341,7 +341,7 @@ bnf =
 
     # The various forms of property.
     KeyValue:
-        o 'Key' -> $1.maybe-var!
+        o 'Key' -> Prop null, $1.maybe-var!
         o 'LITERAL' -> Prop L(1,Key $1, $1 not in <[ arguments eval ]>), L 1 Literal $1
         o 'Key     DOT KeyBase' -> Prop $3, Chain( $1.maybe-var!; [L 2 3 Index $3, $2])
         o 'LITERAL DOT KeyBase' -> Prop $3, Chain(L 1 Literal $1; [L 2 3 Index $3, $2])
@@ -352,13 +352,13 @@ bnf =
         o 'Key : INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($4)
 
         o 'KeyValue'
-        o 'KeyValue LOGIC Expression'  -> L 2 Binary $2, $1, $3
-        o 'KeyValue ASSIGN Expression' -> L 2 Binary $2, $1, $3, true
+        o 'KeyValue LOGIC Expression'  -> $1 .add-logic $2, $3
+        o 'KeyValue ASSIGN Expression' -> $1 .add-logic $2, $3, true
 
-        o '+- Key'     -> Prop $2.maybe-key!   , L 1 Literal $1 is '+'
+        o '+- Key'     -> Prop $2                , L 1 Literal $1 is '+'
         o '+- LITERAL' -> Prop L(2, Key $2, true), L 1 Literal $1 is '+'
 
-        o '... Expression' -> Splat $2
+        o '... Expression' -> Prop Splat!, $2
 
         o 'COMMENT' -> JS $1, true true
     # Properties within an object literal can be separated by
