@@ -120,7 +120,7 @@ eq '2,3', '' + {2,3}<[2 3]>
 eq '-Infinity,Infinity', '' + Number[\NEGATIVE_INFINITY, \POSITIVE_INFINITY]
 
 k = \y
-o = {\x \y \z}{x, (k), 2: z}
+o = {\x \y \z}{x, (k[0]), 2: z}
 eq \x o.x
 eq \y o.y
 eq \z o.2
@@ -134,6 +134,11 @@ compileThrows 'calling a slice' 1 'a{0}()'
 
 compileThrows 'empty slice' 1 'o{}'
 compileThrows 'empty slice' 1 'o[,,]'
+
+compile-throws 'value in object slice is not a key' 1 'a{b: x + y}'
+compile-throws 'value in object slice is not a key' 1 'a{b.c}'
+compile-throws 'value in object slice is not a key' 1 'a{b: c.d}'
+compile-throws 'value in object slice is not a key' 1 'a{b: c.d ? 0}'
 
 if 0 then @front{ne,ss}
 

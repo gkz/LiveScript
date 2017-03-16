@@ -241,6 +241,8 @@ compileThrows 'duplicate property "a"' 1 '{a, b, a}'
 compileThrows 'duplicate property "0"' 1 '{0, "0"}'
 compileThrows 'duplicate property "1"' 1 '{1, 1.0}'
 
+compile-throws 'invalid property shorthand' 1 '{1 xor 0}'
+compile-throws 'invalid property shorthand' 1 '{a.b xor 0}'
 
 #### Implicit/Braceless
 

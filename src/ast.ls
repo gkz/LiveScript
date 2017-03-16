@@ -998,22 +998,27 @@ class exports.Obj extends List
             ref = base
         for node, i in items
             continue if node.comment
-            if node instanceof [Prop, Splat]
-                node[name = node.children[*-1]] =
-                    chain = Chain base, [Index node[name]maybe-key!, symbol]
+            if in-place = node instanceof [Prop, Splat]
+                val = node[name = node.children[*-1]]
+            else val = node
+            # `o{k or v}` => `{k: o.k or v}`
+            val.=first if logic = val.get-default!
+            val instanceof [Literal, Var, Parens, List] or @carp "value in object slice is not a key"
+            if keyless-paren = (val instanceof Parens and not (node instanceof Prop))
+                # `a{(++i)}` => `{(ref$ = ++i): a[ref$]}`
+                [key, val] = val.cache o, true
+                # `a{(++i)} = b` => `{(ref$): a[ref$ = ++i]} = b`
+                #                => `a[ref$ = ++i] = b[ref$]`
+                [key, val] = [val, key] if assign
+                key = Parens key
+                val = Parens val unless val instanceof Parens
+            else key = val
+            val = chain = Chain base, [Index val.maybe-key!, symbol]
+            val = logic <<< first: val if logic
+            if in-place
+                val = Prop key, val if keyless-paren
+                node[name] = val
             else
-                # `o{k or v}` => `{k: a.k or v}`
-                node.=first if logic = node.get-default!
-                if node instanceof Parens
-                    # `a{(++i)}` => `{(ref$ = ++i): a[ref$]}`
-                    [key, node] = node.cache o, true
-                    # `a{(++i)} = b` => `{(ref$): a[ref$ = ++i]} = b`
-                    #                => `a[ref$ = ++i] = b[ref$]`
-                    [key, node] = [node, key] if assign
-                    key = Parens key
-                else key = node
-                val = chain = Chain base, [Index node.maybe-key!, symbol]
-                val = logic <<< first: val if logic
                 items[i] = Prop key, val
             base = ref
         chain or @carp 'empty slice'
@@ -1053,8 +1058,9 @@ class exports.Obj extends List
                 else
                     val.rip-name key
                     code.push (key.=compile o), ": ", (val.compile o, LEVEL_LIST)
-            else
+            else if node instanceof [Key, Var, Literal]
                 code.push (key = node.compile o), ": ", key
+            else @carp "invalid property shorthand"
             # Canonicalize the key, e.g.: `0.0` => `0`
             ID.test key or key = do Function "return #key"
             node.carp "duplicate property \"#key\"" unless dic"#key." .^.= 1

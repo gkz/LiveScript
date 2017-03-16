@@ -318,6 +318,11 @@ a.reverse![--i, --i].=reverse!
 eq 0 a.0
 eq 1 a.1
 
+i = 0
+cache-me = -> i += 1
+o{...(cache-me!)} = {1: a: 9}
+eq 1 i
+eq 9 o.1.a
 
 ### Destructuring Default
 new
@@ -332,7 +337,7 @@ new
   eq a * b * @p, 30
 
   @a = @b = @c = void
-  @{a ? 2, \b ? 3, ([\c]) ? 5} = {}
+  @{a ? 2, \b ? 3, d: ([\c]) ? 5} = {}
   eq @a * @b * @c, 30
 
   @a = @b = @c = void
@@ -346,6 +351,21 @@ new
   @a = @b = @c = void
   @{a &&= 2, b ||= 3} = {a: 99}
   eq @a * @b, 6
+
+# The use of splats and property defaults together in a slice assignment is not
+# intended to be a common pattern (HUGE UNDERSTATEMENT); nevertheless, if it
+# doesn't produce an error, it should not do something crazy like cause the
+# current value of o[cache-me!] to be used as the key into the RHS.
+#
+# I'm mostly counting on object splats changing per gkz/LiveScript#941 before
+# this ever comes up, which is why this is the only test of these features
+# interacting this way.
+i = 0
+o = 1: \bad
+cache-me = -> i += 1
+o{...(cache-me!) ? i} = {0: a: 0; 1: a: 9; bad: a: 666}
+eq 1 i
+eq 9 o.1.a
 
 ### Compound/Conditional Destructuring
 a = b = c = null
@@ -421,7 +441,7 @@ eq \HELLO 'hello'.to-upper-case!
 ### Ill-shadow Protection
 compileThrows 'accidental shadow of "a"' 4 '''
   a = 1
-  let 
+  let
     a := 2
     a  = 3
 '''
