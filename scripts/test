@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 (function() {
+  require('source-map-support').install({ hookRequire: true });
   var fs = require("fs");
   var path = require("path");
   var assert = require("assert");
@@ -46,9 +47,14 @@
   };
 
   global.compileThrows = function(msg, lno, code){
-    throws(msg + " on line " + lno, function(){
-      LiveScript.compile(code);
-    });
+    try {
+      throws(msg + " on line " + lno, function(){
+        LiveScript.compile(code);
+      });
+    } catch (e) {
+      e.code = code;
+      throw e;
+    }
   };
 
   var activeCommandTests = 0;
@@ -163,7 +169,7 @@
 
     try {
       console.log(filename);
-      LiveScript.run(code, { filename: filename });
+      LiveScript.run(code, { filename: filename, map: 'embedded' });
     } catch (e) {
       ++failedTests;
 
@@ -184,17 +190,23 @@
       if ((ref = RegExp(filename + ":(\\d+):(\\d+)\\)?$", "m").exec(stk)) != null) {
         row = ref[1];
         col = ref[2];
+      } else if ((ref = RegExp(filename + "(js):(\\d+):(\\d+)\\)?$", "m").exec(stk)) != null) {
+        row = ref[1];
+        col = ref[2];
+        code = LiveScript.compile(code, {
+          bare: true
+        });
       }
 
       if (row && col) {
         console.error(tint(msg + "\n" + red + "at " + filename + ":" + row-- + ":" + col--, red));
-        code = LiveScript.compile(code, {
-          bare: true
-        });
       } else if (that = /\bon line (\d+)\b/.exec(msg)) {
         console.error(tint(msg, red));
         row = that[1] - 1;
         col = 0;
+        if (e.code) {
+          code = e.code;
+        }
       } else {
         console.error(stk);
         return;
