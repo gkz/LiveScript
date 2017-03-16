@@ -118,7 +118,7 @@
       }
   };
 
-  process.on("exit", function(){
+  process.on("beforeExit", function(){
       var printResults = function() {
           var time = ((Date.now() - startTime) / 1e3).toFixed(2);
           var message = "passed " + passedTests + " tests in " + time + " seconds";
@@ -131,10 +131,12 @@
             process.exit(1);
           }
       };
+      var waitCountdown = 200; // wait at most one second
       var check = function() {
-          if (activeCommandTests > 0) {
-              setTimeout(wait, 5);
+          if (activeCommandTests > 0 && waitCountdown-- > 0) {
+              setTimeout(check, 5);
           } else {
+              failedTests += activeCommandTests;
               printResults();
           }
       };
