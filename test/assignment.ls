@@ -402,6 +402,34 @@ eq b, \b
 eq c, \c
 eq d, e.0
 
+o = {}
+p = x: 1
+{x: o.a} = p
+eq 1 o.a
+{y: o.a ? 2} = p
+eq 2 o.a
+
+new
+  o = a: {b: 1 c: 2}
+  @{a: {b: d, c: e}:f} = o
+  eq 1 @d
+  eq 2 @e
+  eq 1 f.b
+  eq 2 f.c
+
+  g = b: 3 c: 4
+  @{{b: d, c: e}:f ? g} = o
+  eq 3 @d
+  eq 4 @e
+  eq 3 f.b
+  eq 4 f.c
+
+  @{{b: d, c: e}:a ? g} = o
+  eq 1 @d
+  eq 2 @e
+  eq 1 a.b
+  eq 2 a.c
+
 
 ### Unary Assign
 o = {}

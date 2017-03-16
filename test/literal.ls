@@ -204,17 +204,21 @@ eq obj.class + obj.function, 'hotdog'
 
 # Property shorthands.
 new
-  a = 0; @b = 1; x = {a, @b, 2, \3, +4, -5}
+  @go = -> far: c: 6, x: 7
+  a = 0; @b = 1; d = \x; x = {a, @b, 2, \3, +4, -5, @go!far.c, @go!far[d]}
   eq x.a, 0
   eq x.b, 1
   eq x.2, 2
   eq x.3, \3
   eq x.4, true
   eq x.5, false
-  c = null; d = 0; y = {a || 1, @b && 2, c ? 3}
+  eq x.c, 6
+  eq x.x, 7
+  c = null; d = 0; y = {a || 1, @b && 2, c ? 3, @go!far.d = 4}
   eq y.a, 1
   eq y.b, 2
   eq y.c, 3
+  eq y.d, 4
   z = {true, false, on, off, yes, no, null, void, this, arguments, eval, -super, +debugger}
   eq z.true      , true
   eq z.false     , false
@@ -243,6 +247,11 @@ compileThrows 'duplicate property "1"' 1 '{1, 1.0}'
 
 compile-throws 'invalid property shorthand' 1 '{1 xor 0}'
 compile-throws 'invalid property shorthand' 1 '{a.b xor 0}'
+
+compile-throws 'invalid property shorthand' 1 '{[0]}'
+compile-throws 'invalid property shorthand' 1 '{{0}}'
+
+compile-throws 'invalid property flag shorthand' 1 '{+a.b}'
 
 #### Implicit/Braceless
 
@@ -364,6 +373,7 @@ o = splat: 'me'
 obj = {
   /* leading comment  */
   (4 * 2): 8
+  +(6 * 7)
   /* cached shorthand */
   (++i)
   (--i) or 'default value'
@@ -381,6 +391,7 @@ obj = {
 }
 eq obj.interpolated.nested[123], 456
 eq obj[8], 8
+eq obj[42], true
 eq obj[1], 1
 eq obj[0], 'default value'
 eq obj.splat  , 'me'

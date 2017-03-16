@@ -293,7 +293,6 @@ SourceNode::to-string = (...args) ->
     unparen       : THIS
     unwrap        : THIS
     maybe-key     : VOID
-    maybe-var     : THIS
     var-name      : String
     get-accessors : VOID
     get-call      : VOID
@@ -542,7 +541,7 @@ class exports.Literal extends Atom
         else
             super ...
 
-    maybe-key: -> if ID.test @value then Key @value else this
+    maybe-key: -> if ID.test @value then Key @value, @value not in <[arguments eval]> else this
 
     compile: (o, level ? o.level) ->
         switch val = "#{@value}"
@@ -587,8 +586,6 @@ class exports.Key extends Node
     assigns: -> it is @name
 
     maybe-key: THIS
-
-    maybe-var: -> (Var @name) <<< {@line}
 
     var-name: ->
         {name} = this
@@ -929,6 +926,9 @@ class exports.Chain extends Node
             i = -1
         this
 
+    extract-key-ref: (o, assign) ->
+        @tails[*-1]?key?extract-key-ref o, assign or super ...
+
 #### Call
 # `x(y)`
 class exports.Call extends Node
@@ -1030,7 +1030,7 @@ class List extends Node
         for item, i in items when not item.comment
             if is-obj
                 {val} = item
-                unless val instanceof [List, Parens]
+                unless val instanceof List
                     val.=maybe-key! or @carp "value in object slice is not a key"
             else
                 val = item
@@ -1047,6 +1047,8 @@ class List extends Node
         chain or @carp 'empty slice'
         @.[]temps.push temps.0 if temps
         this
+
+    extract-key-ref: -> if @name? then Key that else super ...
 
 #### Obj
 # `{x: y}`
@@ -1103,14 +1105,6 @@ class exports.Prop extends Node
                 fun.x = if fun.hushed = fun.params.length then \s else \g
             this <<< {\accessor}
 
-    add-logic: (op, value, assign) ->
-        if assign
-            binop = CopyL op, Assign @val, value, op
-        else
-            binop = CopyL op, Binary op, @val, value
-            binop.get-default! or @carp "invalid property shorthand"
-        CopyL this, Prop @key, binop
-
     children: <[ key val logic ]>
 
     show: -> @accessor
@@ -1141,6 +1135,11 @@ class exports.Prop extends Node
 
         # Special logic for `{a = b}` meaning the same thing as `{a ? b}`
         @val.=maybe-logic! if not @key? and @val instanceof Assign
+
+        # `{+flag}`
+        if not @key? and @val instanceof Unary and @val.op in <[+ -]>
+            @key = @val.it.maybe-key! or @carp "invalid property flag shorthand"
+            @val = Literal @val.op is \+
 
         # Pull logical operators out of the value so that, e.g., slicing
         # doesn't have to think about them
@@ -2167,6 +2166,8 @@ class exports.Super extends Node
             return sn(this, that, ".superclass") if o.scope.fun?name
         sn(this, \superclass)
 
+    maybe-key: -> Key \super true
+
 #### Parens
 # An extra set of parentheses,
 # specifying evaluation order and/or forcing expression.
@@ -2192,6 +2193,8 @@ class exports.Parens extends Node
         if it.is-statement!
         then it.compile-closure o
         else sn(null, sn(@lb, "("), (it.compile o, LEVEL_PAREN), sn(@rb, ")"))
+
+    maybe-key: THIS
 
     extract-key-ref: (o, assign) ->
         if @it instanceof Chain and assign
