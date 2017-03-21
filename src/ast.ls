@@ -3092,7 +3092,7 @@ UTILS =
       var first = true;
       return eq(x, y, []);
       function eq(a, b, stack) {
-        var className, length, size, result, alength, blength, r, key, ref, sizeB;
+        var className, length, size, result, alength, blength, key, ref, sizeB;
         if (a == null || b == null) { return a === b; }
         if (a.__placeholder__ || b.__placeholder__) { return true; }
         if (a === b) { return a !== 0 || 1 / a == 1 / b; }
