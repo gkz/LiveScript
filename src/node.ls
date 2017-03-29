@@ -9,11 +9,10 @@ module.exports = !(LiveScript) ->
     LiveScript.run = (code, {filename}:options?, {js, context} = {}) ->
         {main} = require
         # Hack for relative `require`.
-        if filename
-            dirname = path.dirname fs.realpath-sync do
-                filename = process.argv.1 = path.resolve filename
+        dirname = if filename
+            path.dirname fs.realpath-sync filename |>= path.resolve
         else
-            dirname = filename = '.'
+            filename = '.'
         main.paths = main.constructor._node-module-paths dirname
         main <<< {filename}
         unless js

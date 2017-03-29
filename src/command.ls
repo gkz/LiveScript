@@ -37,14 +37,6 @@ switch
       die "Option --map must be either: #{ valid-map-values.join ', ' }"
   else o.map = if o.run or o.eval then 'embedded' else 'none'
 
-  if args is process.argv
-    process.argv.0 = process.argv.1
-    to-insert = if o.stdin
-      positional
-    else
-      if o.run then positional.splice 1 9e9 else []
-    process.argv.splice 2, 9e9, ...to-insert
-
   if o.require
     {filename} = module
     module.filename = '.'
