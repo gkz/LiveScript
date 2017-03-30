@@ -278,8 +278,6 @@ bnf =
         # The function literal can be either anonymous with `->`,
         o 'PARAM( ArgList OptComma )PARAM -> Block'
         , -> Fun $2, $6, /~/.test($5), /--|~~/.test($5), /!/.test($5), /\*/.test($5), />>/.test($5)
-        o 'ASYNC PARAM( ArgList OptComma )PARAM -> Block'
-        , -> Fun $3, $7, /~/.test($6), /--|~~/.test($6), /!/.test($6), false, true
         # or named with `function`.
         o 'FUNCTION CALL( ArgList OptComma )CALL Block' -> (Fun $3, $6).named $1
         o 'GENERATOR CALL( ArgList OptComma )CALL Block'

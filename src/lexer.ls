@@ -1036,7 +1036,7 @@ character = if not JSON? then uxxxx else ->
         case tag is 'ID' and val is 'async'
             next = tokens[i + 1]
             switch next.0
-            | 'PARAM(', 'FUNCTION' => token.0 = 'ASYNC'
+            | 'FUNCTION' => token.0 = 'ASYNC'
             | 'GENERATOR' => carp 'named generator cannot be async' line
         prev = token
         continue
