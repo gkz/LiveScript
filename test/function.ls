@@ -532,6 +532,38 @@ let this = eq
   this eq, this
 
 
+### Implicit `let` blocks (https://github.com/gkz/LiveScript/issues/962)
+a = 0
+b = 1
+if true
+  a = 2
+  let a = 123, b = 456, never-defined-globally = 789
+  eq 123 a
+  eq 456 b
+  eq 789 never-defined-globally
+eq 2 a
+eq 1 b
+ok not never-defined-globally?
+
+if true
+  let var never-defined-globally
+  if true
+    never-defined-globally = 1
+  eq 1 never-defined-globally
+ok not never-defined-globally?
+
+let
+  const foo = 12
+  eq 12 foo
+  if true
+    let const foo = 34
+    eq 34 foo
+    let const foo = 56
+      eq 56 foo
+    eq 34 foo
+  eq 12 foo
+
+
 ### `&`
 let 0
   eq & , arguments

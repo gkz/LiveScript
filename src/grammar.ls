@@ -66,7 +66,7 @@ bnf =
 
         o 'Chain ?' -> Chain L 1 2 Existence $1.unwrap!
 
-        o 'LET CALL( ArgList OptComma )CALL Block' -> Chain L 1 5 Call.let $3, $6
+        o 'LET CALL( ArgList OptComma )CALL Block' -> Chain L 1 5 Let $1, $3, $6, yylineno + 1
 
         o '[ Expression LoopHeads ]'
         , -> Chain L 1 4 ($3.0.make-comprehension $2, $3.slice 1)
@@ -195,6 +195,9 @@ bnf =
         o '...' -> Throw L 1 JS "Error('unimplemented')"
 
         o 'REQUIRE Chain'   -> Require $2.unwrap!
+
+        # `let` without a body
+        o 'LET CALL( ArgList OptComma )CALL' -> Let $1, $3, , yylineno + 1
 
     # An indented block of expressions.
     # Note that [Lexer](#lexer) rewrites some single-line forms into blocks.

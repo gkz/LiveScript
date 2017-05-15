@@ -2931,7 +2931,17 @@ exports.Box = (v) ->
     else
         new v.constructor(v)
 
-exports.Decl = (type, nodes, lno) ->
+exports.Let = (type, args, body, lno) ->
+    unless body?
+        bodyless = true
+        body = Block!
+    if type in <[ letvar letconst ]>
+        d = Decl type.substr(3), args, lno
+        body.prepend ...if d.lines? then that else [d]
+        args = []
+    with Call.let args, body then ..back = body if bodyless
+
+exports.Decl = Decl = (type, nodes, lno) ->
     throw SyntaxError "empty #type on line #lno" unless nodes.0
     DECLS[type] nodes
 
