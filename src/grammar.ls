@@ -56,13 +56,11 @@ bnf =
     # The types of things that can be accessed or called into.
     Chain:
         o 'ID'            -> Chain L 1 Var $1
-        o 'Parenthetical' -> Chain $1
+        o 'KeyLike'       -> Chain $1
         o 'List'          ditto
-        o 'STRNUM'        -> Chain L 1 Literal $1
-        o 'LITERAL'       ditto
+        o 'LITERAL'       -> Chain L 1 Literal $1
 
-        o 'Chain DOT Key'  -> $1.add L 2 3 Index $3, $2, true
-        o 'Chain DOT List' ditto
+        o 'Chain Index'       -> $1.add $2
 
         o 'Chain CALL( ArgList OptComma )CALL' -> $1.add L 2 5 Call $3
 
@@ -139,6 +137,15 @@ bnf =
         o 'FOR  Expression Block'
         , -> Chain L 1 2 new For(kind: $1, source: $2, body: $3, ref: true).add-body $3
 
+    KeyLike:
+        o 'STRNUM' -> Literal $1
+        o 'Parenthetical'
+
+    Index:
+        o 'DOT ID'      -> Index (L 2 Key $2), $1, true
+        o 'DOT KeyLike' -> Index           $2, $1, true
+        o 'DOT List'    ditto
+
     # An array or object
     List:
         o '[ ArgList    OptComma ]' -> Arr $2
@@ -146,14 +153,6 @@ bnf =
       # can be labeled to perform named destructuring.
         o '[ ArgList    OptComma ] LABEL' -> Arr $2 .named $5
         o '{ Properties OptComma } LABEL' -> Obj $2 .named $5
-
-    # **Key** represents a property name, before `:` or after `.`.
-    Key:
-        o 'KeyBase'
-        o 'Parenthetical'
-    KeyBase:
-        o 'ID'     -> Key     $1
-        o 'STRNUM' -> Literal $1
 
     # **ArgList** is either the list of objects passed into a function call,
     # the parameter list of a function, or the contents of an array literal
@@ -339,26 +338,17 @@ bnf =
         o         'Expression' -> [$1]
         o 'Exprs , Expression' -> $1 ++ $3
 
+    KeyColon:
+        o 'ID :' -> Key $1
+        o 'KeyLike :' -> $1
+
     # The various forms of property.
-    KeyValue:
-        o 'Key' -> $1.maybe-var!
-        o 'LITERAL' -> Prop L(1,Key $1, $1 not in <[ arguments eval ]>), L 1 Literal $1
-        o 'Key     DOT KeyBase' -> Prop $3, Chain( $1.maybe-var!; [L 2 3 Index $3, $2])
-        o 'LITERAL DOT KeyBase' -> Prop $3, Chain(L 1 Literal $1; [L 2 3 Index $3, $2])
-        o '{ Properties OptComma } LABEL' -> Prop L(5, Key $5), L(1, 4, Obj $2 .named $5)
-        o '[ ArgList    OptComma ] LABEL' -> Prop L(5, Key $5), L(1, 4, Arr $2 .named $5)
     Property:
-        o 'Key : Expression'                     -> Prop $1, $3
-        o 'Key : INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($4)
+        o 'KeyColon Expression'                     -> Prop $1, $2
+        o 'KeyColon INDENT ArgList OptComma DEDENT' -> Prop $1, Arr.maybe($3)
 
-        o 'KeyValue'
-        o 'KeyValue LOGIC Expression'  -> L 2 Binary $2, $1, $3
-        o 'KeyValue ASSIGN Expression' -> L 2 Binary $2, $1, $3, true
-
-        o '+- Key'     -> Prop $2.maybe-key!   , L 1 Literal $1 is '+'
-        o '+- LITERAL' -> Prop L(2, Key $2, true), L 1 Literal $1 is '+'
-
-        o '... Expression' -> Splat $2
+        o 'Expression' -> Prop null $1
+        o '... Expression' -> Prop Splat!, $2
 
         o 'COMMENT' -> JS $1, true true
     # Properties within an object literal can be separated by

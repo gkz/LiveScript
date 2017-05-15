@@ -318,6 +318,26 @@ a.reverse![--i, --i].=reverse!
 eq 0 a.0
 eq 1 a.1
 
+# Splats in object destructuring taking unused keys, as discussed here:
+# https://github.com/gkz/LiveScript/issues/941
+keys = <[a b c d e f]>
+k = (i) -> if delete keys[i] then that else fail "dynamic key was not cached"
+t = {}
+o = g: 1 b: 2 c:{d: 3 e: 4 b: 5 f: 6} f: 7 a: 8 h: 9
+t{g: (k 0), (k 1), (k 2):{(k 3), (k 4), ...h}, (k 5):i, ...j} = o
+eq 1 t.a
+eq 2 t.b
+eq 3 t.d
+eq 4 t.e
+eq 5 t.h.b
+eq 6 t.h.f
+eq 7 t.i
+eq 8 t.j.a
+eq 9 t.j.h
+ok not t.c?
+ok not t.h.d?
+ok not t.j.b?
+ok not t.j.g?
 
 ### Destructuring Default
 new
@@ -332,7 +352,7 @@ new
   eq a * b * @p, 30
 
   @a = @b = @c = void
-  @{a ? 2, \b ? 3, ([\c]) ? 5} = {}
+  @{a ? 2, \b ? 3, d: ([\c]) ? 5} = {}
   eq @a * @b * @c, 30
 
   @a = @b = @c = void
@@ -346,6 +366,8 @@ new
   @a = @b = @c = void
   @{a &&= 2, b ||= 3} = {a: 99}
   eq @a * @b, 6
+
+compile-throws 'invalid assign' 1 'o{...(a) ? b} = c'
 
 ### Compound/Conditional Destructuring
 a = b = c = null
@@ -381,6 +403,34 @@ eq a, o.a
 eq b, \b
 eq c, \c
 eq d, e.0
+
+o = {}
+p = x: 1
+{x: o.a} = p
+eq 1 o.a
+{y: o.a ? 2} = p
+eq 2 o.a
+
+new
+  o = a: {b: 1 c: 2}
+  @{a: {b: d, c: e}:f} = o
+  eq 1 @d
+  eq 2 @e
+  eq 1 f.b
+  eq 2 f.c
+
+  g = b: 3 c: 4
+  @{{b: d, c: e}:f ? g} = o
+  eq 3 @d
+  eq 4 @e
+  eq 3 f.b
+  eq 4 f.c
+
+  @{{b: d, c: e}:a ? g} = o
+  eq 1 @d
+  eq 2 @e
+  eq 1 a.b
+  eq 2 a.c
 
 
 ### Unary Assign
@@ -421,7 +471,7 @@ eq \HELLO 'hello'.to-upper-case!
 ### Ill-shadow Protection
 compileThrows 'accidental shadow of "a"' 4 '''
   a = 1
-  let 
+  let
     a := 2
     a  = 3
 '''

@@ -17,6 +17,7 @@ module.exports = !(LiveScript) ->
         main <<< {filename}
         unless js
             code = LiveScript.compile code, {...options, +bare}
+            code = that if code.code
         if context
             global.__run-context = context
             code = "return (function() {\n#code\n}).call(global.__runContext);"
