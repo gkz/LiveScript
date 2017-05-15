@@ -285,3 +285,33 @@ o =
       | (== 42) => true
 
 ok o.run!foo
+
+# [gkz/LiveScript#931](https://github.com/gkz/LiveScript/issues/931)
+# Let's not produce unreachable `break` statements
+test-cases =
+  '''
+    foo = switch bar
+    | \\a =>
+      if baz then 1 else 2
+    | \\b => 3
+  '''
+  '''
+    foo = switch bar
+    | \\a =>
+      switch baz
+      | \\1 => 1
+      | otherwise => 2
+    | \\b => 3
+  '''
+  '''
+    switch foo
+    | \\a =>
+      if bar
+        return 1
+      else throw new Error
+    | \\b => baz!
+  '''
+
+for test-cases
+  compiled = LiveScript.compile .., {+bare,-header}
+  eq -1 compiled.index-of(\break), "no break in:\n#compiled"
