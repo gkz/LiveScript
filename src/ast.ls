@@ -2274,7 +2274,8 @@ class exports.Splat extends Node
 
     function ensure-array node
         return node if node.is-array!
-        Call.make JS(util(\slice) + \.call), [node]
+        util \slice
+        Call.make Util(\arrayFrom), [node]
 
 #### Jump
 # `break` `continue`
@@ -3241,6 +3242,8 @@ UTILS =
         return result;
       }
     }'''
+
+    array-from: 'Array.from || function(x){return slice$.call(x);}'
 
     # Shortcuts to speed up the lookup time for native methods.
     split    : "''.split"

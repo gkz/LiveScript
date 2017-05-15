@@ -170,3 +170,6 @@ g8_result = g8.next!value
 eq 2 g8_result[0]()
 eq 4 g8_result[1]()
 eq 6 g8_result[2]()
+
+# splats should expand generators (https://github.com/gkz/LiveScript/issues/963)
+eq '0,1,2' "#{[...f!]}"
