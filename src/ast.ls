@@ -299,6 +299,7 @@ SourceNode::to-string = (...args) ->
     get-default   : VOID
     # Digs up a statement that jumps out of this node.
     get-jump      : VOID
+    is-next-unreachable : NO
 
     # If this node can be used as a property shorthand, finds the implied key.
     # If the key is dynamic, this node may be mutated so that it refers to a
@@ -425,6 +426,10 @@ class exports.Block extends Node
     ::delegate <[ isCallable isArray isString isRegex ]> -> @lines[*-1]?[it]!
 
     get-jump: -> for node in @lines then return that if node.get-jump it
+
+    is-next-unreachable: ->
+        for node in @lines then return true if node.is-next-unreachable!
+        false
 
     # **Block** does not return its entire body, rather it
     # ensures that the final line is returned.
@@ -2185,7 +2190,7 @@ class exports.Parens extends Node
 
     show: -> @string and '""'
 
-    ::delegate <[ isComplex isCallable isArray isRegex ]> -> @it[it]!
+    ::delegate <[ isComplex isCallable isArray isRegex isNextUnreachable ]> -> @it[it]!
 
     is-string: -> @string or @it.is-string!
 
@@ -2280,6 +2285,7 @@ class exports.Jump extends Node
 
     is-statement : YES
     make-return  : THIS
+    is-next-unreachable : YES
 
     get-jump: (ctx or {}) ->
         return this unless ctx[@verb]
@@ -2470,6 +2476,8 @@ class exports.For extends While
             delete @item
         this
 
+    is-next-unreachable: NO
+
     compile-node: (o) ->
         o.loop = true
         temps = @temps = []
@@ -2573,6 +2581,8 @@ class exports.Try extends Node
 
     get-jump: -> @attempt.get-jump it or @recovery?get-jump it
 
+    is-next-unreachable: -> @ensure?is-next-unreachable! or @attempt.is-next-unreachable! and (if @recovery? then that.is-next-unreachable! else true)
+
     make-return: ->
         @attempt .=make-return ...&
         @recovery?=make-return ...&
@@ -2619,6 +2629,10 @@ class exports.Switch extends Node
         ctx.break = true
         for c in @cases then return that if c.body.get-jump ctx
         @default?get-jump ctx
+
+    is-next-unreachable: ->
+        for c in @cases then return false unless c.body.is-next-unreachable!
+        @default?is-next-unreachable!
 
     make-return: ->
         for c in @cases then c.make-return ...&
@@ -2679,7 +2693,7 @@ class exports.Case extends Node
         lines[*-1] = JS '// fallthrough' if ft = last?value is \fallthrough
         o.indent = tab += TAB
         code.push bodyCode, \\n     unless sn-empty(bodyCode = @body.compile o, LEVEL_TOP)
-        code.push tab  + 'break;\n' unless nobr or ft or last instanceof Jump
+        code.push tab  + 'break;\n' unless nobr or ft or last?is-next-unreachable!
         sn(null, ...code)
 
 #### If
@@ -2695,7 +2709,7 @@ class exports.If extends Node
 
     terminator: ''
 
-    ::delegate <[ isCallable isArray isString isRegex ]> ->
+    ::delegate <[ isCallable isArray isString isRegex isNextUnreachable ]> ->
         @else?[it]! and @then[it]!
 
     get-jump: -> @then.get-jump it or @else?get-jump it
