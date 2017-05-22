@@ -201,7 +201,12 @@ exports <<<
                 tag = 'BIOP'
             else
                 if able @tokens then id = '<<<' else tag = 'DECL'
-        case 'export' 'const' 'var' then tag = 'DECL'
+        case 'const' 'var'
+            if last.0 is 'LET'
+                last.1 += id
+                return input.length
+            fallthrough
+        case 'export' then tag = 'DECL'
         case 'with'
             tag = | able @tokens  => 'CLONEPORT'
                   | last.0 is '(' => 'BIOP'
