@@ -110,6 +110,29 @@ eq i, 1
 {}p++
 ok 'LHS should take care frontness'
 
+# Compound assign with logic
+new
+  @a = 2
+  @a &&+= 10
+  eq 12 @a
+
+  @a = 0
+  @a &&+= 10
+  eq 0 @a
+
+  @a ?+= 5
+  eq 5 @a
+
+  @b ?+= 5
+  ok \b not of this
+
+  neg = -> -it
+  @a ?|>= neg
+  eq -5 @a
+
+  @b ?|>= neg
+  ok \b not of this
+
 
 ### Destructuring
 

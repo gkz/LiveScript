@@ -1639,12 +1639,15 @@ class exports.Assign extends Node
         sn(null, ...code)
 
     compileConditional: (o, left) ->
-        if left instanceof Var and @logic in <[ ? ]> and @op is \=
+        if left instanceof Var and @logic is \? and @op is \=
             o.scope.declare left.value, left
-        lefts = Chain(left)cache-reference o
+        [lcache, left] = Chain(left)cache-reference o
         # Deal with `a && b ||= c`.
         o.level += LEVEL_OP < o.level
-        morph = Binary @logic, lefts.0, @<<<{-logic, left: lefts.1}
+        if @logic is \? and @op not in <[ = := ]>
+            @logic = \&&
+            lcache |>= Existence
+        morph = Binary @logic, lcache, @<<<{-logic, left}
         sn(this, (morph <<< {@void})compile-node o)
 
     compileMinMax: (o, left, right) ->
