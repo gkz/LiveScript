@@ -156,6 +156,12 @@
   } else {
     console.log("Testing with harmony.");
   }
+  var supportsAsync = parseInt(process.versions.node.split('.')[0]) >= 7
+  if (supportsAsync) {
+    files.splice(files.indexOf("async.ls"), 1);
+  } else {
+    console.log("Testing with async.");
+  }
 
   files.forEach(function(file){
     var stk, msg, m, ref, num, row, col, that, lines, line;
