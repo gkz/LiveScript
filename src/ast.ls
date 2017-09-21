@@ -145,6 +145,7 @@ SourceNode::to-string = (...args) ->
         that.carp 'inconvertible statement' if @get-jump!
         fun = Fun [] Block this
         call = Call!
+        fun.async = true if o.in-async
         fun.generator = true if o.in-generator
         var hasArgs, hasThis
         @traverse-children !->
@@ -162,6 +163,8 @@ SourceNode::to-string = (...args) ->
         out = Parens(Chain fun<<<{+wrapper, @void} [call]; true)
         if o.in-generator
             out = new Yield 'yieldfrom', out
+        else if o.in-async
+            out = new Yield 'await', out
         out.compile o
 
     # Compiles a child node as a block statement.
@@ -1187,8 +1190,6 @@ class exports.Yield extends Node
     | 'yield' => ''
     | 'yieldfrom' => 'from'
     | 'await' => 'await'
-    | 'awaitall' => 'await all'
-    | _ => ''
 
     ::delegate <[ isCallable ]> -> yes
 
@@ -1197,7 +1198,6 @@ class exports.Yield extends Node
         | 'yield' => 'yield'
         | 'yieldfrom' => 'yield*'
         | 'await' => 'await'
-        | 'awaitall' => 'await*'
         )]
         if @it then code.push " #{@it.compile o, LEVEL_OP + PREC.unary}"
         sn(this, "(", ...code, ")")
@@ -1958,7 +1958,8 @@ class exports.Fun extends Node
         code = [\function]
         if @async
             @ctor and @carp "a constructor can't be async"
-            o.in-generator = true
+            @generator and @carp "a generator can't be async"
+            o.in-async = true
             code.unshift 'async '
         else if @generator
             @ctor and @carp "a constructor can't be a generator"
