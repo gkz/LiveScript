@@ -57,6 +57,16 @@
     }
   };
 
+  global.compileParseError = function(lno, code){
+    var msg = "Parse error on line " + lno;
+    try {
+      LiveScript.compile(code);
+    } catch (e) {
+      return e.message.startsWith(msg);
+    }
+    ok(false, "should throw: " + msg);
+  };
+
   var activeCommandTests = 0;
   global.commandEq = function(args, arr, afterTests) {
     activeCommandTests++;
