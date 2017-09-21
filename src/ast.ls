@@ -145,6 +145,7 @@ SourceNode::to-string = (...args) ->
         that.carp 'inconvertible statement' if @get-jump!
         fun = Fun [] Block this
         call = Call!
+        fun.async = true if o.in-async
         fun.generator = true if o.in-generator
         var hasArgs, hasThis
         @traverse-children !->
@@ -162,6 +163,8 @@ SourceNode::to-string = (...args) ->
         out = Parens(Chain fun<<<{+wrapper, @void} [call]; true)
         if o.in-generator
             out = new Yield 'yieldfrom', out
+        else if o.in-async
+            out = new Yield 'await', out
         out.compile o
 
     # Compiles a child node as a block statement.
@@ -1183,21 +1186,20 @@ class exports.Yield extends Node
 
     children: <[ it ]>
 
-    show: -> if @op is 'yieldfrom' then 'from' else ''
+    show: -> switch @op
+    | 'yield' => ''
+    | 'yieldfrom' => 'from'
+    | 'await' => 'await'
 
     ::delegate <[ isCallable ]> -> yes
 
     compile-node: (o) ->
-        code = []
-
-        if @op is \yieldfrom
-            code.push 'yield*'
-        else
-            code.push 'yield'
-
-        if @it
-            code.push " #{@it.compile o, LEVEL_OP + PREC.unary}"
-
+        code = [(switch @op
+        | 'yield' => 'yield'
+        | 'yieldfrom' => 'yield*'
+        | 'await' => 'await'
+        )]
+        if @it then code.push " #{@it.compile o, LEVEL_OP + PREC.unary}"
         sn(this, "(", ...code, ")")
 
 #### Unary operators
@@ -1920,7 +1922,7 @@ class exports.Existence extends Node implements Negatable
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-    (@params or [], @body or Block!, @bound and \this$, @curried or false, @hushed = false, @generator = false) ~>
+    (@params or [], @body or Block!, @bound and \this$, @curried or false, @hushed = false, @generator = false, @async = false) ~>
 
     children: <[ params body ]>
 
@@ -1954,7 +1956,12 @@ class exports.Fun extends Node
         o.indent += TAB
         {body, name, tab} = this
         code = [\function]
-        if @generator
+        if @async
+            @ctor and @carp "a constructor can't be async"
+            @generator and @carp "a generator can't be async"
+            o.in-async = true
+            code.unshift 'async '
+        else if @generator
             @ctor and @carp "a constructor can't be a generator"
             o.in-generator = true
             code.push \*

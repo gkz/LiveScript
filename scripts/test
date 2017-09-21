@@ -124,6 +124,11 @@
       }
   };
 
+  process.on("unhandledRejection", function(e) {
+      console.error("Promise rejected: " + e.message);
+      failedTests++;
+  });
+
   process.on("beforeExit", function(){
       var printResults = function() {
           var time = ((Date.now() - startTime) / 1e3).toFixed(2);
@@ -155,6 +160,12 @@
     files.splice(files.indexOf("generators.ls"), 1);
   } else {
     console.log("Testing with harmony.");
+  }
+  var supportsAsync = parseInt(process.versions.node.split('.')[0]) >= 7;
+  if (supportsAsync) {
+    console.log("Testing with async.");
+  } else {
+    files.splice(files.indexOf("async.ls"), 1);
   }
 
   files.forEach(function(file){
