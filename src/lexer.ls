@@ -240,9 +240,6 @@ exports <<<
                 or last.1 is 'import' and 'All'
                     last.1 += that
                     return 3
-                if last.0 is 'yield' and last.1 is 'await'
-                    last.1 += 'all'
-                    return 3
             case 'from'
                 if last.1 is 'yield'
                     last.1 += 'from'

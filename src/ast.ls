@@ -1190,7 +1190,6 @@ class exports.Yield extends Node
     | 'yield' => ''
     | 'yieldfrom' => 'from'
     | 'await' => 'await'
-    | _ => ''
 
     ::delegate <[ isCallable ]> -> yes
 
