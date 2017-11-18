@@ -88,6 +88,15 @@ a = [1 2 3]
 ok not ("2" in a)
 ok not ("2" in [1 2 3])
 
+# [LiveScript#986](https://github.com/gkz/LiveScript/issues/986)
+# Optimize `in` for one- and zero-element array literals
+eq "x() === 0;"    LiveScript.compile 'x! in [0]'     {+bare,-header}
+eq "x() !== 0;"    LiveScript.compile 'x! not in [0]' {+bare,-header}
+eq "(x(), false);" LiveScript.compile 'x! in [ ]'     {+bare,-header,+no-warn}
+eq "(x(), true);"  LiveScript.compile 'x! not in [ ]' {+bare,-header,+no-warn}
+eq "false;"        LiveScript.compile 'x in [ ]'      {+bare,-header,+no-warn}
+eq "true;"         LiveScript.compile 'x not in [ ]'  {+bare,-header,+no-warn}
+
 # Non-spaced values still work.
 x = 10
 y = -5
