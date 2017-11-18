@@ -1882,10 +1882,18 @@ class exports.In extends Node implements Negatable
 
     compile-node: (o) ->
         {items} = array = @array
-        if array not instanceof Arr or items.length < 2
+        if array not instanceof Arr
             return sn(this, (if @negated then \! else ''), (util \in), "(", (@item.compile o, LEVEL_LIST), ", ", (array.compile o, LEVEL_LIST), ")")
+        if items.length == 0
+            @warn "value can never be `in` an empty array" unless o.no-warn
+            value = "#{!!@negated}"
+            return do
+                if @item.is-complex!
+                    sn(this, "(", (@item.compile o, LEVEL_LIST), ", ", value, ")")
+                else
+                    sn(this, value)
         code = []
-        [sub, ref] = @item.cache o, false, LEVEL_PAREN
+        [sub, ref] = if items.length == 1 then [@item.compile o, LEVEL_PAREN]*2 else @item.cache o, false, LEVEL_PAREN
         [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
         for test, i in items
             code.push cnj if code.length > 0
@@ -1895,7 +1903,7 @@ class exports.In extends Node implements Negatable
             else
                 code.push (if i or sub is ref then ref else "(#sub)"), cmp, (test.compile o, LEVEL_OP + PREC\== )
         sub is ref or o.scope.free ref
-        if o.level < LEVEL_OP + PREC\|| then sn(this, ...code) else sn(this, "(", ...code, ")")
+        if o.level < LEVEL_OP + PREC[if items.length == 1 then \=== else \||] then sn(this, ...code) else sn(this, "(", ...code, ")")
 
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
