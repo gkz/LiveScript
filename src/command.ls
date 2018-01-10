@@ -52,7 +52,7 @@ switch
       if positional.length and (o.json or /\.json$/.test positional.0)
           o.json = true
           fshoot 'readFile', positional.0, json-callback
-      else if o.json
+      else if o.json and not o.ast
           get-stdin json-callback
       else
           compile-script '' o.eval
@@ -119,7 +119,7 @@ switch
       throw
 
     json = o.json or /\.json\.ls$/.test filename
-    run = o.run or o.eval
+    run = o.run or json
     if run
       LiveScript.emit 'compile' t
       print = json or o.print
