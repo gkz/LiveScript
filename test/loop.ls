@@ -1,4 +1,5 @@
 i = 5
+
 list = while i -= 1
   i * 2
 deep-equal [8,6,4,2], list
@@ -693,6 +694,24 @@ eq 1, i
 o = { [k, -> v] for let k, v of {a: 1, b: 2} }
 eq 1 o.a!
 eq 2 o.b!
+
+# interactions of guards+let, see #992
+arr = [0,1,2,3]
+r = []
+for let k in arr when k
+  r.push k
+eq "1,2,3", r.join ','
+
+# interaction of guards+let, when destructuring is used, see #992
+arr =
+  * letter: 'a' valueOf: -> 0 
+  * letter: 'b' valueOf: -> 1 
+  * letter: 'c' valueOf: -> 2 
+r = []
+for let {letter}:guard-o in arr when guard-o > 0
+  r.push letter
+eq "b,c", r.join ','
+
 
 # Certain literals could result in illegal JavaScript if not carefully
 # handled. These are all nonsensical use cases and could just as easily

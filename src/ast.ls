@@ -2475,11 +2475,13 @@ class exports.For extends While
         super body
 
         if @guard and @let and (@index or @item)
-            @body.lines[0].if.traverse-children !~>
+            # if @item is an Obj, then we're destructuring. Check for @item.name instead, in case of an as-pattern.
+            item-name = if @item instanceof Obj then @item.name else @item.value
+            @body.lines[0].traverse-children !~>
                 if it instanceof Var
                     if @index and it.value is @index
                         it.value = \index$$
-                    if @item and it.value is @item.value
+                    if @item and it.value is item-name
                         it.value = \item$$
         if @let
             @body := Block Yield \yieldfrom, body if has-yield
