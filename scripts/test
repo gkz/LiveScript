@@ -129,7 +129,7 @@
       failedTests++;
   });
 
-  process.on("beforeExit", function(){
+  process.once("beforeExit", function(){
       var printResults = function() {
           var time = ((Date.now() - startTime) / 1e3).toFixed(2);
           var message = "passed " + passedTests + " tests in " + time + " seconds";
