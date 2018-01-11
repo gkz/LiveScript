@@ -694,6 +694,43 @@ o = { [k, -> v] for let k, v of {a: 1, b: 2} }
 eq 1 o.a!
 eq 2 o.b!
 
+# interactions of guards+let, see #992
+arr = [0,1,2,3]
+r = []
+for let k in arr when k
+  r.push k
+eq "1,2,3", r.join ','
+
+# interaction of guards+let, when destructuring is used, see #992
+arr =
+  * letter: 'a' valueOf: -> 0
+  * letter: 'b' valueOf: -> 1
+  * letter: 'c' valueOf: -> 2
+r = []
+for let {letter}:guard-o in arr when guard-o > 0
+  r.push letter
+eq "b,c", r.join ','
+
+r = []
+for let {letter, valueOf} in arr when valueOf! > 0
+  r.push letter
+eq "b,c", r.join ','
+
+# more of the above, with extra nesting and complications
+arr =
+  * [true  {b: \alpha x: 0} {d: 1}]
+  * [false {b: \bravo}      {d: 2}]
+  * [true  {}               {d: 3}]
+  * [true  {b: \delta}      {d: 0}]
+  * [true  {b: false}       {d: 5}]
+fns = for let [a, {b ? \default}:c, {d: e}] in arr when a and b and e
+  -> {b, c, e}
+r = for f in fns then f!
+expected =
+  * b: \alpha c: {b: \alpha x: 0} e: 1
+  * b: \default c: {} e: 3
+deep-equal expected, r
+
 # Certain literals could result in illegal JavaScript if not carefully
 # handled. These are all nonsensical use cases and could just as easily
 # be LiveScript syntax errors. The thing to avoid is for them to be JavaScript

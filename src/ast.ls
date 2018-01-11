@@ -285,7 +285,7 @@ SourceNode::to-string = (...args) ->
 
     is-matcher: -> @is-string! or @is-regex!
 
-    # Do I assign a certain variable?
+    # Do I assign any variables? (Returns a non-empty array if so.)
     assigns: NO
 
     # Picks up name(s) from LHS.
@@ -576,7 +576,7 @@ class exports.Var extends Atom
 
     ::is-assignable = ::is-callable = YES
 
-    assigns: -> it is @value
+    assigns: -> [@value]
 
     maybe-key: -> Key(@value) <<< {@line}
 
@@ -591,7 +591,7 @@ class exports.Key extends Node
 
     is-complex: NO
 
-    assigns: -> it is @name
+    assigns: -> [@name]
 
     maybe-key: THIS
 
@@ -1005,7 +1005,8 @@ class List extends Node
     named : (@name) -> this
 
     is-empty: -> not @items.length
-    assigns: -> for node in @items then return true if node.assigns it
+    assigns: -> with [x for node in @items when node.assigns! for x in that]
+        ..push that if @name
 
     @compile = (o, items, deep-eq) ->
         switch items.length
@@ -1118,7 +1119,7 @@ class exports.Prop extends Node
 
     show: -> @accessor
 
-    assigns: -> @val.assigns? it
+    assigns: -> @val.assigns?!
 
     compile-accessor: (o, key) ->
         funs = @val
@@ -1564,7 +1565,7 @@ class exports.Assign extends Node
 
     show: -> [,]concat(@unaries)reverse!join(' ') + [@logic] + @op
 
-    assigns: -> @left.assigns it
+    assigns: -> @left.assigns!
 
     ::delegate <[ isCallable isRegex ]> -> @op in <[ = := ]> and @right and @right[it]!
 
@@ -1672,7 +1673,7 @@ class exports.Assign extends Node
         if left.name
             cache = sn(this, that, " = ", rite)
             o.scope.declare rite = that, left
-        else if (ret or len > 1) and (not ID.test rite.to-string! or left.assigns rite.to-string!)
+        else if (ret or len > 1) and (not ID.test rite.to-string! or if left.assigns! then rite.to-string! in that)
             cache = sn(this, (rref = o.scope.temporary!), " = ", rite)
             rite  = rref
         if rite.to-string! is \arguments and not ret
@@ -2246,7 +2247,7 @@ class exports.Splat extends Node
 
     is-assignable: YES
 
-    assigns: -> @it.assigns it
+    assigns: -> @it.assigns!
 
     compile: -> @carp 'invalid splat'
 
@@ -2465,22 +2466,18 @@ class exports.For extends While
             return true if child instanceof Yield
         if @let
             @item = Literal \.. if delete @ref
-            body = Block Call.let do
-                with []
-                    ..push Assign Var(that), Literal \index$$ if @index
-                    ..push Assign that,      Literal \item$$ if @item
-                body
-                has-yield
+            @item = that if @item?rewrite-shorthand!
+            assignments = with []
+                ..push Assign Var(that), Literal \index$$ if @index
+                ..push Assign that,      Literal \item$$ if @item
+            body = Block if @guard
+                assigned = [Var name for assignments when ..assigns! for name in that]
+                assignments.concat [If delete @guard, Call.let assigned, body, has-yield]
+            else
+                Call.let assignments, body, has-yield
 
         super body
 
-        if @guard and @let and (@index or @item)
-            @body.lines[0].if.traverse-children !~>
-                if it instanceof Var
-                    if @index and it.value is @index
-                        it.value = \index$$
-                    if @item and it.value is @item.value
-                        it.value = \item$$
         if @let
             @body := Block Yield \yieldfrom, body if has-yield
             delete @index
