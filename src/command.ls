@@ -103,6 +103,7 @@ switch
       o.const
       o.map
       o.header
+      o.no-warn
   }
   t       = {input, options}
   try

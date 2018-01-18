@@ -180,7 +180,7 @@
 
     try {
       console.log(filename);
-      LiveScript.run(code, { filename: filename, map: 'embedded' });
+      LiveScript.run(code, { filename: filename, map: 'embedded', noWarn: true });
     } catch (e) {
       ++failedTests;
 
@@ -205,7 +205,8 @@
         row = ref[1];
         col = ref[2];
         code = LiveScript.compile(code, {
-          bare: true
+          bare: true,
+          noWarn: true
         });
       }
 
