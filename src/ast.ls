@@ -259,8 +259,11 @@ SourceNode::to-string = (...args) ->
         @[@a-source] <<< {+cond}
 
     # Throws a syntax error, appending `@line` number to the message.
-    carp: (msg, type = SyntaxError) ->
-        throw type "#msg on line #{ @line or @traverse-children -> it.line }"
+    carp: (msg, type = SyntaxError) !-> throw type "#msg #{@line-msg!}"
+
+    warn: (msg) !-> console?warn "WARNING: #msg #{@line-msg!}"
+
+    line-msg: -> "on line #{ @line or @traverse-children -> it.line }"
 
     # Defines delegators.
     delegate: !(names, fn) ->
@@ -1404,7 +1407,7 @@ class exports.Binary extends Node
                     return @compileRegexEquals o, that
                 if @op is \=== and (@first instanceof Literal and @second instanceof Literal)
                 and @first.is-what! isnt @second.is-what!
-                    console?.warn "WARNING: strict comparison of two different types will always be false: #{@first.value} == #{@second.value}"
+                    @warn "strict comparison of two different types will always be false: #{@first.value} == #{@second.value}" unless o.no-warn
             return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
         @first <<< {@front}
         code = [(@first .compile o, level = LEVEL_OP + PREC[@op]), " ", (@mapOp @op), " ", (@second.compile o, level)]
