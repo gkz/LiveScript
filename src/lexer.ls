@@ -39,7 +39,6 @@ exports <<<
     #### Main Loop
 
     tokenize: (code, o) ->
-        @reset! if @autoreset
         @inter or code.=replace /[\r\u2028\u2029\uFEFF]/g ''
         # Prepend a newline to handle leading INDENT.
         code = '\n' + code
@@ -111,10 +110,10 @@ exports <<<
     # Map of all Identifiers
     identifiers: {}
 
-    # Reset before tokenization or not
-    autoreset: false
-
-    reset: !-> @ <<< dent:0 identifiers: {}
+    # Resets state of lexer
+    # Design to be called by external system that needs to reuse lexer
+    # e.g. editor plugin checking multiple livescript files for errors
+    reset: !-> this <<< dent:0 identifiers: {}
 
     has-own: Object.prototype.has-own-property
 
