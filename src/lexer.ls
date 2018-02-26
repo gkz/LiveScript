@@ -39,6 +39,7 @@ exports <<<
     #### Main Loop
 
     tokenize: (code, o) ->
+        @reset!
         @inter or code.=replace /[\r\u2028\u2029\uFEFF]/g ''
         # Prepend a newline to handle leading INDENT.
         code = '\n' + code
@@ -109,6 +110,8 @@ exports <<<
 
     # Map of all Identifiers
     identifiers: {}
+
+    reset: !-> @ <<< dent:0 identifiers: {}
 
     has-own: Object.prototype.has-own-property
 
