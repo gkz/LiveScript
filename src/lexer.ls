@@ -39,10 +39,7 @@ exports <<<
     #### Main Loop
 
     tokenize: (code, o) ->
-        # The current indentation level.
-        @dent = 0
-        # Map of all Identifiers
-        @identifiers = {}
+        @reset! if @autoreset
         @inter or code.=replace /[\r\u2028\u2029\uFEFF]/g ''
         # Prepend a newline to handle leading INDENT.
         code = '\n' + code
@@ -107,6 +104,17 @@ exports <<<
         o.raw or @rewrite!
 
         @tokens
+
+    # The current indentation level.
+    dent: 0
+
+    # Map of all Identifiers
+    identifiers: {}
+
+    # Reset before tokenization or not
+    autoreset: false
+
+    reset: !-> @ <<< dent:0 identifiers: {}
 
     has-own: Object.prototype.has-own-property
 
