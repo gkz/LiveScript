@@ -110,6 +110,11 @@ exports <<<
     # Map of all Identifiers
     identifiers: {}
 
+    # Resets state of lexer
+    # Design to be called by external system that needs to reuse lexer
+    # e.g. editor plugin checking multiple livescript files for errors
+    reset: !-> this <<< dent:0 identifiers: {}
+
     has-own: Object.prototype.has-own-property
 
     # Checks for consistent use of Identifiers with dashes
