@@ -37,6 +37,15 @@ switch
       die "Option --map must be either: #{ valid-map-values.join ', ' }"
   else o.map = if o.run or o.eval then 'embedded' else 'none'
 
+  if o.run and args is process.argv
+    process.argv.lsc =
+      if o.stdin or o.eval
+        [void ...positional]
+      else
+        # If running a script, this splice keeps arguments after the first from
+        # being handled as additional sources to be compiled.
+        [positional.0, ...positional.splice 1]
+
   if o.require
     {filename} = module
     module.filename = '.'
