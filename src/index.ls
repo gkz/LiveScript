@@ -27,7 +27,7 @@ parser <<<
         upcoming-input: -> ''
 
 exports <<<
-    VERSION: '1.4.0'
+    VERSION: '1.5.0'
 
     # Compiles a string of LiveScript code to JavaScript.
     compile: (code, options = {}) ->
@@ -49,12 +49,12 @@ exports <<<
                   unless filename
                       filename = "unnamed-#{ Math.floor(Math.random! * 4294967296).to-string 16 }.ls"
 
-                  output.set-file filename
+                  output.set-file path.basename filename
                   result = output.to-string-with-source-map!
                   if options.map is 'embedded'
                       result.map.set-source-content filename, code
                   if options.map in <[ linked debug ]>
-                      map-path = "#output-filename.map"
+                      map-path = "#{path.basename output-filename}.map"
                       result.code += "\n//# sourceMappingURL=#map-path\n"
                   else
                       result.code += "\n//# sourceMappingURL=data:application/json;base64,#{ new Buffer result.map.to-string! .to-string 'base64' }\n"

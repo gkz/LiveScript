@@ -1,0 +1,14 @@
+[*]
+indent_style = space
+end_of_line = lf
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.ls]
+indent_size = 4
+
+[*.js]
+indent_size = 2
+
+[Makefile]
+indent_style = tab

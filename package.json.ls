@@ -1,5 +1,5 @@
 name: 'livescript'
-version: '1.4.0'
+version: '1.5.0'
 
 description: 'LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.'
 
@@ -28,6 +28,7 @@ files:
   'LICENSE'
 
 main: './lib/'
+browser: './lib/browser.js'
 bin:
   lsc: './bin/lsc'
 
@@ -44,12 +45,13 @@ repository:
   url: 'git://github.com/gkz/LiveScript.git'
 
 dependencies:
-  'prelude-ls': '~1.1.1'
-  optionator: '~0.6.0'
-  'source-map': '^0.3.0'
+  'prelude-ls': '~1.1.2'
+  optionator: '~0.8.1'
+  'source-map': '^0.5.6'
+  'source-map-support': '^0.4.11'
 
 dev-dependencies:
-  jison: '0.4.15'
-  'uglify-js': '~2.4.15'
-  istanbul: '~0.3.2'
-  browserify: '^9.0.2'
+  jison: '0.4.17'
+  'uglify-js': '~2.6.2'
+  istanbul: '~0.4.3'
+  browserify: '^13.0.1'

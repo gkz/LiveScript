@@ -110,6 +110,11 @@ exports <<<
     # Map of all Identifiers
     identifiers: {}
 
+    # Resets state of lexer
+    # Design to be called by external system that needs to reuse lexer
+    # e.g. editor plugin checking multiple livescript files for errors
+    reset: !-> this <<< dent:0 identifiers: {}
+
     has-own: Object.prototype.has-own-property
 
     # Checks for consistent use of Identifiers with dashes
@@ -143,7 +148,7 @@ exports <<<
             tag = 'LITERAL'
         case <[ new do typeof delete ]>
             tag = 'UNARY'
-        case 'yield'
+        case 'yield' 'await'
             tag = 'YIELD'
         case 'return' 'throw'
             tag = 'HURL'
@@ -405,7 +410,7 @@ exports <<<
                 if t.0 is 'TOKENS'
                     tokens.push ...t.1
                 else
-                    val = t.1.replace HEREGEX_OMIT, ''
+                    val = deheregex t.1
                     continue if one and not val
                     one = tokens.push t <<< ['STRNUM' @string '\'' enslash val]
                 tokens.push ['+-' '+' tokens[*-1].2, tokens[*-1].3]
@@ -415,7 +420,7 @@ exports <<<
                 if dynaflag then tokens.push ...dynaflag else @token 'STRNUM' "'#flag'"
             @token (if flag is '$' then ')' else ')CALL'), ''
         else
-            @regex reslash(parts.0.1.replace HEREGEX_OMIT, ''), flag
+            @regex reslash(deheregex parts.0.1), flag
         parts.size + flag.length
 
     # Matches a word literal, or ignores a sequence of whitespaces.
@@ -655,7 +660,7 @@ exports <<<
             @fset 'for' false
             tag = 'THEN'
         default
-            if /^!?(?:--?|~~?)>\*?$/.test val # function arrow
+            if /^!?(?:--?|~~?)>>?\*?$/.test val # function arrow
                 @parameters tag = '->'
             else if /^\*?<(?:--?|~~?)!?$/.test val # backcall
                 @parameters tag = '<-'
@@ -840,6 +845,7 @@ exports <<<
             @dedent @dents[*-1]
             return @pair it
         @unline!
+        @fclear!
         @closes.pop!
 
     #### Helpers
@@ -886,6 +892,9 @@ exports <<<
 
     fset: (key, val) !->
         @flags{}[@closes.length][key] = val
+
+    fclear: !->
+        @flags.splice @closes.length
 
     # Throws a syntax error with the current line number.
     carp: !-> carp it, @line
@@ -943,6 +952,12 @@ reslash = (.replace /(\\.)|\//g -> &1 or \\\/)
 
 # Transforms hyphenated-words to camelCase.
 camelize = (.replace /-[a-z]/ig -> it.char-at 1 .to-upper-case!)
+
+# ESifies a heregex.
+deheregex = (.replace do
+  /\s+(?:#.*)?|(\\[\s\S])/g
+  (, bs || '') -> if \\n is bs.charAt 1 then \\\n else bs
+)
 
 # Deletes the first character if newline.
 function lchomp then it.slice 1 + it.last-index-of '\n' 0
@@ -1020,6 +1035,11 @@ character = if not JSON? then uxxxx else ->
                                 [')PARAM' ')'  line, column]
                                 ['->'     '~>' line, column]
                             break LOOP
+        case tag is 'ID' and val is 'async'
+            next = tokens[i + 1]
+            switch next.0
+            | 'FUNCTION' => token.0 = 'ASYNC'
+            | 'GENERATOR' => carp 'named generator cannot be async' line
         prev = token
         continue
 
@@ -1334,7 +1354,7 @@ SYMBOL = //
 | \.{1,3}                       # dot / cascade / splat/placeholder/yada*3
 | \^\^                          # clone
 | \*?<(?:--?|~~?)!?             # backcall
-| !?(?:--?|~~?)>\*?             # function, bound function
+| !?(?:--?|~~?)>>?\*?           # function, bound function
 | ([-+&|:])\1                   # crement / logic / `prototype`
 | %%                            # mod
 | &                             # arguments
@@ -1404,4 +1424,4 @@ ARG = CHAIN ++ <[ ... UNARY YIELD CREMENT PARAM( FUNCTION GENERATOR
 
 # Tokens that expect INDENT on the right.
 BLOCK_USERS = <[ , : -> ELSE ASSIGN IMPORT UNARY DEFAULT TRY FINALLY
-                 HURL DECL DO LET FUNCTION GENERATOR ]>
+                 HURL DECL DO LET FUNCTION GENERATOR ... ]>

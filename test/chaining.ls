@@ -101,6 +101,7 @@ eq 42, do(0; parent.child.~method)
 eq 42, do(0; parent.child~"me#{'th'}od")
 eq 42, parent.child. ~ [\method] null
 eq 42, parent.child.~{method}.method!
+eq 42, parent.child.~{renamed:method}.renamed!
 eq "42" 42~toString!
 
 compileThrows 'invalid assign' 1 'o~m=g'
@@ -119,7 +120,7 @@ eq '2,3', '' + {2,3}<[2 3]>
 eq '-Infinity,Infinity', '' + Number[\NEGATIVE_INFINITY, \POSITIVE_INFINITY]
 
 k = \y
-o = {\x \y \z}{x, (k), 2: z}
+o = {\x \y \z}{x, (k[0]), 2: z}
 eq \x o.x
 eq \y o.y
 eq \z o.2
@@ -133,6 +134,15 @@ compileThrows 'calling a slice' 1 'a{0}()'
 
 compileThrows 'empty slice' 1 'o{}'
 compileThrows 'empty slice' 1 'o[,,]'
+
+compile-throws 'value in object slice is not a key' 1 'a{b: x + y}'
+compile-throws 'value in object slice is not a key' 1 'a{b.c}'
+compile-throws 'value in object slice is not a key' 1 'a{b: c.d}'
+compile-throws 'value in object slice is not a key' 1 'a{b: c.d ? 0}'
+
+# Don't permit the label syntax outside of patterns
+compile-throws 'unexpected label' 1 'foo{[0 1]:k}'
+compile-throws 'unexpected label' 1 'foo{k0:[0 1]:k1}'
 
 if 0 then @front{ne,ss}
 
@@ -214,6 +224,11 @@ eq '0,1' ''+o.a.b
 eq '2,3' ''+o.a.c.d
 eq 5 o.a.b.e.f.4
 
+a = []
+eq 2 a{}[0, 1].length
+eq \object typeof a.0
+eq \object typeof a.1
+
 # Bang Call
 eq '' String!
 (-> ok true)!
@@ -224,3 +239,11 @@ eq void f!?p
 
 f = void
 eq void f?!
+
+# Keyword literals in object slices
+keywords = arguments: 1 eval: 2 void: 3 on: 4 debugger: 5
+eq 1 keywords{arguments}arguments
+eq 2 keywords{eval}eval
+eq 3 keywords{void}void
+eq 4 keywords{on}on
+eq 5 keywords{debugger}debugger

@@ -57,6 +57,13 @@ eq '\\\\#{}\\\\\\\"', //
  \\ \"
 //.source
 
+# [coffee#3059](https://github.com/jashkenas/coffee-script/pull/3059)
+# Keep escaped whitespaces.
+ok  //^
+  a \ b　\　c \
+  d
+$//test 'a b\u3000c\nd'
+
 eq '(?:)' ////source
 
 eq // _ #{if 1 then \g else \m}//? + '', '/_/g'
@@ -87,6 +94,23 @@ eq \string typeof /^$/$
 eq \string typeof //^$//$
 eq \string typeof //^#{''}$//$
 
-eq      /\\\//$      /\\\//source
-eq    //\\\///$    //\\\///source
-eq //#{\\}\///$ //#{\\}\///source
+# [gkz/LiveScript#946](https://github.com/gkz/LiveScript/issues/946)
+# It's almost, but not quite true, that $ is equivalent to a more efficient
+# .source. What $ actually does is return the string that LiveScript would be
+# passing to the RegExp constructor, were the $ flag absent. There are some cases
+# where a LiveScript regular expression literal can correspond to a source string
+# that is not as fully escaped as a standards-compliant implementation of .source
+# would produce, yet is close enough to feed to RegExp anyway. In such cases,
+# the $-flagged expression will be different than the result of .source. (The
+# third test case below is such an example.) Note also that the implementation
+# of .source may vary based on the JS engine this test is running on; earlier
+# versions of Node.js would return .source strings with less escaping than modern
+# engines. For these reasons, it's important to always compare a .source with
+# another .source in these tests, instead of comparing the $-flagged expression
+# to .source as previous versions of these tests did.
+
+source-eq = (s, r) -> eq new RegExp(s).source, r.source
+
+source-eq      /\\\//$      /\\\//
+source-eq    //\\\///$    //\\\///
+source-eq //#{\\}\///$ //#{\\}\///

@@ -65,3 +65,10 @@ command-eq '-c --debug --map linked test/data/empty.ls', [
     finally
         file-delete 'test/data/empty.js'
         file-delete 'test/data/empty.js.map'
+
+# Use source maps for stack traces when running
+# gkz/LiveScript#953
+command-eq '-m embedded test/data/runtime-error.ls', [
+    'Failed at: test/data/runtime-error.ls'
+    /ReferenceError: doesNotExist is not defined\n    at Object\.<anonymous> \(.*\/test\/data\/runtime-error\.ls:2:17\).*/
+]

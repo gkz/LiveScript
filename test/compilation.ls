@@ -35,6 +35,7 @@ compileThrows 'unmatched `]`' 3 '[{\n\n]}'
 
 compileThrows 'missing `)CALL`' 1 'f('
 
+compileThrows "can't use label with a curried function (attempted label 'abc')" 1 ':abc (a, b) --> a + b'
 
 throws '''
   empty range on line 1
@@ -331,3 +332,43 @@ object:
         ]
       ]
   '''
+
+# [LiveScript#48](https://github.com/gkz/LiveScript/issues/48)
+saveHere = {}
+LiveScript.compile 'x ?= 1', bare: true, saveScope: saveHere
+code = LiveScript.compile 'y ?= 2', bare: true, saveScope: saveHere
+ok 0 <= code.indexOf 'var x, y'
+
+# The presence of the full "ClassName.prototype.methodName =" in the compiled
+# code is relevant to post-processors like Google's Closure Compiler as a cue
+# that these are class methods.
+compiled = LiveScript.compile '''
+  class A
+    one: -> 1
+    two: -> 2
+  class B extends A
+    three: -> 3
+    four: -> 4
+'''
+for <[
+  A.prototype.one A.prototype.two
+  B.prototype.three B.prototype.four
+]>
+  ok compiled.indexOf(..) >= 0 "missing #{..}"
+
+# [LiveScript#923](https://github.com/gkz/LiveScript/issues/923)
+# The lexer was keeping some state associated with the for comprehension past
+# its extent, which resulted in an incorrect lexing of the subsequent `in`
+# token. These don't comprehensively exercise the underlying flaw; they're
+# just regression checks for this specific report.
+LiveScript.compile '''
+[1 for a]
+[b in c]
+'''
+LiveScript.compile '''
+[[{b: {[.., 1] for a}}]]
+->
+  if c
+    d
+      .e (.f in [2 3])
+'''

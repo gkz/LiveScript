@@ -1,4 +1,4 @@
-LiveScript = require '..'
+LiveScript = require './index'
 
 # `.run`s LiveScript code and calls back, passing error if any.
 LiveScript.stab = (code, callback, filename) !->

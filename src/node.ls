@@ -9,18 +9,19 @@ module.exports = !(LiveScript) ->
     LiveScript.run = (code, {filename}:options?, {js, context} = {}) ->
         {main} = require
         # Hack for relative `require`.
-        if filename
-            dirname = path.dirname fs.realpath-sync do
-                filename = process.argv.1 = path.resolve filename
+        dirname = if filename
+            path.dirname fs.realpath-sync filename |>= path.resolve
         else
-            dirname = filename = '.'
+            filename = '.'
         main.paths = main.constructor._node-module-paths dirname
         main <<< {filename}
         unless js
             code = LiveScript.compile code, {...options, +bare}
+            code = that if code.code
         if context
             global.__run-context = context
             code = "return (function() {\n#code\n}).call(global.__runContext);"
+        filename += '(js)'
         try
             main._compile code, filename
         catch
@@ -29,7 +30,11 @@ module.exports = !(LiveScript) ->
     LiveScript <<<< events.EventEmitter.prototype
 
     require.extensions.'.ls' = (module, filename) ->
-        js = LiveScript.compile (fs.read-file-sync filename, 'utf8'), {filename, +bare, map: "embedded"} .code
+        file = fs.read-file-sync filename, 'utf8'
+        js = if '.json.ls' is filename.substr -8
+            'module.exports = ' + LiveScript.compile file, {filename, +json}
+        else
+            LiveScript.compile file, {filename, +bare, map: "embedded"} .code
         try
             module._compile js, filename
         catch

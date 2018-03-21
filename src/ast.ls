@@ -41,18 +41,6 @@ sn-remove-left = (node, count) ->
         if count <= 0
             return 0
     count
-sn-autofill = (node, parents = []) ->
-    if node instanceof SourceNode
-        if node.line
-            for p in parents
-                p.line = node.line
-                p.column = node.column
-            parents.length = 0
-        else
-            parents.push node
-        for child in node.children
-            sn-autofill child, parents
-    node
 
 SourceNode::replace = (...args) ->
     new SourceNode @line, @column, @source, [..replace(...args) for @children], @name
@@ -157,6 +145,7 @@ SourceNode::to-string = (...args) ->
         that.carp 'inconvertible statement' if @get-jump!
         fun = Fun [] Block this
         call = Call!
+        fun.async = true if o.in-async
         fun.generator = true if o.in-generator
         var hasArgs, hasThis
         @traverse-children !->
@@ -174,6 +163,8 @@ SourceNode::to-string = (...args) ->
         out = Parens(Chain fun<<<{+wrapper, @void} [call]; true)
         if o.in-generator
             out = new Yield 'yieldfrom', out
+        else if o.in-async
+            out = new Yield 'await', out
         out.compile o
 
     # Compiles a child node as a block statement.
@@ -182,6 +173,20 @@ SourceNode::to-string = (...args) ->
             sn(null, "{\n", code, "\n#{@tab}}")
         else
             sn(node, '{}')
+
+    # Spreads a transformation over a list and compiles it.
+    compile-spread-over: (o, list, transform) ->
+        ob = list instanceof Obj
+        them = list.items
+        for node, i in them
+            node.=it if sp = node instanceof Splat
+            node.=val if ob and not sp
+            node = transform node
+            node = lat = Splat node if sp
+            if ob and not sp then them[i].val = node else them[i] = node
+        if not lat and (@void or not o.level)
+            list = Block(if ob then [..val for them] else them) <<< {@front, +void}
+        list.compile o, LEVEL_PAREN
 
     # If the code generation wishes to use the result of a complex expression
     # in multiple places, ensure that the expression is only ever evaluated once,
@@ -199,11 +204,13 @@ SourceNode::to-string = (...args) ->
         if once then [sub, ref <<< {+temp}] else [sub, ref, [ref.value]]
 
     # Compiles to a variable/source pair suitable for looping.
-    compile-loop-reference: (o, name, ret) ->
+    compile-loop-reference: (o, name, ret, safe-access) ->
         if this instanceof Var   and o.scope.check @value
         or this instanceof Unary and @op in <[ + - ]> and -1/0 < +@it.value < 1/0
         or this instanceof Literal and not @is-complex!
-            return [@compile o] * 2
+            code = @compile o, LEVEL_PAREN
+            code = "(#code)" if safe-access and this not instanceof Var
+            return [code] * 2
         asn = Assign Var(tmp = o.scope.temporary name), this
         ret or asn.void = true
         [tmp; asn.compile o, if ret then LEVEL_CALL else LEVEL_PAREN]
@@ -222,14 +229,27 @@ SourceNode::to-string = (...args) ->
         @each-child (node, name, index) ~>
             fn(node, this, name, index) ? node.traverse-children fn, xscope
 
+    # Walks every descendent to expand notation like property shorthand and
+    # slices. `assign` is true if this node is in a negative position, like
+    # the right-hand side of an assignment. Overrides of this function can
+    # return a value to be replaced in the tree.
+    rewrite-shorthand: (o, assign) !->
+        for name in @children when child = @[name]
+            if \length of child
+                for node, i in child
+                    if node.rewrite-shorthand o, assign then child[i] = that
+            else if child.rewrite-shorthand o, assign then @[name] = that
+
     # Performs anaphoric conversion if a `that` is found within `@aTargets`.
     anaphorize: ->
         @children = @aTargets
         if @each-child hasThat
+            # Set a flag and deal with it in the Existence node (it's too
+            # tricky here).
             if (base = this)[name = @a-source] instanceof Existence
-                base.=[name]
-                name = \it
-            unless base[name]value is \that
+                base[name].do-anaphorize = true
+            # 'that = x' here is fine.
+            else if base[name]value is not \that
                 base[name] = Assign Var(\that), base[name]
         function hasThat
             it.value is \that or if it.a-source
@@ -239,8 +259,11 @@ SourceNode::to-string = (...args) ->
         @[@a-source] <<< {+cond}
 
     # Throws a syntax error, appending `@line` number to the message.
-    carp: (msg, type = SyntaxError) ->
-        throw type "#msg on line #{ @line or @traverse-children -> it.line }"
+    carp: (msg, type = SyntaxError) !-> throw type "#msg #{@line-msg!}"
+
+    warn: (msg) !-> console?warn "WARNING: #msg #{@line-msg!}"
+
+    line-msg: -> "on line #{ @line or @traverse-children -> it.line }"
 
     # Defines delegators.
     delegate: !(names, fn) ->
@@ -265,7 +288,7 @@ SourceNode::to-string = (...args) ->
 
     is-matcher: -> @is-string! or @is-regex!
 
-    # Do I assign a certain variable?
+    # Do I assign any variables? (Returns a non-empty array if so.)
     assigns: NO
 
     # Picks up name(s) from LHS.
@@ -275,14 +298,23 @@ SourceNode::to-string = (...args) ->
     unfold-assign : VOID
     unparen       : THIS
     unwrap        : THIS
-    maybe-key     : THIS
-    expand-slice  : THIS
+    maybe-key     : VOID
     var-name      : String
     get-accessors : VOID
     get-call      : VOID
     get-default   : VOID
     # Digs up a statement that jumps out of this node.
     get-jump      : VOID
+    is-next-unreachable : NO
+
+    # If this node can be used as a property shorthand, finds the implied key.
+    # If the key is dynamic, this node may be mutated so that it refers to a
+    # temporary reference that this function returns (whether a reference or
+    # the declaration of the reference is returned depends on the value of the
+    # assign parameter). Most of the interesting logic here is to be found in
+    # Parens::extract-key-ref, which handles the dynamic case.
+    extract-key-ref: (o, assign) -> @maybe-key! or
+        @carp if assign then "invalid assign" else "invalid property shorthand"
 
     invert: -> Unary \! this, true
 
@@ -401,6 +433,10 @@ class exports.Block extends Node
 
     get-jump: -> for node in @lines then return that if node.get-jump it
 
+    is-next-unreachable: ->
+        for node in @lines then return true if node.is-next-unreachable!
+        false
+
     # **Block** does not return its entire body, rather it
     # ensures that the final line is returned.
     make-return: ->
@@ -415,6 +451,7 @@ class exports.Block extends Node
         tab = o.indent
         codes = []
         for node in @lines
+            node = that if node.rewrite-shorthand o
             node = node.unfold-soak o or node
             continue if sn-empty(code = (node <<< {+front})compile o, level)
             codes.push tab
@@ -431,9 +468,9 @@ class exports.Block extends Node
             scope: @scope = Scope.root = new Scope
             ...options
         }
-        if saveTo = delete o.saveScope
+        if delete o.saveScope
             # use savedScope as your scope
-            o.scope = saveTo.savedScope or= o.scope
+            @scope = Scope.root = o.scope = that.savedScope or= o.scope
         delete o.filename
         o.indent = if bare = delete o.bare then '' else TAB
         if /^\s*(?:[/#]|javascript:)/test @lines.0?.code
@@ -464,13 +501,22 @@ class exports.Block extends Node
         lines.push Literal \void unless lines.length
         lines.0 <<< {@front}
         lines[*-1] <<< {@void}
-        return lines.0.compile o, level unless lines.1
+        unless lines.1
+            line = lines.0
+            line = that if line.rewrite-shorthand o
+            return line.compile o, level
         code = []
         last = lines.pop!
         for node in lines
+            node = that if node.rewrite-shorthand o
             code.push (node <<< {+void})compile(o, LEVEL_PAREN), ', '
+        last = that if last.rewrite-shorthand o
         code.push (last.compile o, LEVEL_PAREN)
         if level < LEVEL_LIST then sn(null, ...code) else sn(null, "(", ...code, ")")
+
+    # Blocks rewrite shorthand line-by-line as they're compiled to conserve
+    # shorthand temp variables.
+    rewrite-shorthand: VOID
 
 #### Atom
 # An abstract node for simple values.
@@ -506,6 +552,8 @@ class exports.Literal extends Atom
         else
             super ...
 
+    maybe-key: -> if ID.test @value then Key @value, @value not in <[arguments eval]> else this
+
     compile: (o, level ? o.level) ->
         switch val = "#{@value}"
         | \this      => return sn(this, o.scope.fun?bound or val)
@@ -531,7 +579,7 @@ class exports.Var extends Atom
 
     ::is-assignable = ::is-callable = YES
 
-    assigns: -> it is @value
+    assigns: -> [@value]
 
     maybe-key: -> Key(@value) <<< {@line}
 
@@ -546,7 +594,9 @@ class exports.Key extends Node
 
     is-complex: NO
 
-    assigns: -> it is @name
+    assigns: -> [@name]
+
+    maybe-key: THIS
 
     var-name: ->
         {name} = this
@@ -635,8 +685,6 @@ class exports.Chain extends Node
                 @head.called = true
             else if not @tails.1 and it.key?name is \prototype
                 @head.sproto = true
-        else if delete it.vivify
-            @head = Assign Chain(@head, @tails.splice 0, 9e9), that!, \= \||
         else if it instanceof Call and @tails.length is 1
         and bi and bi.op in logics = <[ && || xor ]>
             call = it
@@ -754,7 +802,7 @@ class exports.Chain extends Node
                 .add Index Key \apply
                 .add Call [context, Arr [this; Arr partial.args; Arr partial.partialized]]), post).compile o
         @carp 'invalid callee' if tails.0 instanceof Call and not head.is-callable!
-        @expand-slice o
+        @expand-vivify!
         @expand-bind o
         @expand-splat o
         @expand-star o
@@ -806,7 +854,7 @@ class exports.Chain extends Node
             return that
         for index, i in @tails then if op = index.assign
             index.assign = ''
-            left = Chain @head, @tails.splice 0 i .expand-slice o .unwrap!
+            left = Chain @head, @tails.splice 0 i .unwrap!
             if left instanceof Arr
                 # `[a, b].=reverse()` => `[a, b] = [a, b].reverse()`
                 lefts = left.items
@@ -832,6 +880,13 @@ class exports.Chain extends Node
                     [@head, ctx] = Chain(@head, tails.splice 0 i-1)cache o, true
                     i = 0
                 call <<< method: \.apply, args: [ctx or Literal \null; JS args]
+
+    expand-vivify: !->
+        {tails} = this
+        i = 0
+        while i < tails.length when delete tails[i++]vivify
+            @head = Assign Chain(@head, tails.splice 0, i), that!, \= \||
+            i = 0
 
     expand-bind: !(o) ->
         {tails} = this
@@ -863,6 +918,13 @@ class exports.Chain extends Node
             if it.value is \*               then stars.push it
             else unless it instanceof Index then it.each-child seek
 
+    rewrite-shorthand: (o, assign) ->
+        @head = that if @head.rewrite-shorthand o
+        for item, i in @tails
+            @tails[i] = that if item.rewrite-shorthand o, assign
+        @expand-slice o, assign
+        @unwrap!
+
     # `a[x, y] = b{z} = c` => `[a[x], a[y]] = {z: b.z} = c`
     expand-slice: (o, assign) ->
         {tails} = this
@@ -874,6 +936,9 @@ class exports.Chain extends Node
             @head = x <<< {@front}
             i = -1
         this
+
+    extract-key-ref: (o, assign) ->
+        @tails[*-1]?key?extract-key-ref o, assign or super ...
 
 #### Call
 # `x(y)`
@@ -943,7 +1008,8 @@ class List extends Node
     named : (@name) -> this
 
     is-empty: -> not @items.length
-    assigns: -> for node in @items then return true if node.assigns it
+    assigns: -> with [x for node in @items when node.assigns! for x in that]
+        ..push that if @name
 
     @compile = (o, items, deep-eq) ->
         switch items.length
@@ -965,6 +1031,37 @@ class List extends Node
         o <<< {indent, level}
         sn(this, ...code)
 
+    # `base[x, ...y]` => `[base[x], ...base[y]]`
+    # `base{x: y}` => `{x: base.y}`
+    to-slice: (o, base, symbol, assign) ->
+        {items} = this
+        is-obj = this instanceof Obj
+        if items.length > 1
+        then [base, ref, temps] = base.cache o
+        else ref = base
+        for item, i in items when not item.comment
+            if is-obj
+                {val} = item
+                unless val instanceof List
+                    val.=maybe-key! or @carp "value in object slice is not a key"
+            else
+                val = item
+                val.=it if splat = val instanceof Splat
+                continue if val.is-empty!
+            chain =
+                if val instanceof List
+                then val.to-slice o, base, symbol, assign
+                else Chain base, [Index val, symbol]
+            if is-obj
+            then item.val = chain
+            else items[i] = if splat then Splat chain else chain
+            base = ref
+        chain or @carp 'empty slice'
+        @.[]temps.push temps.0 if temps
+        this
+
+    extract-key-ref: -> if @name? then Key that else super ...
+
 #### Obj
 # `{x: y}`
 class exports.Obj extends List
@@ -972,38 +1069,8 @@ class exports.Obj extends List
 
     as-obj: THIS
 
-    # `base{x: y}` => `{x: base.y}`
-    to-slice: (o, base, symbol, assign) ->
-        {items} = this
-        if items.length > 1
-            [base, ref, temps] = base.cache o
-        else
-            ref = base
-        for node, i in items
-            continue if node.comment
-            if node instanceof [Prop, Splat]
-                node[name = node.children[*-1]] =
-                    chain = Chain base, [Index node[name]maybe-key!]
-            else
-                # `o{k or v}` => `{k: a.k or v}`
-                node.=first if logic = node.get-default!
-                if node instanceof Parens
-                    # `a{(++i)}` => `{(ref$ = ++i): a[ref$]}`
-                    [key, node] = node.cache o, true
-                    # `a{(++i)} = b` => `{(ref$): a[ref$ = ++i]} = b`
-                    #                => `a[ref$ = ++i] = b[ref$]`
-                    [key, node] = [node, key] if assign
-                    key = Parens key
-                else key = node
-                val = chain = Chain base, [Index node.maybe-key!, symbol]
-                val = logic <<< first: val if logic
-                items[i] = Prop key, val
-            base = ref
-        chain or @carp 'empty slice'
-        (chain.head = Var temps.0)temp = true if temps
-        this
-
     compile-node: (o) ->
+        @carp "unexpected label" if @name?
         {items} = this
         return sn(this, if @front then '({})' else '{}') unless items.length
         code = []
@@ -1013,31 +1080,25 @@ class exports.Obj extends List
             if node.comment
                 code.push idt, node.compile o
                 continue
-            node.=first if logic = node.get-default!
-            if node instanceof Splat or (node.key or node) instanceof Parens
+            if node.key instanceof [Splat, Parens]
                 rest = items.slice i
                 break
-            if logic
+            if node.logic
                 # `{@a or b}` => `{a: @a or b}`
-                if node instanceof Prop
-                then node.val = logic <<< first: node.val
-                else node = Prop node, logic <<< first: node
-            if @deep-eq and node instanceof Prop
+                node.val = node.logic <<< first: node.val
+            if @deep-eq
                 if node.val instanceof Var and node.val.value is \_
                     node.val = Obj [Prop (Key \__placeholder__), Literal true]
                 else if node.val instanceof [Obj, Arr]
                     node.val.deep-eq = true
             if multi then code.push \, else multi = true
             code.push idt
-            if node instanceof Prop
-                {key, val} = node
-                if node.accessor
-                    code.push (node.compile-accessor o, key.=compile o)
-                else
-                    val.rip-name key
-                    code.push (key.=compile o), ": ", (val.compile o, LEVEL_LIST)
+            {key, val} = node
+            if node.accessor
+                code.push (node.compile-accessor o, key.=compile o)
             else
-                code.push (key = node.compile o), ": ", key
+                val.rip-name key
+                code.push (key.=compile o), ": ", (val.compile o, LEVEL_LIST)
             # Canonicalize the key, e.g.: `0.0` => `0`
             ID.test key or key = do Function "return #key"
             node.carp "duplicate property \"#key\"" unless dic"#key." .^.= 1
@@ -1050,18 +1111,18 @@ class exports.Obj extends List
 # `x: y`
 class exports.Prop extends Node
     (@key, @val) ~>
-        return Splat @val if key.value is \...
+        @key = Splat! if key?value is \...
         if val.get-accessors!
             @val = that
             for fun in that
                 fun.x = if fun.hushed = fun.params.length then \s else \g
             this <<< {\accessor}
 
-    children: <[ key val ]>
+    children: <[ key val logic ]>
 
     show: -> @accessor
 
-    assigns: -> @val.assigns? it
+    assigns: -> @val.assigns?!
 
     compile-accessor: (o, key) ->
         funs = @val
@@ -1082,6 +1143,25 @@ class exports.Prop extends Node
         obj.items.push Prop Key(\enumerable  ), Literal true
         obj.compile o
 
+    rewrite-shorthand: (o, assign) !->
+        super ...
+
+        # Special logic for `{a = b}` meaning the same thing as `{a ? b}`
+        @val.=maybe-logic! if not @key? and @val instanceof Assign
+
+        # `{+flag}`
+        if not @key? and @val instanceof Unary and @val.op in <[+ -]>
+            @key = @val.it.maybe-key! or @carp "invalid property flag shorthand"
+            @val = Literal @val.op is \+
+
+        # Pull logical operators out of the value so that, e.g., slicing
+        # doesn't have to think about them
+        if @val instanceof Binary and @val.get-default!
+            @val.=first
+            @logic = that <<< first: null
+
+        @key ?= @val.extract-key-ref o, assign
+
 #### Arr
 # `[x, y]`
 class exports.Arr extends List
@@ -1091,20 +1171,8 @@ class exports.Arr extends List
 
     as-obj: -> Obj([Prop Literal(i), item for item, i in @items])
 
-    # `base[x, ...y]` => `[base[x], ...base[y]]`
-    to-slice: (o, base, symbol) ->
-        {items} = this
-        if items.length > 1 then [base, ref] = base.cache o else ref = base
-        for item, i in items
-            item.=it if splat = item instanceof Splat
-            continue if item.is-empty!
-            chain = Chain base, [Index item, symbol]
-            items[i] = if splat then Splat chain else chain
-            base = ref
-        chain or @carp 'empty slice'
-        this
-
     compile: (o) ->
+        @carp "unexpected label" if @name?
         {items} = this
         return sn(this, '[]') unless items.length
         unless sn-empty(code = Splat.compile-array o, items)
@@ -1122,21 +1190,20 @@ class exports.Yield extends Node
 
     children: <[ it ]>
 
-    show: -> if @op is 'yieldfrom' then 'from' else ''
+    show: -> switch @op
+    | 'yield' => ''
+    | 'yieldfrom' => 'from'
+    | 'await' => 'await'
 
     ::delegate <[ isCallable ]> -> yes
 
     compile-node: (o) ->
-        code = []
-
-        if @op is \yieldfrom
-            code.push 'yield*'
-        else
-            code.push 'yield'
-
-        if @it
-            code.push " #{@it.compile o, LEVEL_OP + PREC.unary}"
-
+        code = [(switch @op
+        | 'yield' => 'yield'
+        | 'yieldfrom' => 'yield*'
+        | 'await' => 'await'
+        )]
+        if @it then code.push " #{@it.compile o, LEVEL_OP + PREC.unary}"
         sn(this, "(", ...code, ")")
 
 #### Unary operators
@@ -1230,20 +1297,18 @@ class exports.Unary extends Node
             code.unshift op
         if o.level < LEVEL_CALL then sn(this, ...code) else sn(this, "(", ...code, ")")
 
-    # `^delete o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
+    # `^delete ...o[p, ...q]` => `[^delete o[p], ...^delete o[q]]`
+    # `^delete ...o{p, ...q}` => `{p: ^delete o[p], ...^delete o[q]}`
     compile-spread: (o) ->
         {it} = this
         ops = [this]
         while it instanceof constructor, it.=it then ops.push it
-        return '' unless it.=expand-slice(o)unwrap! instanceof Arr
-                 and (them = it.items)length
-        for node, i in them
-            node.=it if sp = node instanceof Splat
+        return '' unless it instanceof Splat
+                  and it.=it instanceof List
+
+        @compile-spread-over o, it, (node) ->
             for op in ops by -1 then node = constructor op.op, node, op.post
-            them[i] = if sp then lat = Splat node else node
-        if not lat and (@void or not o.level)
-            it = Block(them) <<< {@front, +void}
-        it.compile o, LEVEL_PAREN
+            node
 
     # `v = delete o.k`
     compile-pluck: (o) ->
@@ -1262,13 +1327,7 @@ class exports.Unary extends Node
 
 #### Binary operators
 class exports.Binary extends Node
-    (op, first, second, destructuring) ~>
-        if destructuring
-            logic = op.logic
-            logic = destructuring if typeof! destructuring is \String
-            op = | logic    => that
-                 | op is \= => \?
-                 | _        => \=
+    (op, first, second) ~>
         @partial = not first? or not second?
         if not @partial
             if \= is op.char-at op.length-1 and op.char-at(op.length-2) not in <[ = < > ! ]>
@@ -1335,7 +1394,7 @@ class exports.Binary extends Node
                 @first .cond = true
                 @second.cond = true
         case \instanceof
-            {items}:rite = @second.expand-slice(o)unwrap!
+            {items}:rite = @second
             if rite instanceof Arr
                 return @compileAnyInstanceOf o, items if items.1
                 @second = items.0 or rite
@@ -1348,7 +1407,7 @@ class exports.Binary extends Node
                     return @compileRegexEquals o, that
                 if @op is \=== and (@first instanceof Literal and @second instanceof Literal)
                 and @first.is-what! isnt @second.is-what!
-                    console?.warn "WARNING: strict comparison of two different types will always be false: #{@first.value} == #{@second.value}"
+                    @warn "strict comparison of two different types will always be false: #{@first.value} == #{@second.value}" unless o.no-warn
             return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
         @first <<< {@front}
         code = [(@first .compile o, level = LEVEL_OP + PREC[@op]), " ", (@mapOp @op), " ", (@second.compile o, level)]
@@ -1405,8 +1464,7 @@ class exports.Binary extends Node
     compileSplit  : -> @compileMethod it, \String \split
 
     compileRepeat: (o) ->
-        {first: x, second: n} = this
-        {items} = x.=expand-slice o .unwrap!
+        {first: {items}:x, second: n} = this
         arr = x.is-array! and \Array
         if items and !sn-empty(arrCode = Splat.compile-array o, items)
             x     = JS arrCode
@@ -1510,17 +1568,17 @@ class exports.Assign extends Node
 
     show: -> [,]concat(@unaries)reverse!join(' ') + [@logic] + @op
 
-    assigns: -> @left.assigns it
+    assigns: -> @left.assigns!
 
-    ::delegate <[ isCallable isRegex ]> -> @op in <[ = := ]> and @right[it]!
+    ::delegate <[ isCallable isRegex ]> -> @op in <[ = := ]> and @right and @right[it]!
 
     is-array: -> switch @op
-        | \= \:= => @right.is-array!
-        | \/=    => @right.is-matcher!
+        | \= \:= => @right and @right.is-array!
+        | \/=    => @right and @right.is-matcher!
 
     is-string: -> switch @op
-        | \= \:= \+= \*= => @right.is-string!
-        | \-=            => @right.is-matcher!
+        | \= \:= \+= \*= => @right and @right.is-string!
+        | \-=            => @right and @right.is-matcher!
 
     unfold-soak: (o) ->
         if @left instanceof Existence
@@ -1535,7 +1593,11 @@ class exports.Assign extends Node
 
     compile-node: (o) ->
         return @compileSplice o if @left instanceof Slice and @op is \=
-        left = @left.expand-slice(o, true)unwrap!
+        left = @left
+        left.=it if sp = @left instanceof Splat
+        if sp
+            left instanceof List or @left.carp 'invalid splat'
+            return @compile-spread o, left
         unless @right
             left.is-assignable! or left.carp 'invalid unary assign'
             [left, @right] = Chain left .cache-reference o
@@ -1583,12 +1645,15 @@ class exports.Assign extends Node
         sn(null, ...code)
 
     compileConditional: (o, left) ->
-        if left instanceof Var and @logic in <[ ? ]> and @op is \=
+        if left instanceof Var and @logic is \? and @op is \=
             o.scope.declare left.value, left
-        lefts = Chain(left)cache-reference o
+        [lcache, left] = Chain(left)cache-reference o
         # Deal with `a && b ||= c`.
         o.level += LEVEL_OP < o.level
-        morph = Binary @logic, lefts.0, @<<<{-logic, left: lefts.1}
+        if @logic is \? and @op not in <[ = := ]>
+            @logic = \&&
+            lcache |>= Existence
+        morph = Binary @logic, lcache, @<<<{-logic, left}
         sn(this, (morph <<< {@void})compile-node o)
 
     compileMinMax: (o, left, right) ->
@@ -1611,17 +1676,21 @@ class exports.Assign extends Node
         if left.name
             cache = sn(this, that, " = ", rite)
             o.scope.declare rite = that, left
-        else if (ret or len > 1) and (not ID.test rite.to-string! or left.assigns rite.to-string!)
+        else if (ret or len > 1) and (not ID.test rite.to-string! or if left.assigns! then rite.to-string! in that)
             cache = sn(this, (rref = o.scope.temporary!), " = ", rite)
             rite  = rref
-        list = @"rend#{ left.constructor.display-name }" o, items, rite
+        if rite.to-string! is \arguments and not ret
+            destructure-args = true
+            if left not instanceof Arr
+                @carp 'arguments can only destructure to array'
+        list = @"rend#{ left.constructor.display-name }" o, items, rite, destructure-args
         o.scope.free rref  if rref
         list.unshift cache if cache
         list.push rite     if ret or not list.length
         code = []
+        sep = if destructure-args then '; ' else ', '
         for item in list
-            code.push item
-            code.push ", "
+            code.push item, sep
         code.pop!
         if list.length < 2 or o.level < LEVEL_LIST then sn(this, ...code) else sn(this, "(", ...code, ")")
 
@@ -1634,7 +1703,23 @@ class exports.Assign extends Node
                 .add Index (Key \concat), \. true .add Call [right-node])]; right]
             .compile o, LEVEL_LIST))
 
-    rendArr: (o, nodes, rite) ->
+    compile-spread: (o, left) ->
+        [rite, rref] =
+            if @unaries then [that] * 2
+            else if left.items.length <= 1 then [@right] * 2
+            else @right.cache o, true
+
+        @compile-spread-over o, left, ~>
+            result = constructor it, rite, @op, @logic
+            rite := rref
+            result
+
+    rendArr: (o, nodes, rite, destructure-args) ->
+        ~function args-slice(begin, end)
+            # [&[..] for from (begin) til (end)]
+            new For {+ref, from: begin, op: \til, to: end}
+                .make-comprehension (Chain Var \arguments .add Index Literal \..), []
+        ret = []
         for node, i in nodes
             continue if node.is-empty!
             if node instanceof Splat
@@ -1642,40 +1727,77 @@ class exports.Assign extends Node
                 skip = (node.=it).is-empty!
                 if i+1 is len = nodes.length
                     break if skip
-                    val = Arr.wrap JS do
-                        util(\slice) + \.call( + rite + if i then ", #i)" else \)
+                    if destructure-args
+                        val = args-slice do # from i to &length
+                            Literal(i)
+                            (Chain Var \arguments .add Index Key \length)
+                    else
+                        val = Arr.wrap JS do
+                            util(\slice) + \.call( + rite + if i then ", #i)" else \)
                 else
                     val = ivar = "#rite.length - #{ len - i - 1 }"
                     # Optimize `[..., a] = b`.
                     continue if skip and i+2 is len
                     start = i+1
-                    @temps = [ivar = o.scope.temporary \i]
-                    val = if skip then node = Var ivar; Var val else
-                        Arr.wrap JS "#i < (#ivar = #val)
-                                  \ ? #{ util \slice }.call(#rite, #i, #ivar)
-                                  \ : (#ivar = #i, [])"
+                    @.[]temps.push ivar = o.scope.temporary \i
+                    val = switch
+                    | skip
+                        Arr.wrap JS "#i < (#ivar = #val) ? #i : (#ivar = #i)"
+                    | destructure-args
+                        args-slice do
+                            JS "#i < (#ivar = #val) ? #i : (#ivar = #i)"
+                            Var ivar
+                    | _
+                        Arr.wrap JS do
+                            "#i < (#ivar = #val)
+                            \ ? #{ util \slice }.call(#rite, #i, #ivar)
+                            \ : (#ivar = #i, [])"
             else
                 (inc = ivar) and start < i and inc += " + #{ i - start }"
                 val = Chain rcache||=Literal(rite), [Index JS inc || i]
-            if node instanceof Assign
-                node = Binary node.op, node.left, node.right, (node.logic or true)
-            (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
+            if destructure-args
+                if node not instanceof Var and val instanceof For
+                    # avoid accidentally creating closure
+                    @.[]temps.push tmp = o.scope.temporary \ref
+                    vtmp = Var tmp
+                    ret.push (this with {left: vtmp, right: val, +void})compile o, LEVEL_TOP
+                    ret.push (this with {left: node, right: vtmp, +void})compile o, LEVEL_TOP
+                else
+                    ret.push (this with {left: node, right: val, +void})compile o, LEVEL_TOP
+            else
+                ret.push (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
+        ret
 
     rendObj: (o, nodes, rite) ->
-        for node in nodes
-            node.=it if splat = node instanceof Splat
-            # `{a or b} = c` => `a = c.a or b`
-            node.=first if logic = node.get-default!
-            if node instanceof Parens
-                [node, key] = Chain(node.it)cache-reference o
-            else if node instanceof Prop
-            then node = ({key} = node)val
-            else key  = node
-            node = CopyL node, Var node.name if node instanceof Key
-            node = logic <<< first: node if logic
-            val  = Chain rcache||=Var(rite), [Index key.maybe-key!]
-            val  = Import Obj!, val if splat
-            (this with {left: node, right: val, +void})compile o, LEVEL_PAREN
+        keys = []
+        pairs = []
+        rvar = Var rite
+        for {key, val: lval, logic} in nodes
+            lval.=unparen!
+            if key instanceof Splat
+                logic? and @carp "invalid assign"
+                excludes = Obj [Prop ..extract-key-ref(o, true, this), Literal 0 for keys]
+                val = Chain Var(util \copyWithout) .add Call [rvar, excludes]
+            else
+                keys.push key
+                # `{a or b} = c` => `a = c.a or b`
+                lval = logic <<< first: lval if logic
+                val  = Chain rvar, [Index key]
+            # Defer compilation because keys might be mutated by a later splat
+            pairs.push [lval, val]
+        for [left, right] in pairs
+            (this with {left, right, +void, temps:[]})compile o, LEVEL_PAREN
+
+    rewrite-shorthand: (o, assign) !->
+        # Special logic for `[a = b] = c` meaning the same thing as `[a ? b] = c`
+        if assign
+            @carp "invalid assign" if this is bin = @maybe-logic!
+            return bin.rewrite-shorthand(o, true) ? bin
+        @left = that if @left?rewrite-shorthand o, true
+        @right = that if @right?rewrite-shorthand o
+
+    maybe-logic: ->
+        if @op is \= then Binary @logic || \? @left, @right else this
 
 #### Import
 # Copies properties from right to left.
@@ -1710,7 +1832,7 @@ class exports.Import extends Node
             if right instanceof Chain
                 right = right.unfold-soak o
                      or right.unfold-assign o
-                     or right.expand-slice o .unwrap!
+                     or right
             return @compile-assign o, right.as-obj!items if right instanceof List
         (CopyL this, Call.make Util("import#{ @all or '' }"), [@left, right]) .compile-node o
 
@@ -1719,7 +1841,7 @@ class exports.Import extends Node
     compile-assign: (o, items) ->
         return @left.compile o unless items.length
         top = not o.level
-        if items.length < 2 and (top or @void or items.0 instanceof Splat)
+        if @proto or (items.length < 2 and (top or @void or items.0.key instanceof Splat))
             reft = @left
             reft = Parens reft if reft.is-complex!
         else [left, reft, @temps] = @left.cache o
@@ -1731,26 +1853,24 @@ class exports.Import extends Node
             if com = node.comment
                 code.push node.compile o
                 continue
-            if node instanceof Splat
-                code.push Import(reft, node.it)compile o
+            {key, val, logic} = node
+            if key instanceof Splat
+                code.push (CopyL this, Import reft, val)compile o
                 continue
-            node.=first if logic = node.get-default!
-            if dyna = node instanceof Parens
-                [key, val] = node.it.cache o, true
-            else if node instanceof Prop
-                {key, val} = node
-                if node.accessor
-                    key = JS "'#{key.name}'" if key instanceof Key
-                    code.push "Object.defineProperty(", (reft.compile o, LEVEL_LIST), ", ", (key .compile o, LEVEL_LIST), ", ", (node.compile-descriptor o), ")"
-                    continue
-            else key = val = node
-            dyna  or  key.=maybe-key!
+            if node.accessor
+                key = JS "'#{key.name}'" if key instanceof Key
+                code.push "Object.defineProperty(", (reft.compile o, LEVEL_LIST), ", ", (key .compile o, LEVEL_LIST), ", ", (node.compile-descriptor o), ")"
+                continue
             logic and val = logic <<< first: val
             code.push (Assign(Chain reft, [Index key]; val)compile o, LEVEL_PAREN)
         return sn(null, ...code) if top
-        @void or node instanceof Splat or
+        @void or key instanceof Splat or
             code.push (if com then ' ' else ', '), (reft.compile o, LEVEL_PAREN)
         if o.level < LEVEL_LIST then sn(null, ...code) else sn(null, "(", ...code, ")")
+
+    rewrite-shorthand: (o, assign) !->
+        @left = that if @left?rewrite-shorthand o, assign
+        @right = that if @right?rewrite-shorthand o
 
 #### In
 # Handles `in` operation that tests if the left operand is included within
@@ -1761,11 +1881,19 @@ class exports.In extends Node implements Negatable
     children: <[ item array ]>
 
     compile-node: (o) ->
-        {items} = array = @array.expand-slice(o)unwrap!
-        if array not instanceof Arr or items.length < 2
+        {items} = array = @array
+        if array not instanceof Arr
             return sn(this, (if @negated then \! else ''), (util \in), "(", (@item.compile o, LEVEL_LIST), ", ", (array.compile o, LEVEL_LIST), ")")
+        if items.length == 0
+            @warn "value can never be `in` an empty array" unless o.no-warn
+            value = "#{!!@negated}"
+            return do
+                if @item.is-complex!
+                    sn(this, "(", (@item.compile o, LEVEL_LIST), ", ", value, ")")
+                else
+                    sn(this, value)
         code = []
-        [sub, ref] = @item.cache o, false, LEVEL_PAREN
+        [sub, ref] = if items.length == 1 then [@item.compile o, LEVEL_PAREN]*2 else @item.cache o, false, LEVEL_PAREN
         [cmp, cnj] = if @negated then [' !== ' ' && '] else [' === ' ' || ']
         for test, i in items
             code.push cnj if code.length > 0
@@ -1775,7 +1903,7 @@ class exports.In extends Node implements Negatable
             else
                 code.push (if i or sub is ref then ref else "(#sub)"), cmp, (test.compile o, LEVEL_OP + PREC\== )
         sub is ref or o.scope.free ref
-        if o.level < LEVEL_OP + PREC\|| then sn(this, ...code) else sn(this, "(", ...code, ")")
+        if o.level < LEVEL_OP + PREC[if items.length == 1 then \=== else \||] then sn(this, ...code) else sn(this, "(", ...code, ")")
 
 #### Existence
 # Checks a value for existence--not `undefined` nor `null`.
@@ -1787,17 +1915,26 @@ class exports.Existence extends Node implements Negatable
     compile-node: (o) ->
         node = @it.unwrap! <<< {@front}
         code = [(node.compile o, LEVEL_OP + PREC\==)]
+        if @do-anaphorize
+            o.scope.declare \that Var \that
         if node instanceof Var and not o.scope.check code.join(""), true
             [op, eq] = if @negated then <[ || = ]> else <[ && ! ]>
+            if @do-anaphorize
+                [anaph-pre, anaph-post] = if @negated
+                    then [["(that = undefined) || "], []]
+                    else [[], [" && (that = ", ...code, ", true)"]]
             code = ["typeof ", ...code, " #eq= 'undefined' #op ", ...code, " #eq== null"]
+            code = that ++ code if anaph-pre?
+            code = code ++ that if anaph-post?
         else
+            code = ["(that = ", ...code, ")"] if @do-anaphorize
             code.push " #{ op = if @negated then \== else \!= } null"
         if o.level < LEVEL_OP + PREC[op] then sn(this, ...code) else sn(this, "(", code, ")")
 
 #### Fun
 # A function definition. This is the only node that creates a `new Scope`.
 class exports.Fun extends Node
-    (@params or [], @body or Block!, @bound and \this$, @curried or false, @hushed = false, @generator = false) ~>
+    (@params or [], @body or Block!, @bound and \this$, @curried or false, @hushed = false, @generator = false, @async = false) ~>
 
     children: <[ params body ]>
 
@@ -1812,6 +1949,8 @@ class exports.Fun extends Node
     # Short-circuit `traverse-children` method to prevent it
     # from crossing scope boundaries by default.
     traverse-children: (, xscope) -> super ... if xscope
+
+    rewrite-shorthand: VOID
 
     make-return: -> if @statement then this <<< {+returns} else super ...
 
@@ -1829,7 +1968,12 @@ class exports.Fun extends Node
         o.indent += TAB
         {body, name, tab} = this
         code = [\function]
-        if @generator
+        if @async
+            @ctor and @carp "a constructor can't be async"
+            @generator and @carp "a generator can't be async"
+            o.in-async = true
+            code.unshift 'async '
+        else if @generator
             @ctor and @carp "a constructor can't be a generator"
             o.in-generator = true
             code.push \*
@@ -1879,13 +2023,16 @@ class exports.Fun extends Node
             break unless p.is-empty! or p.filler
             --params.length
         for p, i in params
+            if p.left instanceof Splat
+                # splats + default/operator arguments = too ambiguous to support
+                p.carp 'invalid splat'
             if p instanceof Splat
                 @has-splats = true
                 splace = i
             # `(a = x) ->` => `(a ? x) ->`
             else if p.op is \=
                 params[i] = Binary (p.logic or \?), p.left, p.right
-        # `(a, ...b, c) ->` => `(a) -> [[] ...b, c] = @@`
+        # `(a, ...b, c) ->` => `(a) -> [[] ...b, c] = &`
         if splace?
             rest = params.splice splace, 9e9
         else if @accessor
@@ -1894,30 +2041,28 @@ class exports.Fun extends Node
             params.0 = Var \it if body.traverse-children -> it.value is \it or null
         names   = []
         assigns = []
-        if params.length
-            dic = {}
-            for p in params
-                vr = p
-                vr.=first if df = vr.get-default!
-                if vr.is-empty!
-                    vr = Var scope.temporary \arg
-                else if vr.value is \..
-                    vr = Var o.ref = scope.temporary!
-                else if vr not instanceof Var
-                    unaries = []
-                    while vr instanceof Unary
-                        has-unary = true
-                        unaries.push vr
-                        vr.=it
-                    v = Var delete (vr.it || vr)name || vr.var-name! || scope.temporary \arg
-                    assigns.push Assign vr, switch
-                        | df        => Binary p.op, v, p.second
-                        | has-unary => fold ((x, y) -> y.it = x; y), v, unaries.reverse!
-                        | otherwise => v
-                    vr = v
-                else if df
-                    assigns.push Assign vr, p.second, \=, p.op, true
-                names.push (scope.add vr.value, \arg, p), ', '
+        for p in params
+            vr = p
+            vr.=first if df = vr.get-default!
+            if vr.is-empty!
+                vr = Var scope.temporary \arg
+            else if vr.value is \..
+                vr = Var o.ref = scope.temporary!
+            else if vr not instanceof Var
+                unaries = []
+                while vr instanceof Unary
+                    has-unary = true
+                    unaries.push vr
+                    vr.=it
+                v = Var delete (vr.it || vr)name || vr.var-name! || scope.temporary \arg
+                assigns.push Assign vr, switch
+                    | df        => Binary p.op, v, p.second
+                    | has-unary => fold ((x, y) -> y.it = x; y), v, unaries.reverse!
+                    | otherwise => v
+                vr = v
+            else if df
+                assigns.push Assign vr, p.second, \=, p.op, true
+            names.push (scope.add vr.value, \arg, p), ', '
         if rest
             while splace-- then rest.unshift Arr!
             assigns.push Assign Arr(rest), Literal \arguments
@@ -1945,6 +2090,7 @@ class exports.Class extends Node
         name = decl or @name
         if ID.test name || '' then fun.cname = name else name = \constructor
         proto = Var \prototype
+        vname = fun.proto = Var fun.bound = name
         const ctor-name = \constructor$$
         var ctor, ctor-place
         import-proto-obj = (node, i) ->
@@ -1972,7 +2118,9 @@ class exports.Class extends Node
                     prop.val.class-bound = true
                 for v in [] ++ prop.val
                     v.meth = key
-            if node.items.length then Import proto, node else Literal 'void'
+            if node.items.length
+              Import(Chain vname .add Index Key \prototype; node) <<< {+proto}
+            else Literal 'void'
 
         for node, i in lines
             if node instanceof Obj
@@ -2012,7 +2160,7 @@ class exports.Class extends Node
                          .add Call [Literal \this; Literal "'_#{f.name}'"])
 
 
-        lines.push vname = fun.proto = Var fun.bound = name
+        lines.push vname
         args = []
         if @sup
             args.push that
@@ -2052,6 +2200,8 @@ class exports.Super extends Node
             return sn(this, that, ".superclass") if o.scope.fun?name
         sn(this, \superclass)
 
+    maybe-key: -> Key \super true
+
 #### Parens
 # An extra set of parentheses,
 # specifying evaluation order and/or forcing expression.
@@ -2062,7 +2212,7 @@ class exports.Parens extends Node
 
     show: -> @string and '""'
 
-    ::delegate <[ isComplex isCallable isArray isRegex ]> -> @it[it]!
+    ::delegate <[ isComplex isCallable isArray isRegex isNextUnreachable ]> -> @it[it]!
 
     is-string: -> @string or @it.is-string!
 
@@ -2078,8 +2228,28 @@ class exports.Parens extends Node
         then it.compile-closure o
         else sn(null, sn(@lb, "("), (it.compile o, LEVEL_PAREN), sn(@rb, ")"))
 
+    maybe-key: THIS
+
+    extract-key-ref: (o, assign, temp-owner) ->
+        # When assigning to an object splat, the lifetimes of the temporary
+        # variables used for dynamic keys have to be extended.
+        if temp-owner? and (v = @it) instanceof Var and delete v.temp
+            temp-owner[]temps.push v.value
+        if @it instanceof Chain and assign
+            # `{(a.b.c)} = d` => `(ref$ = a.b).c = d[ref$.c]`
+            [@it, ref] = @it.cache-reference o
+            return Parens ref
+        # `a{(++i)}` => `{(ref$ = ++i): a[ref$]}`
+        [key, val] = @it.cache o, true
+        # `a{(++i)} = b` => `{(ref$): a[ref$ = ++i]} = b`
+        #                => `a[ref$ = ++i] = b[ref$]`
+        [key, val] = [val, key] if assign
+        @it = val.unparen!
+        Parens key
+
 #### Splat
-# A splat, either as an argument to a call
+# A splat, either as an argument to a call,
+# the operand of a unary operator to be spread,
 # or as part of a destructuring assignment.
 class exports.Splat extends Node
     (@it, @filler) ~>
@@ -2088,7 +2258,7 @@ class exports.Splat extends Node
 
     is-assignable: YES
 
-    assigns: -> @it.assigns it
+    assigns: -> @it.assigns!
 
     compile: -> @carp 'invalid splat'
 
@@ -2126,7 +2296,8 @@ class exports.Splat extends Node
 
     function ensure-array node
         return node if node.is-array!
-        Call.make JS(util(\slice) + \.call), [node]
+        util \slice
+        Call.make Util(\arrayFrom), [node]
 
 #### Jump
 # `break` `continue`
@@ -2137,6 +2308,7 @@ class exports.Jump extends Node
 
     is-statement : YES
     make-return  : THIS
+    is-next-unreachable : YES
 
     get-jump: (ctx or {}) ->
         return this unless ctx[@verb]
@@ -2305,27 +2477,25 @@ class exports.For extends While
             return true if child instanceof Yield
         if @let
             @item = Literal \.. if delete @ref
-            body = Block Call.let do
-                with []
-                    ..push Assign Var(that), Literal \index$$ if @index
-                    ..push Assign that,      Literal \item$$ if @item
-                body
-                has-yield
+            @item = that if @item?rewrite-shorthand!
+            assignments = with []
+                ..push Assign Var(that), Literal \index$$ if @index
+                ..push Assign that,      Literal \item$$ if @item
+            body = Block if @guard
+                assigned = [Var name for assignments when ..assigns! for name in that]
+                assignments.concat [If delete @guard, Call.let assigned, body, has-yield]
+            else
+                Call.let assignments, body, has-yield
 
         super body
 
-        if @guard and @let and (@index or @item)
-            @body.lines[0].if.traverse-children !~>
-                if it instanceof Var
-                    if @index and it.value is @index
-                        it.value = \index$$
-                    if @item and it.value is @item.value
-                        it.value = \item$$
         if @let
             @body := Block Yield \yieldfrom, body if has-yield
             delete @index
             delete @item
         this
+
+    is-next-unreachable: NO
 
     compile-node: (o) ->
         o.loop = true
@@ -2338,6 +2508,7 @@ class exports.For extends While
             [pvar, step] = (@step or Literal 1)compile-loop-reference o, \step
             pvar is step or temps.push pvar
         if @from
+            @item = Var idx if @ref
             [tvar, tail] = @to.compile-loop-reference o, \to
             fvar = @from.compile o, LEVEL_LIST
             vars = "#idx = #fvar"
@@ -2352,7 +2523,7 @@ class exports.For extends While
         else
             @item = Var o.scope.temporary \x if @ref
             if @item or @object and @own or @let
-                [svar, srcPart] = @source.compile-loop-reference o, \ref, not @object
+                [svar, srcPart] = @source.compile-loop-reference o, \ref, not @object, true
                 svar is srcPart or temps.push svar
             else
                 svar = srcPart = @source.compile o, LEVEL_PAREN
@@ -2387,7 +2558,7 @@ class exports.For extends While
         o.indent += TAB
         if @index and not @object
             head.push \\n + o.indent, Assign(Var @index; JS idx).compile(o, LEVEL_TOP), \;
-        if @item and not @item.is-empty!
+        if @item and not @item.is-empty! and not @from
             head.push \\n + o.indent, Assign(@item, JS "#svar[#idx]")compile(o, LEVEL_TOP), \;
         o.ref = @item.value if @ref
         body  = @compile-body o
@@ -2429,6 +2600,8 @@ class exports.Try extends Node
 
     get-jump: -> @attempt.get-jump it or @recovery?get-jump it
 
+    is-next-unreachable: -> @ensure?is-next-unreachable! or @attempt.is-next-unreachable! and (if @recovery? then that.is-next-unreachable! else true)
+
     make-return: ->
         @attempt .=make-return ...&
         @recovery?=make-return ...&
@@ -2449,8 +2622,7 @@ class exports.Try extends Node
 class exports.Switch extends Node
     (@type, @topic, @cases, @default) ->
         if type is \match
-            @target = Arr topic if topic
-            @topic = null
+            @topic = Arr topic if topic
         else
             if topic
                 throw "can't have more than one topic in switch statement" if topic.length > 1
@@ -2477,6 +2649,10 @@ class exports.Switch extends Node
         for c in @cases then return that if c.body.get-jump ctx
         @default?get-jump ctx
 
+    is-next-unreachable: ->
+        for c in @cases then return false unless c.body.is-next-unreachable!
+        @default?is-next-unreachable!
+
     make-return: ->
         for c in @cases then c.make-return ...&
         @default?make-return ...&
@@ -2484,8 +2660,8 @@ class exports.Switch extends Node
 
     compile-node: (o) ->
         {tab} = this
-        [target-node, target] = Chain @target .cache-reference o if @target
         topic = if @type is \match
+            [target-node, target] = Chain @topic .cache-reference o if @topic
             t = if target then [target-node] else []
             Block (t ++ [Literal \false]) .compile o, LEVEL_PAREN
         else
@@ -2515,7 +2691,6 @@ class exports.Case extends Node
     compile-case: (o, tab, nobr, bool, type, target) ->
         tests = []
         for test in @tests
-            test.=expand-slice(o)unwrap!
             if test instanceof Arr and type isnt \match
                 for t in test.items then tests.push t
             else tests.push test
@@ -2537,7 +2712,7 @@ class exports.Case extends Node
         lines[*-1] = JS '// fallthrough' if ft = last?value is \fallthrough
         o.indent = tab += TAB
         code.push bodyCode, \\n     unless sn-empty(bodyCode = @body.compile o, LEVEL_TOP)
-        code.push tab  + 'break;\n' unless nobr or ft or last instanceof Jump
+        code.push tab  + 'break;\n' unless nobr or ft or last?is-next-unreachable!
         sn(null, ...code)
 
 #### If
@@ -2553,7 +2728,7 @@ class exports.If extends Node
 
     terminator: ''
 
-    ::delegate <[ isCallable isArray isString isRegex ]> ->
+    ::delegate <[ isCallable isArray isString isRegex isNextUnreachable ]> ->
         @else?[it]! and @then[it]!
 
     get-jump: -> @then.get-jump it or @else?get-jump it
@@ -2597,6 +2772,7 @@ class exports.If extends Node
 # A labeled block or statement.
 class exports.Label extends Node
     (@label or \_, @it) ->
+        @carp "can't use label with a curried function (attempted label '#{@label}')" if @it.curried
         if fun = it instanceof [Fun, Class] and it or
              it.calling and it.it.head
             fun.name or fun <<< {name: @label, +labeled}
@@ -2691,7 +2867,7 @@ class exports.Require extends Node
 
         process-item = (item) ->
             [asg, value] = switch
-            | item instanceof Prop    => [item.val, item.key]
+            | item instanceof Prop    => [item.val, item.key ? item.val]
             | otherwise               => [item, item]
             asg-value = get-value asg
             to-asg = if typeof! asg-value is 'String' then CopyL asg, Var name-from-path asg-value else asg
@@ -2933,6 +3109,11 @@ UTILS =
       for (var key in src) obj[key] = src[key];
       return obj;
     }'''
+    copy-without: '''function(src, ex){
+      var obj = {}, own = {}.hasOwnProperty;
+      for (var key in src) if (own.call(src, key) && !own.call(ex, key)) obj[key] = src[key];
+      return obj;
+    }'''
 
     repeat-string: '''function(str, n){
       for (var r = ''; n > 0; (n >>= 1) && (str += str)) if (n & 1) r += str;
@@ -3079,6 +3260,8 @@ UTILS =
         return result;
       }
     }'''
+
+    array-from: 'Array.from || function(x){return slice$.call(x);}'
 
     # Shortcuts to speed up the lookup time for native methods.
     split    : "''.split"

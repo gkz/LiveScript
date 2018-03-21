@@ -295,6 +295,13 @@ deep-equal [3,4,5] [.. + 2 for [1 2 3]]
 deep-equal [3,5]   [.. + 2 for [1 2 3] when .. % 2 isnt 0]
 deep-equal [5,4,3] [.. + 2 for [1 2 3] by -1]
 deep-equal [5,3]   [.. + 2 for [1 2 3] by -1 when .. % 2 isnt 0]
+deep-equal [3,4,5] [.. + 2 for from 1 to 3]
+deep-equal [3,5]   [.. + 2 for from 1 to 3 when .. % 2 isnt 0]
+deep-equal [5,4,3] [.. + 2 for from 3 to 1 by -1]
+deep-equal [5,3]   [.. + 2 for from 3 to 1 by -1 when .. % 2 isnt 0]
+
+# gkz/LiveScript#854
+deep-equal [2,3,4,5] [.. + 2 for [to 3]]
 
 list-of-obj =
   * ha: 1
@@ -686,3 +693,50 @@ eq 1, i
 o = { [k, -> v] for let k, v of {a: 1, b: 2} }
 eq 1 o.a!
 eq 2 o.b!
+
+# interactions of guards+let, see #992
+arr = [0,1,2,3]
+r = []
+for let k in arr when k
+  r.push k
+eq "1,2,3", r.join ','
+
+# interaction of guards+let, when destructuring is used, see #992
+arr =
+  * letter: 'a' valueOf: -> 0
+  * letter: 'b' valueOf: -> 1
+  * letter: 'c' valueOf: -> 2
+r = []
+for let {letter}:guard-o in arr when guard-o > 0
+  r.push letter
+eq "b,c", r.join ','
+
+r = []
+for let {letter, valueOf} in arr when valueOf! > 0
+  r.push letter
+eq "b,c", r.join ','
+
+# more of the above, with extra nesting and complications
+arr =
+  * [true  {b: \alpha x: 0} {d: 1}]
+  * [false {b: \bravo}      {d: 2}]
+  * [true  {}               {d: 3}]
+  * [true  {b: \delta}      {d: 0}]
+  * [true  {b: false}       {d: 5}]
+fns = for let [a, {b ? \default}:c, {d: e}] in arr when a and b and e
+  -> {b, c, e}
+r = for f in fns then f!
+expected =
+  * b: \alpha c: {b: \alpha x: 0} e: 1
+  * b: \default c: {} e: 3
+deep-equal expected, r
+
+# Certain literals could result in illegal JavaScript if not carefully
+# handled. These are all nonsensical use cases and could just as easily
+# be LiveScript syntax errors. The thing to avoid is for them to be JavaScript
+# syntax errors; lsc should never produce illegal JavaScript on any input,
+# silly or otherwise.
+deep-equal [] [0 for x in 42]
+deep-equal [] [0 for x in -42]
+throws "Cannot read property 'length' of null" -> [0 for x in null]
+throws "Cannot read property 'length' of undefined" -> [0 for x in void]
