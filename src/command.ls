@@ -35,7 +35,7 @@ switch
     valid-map-values = <[ none linked linked-src embedded debug ]>
     if o.map not in valid-map-values
       die "Option --map must be either: #{ valid-map-values.join ', ' }"
-  else o.map = if o.run or o.eval then 'embedded' else 'none'
+  else o.map = if o.run then 'embedded' else 'none'
 
   if o.require
     {filename} = module
