@@ -72,3 +72,9 @@ command-eq '-m embedded test/data/runtime-error.ls', [
     'Failed at: test/data/runtime-error.ls'
     /ReferenceError: doesNotExist is not defined\n    at Object\.<anonymous> \(.*\/test\/data\/runtime-error\.ls:2:17\).*/
 ]
+
+# eval+compile
+command-eq '--no-header -bce "a!"' ['a();']
+
+# json+ast
+command-eq '-aje 1' [ JSON.stringify(LiveScript.ast '1'; null 2) ]
