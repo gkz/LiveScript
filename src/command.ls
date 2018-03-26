@@ -129,7 +129,7 @@ switch
       throw
 
     json = o.json or /\.json\.ls$/.test filename
-    run = o.run or json
+    run = o.run or (json and o.print)
     if run
       LiveScript.emit 'compile' t
       print = json or o.print

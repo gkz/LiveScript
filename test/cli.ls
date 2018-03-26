@@ -48,6 +48,22 @@ command-eq '-cp test/data/data.json.ls', [json-content ]
 # explicit json
 command-eq '-cp --json test/data/data.ls', [json-content]
 
+# json to files
+do
+    # implicit json
+    <- command-eq '-c --debug test/data/data.json.ls', ['test/data/data.json.ls => test/data/data.json']
+    try
+        ok file-exists 'test/data/data.json'
+        eq json-content + '\n', file-read 'test/data/data.json'
+    finally file-delete 'test/data/data.json'
+
+    # explicit json
+    <- command-eq '-cj --debug test/data/data.ls', ['test/data/data.ls => test/data/data.json']
+    try
+        ok file-exists 'test/data/data.json'
+        eq json-content + '\n', file-read 'test/data/data.json'
+    finally file-delete 'test/data/data.json'
+
 # eval print json, explicit
 command-eq '-je "@two" test/data/j.json', ['4']
 
