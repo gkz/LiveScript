@@ -30,7 +30,8 @@ switch
 | o.version => say "LiveScript version #version"
 | o.help    => say generate-help interpolate: {version}
 | otherwise =>
-  o.run = not o.compile ||= o.output
+  o.compile ||= o.output
+  o.run = not (o.compile or o.ast or o.tokens or o.lex)
   if o.map?
     valid-map-values = <[ none linked linked-src embedded debug ]>
     if o.map not in valid-map-values
@@ -61,7 +62,7 @@ switch
       if positional.length and (o.json or /\.json$/.test positional.0)
           o.json = true
           fshoot 'readFile', positional.0, json-callback
-      else if o.json and not o.ast
+      else if o.json and o.run
           get-stdin json-callback
       else
           compile-script '' o.eval

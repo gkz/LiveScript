@@ -100,3 +100,6 @@ module.exports = optionator do
         * option: 'no-warn'
           type: 'Boolean'
           description: 'suppress compiler warnings'
+    mutually-exclusive:
+        * [ <[ compile output ]> \ast \tokens \lex ]
+        ...
