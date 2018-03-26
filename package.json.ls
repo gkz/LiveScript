@@ -51,7 +51,7 @@ dependencies:
   'source-map-support': '^0.4.11'
 
 dev-dependencies:
-  jison: '0.4.17'
+  jison: '0.4.18'
   'uglify-js': '~2.6.2'
   istanbul: '~0.4.3'
   browserify: '^13.0.1'
