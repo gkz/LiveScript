@@ -229,8 +229,8 @@ eq '0,1' ''+ (o[]h ++ [0 1])
 
 a = []
 eq 2 a{}[0, 1].length
-eq \object typeof a.0
-eq \object typeof a.1
+eq \Object typeof! a.0
+eq \Object typeof! a.1
 
 # Bang Call
 eq '' String!
