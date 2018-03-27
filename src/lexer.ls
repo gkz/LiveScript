@@ -993,9 +993,11 @@ character = if not JSON? then uxxxx else ->
         case tag is 'DOT' and prev.0 is ']' and tokens[i-2].0 is '[' and tokens[i-3].0 is 'DOT'
             tokens.splice i-2, 3
             tokens[i-3].1 = '[]'
+            i -= 3
         case tag is 'DOT' and prev.0 is '}' and tokens[i-2].0 is '{' and tokens[i-3].0 is 'DOT'
             tokens.splice i-2, 3
             tokens[i-3].1 = '{}'
+            i -= 3
         case val is '.' and token.spaced and prev.spaced
             tokens[i] = ['COMPOSE' '<<' line, column]
         case val is '++'

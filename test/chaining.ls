@@ -223,11 +223,14 @@ o?.{}a?.[]b?{}e?{}f.4 = 5
 eq '0,1' ''+o.a.b
 eq '2,3' ''+o.a.c.d
 eq 5 o.a.b.e.f.4
+eq '0,1' ''+ (o[]g++o.a.b)
+eq '0,1' ''+ (o[]h ++ o.a.b)
+eq '0,1' ''+ (o[]h ++ [0 1])
 
 a = []
 eq 2 a{}[0, 1].length
-eq \object typeof a.0
-eq \object typeof a.1
+eq \Object typeof! a.0
+eq \Object typeof! a.1
 
 # Bang Call
 eq '' String!
