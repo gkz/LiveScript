@@ -285,7 +285,7 @@ exports <<<
             @fset 'for' false
             @fset 'by' false
         @unline! if tag in <[ RELATION THEN ELSE CASE DEFAULT CATCH FINALLY
-                              IN OF FROM TO BY EXTENDS IMPLEMENTS WHERE ]>
+                              IN OF FROM TO BY EXTENDS IMPLEMENTS ]>
         @token tag, id
         input.length
 
@@ -1131,7 +1131,7 @@ character = if not JSON? then uxxxx else ->
         tag is '[' and brackets.push prev.0 is 'DOT'
         if prev.0 is ']'
             if brackets.pop! then prev.index = true else continue
-        continue unless prev.0 in <[ FUNCTION GENERATOR LET WHERE ]>
+        continue unless prev.0 in <[ FUNCTION GENERATOR LET ]>
                      or prev.spaced and able tokens, i, true
         if token.doblock
             token.0 = 'CALL('
@@ -1341,7 +1341,7 @@ KEYWORDS_UNUSED =
 
 JS_KEYWORDS = KEYWORDS_SHARED ++ KEYWORDS_UNUSED
 
-LS_KEYWORDS = <[ xor match where ]>
+LS_KEYWORDS = <[ xor match ]>
 
 ##### Regexes
 # Some of these are given `g` flag and made sure to match empty string
