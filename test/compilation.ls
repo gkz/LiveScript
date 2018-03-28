@@ -372,3 +372,11 @@ LiveScript.compile '''
     d
       .e (.f in [2 3])
 '''
+
+# [LiveScript#1030](https://github.com/gkz/LiveScript/issues/1030)
+compiled = LiveScript.compile '''
+#!lsc shebang line
+``#!node shebang line``
+foo bar
+''' {+header}
+ok compiled.starts-with '#!node shebang line\n'
