@@ -480,7 +480,7 @@ class exports.Block extends Node
         code = [(@compile-with-declarations o)]
         # Wrap everything in a safety closure unless requested not to.
         bare or code = ["(function(){\n", ...code, "\n}).call(this);\n"]
-        result = sn(null, prefix || [], ...code)
+        sn null, prefix || [], options.header || [], code
 
     # Compile to a function body.
     compile-with-declarations: (o) ->
