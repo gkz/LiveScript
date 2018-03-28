@@ -2247,6 +2247,11 @@ class exports.Parens extends Node
         @it = val.unparen!
         Parens key
 
+    rewrite-shorthand: (o) !->
+        # Intentionally not passing the second argument to rewrite-shorthand.
+        # The contents of Parens are never in assign position.
+        @it = that if @it.rewrite-shorthand o
+
 #### Splat
 # A splat, either as an argument to a call,
 # the operand of a unary operator to be spread,
