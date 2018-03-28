@@ -510,3 +510,14 @@ eq 2 changeMe
 compileThrows 'cannot assign to reserved word \'match\'' 1 '''
   match = 1
 '''
+
+# [LiveScript#1027](https://github.com/gkz/LiveScript/issues/1027)
+a = [9 9]
+i = 0
+a[i = 1] = 2
+eq ''+a, '9,2'
+eq i, 1
+
+a[i += 1] = 3
+eq ''+a, '9,2,3'
+eq i, 2
