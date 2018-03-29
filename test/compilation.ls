@@ -372,3 +372,15 @@ LiveScript.compile '''
     d
       .e (.f in [2 3])
 '''
+
+
+# testing warnings: start
+old-warn = console.warn
+console.warn = -> fail "Expected no warnings. Got: #it"
+
+# [LiveScript#1037](https://github.com/gkz/LiveScript/pull/1037)
+# This code should produce no compilation warnings
+LiveScript.compile '1 => .. == 1; 1 == ..'
+
+# testing warnings: end
+console.warn = old-warn
