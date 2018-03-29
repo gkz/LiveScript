@@ -134,8 +134,13 @@ bnf =
 
         o 'WITH Expression Block'
         , -> Chain L 1 2 Cascade $2, $3, 'with'
-        o 'FOR  Expression Block'
-        , -> Chain L 1 2 new For(kind: $1, source: $2, body: $3, ref: true).add-body $3
+
+        # Normal loops have a block of expressions to execute and an optional
+        # `else` clause.
+        #
+        # The grammar won't permit loop forms that end in Expression to be
+        # productions in Chain, so those other loops are in Expression.
+        o 'LoopHead Block Else' -> Chain($1.add-body $2 .add-else $3)
 
     KeyLike:
         o 'STRNUM' -> Literal $1
@@ -289,9 +294,7 @@ bnf =
         # and their postfix forms.
         o 'Expression POST_IF Expression' -> L 2 3 If $3, $1, $2 is 'unless'
 
-        # Loops can either be normal with a block of expressions to execute
-        # and an optional `else` clause,
-        o 'LoopHead Block Else' -> $1.add-body $2 .add-else $3
+        # In addition to the LoopHead-based forms in Chain, here are a few more loops:
         # postfix with a single expression,
         o 'DO Block WHILE Expression'
         , -> new While($4, $3 is 'until', true).add-body $2
