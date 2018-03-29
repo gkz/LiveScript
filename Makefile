@@ -11,7 +11,7 @@ lib:
 	mkdir -p lib/
 
 lib/parser.js: lib/grammar.js
-	./scripts/build-parser > lib/parser.js
+	./scripts/build-parser
 
 lib/%.js: src/%.ls lib
 	$(LSC) --output lib --bare --compile "$<"
