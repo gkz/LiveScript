@@ -453,7 +453,7 @@ exports <<<
         else
             [tag, val] = last
             if tag is 'ASSIGN' and val + '' not in <[ = := += ]>
-            or val is '++' and @tokens[*-2].spaced
+            or tag is 'CREMENT' and val is '++' and @tokens[*-2].spaced
             or tag in <[ +- PIPE BACKPIPE COMPOSE DOT LOGIC MATH COMPARE RELATION
                          SHIFT IN OF TO BY FROM EXTENDS IMPLEMENTS ]>
                 return length
@@ -709,7 +709,8 @@ exports <<<
 
     # Generates a newline token. Consecutive newlines get merged together.
     newline: !->
-        @last.1 is '\n' or @tokens.push @last = ['NEWLINE' '\n' @line, @column] <<< {+spaced}
+        unless @last.0 is 'NEWLINE' and @last.1 is '\n'
+            @tokens.push @last = ['NEWLINE' '\n' @line, @column] <<< {+spaced}
 
     # Cancels an immediate newline.
     unline: !->
@@ -987,21 +988,51 @@ character = if not JSON? then uxxxx else ->
     i = 0
     while token = tokens[++i]
         [tag, val, line, column] = token
-        switch
-        case tag is 'ASSIGN' and prev.1 in LS_KEYWORDS and tokens[i-2].0 isnt 'DOT'
-            carp "cannot assign to reserved word '#{prev.1}'" line
-        case tag is 'DOT' and prev.0 is ']' and tokens[i-2].0 is '[' and tokens[i-3].0 is 'DOT'
-            tokens.splice i-2, 3
-            tokens[i-3].1 = '[]'
-            i -= 3
-        case tag is 'DOT' and prev.0 is '}' and tokens[i-2].0 is '{' and tokens[i-3].0 is 'DOT'
-            tokens.splice i-2, 3
-            tokens[i-3].1 = '{}'
-            i -= 3
-        case val is '.' and token.spaced and prev.spaced
-            tokens[i] = ['COMPOSE' '<<' line, column]
-        case val is '++'
-            break unless next = tokens[i + 1]
+        switch tag
+        case 'ASSIGN'
+            if prev.1 in LS_KEYWORDS and tokens[i-2].0 isnt 'DOT'
+                carp "cannot assign to reserved word '#{prev.1}'" line
+        case 'DOT'
+            switch
+            case prev.0 is ']' and tokens[i-2].0 is '[' and tokens[i-3].0 is 'DOT'
+                tokens.splice i-2, 3
+                tokens[i-3].1 = '[]'
+                i -= 3
+            case prev.0 is '}' and tokens[i-2].0 is '{' and tokens[i-3].0 is 'DOT'
+                tokens.splice i-2, 3
+                tokens[i-3].1 = '{}'
+                i -= 3
+            case val is '.' and token.spaced and prev.spaced
+                tokens[i] = ['COMPOSE' '<<' line, column]
+            default
+                next = tokens[i + 1]
+                if prev.0 is '(' and next.0 is ')'
+                    tokens[i].0 = 'BIOP'
+                else if prev.0 is '('
+                    tokens.splice i, 0,
+                        * 'PARAM(' '('  line, column
+                        * ')PARAM' ')'  line, column
+                        * '->'     '~>' line, column
+                        * 'ID'     'it' line, column
+                else if next.0 is ')'
+                    tokens.splice i + 1, 0,
+                        ['['    '['    line, column]
+                        ['ID' 'it' line, column]
+                        [']'    ']'    line, column]
+                    parens = 1
+                    :LOOP for j from i + 1 to 0 by -1
+                        switch tokens[j].0
+                        | ')' => ++parens
+                        | '(' =>
+                            if --parens is 0
+                                tokens.splice j + 1, 0,
+                                    ['PARAM(' '('  line, column]
+                                    ['ID'     'it' line, column]
+                                    [')PARAM' ')'  line, column]
+                                    ['->'     '~>' line, column]
+                                break LOOP
+        case 'CREMENT'
+            break unless val is '++' and next = tokens[i + 1]
             ts = <[ ID LITERAL STRNUM ]>
             if prev.spaced and token.spaced
             or not (prev.spaced or token.spaced) and prev.0 in ts and next.0 in ts
@@ -1010,34 +1041,8 @@ character = if not JSON? then uxxxx else ->
             or prev.0 is '(' and token.spaced
             or next.0 is ')' and prev.spaced
                 tokens[i].0 = 'BIOP'
-        case tag is 'DOT'
-            next = tokens[i + 1]
-            if prev.0 is '(' and next.0 is ')'
-                tokens[i].0 = 'BIOP'
-            else if prev.0 is '('
-                tokens.splice i, 0,
-                    * 'PARAM(' '('  line, column
-                    * ')PARAM' ')'  line, column
-                    * '->'     '~>' line, column
-                    * 'ID'     'it' line, column
-            else if next.0 is ')'
-                tokens.splice i + 1, 0,
-                    ['['    '['    line, column]
-                    ['ID' 'it' line, column]
-                    [']'    ']'    line, column]
-                parens = 1
-                :LOOP for j from i + 1 to 0 by -1
-                    switch tokens[j].0
-                    | ')' => ++parens
-                    | '(' =>
-                        if --parens is 0
-                            tokens.splice j + 1, 0,
-                                ['PARAM(' '('  line, column]
-                                ['ID'     'it' line, column]
-                                [')PARAM' ')'  line, column]
-                                ['->'     '~>' line, column]
-                            break LOOP
-        case tag is 'ID' and val is 'async'
+        case 'ID'
+            break unless val is 'async'
             next = tokens[i + 1]
             switch next.0
             | 'FUNCTION' => token.0 = 'ASYNC'

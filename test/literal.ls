@@ -119,6 +119,25 @@ compile-throws 'unterminated words' 5 '''
   <[
   '''
 
+# [LiveScript#739](https://github.com/gkz/LiveScript/issues/739)
+# For the below tests, it's important that there not be any extra whitespace
+# between the <[ ]> brackets. These tests guard against mistaking a WORDS token
+# for some other kind of token based on its value only.
+
+# Don't interpret WORDS:\n as a newline
+w = <[
+]>
+eq w.length, 0
+
+# And don't interpret WORDS:++ as concat
+w = <[++]>
+eq w.0, \++
+
+# And don't interpret WORDS:. as compose
+# (Note: the spacing and punctuation *outside* the <[ ]> brackets is also
+# significant in this test.)
+eq '' + <[.]> \.
+
 #### Implicit arrays
 o =
   atom:
