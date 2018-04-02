@@ -212,7 +212,6 @@ exports <<<
                   | last.0 is '(' => 'BIOP'
                   | otherwise     => 'WITH'
         case 'when'
-            @fset 'for' false
             tag = 'CASE'
             fallthrough
         case 'case'
@@ -467,9 +466,9 @@ exports <<<
         @last.spaced = true if input = SPACE.exec(code).0
         input.length
 
-    # Used from both do-literal (|) and do-ID (case): adds swtich if required
+    # Used from both do-literal (|) and do-ID (case): adds switch if required
     do-case: ->
-        @seen-for = false
+        @fset 'for' false
         if @last.0 in <[ ASSIGN -> : ]>
         or (@last.0 is 'INDENT' and @tokens[*-2].0 in <[ ASSIGN -> : ]>)
             @token 'SWITCH' 'switch'
