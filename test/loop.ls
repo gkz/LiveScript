@@ -743,3 +743,16 @@ throws "Cannot read property 'length' of undefined" -> [0 for x in void]
 
 # [LiveScript#1035](https://github.com/gkz/LiveScript/issues/1035)
 for [1 2 3] then 1 else 0
+
+# [LiveScript#1039](https://github.com/gkz/LiveScript/issues/1039)
+arr = [3 2 1 0]
+x = for arr case .. in [1 2] => 1
+eq '1,1' x.join \,
+
+v = 1
+b = [1]
+x = for arr | v in b => 1
+eq '1,1,1,1' x.join \,
+
+x = [1 for arr case .. in [1 2]]
+eq '1,1' x.join \,
