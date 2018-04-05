@@ -380,3 +380,13 @@ compiled = LiveScript.compile '''
 foo bar
 ''' {+header}
 ok compiled.starts-with '#!node shebang line\n'
+
+# Reuse reference variables when appropriate
+compiled = LiveScript.compile 'a.b[*-1].=c' {+bare,-header}
+ok compiled.starts-with 'var ref$, key$;\n'
+
+compiled = LiveScript.compile '(class A).b ++= c' {+bare,-header}
+ok compiled.starts-with 'var A;\n'
+
+compiled = LiveScript.compile 'a[b = c + d] **= e' {+bare,-header}
+ok compiled.starts-with 'var b;\n'
