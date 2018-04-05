@@ -232,6 +232,24 @@ eq 2 a{}[0, 1].length
 eq \Object typeof! a.0
 eq \Object typeof! a.1
 
+# [LiveScript#1028](https://github.com/gkz/LiveScript/issues/1028)
+a = {}
+a[]b ++= [1 2]
+eq ''+a.b, '1,2'
+a[]b ++= [3 4]
+eq ''+a.b, '1,2,3,4'
+
+a = {}
+counter = 0
+get-key = -> counter++; \foo
+a[][get-key!] ++= [1 2]
+eq ''+a.foo, '1,2'
+eq counter, 1
+
+a = {}
+a[]b = [a.b.length, a.b.length]
+eq ''+a.b, '0,0'
+
 # Bang Call
 eq '' String!
 (-> ok true)!

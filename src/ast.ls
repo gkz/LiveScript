@@ -630,7 +630,7 @@ class exports.Index extends Node
 
     show: -> [\? if @soak] + @symbol
 
-    is-complex: -> @key.is-complex!
+    is-complex: -> @key.is-complex! or @vivify?
 
     var-name: -> @key instanceof [Key, Literal] and @key.var-name!
 
@@ -777,6 +777,10 @@ class exports.Chain extends Node
         # `a{}`
         return [base, bref] unless name
         nref = name
+        # `a{}b`
+        if name.symbol isnt \.
+            nref = name
+            name = Index name.key, \.
         # `a[b()]`
         if name.is-complex!
             [key, nref.key] = name.key.unwrap!cache o, true void \key
@@ -1627,6 +1631,12 @@ class exports.Assign extends Node
             op    = \:=
         op = (op.slice 1 -2) + \= if op in <[ .&.= .|.= .^.= .<<.= .>>.= .>>>.= ]>
         (right.=unparen!)rip-name left.=unwrap!
+        if left instanceof Chain
+            # `a[]b = ...`
+            left.expand-vivify!
+            if left.=unwrap! instanceof Assign
+                [left.left, @left] = Chain left.left .cache-reference o
+                return Block [left, this with terminator: ''] .compile o
         sign = sn(@opLoc, " ", (op.replace \: ''), " ")
         name = ((left <<< {+front})compile o, LEVEL_LIST)
         if lvar = left instanceof Var
