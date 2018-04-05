@@ -1407,6 +1407,7 @@ class exports.Binary extends Node
                     return @compileRegexEquals o, that
                 if @op is \=== and (@first instanceof Literal and @second instanceof Literal)
                 and @first.is-what! isnt @second.is-what!
+                and \.. not in [@first.value, @second.value]
                     @warn "strict comparison of two different types will always be false: #{@first.value} == #{@second.value}" unless o.no-warn
             return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
         @first <<< {@front}
