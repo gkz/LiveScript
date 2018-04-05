@@ -191,17 +191,20 @@ SourceNode::to-string = (...args) ->
     # If the code generation wishes to use the result of a complex expression
     # in multiple places, ensure that the expression is only ever evaluated once,
     # by assigning it to a temporary variable.
-    cache: (o, once, level) ->
+    cache: (o, once, level, temp-name) ->
         unless @is-complex!
             return [if level? then @compile o, level else this] * 2
-        sub = Assign ref = Var(o.scope.temporary!), this
+        if ref = @get-ref! then sub = this
+        else
+            sub = Assign ref = Var(o.scope.temporary temp-name), this
+            # If flagged as `once`, the tempvar will be auto-freed.
+            if once then ref <<< {+temp} else tempvars = [ref.value]
         # Pass a `level` to precompile.
         if level?
             sub.=compile o, level
-            o.scope.free ref.value if once
+            o.scope.free ref.value if once and tempvars
             return [sub, ref.value]
-        # If flagged as `once`, the tempvar will be auto-freed.
-        if once then [sub, ref <<< {+temp}] else [sub, ref, [ref.value]]
+        [sub, ref, tempvars]
 
     # Compiles to a variable/source pair suitable for looping.
     compile-loop-reference: (o, name, ret, safe-access) ->
@@ -293,6 +296,10 @@ SourceNode::to-string = (...args) ->
 
     # Picks up name(s) from LHS.
     rip-name: VOID
+
+    # If this node will create a reference variable storing its entire value,
+    # return it.
+    get-ref: VOID
 
     unfold-soak   : VOID
     unfold-assign : VOID
@@ -765,17 +772,16 @@ class exports.Chain extends Node
         base = Chain @head, @tails.slice 0 -1
         # `a().b`
         if base.is-complex!
-            ref  = o.scope.temporary!
-            base = Chain Assign Var(ref), base
-            bref = Var(ref) <<< {+temp}
+            [base, bref] = base.unwrap!cache o, true
+            base = Chain base
         # `a{}`
         return [base, bref] unless name
+        nref = name
         # `a[b()]`
         if name.is-complex!
-            ref  = o.scope.temporary \key
-            name = Index Assign Var(ref), name.key
-            nref = Index Var(ref) <<< {+temp}
-        [base.add name; Chain bref || base.head, [nref or name]]
+            [key, nref.key] = name.key.unwrap!cache o, true void \key
+            name = Index key
+        [base.add name; Chain bref || base.head, [nref]]
 
     compile-node: (o) ->
         if @flip
@@ -1570,6 +1576,8 @@ class exports.Assign extends Node
 
     assigns: -> @left.assigns!
 
+    get-ref: -> @left unless @left.is-complex!
+
     ::delegate <[ isCallable isRegex ]> -> @op in <[ = := ]> and @right and @right[it]!
 
     is-array: -> switch @op
@@ -2080,6 +2088,8 @@ class exports.Class extends Node
 
     rip-name: !-> @name = it.var-name!
 
+    get-ref: -> Var that if @title?var-name! or @name
+
     compile: (o, level) ->
         {{{lines}:body}:fun, title} = this
         CopyL this, fun
@@ -2212,7 +2222,7 @@ class exports.Parens extends Node
 
     show: -> @string and '""'
 
-    ::delegate <[ isComplex isCallable isArray isRegex isNextUnreachable ]> -> @it[it]!
+    ::delegate <[ isComplex isCallable isArray isRegex isNextUnreachable getRef ]> -> @it[it]!
 
     is-string: -> @string or @it.is-string!
 
