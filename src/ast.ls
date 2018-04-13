@@ -480,14 +480,16 @@ class exports.Block extends Node
             @scope = Scope.root = o.scope = that.savedScope or= o.scope
         delete o.filename
         o.indent = if bare = delete o.bare then '' else TAB
-        if /^\s*(?:[/#]|javascript:)/test @lines.0?.code
+        if /^\s*(?:#!|javascript:)/test @lines.0?code
             prefix = @lines.shift!code + \\n
+        if @lines.0?code?0 is '/'
+            comment = @lines.shift!code + \\n
         if delete o.eval and @chomp!lines.length
             if bare then @lines.push Parens @lines.pop! else @make-return!
         code = [(@compile-with-declarations o)]
         # Wrap everything in a safety closure unless requested not to.
         bare or code = ["(function(){\n", ...code, "\n}).call(this);\n"]
-        sn null, prefix || [], options.header || [], code
+        sn null, prefix || [], options.header || [], comment || [], code
 
     # Compile to a function body.
     compile-with-declarations: (o) ->
