@@ -47,8 +47,8 @@ repository:
 dependencies:
   'prelude-ls': '~1.1.2'
   optionator: '~0.8.1'
-  'source-map': '^0.5.6'
-  'source-map-support': '^0.4.11'
+  'source-map': '=0.6.1'
+  'source-map-support': '=0.5.6'
 
 dev-dependencies:
   jison: '0.4.18'

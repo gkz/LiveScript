@@ -26,6 +26,8 @@ parser <<<
             @tokens = it
         upcoming-input: -> ''
 
+bufferFrom = Buffer.from or -> new Buffer it
+
 exports <<<
     VERSION: '1.5.0'
 
@@ -54,7 +56,7 @@ exports <<<
                       map-path = "#{path.basename output-filename}.map"
                       result.code += "\n//# sourceMappingURL=#map-path\n"
                   else
-                      result.code += "\n//# sourceMappingURL=data:application/json;base64,#{ new Buffer result.map.to-string! .to-string 'base64' }\n"
+                      result.code += "\n//# sourceMappingURL=data:application/json;base64,#{ bufferFrom result.map.to-string! .to-string 'base64' }\n"
                   result
               else
                   output.to-string!

@@ -460,7 +460,7 @@ new
 o = {}
 eq 1,  -~=o.0
 eq false, !=o
-eq 0,     -=o
+eq -0,    -=o
 eq 1,  ! += o
 eq true, !!=o
 
