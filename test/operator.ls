@@ -825,6 +825,10 @@ o =
     eq 3, @y
 o.f!
 
+# but don't overdo it with the `this` binding
+ok (LiveScript.compile '(.0)'  {+bare,-header} .index-of \this) < 0
+ok (LiveScript.compile '(+ 1)' {+bare,-header} .index-of \this) < 0
+
 # Unary ops as functions
 ok (not) false
 ok (!).call(null, false)

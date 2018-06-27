@@ -2005,7 +2005,8 @@ class exports.Fun extends Node
                 body.lines.push Return Literal \this$
             else if sscope.fun?bound
             then @bound = that
-            else sscope.assign \this$ \this
+            else if @uses-this!
+            then sscope.assign \this$ \this
         if @statement
             name                    or @carp  'nameless function declaration'
             pscope is o.block.scope or @carp 'misplaced function declaration'
@@ -2089,6 +2090,11 @@ class exports.Fun extends Node
         @body.prepend ...assigns if assigns.length
         names.pop!
         sn(null, ...names)
+
+    uses-this: ->
+        Node::traverse-children.call this, ->
+            | it instanceof Literal and it.value is \this      => true
+            | it instanceof Fun and it.bound and it.uses-this! => true
 
 #### Class
 class exports.Class extends Node
