@@ -1527,9 +1527,11 @@ class exports.Binary extends Node
 
     compileMod: (o) ->
         ref = o.scope.temporary!
-        code = [sn(this, "((("), (@first.compile o), sn(this, ") % ("), sn(this, ref, " = "), (@second.compile o), sn(this, ") + ", ref, ") % ", ref, ")")]
+        code = [sn(this, "(("), (@first.compile o), sn(this, ") % ("), sn(this, ref, " = "), (@second.compile o), sn(this, ") + ", ref, ") % ", ref)]
         o.scope.free ref
-        sn(null, ...code)
+        if o.level < LEVEL_OP + PREC\%
+        then sn(null, ...code)
+        else sn(null, "(", ...code, ")")
 
     compilePartial: (o) ->
         vit = Var \it
