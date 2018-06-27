@@ -5939,6 +5939,34 @@ f do
     <div id="changelog" class="section">
       <a name="changelog"></a>
       <h2>Changelog</h2>
+      <h3>1.5.0</h3>
+      <h4>Breaking changes</h4>
+      <ul>
+        <li>The LHS of <code>[a, ..., b, c, d] = [1 2 3]</code> now behaves the same as <code>[a, ...m, b, c, d]</code>. (See <a href="https://github.com/gkz/LiveScript/issues/858">#858</a>.)
+        <li>Unary operator spreading now requires a <code>...</code> before the list to spread over. (See <a href="https://github.com/gkz/LiveScript/pull/863">#863</a>.)
+      </ul>
+      <h4>Features</h4>
+      <ul>
+        <li>REPL gains a saved history file and autocompletion for globals (<a href="https://github.com/gkz/LiveScript/pull/695">#695</a>)
+        <li>Embedded source maps get generated when requiring a <code>.ls</code> file (<a href="https://github.com/gkz/LiveScript/pull/786">#786</a>)
+        <li><code>.json.ls</code> files are handled appropriately when <code>require</code>d (<a href="https://github.com/gkz/LiveScript/pull/884">#884</a>)
+        <li>Class members are now assigned using the <code>ClassName.prototype.memberName =</code> pattern that permits JS optimization tools to identify them as such (<a href="https://github.com/gkz/LiveScript/issues/853">#853</a>)
+        <li>Added support for <code>[for x by y]</code> (<a href="https://github.com/gkz/LiveScript/pull/837">#837</a>), <code>[.. for from i to j by k]</code> (<a href="https://github.com/gkz/LiveScript/pull/859">#859</a>)
+      </ul>
+      <h4>Fixes</h4>
+      <ul>
+        <li>Grouping of logical expressions in match cases (<a href="https://github.com/gkz/LiveScript/issues/584">#584</a>)
+        <li>Bound binary operators (<a href="https://github.com/gkz/LiveScript/issues/634">#634</a>)
+        <li>Yield inside for-let (<a href="https://github.com/gkz/LiveScript/issues/749">#749</a>)
+        <li>Yield is callable (<a href="https://github.com/gkz/LiveScript/pull/823">#823</a>)
+        <li>Error evaluating <code>.ls</code> files with source maps on (<a href="https://github.com/gkz/LiveScript/issues/830">#830</a>)
+        <li>Windows path bug (<a href="https://github.com/gkz/LiveScript/pull/835">#835</a>)
+        <li>Loop edge cases you are very unlikely to encounter (<a href="https://github.com/gkz/LiveScript/pull/841">#841</a>)
+        <li>Heregexes (<a href="https://github.com/gkz/LiveScript/issues/844">#844</a>)
+        <li>Autovivification with slices (<a href="https://github.com/gkz/LiveScript/issues/847">#847</a>)
+        <li>Parsing error with nested comprehensions (<a href="https://github.com/gkz/LiveScript/issues/854">#854</a>)
+        <li>Performance improvement for splat args (<a href="https://github.com/gkz/LiveScript/issues/857">#857</a>)
+      </ul>
       <h3>1.4.0</h3>
       <ul>
           <li>Changed npm name to <code>livescript</code> as npm no longer allows publishing updates to packages with upper-case letters
