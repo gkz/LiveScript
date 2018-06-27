@@ -3399,8 +3399,35 @@ alert('hi');
         </div>
       </div>
 
+      <h3 id="async-await">Async and Await</h2>
 
-      <p>If you want further async functionality, you can use <a href="https://github.com/caolan/async/">async.js</a> with LiveScript.
+      <p>If you will be running your compiled code on a platform that supports the <code>async</code> and <code>await</code> JavaScript keywords, then you can write true asynchronous functions in LiveScript. To mark a function as async, either add an extra <code>&gt;</code> to the function arrow (<code>-&gt;&gt;</code>, <code>~&gt;&gt;</code>, <code>--&gt;&gt;</code>, etc.), or write <code>async function</code> instead of <code>function</code> for named functions. Inside an async function, you can use the <code>await</code> keyword as you would in JavaScript.
+
+      <div class="example">
+        <div class="example-ls">
+      <pre class="prettyprint lang-ls">
+
+f1 = (x) ->> await x
+
+
+async function f2 x
+  a = await f1 x
+
+</pre>
+  </div>
+  <div class="example-js">
+<pre class="prettyprint lang-js">
+var f1;
+f1 = async function(x){
+  return (await x);
+};
+async function f2(x){
+  var a;
+  return a = (await f1(x));
+}
+</pre>
+  </div>
+</div>
 
       <h3 id="functions-partial">Partial Application</h3>
 
