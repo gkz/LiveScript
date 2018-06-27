@@ -152,9 +152,7 @@ take(2, [1, 2, 3, 4, 5]);
 takeThree = take(3);
 takeThree([3, 4, 5, 6, 7, 8]);
 
-lastThree = function(){
-  return reverse(takeThree(reverse.apply(this, arguments)));
-};
+lastThree = compose$(reverse, takeThree, reverse);
 lastThree([1, 2, 3, 4, 5, 6, 7, 8]);
 function curry$(f, bound){
   var context,
@@ -168,6 +166,17 @@ function curry$(f, bound){
     } : f;
   };
   return _curry();
+}
+function compose$() {
+  var functions = arguments;
+  return function() {
+    var i, result;
+    result = functions[0].apply(this, arguments);
+    for (i = 1; i < functions.length; ++i) {
+      result = functions[i](result);
+    }
+    return result;
+  };
 }
 </pre>
         </div>
@@ -185,6 +194,10 @@ table1 =
   * id: 3
     name: 'donald'
 
+
+
+
+
 table2 =
   * id: 2
     age: 21
@@ -192,6 +205,9 @@ table2 =
     age: 20
   * id: 3
     age: 26
+
+
+
 
 # Accès implicite, accessignment
 up-case-name = (.name .= to-upper-case!)
@@ -212,10 +228,6 @@ up-case-name = (.name .= to-upper-case!)
 #[{"id":1,"name":"GEORGE","age":20},
 # {"id":2,"name":"MIKE",  "age":21},
 # {"id":3,"name":"DONALD","age":26}]
-
-
-
-
 
 
 
@@ -285,6 +297,25 @@ sortBy(function(it){
   }
   return results$;
 }()))));
+fold1(curry$(function(x$, y$){
+  return x$ + y$;
+}))(
+map(function(it){
+  return it.age;
+}, table2));
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
+}
 </pre>
         </div>
       </div>
@@ -452,6 +483,8 @@ add(2, 3);
 
 (x, y) -> x + y
 
+
+
 -> # une fonction vide
 
 times = (x, y) ->
@@ -463,7 +496,9 @@ times = (x, y) ->
   <div class="example-js">
 <pre class="prettyprint lang-js">
 var times;
-(function(x, y){ return x + y; });
+(function(x, y){
+  return x + y;
+});
 
 (function(){});
 
@@ -770,9 +805,9 @@ variable = "world";
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-multiline = 'les chaînes peuvent être multilignes
-            en continuant tant que nécessaire
-            les espaces précédant sont
+multiline = 'les chaînes peuvent être multilignes \
+            en continuant tant que nécessaire \
+            les espaces précédant sont \
             ignorés'
 heredoc = '''
             les chaînes peuvent être multilignes
@@ -889,7 +924,7 @@ obj =
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var ref$, obj;
+var obj, ref$;
 obj = (ref$ = {}, ref$[variable + ""] = 234, ref$[person.eyeColor] = false, ref$);
 </pre>
         </div>
@@ -1167,7 +1202,6 @@ objOneList = [{
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var i$;
 [1, 2, 3, 4, 5];
 [1, 2, 3, 4];
 [1, 3, 5, 7, 9];
@@ -1573,10 +1607,10 @@ false xor false #=> false
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-((true, false) || true) && !(false && true) && (false || true);
-((false, false) || false) && !(false && false) && (false || false);
-((0, 1) || 0) && !(1 && 0) && (1 || 0);
-((1, 1) || 1) && !(1 && 1) && (1 || 1);
+!false !== !true && (false || true);
+!false !== !false && (false || false);
+!1 !== !0 && (1 || 0);
+!1 !== !1 && (1 || 1);
 </pre>
         </div>
       </div>
@@ -1648,15 +1682,15 @@ list = [7 8 9]
 <pre class="prettyprint lang-js">
 var list;
 list = [7, 8, 9];
-2 == 1 || 2 == 2 || 2 == 3 || 2 == 4 || 2 == 5;
+2 === 1 || 2 === 2 || 2 === 3 || 2 === 4 || 2 === 5;
 in$(3, list);
 'id' in {
   id: 23,
   name: 'rogers'
 };
-function in$(x, arr){
-  var i = 0, l = arr.length >>> 0;
-  while (i < l) if (x === arr[i++]) return true;
+function in$(x, xs){
+  var i = -1, l = xs.length >>> 0;
+  while (++i < l) if (x === xs[i]) return true;
   return false;
 }
 </pre>
@@ -1760,10 +1794,19 @@ odd 3   #=> true
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var odd;
-odd = function(){
-  return not$(even.apply(this, arguments));
-};
+odd = compose$(even, not$);
 odd(3);
+function compose$() {
+  var functions = arguments;
+  return function() {
+    var i, result;
+    result = functions[0].apply(this, arguments);
+    for (i = 1; i < functions.length; ++i) {
+      result = functions[i](result);
+    }
+    return result;
+  };
+}
 function not$(x){ return !x; }
 </pre>
         </div>
@@ -1784,22 +1827,29 @@ times-two-add-two 3 #=> (3*2)+2 = 8
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var addTwoTimesTwo, timesTwoAddTwo;
-addTwoTimesTwo = function(){
-  return (function(it){
-    return it * 2;
-  })((function(it){
-    return it + 2;
-  }).apply(this, arguments));
-};
-timesTwoAddTwo = function(){
-  return (function(it){
-    return it + 2;
-  })((function(it){
-    return it * 2;
-  }).apply(this, arguments));
-};
+addTwoTimesTwo = compose$((function(it){
+  return it + 2;
+}), (function(it){
+  return it * 2;
+}));
+timesTwoAddTwo = compose$((function(it){
+  return it * 2;
+}), (function(it){
+  return it + 2;
+}));
 addTwoTimesTwo(3);
 timesTwoAddTwo(3);
+function compose$() {
+  var functions = arguments;
+  return function() {
+    var i, result;
+    result = functions[0].apply(this, arguments);
+    for (i = 1; i < functions.length; ++i) {
+      result = functions[i](result);
+    }
+    return result;
+  };
+}
 </pre>
         </div>
       </div>
@@ -1862,18 +1912,17 @@ timesTwoAddTwo(3);
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-r = +[4 5 6]        #=> [+4, +5, +6]
-t = typeof! [\b 5 {}]
-#=> ["String", "Number", "Object"]
-c = ~[4, 5]         #=> [-5, -6]
-++player<[strength hp]>
+r = +...[4 5 6]          #=> [+4, +5, +6]
+t = typeof! ...[\b 5 {}] #=> ["String", "Number", "Object"]
+c = ~...[4, 5]           #=> [-5, -6]
+++...player<[strength hp]>
 
 # marche aussi avec -, --, typeof,
 # ! et delete! voire -~-~
-i = new [some, classes]
-c = ^^[copy, these, {}]
-delete list[1, 2, 3]
-do [a, b, c]
+i = new ...[some, classes]
+c = ^^...[copy, these, {}]
+delete ...list[1, 2, 3]
+do ...[a, b, c]
 </pre>
         </div>
         <div class="example-js">
@@ -2105,6 +2154,8 @@ function import$(obj, src){
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
 obj = {one: 1}
+
+
 obj2 = ^^obj
 obj2.two = 2
 obj2 #=> {one: 1, two: 2}
@@ -2116,7 +2167,9 @@ obj  #=> {one: 1}
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var obj, obj2;
-obj = {one: 1};
+obj = {
+  one: 1
+};
 obj2 = clone$(obj);
 obj2.two = 2;
 obj2;
@@ -2147,14 +2200,14 @@ girl #=> {name: 'hanna', age: 22}
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var girl, ref$, guy;
+var girl, guy, ref$;
 girl = {
   name: 'hanna',
   age: 22
 };
 guy = (ref$ = clone$(girl), ref$.name = 'john', ref$);
 guy;
-guy.age;
+girl;
 function clone$(it){
   function fun(){} fun.prototype = it;
   return new fun;
@@ -2187,7 +2240,7 @@ curry$(function(x$, y$){
 })(4, 3);
 not$(true);
 (function(it){
-  return it == 1 || it == 2 || it == 3;
+  return it === 1 || it === 2 || it === 3;
 })(2);
 function curry$(f, bound){
   var context,
@@ -2231,12 +2284,12 @@ require! <[ fs path ]>
 
 
 
-require! $: jQuery
+require! jQuery: $
 
 require! {
   fs
   path
-  lib: lib4
+  lib4: lib
 }
 </pre>
   </div>
@@ -2268,22 +2321,17 @@ lib = require('lib4');
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
-require! lib.part
-
 require! {
   lib
-  lib.part1
+  lib:{part1}
 }
 </pre>
   </div>
   <div class="example-js">
 <pre class="prettyprint lang-js">
-var part, lib, part1;
-part = require('lib').part;
-
+var lib, part1;
 lib = require('lib');
 part1 = require('lib').part1;
-
 
 </pre>
         </div>
@@ -2489,7 +2537,7 @@ func do
         <div class="example-js">
 <pre class="prettyprint lang-js">
 func({
-  a: b
+  a: b,
   c: d
 });
 </pre>
@@ -2512,10 +2560,10 @@ h 1 do
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-func(1, 2);
+pow(1, 2);
 
 
-h(1; {
+h(1, {
   a: 2,
   b: 5
 });
@@ -2641,6 +2689,8 @@ add = function(x, y){
   return x + y;
 };
 add(1, 2);
+add(1);
+add();
 </pre>
         </div>
       </div>
@@ -2710,7 +2760,7 @@ set-cords!           #=> '1,3'
 <pre class="prettyprint lang-js">
 var setCords;
 setCords = function(arg$){
-  var ref$, ref1$, x, y;
+  var ref$, x, ref1$, y;
   ref$ = arg$ != null
     ? arg$
     : {}, x = (ref1$ = ref$.x) != null ? ref1$ : 1, y = (ref1$ = ref$.y) != null ? ref1$ : 3;
@@ -2742,10 +2792,14 @@ f 1 2 3 4 #=> 4
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var f, slice$ = [].slice;
+var f;
 f = function(x){
-  var ys;
-  ys = slice$.call(arguments, 1);
+  var ys, res$, i$, to$;
+  res$ = [];
+  for (i$ = 1, to$ = arguments.length; i$ < to$; ++i$) {
+    res$.push(arguments[i$]);
+  }
+  ys = res$;
   return x + ys[1];
 };
 f(1, 2, 3, 4);
@@ -2776,12 +2830,18 @@ times = curry$(function(x, y){
 times(2, 3);
 double = times(2);
 double(5);
-function curry$(f, args){
-  return f.length > 1 ? function(){
-    var params = args ? args.concat() : [];
-    return params.push.apply(params, arguments) < f.length && arguments.length ?
-      curry$.call(this, f, params) : f.apply(this, params);
-  } : f;
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
 }
 </pre>
         </div>
@@ -3870,7 +3930,7 @@ result #=> 'this is it'
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var something, result;
+var result, something;
 result = (function(){
   switch (6) {
   case 6:
@@ -3949,13 +4009,13 @@ func = function(param){
     return param.slice(3);
   }
 };
-func('hello');
+func('coucou');
 state = (function(){
   switch (false) {
   case 2 + 2 !== 5:
-    return 'I love Big Brother';
+    return "I love Big Brother";
   default:
-    return 'I love Julia';
+    return "I love Julia";
   }
 }());
 </pre>
@@ -4067,7 +4127,6 @@ x #=> 10
 <pre class="prettyprint lang-js">
 var x;
 x = 2 + 2 === 4 ? 10 : 0;
-
 x;
 </pre>
         </div>
@@ -4133,8 +4192,7 @@ x ||= 5  #=> 16
 x &&= 5  #=> 5
 
 x &&+= 3 #=> 8
-x ?*= 2
-x        #=> 8
+x ?*= 2  #=> 16
 
 xs = [1 2]
 xs ++= [3]
@@ -4156,17 +4214,14 @@ x >= 2 || (x = 2);
 x = Math.pow(x, 2);
 x = Math.pow(x, 2);
 
-x == null && (x = 16);
-x;
-x != null && (x = 8);
+x == null && (x = 10);
 x;
 
 x || (x = 5);
 x && (x = 5);
 
 x && (x += 3);
-x == null && (x *= 2);
-x;
+x != null && (x *= 2);
 
 xs = [1, 2];
 xs = xs.concat([3]);
@@ -4558,10 +4613,18 @@ x.arr.1.y #=> 9
         <div class="example-js">
 <pre class="prettyprint lang-js">
 var x, ref$;
-x = { "hello world": [ 4, [ 5, { boom: 6 } ] ] };
-
+x = {
+  "hello world": [
+    4, [
+      5, {
+        boom: 6
+      }
+    ]
+  ]
+};
 ((ref$ = (x['hello world'] || (x['hello world'] = []))[1])[1] || (ref$[1] = {})).boom;
 ((ref$ = x.arr || (x.arr = []))[1] || (ref$[1] = {})).y = 9;
+x.arr[1].y;
 </pre>
         </div>
       </div>
@@ -4598,6 +4661,7 @@ target = {
   notBound: obj.add,
   bound: bind$(obj, 'add')
 };
+target.notBound(5);
 target.bound(5);
 function bind$(obj, key, target){
   return function(){ return (target || obj)[key].apply(obj, arguments) };
@@ -4633,18 +4697,17 @@ document.query-selector \h1
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var x$, a, y$;
+var x$, a, y$, z$;
 x$ = a = [2, 7, 1, 8];
 x$.push(3);
 x$.shift();
 x$.sort();
 a;
-
-x$ = document.querySelector('h1');
-y$ = x$.style;
-y$.color = 'red';
-y$.fontSize = 'large';
-x$.innerHTML = 'LIVESCRIPT!';
+y$ = document.querySelector('h1');
+z$ = y$.style;
+z$.color = 'red';
+z$.fontSize = 'large';
+y$.innerHTML = 'LIVESCRIPT!';
 </pre>
         </div>
       </div>
@@ -4841,8 +4904,8 @@ A = (function(){
   function A(num){
     this.x = num;
   }
-  prototype.property = 1;
-  prototype.method = function(y){
+  A.prototype.property = 1;
+  A.prototype.method = function(y){
     return this.x + this.property + y;
   };
   return A;
@@ -4877,7 +4940,7 @@ A = (function(){
   A.displayName = 'A';
   var prototype = A.prototype, constructor = A;
   A.staticProp = 10;
-  prototype.getStatic = function(){
+  A.prototype.getStatic = function(){
     return constructor.staticProp + 2;
   };
   function A(){}
@@ -4912,7 +4975,7 @@ A = (function(){
   A.displayName = 'A';
   var secret, prototype = A.prototype, constructor = A;
   secret = 10;
-  prototype.getSecret = function(){
+  A.prototype.getSecret = function(){
     return secret;
   };
   function A(){}
@@ -4952,11 +5015,11 @@ var A, a, obj;
 A = (function(){
   A.displayName = 'A';
   var prototype = A.prototype, constructor = A;
-  prototype.x = 10;
-  prototype.boundFunc = function(x){
+  A.prototype.x = 10;
+  A.prototype.boundFunc = function(x){
     return this.x;
   };
-  prototype.regFunc = function(x){
+  A.prototype.regFunc = function(x){
     return this.x;
   };
   function A(){
@@ -5005,7 +5068,7 @@ A = (function(){
   function A(x){
     this.x = x;
   }
-  prototype.f = function(y){
+  A.prototype.f = function(y){
     this.y = y;
     return this.x + this.y;
   };
@@ -5117,7 +5180,7 @@ A = (function(){
     this.x = 1;
   }
   A.staticProp = 8;
-  prototype.method = function(){
+  A.prototype.method = function(){
     return this.x + 2;
   };
   return A;
@@ -5181,7 +5244,7 @@ A = (function(){
   function A(){
     this.x = 1;
   }
-  prototype.method = function(num){
+  A.prototype.method = function(num){
     return this.x + num;
   };
   return A;
@@ -5192,7 +5255,7 @@ B = (function(superclass){
     this.y = 2;
     B.superclass.call(this);
   }
-  prototype.method = function(num){
+  B.prototype.method = function(num){
     return this.y + superclass.prototype.method.apply(this, arguments);
   };
   return B;
@@ -5302,8 +5365,8 @@ var A, a, b, ref$;
 A = (function(){
   A.displayName = 'A';
   var prototype = A.prototype, constructor = A;
-  prototype.prop = 10;
-  prototype.f = function(){
+  A.prototype.prop = 10;
+  A.prototype.f = function(){
     return this.prop;
   };
   function A(){}
@@ -5347,7 +5410,7 @@ var Box, b;
 Box = (function(){
   Box.displayName = 'Box';
   var prototype = Box.prototype, constructor = Box;
-  Object.defineProperty(prototype, 'dimensions', {
+  Object.defineProperty(Box.prototype, 'dimensions', {
     get: function(){
       return this.d;
     },
@@ -5410,7 +5473,7 @@ do ->
       <li>N'utilisez pas <code>it</code>, <code>that</code>, <code>fallthrough</code>, ou <code>otherwise</code> pour vos variables. Cela peut ne pas être techniquement requis dans tous les cas, mais sera moins confus. Référez-vous à la documentation ci-dessus pour leurs utilisations.
       <li>LiveScript ignore l'indentation dans les chaînes multilignes avec entourées de guillements simples (non triplés, <code>"string"</code> ou <code>'string'</code>)
 <pre>
-text = "hi
+text = "hi 
         there"
 </pre> devra être changé car produit, en CoffeeScript, <code>"hi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;there"</code> mais <code>"hi there"</code> en LiveScript.
       <li><code>and</code>, <code>or</code> et les versions espacées de <code>.</code> and <code>?.</code> ferment les appels implicites : <code>f a .g b or h c</code> est <code>f(a.g(b || h(c)))</code> in CoffeeScript and <code>f(a).g(b) || h(c)</code> in LiveScript. You can use <code>||</code> instead of <code>or</code> and <code>&amp;&amp;</code> instead of <code>and</code> as those versions do not close implicit calls.
