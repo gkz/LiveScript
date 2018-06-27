@@ -933,11 +933,13 @@ heredoc = '''
             beginning whitespace is
             ignored
 '''
+nospaces = 'deadbeef
+            deadbeef'
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var multiline, heredoc;
+var multiline, heredoc, nospaces;
 multiline = 'string can be multiline and go on and on beginning whitespace is ignored';
 
 heredoc = 'string can be multiline\nwith newlines\nand go on and on\nbeginning whitespace is\nignored';
@@ -946,6 +948,7 @@ heredoc = 'string can be multiline\nwith newlines\nand go on and on\nbeginning w
 
 
 
+nospaces = 'deadbeefdeadbeef';
 
 </pre>
         </div>

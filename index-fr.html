@@ -815,11 +815,13 @@ heredoc = '''
             les espaces précédant sont
             ignorés
 '''
+nospace = 'deadbeef
+           deadbeef'
 </pre>
         </div>
         <div class="example-js">
 <pre class="prettyprint lang-js">
-var multiline, heredoc;
+var multiline, heredoc, nospace;
 multiline = 'les chaînes peuvent être multilignes en continuant tant que nécessaire les espaces précédant sont ignorés';
 
 heredoc = 'les chaînes peuvent être multilignes\nen continuant tant que nécessaire\nles espaces précédant sont\nignorés';
@@ -827,7 +829,7 @@ heredoc = 'les chaînes peuvent être multilignes\nen continuant tant que néces
 
 
 
-
+nospace = 'deadbeefdeadbeef';
 
 </pre>
         </div>
