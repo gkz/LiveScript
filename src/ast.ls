@@ -1001,7 +1001,15 @@ class exports.Call extends Node
             ++index
         node <<< back: (args[index] = fun)body
 
-    @let = (args, body, generator = false) ->
+    @let = (args, body) ->
+        has-yield = false
+        has-await = false
+        body.traverse-children (child) ->
+            if child instanceof Yield
+                switch child.op
+                | \yield \yieldfrom => has-yield := true
+                | \await            => has-await := true
+            return true if has-yield and has-await
         params = for a, i in args
             if a.op is \= and not a.logic and a.right
                 args[i] = that
@@ -1009,7 +1017,10 @@ class exports.Call extends Node
                 a.left
             else Var a.var-name! || a.carp 'invalid "let" argument'
         gotThis or args.unshift Literal \this
-        @block Fun(params, body, null, null, null, generator), args, \.call
+        body = @block Fun(params, body, null, null, null, has-yield, has-await), args, \.call
+        if has-yield || has-await
+            Block Yield if has-yield then \yieldfrom else \await, body
+        else body
 
 #### List
 # An abstract node for a list of comma-separated items.
@@ -2508,8 +2519,6 @@ class exports.For extends While
     show: -> ((@kind || []) ++ @index).join ' '
 
     add-body: (body) ->
-        has-yield = !!body.traverse-children (child) ->
-            return true if child instanceof Yield
         if @let
             @item = Literal \.. if delete @ref
             @item = that if @item?rewrite-shorthand!
@@ -2518,14 +2527,13 @@ class exports.For extends While
                 ..push Assign that,      Literal \item$$ if @item
             body = Block if @guard
                 assigned = [Var name for assignments when ..assigns! for name in that]
-                assignments.concat [If delete @guard, Call.let assigned, body, has-yield]
+                assignments.concat [If delete @guard, Call.let assigned, body]
             else
-                Call.let assignments, body, has-yield
+                Call.let assignments, body
 
         super body
 
         if @let
-            @body := Block Yield \yieldfrom, body if has-yield
             delete @index
             delete @item
         this
