@@ -62,7 +62,7 @@ first = ->*
 second = ->*
   yield from first!
 list = second!
-for i to 3 
+for i to 3
   {value} = list.next!
   eq value, i
 
@@ -173,3 +173,25 @@ eq 6 g8_result[2]()
 
 # splats should expand generators (https://github.com/gkz/LiveScript/issues/963)
 eq '0,1,2' "#{[...f!]}"
+
+# [LiveScript#1019](https://github.com/gkz/LiveScript/issues/1019)
+# in `let` blocks
+fn = ->*
+  let a = 1
+    yield a
+eq 1 fn!next!value
+
+# [LiveScript#1023](https://github.com/gkz/LiveScript/issues/1023)
+# Loop guards (`when`, `case`, `|`) didn't work with `for..let` loops with `yield` in their bodies
+fn = (remainder) ->*
+  obj = a: 1, b: 2, c: 3, d: 4
+  for own let k, v of obj when v % 2 == remainder
+    yield v
+gen = fn 0
+eq 2 gen.next!value
+eq 4 gen.next!value
+eq true gen.next!done
+gen = fn 1
+eq 1 gen.next!value
+eq 3 gen.next!value
+eq true gen.next!done

@@ -187,3 +187,35 @@ do ->
 
 # check that ->>* results in an error at compile time
 compile-throws "a generator can't be async" 1 '->>* 3'
+
+# [LiveScript#1019](https://github.com/gkz/LiveScript/issues/1019)
+# in `let` blocks
+do ->
+  x = ->>
+    let a = Promise.resolve 1
+      await a
+
+  y <- x!then!
+  eq y, 1
+
+# [LiveScript#1021](https://github.com/gkz/LiveScript/issues/1021)
+# in for..let loops
+do ->
+  x = ->>
+    for let v in [Promise.resolve 1; Promise.resolve 2]
+      await v
+
+  y <- x!then!
+  eq "#y" '1,2'
+
+# [LiveScript#1023](https://github.com/gkz/LiveScript/issues/1023)
+# Loop guards (`when`, `case`, `|`) didn't work with `for..let` loops with `yield` in their bodies
+do ->
+  x = (keys) ->>
+    pr = Promise~resolve
+    obj = {a: pr 1; b: pr 2; c: pr 3}
+    for own let k, v of obj when k in keys
+      await v
+
+  y <- x(<[ a c ]>).then!
+  eq "#y", '1,3'
