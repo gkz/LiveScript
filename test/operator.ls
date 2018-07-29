@@ -988,3 +988,15 @@ ok not (even or 1) 3
 ok ((.length > 4) or [1 2 3]) [1 2 3]
 
 eq 8 ((-> &0 + &1 is 5) and (**)) 2 3
+
+# [LiveScript#1025](https://github.com/gkz/LiveScript/issues/1025)
+# The placeholder logic from `match` is also applied here
+_ = -> -> false
+_.isString = -> typeof it == \string
+_.isNumber = -> typeof it == \number
+eq false (_.isString || _.isNumber) []
+eq false (_.isString || _!) []
+eq true  (_.isString || _.isNumber) 1
+
+# other examples of Chains with tails
+eq \bar ('foo'~slice || 'foobar'~slice) 3

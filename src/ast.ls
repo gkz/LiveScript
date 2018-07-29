@@ -708,7 +708,7 @@ class exports.Chain extends Node
         this
 
     auto-compare: (target) ->
-        test = @head
+        test = @head unless @tails.length
         switch
         | test instanceof Literal
             Binary \===  test, target.0

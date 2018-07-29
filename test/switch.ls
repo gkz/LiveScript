@@ -275,6 +275,23 @@ match 1, 3, 3
 | _            => ok 0
 
 
+# [LiveScript#1025](https://github.com/gkz/LiveScript/issues/1025)
+# Expressions starting from `_` were treated as placeholders in `match` cases
+_ = -> -> false
+_.isString = -> typeof it == \string
+match 1
+| _.isString   => ok 0
+| (_.isString) => ok 0
+| _!           => ok 0
+match \foo
+| _.isString   => ok 1
+
+# other examples of Chains with tails
+match \foo
+| 'barbaz'~starts-with => ok 0
+| 'foobar'~starts-with => ok 1
+| otherwise            => ok 0
+
 # [LiveScript#926](https://github.com/gkz/LiveScript/issues/926)
 # `match` wasn't binding `this` correctly in expression position
 o =
