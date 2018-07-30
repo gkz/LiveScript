@@ -26,7 +26,7 @@ parser <<<
             @tokens = it
         upcoming-input: -> ''
 
-bufferFrom = Buffer.from or -> new Buffer it
+bufferFrom = Buffer.alloc and Buffer.from or -> new Buffer it
 
 exports <<<
     VERSION: '1.5.0'
