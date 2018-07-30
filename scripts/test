@@ -21,6 +21,15 @@
     return color + text + reset;
   }
 
+  function testSyntax(code) {
+    try {
+      eval(code);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
   var startTime = Date.now();
   var passedTests = 0;
   var failedTests = 0;
@@ -156,13 +165,13 @@
 
   var files = fs.readdirSync("test");
 
-  if (process.execArgv.indexOf("--harmony") < 0 && process.execArgv.indexOf("--harmony-generators") < 0) {
-    files.splice(files.indexOf("generators.ls"), 1);
+  if (testSyntax("(function* () {})")) {
+    console.log("Testing with generators.");
   } else {
-    console.log("Testing with harmony.");
+    files.splice(files.indexOf("generators.ls"), 1);
   }
-  var supportsAsync = parseInt(process.versions.node.split('.')[0]) >= 7;
-  if (supportsAsync) {
+
+  if (testSyntax("(async function () {})")) {
     console.log("Testing with async.");
   } else {
     files.splice(files.indexOf("async.ls"), 1);
