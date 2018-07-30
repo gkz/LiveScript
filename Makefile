@@ -28,7 +28,7 @@ browser/livescript-min.js:  browser/livescript.js
 package.json: package.json.ls
 	$(LSC) --compile package.json.ls
 
-.PHONY: build build-browser force full install dev-install test test-harmony coverage loc clean
+.PHONY: build build-browser force full install dev-install test coverage loc clean
 
 all: build
 
@@ -50,9 +50,6 @@ dev-install: package.json
 
 test: build
 	./scripts/test
-
-test-harmony: build
-	node --harmony ./scripts/test
 
 coverage: build
 	$(ISTANBUL) cover ./scripts/test

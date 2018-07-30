@@ -165,12 +165,6 @@
 
   var files = fs.readdirSync("test");
 
-  if (testSyntax("(function* () {})")) {
-    console.log("Testing with generators.");
-  } else {
-    files.splice(files.indexOf("generators.ls"), 1);
-  }
-
   if (testSyntax("(async function () {})")) {
     console.log("Testing with async.");
   } else {
