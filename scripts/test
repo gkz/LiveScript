@@ -170,6 +170,11 @@
   } else {
     files.splice(files.indexOf("async.ls"), 1);
   }
+  if (testSyntax("(async function* () {})")) {
+    console.log("Testing with async generators.");
+  } else {
+    files.splice(files.indexOf("async-generators.ls"), 1);
+  }
 
   files.forEach(function(file){
     var stk, msg, m, ref, num, row, col, that, lines, line;
