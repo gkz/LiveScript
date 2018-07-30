@@ -288,6 +288,8 @@ bnf =
         , -> (Fun $3, $6, false, false, false, true, false).named $1
         o 'ASYNC FUNCTION CALL( ArgList OptComma )CALL Block'
         , -> (Fun $4, $7, false, false, false, false, true).named $2
+        o 'ASYNC GENERATOR CALL( ArgList OptComma )CALL Block'
+        , -> (Fun $4, $7, false, false, false, true, true).named $2
 
         # The full complement of `if` and `unless` expressions
         o 'IF Expression Block Else'      -> L 1 2 If $2, $3, $1 is 'unless' .add-else $4

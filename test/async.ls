@@ -185,9 +185,6 @@ do ->
   y <- obj2.bound!then
   eq y, 3
 
-# check that ->>* results in an error at compile time
-compile-throws "a generator can't be async" 1 '->>* 3'
-
 # [LiveScript#1019](https://github.com/gkz/LiveScript/issues/1019)
 # in `let` blocks
 do ->

@@ -1043,9 +1043,7 @@ character = if not JSON? then uxxxx else ->
         case 'ID'
             break unless val is 'async'
             next = tokens[i + 1]
-            switch next.0
-            | 'FUNCTION' => token.0 = 'ASYNC'
-            | 'GENERATOR' => carp 'named generator cannot be async' line
+            if next.0 in <[ FUNCTION GENERATOR ]> then token.0 = 'ASYNC'
         prev = token
         continue
 

@@ -2003,10 +2003,11 @@ class exports.Fun extends Node
         code = [\function]
         if @async
             @ctor and @carp "a constructor can't be async"
-            @generator and @carp "a generator can't be async"
             o.in-async = true
             code.unshift 'async '
-        else if @generator
+        else if not @wrapper
+            o.in-async = false
+        if @generator
             @ctor and @carp "a constructor can't be a generator"
             o.in-generator = true
             code.push \*
