@@ -1430,7 +1430,7 @@ class exports.Binary extends Node
                     return @compileRegexEquals o, that
                 if @op is \=== and (@first instanceof Literal and @second instanceof Literal)
                 and @first.is-what! isnt @second.is-what!
-                    @warn "strict comparison of two different types will always be false: #{@first.value} == #{@second.value}" unless o.no-warn
+                    @warn "strict comparison of two different types will always be false: #{@first.value} == #{@second.value}" if o.warn
             return @compileChain o if COMPARER.test @op and COMPARER.test @second.op
         @first <<< {@front}
         code = [(@first .compile o, level = LEVEL_OP + PREC[@op]), " ", (@mapOp @op), " ", (@second.compile o, level)]
@@ -1918,7 +1918,7 @@ class exports.In extends Node implements Negatable
         if array not instanceof Arr
             return sn(this, (if @negated then \! else ''), (util \in), "(", (@item.compile o, LEVEL_LIST), ", ", (array.compile o, LEVEL_LIST), ")")
         if items.length == 0
-            @warn "value can never be `in` an empty array" unless o.no-warn
+            @warn "value can never be `in` an empty array" if o.warn
             value = "#{!!@negated}"
             return do
                 if @item.is-complex!

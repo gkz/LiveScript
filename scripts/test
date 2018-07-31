@@ -183,7 +183,7 @@
 
     try {
       console.log(filename);
-      LiveScript.run(code, { filename: filename, map: 'embedded', noWarn: true });
+      LiveScript.run(code, { filename: filename, map: 'embedded', warn: false });
     } catch (e) {
       ++failedTests;
 
@@ -209,7 +209,7 @@
         col = ref[2];
         code = LiveScript.compile(code, {
           bare: true,
-          noWarn: true
+          warn: false
         });
       }
 
