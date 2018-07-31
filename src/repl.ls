@@ -3,6 +3,7 @@ require! {
   path
   fs
   util
+  os
   'prelude-ls': {each, lines, unlines, take}:prelude
 }
 
@@ -40,7 +41,8 @@ dasherize-vars = (str) -> if /^[a-z]/ is str then dasherize str else str
     say util.inspect x, show-hidden, depth, !process.env.NODE_DISABLE_COLORS
   ppp = !-> pp it, true, null
   MAX-HISTORY-SIZE = 500
-  history-file = path.join process.env.HOME, '/.lsc_history'
+  home-dir = os.homedir?! or process.env.HOME or process.env.USERPROFILE
+  history-file = path.join home-dir, '/.lsc_history'
   code   = if repl.infunc then '  ' else ''
   cont   = 0
   rl     = require 'readline' .create-interface stdin, stdout
