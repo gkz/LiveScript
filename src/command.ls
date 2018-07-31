@@ -113,7 +113,7 @@ switch
       o.const
       o.map
       o.header
-      o.no-warn
+      o.warn
   }
   t       = {input, options}
   try
