@@ -5089,6 +5089,8 @@ x.arr[1].y;
 
       <p>Binding access <code>.~</code> retrieves an object's method as bound to the object. With automatic dot insertion you can just use <code>~</code>.
 
+      <p>Note that this is not the same as the <code>.bind</code> method on <code>Function</code>. With <code>.~</code>, the method is dynamically bound; <code>foo~bar</code> will refer to the value of <code>bar</code> on <code>foo</code> at the time the bound function is invoked, not at the time the binding access is made.
+
       <div class="example">
         <div class="example-ls">
 <pre class="prettyprint lang-ls">
@@ -5103,6 +5105,10 @@ target =
 
 target.not-bound 5 #=> 605
 target.bound 5     #=> 10
+
+# Binding access is dynamic:
+obj.add = (y) -> @x + 1000*y
+target.bound 5     #=> 5005
 </pre>
         </div>
         <div class="example-js">
@@ -5120,6 +5126,10 @@ target = {
   bound: bind$(obj, 'add')
 };
 target.notBound(5);
+target.bound(5);
+obj.add = function(y){
+  return this.x + 1000 * y;
+};
 target.bound(5);
 function bind$(obj, key, target){
   return function(){ return (target || obj)[key].apply(obj, arguments) };
