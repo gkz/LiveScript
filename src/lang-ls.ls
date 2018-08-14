@@ -41,14 +41,15 @@ tint \ls [
   | un(?:less|til)
   | w(?:hile|ith|hen)
   | s(?:witch|uper)
-  | o[frn] | off | return | break | and | let | var | loop | yes | yield
+  | a(?:nd|wait)
+  | o[frn] | off | return | break | let | var | loop | yes | yield
   ) #kwend //]
   [\typ // ^ (?: true | false | null | void ) #kwend //]
   [\ctx // ^ (?
   : t(?:h(?:is|at)|o|il)
   | f(?:rom|allthrough)
   | e(?:val)?
-  | it | arguments | by | constructor | prototype | superclass
+  | it | arguments | by | constructor | prototype | superclass | async
   ) #kwend //]
   [\glb // ^ (?
   : Array | Boolean | Date | Error | Function | JSON | Math | Number
