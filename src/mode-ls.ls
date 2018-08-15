@@ -59,7 +59,7 @@ LiveScriptMode.Rules =
         |f(?:or(?:\s+own)?|inally|unction)
         |s(?:uper|witch)
         |e(?:lse|x(?:tends|port)|val)
-        |a(?:nd|rguments)
+        |a(?:nd|rguments|sync|wait)
         |n(?:ew|ot)
         |un(?:less|til)
         |w(?:hile|ith)
