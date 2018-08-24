@@ -29,7 +29,7 @@ parser <<<
 bufferFrom = Buffer.alloc and Buffer.from or -> new Buffer it
 
 exports <<<
-    VERSION: '1.5.0'
+    VERSION: '1.6.0'
 
     # Compiles a string of LiveScript code to JavaScript.
     compile: (code, options = {}) ->
