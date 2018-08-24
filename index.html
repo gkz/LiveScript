@@ -5979,6 +5979,46 @@ f do
     <div id="changelog" class="section">
       <a name="changelog"></a>
       <h2>Changelog</h2>
+      <h3>1.6.0</h3>
+      <h4>Breaking changes</h4>
+      <ul>
+        <li><code>{a, b, ...c} = a: 1 b: 2 c: 3 x: 4</code> now sets <code>c = c: 3 x: 4</code> instead of <code>c = {} &lt;&lt;&lt; 3</code>. (See <a href="https://github.com/gkz/LiveScript/issues/941">#941</a>.)
+        <li><code>o{k: a.complex.expression}</code>, <code>{a xor b}</code>, <code>foo.bar = [a, b]:c</code>, <code>{...x ? y} = z</code> are all now errors. (See <a href="https://github.com/gkz/LiveScript/pull/958">#958</a> for rationales.)
+        <li><code>a ?+= b</code> now means <code>a? &amp;&amp; a += b</code> instead of <code>a? || a += b</code> (See <a href="https://github.com/gkz/LiveScript/pull/969">#969</a>.)
+      </ul>
+      <h4>Features</h4>
+      <ul>
+        <li>Added <code>async</code> functions and generators (<a href="https://github.com/gkz/LiveScript/pull/978">#978</a>, <a href="https://github.com/gkz/LiveScript/pull/1063">#1063</a>)
+        <li>Added support for more complex object shorthand, such as <code>{a.b!c?key}</code> (<a href="https://github.com/gkz/LiveScript/pull/958">#958</a>)
+        <li>Support ES6 iterators in splats (<a href="https://github.com/gkz/LiveScript/issues/963">#963</a>)
+        <li>In Node, added a <code>process.argv.lsc</code> property for getting interpreted script arguments reliably (<a href="https://github.com/gkz/LiveScript/pull/1014">#1014</a>)
+      </ul>
+      <h4>Fixes</h4>
+      <ul>
+        <li>Anaphorization bugs (<a href="https://github.com/gkz/LiveScript/issues/743">#743</a>, <a href="https://github.com/gkz/LiveScript/pull/957">#957</a>)
+        <li>Report error for labeled and curried functions (<a href="https://github.com/gkz/LiveScript/issues/751">#751</a>)
+        <li>Implicit <code>it</code> parameter not defined when used in object shorthand (<a href="https://github.com/gkz/LiveScript/issues/899">#899</a>)
+        <li>Forking bug (<a href="https://github.com/gkz/LiveScript/issues/916">#916</a>)
+        <li><code>for in</code> lexing bug (<a href="https://github.com/gkz/LiveScript/issues/923">#923</a>)
+        <li><code>match</code> bug (<a href="https://github.com/gkz/LiveScript/issues/926">#926</a>)
+        <li>REPL bugs (<a href="https://github.com/gkz/LiveScript/pull/928">#928</a>, <a href="https://github.com/gkz/LiveScript/pull/929">#929</a>)
+        <li>Binding access and object slices (<a href="https://github.com/gkz/LiveScript/issues/930">#930</a>)
+        <li>Reporting source file line numbers (<a href="https://github.com/gkz/LiveScript/issues/953">#953</a>)
+        <li>Various bugs with object slicing (<a href="https://github.com/gkz/LiveScript/pull/958">#958</a>)
+        <li>No more unreachable <code>break</code>s in compiled <code>switch</code> code (<a href="https://github.com/gkz/LiveScript/issues/931">#931</a>)
+        <li>Fixes for <code>-ce</code>, <code>-aj</code> combinations of options (<a href="https://github.com/gkz/LiveScript/issues/993">#993</a>)
+        <li>Loop variable in <code>for let ... when</code> guard (<a href="https://github.com/gkz/LiveScript/issues/992">#992</a>)
+        <li>Script argument regression (<a href="https://github.com/gkz/LiveScript/issues/1013">#1013</a>)
+        <li><code>a[]b ++ c</code>, <code>a[]b ++= c</code> (<a href="https://github.com/gkz/LiveScript/issues/542">#542</a>, <a href="https://github.com/gkz/LiveScript/issues/1028">#1028</a>)
+        <li>Show errors when running with <code>-w</code> option (<a href="https://github.com/gkz/LiveScript/issues/1015">#1015</a>)
+        <li><code>for [] ... else</code> (<a href="https://github.com/gkz/LiveScript/issues/1035">#1035</a>)
+        <li>Move shebang lines above header comment (<a href="https://github.com/gkz/LiveScript/pull/1032">#1032</a>)
+        <li>Empty words literal <code>&lt;[ ]&gt;</code> (<a href="https://github.com/gkz/LiveScript/issues/739">#739</a>)
+        <li><code>for arr case .. in</code> (<a href="https://github.com/gkz/LiveScript/issues/1039">#1039</a>)
+        <li>Fix for <code>_.member</code> in <code>match</code> (<a href="https://github.com/gkz/LiveScript/issues/1025">#1025</a>)
+        <li><code>yield</code> and <code>await</code> inside various <code>let</code> blocks (<a href="https://github.com/gkz/LiveScript/issues/1019">#1019</a>, <a href="https://github.com/gkz/LiveScript/issues/1021">#1021</a>, <a href="https://github.com/gkz/LiveScript/issues/1023">#1023</a>)
+        <li>REPL mode on Windows (<a href="https://github.com/gkz/LiveScript/issues/897">#897</a>)
+      </ul>
       <h3>1.5.0</h3>
       <h4>Breaking changes</h4>
       <ul>
