@@ -364,6 +364,17 @@ a = Array do
 eq 2, a.length
 eq 2, (Array 1: 2, 3).length
 
+# [LiveScript#1038](https://github.com/gkz/LiveScript/issues/1038):
+# More cases of not consuming shorthand properties.
+a = [a: 1 2 3]
+eq 3 a.length
+
+fn = (x, y, z) -> z
+eq 3 fn a: 1 2 3
+
+e = try LiveScript.compile 'x = a: 1 2' catch e
+eq "Parse error on line 1: Unexpected ','" e.message
+
 
 # With leading comments.
 obj =
