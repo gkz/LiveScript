@@ -31,8 +31,8 @@ exports <<<
         add-implicit-indentation it
         rewrite-blockless it
         add-implicit-parentheses it
-        add-implicit-braces it
         expand-literals it
+        add-implicit-braces it
         it.shift! if it.0?.0 is 'NEWLINE'
         it
 
