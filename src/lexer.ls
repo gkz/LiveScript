@@ -1317,10 +1317,15 @@ character = if not JSON? then uxxxx else ->
                     tokens.splice i, 2 + 2 * byp, ...ts
                     # advance index
                     i += ts.length - 1
+                    # done
             else
                     token.0 = 'STRNUM'
-                    if tokens[i + 2]?.0 is 'RANGE_BY'
+                    if nFrom != null
+                        # set implicit <from> number
+                        token.1 = '0'
+                    else if tokens[i + 2]?.0 is 'RANGE_BY'
                         tokens.splice i + 2, 1, ['BY' 'by' lno, cno]
+                    # insert <TO>
                     tokens.splice i + 1, 0, ['TO', token.op, lno, cno]
             # clear <from> flag-number
             nFrom = null
