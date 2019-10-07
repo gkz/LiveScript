@@ -250,14 +250,21 @@ exports <<<
                     return 4
                 @forange! and tag = 'FROM'
             case 'to' 'til'
-                @forange! and @tokens.push do
-                    ['FROM' '' @line, @column] ['STRNUM' '0' @line, @column]
-                if @fget 'from'
-                    @fset 'from' false
-                    @fset 'by' true
-                    tag = 'TO'
-                else if not last.callable and last.0 is 'STRNUM' and @tokens[*-2].0 is '['
-                    last <<< 0:'RANGE' op: id
+                # check <for> without <from>
+                if @forange!
+                    @tokens.push ['FROM' '' @line, @column]
+                    @tokens.push ['STRNUM' '0' @line, @column]
+                # check <from> flag
+                if (a = @flags[@closes.length]) and a.from
+                    # <from> is done, current is <to>, next is <by>
+                    a.from = false
+                    a.by   = true
+                    tag    = 'TO'
+                # check at the array start
+                else if not last.callable and last.0 == 'STRNUM' and @tokens[*-2].0 == '['
+                    # STRNUM is converted to RANGE
+                    last.0  = 'RANGE'
+                    last.op = id
                     return id.length
                 else if ']' in @closes
                     @token 'TO' id
@@ -1218,7 +1225,8 @@ character = if not JSON? then uxxxx else ->
 # - Insert `, ` after each non-callable token facing an argument token.
 !function expand-literals tokens
     i = 0
-    var from-num
+    nFrom = null
+    nTo   = null
     while token = tokens[++i]
         switch token.0
         case 'STRNUM'
@@ -1239,46 +1247,84 @@ character = if not JSON? then uxxxx else ->
             if tokens[i + 2].0 is 'BY'
                 tokens[i + 2].0 = 'RANGE_BY'
             token.op = token.1
-            from-num = 0
+            nFrom = 0
             fallthrough
         case 'RANGE'
+            # {{{
+            # prepare
             lno = token.2
             cno = token.3
-            if from-num? or (tokens[i-1].0 is '['
-            and tokens[i + 1].0 is 'STRNUM'
-            and ((tokens[i + 2].0 is ']'
-                and (tokens[i + 1].1.char-at(0) in ['\'' '"']
-                    or +tokens[i + 1].1 >= 0))
-                or (tokens[i + 2].0 is 'RANGE_BY'
-                and tokens[i + 3]?.0 is 'STRNUM'
-                and tokens[i + 4]?.0 is ']')))
-                unless from-num?
-                    [from-num, char] = decode token.1, lno
-                [to-num, tochar] = decode tokens[i + 1].1, lno
-                carp 'bad "to" in range' lno if not to-num? or char .^. tochar
-                by-num = 1
-                if byp = tokens[i + 2]?.0 is 'RANGE_BY'
-                    carp 'bad "by" in range' tokens[i + 2].2 unless by-num = +tokens[i + 3]?.1
-                else if from-num > to-num
-                    by-num = -1
-                ts = []
-                enc = if char then character else String
-                add = !->
-                     if 0x10000 < ts.push ['STRNUM' enc n; lno, cno] [',' ',' lno, cno]
-                         carp 'range limit exceeded' lno
-                if token.op is 'to'
-                    for n from from-num to to-num by by-num then add!
-                else
-                    for n from from-num til to-num by by-num then add!
-                ts.pop! or carp 'empty range' lno
-                tokens.splice i, 2 + 2 * byp, ...ts
-                i += ts.length - 1
+            # check token sequence,
+            # range with accessor should not be expanded
+            if tokens[i - 2].0 != 'DOT' and
+               # implicit range (when <from> flag-number is set) or,
+               (nFrom != null or
+               # there is a "simple" numeric range startup with..
+               (tokens[i - 1].0 == '[' and
+                tokens[i + 1].0 == 'STRNUM' and
+                # either end of the range..
+                ((tokens[i + 2].0 == ']' and
+                  # with a string literal(?) or a positive number..
+                  # Q: why this exact check order should matter?
+                  (tokens[i + 1].1.0 == '"' or
+                   tokens[i + 1].1.0 == "'" or
+                   +tokens[i + 1].1 >= 0)) or
+                 # ..or, a full <range_by>
+                 (tokens[i + 2].0 == 'RANGE_BY' and
+                  tokens[i + 3] and tokens[i + 4] and
+                  tokens[i + 3].0 == 'STRNUM' and
+                  tokens[i + 4].0 == ']'))))
+                    # do RANGE expansion
+                    # determine <from> number
+                    if nFrom == null
+                        # Q: the purpose of char?
+                        [nFrom, char] = decode token.1, lno
+                    # determine <to> number
+                    [nTo, tochar] = decode tokens[i + 1].1, lno
+                    carp 'bad "to" in range' lno if not nTo? or char .^. tochar
+                    # determine <by> number
+                    nBy = 1
+                    if byp = tokens[i + 2]?.0 is 'RANGE_BY'
+                        carp 'bad "by" in range' tokens[i + 2].2 unless nBy = +tokens[i + 3]?.1
+                    else if nFrom > nTo
+                        nBy = -1
+                    # prepare tokens stack
+                    ts = []
+                    # prepare encoder function
+                    enc = if char
+                        then character
+                        else String
+                    # fill the stack
+                    if token.op == 'to'
+                        for nI from nFrom to nTo by nBy
+                            ts.push ['STRNUM', (enc nI), lno, cno]
+                            ts.push [',', ',', lno, cno]
+                            if ts.length > 0x10000
+                                carp 'range limit exceeded' lno
+                    else
+                        for nI from nFrom til nTo by nBy
+                            ts.push ['STRNUM', (enc nI), lno, cno]
+                            ts.push [',', ',', lno, cno]
+                            if ts.length > 0x10000
+                                carp 'range limit exceeded' lno
+                    # remove last (garbage) token from the stack
+                    # and make a short check
+                    if not ts.pop!
+                        carp 'empty range' lno
+                    # replace this <RANGE> with stacked tokens
+                    # the tokens array should be modified *in place*
+                    #tokens = (tokens.slice 0, i) ++ ts ++ (tokens.slice i + 2 + 2*byp)
+                    tokens.splice i, 2 + 2 * byp, ...ts
+                    # advance index
+                    i += ts.length - 1
             else
-                token.0 = 'STRNUM'
-                if tokens[i + 2]?.0 is 'RANGE_BY'
-                    tokens.splice i + 2, 1, ['BY' 'by' lno, cno]
-                tokens.splice i + 1, 0, ['TO', token.op, lno, cno]
-            from-num = null
+                    token.0 = 'STRNUM'
+                    if tokens[i + 2]?.0 is 'RANGE_BY'
+                        tokens.splice i + 2, 1, ['BY' 'by' lno, cno]
+                    tokens.splice i + 1, 0, ['TO', token.op, lno, cno]
+            # clear <from> flag-number
+            nFrom = null
+            # }}}
         case 'WORDS'
             ts = [['[' '[' lno = token.2, cno = token.3]]
             for word in token.1.match /\S+/g or ''
@@ -1302,7 +1348,8 @@ character = if not JSON? then uxxxx else ->
             if not token.spaced and token.1 in <[ + - ]> and tokens[i + 1].0 isnt ')'
                 tokens[i].0 = '+-'
             continue
-        default continue
+        default
+            continue
         if token.spaced and tokens[i + 1].0 in ARG
             tokens.splice ++i, 0 [',' ',' token.2, token.3]
 
