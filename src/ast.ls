@@ -1725,7 +1725,7 @@ class exports.Assign extends Node
         for item in list
             code.push item, sep
         code.pop!
-        if list.length < 2 or o.level < LEVEL_LIST then sn(this, ...code) else sn(this, "(", ...code, ")")
+        if (o.level < LEVEL_OP and list.length < 2) or o.level < LEVEL_LIST then sn(this, ...code) else sn(this, "(", ...code, ")")
 
     compileSplice: (o) ->
         [from-exp-node, from-exp] = Chain @left.from .cache-reference o
