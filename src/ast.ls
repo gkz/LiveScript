@@ -1456,7 +1456,7 @@ class exports.Binary extends Node
 
     compileExistence: (o) ->
         if @void or not o.level
-            x = Binary \&& Existence(@first, true), @second
+            x = Binary \&& Existence(@first, true), Parens @second.unwrap!
             return (x <<< {+void})compile-node o
         x = @first.cache o, true
         sn(this, If(Existence x.0; x.1)add-else(@second)compile-expression o)
@@ -2799,7 +2799,7 @@ class exports.If extends Node
         {then: thn, else: els or Literal \void} = this
         @void and thn.void = els.void = true
         if not @else and (@cond or @void)
-            return Parens Binary \&& @if, thn .compile o
+            return Parens Binary \&& @if, (Parens thn.unwrap!) .compile o
         code = [sn(this, @if.compile o, LEVEL_COND)]
         pad  = if els.is-complex! then \\n + o.indent += TAB else ' '
         code.push "#pad", sn(thn, "? "), (thn.compile o, LEVEL_LIST), "#pad", sn(els, ": "), (els.compile o, LEVEL_LIST)
