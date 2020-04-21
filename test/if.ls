@@ -168,3 +168,7 @@ else if true =>
   ok 0
 else
   ok 0
+
+# https://github.com/gkz/LiveScript/issues/1098
+f = -> ok false
+while (if false then f! or f!) then
