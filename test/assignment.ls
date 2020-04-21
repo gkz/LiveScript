@@ -404,6 +404,15 @@ o{d, e} &&*= d: 2, e: 3
 eq 0 o.d
 eq 3 o.e
 
+# https://github.com/gkz/LiveScript/issues/1096
+[{a}?] = [a: 1]
+eq 1 a
+a = null
+[{a}?] = []
+eq null a
+[[[a]?]?] = []
+eq null a
+
 
 ### Named Destructuring
 [b, c]:a = [0 1]

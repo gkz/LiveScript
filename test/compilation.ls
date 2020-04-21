@@ -394,3 +394,12 @@ ok compiled.starts-with 'var A;\n'
 
 compiled = LiveScript.compile 'a[b = c + d] **= e' {+bare,-header}
 ok compiled.starts-with 'var b;\n'
+
+
+# Don't wrap single destructuring statements in parentheses under these
+# specific conditions:
+#  * the destructuring is inside a conditional
+#  * the conditional is in an expression position
+#  * but the value of the conditional isn't needed
+compiled = LiveScript.compile 'a or if b then [@c] = d else 0' {+bare,-header}
+eq 'a || (b ? this.c = d[0] : 0);' compiled
