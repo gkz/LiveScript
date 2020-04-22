@@ -3145,8 +3145,11 @@ UTILS =
 
     # Copies properties from right to left.
     import: '''function(obj, src){
-      var own = {}.hasOwnProperty;
-      for (var key in src) if (own.call(src, key)) obj[key] = src[key];
+      for (var key in src) {
+        if (Object.hasOwnProperty.call(src, key)) {
+          obj[key] = src[key];
+        }
+      }
       return obj;
     }'''
     import-all: '''function(obj, src){

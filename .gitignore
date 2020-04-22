@@ -1,3 +1,6 @@
 t.*
 coverage
 node_modules
+*.swp
+*.vim
+src/*.js
