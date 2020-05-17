@@ -209,7 +209,7 @@ switch
 
       if o.map == 'linked' || o.map == "debug"
         map-path = "#js-path.map"
-        e2 <-! fs.write-file map-path, js.map || '\n'
+        e2 <-! fs.write-file map-path, js.map.to-string! || '\n'
         return warn e2 if e2
         if o.map == "debug"
           e3 <-! fs.write-file "#map-path.debug", js.debug || '\n'
