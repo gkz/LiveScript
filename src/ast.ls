@@ -1398,6 +1398,8 @@ class exports.Binary extends Node
 
     get-default: -> switch @op | \? \|| \&& => this
 
+    assigns: -> @get-default!?first.assigns!
+
     xor-children: (test) ->
         return false unless (first = test @first) xor test @second
         return if first then [@first, @second] else [@second, @first]
@@ -2536,7 +2538,6 @@ class exports.For extends While
     add-body: (body) ->
         if @let
             @item = Literal \.. if delete @ref
-            @item = that if @item?rewrite-shorthand!
             assignments = with []
                 ..push Assign Var(that), Literal \index$$ if @index
                 ..push Assign that,      Literal \item$$ if @item
