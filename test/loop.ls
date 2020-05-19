@@ -731,6 +731,22 @@ expected =
   * b: \default c: {} e: 3
 deep-equal expected, r
 
+# Unreported for-let regression
+arr =
+  * x: 6 y: 7
+  * x: 8 y: 9
+o = x: \x y: \y
+i = 0
+f = -> i++; o
+fns = for let {(f!x), (f!y)} in arr
+  t = o{x, y}
+  o.x = \x
+  o.y = \y
+  -> t
+r = for f in fns then f!
+deep-equal arr, r
+eq 4 i
+
 # Certain literals could result in illegal JavaScript if not carefully
 # handled. These are all nonsensical use cases and could just as easily
 # be LiveScript syntax errors. The thing to avoid is for them to be JavaScript
