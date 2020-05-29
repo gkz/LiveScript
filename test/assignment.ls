@@ -390,6 +390,11 @@ new
   @{a &&= 2, b ||= 3} = {a: 99}
   eq @a * @b, 6
 
+  i = 0
+  f = -> ++i
+  [@a or {(f!)}] = [false]
+  eq @a.1, 1
+
 compile-throws 'invalid assign' 1 'o{...(a) ? b} = c'
 
 ### Compound/Conditional Destructuring
