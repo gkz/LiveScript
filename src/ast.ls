@@ -1589,6 +1589,11 @@ class exports.Binary extends Node
         sn(this, (Binary \&& (Binary \!== (Unary \! left.0), (Unary \! right.0))
              , (Parens Binary \|| left.1, right.1) .compile o))
 
+    rewrite-shorthand: (o, assign) !->
+        return super ... if @partial
+        @first = that if @first.rewrite-shorthand o, assign
+        @second = that if @second.rewrite-shorthand o
+
 #### Assign
 # Assignment to a variable/property.
 class exports.Assign extends Node
