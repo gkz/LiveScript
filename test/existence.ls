@@ -188,6 +188,19 @@ let [x, y?]? = a, {z}? = a.1
   eq y, void
   eq z, void
 
+a = {}
+d = [null]
+e = c: null
+[a?b] = d
+eq null a.b
+{c: a?b} = e
+eq null a.b
+a = null
+eq d, [a?b] = d
+eq null a
+eq e, {c: a?b} = e
+eq null a
+
 ### on function call
 f = -> 42
 g = -> void
