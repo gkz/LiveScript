@@ -273,6 +273,11 @@ loaders =
 x = do ...loaders{a, b, ...more}
 deep-equal {a: 1 b: 2 c: 3 d: 4} x
 
+f = null
+g = -> 1
+x = do ...[f?, g?]
+deep-equal [void 1] x
+
 
 ### `import`
 x = 'xx'
