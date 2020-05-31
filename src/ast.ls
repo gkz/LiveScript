@@ -1633,6 +1633,11 @@ class exports.Assign extends Node
         if left.get-default!
             @right = Binary left.op, @right, left.second
             left.=first
+        if left.unfold-soak o
+            left = that
+            @left = left.then
+            left.then = this
+            return left.compile o
         return @compileDestructuring o, left if left.items
         left.is-assignable! or left.carp 'invalid assign'
         return @compileConditional   o, left if @logic
