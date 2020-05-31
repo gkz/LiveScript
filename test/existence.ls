@@ -193,12 +193,20 @@ d = [null]
 e = c: null
 [a?b] = d
 eq null a.b
+[a?b = 1] = d
+eq 1 a.b
 {c: a?b} = e
 eq null a.b
+{c: a?b = 2} = e
+eq 2 a.b
 a = null
 eq d, [a?b] = d
 eq null a
 eq e, {c: a?b} = e
+eq null a
+eq d, [a?b = 1] = d
+eq null a
+eq e, {c: a?b = 2} = e
 eq null a
 
 ### on function call
