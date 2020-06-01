@@ -1613,7 +1613,7 @@ class exports.Assign extends Node
             if delete (@left.=it)name
             then rite = @right; rite = Assign @right = Var(that), rite
             else [rite, @right, temps] = @right.cache o
-            return If(Existence rite; this) <<< {temps, @cond, @void}
+            return If(Existence rite; this) <<< {+soak, temps, @cond, @void}
         If.unfold-soak o, this, \left
 
     unfold-assign: -> @access and this
