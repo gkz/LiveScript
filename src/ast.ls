@@ -458,8 +458,8 @@ class exports.Block extends Node
         tab = o.indent
         codes = []
         for node in @lines
+            node <<< {+void} unless node.eval-result
             node = that if node.rewrite-shorthand o
-            node = node.unfold-soak o or node
             continue if sn-empty(code = (node <<< {+front})compile o, level)
             codes.push tab
             codes.push code
@@ -485,7 +485,7 @@ class exports.Block extends Node
         if @lines.0?code?0 is '/'
             comment = @lines.shift!code + \\n
         if delete o.eval and @chomp!lines.length
-            if bare then @lines.push Parens @lines.pop! else @make-return!
+            if bare then @lines.push Parens(@lines.pop!) <<< {+eval-result} else @make-return!
         code = [(@compile-with-declarations o)]
         # Wrap everything in a safety closure unless requested not to.
         bare or code = ["(function(){\n", ...code, "\n}).call(this);\n"]
@@ -931,6 +931,7 @@ class exports.Chain extends Node
             else unless it instanceof Index then it.each-child seek
 
     rewrite-shorthand: (o, assign) ->
+        return that.rewrite-shorthand o, assign or that if @unfold-soak o
         @head = that if @head.rewrite-shorthand o
         for item, i in @tails
             @tails[i] = that if item.rewrite-shorthand o, assign
@@ -1347,6 +1348,10 @@ class exports.Unary extends Node
         then sn(this, util \not)
         else sn(this, "(", ((Fun [], Block Unary @op, Chain Var \it).compile o), ")")
 
+    rewrite-shorthand: (o, assign) ->
+        return that.rewrite-shorthand o, assign or that if @unfold-soak o
+        super o, assign || @op in <[ ++ -- delete jsdelete ]>
+
 
 #### Binary operators
 class exports.Binary extends Node
@@ -1633,8 +1638,7 @@ class exports.Assign extends Node
         if left.get-default!
             @right = Binary left.op, @right, left.second
             left.=first
-        if left.unfold-soak o
-            left = that
+        if left.soak
             @left = left.then
             left.then = this
             return left.compile o
@@ -1831,6 +1835,8 @@ class exports.Assign extends Node
         if assign
             @carp "invalid assign" if this is bin = @maybe-logic!
             return bin.rewrite-shorthand(o, true) ? bin
+
+        return that.rewrite-shorthand o, assign or that if @unfold-soak o
         @left = that if @left?rewrite-shorthand o, true
         @right = that if @right?rewrite-shorthand o
 
@@ -1861,7 +1867,7 @@ class exports.Import extends Node
                 [left, @left, temps] = left.cache o
             return If(left, this) <<< {temps, +soak, @cond, @void}
         If.unfold-soak o, this, \left
-        or (@void or not o.level) and
+        or @void and
         If.unfold-soak o, this, \right
 
     compile-node: (o) ->
@@ -1907,6 +1913,7 @@ class exports.Import extends Node
         if o.level < LEVEL_LIST then sn(null, ...code) else sn(null, "(", ...code, ")")
 
     rewrite-shorthand: (o, assign) !->
+        return that.rewrite-shorthand o, assign or that if @unfold-soak o
         @left = that if @left?rewrite-shorthand o, assign
         @right = that if @right?rewrite-shorthand o
 
