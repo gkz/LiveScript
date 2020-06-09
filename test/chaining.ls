@@ -268,3 +268,26 @@ eq 2 keywords{eval}eval
 eq 3 keywords{void}void
 eq 4 keywords{on}on
 eq 5 keywords{debugger}debugger
+
+# Existence checks and slices
+a = null
+eq void a?{x}
+eq void a?[0 1]
+a?{x} = a
+++a?{x}[\x]y
+delete a?{x}[\x]y
+delete! a?{x}[\x]y
+eq void a?[0 1] <<< {2}
+
+a = {}
+b = x: y: 1
+a?{x} = b
+eq b.x, a.x
+++a?{x}[\x]y
+eq 2 delete a?{x}[\x]y
+eq void b.x.y
+b.x.y = 2
+eq true delete! a?{x}[\x]y
+eq void b.x.y
+a = [4 3]
+eq '4,3,2' "#{a?[0 1] <<< {2}}"

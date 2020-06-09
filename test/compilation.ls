@@ -403,3 +403,12 @@ ok compiled.starts-with 'var b;\n'
 #  * but the value of the conditional isn't needed
 compiled = LiveScript.compile 'a or if b then [@c] = d else 0' {+bare,-header}
 eq 'a || (b ? this.c = d[0] : 0);' compiled
+
+
+# Wrap `import$` calls in `if` when left side is simple, right side is soaking,
+# and value is unused
+compiled = LiveScript.compile '!-> a <<< b.c?d' {+bare,-header}
+expected = '(function(){\n  var ref$;\n  if ((ref$ = b.c) != null) {\n    import$'
+ok compiled.starts-with expected
+compiled = LiveScript.compile '-> a <<< b.c?d; f!' {+bare,-header}
+ok compiled.starts-with expected
