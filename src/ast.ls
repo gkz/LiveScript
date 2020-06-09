@@ -132,11 +132,10 @@ SourceNode::to-string = (...args) ->
     compile: (options, level) ->
         o = {} <<< options
         o.level? = level
-        node = @unfold-soak o or this
         # If a statement appears within an expression, wrap it in a closure.
-        return node.compile-closure o if o.level and node.is-statement!
-        code = (node <<< tab: o.indent).compile-node o
-        if node.temps then for tmp in that then o.scope.free tmp
+        return @compile-closure o if o.level and @is-statement!
+        code = (this <<< tab: o.indent).compile-node o
+        if @temps then for tmp in that then o.scope.free tmp
         code
 
     compile-closure: (o) ->
@@ -1255,6 +1254,11 @@ class exports.Unary extends Node
                     return it
             case \~ then if it instanceof Fun and it.statement and not it.bound
                 return it <<< bound: \this$
+            case \do
+                # `do f?` => `f?()`
+                if it instanceof Existence and not it.negated
+                    return Chain(it)add Call!
+
         this <<< {op, it}
 
     children: [\it]
@@ -1294,12 +1298,9 @@ class exports.Unary extends Node
         case \!   then it.cond = true
         case \new then it.is-callable! or it.carp 'invalid constructor'
         case \do
-            # `do f?` => `f?()`
             if o.level is LEVEL_TOP and it instanceof Fun and it.is-statement!
                 return sn(this, (it.compile o), " ", (Unary \do Var it.name .compile o))
-            x = Parens if it instanceof Existence and not it.negated
-                 then Chain(it)add Call!
-                 else Call.make it
+            x = Parens Call.make it
             return sn(this, (x <<< {@front, @newed})compile o)
         case \delete
             @carp 'invalid delete' if it instanceof Var or not it.is-assignable!
@@ -1332,7 +1333,7 @@ class exports.Unary extends Node
 
         @compile-spread-over o, it, (node) ->
             for op in ops by -1 then node = constructor op.op, node, op.post
-            node
+            node.unfold-soak o or node
 
     # `v = delete o.k`
     compile-pluck: (o) ->
@@ -1624,6 +1625,7 @@ class exports.Assign extends Node
     unfold-assign: -> @access and this
 
     compile-node: (o) ->
+        return that.compile o if @unfold-soak o
         return @compileSplice o if @left instanceof Slice and @op is \=
         left = @left
         left.=it if sp = @left instanceof Splat
