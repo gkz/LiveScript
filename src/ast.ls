@@ -1272,7 +1272,7 @@ class exports.Unary extends Node
         constructor \! this, true
 
     unfold-soak: (o) ->
-        @op in <[ ++ -- delete ]> and @it? and If.unfold-soak o, this, \it
+        @op in <[ ++ -- delete jsdelete ]> and @it? and If.unfold-soak o, this, \it
 
     get-accessors: ->
         return unless @op is \~
