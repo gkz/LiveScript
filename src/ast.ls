@@ -3077,7 +3077,7 @@ Scope ::=
             scope = that
         else
             scope = this
-        scope.add name, (if constant then \const else \var), node
+        scope.add name, (if constant and name != "that" then \const else \var), node
 
     # Ensures that an assignment is made at the top of this scope.
     assign: (name, value) -> @add name, {value}
