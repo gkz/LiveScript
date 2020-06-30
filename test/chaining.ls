@@ -291,3 +291,9 @@ eq true delete! a?{x}[\x]y
 eq void b.x.y
 a = [4 3]
 eq '4,3,2' "#{a?[0 1] <<< {2}}"
+
+# Assigning through computed properties in slices
+p = -> \q
+o = q: r: 1
+o{(p!)}q.r = 1
+eq 1 o.q.r

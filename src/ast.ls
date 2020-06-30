@@ -932,8 +932,9 @@ class exports.Chain extends Node
     rewrite-shorthand: (o, assign) ->
         return that.rewrite-shorthand o, assign or that if @unfold-soak o
         @head = that if @head.rewrite-shorthand o
+        last-i = @tails.length - 1
         for item, i in @tails
-            @tails[i] = that if item.rewrite-shorthand o, assign
+            @tails[i] = that if item.rewrite-shorthand(o, assign && i is last-i)
         @expand-slice o, assign
         @unwrap!
 
