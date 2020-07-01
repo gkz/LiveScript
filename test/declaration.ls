@@ -105,3 +105,5 @@ eq '''(function(n){
 
 eq '''var ref$;
 1 < 2 && 2 === (ref$ = 4 / 2) && ref$ > 0;''' LiveScript.compile '1 < 2 == 4/2 > 0' {+\const, +bare,-header}
+
+LiveScript.compile "a = that if 1\nb = that if 2" {+\const}
