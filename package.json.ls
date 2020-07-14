@@ -1,5 +1,5 @@
 name: 'livescript'
-version: '1.6.0'
+version: '1.6.1'
 
 description: 'LiveScript is a language which compiles to JavaScript. It has a straightforward mapping to JavaScript and allows you to write expressive code devoid of repetitive boilerplate. While LiveScript adds many features to assist in functional style programming, it also has many improvements for object oriented and imperative programming.'
 
@@ -44,8 +44,8 @@ repository:
   url: 'git://github.com/gkz/LiveScript.git'
 
 dependencies:
-  'prelude-ls': '~1.1.2'
-  optionator: '~0.8.2'
+  'prelude-ls': '~1.2.1'
+  optionator: '~0.9.1'
   'source-map': '=0.6.1'
   'source-map-support': '=0.5.6'
 
