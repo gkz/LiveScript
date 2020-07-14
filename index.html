@@ -5979,6 +5979,22 @@ f do
     <div id="changelog" class="section">
       <a name="changelog"></a>
       <h2>Changelog</h2>
+      <h3>1.6.1</h3>
+      <h4>Fixes</h4>
+      <ul>
+        <li>Prevent property shorthand from applying outside of braces (<a href="https://github.com/gkz/LiveScript/issues/1038">#1038</a>)
+        <li>Fix for destructuring optional object in array (<a href="https://github.com/gkz/LiveScript/issues/1096">#1096</a>)
+        <li>Fix operator precedence edge case with <code>if</code> conditions (<a href="https://github.com/gkz/LiveScript/issues/1098">#1098</a>)
+        <li>Fix source map generation for newer Node.js
+        <li>Fix regression with destructuring into a soak with a default (<code>[a?b = 1] = c</code> and similar)
+        <li>Prevent a soak from overwriting <code>that</code> (<code>if a then that.b? = c</code>)
+        <li>Support <code>delete!</code> on soaked chains
+        <li>Fix regression where <code>.?</code> was treated like <code>.</code> before an object slice (<a href="https://github.com/gkz/LiveScript/issues/1102">#1102</a>)
+        <li>Using <code>that</code> multiple times in a scope now works when compiling with <code>--const</code> (<a href="https://github.com/gkz/LiveScript/issues/809">#809</a>)
+        <li>Fix regression with destructuring in the head of a <code>for let</code> loop
+        <li>Fix regression with an object as a default in a destructuring pattern (<code>[@a or {(f!)}] = x</code>)
+        <li>Fix assigning to a chain with an object slice in the middle (<code>o{(p!)}q.r = s</code>)
+      </ul>
       <h3>1.6.0</h3>
       <h4>Breaking changes</h4>
       <ul>
