@@ -801,3 +801,15 @@ l = (!!@x) -> x
 obj = {-x}
 l.call obj, 'hello'
 eq true obj.x
+
+# [#746](https://github.com/gkz/LiveScript/issues/746)
+m = a: -> it
+n = (m.a _ .b)
+eq 1 n b: 1
+
+o = (m.a _ .b!)
+eq 1 o b: -> 1
+
+p = 2
+q = (m.a _ .b p)
+eq 3 p b: -> 1 + it
