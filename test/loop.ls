@@ -772,3 +772,10 @@ eq '1,1,1,1' x.join \,
 
 x = [1 for arr case .. in [1 2]]
 eq '1,1' x.join \,
+
+# [LiveScript#1121](https://github.com/gkz/LiveScript/issues/1121)
+array = ["a", "a", "a"]
+j = 0
+for ,i in (array ? [])
+  j++
+eq 3 j
