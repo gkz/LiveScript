@@ -2591,7 +2591,7 @@ class exports.For extends While
                 [svar, srcPart] = @source.compile-loop-reference o, \ref, not @object, true
                 svar is srcPart or temps.push svar
             else
-                svar = srcPart = @source.compile o, LEVEL_PAREN
+                svar = srcPart = @source.compile o, if @object then LEVEL_PAREN else LEVEL_CALL
             unless @object
                 if 0 > pvar and ~~pvar is +pvar  # negative int
                     vars = "#idx = #srcPart.length - 1"
