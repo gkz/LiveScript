@@ -49,16 +49,21 @@ command-eq '-cp test/data/data.json.ls', [json-content ]
 command-eq '-cp --json test/data/data.ls', [json-content]
 
 # json to files
+normed-json = (ext = '') ->
+    (normalize 'test/data/data') ++ "#ext.ls => " ++ (normalize 'test/data/data.json')
+
 do
     # implicit json
-    <- command-eq '-c --debug test/data/data.json.ls', ['test/data/data.json.ls => test/data/data.json']
+    #<- command-eq '-c --debug test/data/data.json.ls', ['test/data/data.json.ls => test/data/data.json']
+    <- command-eq '-c --debug test/data/data.json.ls', [normed-json '.json']
     try
         ok file-exists 'test/data/data.json'
         eq json-content + '\n', file-read 'test/data/data.json'
     finally file-delete 'test/data/data.json'
 
     # explicit json
-    <- command-eq '-cj --debug test/data/data.ls', ['test/data/data.ls => test/data/data.json']
+    #<- command-eq '-cj --debug test/data/data.ls', ['test/data/data.ls => test/data/data.json']
+    <- command-eq '-cj --debug test/data/data.ls', [normed-json!]
     try
         ok file-exists 'test/data/data.json'
         eq json-content + '\n', file-read 'test/data/data.json'
@@ -86,7 +91,7 @@ command-eq '-c --debug --map linked test/data/empty.ls', [
 # gkz/LiveScript#953
 command-eq '-m embedded test/data/runtime-error.ls', [
     'Failed at: test/data/runtime-error.ls'
-    /ReferenceError: doesNotExist is not defined\n    at Object\.<anonymous> \(.*\/test\/data\/runtime-error\.ls:2:17\).*/
+    /ReferenceError: doesNotExist is not defined[\r\n]{1,2}    at Object\.<anonymous> \([\.\*\\\/\:a-zA-Z]*runtime-error\.ls:2:17\).*/
 ]
 
 # eval+compile
