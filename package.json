@@ -33,9 +33,12 @@
     "lsc": "./bin/lsc"
   },
   "scripts": {
+    "browser": "live browser",
+    "clean": "live clean",
+    "lib": "live lib",
     "pretest": "make force && make force",
     "test": "make test",
-    "posttest": "git checkout -- lib"
+    "test2": "node scripts/test"
   },
   "preferGlobal": true,
   "repository": {
@@ -43,15 +46,17 @@
     "url": "git://github.com/gkz/LiveScript.git"
   },
   "dependencies": {
-    "prelude-ls": "~1.2.1",
     "optionator": "~0.9.1",
+    "prelude-ls": "~1.2.1",
     "source-map": "=0.6.1",
     "source-map-support": "=0.5.6"
   },
   "devDependencies": {
-    "jison": "0.4.18",
-    "uglify-js": "~2.6.4",
+    "@othelarian/livefile": "^1.0.0",
+    "bach": "^2.0.1",
+    "browserify": "^13.3.0",
     "istanbul": "~0.4.3",
-    "browserify": "^13.3.0"
+    "jison": "0.4.18",
+    "uglify-js": "~2.6.4"
   }
 }
