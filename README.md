@@ -11,6 +11,20 @@ Have Node.js installed. `sudo npm install -g livescript`
 
 After, run `lsc -h` for more information.
 
+### Compilation, Livefile, Live and npm usage
+
+To compile, you can use the `npm run`. The command will look like this:
+
+`npm run [options]`
+
+Here the options:
+
+- `browser`: compile the lib into 2 files, `livescript.js` and `livescript.min.js`. You need to run `lib` before to be sure the lib is correctly build before.
+- `clean`: remove the following directories: browser, lib and coverage.
+- `coverage`: run istanbul to get the package coverage.
+- `lib`: compile the lib itself, creating the lib directory and filling it up with all the js files composing the livescript lib.
+- `package`: (re)generating the `package.json` from the `package.json.ls`.
+- `test`: launch the test script. You need to compile the lib before if you want to test your last modifications.
 
 ### Source
 [git://github.com/gkz/LiveScript.git](git://github.com/gkz/LiveScript.git)
