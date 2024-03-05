@@ -25,6 +25,9 @@ browser/livescript.js: $(LIB) browser scripts/preroll
 browser/livescript-min.js:  browser/livescript.js
 	$(UGLIFYJS) browser/livescript.js --mangle --comments "all" > browser/livescript-min.js
 
+live: bin/live
+	./scripts/build-live
+
 package.json: package.json.ls
 	$(LSC) --compile package.json.ls
 

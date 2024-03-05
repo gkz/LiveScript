@@ -1,0 +1,4 @@
+option \option \o \Boolean 'an option'
+
+task 'valid', 'validating the Livefile', !->
+  console.log 'this is a Livefile!'

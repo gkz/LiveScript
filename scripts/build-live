@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+var fs = require("fs");
+var path = require("path");
+
+var realpath = path.dirname(fs.realpathSync(__filename));
+var lib = path.join(realpath, "../lib");
+var target = path.resolve(realpath, "../bin-src/live.ls");
+var output = path.resolve(realpath, "../bin/live");
+
+var ls = require(lib);
+
+code = fs.readFileSync(target, "utf-8");
+res = ls.compile(code, {bare: true});
+fs.writeFileSync(output, "#!/usr/bin/env node\n\n" + res);
