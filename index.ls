@@ -4,7 +4,7 @@ require! {
   bach
   fs
   optionator
-  'prelude-ls': { map }
+  'prelude-ls': { each, map }
 }
 
 # VARS ############################
@@ -104,10 +104,7 @@ try
       rmd = (dir) -> (cb) !->
         console.log "removing `#dir`"
         fs.rm dir, {force: yes, recursive: yes}, cb
-      #
-      # TODO: changing browser_2 and lib_2 for real names
-      #
-      args = <[browser lib_2 coverage]> |> map rmd
+      args = <[browser lib coverage]> |> map rmd
       (bach.series args) (err, ok) !->
         console.log if err? then err else 'dirs removed'
     # Executing istanbul #######################################################
@@ -120,16 +117,36 @@ try
       spawn istanbul, ['cover', './scripts/test'], opts
     # compiling the lib ########################################################
     | opts.lib
-      #
-      # TODO
-      #
+      # generating the parser
+      generate-grammar = (cb) !->
+        console.log 'Generating parser...'
+        require! { path: {resolve, dirname}, '.': {compile}, './lib/grammar' }
+        target = resolve dirname(module.filename), \./lib/parser.js
+        try
+          parser = grammar.generate!
+          fs.writeFileSync target, parser ++ '\n'
+          console.log '==> parser GENERATED'
+          cb void 2
+        catch
+          cb e, void
+      # compiling files from src to lib
+      compile-lib = (cb) !->
+        require! '.': {compile}
+        try
+          mapper = (file) !->
+            console.log "compiling '#file'..."
+            code = fs.readFileSync "./src/#file", \utf-8
+            res = compile code, {bare: yes}
+            fs.writeFileSync "./lib/#{file.split \. .0}.js", res
+          fs.readdirSync \./src |> each mapper
+        catch
+          cb e, void
+      # doing all actions relative to lib
       actions =
-        create-dir \lib_2
-        #
-        #
-      #
-      console.log \lib
-      #
+        create-dir \lib
+        generate-grammar
+        compile-lib
+      (bach.series actions) generic-cb
     # generating the package.json ##############################################
     | opts.package
       require! '.': {compile}
